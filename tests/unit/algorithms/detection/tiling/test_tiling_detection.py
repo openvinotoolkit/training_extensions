@@ -54,7 +54,7 @@ class MockDetModel(nn.Module):
         return boxes, labels, masks
 
 
-def create_otx_dataset(height: int, width: int, labels: List[str]):
+def create_otx_dataset(height: int, width: int, labels: List[str], domain: Domain = Domain.DETECTION):
     """Create a random OTX dataset.
 
     Args:
@@ -67,7 +67,7 @@ def create_otx_dataset(height: int, width: int, labels: List[str]):
     """
     labels = []
     for label in ["rectangle", "ellipse", "triangle"]:
-        labels.append(LabelEntity(name=label, domain=Domain.DETECTION))
+        labels.append(LabelEntity(name=label, domain=Domain))
     image, anno_list = generate_random_annotated_image(width, height, labels)
     image = Image(data=image)
     annotation_scene = AnnotationSceneEntity(annotations=anno_list, kind=AnnotationSceneKind.ANNOTATION)
@@ -88,6 +88,7 @@ class TestTilingDetection:
             tile_size=np.random.randint(low=100, high=500),
             overlap_ratio=np.random.uniform(low=0.0, high=0.5),
             max_per_img=np.random.randint(low=1, high=10000),
+            max_annotation=1000,
         )
         self.dataloader_cfg = dict(samples_per_gpu=1, workers_per_gpu=1)
         self.otx_dataset, self.labels = create_otx_dataset(self.height, self.width, self.label_names)
@@ -314,3 +315,56 @@ class TestTilingDetection:
         _, _, ir_height, ir_width = ir_input_shape
         assert ir_height == original_height * scale_factor
         assert ir_width == original_width * scale_factor
+
+    @e2e_pytest_unit
+    def test_max_annotation(self, max_annotation=200):
+        otx_dataset, labels = create_otx_dataset(
+            self.height, self.width, self.label_names, Domain.INSTANCE_SEGMENTATION
+        )
+        factor = int(max_annotation / len(otx_dataset[0].annotation_scene.annotations)) + 1
+        otx_dataset[0].annotation_scene.annotations = otx_dataset[0].annotation_scene.annotations * factor
+        dataloader_cfg = dict(samples_per_gpu=1, workers_per_gpu=1)
+
+        tile_cfg = dict(
+            tile_size=np.random.randint(low=100, high=500),
+            overlap_ratio=np.random.uniform(low=0.0, high=0.5),
+            max_per_img=np.random.randint(low=1, high=10000),
+            max_annotation=max_annotation,
+        )
+        train_data_cfg = ConfigDict(
+            dict(
+                type="ImageTilingDataset",
+                pipeline=[
+                    dict(type="Resize", img_scale=(self.height, self.width), keep_ratio=False),
+                    dict(type="RandomFlip", flip_ratio=0.5),
+                    dict(type="Pad", size_divisor=32),
+                    dict(type="DefaultFormatBundle"),
+                    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"]),
+                ],
+                dataset=dict(
+                    type="OTXDetDataset",
+                    pipeline=[
+                        dict(type="LoadImageFromOTXDataset"),
+                        dict(
+                            type="LoadAnnotationFromOTXDataset",
+                            with_bbox=True,
+                            with_mask=False,
+                            domain=Domain.INSTANCE_SEGMENTATION,
+                            min_size=-1,
+                        ),
+                    ],
+                    otx_dataset=otx_dataset,
+                    labels=labels,
+                    domain=Domain.INSTANCE_SEGMENTATION,
+                ),
+                **tile_cfg
+            )
+        )
+
+        dataset = build_dataset(train_data_cfg)
+        train_dataloader = build_dataloader(dataset, **dataloader_cfg)
+        for data in train_dataloader:
+            assert isinstance(data["img"].data[0], torch.Tensor)
+            assert isinstance(data["gt_bboxes"].data[0][0], torch.Tensor)
+            assert isinstance(data["gt_labels"].data[0][0], torch.Tensor)
+            assert isinstance(data["gt_masks"].data[0][0], torch.Tensor)

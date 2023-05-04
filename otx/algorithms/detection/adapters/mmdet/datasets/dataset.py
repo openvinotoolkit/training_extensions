@@ -324,6 +324,8 @@ class ImageTilingDataset:
             boxes in tiles' overlap areas. Defaults to 0.45.
         max_per_img (int, optional): if there are more than max_per_img bboxes
             after NMS, only top max_per_img will be kept. Defaults to 200.
+        max_annotation (int, optional): Limit the number of ground truth by
+            randomly select 5000 due to RAM OOM. Defaults to 5000.
     """
 
     def __init__(
@@ -335,6 +337,7 @@ class ImageTilingDataset:
         overlap_ratio=0.2,
         iou_threshold=0.45,
         max_per_img=200,
+        max_annotation=5000,
         filter_empty_gt=True,
         test_mode=False,
     ):
@@ -351,6 +354,7 @@ class ImageTilingDataset:
             min_area_ratio=min_area_ratio,
             iou_threshold=iou_threshold,
             max_per_img=max_per_img,
+            max_annotation=max_annotation,
             filter_empty_gt=False if test_mode else filter_empty_gt,
         )
         self.flag = np.zeros(len(self), dtype=np.uint8)
