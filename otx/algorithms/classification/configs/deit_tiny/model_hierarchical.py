@@ -10,7 +10,7 @@ model = dict(
     task="classification",
     backbone=dict(arch="deit-tiny", init_cfg=dict(type="Pretrained", checkpoint=ckpt_url, prefix="backbone")),
     head=dict(
-        type="VisionTransformerHierarchicalClsHead",
+        type="CustomHierarchicalLinearClsHead",
         multilabel_loss=dict(
             type="AsymmetricLossWithIgnore",
             gamma_pos=0.0,

@@ -22,6 +22,7 @@ from .custom_hierarchical_linear_cls_head import CustomHierarchicalLinearClsHead
 from .custom_hierarchical_non_linear_cls_head import CustomHierarchicalNonLinearClsHead
 from .custom_multi_label_linear_cls_head import CustomMultiLabelLinearClsHead
 from .custom_multi_label_non_linear_cls_head import CustomMultiLabelNonLinearClsHead
+from .custom_vision_transformer_head import CustomVisionTransformerClsHead
 from .mmov_cls_head import MMOVClsHead
 from .non_linear_cls_head import NonLinearClsHead
 from .semisl_cls_head import SemiLinearClsHead, SemiNonLinearClsHead
@@ -30,8 +31,6 @@ from .semisl_multilabel_cls_head import (
     SemiNonLinearMultilabelClsHead,
 )
 from .supcon_cls_head import SupConClsHead
-from .vision_transformer_hierarchical_cls_head import VisionTransformerHierarchicalClsHead
-from .vision_transformer_multi_label_cls_head import VisionTransformerMultiLabelClsHead
 
 __all__ = [
     "ConstrastiveHead",
@@ -43,8 +42,7 @@ __all__ = [
     "CustomMultiLabelNonLinearClsHead",
     "SemiLinearMultilabelClsHead",
     "SemiNonLinearMultilabelClsHead",
-    "VisionTransformerMultiLabelClsHead",
-    "VisionTransformerHierarchicalClsHead",
+    "CustomVisionTransformerClsHead",
     "NonLinearClsHead",
     "SemiLinearClsHead",
     "SemiNonLinearClsHead",
