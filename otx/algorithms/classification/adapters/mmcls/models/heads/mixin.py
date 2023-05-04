@@ -3,17 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.algorithms.common.utils.logger import get_logger
-
-logger = get_logger()
-
 
 class OTXHeadMixin:
     """Mix-in class for OTX custom heads."""
 
     @staticmethod
     def pre_logits(x):
-        """Preprocess logits before forward."""
+        """Preprocess logits before forward. Designed to support vision transformer output."""
         if isinstance(x, list):
             x = x[-1]
             return x
