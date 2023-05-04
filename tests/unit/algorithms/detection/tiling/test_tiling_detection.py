@@ -67,7 +67,7 @@ def create_otx_dataset(height: int, width: int, labels: List[str], domain: Domai
     """
     labels = []
     for label in ["rectangle", "ellipse", "triangle"]:
-        labels.append(LabelEntity(name=label, domain=Domain))
+        labels.append(LabelEntity(name=label, domain=domain))
     image, anno_list = generate_random_annotated_image(width, height, labels)
     image = Image(data=image)
     annotation_scene = AnnotationSceneEntity(annotations=anno_list, kind=AnnotationSceneKind.ANNOTATION)
@@ -321,7 +321,7 @@ class TestTilingDetection:
         otx_dataset, labels = create_otx_dataset(
             self.height, self.width, self.label_names, Domain.INSTANCE_SEGMENTATION
         )
-        factor = int(max_annotation / len(otx_dataset[0].annotation_scene.annotations)) + 1
+        factor = int(max_annotation / len(otx_dataset[0].annotation_scene.annotations)) + 2
         otx_dataset[0].annotation_scene.annotations = otx_dataset[0].annotation_scene.annotations * factor
         dataloader_cfg = dict(samples_per_gpu=1, workers_per_gpu=1)
 
@@ -348,7 +348,7 @@ class TestTilingDetection:
                         dict(
                             type="LoadAnnotationFromOTXDataset",
                             with_bbox=True,
-                            with_mask=False,
+                            with_mask=True,
                             domain=Domain.INSTANCE_SEGMENTATION,
                             min_size=-1,
                         ),
@@ -361,10 +361,12 @@ class TestTilingDetection:
             )
         )
 
+        # original annotation over the limitation
+        assert len(otx_dataset[0].annotation_scene.annotations) > max_annotation
         dataset = build_dataset(train_data_cfg)
         train_dataloader = build_dataloader(dataset, **dataloader_cfg)
+        # check gt annotation is under the limitation
         for data in train_dataloader:
-            assert isinstance(data["img"].data[0], torch.Tensor)
-            assert isinstance(data["gt_bboxes"].data[0][0], torch.Tensor)
-            assert isinstance(data["gt_labels"].data[0][0], torch.Tensor)
-            assert isinstance(data["gt_masks"].data[0][0], torch.Tensor)
+            assert len(data["gt_bboxes"].data[0][0]) <= max_annotation
+            assert len(data["gt_labels"].data[0][0]) <= max_annotation
+            assert len(data["gt_masks"].data[0][0]) <= max_annotation
