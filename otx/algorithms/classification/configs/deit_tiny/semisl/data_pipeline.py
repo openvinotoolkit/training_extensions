@@ -1,4 +1,4 @@
-"""Data Pipeline of EfficientNet model for Classification Semi-SL Task."""
+"""Data Pipeline of deit-tiny model for Classification Semi-SL Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #

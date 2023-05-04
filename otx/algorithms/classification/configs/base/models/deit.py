@@ -1,4 +1,4 @@
-"""Base deit."""
+"""Base deit config."""
 
 # model settings
 model = dict(

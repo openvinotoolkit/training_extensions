@@ -17,9 +17,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
-EXPLAIN_SUPPORTED_TEMPLATES = ["EfficientNet-B0", "MobileNet-V3-large-1x", "EfficientNet-V2-S"]
 templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates
-templates_cls = [template for template in templates_cls if template.name in EXPLAIN_SUPPORTED_TEMPLATES]
 templates_cls_ids = [template.model_template_id for template in templates_cls]
 
 
@@ -33,8 +31,9 @@ class TestExplainMethods:
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_cls, ids=templates_cls_ids)
     def test_saliency_map_cls(self, template):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         torch.manual_seed(0)
-
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
         cfg_path = os.path.join(base_dir, "model.py")
         cfg = MPAConfig.fromfile(cfg_path)

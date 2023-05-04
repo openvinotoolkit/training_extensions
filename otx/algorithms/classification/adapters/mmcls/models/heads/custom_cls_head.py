@@ -15,16 +15,12 @@ from .non_linear_cls_head import NonLinearClsHead
 class CustomNonLinearClsHead(NonLinearClsHead):
     """Custom Nonlinear classifier head."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
-
     def loss(self, cls_score, gt_label, feature=None):
         """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.loss_type == "IBLoss":
+        if self.compute_loss._get_name() == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
@@ -59,17 +55,12 @@ class CustomLinearClsHead(LinearClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(self, num_classes, in_channels, init_cfg=None, **kwargs):
-        init_cfg = init_cfg if init_cfg else dict(type="Normal", layer="Linear", std=0.01)
-        super().__init__(num_classes, in_channels, init_cfg=init_cfg, **kwargs)
-        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
-
     def loss(self, cls_score, gt_label, feature=None):
         """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.loss_type == "IBLoss":
+        if self.compute_loss._get_name() == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)

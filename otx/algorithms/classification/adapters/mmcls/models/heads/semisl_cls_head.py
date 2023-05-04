@@ -77,9 +77,9 @@ class SemiClsHead(OTXHeadMixin):
             dict[str, Tensor]: A dictionary of loss components.
         """
         label_u, mask = None, None
-        for key in x.keys():
-            x[key] = self.pre_logits(x[key])
         if isinstance(x, dict):
+            for key in x.keys():
+                x[key] = self.pre_logits(x[key])
             outputs = final_layer(x["labeled"])  # Logit of Labeled Img
             batch_size = len(outputs)
 
