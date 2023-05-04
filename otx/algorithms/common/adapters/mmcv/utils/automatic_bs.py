@@ -64,15 +64,17 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         else:
             copied_cfg.runner["max_epochs"] = 1
 
-        otx_prog_hook_idx = None
+        idx_hooks_to_remove = []
         for i, hook in enumerate(copied_cfg.custom_hooks):
             if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
                 hook["enable_eval_before_run"] = False
-            elif hook["type"] == "OTXProgressHook":
-                otx_prog_hook_idx = i
+            if hook["type"] == "OTXProgressHook" or "earlystoppinghook" in hook["type"].lower():
+                idx_hooks_to_remove.append(i)
 
-        if otx_prog_hook_idx is not None:
-            del copied_cfg.custom_hooks[otx_prog_hook_idx]
+        if idx_hooks_to_remove:
+            idx_hooks_to_remove.sort()
+            for i in reversed(idx_hooks_to_remove):
+                del copied_cfg.custom_hooks[i]
 
         new_datasets = [SubDataset(datasets[0], batch_size)]
 
