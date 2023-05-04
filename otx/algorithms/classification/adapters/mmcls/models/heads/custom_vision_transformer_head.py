@@ -1,5 +1,7 @@
 """Module to define CustomVisionTransformerClsHead for classification task."""
-# Copyright (c) OpenMMLab. All rights reserved.
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import VisionTransformerClsHead

@@ -102,7 +102,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_supcon(self, template, tmp_dir_path):
         if template.name == "deit-tiny":
-            pytest.skip(reason="Issue#???? supcon for ViT template is not supported yet.")
+            pytest.skip(reason="Supcon for ViT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_supcon"
         args1 = copy.deepcopy(args)
         args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
@@ -138,7 +138,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
         if template.name == "deit-tiny" and dump_features:
-            pytest.skip(reason="Issue#???? ViT template does not support dump_features.")
+            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -399,7 +399,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
         if template.name == "deit-tiny" and dump_features:
-            pytest.skip(reason="Issue#???? ViT template does not support dump_features.")
+            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -599,7 +599,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
         if template.name == "deit-tiny" and dump_features:
-            pytest.skip(reason="Issue#???? ViT template does not support dump_features.")
+            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -775,7 +775,7 @@ class TestToolsSelfSLClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_selfsl_train(self, template, tmp_dir_path):
         if template.name == "deit-tiny":
-            pytest.skip(reason="Issue#???? self-sl for ViT template is not supported yet.")
+            pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         tmp_dir_path_1 = tmp_dir_path / "multi_class_cls/test_selfsl"
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
@@ -789,7 +789,7 @@ class TestToolsSelfSLClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_selfsl_eval(self, template, tmp_dir_path):
         if template.name == "deit-tiny":
-            pytest.skip(reason="Issue#???? self-sl for ViT template is not supported yet.")
+            pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -799,7 +799,7 @@ class TestToolsSelfSLClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
         if template.name == "deit-tiny":
-            pytest.skip(reason="Issue#???? self-sl for ViT template is not supported yet.")
+            pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_selfsl"
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
