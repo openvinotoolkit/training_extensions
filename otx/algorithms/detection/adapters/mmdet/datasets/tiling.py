@@ -132,6 +132,14 @@ class Tile:
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
+
+        # Limit the number of ground truth by randomly select 5000-6000 get due to RAM OOM
+        if "gt_masks" in result and len(result["gt_masks"]) > 5000:
+            max_limit = np.random.randint(5000, 6000)
+            indices = np.random.choice(len(result["gt_bboxes"]), size=max_limit, replace=False)
+            result["gt_bboxes"] = result["gt_bboxes"][indices]
+            result["gt_labels"] = result["gt_labels"][indices]
+            result["gt_masks"] = result["gt_masks"][indices]
         return result
 
     # pylint: disable=too-many-locals
