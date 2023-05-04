@@ -4,24 +4,28 @@ Guide
 
 .. toctree::
   :hidden:
+  :maxdepth: 3
   :caption: Get Started
 
   get_started/introduction
-  get_started/quick_start_guide/index
+  get_started/installation
+  get_started/cli_commands
 
 
 .. toctree::
   :hidden:
   :caption: Tutorials
 
-  tutorials/index
+  tutorials/base/index.rst
+  tutorials/advanced/index.rst
 
 
 .. toctree::
   :hidden:
   :caption: Explanation
 
-  explanation/index
+  explanation/algorithms/index
+  explanation/additional_features/index
 
 
 .. toctree::
@@ -36,7 +40,6 @@ Guide
 
 
 .. toctree::
-  :hidden:
   :caption: Release Notes
 
   release_notes/index
