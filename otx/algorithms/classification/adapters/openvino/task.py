@@ -265,9 +265,11 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                         "Please rerun OpenVINO export or retrain the model."
                     )
 
+        max_num_infer_requests = 8
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             if max_num_infer_requests > 1:
+                assert self.inferencer.num_running_reqs <=1
                 if self.inferencer.num_running_reqs >= max_num_infer_requests:
                     self.inferencer.model.await_any()
 
