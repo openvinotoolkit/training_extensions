@@ -85,7 +85,7 @@ class BsSearchAlgo:
             cuda_oom, max_memory_allocated = self._try_batch_size(current_bs)
 
             # If GPU memory usage is too close to limit, CUDA OOM can be raised during training
-            if cuda_oom or self._mem_higher_bound < max_memory_allocated:
+            if cuda_oom or max_memory_allocated > self._mem_higher_bound:
                 if current_bs < lowest_unavailable_bs:
                     lowest_unavailable_bs = current_bs
                 current_bs = self._get_even_center_val(current_bs, available_bs)
@@ -106,7 +106,7 @@ class BsSearchAlgo:
 
         # try default batch size
         cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
-        if cuda_oom or self._mem_higher_bound < bs_mem_usage:
+        if cuda_oom or bs_mem_usage > self._mem_higher_bound:
             self._default_bs -= 2
             if self._default_bs <= 0:
                 raise RuntimeError("Current device can't train model even with 2.")
@@ -116,8 +116,8 @@ class BsSearchAlgo:
         # try default batch size + 2
         current_bs += 2
         cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
-        if cuda_oom or self._mem_higher_bound < bs_mem_usage:
-            return  current_bs
+        if cuda_oom or bs_mem_usage > self._mem_higher_bound:
+            return  self._default_bs
 
         estimation_pct = 0.8
         while True:
@@ -134,6 +134,8 @@ class BsSearchAlgo:
                     return self._default_bs + 2
             elif self._mem_lower_bound <= mem_usage <= self._mem_higher_bound:
                 return current_bs
+            else:
+                estimation_pct = 0.8
 
     def _estimate_batch_size(self, estimation_pct: float) -> int:
         if len(self._bs_try_history) < 2:
