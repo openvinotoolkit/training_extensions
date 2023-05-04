@@ -29,7 +29,7 @@ from mmdet.datasets.pipelines import Compose
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
 from otx.algorithms.detection.adapters.mmdet.evaluation import eval_segm
-from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.utils.shape_factory import ShapeFactory
@@ -39,7 +39,7 @@ from .tiling import Tile
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 def get_annotation_mmdet_format(
-    dataset_item: DatasetItemEntity,
+    dataset_item: DatasetItemEntityWithID,
     labels: List[LabelEntity],
     domain: Domain,
     min_size: int = -1,
@@ -59,11 +59,11 @@ def get_annotation_mmdet_format(
     gt_bboxes = []
     gt_labels = []
     gt_polygons = []
+    gt_ann_ids = []
 
     label_idx = {label.id: i for i, label in enumerate(labels)}
 
-    for annotation in dataset_item.get_annotations(labels=labels, include_empty=False):
-
+    for annotation in dataset_item.get_annotations(labels=labels, include_empty=False, preserve_id=True):
         box = ShapeFactory.shape_as_rectangle(annotation.shape)
 
         if min(box.width * width, box.height * height) < min_size:
@@ -80,18 +80,22 @@ def get_annotation_mmdet_format(
             polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
             gt_polygons.extend([[polygon] for _ in range(n)])
         gt_labels.extend(class_indices)
+        item_id = getattr(dataset_item, "id_", None)
+        gt_ann_ids.append((item_id, annotation.id_))
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
             bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
             labels=np.array(gt_labels, dtype=int),
             masks=PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
+            ann_ids=gt_ann_ids,
         )
     else:
         ann_info = dict(
             bboxes=np.zeros((0, 4), dtype=np.float32),
             labels=np.array([], dtype=int),
             masks=[],
+            ann_ids=[],
         )
     return ann_info
 

@@ -94,8 +94,6 @@ class OTXClsDataset(BaseDataset):
             index=index,
             gt_label=gt_label,
             ignored_labels=ignored_labels,
-            entity_id=getattr(item, "id_", None),
-            label_id=self._get_label_id(gt_label),
         )
 
         if self.pipeline is None:

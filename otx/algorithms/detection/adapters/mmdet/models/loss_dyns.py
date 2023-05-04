@@ -1,7 +1,17 @@
-"""Common class for tracking loss dynamics."""
+"""Utililty classes for tracking loss dynamics."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
+from enum import IntEnum
+
+
+class TrackingLossType(IntEnum):
+    """Type of loss functions to track."""
+
+    cls = 0
+    bbox = 1
+    centerness = 2
 
 
 class LossAccumulator:

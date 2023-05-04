@@ -82,6 +82,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.core.data import caching
+from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook
 
 logger = get_logger()
 
@@ -144,6 +145,10 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
+
+        # Loss dynamics tracking
+        if getattr(self._hyperparams.algo_backend, "enable_noisy_label_detection", False):
+            LossDynamicsTrackingHook.configure_recipe(self._recipe_cfg, self._output_path)
 
         logger.info("initialized.")
 
@@ -365,7 +370,6 @@ class MMDetectionTask(OTXDetectionTask):
             time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
             time_monitor = time_monitor[0] if time_monitor else None
         if time_monitor is not None:
-
             # pylint: disable=unused-argument
             def pre_hook(module, inp):
                 time_monitor.on_test_batch_begin(None, None)
@@ -562,7 +566,6 @@ class MMDetectionTask(OTXDetectionTask):
             time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
             time_monitor = time_monitor[0] if time_monitor else None
         if time_monitor is not None:
-
             # pylint: disable=unused-argument
             def pre_hook(module, inp):
                 time_monitor.on_test_batch_begin(None, None)

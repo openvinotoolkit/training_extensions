@@ -249,6 +249,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         labels: Optional[List[LabelEntity]] = None,
         include_empty: bool = False,
         include_ignored: bool = False,
+        preserve_id: bool = False,
     ) -> List[Annotation]:
         """Returns a list of annotations that exist in the dataset item (wrt. ROI).
 
@@ -259,6 +260,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 the ROI are returned.
             include_empty (bool): if True, returns both empty and non-empty labels
             include_ignored (bool): if True, includes the labels in ignored_labels
+            preserve_id (bool): if True, preserve the annotation id when copying
 
         Returns:
             List[Annotation]: The intersection of the input label set and those present within the ROI
@@ -300,7 +302,13 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                     # without tampering with the original shape.
                     shape = copy.deepcopy(annotation.shape)
 
-                annotations.append(Annotation(shape=shape, labels=shape_labels))
+                annotations.append(
+                    Annotation(
+                        shape=shape,
+                        labels=shape_labels,
+                        id=annotation.id_ if preserve_id else None,
+                    )
+                )
         return annotations
 
     def append_annotations(self, annotations: Sequence[Annotation]):

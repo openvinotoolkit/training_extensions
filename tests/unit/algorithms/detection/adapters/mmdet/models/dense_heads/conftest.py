@@ -79,9 +79,9 @@ def fxt_cfg_atss_head(n_classes=4, n_channels=64) -> Dict:
             beta=2.0,
             loss_weight=1.0,
         ),
+        train_cfg=train_cfg,
     )
 
-    head_cfg["train_cfg"] = train_cfg
     return head_cfg
 
 
