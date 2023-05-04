@@ -157,9 +157,14 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self.rebuild = True
                 model = model if model else self.template.name
                 self.template = self._get_template(str(self.task_type), model=model)
+                self.train_type = self._get_train_type()
+            else:
+                # FIXME: Inside the workspace, ignore the --train-type args.
+                self.train_type = self._get_train_type(ignore_args=True)
         elif self.template and Path(self.template).exists():
             # No workspace -> template O
             self.template = parse_model_template(self.template)
+            self.train_type = self._get_train_type()
         else:
             task_type = self.task_type
             if not task_type and not model:
@@ -167,9 +172,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     raise ConfigValueError("Can't find the argument 'train_data_roots'")
                 task_type = self.auto_task_detection(self.args.train_data_roots)
             self.template = self._get_template(task_type, model=model)
+            self.train_type = self._get_train_type()
         self.task_type = self.template.task_type
         self.model = self.template.name
-        self.train_type = self._get_train_type()
 
     def _check_rebuild(self):
         """Checking for Rebuild status."""
