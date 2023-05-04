@@ -54,6 +54,8 @@ class Tile:
             boxes in tiles' overlap areas. Defaults to 0.45.
         max_per_img (int, optional): if there are more than max_per_img bboxes
             after NMS, only top max_per_img will be kept. Defaults to 1500.
+        max_annotation(int, optional): Limit the number of ground truth by
+            randomly select 5000 due to RAM OOM.
         filter_empty_gt (bool, optional): If set true, images without bounding
             boxes of the dataset's classes will be filtered out. This option
             only works when `test_mode=False`, i.e., we never filter images
@@ -71,6 +73,7 @@ class Tile:
         min_area_ratio: float = 0.9,
         iou_threshold: float = 0.45,
         max_per_img: int = 1500,
+        max_annotation: int = 5000,
         filter_empty_gt: bool = True,
         nproc: int = 2,
     ):
@@ -78,6 +81,7 @@ class Tile:
         self.filter_empty_gt = filter_empty_gt
         self.iou_threshold = iou_threshold
         self.max_per_img = max_per_img
+        self.max_annotation = max_annotation
         self.tile_size = tile_size
         self.overlap = overlap
         self.stride = int(tile_size * (1 - overlap))
@@ -133,10 +137,9 @@ class Tile:
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
 
-        # Limit the number of ground truth by randomly select 5000-6000 get due to RAM OOM
-        if "gt_masks" in result and len(result["gt_masks"]) > 5000:
-            max_limit = np.random.randint(5000, 6000)
-            indices = np.random.choice(len(result["gt_bboxes"]), size=max_limit, replace=False)
+        # Limit the number of ground truth by randomly select 5000 get due to RAM OOM
+        if "gt_masks" in result and len(result["gt_masks"]) > self.max_annotation:
+            indices = np.random.choice(len(result["gt_bboxes"]), size=self.max_annotation, replace=False)
             result["gt_bboxes"] = result["gt_bboxes"][indices]
             result["gt_labels"] = result["gt_labels"][indices]
             result["gt_masks"] = result["gt_masks"][indices]
