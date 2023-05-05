@@ -143,7 +143,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         """Forward function of OpenVINO Segmentation Inferencer."""
         return self.model.infer_sync(image)
 
-    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any):
+    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
         if not self.model.is_ready():
             self.model.await_any()
@@ -151,11 +151,11 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         callback_data = id, metadata, result_handler
         self.model.infer_async(image, callback_data)
 
-    def await_all(self, ):
+    def await_all(self) -> None:
         """Await all running infer requests if any."""
         self.model.await_all()
 
-    def _async_callback(self, request: Any, callback_args: tuple):
+    def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
             res_copy_func, args = callback_args
@@ -233,7 +233,12 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             dump_soft_prediction = True
             enable_async_inference = True
 
-        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, feature_vector: Union[np.ndarray, None], soft_prediction: Union[np.ndarray, None]):
+        def add_prediction(
+            id: int,
+            predicted_scene: AnnotationSceneEntity,
+            feature_vector: Union[np.ndarray, None],
+            soft_prediction: Union[np.ndarray, None],
+        ):
             dataset_item = dataset[id]
             dataset_item.append_annotations(predicted_scene.annotations)
 
@@ -259,7 +264,6 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         total_time = 0.0
         dataset_size = len(dataset)
-        enable_async_inference = False
         for i, dataset_item in enumerate(dataset, 1):
             start_time = time.perf_counter()
             if enable_async_inference:

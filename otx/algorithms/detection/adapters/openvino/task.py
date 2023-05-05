@@ -140,7 +140,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
-    def _async_callback(self, request: Any, callback_args: tuple):
+    def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
             res_copy_func, args = callback_args
@@ -161,12 +161,11 @@ class BaseInferencerWithConverter(BaseInferencer):
                 )
 
             result_handler(id, processed_prediciton, features)
-            print('postprocess', id)
 
         except Exception as e:
             self.callback_exceptions.append(e)
 
-    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any):
+    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
         if not self.model.is_ready():
             self.model.await_any()
@@ -174,7 +173,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         callback_data = id, metadata, result_handler
         self.model.infer_async(image, callback_data)
 
-    def await_all(self, ):
+    def await_all(self) -> None:
         """Await all running infer requests if any."""
         self.model.await_all()
 
@@ -446,14 +445,15 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
             self.model.get_data("openvino.bin"),
+            "CPU",
+            get_default_async_reqs_num(),
         ]
-        num_requests = get_default_async_reqs_num()
         if self.task_type == TaskType.DETECTION:
-            inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args, num_requests=num_requests)
+            inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
-            inferencer = OpenVINOMaskInferencer(*args, num_requests=num_requests)
+            inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
-            inferencer = OpenVINORotatedRectInferencer(*args, num_requests=num_requests)
+            inferencer = OpenVINORotatedRectInferencer(*args)
         if self.config.tiling_parameters.enable_tiling:
             logger.info("Tiling is enabled. Wrap inferencer with tile inference.")
             tile_classifier_model_file, tile_classifier_weight_file = None, None
@@ -505,7 +505,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         if self.config.tiling_parameters.enable_tiling:
             enable_async_inference = False
-
 
         def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
             dataset_item = dataset[id]

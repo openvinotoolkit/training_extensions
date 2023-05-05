@@ -124,7 +124,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 
         return self.model.preprocess(image)
 
-    def _async_callback(self, request: Any, callback_args: tuple):
+    def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
             res_copy_func, args = callback_args
@@ -156,7 +156,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 
         return predictions, probs, actmap, repr_vectors, act_score
 
-    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any):
+    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
         if not self.model.is_ready():
             self.model.await_any()
@@ -164,7 +164,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         callback_data = id, metadata, result_handler
         self.model.infer_async(image, callback_data)
 
-    def await_all(self, ):
+    def await_all(self) -> None:
         """Await all running infer requests if any."""
         self.model.await_all()
 

@@ -51,7 +51,7 @@ class TestInferenceParameters:
         assert dataclasses.fields(infer_params)[2].name == "explainer"
         assert dataclasses.fields(infer_params)[3].name == "process_saliency_maps"
         assert dataclasses.fields(infer_params)[4].name == "explain_predicted_classes"
-        assert dataclasses.fields(infer_params)[5].name == "max_num_infer_requests"
+        assert dataclasses.fields(infer_params)[5].name == "enable_async_inference"
         assert type(infer_params.is_evaluation) is bool
         assert type(infer_params.process_saliency_maps) is bool
         assert type(infer_params.explain_predicted_classes) is bool

@@ -119,7 +119,7 @@ def set_random_seed(seed, logger, deterministic=False):
 
 
 def get_default_async_reqs_num() -> int:
-    """Returns a default number of infer request for OV models"""
+    """Returns a default number of infer request for OV models."""
     reqs_num = os.cpu_count()
     if reqs_num is not None:
         reqs_num = max(1, int(reqs_num / 2))
