@@ -18,7 +18,8 @@ import io
 import json
 import os
 import tempfile
-from typing import Any, Dict, Optional, Tuple, Union
+import time
+from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import attr
@@ -33,6 +34,7 @@ from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.segmentation.adapters.openvino import model_wrappers
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
@@ -113,6 +115,8 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
             hparams.postprocessing.class_name.value, model_adapter, self.configuration, preload=True
         )
         self.converter = SegmentationToAnnotationConverter(label_schema)
+        self.callback_exceptions: List[Exception] = []
+        self.model.model_adapter.set_callback(self._async_callback)
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Segmentation Inferencer."""
@@ -138,6 +142,31 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
     def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Segmentation Inferencer."""
         return self.model.infer_sync(image)
+
+    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any):
+        """Runs async inference."""
+        if not self.model.is_ready():
+            self.model.await_any()
+        image, metadata = self.pre_process(image)
+        callback_data = id, metadata, result_handler
+        self.model.infer_async(image, callback_data)
+
+    def await_all(self, ):
+        """Await all running infer requests if any."""
+        self.model.await_all()
+
+    def _async_callback(self, request: Any, callback_args: tuple):
+        """Fetches the results of async inference."""
+        try:
+            res_copy_func, args = callback_args
+            id, preprocessing_meta, result_handler = args
+            prediction = res_copy_func(request)
+
+            processed_prediciton = self.post_process(prediction, preprocessing_meta)
+            result_handler(id, *processed_prediciton)
+
+        except Exception as e:
+            self.callback_exceptions.append(e)
 
 
 class OTXOpenVinoDataLoader(DataLoader):
@@ -188,6 +217,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
             self.model.get_data("openvino.bin"),
+            num_requests=get_default_async_reqs_num(),
         )
 
     def infer(
@@ -197,13 +227,14 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             dump_soft_prediction = not inference_parameters.is_evaluation
+            enable_async_inference = inference_parameters.enable_async_inference
         else:
             update_progress_callback = default_progress_callback
             dump_soft_prediction = True
+            enable_async_inference = True
 
-        dataset_size = len(dataset)
-        for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, feature_vector, soft_prediction = self.inferencer.predict(dataset_item.numpy)
+        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, feature_vector: Union[np.ndarray, None], soft_prediction: Union[np.ndarray, None]):
+            dataset_item = dataset[id]
             dataset_item.append_annotations(predicted_scene.annotations)
 
             if feature_vector is not None:
@@ -226,7 +257,26 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                     )
                     dataset_item.append_metadata_item(result_media, model=self.model)
 
+        total_time = 0.0
+        dataset_size = len(dataset)
+        enable_async_inference = False
+        for i, dataset_item in enumerate(dataset, 1):
+            start_time = time.perf_counter()
+            if enable_async_inference:
+                self.inferencer.enqueue_prediction(dataset_item.numpy, i - 1, add_prediction)
+            else:
+                predicted_scene, feature_vector, soft_prediction = self.inferencer.predict(dataset_item.numpy)
+                add_prediction(i - 1, predicted_scene, feature_vector, soft_prediction)
+            end_time = time.perf_counter() - start_time
+            total_time += end_time
+
             update_progress_callback(int(i / dataset_size * 100), None)
+
+        self.inferencer.await_all()
+
+        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        logger.info(f"Total time: {total_time} secs")
+        logger.info("Segmentation OpenVINO inference completed")
 
         return dataset
 

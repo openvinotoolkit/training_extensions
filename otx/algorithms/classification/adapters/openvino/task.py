@@ -117,14 +117,14 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
         self.callback_exceptions: List[Exception] = []
-        self.model.model_adapter.set_callback(self.callback)
+        self.model.model_adapter.set_callback(self._async_callback)
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Classification Inferencer."""
 
         return self.model.preprocess(image)
 
-    def callback(self, request: Any, callback_args: tuple):
+    def _async_callback(self, request: Any, callback_args: tuple):
         """Fetches the results of async inference."""
         try:
             res_copy_func, args = callback_args
