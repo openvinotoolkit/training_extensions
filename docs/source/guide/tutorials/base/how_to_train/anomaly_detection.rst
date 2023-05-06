@@ -1,7 +1,7 @@
 Anomaly Detection Tutorial
 ================================
 
-This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications. 
+This tutorial demonstrates how to train, evaluate, and deploy a classification, detection, or segmentation model for anomaly detection in industrial or medical applications.
 Read :doc:`../../../explanation/algorithms/anomaly/index` for more information about the Anomaly tasks.
 
 .. note::
@@ -23,17 +23,17 @@ The process has been tested with the following configuration:
 Setup the Virtual environment
 *****************************
 
-1. To create a universal virtual environment for OpenVINO™ Training Extensions, 
-please follow the installation process in the :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`. 
+1. To create a universal virtual environment for OpenVINO™ Training Extensions,
+please follow the installation process in the :doc:`quick start guide <../../../get_started/installation>`.
 
-2. Alternatively, if you want to only train anomaly models, then you can create a task specific environment. 
+2. Alternatively, if you want to only train anomaly models, then you can create a task specific environment.
 Then also follow the installation process in the guide above, but substitute ``pip install -e .[anomaly]`` with the following command:
 
 .. code-block::
 
     pip install -e .[anomaly]
 
-3. Activate your virtual 
+3. Activate your virtual
 environment:
 
 .. code-block::
@@ -49,10 +49,10 @@ Dataset Preparation
 1. For this example, we will use the `MVTec <https://www.mvtec.com/company/research/datasets/mvtec-ad>`_ dataset.
 You can download the dataset from the link above. We will use the ``bottle`` category for this tutorial.
 
-2. This is how it might look like in your 
+2. This is how it might look like in your
 file system:
 
-.. code-block:: 
+.. code-block::
 
     datasets/MVTec/bottle
     ├── ground_truth
@@ -98,7 +98,7 @@ file system:
 Training
 ***************************
 
-1. For this example let's look at the 
+1. For this example let's look at the
 anomaly detection tasks
 
 .. code-block:: bash
@@ -116,8 +116,8 @@ anomaly detection tasks
 
 You can see two anomaly detection models, STFPM and PADIM. For more detail on each model, refer to Anomalib's `STFPM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/stfpm.html>`_ and `PADIM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/padim.html>`_ documentation.
 
-2. Let's proceed with PADIM for 
-this example. 
+2. Let's proceed with PADIM for
+this example.
 
 .. code-block:: bash
 
@@ -203,7 +203,7 @@ Optimization
 Anomaly tasks can be optimized either in POT or NNCF format. For more information refer to the :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section.
 
 
-1. Let's start with POT 
+1. Let's start with POT
 optimization.
 
 .. code-block::
@@ -223,10 +223,10 @@ This command generates the following files that can be used to run :doc:`otx dem
 - openvino.bin
 - openvino.xml
 
-2. To perform NNCF optimization, pass the torch ``pth`` 
+2. To perform NNCF optimization, pass the torch ``pth``
 weights to the ``opitmize`` command:
 
-.. code-block:: 
+.. code-block::
 
     otx optimize ote_anomaly_detection_padim \
         --train-data-roots datasets/MVTec/bottle/train \
@@ -247,7 +247,7 @@ Similar to POT optimization, it generates the following files:
 Segmentation and Classification
 *******************************
 
-While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models. 
+While the above example shows Anomaly Detection, you can also train Anomaly Segmentation and Classification models.
 To see what tasks are available, you can pass ``anomaly_segmentation`` and ``anomaly_classification`` to ``otx find`` mentioned in the `Training`_ section. You can then use the same commands to train, evaluate, export and optimize the models.
 
 .. note::

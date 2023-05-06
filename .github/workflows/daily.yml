@@ -6,11 +6,6 @@ on:
     # every UTC 7PM from Mon to Fri
     - cron: "0 19 * * 1-5"
 
-# This is what will cancel the workflow concurrency
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   E2E-tests:
     strategy:
