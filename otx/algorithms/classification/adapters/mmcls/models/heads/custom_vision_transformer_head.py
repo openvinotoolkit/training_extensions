@@ -16,7 +16,7 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.compute_loss._get_name() == "IBLoss":
+        if self.compute_loss.__class__.__name__ == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
