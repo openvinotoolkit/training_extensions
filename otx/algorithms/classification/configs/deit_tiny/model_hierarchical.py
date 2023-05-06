@@ -19,5 +19,5 @@ model = dict(
     ),
 )
 
-optimizer = dict(_delete_=True, type='AdamW', lr=0.01, weight_decay=0.05)
+optimizer = dict(_delete_=True, type="AdamW", lr=0.01, weight_decay=0.05)
 optimizer_config = dict(_delete_=True)
