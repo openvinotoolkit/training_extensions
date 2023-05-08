@@ -12,13 +12,12 @@ on:
       - synchronize
   workflow_dispatch: # run on request (no need for PR)
 
-# This is what will cancel the workflow concurrency
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
   Code-Quality-Checks:
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
@@ -36,6 +35,7 @@ jobs:
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
+      fail-fast: false
       matrix:
         include:
           - python-version: "3.8"
@@ -45,6 +45,10 @@ jobs:
           - python-version: "3.10"
             tox-env: "py310"
     name: Unit-Test-with-Python${{ matrix.python-version }}
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Unit-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
+      cancel-in-progress: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -77,6 +81,7 @@ jobs:
   Integration-Test:
     needs: Unit-Test
     strategy:
+      fail-fast: false
       matrix:
         include:
           - task: "all"
@@ -94,6 +99,10 @@ jobs:
           - task: "ano"
             test_dir: "tests/integration/cli/anomaly"
     name: Integration-Test-py310-${{ matrix.task }}
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
+      cancel-in-progress: true
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"

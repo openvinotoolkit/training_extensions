@@ -45,8 +45,8 @@ If you have your dataset in those formats, then you can simply run using one lin
 
 .. code-block::
 
-    $ otx train --template <model_template> --train-data-roots <path_to_data_root> \
-                --val-data-roots <path_to_data_root>
+    $ otx train  <model_template> --train-data-roots <path_to_data_root> \
+                                            --val-data-roots <path_to_data_root>
 
 .. note::
 

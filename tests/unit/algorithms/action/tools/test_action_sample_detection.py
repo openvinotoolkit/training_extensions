@@ -87,7 +87,7 @@ def test_main(mocker) -> None:
         def evaluate(self, resultset):
             resultset.performance = 1.0
 
-        def export(self, export_type, model):
+        def export(self, export_type, model, dump_features):
             return model
 
         def optimize(self, optimization_type, dataset, modle, params):
@@ -118,5 +118,4 @@ def test_main(mocker) -> None:
     main(MockArgs())
 
     MockArgs.export = True
-    with pytest.raises(Exception):
-        main(MockArgs())
+    main(MockArgs())

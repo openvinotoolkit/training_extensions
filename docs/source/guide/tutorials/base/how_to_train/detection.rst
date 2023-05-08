@@ -28,10 +28,10 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -55,7 +55,7 @@ Dataset preparation
   - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
   - `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_
 
-1. Clone a repository with 
+1. Clone a repository with
 `WGISD dataset <https://github.com/thsant/wgisd>`_.
 
 .. code-block::
@@ -122,7 +122,7 @@ We can do that by running these commands:
 Training
 *********
 
-1. First of all, you need to choose which object detection model you want to train. 
+1. First of all, you need to choose which object detection model you want to train.
 The list of supported templates for object detection is available with the command line below.
 
 .. note::
@@ -144,15 +144,15 @@ The list of supported templates for object detection is available with the comma
 
 .. _detection_workspace:
 
-2. On this step we will create **otx-workspace-Detection** 
+2. On this step we will create **otx-workspace-Detection**
 with:
 
 - all necessary configs for Custom_Object_Detection_Gen3_ATSS
 - prepared ``data.yaml`` to simplify CLI commands launch
 - train/validation sets, based on provided annotation.
 
-It may be counterintuitive, but for ``--train-data-roots`` we need to pass the path to the dataset folder root (in our case it's ``data/wgisd``) instead of the folder with validation images. 
-This is because the function automatically detects annotations and images according to the expected folder structure we achieved above. 
+It may be counterintuitive, but for ``--train-data-roots`` we need to pass the path to the dataset folder root (in our case it's ``data/wgisd``) instead of the folder with validation images.
+This is because the function automatically detects annotations and images according to the expected folder structure we achieved above.
 So, if you'd like to add ``--val-data-roots``, please note, that it should also be a path to a dataset folder root.
 
 On contrary, if we omit adding ``--val-data-roots``, the function will find images for validation according to validation annotation and create ``splitted_dataset`` folder inside the workplace with the desired split.
@@ -186,7 +186,7 @@ Let's prepare the object detection workspace running the following command:
 
 
 .. warning::
-  
+
   If you want to rebuild your current workspace by running ``otx build`` with other parameters, it's better to delete the original workplace before that to prevent mistakes.
 
 Check ``otx-workspace-DETECTION/data.yaml`` to ensure, which data subsets will be used for training and validation, and update it if necessary.
@@ -208,11 +208,11 @@ Check ``otx-workspace-DETECTION/data.yaml`` to ensure, which data subsets will b
     data-roots: null
 
 
-We also can modify the backbone of the model, by adding ``--backbone`` parameter. 
+We also can modify the backbone of the model, by adding ``--backbone`` parameter.
 We can find the available backbone by running ``otx find`` with the framework parameter.
 Learn more about modified backbones in :doc:`advanced tutorial for backbone replacement <../../advanced/backbones>`.
 
-3. ``otx train`` trains a model (a particular model template) 
+3. ``otx train`` trains a model (a particular model template)
 on a dataset and results in two files:
 
 - ``weights.pth`` - a model snapshot
@@ -221,7 +221,7 @@ on a dataset and results in two files:
 These are needed as inputs for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
 
 
-4. The following command line starts training of the medium object 
+4. The following command line starts training of the medium object
 detection model on the first GPU on WGISD dataset:
 
 .. code-block::
@@ -231,7 +231,7 @@ detection model on the first GPU on WGISD dataset:
 
 To start multi-gpu training, list the indexes of GPUs you want to train on or omit `gpus` parameter, so training will run on all available GPUs.
 
-4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations. 
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
 Learn more about template-specific parameters using ``otx train params --help``.
 
 It can be done by manually updating parameters in the ``template.yaml`` file in your workplace or via the command line.
@@ -239,13 +239,13 @@ It can be done by manually updating parameters in the ``template.yaml`` file in 
 For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
 .. code-block::
-  
-                       params --learning_parameters.batch_size 4 
+
+                       params --learning_parameters.batch_size 4
                               --learning_parameters.num_iters 100 \
                               --learning_parameters.enable_early_stopping false
 
 
-5. The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``outputs`` folder, 
+5. The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``outputs`` folder,
 while training logs can be found in the ``outputs/logs`` dir.
 
 .. note::
@@ -275,7 +275,7 @@ After that, we have the PyTorch object detection model trained with OpenVINO™ 
 Validation
 ***********
 
-1. ``otx eval`` runs evaluation of a 
+1. ``otx eval`` runs evaluation of a
 trained model on a particular dataset.
 
 Eval function receives test annotation information and model snapshot, trained in previous step.
@@ -283,7 +283,7 @@ Please note, ``label_schema.json`` file contains meta information about the data
 
 The default metric is F1 measure.
 
-2. That's how we can evaluate the snapshot in ``outputs`` 
+2. That's how we can evaluate the snapshot in ``outputs``
 folder on WGISD dataset and save results to ``outputs/performance``:
 
 .. code-block::
@@ -293,14 +293,14 @@ folder on WGISD dataset and save results to ``outputs/performance``:
                       --output ../outputs/
 
 
-3. The output of ``../outputs/performance.json`` consists of 
+3. The output of ``../outputs/performance.json`` consists of
 a dict with target metric name and its value.
 
 .. code-block::
 
   {"f-measure": 0.5487693710118504}
 
-4. ``Optional`` Additionally, we can tune evaluation parameters such as confidence threshold via the command line. 
+4. ``Optional`` Additionally, we can tune evaluation parameters such as confidence threshold via the command line.
 Learn more about template-specific parameters using ``otx eval params --help``.
 
 For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.
@@ -328,7 +328,7 @@ Export
 It allows to efficiently run it on Intel hardware, especially on CPU, using OpenVINO™ runtime.
 Also, the resulting IR model is required to run POT optimization in the section below. IR model contains 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
-2. That's how we can export the trained model ``../outputs/weights.pth`` 
+2. That's how we can export the trained model ``../outputs/weights.pth``
 from the previous section and save the exported model to the ``../outputs/openvino/`` folder.
 
 .. code-block::
@@ -342,7 +342,7 @@ from the previous section and save the exported model to the ``../outputs/openvi
   2023-01-10 06:23:41,630 | INFO : Exporting completed
 
 
-3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model, 
+3. We can check the accuracy of the IR model and the consistency between the exported model and the PyTorch model,
 using ``otx eval`` and passing the IR model path to the ``--load-weights`` parameter.
 
 .. code-block::
@@ -363,7 +363,7 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 Optimization
 *************
 
-1. We can further optimize the model with ``otx optimize``. 
+1. We can further optimize the model with ``otx optimize``.
 It uses NNCF or POT depending on the model format.
 
 ``NNCF`` optimization is used for trained snapshots in a framework-specific format such as checkpoint (.pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
@@ -380,7 +380,7 @@ The function results with the following files, which could be used to run :doc:`
 
 To learn more about optimization, refer to `NNCF repository <https://github.com/openvinotoolkit/nncf>`_.
 
-2. Command example for optimizing a PyTorch model (`.pth`) 
+2. Command example for optimizing a PyTorch model (`.pth`)
 with OpenVINO NNCF.
 
 .. code-block::
@@ -399,7 +399,7 @@ with OpenVINO NNCF.
   Performance(score: 0.5446735395189003, dashboard: (1 metric groups))
 
 
-3.  Command example for optimizing OpenVINO™ model (.xml) 
+3.  Command example for optimizing OpenVINO™ model (.xml)
 with OpenVINO™ POT.
 
 .. code-block::
@@ -423,7 +423,7 @@ with OpenVINO™ POT.
 The optimization time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 it took about 10 minutes.
 Please note, that POT will take some time without logging to optimize the model.
 
-4. Finally, we can also evaluate the optimized model by passing 
+4. Finally, we can also evaluate the optimized model by passing
 it to the ``otx eval`` function.
 
 Now we have fully trained, optimized and exported an efficient model representation ready-to-use object detection model.
