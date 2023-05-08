@@ -146,3 +146,9 @@ class Image(IMedia2DEntity):
     def path(self) -> Optional[str]:
         """Returns the file path of the image."""
         return self.__file_path
+
+    @property
+    def data(self) -> Optional[np.ndarray]:
+        """Returns the data."""
+        #FIXME: Need to check the effect of Geti.
+        return self.__data
