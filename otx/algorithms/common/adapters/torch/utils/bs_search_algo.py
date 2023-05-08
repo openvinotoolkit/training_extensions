@@ -157,17 +157,36 @@ class BsSearchAlgo:
 
         def distance_from_bound(val):
             if val[1] < self._mem_lower_bound:
-                return self._mem_lower_bound - val[1]
+                # if memory usage is same, then higher batch size is preferred
+                return self._mem_lower_bound - val[1] - val[0] / 10000
             elif self._mem_upper_bound < val[1]:
-                return val[1] - self._mem_upper_bound
+                # if memory usage is same, then lower batch size is preferred
+                return val[1] - self._mem_upper_bound + val[0] / 10000
             else:
                 return 0
-
+            
         bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=distance_from_bound)
         bs1 = bs_arr[0][0]
         bs1_mem_usage = bs_arr[0][1]
 
-        graident = (bs_arr[1][1] - bs_arr[0][1]) / (bs_arr[1][0] - bs_arr[0][0])
-        b = bs1_mem_usage - graident * bs1
+        for i in range(1, len(bs_arr)):
+            graident = (bs_arr[i][1] - bs1_mem_usage) / (bs_arr[i][0] - bs1)
+            b = bs1_mem_usage - graident * bs1
+            if graident != 0:
+                break
 
-        return round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
+        if graident == 0:  # all batch size history used same GPU memory
+            if bs1_mem_usage < self._mem_lower_bound:
+                return bs1 + 2
+            elif bs1_mem_usage > self._mem_upper_bound:
+                if bs1 <= 2:
+                    return 2
+                return bs1 - 2
+            else:
+                return bs1
+
+        estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
+        if estimated_bs in self._bs_try_history and self._bs_try_history[estimated_bs] > self._mem_upper_bound:
+            return estimated_bs - 2
+
+        return estimated_bs
