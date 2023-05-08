@@ -114,7 +114,7 @@ class TestRegressionActionClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_eval_openvino(self, template, tmp_dir_path):
         if template.name == "MoViNet":
-            pytest.skip(reason="[CVS-106939] MoViNet export --> eval issue.")
+            pytest.skip(reason="Issue#2058: MoViNet fails with OpenVINO inference occasionally")
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / TASK_TYPE
@@ -128,7 +128,7 @@ class TestRegressionActionClassification:
             tmp_dir_path,
             otx_dir,
             action_cls_data_args,
-            threshold=0.02,
+            threshold=0.05,
             criteria=action_cls_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],

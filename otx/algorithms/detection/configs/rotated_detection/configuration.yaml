@@ -101,7 +101,7 @@ learning_parameters:
     warning: null
   num_workers:
     affects_outcome_of: NONE
-    default_value: 0
+    default_value: 2
     description:
       Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
@@ -116,7 +116,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 0
+    value: 2
     visible_in_ui: true
     warning: null
   enable_early_stopping:
@@ -198,6 +198,23 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: This will automatically control the patience and interval when early stopping is enabled.
+  auto_decrease_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Find a proper batch size by training for an iteration with various batch size a few times.
+    editable: true
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning:
+      Enabling this option could reduce the actual batch size if the current setting results in out-of-memory error.
+      The learning rate also could be adjusted according to the adapted batch size.
+      This process might take some extra computation time to try a few batch size candidates.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -260,7 +277,7 @@ algo_backend:
       rules: []
       type: UI_RULES
     value: Incremental
-    visible_in_ui: True
+    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
@@ -452,7 +469,7 @@ tiling_parameters:
     affects_outcome_of: TRAINING
     default_value: 0.2
     min_value: 0.0
-    max_value: 1.0
+    max_value: 0.9
     type: FLOAT
     editable: true
     ui_rules:

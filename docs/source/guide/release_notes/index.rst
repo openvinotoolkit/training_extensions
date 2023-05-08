@@ -1,8 +1,5 @@
-Release Notes
-=============
-
-.. toctree::
-   :maxdepth: 2
+Releases
+========
 
 *************
 v1.2.0 (1Q23)
@@ -12,6 +9,8 @@ v1.2.0 (1Q23)
 - Support multiple python versions up to 3.10
 - Support export of onnx models
 - Add option to save images after inference in OTX CLI demo together with demo in exportable code
+- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks
+- Add noisy label detection for multi-class classification task
 
 *************
 v1.1.0 (1Q23)

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-arguments
 import os
 from typing import Dict, List, Optional
 
@@ -37,17 +37,25 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     def _import_dataset(
         self,
         train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
         test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import MVTec dataset.
 
         Args:
             train_data_roots (Optional[str]): Path for training data
+            train_ann_files (Optional[str]): Path for training annotation file
             val_data_roots (Optional[str]): Path for validation data
+            val_ann_files (Optional[str]): Path for validation annotation file
             test_data_roots (Optional[str]): Path for test data
+            test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data
+            unlabeled_file_list (Optional[str]): Path of unlabeled file list
 
         Returns:
             DatumaroDataset: Datumaro Dataset

@@ -42,7 +42,6 @@ model = dict(
         norm_cfg=dict(type="BN", requires_grad=True),
         align_corners=False,
         enable_aggregator=True,
-        enable_out_norm=False,
         loss_decode=[
             dict(
                 type="CrossEntropyLoss",

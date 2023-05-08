@@ -6,11 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
--
+- Support direct annotation input for COCO format (<https://github.com/openvinotoolkit/training_extensions/pull/1921>)
+- Action task supports multi GPU training. (<https://github.com/openvinotoolkit/training_extensions/pull/2057>)
+- Support storage cache in Apache Arrow using Datumaro for action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2087>)
 
 ### Enhancements
 
--
+- Make semantic segmentation OpenVINO models compatible with ModelAPI (<https://github.com/openvinotoolkit/training_extensions/pull/2029>).
 
 ### Bug fixes
 
@@ -21,6 +23,20 @@ All notable changes to this project will be documented in this file.
 - OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
   (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
 
+## \[v1.2.1\]
+
+### Enhancements
+
+- Upgrade mmdeploy==0.14.0 from official PyPI (<https://github.com/openvinotoolkit/training_extensions/pull/2047>)
+- Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>)
+- Optimize YOLOX data pipeline (<https://github.com/openvinotoolkit/training_extensions/pull/2075>)
+- Tiling Spatial Concatenation for OpenVINO IR (<https://github.com/openvinotoolkit/training_extensions/pull/2052>)
+
+### Bug fixes
+
+- Bug fix: value of validation variable is changed after auto decrease batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2053>)
+- Fix tiling 0 stride issue in parameter adapter (<https://github.com/openvinotoolkit/training_extensions/pull/2078>)
+
 ## \[v1.2.0\]
 
 ### New features
@@ -29,6 +45,8 @@ All notable changes to this project will be documented in this file.
 - Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
 - Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
 - Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
+- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
+- Add noisy label detection for multi-class classification task (<https://github.com/openvinotoolkit/training_extensions/pull/1985>, <https://github.com/openvinotoolkit/training_extensions/pull/2034>)
 
 ### Enhancements
 
@@ -39,6 +57,8 @@ All notable changes to this project will be documented in this file.
 - Extend OTX explain CLI (<https://github.com/openvinotoolkit/training_extensions/pull/1941>)
 - Segmentation task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1977>)
 - Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
+- Optimize data preprocessing time and enhance overall performance in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2020>)
+- Support automatic batch size decrease when there is no enough GPU memory (<https://github.com/openvinotoolkit/training_extensions/pull/2022>)
 
 ### Bug fixes
 

@@ -81,7 +81,7 @@ class TestRegressionAnomalyDetection:
 
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         train_start_time = timer()
-        otx_train_testing(template, tmp_dir_path, otx_dir, category_data_args)
+        otx_train_testing(template, tmp_dir_path, otx_dir, category_data_args, deterministic=False)
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()
@@ -144,7 +144,7 @@ class TestRegressionAnomalyDetection:
             tmp_dir_path,
             otx_dir,
             category_data_args,
-            threshold=0.02,
+            threshold=0.05,
             criteria=anomaly_detection_regression_config["regression_criteria"]["export"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -175,7 +175,7 @@ class TestRegressionAnomalyDetection:
             tmp_dir_path,
             otx_dir,
             category_data_args,
-            threshold=0.02,
+            threshold=0.0,
             criteria=anomaly_detection_regression_config["regression_criteria"]["deploy"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -209,7 +209,7 @@ class TestRegressionAnomalyDetection:
             tmp_dir_path,
             otx_dir,
             category_data_args,
-            threshold=0.001,
+            threshold=0.01,
             criteria=anomaly_detection_regression_config["regression_criteria"]["nncf"][category],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],

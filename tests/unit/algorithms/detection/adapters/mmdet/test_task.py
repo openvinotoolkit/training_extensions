@@ -133,8 +133,8 @@ class MockExporter:
         }
 
 
-class TestMMActionTask:
-    """Test class for MMActionTask.
+class TestMMDetectionTask:
+    """Test class for MMDetectionTask.
 
     Details are explained in each test function.
     """

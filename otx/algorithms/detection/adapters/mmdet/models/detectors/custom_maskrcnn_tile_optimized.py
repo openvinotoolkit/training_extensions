@@ -12,6 +12,7 @@ from mmdet.models.builder import DETECTORS
 from torch import nn
 
 from otx.algorithms.common.adapters.mmdeploy import is_mmdeploy_enabled
+from otx.algorithms.common.adapters.nncf import no_nncf_trace
 
 from .custom_maskrcnn_detector import CustomMaskRCNN
 
@@ -82,7 +83,10 @@ class TileClassifier(torch.nn.Module):
         Returns:
             torch.Tensor: objectness score
         """
-        return self.sigmoid(self.forward(img))[0][0]
+
+        out = self.forward(img)
+        with no_nncf_trace():
+            return self.sigmoid(out)[0][0]
 
 
 # pylint: disable=too-many-ancestors

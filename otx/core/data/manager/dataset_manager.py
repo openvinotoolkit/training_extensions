@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name
 import os
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import datumaro
 from datumaro.components.dataset import Dataset, DatasetSubset
@@ -73,9 +73,11 @@ class DatasetManager:
         return data_format
 
     @staticmethod
-    def get_image_path(data_item: DatasetItem) -> str:
+    def get_image_path(data_item: DatasetItem) -> Optional[str]:
         """Returns the path of image."""
-        return data_item.media.path
+        if hasattr(data_item.media, "path"):
+            return data_item.media.path
+        return None
 
     @staticmethod
     def export_dataset(dataset: Dataset, output_dir: str, data_format: str, save_media=True):
@@ -83,9 +85,9 @@ class DatasetManager:
         return dataset.export(output_dir, data_format, save_media=save_media)
 
     @staticmethod
-    def import_dataset(data_root: str, data_format: str) -> dict:
+    def import_dataset(data_root: str, data_format: str, subset: Optional[str] = None) -> dict:
         """Import dataset."""
-        return Dataset.import_from(data_root, format=data_format)
+        return Dataset.import_from(data_root, format=data_format, subset=subset)
 
     @staticmethod
     def auto_split(task: str, dataset: Dataset, split_ratio: List[Tuple[str, float]]) -> dict:

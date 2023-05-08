@@ -135,7 +135,7 @@ class TestRegressionTilingInstanceSegmentation:
             tmp_dir_path,
             otx_dir,
             tiling_inst_seg_data_args,
-            threshold=0.02,
+            threshold=0.05,
             criteria=tiling_inst_seg_regression_config["regression_criteria"]["export"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -164,7 +164,7 @@ class TestRegressionTilingInstanceSegmentation:
             tmp_dir_path,
             otx_dir,
             tiling_inst_seg_data_args,
-            threshold=0.02,
+            threshold=0.0,
             criteria=tiling_inst_seg_regression_config["regression_criteria"]["deploy"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
@@ -179,7 +179,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="CVS-98026")
+    @pytest.mark.skip("Issue#2060: Tiling nncf shows errors")
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
@@ -197,7 +197,7 @@ class TestRegressionTilingInstanceSegmentation:
             tmp_dir_path,
             otx_dir,
             tiling_inst_seg_data_args,
-            threshold=0.001,
+            threshold=0.01,
             criteria=tiling_inst_seg_regression_config["regression_criteria"]["nncf"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],

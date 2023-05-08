@@ -14,8 +14,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# ruff: noqa: E402
+
 import argparse
+import os
 import sys
+
+os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
 
 from mmcv.utils import get_logger
 
@@ -27,6 +32,7 @@ from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data.adapter import get_dataset_adapter
 
 logger = get_logger(name="sample")
@@ -111,7 +117,60 @@ def main(args):
     logger.info(str(resultset.performance))
 
     if args.export:
-        raise Exception("CVS-102941 ONNX export of action detection model keeps failed")
+        logger.info("Export model")
+        exported_model = ModelEntity(
+            dataset,
+            environment.get_model_configuration(),
+        )
+        task.export(ExportType.OPENVINO, exported_model, dump_features=False)
+
+        logger.info("Create OpenVINO Task")
+        environment.model = exported_model
+        openvino_task_impl_path = model_template.entrypoints.openvino
+        openvino_task_cls = get_task_class(openvino_task_impl_path)
+        openvino_task = openvino_task_cls(environment)
+
+        logger.info("Get predictions on the validation set")
+        predicted_validation_dataset = openvino_task.infer(
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True),
+        )
+
+        resultset = ResultSetEntity(
+            model=output_model,
+            ground_truth_dataset=validation_dataset,
+            prediction_dataset=predicted_validation_dataset,
+        )
+        logger.info("Estimate quality on validation set")
+        openvino_task.evaluate(resultset)
+        logger.info(str(resultset.performance))
+
+        # FIXME. POT for action detection model fails.
+        # logger.info("Run POT optimization")
+        # optimized_model = ModelEntity(
+        #     dataset,
+        #     environment.get_model_configuration(),
+        # )
+        # openvino_task.optimize(
+        #     OptimizationType.POT,
+        #     dataset.get_subset(Subset.TRAINING),
+        #     optimized_model,
+        #     OptimizationParameters(),
+        # )
+
+        # logger.info("Get predictions on the validation set")
+        # predicted_validation_dataset = openvino_task.infer(
+        #     validation_dataset.with_empty_annotations(),
+        #     InferenceParameters(is_evaluation=True),
+        # )
+        # resultset = ResultSetEntity(
+        #     model=optimized_model,
+        #     ground_truth_dataset=validation_dataset,
+        #     prediction_dataset=predicted_validation_dataset,
+        # )
+        # logger.info("Performance of optimized model:")
+        # openvino_task.evaluate(resultset)
+        # logger.info(str(resultset.performance))
 
 
 if __name__ == "__main__":

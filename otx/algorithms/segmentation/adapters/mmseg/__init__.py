@@ -17,10 +17,8 @@
 
 from .datasets import MPASegDataset
 from .models import (
-    ClassIncrEncoderDecoder,
     ConstantScalarScheduler,
     CrossEntropyLossWithIgnore,
-    CustomFCNHead,
     DetConB,
     DetConLoss,
     LiteHRNet,
@@ -47,7 +45,6 @@ __all__ = [
     "MPASegDataset",
     "LiteHRNet",
     "MMOVBackbone",
-    "CustomFCNHead",
     "MMOVDecodeHead",
     "DetConLoss",
     "SelfSLMLP",
@@ -57,6 +54,5 @@ __all__ = [
     "DetConB",
     "CrossEntropyLossWithIgnore",
     "SupConDetConB",
-    "ClassIncrEncoderDecoder",
     "MeanTeacherSegmentor",
 ]

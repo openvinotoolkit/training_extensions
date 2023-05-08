@@ -124,5 +124,6 @@ class TestOTXSegmentationTask:
     def test_export(self, otx_model, mocker):
         mocker_open = mocker.patch("builtins.open")
         mocker_open.__enter__.return_value = True
+        mocker.patch("otx.algorithms.segmentation.task.embed_ir_model_data", return_value=None)
         self.seg_task.export(ExportType.OPENVINO, otx_model)
         mocker_open.assert_called()
