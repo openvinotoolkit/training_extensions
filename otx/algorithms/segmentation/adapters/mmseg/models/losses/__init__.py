@@ -16,5 +16,6 @@
 
 from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
 from .detcon_loss import DetConLoss
+from .ohem import CriterionOhem
 
-__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore"]
+__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore", "CriterionOhem"]

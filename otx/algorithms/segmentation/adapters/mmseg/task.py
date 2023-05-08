@@ -18,6 +18,7 @@ import glob
 import io
 import os
 import time
+import math
 from contextlib import nullcontext
 from copy import deepcopy
 from functools import partial
@@ -225,6 +226,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             persistent_workers=False,
             shuffle=False,
         )
+        cfg.model["loss_decode"]["num_iter"] = len(dataloader)
 
         # Target classes
         if "task_adapt" in cfg:
@@ -329,6 +331,12 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         # Data
         datasets = [build_dataset(cfg.data.train)]
+
+        if self._train_type == TrainType.Semisupervised:
+            # forward the knowledge of num iters per epoch to model for filter loss
+            bs_per_gpu = cfg.data.train_dataloader["samples_per_gpu"]
+            actual_bs = bs_per_gpu * len(cfg.gpu_ids) if cfg.distributed else bs_per_gpu
+            cfg.model.num_iters_per_epoch = math.ceil(len(datasets[0]) / actual_bs)
 
         # FIXME: Currently segmentor does not support multi batch evaluation.
         # For the Self-SL case, there is no val data. So, need to check the
