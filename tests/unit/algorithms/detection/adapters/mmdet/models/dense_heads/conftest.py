@@ -17,7 +17,7 @@ def fxt_head_input(
     img_size=256,
     n_bboxes=3,
     n_classes=4,
-    batch_size=2,
+    batch_size=8,
     n_channels=64,
 ):
     img_metas = [

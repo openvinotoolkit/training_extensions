@@ -270,7 +270,6 @@ class CustomSSDHeadTrackingLossDynamics(CustomSSDHead):
     ):
         """Get targets for Detection head."""
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        self.batch_size = len(gt_bboxes_list)
         self.max_gt_bboxes_len = max([len(gt_bboxes) for gt_bboxes in gt_bboxes_list])
         self.cur_batch_idx = 0
         self.pos_assigned_gt_inds_list = []
@@ -285,7 +284,9 @@ class CustomSSDHeadTrackingLossDynamics(CustomSSDHead):
             unmap_outputs,
             return_sampling_results,
         )
-        self.all_pos_assigned_gt_inds = images_to_levels(self.pos_assigned_gt_inds_list, num_level_anchors)
+
+        all_pos_assigned_gt_inds = images_to_levels(self.pos_assigned_gt_inds_list, num_level_anchors)
+        self.all_pos_assigned_gt_inds = torch.cat(all_pos_assigned_gt_inds, -1)
         return targets
 
     def _get_targets_single(
