@@ -150,5 +150,5 @@ class Image(IMedia2DEntity):
     @property
     def data(self) -> Optional[np.ndarray]:
         """Returns the data."""
-        #FIXME: Need to check the effect of Geti.
+        # FIXME: Need to check the effect of Geti.
         return self.__data

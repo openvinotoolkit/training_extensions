@@ -193,13 +193,13 @@ def get_image(
             loaded_img = load_image_from_cache(filename, to_float32=to_float32)
             if loaded_img is not None:
                 return loaded_img
-            
+
     if media.data is None:
         img_bytes = file_client.get(media.path)
         img = mmcv.imfrombytes(img_bytes, flag="color")
     else:
         img = media.data
-        
+
     if to_float32:
         img = img.astype(np.float32)
 
