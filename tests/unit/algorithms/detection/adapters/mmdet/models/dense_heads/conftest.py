@@ -86,5 +86,54 @@ def fxt_cfg_atss_head(n_classes=4, n_channels=64) -> Dict:
 
 
 @pytest.fixture
-def fxt_atss_head(fxt_cfg_atss_head: Dict) -> CustomATSSHead:
-    return build_head(fxt_cfg_atss_head)
+def fxt_cfg_ssd_head(n_classes=4, n_channels=64) -> Dict:
+    head_cfg = {
+        "type": "CustomSSDHead",
+        "num_classes": n_classes,
+        "in_channels": (n_channels, n_channels),
+        "use_depthwise": True,
+        "norm_cfg": {"type": "BN"},
+        "act_cfg": {"type": "ReLU"},
+        "init_cfg": {"type": "Xavier", "layer": "Conv2d", "distribution": "uniform"},
+        "loss_balancing": False,
+        "anchor_generator": {
+            "type": "SSDAnchorGeneratorClustered",
+            "strides": (16, 32),
+            "reclustering_anchors": True,
+            "widths": [
+                [38.641007923271076, 92.49516032784699, 271.4234764938237, 141.53469410876247],
+                [206.04136086566515, 386.6542727907841, 716.9892752215089, 453.75609561761405, 788.4629155558277],
+            ],
+            "heights": [
+                [48.9243877087132, 147.73088476194903, 158.23569788707474, 324.14510379107367],
+                [587.6216059488938, 381.60024152086544, 323.5988913027747, 702.7486097568518, 741.4865860938451],
+            ],
+        },
+        "bbox_coder": {
+            "type": "DeltaXYWHBBoxCoder",
+            "target_means": (0.0, 0.0, 0.0, 0.0),
+            "target_stds": (0.1, 0.1, 0.2, 0.2),
+        },
+        "loss_cls": {"type": "FocalLoss", "loss_weight": 1.0, "gamma": 2, "reduction": "none"},
+        "train_cfg": mmcv.ConfigDict(
+            {
+                "assigner": {
+                    "type": "MaxIoUAssigner",
+                    "min_pos_iou": 0.0,
+                    "ignore_iof_thr": -1,
+                    "gt_max_assign_all": False,
+                    "pos_iou_thr": 0.4,
+                    "neg_iou_thr": 0.4,
+                },
+                "smoothl1_beta": 1.0,
+                "allowed_border": -1,
+                "pos_weight": -1,
+                "neg_pos_ratio": 3,
+                "debug": False,
+                "use_giou": False,
+                "use_focal": False,
+            }
+        ),
+    }
+
+    return head_cfg
