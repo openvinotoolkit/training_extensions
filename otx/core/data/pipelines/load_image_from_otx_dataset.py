@@ -5,8 +5,8 @@
 from tempfile import TemporaryDirectory
 from typing import Any, Dict, Tuple
 
-import numpy as np
 import mmcv
+import numpy as np
 
 from otx.algorithms.common.utils.data import get_image
 
@@ -39,9 +39,9 @@ class LoadImageFromOTXDataset:
             MemCacheHandlerSingleton.create(mode="null", mem_size=0)
             self.mem_cache_handler = MemCacheHandlerSingleton.get()
 
-        self.file_client_args = dict(backend='disk')
+        self.file_client_args = dict(backend="disk")
         self.file_client = None
-        
+
     @staticmethod
     def _get_unique_key(results: Dict[str, Any]) -> Tuple:
         # TODO: We should improve it by assigning an unique id to DatasetItemEntity.
@@ -54,19 +54,14 @@ class LoadImageFromOTXDataset:
         """Callback function of LoadImageFromOTXDataset."""
         if self.file_client is None:
             self.file_client = mmcv.FileClient(**self.file_client_args)
-        
+
         key = self._get_unique_key(results)
 
         img = self.mem_cache_handler.get(key)
 
         if img is None:
             # Get image (possibly from cache)
-            img = get_image(
-                results, 
-                _CACHE_DIR.name, 
-                to_float32=False, 
-                file_client=self.file_client
-            )
+            img = get_image(results, _CACHE_DIR.name, to_float32=False, file_client=self.file_client)
             self.mem_cache_handler.put(key, img)
 
         if self.to_float32:

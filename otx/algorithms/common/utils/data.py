@@ -22,8 +22,8 @@ import os
 from typing import Any, Dict, Optional, Union
 
 import cv2
-import numpy as np
 import mmcv
+import numpy as np
 from mmcv import FileClient
 
 from otx.api.entities.annotation import NullAnnotationSceneEntity
@@ -140,10 +140,7 @@ def get_old_new_img_indices(labels, new_classes, dataset):
 
 
 def get_image(
-    results: Dict[str, Any], 
-    cache_dir: str, 
-    to_float32: bool = False, 
-    file_client: Optional[FileClient] = None
+    results: Dict[str, Any], cache_dir: str, to_float32: bool = False, file_client: Optional[FileClient] = None
 ) -> np.ndarray:
     """Load an image and cache it if it's a training video frame.
 
@@ -198,8 +195,8 @@ def get_image(
                 return loaded_img
 
     img_bytes = file_client.get(media.path)
-    img = mmcv.imfrombytes(img_bytes, flag='color')
-    
+    img = mmcv.imfrombytes(img_bytes, flag="color")
+
     if to_float32:
         img = img.astype(np.float32)
 

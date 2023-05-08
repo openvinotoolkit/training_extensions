@@ -37,7 +37,6 @@ from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
-from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
 
 logger = get_logger()
 
@@ -349,6 +348,7 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
         config.merge_from_dict(data_pipeline_cfg)
     else:
         raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
+
 
 def patch_runner(config: Config):
     """Patch runner."""
