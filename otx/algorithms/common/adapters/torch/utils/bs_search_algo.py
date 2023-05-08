@@ -3,7 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Callable, Tuple, List, Dict
+from typing import Callable, Tuple, Dict
 
 import torch
 
@@ -36,7 +36,7 @@ class BsSearchAlgo:
         self._bs_try_history: Dict[int, int] = {}
         _, self._total_mem = torch.cuda.mem_get_info()
         self._mem_lower_bound = 0.8 * self._total_mem
-        self._mem_higher_bound = 0.85 * self._total_mem
+        self._mem_upper_bound = 0.85 * self._total_mem
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
         cuda_oom = False
@@ -85,7 +85,7 @@ class BsSearchAlgo:
             cuda_oom, max_memory_allocated = self._try_batch_size(current_bs)
 
             # If GPU memory usage is too close to limit, CUDA OOM can be raised during training
-            if cuda_oom or max_memory_allocated > self._mem_higher_bound:
+            if cuda_oom or max_memory_allocated > self._mem_upper_bound:
                 if current_bs < lowest_unavailable_bs:
                     lowest_unavailable_bs = current_bs
                 current_bs = self._get_even_center_val(current_bs, available_bs)
@@ -102,11 +102,24 @@ class BsSearchAlgo:
         return available_bs
 
     def find_big_enough_batch_size(self) -> int:
+        """Find a big enough batch size
+
+        This function finds a big enough batch size by training with various batch sizes.
+        It estimate a batch size using equation is estimated using training history.
+        The reason why using the word "big enough" is that it tries to find not maxmium but big enough value which uses
+        GPU memory between lower and upper bound.
+
+        Raises:
+            RuntimeError: If training with batch size 2 can't be run, raise an error.
+
+        Returns:
+            int: Big enough batch size.
+        """
         current_bs = self._default_bs
 
         # try default batch size
         cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
-        if cuda_oom or bs_mem_usage > self._mem_higher_bound:
+        if cuda_oom or bs_mem_usage > self._mem_upper_bound:
             self._default_bs -= 2
             if self._default_bs <= 0:
                 raise RuntimeError("Current device can't train model even with 2.")
@@ -116,9 +129,10 @@ class BsSearchAlgo:
         # try default batch size + 2
         current_bs += 2
         cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
-        if cuda_oom or bs_mem_usage > self._mem_higher_bound:
+        if cuda_oom or bs_mem_usage > self._mem_upper_bound:
             return  self._default_bs
 
+        # estimate batch size using equation
         estimation_pct = 0.8
         while True:
             current_bs = self._estimate_batch_size(estimation_pct)
@@ -132,7 +146,7 @@ class BsSearchAlgo:
                 estimation_pct -= 0.1
                 if estimation_pct <= 0:
                     return self._default_bs + 2
-            elif self._mem_lower_bound <= mem_usage <= self._mem_higher_bound:
+            elif self._mem_lower_bound <= mem_usage <= self._mem_upper_bound:
                 return current_bs
             else:
                 estimation_pct = 0.8
@@ -144,8 +158,8 @@ class BsSearchAlgo:
         def distance_from_bound(val):
             if val[1] < self._mem_lower_bound:
                 return self._mem_lower_bound - val[1]
-            elif self._mem_higher_bound < val[1]:
-                return val[1] - self._mem_higher_bound
+            elif self._mem_upper_bound < val[1]:
+                return val[1] - self._mem_upper_bound
             else:
                 return 0
 

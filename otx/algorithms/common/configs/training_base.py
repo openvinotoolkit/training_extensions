@@ -200,6 +200,18 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        auto_adapt_batch_size = configurable_boolean(
+            default_value=False,
+            header="Adapt a batch size according to GPU memory.",
+            description="Find a big enough batch size using most of GPU memory by training with various batch size "
+            "a few times. It increases batch size generally, but it can decrease batch size if even default value "
+            "isn't fit to current GPU memory. After adapting batch size, learning rate is also updated.",
+            warning="Batch size is updated to use most of GPU memory, which means batch size increases generally. "
+            "It can reduce overall training time by reducing number of back propgation execution, "
+            "but it could reduce model accuracy slightly although learning rate is also aligned to batch size.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""

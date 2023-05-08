@@ -277,9 +277,11 @@ class MMDetectionTask(OTXDetectionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+        if (self._hyperparams.learning_parameters.auto_decrease_batch_size
+            or self._hyperparams.learning_parameters.auto_adapt_batch_size):
             train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
+            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                             not_increase=(not self._hyperparams.learning_parameters.auto_adapt_batch_size))
 
         train_detector(
             model,

@@ -5,6 +5,7 @@
 
 from copy import deepcopy
 from typing import Callable, Dict, List
+from math import sqrt
 
 import numpy as np
 
@@ -36,7 +37,7 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
     target[keys[-1]] = value
 
 
-def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False):
+def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False, not_increase: bool = True):
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
     This function just setup for single iteration training to reduce time for adapting.
@@ -49,6 +50,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         meta (Dict): A dict records some meta information of a training.
         datasets (List): List of datasets.
         validate (bool): Whether do vlidation or not.
+        not_increase (book) : Whether adapting batch size to larger value than default value or not.
     """
 
     def train_func_single_iter(batch_size):
@@ -91,15 +93,22 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         default_bs=default_bs,
         max_bs=len(datasets[0]),
     )
-    runnable_bs = bs_search_ago.auto_decrease_batch_size()
+    if not_increase:
+        new_batch_size = bs_search_ago.auto_decrease_batch_size()
+    else:
+        new_batch_size = bs_search_ago.find_big_enough_batch_size()
 
-    if default_bs != runnable_bs:
-        _set_batch_size(cfg, runnable_bs)
+    if default_bs != new_batch_size:
+        _set_batch_size(cfg, new_batch_size)
         origin_lr = cfg.optimizer.lr
-        cfg.optimizer.lr *= runnable_bs / default_bs
+        bs_change_ratio = new_batch_size / default_bs
+        if bs_change_ratio <= 1:
+            cfg.optimizer.lr *= bs_change_ratio
+        else:
+            cfg.optimizer.lr *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
 
         logger.info("Adapting batch size is done.")
-        logger.info(f"Batch size is adapted : {default_bs} -> {runnable_bs}")
+        logger.info(f"Batch size is adapted : {default_bs} -> {new_batch_size}")
         logger.info(f"learning rate is adapted : {origin_lr} -> {cfg.optimizer.lr}")
     else:
         logger.info("Adapting batch size is done. Current batch size is availble.")
