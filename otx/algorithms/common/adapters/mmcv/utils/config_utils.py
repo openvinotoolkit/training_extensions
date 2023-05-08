@@ -350,18 +350,6 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
     else:
         raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
 
-
-def patch_color_conversion(config: Config):
-    """Patch color conversion."""
-    assert "data" in config
-
-    for cfg in get_configs_by_pairs(config.data, dict(type="Normalize")):
-        to_rgb = False
-        if "to_rgb" in cfg:
-            to_rgb = cfg.to_rgb
-        cfg.to_rgb = not bool(to_rgb)
-
-
 def patch_runner(config: Config):
     """Patch runner."""
     assert "runner" in config

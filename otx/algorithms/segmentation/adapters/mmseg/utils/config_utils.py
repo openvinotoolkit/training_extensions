@@ -27,7 +27,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
-    patch_color_conversion,
     prepare_work_dir,
     remove_from_config,
     remove_from_configs_by_type,
@@ -318,8 +317,6 @@ def patch_datasets(
             remove_from_config(cfg, "classes")
 
             update_pipeline(cfg)
-
-    patch_color_conversion(config)
 
 
 def patch_evaluation(config: Config):

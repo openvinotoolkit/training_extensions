@@ -90,6 +90,7 @@ class NaiveExporter:
         if normalize_cfg.get("std", None) is not None:
             mo_args["scale_values"] = normalize_cfg.get("std")
         if normalize_cfg.get("to_rgb", False):
+            #FIXME: it was implemented unlike other implementations
             mo_args["reverse_input_channels"] = None
 
         if precision == "FP16":

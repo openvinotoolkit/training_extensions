@@ -22,7 +22,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
     get_dataset_configs,
     get_meta_keys,
-    patch_color_conversion,
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.label import Domain
@@ -65,8 +64,6 @@ def patch_datasets(
             cfg.update(kwargs)
 
             update_pipeline(cfg)
-
-    patch_color_conversion(config)
 
 
 def patch_evaluation(config: Config, task: str):

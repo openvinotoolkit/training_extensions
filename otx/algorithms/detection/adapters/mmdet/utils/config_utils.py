@@ -25,7 +25,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
-    patch_color_conversion,
     prepare_work_dir,
     remove_from_config,
     update_config,
@@ -250,8 +249,6 @@ def patch_datasets(
 
             update_pipeline(cfg)
 
-    patch_color_conversion(config)
-
 
 def patch_evaluation(config: Config):
     """Update evaluation configs."""
@@ -378,8 +375,6 @@ def patch_tiling(config, hparams, dataset=None):
 def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
     """Update backend configuration with input preprocessing options.
 
-    - If `"to_rgb"` in Normalize config is truthy, it adds `"--reverse_input_channels"` as a flag.
-
     The function then sets default values for the backend configuration in `deploy_cfg`.
 
     Args:
@@ -395,7 +390,7 @@ def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
 
     # Set options based on Normalize config
     options = {
-        "flags": ["--reverse_input_channels"] if normalize_cfg.get("to_rgb", False) else [],
+        "flags": ["--reverse_input_channels"] if not normalize_cfg.get("to_rgb", True) else [],
         "args": {
             "--mean_values": list(normalize_cfg.get("mean", [])),
             "--scale_values": list(normalize_cfg.get("std", [])),

@@ -584,16 +584,7 @@ class MMClassificationTask(OTXClassificationTask):
                 normalize_cfg = normalize_cfg[0]
 
                 options = dict(flags=[], args={})
-                # NOTE: OTX loads image in RGB format
-                # so that `to_rgb=True` means a format change to BGR instead.
-                # Conventionally, OpenVINO IR expects a image in BGR format
-                # but OpenVINO IR under OTX assumes a image in RGB format.
-                #
-                # `to_rgb=True` -> a model was trained with images in BGR format
-                #                  and a OpenVINO IR needs to reverse input format from RGB to BGR
-                # `to_rgb=False` -> a model was trained with images in RGB format
-                #                   and a OpenVINO IR does not need to do a reverse
-                if normalize_cfg.get("to_rgb", False):
+                if not normalize_cfg.get("to_rgb", True):
                     options["flags"] += ["--reverse_input_channels"]
                 # value must be a list not a tuple
                 if normalize_cfg.get("mean", None) is not None:
