@@ -1,6 +1,6 @@
 import pytest
 
-from otx.algorithms.common.adapters.torch.utils import find_max_usable_bs
+from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.adapters.torch.utils import bs_search_algo
 
 
@@ -49,3 +49,8 @@ def test_find_max_usable_bs_wrong_default_bs(mocker, default_bs):
 def test_find_max_usable_bs_wrong_trainset_size(mocker, trainset_size):
     with pytest.raises(ValueError):
         find_max_usable_bs(mocker.MagicMock(), 8, trainset_size)
+
+
+class TestBsSearchAlgo:
+    def test_init(self):
+        pass
