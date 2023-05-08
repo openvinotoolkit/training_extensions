@@ -330,6 +330,8 @@ class MMDetectionTask(OTXDetectionTask):
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
+        # If the batch size and the number of data are not divisible, the metric may score differently.
+        # To avoid this, use 1 if they are not divisible.
         samples_per_gpu = samples_per_gpu if len(mm_dataset) % samples_per_gpu == 0 else 1
         dataloader = build_dataloader(
             mm_dataset,
