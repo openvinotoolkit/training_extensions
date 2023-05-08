@@ -5,7 +5,7 @@
 ---
 
 [Key Features](#key-features) •
-[Quick Start](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/index.html) •
+[Installation](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html) •
 [Documentation](https://openvinotoolkit.github.io/training_extensions/latest/index.html) •
 [License](#license)
 
@@ -19,7 +19,6 @@
 
 <!-- markdownlint-enable  MD042 -->
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/f9ba89f9ea2a47eeb9d52c2acc311e6c)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
 [![Codecov](https://codecov.io/gh/openvinotoolkit/training_extensions/branch/develop/graph/badge.svg?token=9HVFNMPFGD)](https://codecov.io/gh/openvinotoolkit/training_extensions)
 [![Pre-Merge Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/pre_merge.yml)
 [![Nightly Test](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/daily.yml)
@@ -39,7 +38,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit).
 
 OpenVINO™ Training Extensions provides a "model template" for every supported task type, which consolidates necessary information to build a model.
 Model templates are validated on various datasets and serve one-stop shop for obtaining the best models in general.
-If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/latest/index.html), [pytorchcv](https://github.com/osmr/imgclsmob), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
+If you are an experienced user, you can configure your own model based on [torchvision](https://pytorch.org/vision/stable/index.html), [pytorchcv](https://github.com/osmr/imgclsmob), [mmcv](https://github.com/open-mmlab/mmcv) and [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo).
 
 Furthermore, OpenVINO™ Training Extensions provides automatic configuration of task types and hyperparameters.
 The framework will identify the most suitable model template based on your dataset, and choose the best hyperparameter configuration. The development team is continuously extending functionalities to make training as simple as possible so that single CLI command can obtain accurate, efficient and robust models ready to be integrated into your project.
@@ -66,7 +65,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Half-precision training** to save GPUs memory and use larger batch sizes
 - Integrated, efficient [hyper-parameter optimization module (HPO)](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/hpo.html). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
-- OpenVINO™ Training Extensions uses [Datumaro](https://openvinotoolkit.github.io/datumaro/docs/) as the backend to hadle datasets. Thanks to that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
+- OpenVINO™ Training Extensions uses [Datumaro](https://openvinotoolkit.github.io/datumaro/stable/index.html) as the backend to hadle datasets. Thanks to that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. We constantly working to extend supported formats to give more freedom of datasets format choice.
 - [Auto-configuration functionality](https://openvinotoolkit.github.io/training_extensions/latest/guide/explanation/additional_features/auto_configuration.html). OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model template to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 
 ---
@@ -75,7 +74,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 ### Installation
 
-Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/installation.html).
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html).
 
 ### OpenVINO™ Training Extensions CLI Commands
 
@@ -89,7 +88,7 @@ Please refer to the [installation guide](https://openvinotoolkit.github.io/train
 - `otx demo` allows one to apply a trained model on the custom data or the online footage from a web camera and see how it will work in a real-life scenario.
 - `otx explain` runs explain algorithm on the provided data and outputs images with the saliency maps to show how your model makes predictions.
 
-You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/quick_start_guide/cli_commands.html).
+You can find more details with examples in the [CLI command intro](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/cli_commands.html).
 
 ---
 
