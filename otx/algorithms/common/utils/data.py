@@ -23,6 +23,8 @@ from typing import Any, Dict, Optional, Union
 
 import cv2
 import numpy as np
+import mmcv
+from mmcv import FileClient
 
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -137,13 +139,19 @@ def get_old_new_img_indices(labels, new_classes, dataset):
     return {"old": ids_old, "new": ids_new}
 
 
-def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.ndarray:
+def get_image(
+    results: Dict[str, Any], 
+    cache_dir: str, 
+    to_float32: bool = False, 
+    file_client: Optional[FileClient] = None
+) -> np.ndarray:
     """Load an image and cache it if it's a training video frame.
 
     Args:
         results (Dict[str, Any]): A dictionary that contains information about the dataset item.
         cache_dir (str): A directory path where the cached images will be stored.
         to_float32 (bool, optional): A flag indicating whether to convert the image to float32. Defaults to False.
+        file_client (FileClient, optional): A file client that could read the image from the disk.
 
     Returns:
         np.ndarray: The loaded image.
@@ -189,7 +197,9 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
             if loaded_img is not None:
                 return loaded_img
 
-    img = results["dataset_item"].numpy  # this takes long for VideoFrame
+    img_bytes = file_client.get(media.path)
+    img = mmcv.imfrombytes(img_bytes, flag='color')
+    
     if to_float32:
         img = img.astype(np.float32)
 
