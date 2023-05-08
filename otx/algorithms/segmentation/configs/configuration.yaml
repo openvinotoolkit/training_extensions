@@ -247,6 +247,26 @@ learning_parameters:
       Enabling this option could reduce the actual batch size if the current setting results in out-of-memory error.
       The learning rate also could be adjusted according to the adapted batch size.
       This process might take some extra computation time to try a few batch size candidates.
+  auto_adapt_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description:
+      Find a big enough batch size using most of GPU memory by training with various batch size a few times.
+      It increases batch size generally, but it can decrease batch size if even default value isn't fit to
+      current GPU memory. After adapting batch size, learning rate is also updated.
+    editable: true
+    header: Adapt a batch size according to GPU memory.
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning:
+      Batch size is updated to use most of GPU memory, which means batch size increases generally.
+      It can reduce overall training time by reducing number of back propgation execution,
+      but it could reduce model accuracy slightly although learning rate is also aligned to batch size.
 postprocessing:
   confidence_threshold:
     affects_outcome_of: INFERENCE
