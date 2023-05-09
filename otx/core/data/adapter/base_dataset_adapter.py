@@ -102,7 +102,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         cache_config = cache_config if cache_config is not None else {}
         for subset, dataset in self.dataset.items():
             # cache these subsets only
-            if subset not in (Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED, Subset.PSEUDOLABELED):
+            if subset in (Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED, Subset.PSEUDOLABELED):
                 self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
 
         self.category_items: Dict[DatumAnnotationType, DatumCategories]
