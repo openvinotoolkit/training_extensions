@@ -71,7 +71,9 @@ class TestTilingTileClassifier:
             mocker (_type_): pytest mocker from fixture
         """
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
-        mocker.patch.object(Model, "create_model", return_value=mocker.MagicMock(spec=OTXMaskRCNNModel))
+        mocked_model = mocker.patch.object(Model, "create_model")
+        adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
+        mocked_model.return_value = mocker.MagicMock(spec=OTXMaskRCNNModel, model_adapter=adapter_mock)
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
         ov_mask_inferencer.model.resize_mask = False
