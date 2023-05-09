@@ -12,6 +12,7 @@ class TrackingLossType(IntEnum):
     cls = 0
     bbox = 1
     centerness = 2
+    bbox_refine = 3
 
 
 class LossAccumulator:

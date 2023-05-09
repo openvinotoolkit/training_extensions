@@ -78,11 +78,19 @@ class TestLossDynamicsTrackingMixin:
         detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
         return detector
 
+    @pytest.fixture
+    def fxt_custom_vfnet(self, fxt_cfg_custom_vfnet: Dict, fxt_det_dataset_entity: DatasetEntity) -> CustomATSS:
+        fxt_cfg_custom_vfnet["track_loss_dynamics"] = True
+
+        detector = build_detector(fxt_cfg_custom_vfnet)
+        detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
+        return detector
+
     @pytest.fixture()
     def detector(self, request: Type[pytest.FixtureRequest]):
         return request.getfixturevalue(request.param)
 
-    TESTCASE = ["fxt_custom_atss", "fxt_custom_ssd"]
+    TESTCASE = ["fxt_custom_atss", "fxt_custom_ssd", "fxt_custom_vfnet"]
 
     @torch.no_grad()
     @pytest.mark.parametrize("detector", TESTCASE, indirect=True)
