@@ -13,8 +13,8 @@ import numpy as np
 
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.utils.shape_drawer import ShapeDrawer
-
 from otx.api.usecases.exportable_code.streamer import BaseStreamer
+
 
 class IVisualizer(metaclass=abc.ABCMeta):
     """Interface for converter."""
@@ -51,12 +51,12 @@ class IVisualizer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def video_delay(self, elapsed_time: float, streamer_type: str) -> None:
-        """Check if video frames were inferenced faster than 30 FPS, and delay visualizer if so.
+    def video_delay(self, elapsed_time: float, streamer: BaseStreamer) -> None:
+        """Check if video frames were inferenced faster than 30 FPS and delay visualizer if so.
 
         Args:
             elapsed_time (float): Time spent on frame inference
-            streamer_type (str): Type of streamer
+            streamer (BaseStreamer): Streamer object
         """
 
         raise NotImplementedError
