@@ -43,7 +43,7 @@ class SyncExecutor:
             output = self.visualizer.draw(frame, annotation_scene, frame_meta)
             self.visualizer.show(output)
             if self.visualizer.output:
-                saved_frames.append(frame)
+                saved_frames.append(output)
             if self.visualizer.is_quit():
                 break
             # visualize video not faster then original FPS

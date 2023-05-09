@@ -49,7 +49,7 @@ class AsyncExecutor:
                 next_frame_id_to_show += 1
                 self.visualizer.show(output)
                 if self.visualizer.output:
-                    saved_frames.append(frame)
+                    saved_frames.append(output)
                 if self.visualizer.is_quit():
                     stop_visualization = True
                 results = self.async_pipeline.get_result(next_frame_id_to_show)
