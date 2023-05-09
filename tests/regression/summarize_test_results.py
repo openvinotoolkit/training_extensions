@@ -65,11 +65,8 @@ def get_metric_dict(dict_data: Union[List[Dict[str, Any]], None], idx: int, mode
     So, if we don't have results, we need to mark the empty result as "-".
 
     """
-    if dict_data:
-        if len(dict_data) > idx:
-            return dict_data[idx][model]
-        else:
-            return "-"
+    if dict_data and len(dict_data) > idx:
+        return dict_data[idx][model]
     else:
         return "-"
 
