@@ -173,3 +173,14 @@ def fxt_cfg_vfnet_head(n_classes=4, n_channels=64) -> Dict:
     }
 
     return head_cfg
+
+
+@pytest.fixture
+def fxt_cfg_yolox_head(n_classes=4, n_channels=64):
+    return {
+        "type": "CustomYOLOXHead",
+        "num_classes": n_classes,
+        "in_channels": n_channels,
+        "feat_channels": n_channels,
+        "train_cfg": mmcv.Config({"assigner": {"type": "SimOTAAssigner", "center_radius": 2.5}}),
+    }

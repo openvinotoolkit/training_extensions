@@ -43,6 +43,7 @@ class TestLossDynamicsTrackingHeads:
             "fxt_cfg_atss_head",
             "fxt_cfg_ssd_head",
             "fxt_cfg_vfnet_head",
+            "fxt_cfg_yolox_head",
         ],
         indirect=True,
     )

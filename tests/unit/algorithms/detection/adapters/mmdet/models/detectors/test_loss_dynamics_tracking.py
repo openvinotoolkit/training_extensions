@@ -86,11 +86,19 @@ class TestLossDynamicsTrackingMixin:
         detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
         return detector
 
+    @pytest.fixture
+    def fxt_custom_yolox(self, fxt_cfg_custom_yolox: Dict, fxt_det_dataset_entity: DatasetEntity) -> CustomATSS:
+        fxt_cfg_custom_yolox["track_loss_dynamics"] = True
+
+        detector = build_detector(fxt_cfg_custom_yolox)
+        detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
+        return detector
+
     @pytest.fixture()
     def detector(self, request: Type[pytest.FixtureRequest]):
         return request.getfixturevalue(request.param)
 
-    TESTCASE = ["fxt_custom_atss", "fxt_custom_ssd", "fxt_custom_vfnet"]
+    TESTCASE = ["fxt_custom_atss", "fxt_custom_ssd", "fxt_custom_vfnet", "fxt_custom_yolox"]
 
     @torch.no_grad()
     @pytest.mark.parametrize("detector", TESTCASE, indirect=True)
