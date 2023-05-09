@@ -74,7 +74,9 @@ class Registry:
         """Returns a model template with specified template_id or template.name."""
 
         templates = [
-            template for template in self.templates if template_id in (template.model_template_id, template.name)
+            template
+            for template in self.templates
+            if str(template_id).upper() in (str(template.model_template_id).upper(), str(template.name).upper())
         ]
         if not templates:
             if skip_error:
