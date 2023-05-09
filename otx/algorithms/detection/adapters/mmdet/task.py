@@ -41,7 +41,6 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
-    get_configs_by_pairs,
     patch_data_pipeline,
     patch_from_hyperparams,
 )
@@ -51,7 +50,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.configurer import (
@@ -63,7 +61,12 @@ from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
 )
-from otx.algorithms.detection.adapters.mmdet.utils import patch_tiling
+from otx.algorithms.detection.adapters.mmdet.utils import (
+    patch_input_preprocessing,
+    patch_input_shape,
+    patch_ir_scale_factor,
+    patch_tiling,
+)
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     should_cluster_anchors,
@@ -106,7 +109,7 @@ class MMDetectionTask(OTXDetectionTask):
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
-        set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
+        self.set_seed()
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
@@ -236,10 +239,6 @@ class MMDetectionTask(OTXDetectionTask):
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
-        # FIXME: Currently detection do not support multi batch evaluation. This will be fixed
-        if "val" in cfg.data:
-            cfg.data.val_dataloader["samples_per_gpu"] = 1
-
         # TODO. This should be moved to configurer
         # TODO. Anchor clustering should be checked
         # if hasattr(cfg, "hparams"):
@@ -279,9 +278,8 @@ class MMDetectionTask(OTXDetectionTask):
         validate = bool(cfg.data.get("val", None))
 
         if self._hyperparams.learning_parameters.auto_decrease_batch_size:
-            validate = isinstance(self, NNCFBaseTask)  # nncf needs eval hooks
             train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, validate)
+            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
 
         train_detector(
             model,
@@ -329,10 +327,12 @@ class MMDetectionTask(OTXDetectionTask):
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
 
-        samples_per_gpu = 1
-
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
+        samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
+        # If the batch size and the number of data are not divisible, the metric may score differently.
+        # To avoid this, use 1 if they are not divisible.
+        samples_per_gpu = samples_per_gpu if len(mm_dataset) % samples_per_gpu == 0 else 1
         dataloader = build_dataloader(
             mm_dataset,
             samples_per_gpu=samples_per_gpu,
@@ -622,67 +622,10 @@ class MMDetectionTask(OTXDetectionTask):
         if os.path.exists(deploy_cfg_path):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
 
-            def patch_input_preprocessing(deploy_cfg):
-                normalize_cfg = get_configs_by_pairs(
-                    cfg.data.test.pipeline,
-                    dict(type="Normalize"),
-                )
-                assert len(normalize_cfg) == 1
-                normalize_cfg = normalize_cfg[0]
-
-                options = dict(flags=[], args={})
-                # NOTE: OTX loads image in RGB format
-                # so that `to_rgb=True` means a format change to BGR instead.
-                # Conventionally, OpenVINO IR expects a image in BGR format
-                # but OpenVINO IR under OTX assumes a image in RGB format.
-                #
-                # `to_rgb=True` -> a model was trained with images in BGR format
-                #                  and a OpenVINO IR needs to reverse input format from RGB to BGR
-                # `to_rgb=False` -> a model was trained with images in RGB format
-                #                   and a OpenVINO IR does not need to do a reverse
-                if normalize_cfg.get("to_rgb", False):
-                    options["flags"] += ["--reverse_input_channels"]
-                # value must be a list not a tuple
-                if normalize_cfg.get("mean", None) is not None:
-                    options["args"]["--mean_values"] = list(normalize_cfg.get("mean"))
-                if normalize_cfg.get("std", None) is not None:
-                    options["args"]["--scale_values"] = list(normalize_cfg.get("std"))
-
-                # fill default
-                backend_config = deploy_cfg.backend_config
-                if backend_config.get("mo_options") is None:
-                    backend_config.mo_options = ConfigDict()
-                mo_options = backend_config.mo_options
-                if mo_options.get("args") is None:
-                    mo_options.args = ConfigDict()
-                if mo_options.get("flags") is None:
-                    mo_options.flags = []
-
-                # already defiend options have higher priority
-                options["args"].update(mo_options.args)
-                mo_options.args = ConfigDict(options["args"])
-                # make sure no duplicates
-                mo_options.flags.extend(options["flags"])
-                mo_options.flags = list(set(mo_options.flags))
-
-            def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_pairs(
-                    cfg.data.test.pipeline,
-                    dict(type="Resize"),
-                )
-                assert len(resize_cfg) == 1
-                resize_cfg = resize_cfg[0]
-                size = resize_cfg.size
-                if isinstance(size, int):
-                    size = (size, size)
-                assert all(isinstance(i, int) and i > 0 for i in size)
-                # default is static shape to prevent an unexpected error
-                # when converting to OpenVINO IR
-                deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
-
-            patch_input_preprocessing(deploy_cfg)
+            patch_input_preprocessing(cfg, deploy_cfg)
             if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(deploy_cfg)
+                patch_input_shape(cfg, deploy_cfg)
+            patch_ir_scale_factor(deploy_cfg, self._hyperparams)
 
         return deploy_cfg
 

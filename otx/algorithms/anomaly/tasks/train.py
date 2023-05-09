@@ -49,6 +49,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         output_model: ModelEntity,
         train_parameters: TrainParameters,
         seed: Optional[int] = None,
+        deterministic: bool = False,
     ) -> None:
         """Train the anomaly classification model.
 
@@ -56,8 +57,8 @@ class TrainingTask(InferenceTask, ITrainingTask):
             dataset (DatasetEntity): Input dataset.
             output_model (ModelEntity): Output model to save the model weights.
             train_parameters (TrainParameters): Training parameters
-            seed: (Optional[int]): Setting seed to a value other than 0 also marks PytorchLightning trainer's
-                deterministic flag to True.
+            seed (Optional[int]): Setting seed to a value other than 0
+            deterministic (bool): Setting PytorchLightning trainer's deterministic flag.
         """
         logger.info("Training the model.")
 
@@ -66,7 +67,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         if seed:
             logger.info(f"Setting seed to {seed}")
             seed_everything(seed, workers=True)
-            config.trainer.deterministic = True
+        config.trainer.deterministic = deterministic
 
         logger.info("Training Configs '%s'", config)
 

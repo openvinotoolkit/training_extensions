@@ -26,7 +26,7 @@ from torch import nn
 
 from otx.algorithms.common.utils.logger import get_logger
 
-from .class_incr_encoder_decoder import ClassIncrEncoderDecoder
+from .otx_encoder_decoder import OTXEncoderDecoder
 
 logger = get_logger()
 
@@ -442,7 +442,7 @@ class DetConB(nn.Module):
 
 # pylint: disable=too-many-locals
 @SEGMENTORS.register_module()
-class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancestors
+class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
     """Apply DetConB as a contrastive part of `Supervised Contrastive Learning` (https://arxiv.org/abs/2004.11362).
 
     SupCon with DetConB uses ground truth masks instead of pseudo masks to organize features among the same classes.
@@ -497,7 +497,6 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
         img,
         img_metas,
         gt_semantic_seg,
-        pixel_weights=None,
         **kwargs,
     ):
         """Forward function for training.
@@ -507,7 +506,6 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             img_metas (list[dict]): Input information.
             gt_semantic_seg (Tensor): Ground truth masks.
                 It is used to organize features among the same classes.
-            pixel_weights (Tensor): Pixels weights.
             **kwargs (Any): Addition keyword arguments.
 
         Returns:
@@ -527,9 +525,7 @@ class SupConDetConB(ClassIncrEncoderDecoder):  # pylint: disable=too-many-ancest
             img_metas += img_metas
 
         # decode head
-        loss_decode, _ = self._decode_head_forward_train(
-            embds, img_metas, gt_semantic_seg=masks, pixel_weights=pixel_weights
-        )
+        loss_decode = self._decode_head_forward_train(embds, img_metas, gt_semantic_seg=masks)
         losses.update(loss_decode)
 
         return losses

@@ -67,6 +67,7 @@ from otx.api.usecases.evaluation.f_measure import FMeasure
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.vis_utils import get_actmap
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
 logger = get_logger()
 
@@ -98,7 +99,12 @@ class OTXActionTask(OTXTask, ABC):
         self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
     ):
         """Train function for OTX action task.
 
@@ -112,6 +118,8 @@ class OTXActionTask(OTXTask, ABC):
             self._should_stop = False
             self._is_training = False
             return
+        self.seed = seed
+        self.deterministic = deterministic
 
         # Set OTX LoggerHook & Time Monitor
         if train_parameters:
@@ -430,6 +438,9 @@ class OTXActionTask(OTXTask, ABC):
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in ActionTrainTask."""
+        if is_multigpu_child_process():
+            return
+
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))

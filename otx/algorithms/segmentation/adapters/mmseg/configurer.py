@@ -6,6 +6,7 @@
 import importlib
 import json
 import os
+from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -31,6 +32,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     patch_datasets,
     patch_evaluation,
@@ -189,21 +191,24 @@ class SegmentationConfigurer:
             # Task classes
             self.configure_classes(cfg)
             # Ignored mode
-            self.configure_ignore(cfg)
+            self.configure_decode_head(cfg)
 
-    def configure_ignore(self, cfg: Config) -> None:
-        """Change to incremental loss (ignore mode)."""
-        if cfg.get("ignore", False):
+    def configure_decode_head(self, cfg: Config) -> None:
+        """Change to incremental loss (ignore mode) and substitute head with otx universal head."""
+        ignore = cfg.get("ignore", False)
+        if ignore:
             cfg_loss_decode = ConfigDict(
                 type="CrossEntropyLossWithIgnore",
                 use_sigmoid=False,
                 loss_weight=1.0,
             )
 
-            if "decode_head" in cfg.model:
-                decode_head = cfg.model.decode_head
-                if decode_head.type == "FCNHead":
-                    decode_head.type = "CustomFCNHead"
+        for head in ("decode_head", "auxiliary_head"):
+            decode_head = cfg.model.get(head, None)
+            if decode_head is not None:
+                decode_head.base_type = decode_head.type
+                decode_head.type = otx_head_factory
+                if ignore:
                     decode_head.loss_decode = cfg_loss_decode
 
     # pylint: disable=too-many-branches
@@ -265,6 +270,35 @@ class SegmentationConfigurer:
             cfg.resume_from = cfg.load_from
         if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
             cfg.model.backbone.pretrained = None
+        # patch checkpoint if needed (e.g. pretrained weights from mmseg)
+        if cfg.get("load_from", None) and not model_ckpt and not cfg.get("resume", False):
+            cfg.load_from = self.patch_chkpt(cfg.load_from)
+
+    @staticmethod
+    def patch_chkpt(ckpt_path: str, new_path: Optional[str] = None) -> str:
+        """Modify state dict for pretrained weights to match model state dict."""
+        ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
+        local_torch_hub_folder = torch.hub.get_dir()
+        if "state_dict" in ckpt:
+            ckpt = ckpt["state_dict"]
+            new_ckpt = OrderedDict()
+            modified = False
+            # patch pre-trained checkpoint for model
+            for name in ckpt:
+                # we should add backbone prefix to backbone parameters names to load it for our models
+                if not name.startswith("backbone") and "head" not in name:
+                    new_name = "backbone." + name
+                    modified = True
+                else:
+                    new_name = name
+                new_ckpt[new_name] = ckpt[name]
+            if modified:
+                if not new_path:
+                    new_path = os.path.join(local_torch_hub_folder, "converted.pth")
+                if not torch.distributed.is_initialized() or dist.get_rank() == 0:
+                    torch.save(new_ckpt, new_path)
+                return new_path
+        return ckpt_path
 
     @staticmethod
     def get_model_ckpt(ckpt_path: str, new_path: Optional[str] = None) -> str:
@@ -274,7 +308,8 @@ class SegmentationConfigurer:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
-            torch.save(ckpt, new_path)
+            if not torch.distributed.is_initialized() or dist.get_rank() == 0:
+                torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
 
@@ -384,12 +419,7 @@ class SegmentationConfigurer:
                 cfg.distributed = True
                 self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
-            gpu_ids = os.environ.get("CUDA_VISIBLE_DEVICES")
-            logger.info(f"CUDA_VISIBLE_DEVICES = {gpu_ids}")
-            if gpu_ids is not None:
-                cfg.gpu_ids = range(len(gpu_ids.split(",")))
-            else:
-                cfg.gpu_ids = range(1)
+            cfg.gpu_ids = range(1)
 
         # consider "cuda" and "cpu" device only
         if not torch.cuda.is_available():
@@ -536,10 +566,6 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
     def configure_task(self, cfg: ConfigDict, training: bool, **kwargs: Any) -> None:
         """Adjust settings for task adaptation."""
         super().configure_task(cfg, training, **kwargs)
-
-        # Don't pass task_adapt arg to semi-segmentor
-        if cfg.model.type != "ClassIncrEncoderDecoder" and cfg.model.get("task_adapt", False):
-            cfg.model.pop("task_adapt")
 
         # Remove task adapt hook (set default torch random sampler)
         remove_custom_hook(cfg, "TaskAdaptHook")

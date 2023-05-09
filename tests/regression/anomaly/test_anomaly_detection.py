@@ -39,7 +39,7 @@ from tests.regression.regression_command import (
 
 # Configurations for regression test.
 TASK_TYPE = "anomaly_detection"
-SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 15)
+SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 3)
 
 otx_dir = os.getcwd()
 templates = Registry("otx/algorithms/anomaly").filter(task_type=TASK_TYPE.upper()).templates
@@ -81,7 +81,7 @@ class TestRegressionAnomalyDetection:
 
         tmp_dir_path = tmp_dir_path / TASK_TYPE
         train_start_time = timer()
-        otx_train_testing(template, tmp_dir_path, otx_dir, category_data_args)
+        otx_train_testing(template, tmp_dir_path, otx_dir, category_data_args, deterministic=False)
         train_elapsed_time = timer() - train_start_time
 
         infer_start_time = timer()

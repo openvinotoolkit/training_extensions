@@ -9,7 +9,7 @@ To learn more about Instance Segmentation task, refer to :doc:`../../../explanat
 
 .. note::
 
-  To learn deeper how to manage training process of the model including additional parameters and its modification, refer to :doc:`./detection`.
+  To learn deeper how to manage training process of the model including additional parameters and its modification.
 
   To learn how to deploy the trained model, refer to: :doc:`../deploy`.
 
@@ -20,13 +20,13 @@ The process has been tested on the following configuration.
 - Ubuntu 20.04
 - NVIDIA GeForce RTX 3090
 - Intel(R) Core(TM) i9-11900
-- CUDA Toolkit 11.4
+- CUDA Toolkit 11.7
 
 *************************
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>`
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
 2. Activate your virtual
@@ -43,40 +43,76 @@ environment:
 Dataset preparation
 ***************************
 
-1. Let's use the simple toy dataset `Car, Tree, Bug dataset <https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/car_tree_bug>`_
-provided by OpenVINO™ Training Extensions.
+..  note::
 
-This dataset contains images of simple car, tree, bug with the annotation for instance segmentation.
+  Currently, we support the following instance segmentation dataset formats:
 
-- ``car``	- Car Shape Illustration
-- ``tree``	- Tree Shape Illustration
-- ``bug``	- Bug Shape Illustration
-
-This allows us to look at the structure of the dataset used in instance segmentation, and can be a good starting point for how to start an instance segmentation task with OpenVINO™ Training Extensions.
+  - `COCO <https://cocodataset.org/#format-data>`_
 
 
-.. image:: ../../../../../utils/images/car_tree_bug_gt_sample.png
-  :width: 400
+1. Clone a repository with
+`WGISD dataset <https://github.com/thsant/wgisd>`_.
 
+.. code-block::
+
+  mkdir data ; cd data
+  git clone https://github.com/thsant/wgisd.git
+  cd wgisd
+  git checkout 6910edc5ae3aae8c20062941b1641821f0c30127
+
+
+This dataset contains images of grapevines with the annotation for different varieties of grapes.
+
+- ``CDY`` - Chardonnay
+- ``CFR`` - Cabernet Franc
+- ``CSV`` - Cabernet Sauvignon
+- ``SVB`` - Sauvignon Blanc
+- ``SYH`` - Syrah
+
+|
+
+.. image:: ../../../../../utils/images/wgisd_dataset_sample.jpg
+  :width: 600
+  :alt: this image uploaded from this `source <https://github.com/thsant/wgisd/blob/master/data/CDY_2015.jpg>`_
+
+|
 
 2. Check the file structure of downloaded dataset,
 we will need the following file structure:
 
 .. code-block::
 
-  car_tree_bug
+  wgisd
   ├── annotations/
-    ├── instances_train.json
-    └── instances_val.json
+      ├── instances_train.json
+      ├── instances_val.json
+      (Optional)
+      └── instances_test.json
   ├──images/
-    └── <images>
-  ...
+      (Optional)
+      ├── train
+      ├── val
+      └── test
+  (There may be more extra unrelated folders)
 
-.. warning::
-  There may be features that don't work properly with the current toy dataset. We recommend that you proceed with a proper training and validation dataset,
-  the tutorial and dataset here are for reference only.
+We can do that by running these commands:
 
-  We will update this tutorial with larger public datasets soon.
+.. code-block::
+
+  # format images folder
+  mv data images
+
+  # format annotations folder
+  mv coco_annotations annotations
+
+  # rename annotations to meet *_train.json pattern
+  mv annotations/train_bbox_instances.json annotations/instances_train.json
+  mv annotations/test_bbox_instances.json annotations/instances_val.json
+
+  cd ../..
+
+..  note::
+  We can use this dataset in the detection tutorial. refer to :doc:`./detection`.
 
 *********
 Training
@@ -109,7 +145,7 @@ Let's prepare an OpenVINO™ Training Extensions instance segmentation workspace
 
 .. code-block::
 
-  (otx) ...$ otx build --task instance_segmentation --model MaskRCNN-ResNet50
+  (otx) ...$ otx build --task instance_segmentation
 
   [*] Workspace Path: otx-workspace-INSTANCE_SEGMENTATION
   [*] Load Model Template ID: Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50
@@ -124,6 +160,14 @@ Let's prepare an OpenVINO™ Training Extensions instance segmentation workspace
 
   (otx) ...$ cd ./otx-workspace-INSTANCE_SEGMENTATION
 
+.. note::
+  The default model for instance segmentation is MaskRCNN-ResNet50.
+  If you want to use a different model, use the commands below.
+
+  .. code-block::
+
+    (otx) ...$ otx build --task instance_segmentation --model <Model-Name>
+
 It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessary configs for MaskRCNN-ResNet50, prepared ``data.yaml`` to simplify CLI commands launch and splitted dataset.
 
 .. note::
@@ -134,13 +178,11 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessary config
   .. code-block::
 
     (otx) ...$ otx train Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 \
-                      --train-data-roots data/car_tree_bug \
-                      --val-data-roots data/car_tree_bug \
+                      --train-data-roots <data_root_path>/wgisd \
+                      --val-data-roots <data_root_path>/wgisd \
                       params --learning_parameters.num_iters 8
 
   The command above also creates an ``otx-workspace-INSTANCE_SEGMENTATION``, just like running build. This also updates ``data.yaml`` with data-specific commands.
-
-  For more information, see :doc:`quick start guide <../../../get_started/quick_start_guide/cli_commands>` or :ref:`detection example <detection_workspace>`.
 
 .. warning::
   Note, that we can't run CLI commands for instance segmentation via model name, since the same models are utilized for different algorithm and the behavior can be unpredictable.
@@ -149,58 +191,86 @@ It will create **otx-workspace-INSTANCE_SEGMENTATION** with all necessary config
 To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter.
 The content of the ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` for dataset should have absolute paths and will be similar to that:
 
-.. note::
-
-  When a workspace is created, ``data.yaml`` is always generated.
-
-  You can modify the required arguments in ``data.yaml`` or use the command to provide the required arguments.
+Check ``otx-workspace-INSTANCE_SEGMENTATION/data.yaml`` to ensure, which data subsets will be used for training and validation, and update it if necessary.
 
 .. code-block::
 
-  {'data':
-    {
-    'train':
-      {'data-roots': 'otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug'},
-    'val':
-      {'data-roots': 'otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug'},
-    'test':
-      {'data-roots': 'otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug'}
-    }
-  }
+  data:
+  train:
+    ann-files: null
+    data-roots: <data_root_path>/wgisd
+  val:
+    ann-files: null
+    data-roots: <data_root_path>/wgisd
+  test:
+    ann-files: null
+    data-roots: null
+  unlabeled:
+    file-list: null
+    data-roots: null
 
-4. To start training we need to call ``otx train``
+3. To start training we need to call ``otx train``
 command in our workspace:
 
 .. code-block::
 
-  (otx) .../otx-workspace-INSTANCE_SEGMENTATION$ otx train \
-                                                    params --learning_parameters.num_iters 10
+  (otx) .../otx-workspace-INSTANCE_SEGMENTATION$ otx train
 
-.. warning::
-  Since this is a very small dataset, we adjusted ``num_iters`` to avoid overfitting in this tutorial.
+  ...
+  2023-04-26 10:55:29,312 | INFO : Update LrUpdaterHook patience: 3 -> 3
+  2023-04-26 10:55:29,312 | INFO : Update CheckpointHook interval: 1 -> 2
+  2023-04-26 10:55:29,312 | INFO : Update EvalHook interval: 1 -> 2
+  2023-04-26 10:55:29,312 | INFO : Update EarlyStoppingHook patience: 10 -> 5
+  2023-04-26 10:55:46,681 | INFO : Epoch [1][28/28] lr: 5.133e-04, eta: 2:54:03, time: 1.055, data_time: 0.658, memory: 7521, current_iters: 27, loss_rpn_cls: 0.2227, loss_rpn_bbox: 0.1252, loss_cls: 1.0220, acc: 77.4606, loss_bbox: 0.7682, loss_mask: 1.1534, loss: 3.2915, grad_norm: 14.0078
 
-  In other general datasets, OpenVINO™ Training Extensions ends training at the right time without adjusting ``num_iters``.
+  ...
+  2023-04-26 11:32:36,162 | INFO : called evaluate()
+  2023-04-26 11:32:36,511 | INFO : F-measure after evaluation: 0.5576271186440678
+  2023-04-26 11:32:36,511 | INFO : Evaluation completed
+  Performance(score: 0.5576271186440678, dashboard: (1 metric groups))
+  otx train time elapsed:  0:20:23.541362
 
+The training time highly relies on the hardware characteristics, for example on 1 NVIDIA GeForce RTX 3090 the training took about 20 minutes with full dataset.
 
-The training results are ``weights.pth`` and ``label_schema.json`` files that located in ``otx-workspace-INSTANCE_SEGMENTATION/models`` folder, while training logs and tf_logs for `Tensorboard` visualization can be found in the ``otx-workspace-INSTANCE_SEGMENTATION`` dir.
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iterations.
+Learn more about template-specific parameters using ``otx train params --help``.
 
-``weights.pth`` and ``label_schema.json``, which are needed as input for the further commands: ``export``, ``eval``,  ``optimize``,  etc.
+It can be done by manually updating parameters in the ``template.yaml`` file in your workplace or via the command line.
+
+For example, to decrease the batch size to 4, fix the number of epochs to 100 and disable early stopping, extend the command line above with the following line.
 
 .. code-block::
 
-  ...
-  2023-02-21 22:34:53,474 | INFO : Update LrUpdaterHook patience: 5 -> 2
-  2023-02-21 22:34:53,474 | INFO : Update CheckpointHook interval: 1 -> 5
-  2023-02-21 22:34:53,474 | INFO : Update EvalHook interval: 1 -> 5
-  2023-02-21 22:34:53,474 | INFO : Update EarlyStoppingHook patience: 10 -> 3
-  2023-02-21 22:34:54,320 | INFO : Epoch [1][2/2] lr: 3.400e-04, eta: 3:14:44, time: 1.180, data_time: 0.784, memory: 7322, current_iters: 1, loss_rpn_cls: 0.0720, loss_rpn_bbox: 0.0250, loss_cls: 2.6643, acc: 89.3066, loss_bbox: 0.3984, loss_mask: 3.5540, loss: 6.7136, grad_norm: 66.2921
+                      otx train params --learning_parameters.batch_size 4 \
+                              --learning_parameters.num_iters 100 \
+                              --learning_parameters.enable_early_stopping false
 
+5. The training results are ``weights.pth`` and ``label_schema.json`` files located in ``outputs/**_train/models`` folder,
+while training logs can be found in the ``outputs/**_train/logs`` dir.
+
+- ``weights.pth`` - a model snapshot
+- ``label_schema.json`` - a label schema used in training, created from a dataset
+
+These are needed as inputs for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
+
+.. note::
+  We also can visualize the training using ``Tensorboard`` as these logs are located in ``outputs/**/logs/**/tf_logs``.
+
+.. code-block::
+
+  otx-workspace-INSTANCE_SEGMENTATION
+  ├── outputs/
+      ├── 20230403_134256_train/
+          ├── logs/
+          ├── models/
+              ├── weights.pth
+              └── label_schema.json
+          └── cli_report.log
+      ├── latest_trained_model
+          ├── logs/
+          ├── models/
+          └── cli_report.log
   ...
-  2023-02-21 22:35:07,908 | INFO : Inference completed
-  2023-02-21 22:35:07,908 | INFO : called evaluate()
-  2023-02-21 22:35:07,909 | INFO : F-measure after evaluation: 0.33333333333333326
-  2023-02-21 22:35:07,909 | INFO : Evaluation completed
-  Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
 
 After that, we have the PyTorch instance segmentation model trained with OpenVINO™ Training Extensions, which we can use for evaluation, export, optimization and deployment.
 
@@ -217,13 +287,11 @@ Please note, ``label_schema.json`` file contains meta information about the data
 ``otx eval`` will output a F-measure for instance segmentation.
 
 2. The command below will run validation on our dataset
-and save performance results in ``outputs/performance.json`` file:
+and save performance results in ``outputs/**_eval/performance.json`` file:
 
 .. code-block::
 
-  (otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
-                      --load-weights models/weights.pth \
-                      --outputs outputs
+  (otx) ...$ otx eval --test-data-roots <data_root_path>/wgisd
 
 We will get a similar to this validation output:
 
@@ -231,26 +299,25 @@ We will get a similar to this validation output:
 
   ...
 
-  2023-02-21 22:37:10,263 | INFO : Inference completed
-  2023-02-21 22:37:10,263 | INFO : called evaluate()
-  2023-02-21 22:37:10,265 | INFO : F-measure after evaluation: 0.33333333333333326
-  2023-02-21 22:37:10,265 | INFO : Evaluation completed
-  Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
+  2023-04-26 12:46:27,856 | INFO : Inference completed
+  2023-04-26 12:46:27,856 | INFO : called evaluate()
+  2023-04-26 12:46:28,453 | INFO : F-measure after evaluation: 0.5576271186440678
+  2023-04-26 12:46:28,453 | INFO : Evaluation completed
+  Performance(score: 0.5576271186440678, dashboard: (1 metric groups))
 
 .. note::
 
   You can omit ``--test-data-roots`` if you are currently inside a workspace and have test-data stuff written in ``data.yaml``.
 
-  Also, if you're inside a workspace and ``weights.pth`` exists in ``models`` dir, you can omit ``--load-weights`` as well, assuming those weights are the default as ``models/weights.pth``.
+  Also, if you're inside a workspace and ``weights.pth`` exists in ``outputs/latest_train_model/models`` dir,
+  you can omit ``--load-weights`` as well, assuming those weights are the default as ``latest_train_model/models/weights.pth``.
 
-  If you omit ``--output``, it will create a ``performance.json`` in the folder for those weights.
 
-
-The output of ``./outputs/performance.json`` consists of a dict with target metric name and its value.
+The output of ``./outputs/**_eval/performance.json`` consists of a dict with target metric name and its value.
 
 .. code-block::
 
-  {"f-measure": 0.33333333333333326}
+  {"f-measure": 0.5576271186440678}
 
 *********
 Export
@@ -262,42 +329,24 @@ OpenVINO™ Intermediate Representation (IR) format.
 It allows running the model on the Intel hardware much more efficient, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of 2 files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. We can run the below command line to export the trained model
-and save the exported model to the ``openvino_model`` folder.
+and save the exported model to the ``outputs/**_export/openvino`` folder.
+
+.. note::
+
+  if you're inside a workspace and ``weights.pth`` exists in ``outputs/latest_train_model/models`` dir,
+  you can omit ``--load-weights`` as well, assuming those weights are the default as ``latest_train_model/models/weights.pth``.
 
 .. code-block::
 
-  (otx) ...$ otx export --load-weights models/weights.pth \
-                        --output openvino_model
+  (otx) ...$ otx export
 
   ...
   [ SUCCESS ] Generated IR version 11 model.
-  [ SUCCESS ] XML file: /tmp/OTX-task-51omlxb0/stage00_DetectionExporter-train/model.xml
-  [ SUCCESS ] BIN file: /tmp/OTX-task-51omlxb0/stage00_DetectionExporter-train/model.bin
+  [ SUCCESS ] XML file: otx-workspace-INSTANCE_SEGMENTATION/outputs/20230426_124738_export/logs/model.xml
+  [ SUCCESS ] BIN file: otx-workspace-INSTANCE_SEGMENTATION/outputs/20230426_124738_export/logs/model.bin
 
-  2023-02-21 22:38:21,893 - mmdeploy - INFO - Successfully exported OpenVINO model: /tmp/OTX-task-51omlxb0/stage00_DetectionExporter-train/model_ready.xml
-  2023-02-21 22:38:21,894 | INFO : run task done.
-  2023-02-21 22:38:21,940 | INFO : Exporting completed
-
-3. We can check the accuracy of the IR model and the consistency between
-the exported model and the PyTorch model.
-
-You can use ``otx train`` directly without ``otx build``. It will be required to add ``--train-data-roots`` and ``--val-data-roots`` in the command line:
-
-.. code-block::
-
-  (otx) ...$ otx eval --test-data-roots otx-workspace-INSTANCE_SEGMENTATION/splitted_dataset/car_tree_bug \
-                      --load-weights openvino_model/openvino.xml \
-                      --output openvino_model
-
-  ...
-
-  2023-02-21 22:39:13,423 | INFO : Loading OpenVINO OTXDetectionTask
-  2023-02-21 22:39:17,014 | INFO : OpenVINO task initialization completed
-  2023-02-21 22:39:17,015 | INFO : Start OpenVINO inference
-  2023-02-21 22:39:18,309 | INFO : OpenVINO inference completed
-  2023-02-21 22:39:18,309 | INFO : Start OpenVINO metric evaluation
-  2023-02-21 22:39:18,310 | INFO : OpenVINO metric evaluation completed
-  Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
+  2023-04-26 12:47:48,293 - mmdeploy - INFO - Successfully exported OpenVINO model: outputs/20230426_124738_export/logs/model_ready.xml
+  2023-04-26 12:47:48,670 | INFO : Exporting completed
 
 *************
 Optimization
@@ -309,34 +358,23 @@ It uses NNCF or POT depending on the model format.
 Please, refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section to get the intuition of what we use under the hood for optimization purposes.
 
 2. Command example for optimizing
-a PyTorch model (`.pth`) with OpenVINO™ NNCF.
+a PyTorch model (`.pth`) with OpenVINO™ `NNCF <https://github.com/openvinotoolkit/nncf>`_.
+
+.. note::
+
+  if you're inside a workspace and ``weights.pth`` exists in ``outputs/latest_train_model/models`` dir,
+  you can omit ``--load-weights`` as well (nncf only), assuming those weights are the default as ``latest_train_model/models/weights.pth``.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights models/weights.pth --output nncf_model
-
-  ...
-
-  2023-02-21 22:45:35,996 | INFO : run task done.
-  2023-02-21 22:45:36,012 | INFO : Inference completed
-  2023-02-21 22:45:36,013 | INFO : called evaluate()
-  2023-02-21 22:45:36,014 | INFO : F-measure after evaluation: 0.33333333333333326
-  2023-02-21 22:45:36,014 | INFO : Evaluation completed
-  Performance(score: 0.33333333333333326, dashboard: (1 metric groups))
-
-The optimization time relies on the hardware characteristics, for example on 1 GeForce 3090 and Intel(R) Core(TM) i9-11900 it took about 1 minutes.
+  (otx) ...$ otx optimize
 
 3.  Command example for optimizing
 OpenVINO™ model (.xml) with OpenVINO™ POT.
 
 .. code-block::
 
-  (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml \
-                          --output pot_model
-
-  ...
-
-  Performance(score: 0.33333333333333326, dashboard: (3 metric groups))
+  (otx) ...$ otx optimize --load-weights openvino_model/openvino.xml
 
 Please note, that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
 

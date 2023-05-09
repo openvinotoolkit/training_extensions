@@ -48,7 +48,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
-from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -82,7 +81,7 @@ class MMActionTask(OTXActionTask):
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
-        set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
+        self.set_seed()
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
@@ -158,8 +157,9 @@ class MMActionTask(OTXActionTask):
 
         recipe_cfg.work_dir = self._output_path
         recipe_cfg.resume = self._resume
-        recipe_cfg.distributed = False
         recipe_cfg.omnisource = False
+
+        self._configure_device(recipe_cfg, training)
 
         if data_cfg is not None:
             recipe_cfg.merge_from_dict(data_cfg)
@@ -195,6 +195,35 @@ class MMActionTask(OTXActionTask):
 
         self._config = recipe_cfg
         return recipe_cfg
+
+    def _configure_device(self, cfg: Config, training: bool):
+        """Setting device for training and inference."""
+        cfg.distributed = False
+        if torch.distributed.is_initialized():
+            cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
+            if training:  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
+                cfg.distributed = True
+                self.configure_distributed(cfg)
+        elif "gpu_ids" not in cfg:
+            cfg.gpu_ids = range(1)
+
+        # consider "cuda" and "cpu" device only
+        if not torch.cuda.is_available():
+            cfg.device = "cpu"
+            cfg.gpu_ids = range(-1, 0)
+        else:
+            cfg.device = "cuda"
+
+    @staticmethod
+    def configure_distributed(cfg: Config):
+        """Patching for distributed training."""
+        if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
+            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            logger.info(
+                f"enabled linear scaling rule to the learning rate. \
+                changed LR from {cfg.optimizer.lr} to {new_lr}"
+            )
+            cfg.optimizer.lr = new_lr
 
     # pylint: disable=too-many-branches, too-many-statements
     def _train_model(
@@ -392,7 +421,7 @@ class MMActionTask(OTXActionTask):
                     with torch.no_grad():
                         result = model(return_loss=False, **data)
                     eval_predictions.extend(result)
-                    for _ in range(len(data)):
+                    for _ in range(videos_per_gpu):
                         prog_bar.update()
         prog_bar.file.write("\n")
 
@@ -421,6 +450,8 @@ class MMActionTask(OTXActionTask):
         state_dict = torch.load(self._model_ckpt)
         if "model" in state_dict.keys():
             state_dict = state_dict["model"]
+        if "state_dict" in state_dict.keys():
+            state_dict = state_dict["state_dict"]
 
         self._precision[0] = precision
         half_precision = precision == ModelPrecision.FP16

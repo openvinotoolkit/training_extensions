@@ -48,7 +48,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.configurer import (
@@ -59,8 +58,6 @@ from otx.algorithms.segmentation.adapters.mmseg.configurer import (
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegmentationExporter
 from otx.algorithms.segmentation.task import OTXSegmentationTask
-
-# from otx.algorithms.segmentation.utils import get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -96,7 +93,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
-        set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
+        self.set_seed()
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
@@ -372,9 +369,8 @@ class MMSegmentationTask(OTXSegmentationTask):
         validate = bool(cfg.data.get("val", None))
 
         if self._hyperparams.learning_parameters.auto_decrease_batch_size:
-            validate = isinstance(self, NNCFBaseTask)  # nncf needs eval hooks
             train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, validate)
+            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
 
         train_segmentor(
             model,
