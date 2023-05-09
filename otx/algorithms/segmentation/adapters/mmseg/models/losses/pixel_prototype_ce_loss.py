@@ -7,6 +7,7 @@ from abc import ABC
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmseg.models.builder import LOSSES
 
 class PPC(nn.Module, ABC):
     def __init__(self):
@@ -31,11 +32,13 @@ class PPD(nn.Module, ABC):
 
         return loss_ppd
 
-class PixelPrototypeCELoss(nn.Module, ABC):
-    def __init__(self, loss_ppc_weight=0.01, loss_ppd_weight=0.001):
-        super(PixelPrototypeCELoss, self).__init__()
 
-        ignore_index = 255
+@LOSSES.register_module()
+class PixelPrototypeCELoss(nn.Module, ABC):
+    def __init__(self, loss_ppc_weight=0.01, loss_ppd_weight=0.001, ignore_index=255):
+        super(PixelPrototypeCELoss, self).__init__()
+        self._loss_name = 'pixel_proto_ce_loss'
+        ignore_index = ignore_index
         self.loss_ppc_weight = loss_ppc_weight
         self.loss_ppd_weight = loss_ppd_weight
 
@@ -44,16 +47,23 @@ class PixelPrototypeCELoss(nn.Module, ABC):
         self.ppc_criterion = PPC()
         self.ppd_criterion = PPD()
 
-    def forward(self, preds, target):
-        assert "seg_out" in preds
-        assert "proto_logits" in preds
-        assert "proto_targets" in preds
-
-        pred = preds['seg_out']
-        contrast_logits = preds['proto_logits']
-        contrast_target = preds['proto_targets']
-        loss_ppc = self.ppc_criterion(contrast_logits, contrast_target)
-        loss_ppd = self.ppd_criterion(contrast_logits, contrast_target)
-        logits, _ = torch.max(pred, dim=1)
-        loss = self.seg_criterion(logits, target.squeeze(1))
+    def forward(self, seg_out, proto_logits, proto_targets, target):
+        loss_ppc = self.ppc_criterion(proto_logits, proto_targets)
+        loss_ppd = self.ppd_criterion(proto_logits, proto_targets)
+        loss = self.seg_criterion(seg_out, target.squeeze(1).long())
         return loss + self.loss_ppc_weight * loss_ppc + self.loss_ppd_weight * loss_ppd
+
+    @property
+    def loss_name(self):
+        """Loss Name.
+
+        This function must be implemented and will return the name of this
+        loss function. This name will be used to combine different loss items
+        by simple sum operation. In addition, if you want this loss item to be
+        included into the backward graph, `loss_` must be the prefix of the
+        name.
+
+        Returns:
+            str: The name of this loss item.
+        """
+        return self._loss_name

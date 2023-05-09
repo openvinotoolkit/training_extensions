@@ -6,19 +6,21 @@ from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 from mmseg.models.decode_heads.aspp_head import ASPPHead
 from mmseg.ops import resize
 from mmcv.cnn import build_norm_layer
+from mmcv.runner import force_fp32
 from einops import rearrange, repeat
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import distributed_sinkhorn, momentum_update, ProjectionHead, trunc_normal_
 import torch.distributed as dist
+from  mmseg.models.losses import accuracy
 
 
 @HEADS.register_module()
 class ProtoNet(ASPPHead):
-    def __init__(self, gamma, num_prototype, in_proto_channels, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, gamma, num_prototype, in_proto_channels, num_classes, **kwargs):
+        super().__init__(num_classes=num_classes, **kwargs)
         self.gamma = gamma
         self.num_prototype = num_prototype
-        norm_cfg = kwargs["backbone"].get("norm_cfg")
-        self.num_classes = self.model_s.decode_head.num_classes
+        norm_cfg = kwargs.get("norm_cfg")
+        self.num_classes = num_classes
         self.prototypes = nn.Parameter(torch.zeros(self.num_classes, self.num_prototype, in_proto_channels),
                                 requires_grad=False)
         trunc_normal_(self.prototypes, std=0.02)
@@ -28,7 +30,7 @@ class ProtoNet(ASPPHead):
         self.feat_norm = nn.LayerNorm(in_proto_channels)
         self.mask_norm = nn.LayerNorm(self.num_classes)
 
-    def forward_aspp(self, inputs):
+    def __forward_aspp(self, inputs):
         x = self._transform_inputs(inputs)
         aspp_outs = [
             resize(
@@ -39,7 +41,6 @@ class ProtoNet(ASPPHead):
         ]
         aspp_outs.extend(self.aspp_modules(x))
         aspp_outs = torch.cat(aspp_outs, dim=1)
-
         return aspp_outs
 
     def prototype_learning(self, _c, out_seg, gt_seg, masks):
@@ -87,7 +88,8 @@ class ProtoNet(ASPPHead):
 
         return proto_logits, proto_target
 
-    def forward_proto(self, aspp_out, gt_semantic_seg, orig_size=(512,512)):
+    def forward_proto(self, inputs, gt_semantic_seg, orig_size=(512,512)):
+        aspp_out = self.__forward_aspp(inputs)
         c = self.proj_head(aspp_out)
         _c = rearrange(c, 'b c h w -> (b h w) c')
         _c = self.feat_norm(_c)
@@ -105,3 +107,29 @@ class ProtoNet(ASPPHead):
         proto_out = {"out_seg": out_seg, "contrast_logits": contrast_logits, "contrast_target": contrast_target}
 
         return proto_out
+
+    @force_fp32(apply_to=("out_seg", "contrast_logits", "contrast_target",))
+    def losses(self, out_seg, contrast_logits, contrast_target, seg_label):
+        loss = dict()
+        if not isinstance(self.loss_decode, nn.ModuleList):
+            losses_decode = [self.loss_decode]
+        else:
+            losses_decode = self.loss_decode
+        for loss_decode in losses_decode:
+            if loss_decode.loss_name not in loss:
+                loss[loss_decode.loss_name] = loss_decode(
+                    out_seg,
+                    contrast_logits,
+                    contrast_target,
+                    seg_label)
+            else:
+                loss[loss_decode.loss_name] = loss_decode(
+                    out_seg,
+                    contrast_logits,
+                    contrast_target,
+                    seg_label)
+
+        loss['acc_seg'] = accuracy(out_seg, seg_label.squeeze(1), ignore_index=self.ignore_index)
+
+        return loss
+

@@ -14,6 +14,7 @@ from .local_attention import LocalAttentionModule
 from .loss_equalizer import LossEqualizer
 from .normalize import normalize
 from .psp_layer import PSPModule
+from .proto_utils import distributed_sinkhorn, momentum_update, ProjectionHead, trunc_normal_
 
 __all__ = [
     "IterativeAggregator",
@@ -25,4 +26,8 @@ __all__ = [
     "AsymmetricPositionAttentionModule",
     "AngularPWConv",
     "normalize",
+    "distributed_sinkhorn",
+    "momentum_update",
+    "ProjectionHead",
+    "trunc_normal_"
 ]

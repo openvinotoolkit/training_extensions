@@ -9,6 +9,7 @@ from mmseg.ops import resize
 import numpy as np
 
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.segmentation.adapters.mmseg.models.heads.proto_head import ProtoNet
 
 logger = get_logger()
 
@@ -22,7 +23,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
     It creates two models and ema from one to the other for consistency loss.
     """
 
-    def __init__(self, orig_type=None, unsup_weight=0.1, aux_weight=0.1, drop_percent=80, num_iters_per_epoch=6000, **kwargs):
+    def __init__(self, orig_type=None, unsup_weight=0.1, proto_weight=0.7, aux_weight=0.1, drop_percent=80, num_iters_per_epoch=6000, proto_head=None, **kwargs):
         super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.count_iter = 0
@@ -36,7 +37,12 @@ class MeanTeacherSegmentor(BaseSegmentor):
         self.model_s = build_segmentor(cfg)
         self.model_t = build_segmentor(cfg)
         self.unsup_weight = unsup_weight
-
+        if proto_head is not None:
+            self.proto_net = ProtoNet(num_classes=self.model_s.decode_head.num_classes, **proto_head)
+            self.use_prototype_head = True
+        else:
+            self.use_prototype_head = False
+        self.proto_weight = proto_weight
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
         self._register_load_state_dict_pre_hook(functools.partial(self.load_state_dict_pre_hook, self))
@@ -54,7 +60,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
         return self.model_s.simple_test(img, img_meta, **kwargs)
 
     @staticmethod
-    def cutmix(imgs, gt_seg, mask=None, aug_prob=0.5, alpha=1.):
+    def cutmix(imgs, gt_seg, mask=None, aug_prob=0., alpha=1.):
         def rand_bbox(size, lam):
             W = size[2]
             H = size[3]
@@ -143,7 +149,11 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         # extract features from labeled and unlabeled augmented images
         x = self.model_s.extract_feat(aug_img)
-        x_u = self.model_s.extract_feat(aug_ul_imgs)
+        x_u = self.model_s.extract_feat(ul_s_img)
+        # proto aspp forward + proto learning
+        if self.use_prototype_head:
+            proto_out_supervised = self.proto_net.forward_proto(x, aug_gt_seg, orig_size=img.shape[2:])
+            proto_out_unsupervised = self.proto_net.forward_proto(x_u, aug_ul_gt_seg, orig_size=img.shape[2:])
 
         # compute losses
         losses = dict()
@@ -157,8 +167,15 @@ class MeanTeacherSegmentor(BaseSegmentor):
             aux_loss_u = self.model_s.auxiliary_head.forward_train(x_u, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg)
             self.update_summary_loss(losses, aux_loss, aux_loss_u, reweight_unsup, loss_weight=self.aux_weight)
 
+        if self.use_prototype_head:
+            loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=aug_gt_seg)
+            loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=aug_ul_gt_seg)
+            self.update_summary_loss(losses, loss_proto, loss_proto_u, reweight_unsup, loss_weight=self.proto_weight)
+
         losses["decode.acc_seg"] = loss_decode["decode.acc_seg"]
         losses["decode.acc_seg_ul"] = loss_decode_u["decode.acc_seg"]
+        losses["proto.decode_s"] = loss_proto["pixel_proto_ce_loss"]
+        losses["proto.decode_u"] = loss_proto["pixel_proto_ce_loss"]
 
         return losses
 
