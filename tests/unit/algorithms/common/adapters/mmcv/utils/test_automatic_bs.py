@@ -38,7 +38,7 @@ def common_cfg(mocker):
     mock_cfg.runner = {"type": "EpochRunnerWithCancel", "max_epochs": 100}
     mock_cfg.custom_hooks = [
         {"type": "AdaptiveTrainSchedulingHook", "enable_eval_before_run": True},
-        {"type": "OTXProgressHook"}
+        {"type": "OTXProgressHook"},
     ]
     mock_cfg.optimizer.lr = DEFAULT_LR
     return mock_cfg

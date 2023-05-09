@@ -295,11 +295,18 @@ class MMActionTask(OTXActionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if (self._hyperparams.learning_parameters.auto_decrease_batch_size
-            or self._hyperparams.learning_parameters.auto_adapt_batch_size):
+        if (
+            self._hyperparams.learning_parameters.auto_decrease_batch_size
+            or self._hyperparams.learning_parameters.auto_adapt_batch_size
+        ):
             train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, validate,
-                             not_increase=(not self._hyperparams.learning_parameters.auto_adapt_batch_size))
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                validate,
+                not_increase=(not self._hyperparams.learning_parameters.auto_adapt_batch_size),
+            )
 
         train_model(
             model,

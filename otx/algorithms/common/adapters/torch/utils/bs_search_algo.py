@@ -3,7 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Callable, Tuple, Dict
+from typing import Callable, Dict, Tuple
 
 import torch
 
@@ -102,7 +102,7 @@ class BsSearchAlgo:
         return available_bs
 
     def find_big_enough_batch_size(self) -> int:
-        """Find a big enough batch size
+        """Find a big enough batch size.
 
         This function finds a big enough batch size by training with various batch sizes.
         It estimate a batch size using equation is estimated using training history.
@@ -130,7 +130,7 @@ class BsSearchAlgo:
         current_bs += 2
         cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
         if cuda_oom or bs_mem_usage > self._mem_upper_bound:
-            return  self._default_bs
+            return self._default_bs
 
         # estimate batch size using equation
         estimation_pct = 0.8
@@ -164,7 +164,7 @@ class BsSearchAlgo:
                 return val[1] - self._mem_upper_bound + val[0] / 10000
             else:
                 return 0
-            
+
         bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=distance_from_bound)
         bs1 = bs_arr[0][0]
         bs1_mem_usage = bs_arr[0][1]

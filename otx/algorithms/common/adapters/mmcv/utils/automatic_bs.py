@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
-from typing import Callable, Dict, List
 from math import sqrt
+from typing import Callable, Dict, List
 
 import numpy as np
 

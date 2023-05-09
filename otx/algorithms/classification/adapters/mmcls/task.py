@@ -406,11 +406,18 @@ class MMClassificationTask(OTXClassificationTask):
                 )
             )
 
-        if (self._hyperparams.learning_parameters.auto_decrease_batch_size
-            or self._hyperparams.learning_parameters.auto_adapt_batch_size):
+        if (
+            self._hyperparams.learning_parameters.auto_decrease_batch_size
+            or self._hyperparams.learning_parameters.auto_adapt_batch_size
+        ):
             train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
-                             not_increase=(not self._hyperparams.learning_parameters.auto_adapt_batch_size))
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                not_increase=(not self._hyperparams.learning_parameters.auto_adapt_batch_size),
+            )
 
         train_model(
             model,
