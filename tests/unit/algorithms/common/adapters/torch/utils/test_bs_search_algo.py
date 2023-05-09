@@ -72,3 +72,11 @@ class TestBsSearchAlgo:
         bs_search_algo = BsSearchAlgo(mock_train_func, 128, 1000)
         with pytest.raises(RuntimeError):
             bs_search_algo.find_big_enough_batch_size()
+
+    def test_find_big_enough_batch_size_default_bs_is_max_bs(self):
+        mock_train_func = self.get_mock_train_func(cuda_oom_bound=10000, use_much_mom_bound=100)
+
+        bs_search_algo = BsSearchAlgo(mock_train_func, 64, 64)
+        adapted_bs = bs_search_algo.find_big_enough_batch_size()
+
+        assert adapted_bs == 64

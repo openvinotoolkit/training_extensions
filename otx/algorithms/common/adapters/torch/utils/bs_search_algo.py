@@ -128,6 +128,8 @@ class BsSearchAlgo:
 
         # try default batch size + 2
         current_bs += 2
+        if current_bs > self._max_bs:
+            return self._default_bs
         cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
         if cuda_oom or bs_mem_usage > self._mem_upper_bound:
             return self._default_bs
