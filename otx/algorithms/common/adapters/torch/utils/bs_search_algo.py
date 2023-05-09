@@ -135,11 +135,9 @@ class BsSearchAlgo:
             return self._default_bs
 
         # estimate batch size using equation
-        estimation_pct = 0.8
+        estimation_pct = 0.82
         while True:
             current_bs = self._estimate_batch_size(estimation_pct)
-            if current_bs > self._max_bs:
-                current_bs = self._max_bs
             if current_bs in self._bs_try_history:
                 return current_bs
             cuda_oom, mem_usage = self._try_batch_size(current_bs)
@@ -151,7 +149,7 @@ class BsSearchAlgo:
             elif self._mem_lower_bound <= mem_usage <= self._mem_upper_bound:
                 return current_bs
             else:
-                estimation_pct = 0.8
+                estimation_pct = 0.82
 
     def _estimate_batch_size(self, estimation_pct: float) -> int:
         if len(self._bs_try_history) < 2:
@@ -188,7 +186,16 @@ class BsSearchAlgo:
                 return bs1
 
         estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
+
+        # If estimated_bs is already tried and it used GPU memory more than upper bound,
+        # set estimated_bs as lowest value of batch sizes using GPU memory more than uppoer bound - 2
         if estimated_bs in self._bs_try_history and self._bs_try_history[estimated_bs] > self._mem_upper_bound:
-            return estimated_bs - 2
+            for bs, mem_usage in bs_arr:
+                if mem_usage > self._mem_upper_bound:
+                    estimated_bs = bs - 2
+                    break
+
+        if estimated_bs > self._max_bs:
+            estimated_bs = self._max_bs
 
         return estimated_bs
