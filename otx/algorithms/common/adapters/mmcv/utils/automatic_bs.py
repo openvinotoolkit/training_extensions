@@ -50,7 +50,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         meta (Dict): A dict records some meta information of a training.
         datasets (List): List of datasets.
         validate (bool): Whether do vlidation or not.
-        not_increase (book) : Whether adapting batch size to larger value than default value or not.
+        not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
 
     def train_func_single_iter(batch_size):
