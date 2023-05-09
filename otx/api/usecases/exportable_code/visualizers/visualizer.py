@@ -14,6 +14,7 @@ import numpy as np
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.utils.shape_drawer import ShapeDrawer
 
+from otx.api.usecases.exportable_code.streamer import BaseStreamer
 
 class IVisualizer(metaclass=abc.ABCMeta):
     """Interface for converter."""
@@ -126,15 +127,16 @@ class Visualizer(IVisualizer):
 
         return ord("q") == cv2.waitKey(self.delay)
 
-    def video_delay(self, elapsed_time: float, streamer_type: str):
+    def video_delay(self, elapsed_time: float, streamer: BaseStreamer):
         """Check if video frames were inferenced faster than 30 FPS and delay visualizer if so.
 
         Args:
             elapsed_time (float): Time spent on frame inference
-            streamer_type (str): Type of streamer
+            streamer (BaseStreamer): Streamer object
         """
         if self.no_show:
             return
-        if "VIDEO" in streamer_type:
-            if elapsed_time < 1 / 30:
-                time.sleep(1 / 30 - elapsed_time)
+        if "VIDEO" in str(streamer.get_type()):
+            orig_frame_time = 1 / streamer.fps()
+            if elapsed_time < orig_frame_time:
+                time.sleep(orig_frame_time - elapsed_time)
