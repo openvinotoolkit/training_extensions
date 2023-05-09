@@ -564,7 +564,7 @@ class LabelSchemaEntity:
         The following two steps are taken:
 
         - select the most likely label from each label group
-        - add their predecessors if they are also most likely labels (greedy approach).
+        - add it and it's predecessors if they are also most likely labels (greedy approach).
 
         Args:
             scored_labels (List[LabelEntity]): list of labels to resolve
