@@ -115,7 +115,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             return inputs
 
         def forward_train(
-            self, inputs: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, train_cfg: Dict
+            self, inputs: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, train_cfg: Dict = dict()
         ):
             """Forward function for training.
 

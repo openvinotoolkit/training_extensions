@@ -22,13 +22,14 @@ class MeanTeacherSegmentor(BaseSegmentor):
     It creates two models and ema from one to the other for consistency loss.
     """
 
-    def __init__(self, orig_type=None, unsup_weight=0.1, drop_percent=80, num_iters_per_epoch=6000, **kwargs):
+    def __init__(self, orig_type=None, unsup_weight=0.1, aux_weight=0.1, drop_percent=80, num_iters_per_epoch=6000, **kwargs):
         super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.count_iter = 0
         self.filter_pixels_iters = num_iters_per_epoch * 100 # 100 epochs
         self.semisl_start_iter = num_iters_per_epoch # 1 epoch
         self.drop_percent = drop_percent
+        self.aux_weight = aux_weight
         cfg = kwargs.copy()
         cfg["type"] = orig_type
         self.align_corners = cfg["decode_head"].align_corners
@@ -53,7 +54,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
         return self.model_s.simple_test(img, img_meta, **kwargs)
 
     @staticmethod
-    def cutmix(imgs, gt_seg, mask=None, aug_prob=1., alpha=1.):
+    def cutmix(imgs, gt_seg, mask=None, aug_prob=0.5, alpha=1.):
         def rand_bbox(size, lam):
             W = size[2]
             H = size[3]
@@ -73,7 +74,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
             return bbx1, bby1, bbx2, bby2
 
         r = np.random.rand(1)
-        if r <= aug_prob:
+        if r < aug_prob:
             # generate mixed sample
             lam = np.random.beta(alpha, alpha)
             rand_index = torch.randperm(imgs.size(0), device=imgs.device)
@@ -118,11 +119,10 @@ class MeanTeacherSegmentor(BaseSegmentor):
             _, pl_from_teacher = torch.max(teacher_prob_unsup, axis=1, keepdim=True)
 
 
-
         # drop pixels with high entropy
         drop_percent = self.drop_percent
         percent_unreliable = (100 - drop_percent) * (1 - self.count_iter / self.filter_pixels_iters)
-        drop_percent = 100 - percent_unreliable
+        drop_percent = 100 if percent_unreliable <= 0 else 100 - percent_unreliable
         batch_size, _, h, w = teacher_logit.shape
 
         with torch.no_grad():
@@ -147,15 +147,26 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         # compute losses
         losses = dict()
+        losses["sum_loss"] = 0
         loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=aug_gt_seg)
         loss_decode_u = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg)
+        self.update_summary_loss(losses, loss_decode, loss_decode_u, reweight_unsup)
 
-        for (key, value) in loss_decode_u.items():
-            if value is None:
-                continue
-            losses[key] = loss_decode[key] + loss_decode_u[key] * self.unsup_weight * reweight_unsup
+        if hasattr(self.model_s, "auxiliary_head"):
+            aux_loss = self.model_s.auxiliary_head.forward_train(x, img_metas, gt_semantic_seg=aug_gt_seg)
+            aux_loss_u = self.model_s.auxiliary_head.forward_train(x_u, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg)
+            self.update_summary_loss(losses, aux_loss, aux_loss_u, reweight_unsup, loss_weight=self.aux_weight)
+
+        losses["decode.acc_seg"] = loss_decode["decode.acc_seg"]
+        losses["decode.acc_seg_ul"] = loss_decode_u["decode.acc_seg"]
 
         return losses
+
+    def update_summary_loss(self, losses, loss_s, loss_u, reweight_unsup=1., loss_weight=1.):
+        for (key, value) in loss_s.items():
+            if value is None or "loss" not in key:
+                continue
+            losses["sum_loss"] += (loss_s[key] + loss_u[key] * self.unsup_weight * reweight_unsup) * loss_weight
 
     @staticmethod
     def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # pylint: disable=unused-argument
