@@ -21,6 +21,7 @@ from otx.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
 from otx.api.entities.model import ModelConfiguration, ModelEntity
@@ -140,9 +141,29 @@ class TestOpenVINOClassificationTask:
             return_value=(self.fake_ann_scene, np.array([0, 1]), self.fake_input, self.fake_input, self.fake_input),
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
-        updated_dataset = self.cls_ov_task.infer(self.dataset)
+        updated_dataset = self.cls_ov_task.infer(
+            self.dataset, InferenceParameters(enable_async_inference=False, is_evaluation=True)
+        )
 
         mock_predict.assert_called()
+        for updated in updated_dataset:
+            assert updated.annotation_scene.contains_any(self.labels)
+
+    @e2e_pytest_unit
+    def test_infer_async(self, mocker):
+        mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
+
+        def fake_enqueue_prediciton(obj, x, idx, result_handler):
+            result_handler(idx, self.fake_ann_scene, (x, None, None, 0))
+
+        mock_enqueue = mocker.patch.object(
+            ClassificationOpenVINOInferencer, "enqueue_prediction", fake_enqueue_prediciton
+        )
+
+        updated_dataset = self.cls_ov_task.infer(
+            self.dataset, InferenceParameters(enable_async_inference=True, is_evaluation=True)
+        )
+
         for updated in updated_dataset:
             assert updated.annotation_scene.contains_any(self.labels)
 

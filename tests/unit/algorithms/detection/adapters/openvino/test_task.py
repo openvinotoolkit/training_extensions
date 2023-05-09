@@ -21,6 +21,7 @@ from otx.algorithms.detection.utils import generate_label_schema
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
 from otx.api.entities.model_template import (
@@ -29,6 +30,7 @@ from otx.api.entities.model_template import (
     task_type_to_label_domain,
 )
 from otx.api.entities.resultset import ResultSetEntity
+from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -52,7 +54,8 @@ class TestOpenVINODetectionInferencer:
         label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
-        mocked_model.return_value = mocker.MagicMock(spec=Model)
+        adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
+        mocked_model.return_value = mocker.MagicMock(spec=Model, model_adapter=adapter_mock)
         self.ov_inferencer = OpenVINODetectionInferencer(params, label_schema, "")
         self.fake_input = np.full((5, 1), 0.1)
 
@@ -111,7 +114,8 @@ class TestOpenVINOMaskInferencer:
         label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
-        mocked_model.return_value = mocker.MagicMock(spec=Model)
+        adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
+        mocked_model.return_value = mocker.MagicMock(spec=Model, model_adapter=adapter_mock)
         self.ov_inferencer = OpenVINOMaskInferencer(params, label_schema, "")
         self.fake_input = np.full((5, 1), 0.1)
 
@@ -135,16 +139,17 @@ class TestOpenVINORotatedRectInferencer:
         label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
-        mocked_model.return_value = mocker.MagicMock(spec=Model)
+        adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
+        mocked_model.return_value = mocker.MagicMock(spec=Model, model_adapter=adapter_mock)
         self.ov_inferencer = OpenVINORotatedRectInferencer(params, label_schema, "")
         self.fake_input = np.full((5, 1), 0.1)
 
     @e2e_pytest_unit
     def test_pre_process(self):
         """Test pre_process method in RotatedRectInferencer."""
-        self.ov_inferencer.model.preprocess.return_value = {"foo": "bar"}
+        self.ov_inferencer.model.preprocess.return_value = None, {"foo": "bar"}
         returned_value = self.ov_inferencer.pre_process(self.fake_input)
-        assert returned_value == {"foo": "bar"}
+        assert returned_value == (None, {"foo": "bar"})
 
 
 class TestOpenVINODetectionTask:
@@ -162,7 +167,8 @@ class TestOpenVINODetectionTask:
         params = DetectionConfig(header=hyper_parameters.header)
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
-        mocked_model.return_value = mocker.MagicMock(spec=Model)
+        adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
+        mocked_model.return_value = mocker.MagicMock(spec=Model, model_adapter=adapter_mock)
         ov_inferencer = OpenVINODetectionInferencer(params, label_schema, "")
         ov_inferencer.model.__model__ = "OTX_SSD"
         task_env.model = otx_model
@@ -178,9 +184,22 @@ class TestOpenVINODetectionTask:
         mock_predict = mocker.patch.object(
             OpenVINODetectionInferencer, "predict", return_value=(fake_ann_scene, (None, None))
         )
-        updated_dataset = self.ov_task.infer(self.dataset)
+        updated_dataset = self.ov_task.infer(self.dataset, InferenceParameters(enable_async_inference=False))
 
         mock_predict.assert_called()
+        for updated in updated_dataset:
+            assert updated.annotation_scene.contains_any([LabelEntity(name=labels[0].name, domain="DETECTION")])
+
+    @e2e_pytest_unit
+    def test_infer_async(self, mocker):
+        """Test async infer method in OpenVINODetectionTask."""
+        self.dataset, labels = generate_det_dataset(task_type=TaskType.DETECTION)
+        mock_pre_process = mocker.patch.object(
+            OpenVINODetectionInferencer, "pre_process", return_value=(None, {"foo", "bar"})
+        )
+        updated_dataset = self.ov_task.infer(self.dataset, InferenceParameters(enable_async_inference=True))
+
+        mock_pre_process.assert_called()
         for updated in updated_dataset:
             assert updated.annotation_scene.contains_any([LabelEntity(name=labels[0].name, domain="DETECTION")])
 

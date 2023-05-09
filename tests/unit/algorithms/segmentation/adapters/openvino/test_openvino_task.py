@@ -23,6 +23,7 @@ from otx.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
 from otx.api.entities.model_template import parse_model_template
@@ -131,9 +132,38 @@ class TestOpenVINOSegmentationTask:
             "otx.algorithms.segmentation.adapters.openvino.task.get_activation_map", return_value=np.zeros((5, 1))
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
-        updated_dataset = self.seg_ov_task.infer(self.dataset)
-
+        updated_dataset = self.seg_ov_task.infer(self.dataset, InferenceParameters(enable_async_inference=False))
         mock_predict.assert_called()
+
+        for updated in updated_dataset:
+            assert updated.annotation_scene.contains_any([LabelEntity(name="fake", domain="SEGMENTATION")])
+
+    @e2e_pytest_unit
+    def test_infer_async(self, mocker):
+        self.dataset = generate_otx_dataset()
+        fake_annotation = [
+            Annotation(
+                Polygon(points=[Point(0, 0)]),
+                id=0,
+                labels=[ScoredLabel(LabelEntity(name="fake", domain="SEGMENTATION"), probability=1.0)],
+            )
+        ]
+        fake_ann_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=fake_annotation)
+
+        def fake_enqueue_prediciton(obj, x, idx, result_handler):
+            result_handler(idx, fake_ann_scene, None, None)
+
+        mock_enqueue = mocker.patch.object(
+            OpenVINOSegmentationInferencer, "enqueue_prediction", fake_enqueue_prediciton
+        )
+        mocker.patch(
+            "otx.algorithms.segmentation.adapters.openvino.task.get_activation_map", return_value=np.zeros((5, 1))
+        )
+        mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
+        updated_dataset = self.seg_ov_task.infer(
+            self.dataset, InferenceParameters(is_evaluation=True, enable_async_inference=True)
+        )
+
         for updated in updated_dataset:
             assert updated.annotation_scene.contains_any([LabelEntity(name="fake", domain="SEGMENTATION")])
 
