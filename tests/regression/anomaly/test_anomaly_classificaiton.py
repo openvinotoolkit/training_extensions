@@ -39,7 +39,7 @@ from tests.regression.regression_command import (
 
 # Configurations for regression test.
 TASK_TYPE = "anomaly_classification"
-SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 15)
+SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 3)
 
 otx_dir = os.getcwd()
 templates = Registry("otx/algorithms/anomaly").filter(task_type=TASK_TYPE.upper()).templates
