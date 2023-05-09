@@ -21,10 +21,10 @@ The process has been tested on the following configuration:
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -40,7 +40,7 @@ Pre-training
 1. Prepare dataset and model. To prepare dataset and decide model, refer to :doc:`classification tutorial <../base/how_to_train/classification>`.
 In this self-supervised learning tutorial, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ and :ref:`MobileNet-V3-large-1x <classification_models>` model used in :doc:`classification tutorial <../base/how_to_train/classification>` is used as it is.
 
-2. Prepare OpenVINO™ Training Extensions workspace for **supervised learning** by running 
+2. Prepare OpenVINO™ Training Extensions workspace for **supervised learning** by running
 the following command:
 
 .. code-block::
@@ -59,7 +59,7 @@ the following command:
     [*]     - Updated: otx-workspace-CLASSIFICATION/compression_config.json
     [*] Update data configuration file to: otx-workspace-CLASSIFICATION/data.yaml
 
-3. Prepare an OpenVINO™ Training Extensions workspace 
+3. Prepare an OpenVINO™ Training Extensions workspace
 for **self-supervised learning** by running the following command:
 
 .. code-block::
@@ -117,9 +117,9 @@ After the workspace creation, the workspace structure is as follows:
 .. note::
 
     For :ref:`semantic segmentation <selfsl_semantic_segmentation>`, ``--train-data-root`` must be set to a directory including only images, not masks, like below.
-    
+
     For `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ used in :doc:`semantic segmentation tutorial <../base/how_to_train/semantic_segmentation>`, for example, the path ``data/VOCdevkit/VOC2012/JPEGImages`` must be set instead of ``data/VOCdevkit/VOC2012``.
-    
+
     Please refer to :ref:`Explanation of Self-Supervised Learning for Semantic Segmentation <selfsl_semantic_segmentation>`.
     And don't forget to add ``--train-type Selfsupervised``.
 
@@ -129,14 +129,14 @@ After the workspace creation, the workspace structure is as follows:
                             --model Lite-HRNet-18-mod2 \
                             --train-type Selfsupervised
 
-4. To start training we need to call ``otx train`` 
+4. To start training we need to call ``otx train``
 command in **self-supervised learning** workspace:
 
 .. code-block::
 
     (otx) ...$ cd otx-workspace-CLASSIFICATION-Selfsupervised
     (otx) ...$ otx train --data ../otx-workspace-CLASSIFICATION/data.yaml
-    
+
     ...
 
     2023-02-23 19:41:36,879 | INFO : Iter [4970/5000]       lr: 8.768e-05, eta: 0:00:29, time: 1.128, data_time: 0.963, memory: 7522, current_iters: 4969, loss: 0.2788

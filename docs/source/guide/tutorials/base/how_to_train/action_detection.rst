@@ -1,8 +1,8 @@
 Action Detection model
 ================================
 
-This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of `JHMDB <http://jhmdb.is.tue.mpg.de/>`_. 
-To learn more about Action Detection task, refer to :doc:`../../../explanation/algorithms/action/action_detection`. 
+This live example shows how to easily train and validate for spatio-temporal action detection model on the subset of `JHMDB <http://jhmdb.is.tue.mpg.de/>`_.
+To learn more about Action Detection task, refer to :doc:`../../../explanation/algorithms/action/action_detection`.
 
 .. note::
 
@@ -19,10 +19,10 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -167,7 +167,7 @@ and save the exported model to the ``openvino`` folder.
 
 .. code-block::
 
-  (otx) ...$ otx export 
+  (otx) ...$ otx export
 
   2023-03-24 15:03:35,993 - mmdeploy - INFO - Export PyTorch model to ONNX: /tmp/OTX-task-ffw8llin/openvino.onnx.
   2023-03-24 15:03:44,450 - mmdeploy - INFO - Args for Model Optimizer: mo --input_model="/tmp/OTX-task-ffw8llin/openvino.onnx" --output_dir="/tmp/OTX-task-ffw8llin/" --output="bboxes,labels" --input="input" --input_shape="[1, 3, 32, 256, 256]" --mean_values="[123.675, 116.28, 103.53]" --scale_values="[58.395, 57.12, 57.375]" --source_layout=bctwh

@@ -481,6 +481,10 @@ def adaptive_tile_params(
     tile_size = int(math.sqrt(object_area / object_tile_ratio))
     tile_overlap = max_area / (tile_size**2)
 
+    if tile_overlap >= tiling_parameters.get_metadata("tile_overlap")["max_value"]:
+        # Use the average object area if the tile overlap is too large to prevent 0 stride.
+        tile_overlap = object_area / (tile_size**2)
+
     # validate parameters are in range
     tile_size = max(
         tiling_parameters.get_metadata("tile_size")["min_value"],

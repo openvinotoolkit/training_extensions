@@ -99,10 +99,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             unlabeled_file_list=unlabeled_file_list,
         )
 
-        if cache_config is None:
-            cache_config = {}
+        cache_config = cache_config if cache_config is not None else {}
         for subset, dataset in self.dataset.items():
-            self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
+            # cache these subsets only
+            if subset not in (Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED, Subset.PSEUDOLABELED):
+                self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
 
         self.category_items: Dict[DatumAnnotationType, DatumCategories]
         self.label_groups: List[str]
@@ -214,14 +215,14 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             for s in [subset, "default"]:
                 if subset == "val" and s != "default":
                     s = "valid"
-                exact_subset = get_close_matches(s, subsets)
+                exact_subset = get_close_matches(s, subsets, cutoff=0.5)
 
                 if exact_subset:
                     return dataset.subsets()[exact_subset[0]].as_dataset()
                 elif subset == "test":
                     # If there is not test dataset in data.yml, then validation set will be test dataset
                     s = "valid"
-                    exact_subset = get_close_matches(s, subsets)
+                    exact_subset = get_close_matches(s, subsets, cutoff=0.5)
                     if exact_subset:
                         return dataset.subsets()[exact_subset[0]].as_dataset()
 

@@ -14,8 +14,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# ruff: noqa: E402
+
 import argparse
+import os
 import sys
+
+os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
 
 from mmcv.utils import get_logger
 
@@ -120,7 +125,7 @@ def main(args):
             dataset,
             environment.get_model_configuration(),
         )
-        task.export(ExportType.OPENVINO, exported_model)
+        task.export(ExportType.OPENVINO, exported_model, dump_features=False)
 
         logger.info("Create OpenVINO Task")
         environment.model = exported_model

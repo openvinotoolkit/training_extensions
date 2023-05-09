@@ -205,6 +205,20 @@ learning_parameters:
     value: 0
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
+  use_adaptive_interval:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
+    editable: false
+    header: Use adaptive validation interval
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: This will automatically control the patience and interval when early stopping is enabled.
   enable_supcon:
     affects_outcome_of: TRAINING
     default_value: false
@@ -390,7 +404,7 @@ algo_backend:
   storage_cache_scheme:
     affects_outcome_of: TRAINING
     default_value: NONE
-    description: Scheme fort storage cache
+    description: Scheme for storage cache
     editable: true
     enum_name: StorageCacheScheme
     header: Scheme for storage cache

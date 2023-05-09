@@ -1,4 +1,4 @@
-Noisy label detection
+Noisy Label Detection
 =====================
 
 OpenVINO™ Training Extensions provide a feature for detecting noisy labels during model training.

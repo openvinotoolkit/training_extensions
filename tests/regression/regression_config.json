@@ -88,30 +88,30 @@
     "segmentation": {
       "supervised": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr",
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/val",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/test",
           "--input": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/test/images"
         }
       },
       "class_incr": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_sl",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_sl",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_sl"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_sl/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_sl/val",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_sl/test"
         }
       },
       "semi_supervised": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr",
-          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr",
-          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr",
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/train",
+          "--val-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/val",
+          "--test-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/test",
           "--unlabeled-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_semisl/unlabeled"
         }
       },
       "self_supervised": {
         "multi_class": {
-          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr"
+          "--train-data-roots": "/storageserver/pvd_data/otx_data_archive/regression_datasets/segmentation/regression_voc_cls_decr/train"
         }
       }
     },

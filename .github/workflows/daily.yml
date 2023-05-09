@@ -7,24 +7,29 @@ on:
     - cron: "0 19 * * 1-5"
 
 jobs:
-  Daily-Tests:
-    runs-on: [self-hosted, linux, x64, dev]
-    timeout-minutes: 1440
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
-      - name: E2E Tests
-        run: tox -e pre-merge-all-py310 -- tests/e2e
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: .tox/test-results.xml
-        # Use always() to always run this step to publish test results when there are test failures
-        if: ${{ always() }}
+  E2E-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: "act"
+            test_dir: "tests/e2e/cli/action"
+          - task: "ano"
+            test_dir: "tests/e2e/cli/anomaly"
+          - task: "cls"
+            test_dir: "tests/e2e/cli/classification"
+          - task: "det"
+            test_dir: "tests/e2e/cli/detection"
+          - task: "iseg"
+            test_dir: "tests/e2e/cli/instance_segmentation"
+          - task: "seg"
+            test_dir: "tests/e2e/cli/semantic_segmentation"
+    name: E2E-Test-py310-${{ matrix.task }}
+    uses: ./.github/workflows/run_tests_in_tox.yml
+    with:
+      python-version: "3.10"
+      toxenv-pyver: "py310"
+      toxenv-task: ${{ matrix.task }}
+      tests-dir: ${{ matrix.test_dir }}
+      timeout-minutes: 360
+      upload-artifact: true
