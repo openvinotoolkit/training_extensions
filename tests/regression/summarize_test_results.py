@@ -59,7 +59,7 @@ def get_metric_dict(dict_data: Union[List[Dict[str, Any]], None], idx: int, mode
     """Get the proper dict item by referencing the index and model information.
 
     Since all models could be optimized by POT or NNCF, we need to check that there are proper values in the data.
-    For example, if A model could be optimized by both POT and NNCF and B model couldn't be supported by POT and NNCF.
+    For example, if model A could be optimized by both POT and NNCF and model B couldn't be supported by POT and NNCF.
     In this case, we have POT, NNCF results about A, however, we don't have POT, NNCF results about B.
 
     So, if we don't have results, we need to mark the empty result as "-".
