@@ -52,7 +52,7 @@ class IVisualizer(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def video_delay(self, elapsed_time: float, streamer: BaseStreamer) -> None:
-        """Check if video frames were inferenced faster than 30 FPS and delay visualizer if so.
+        """Check if video frames were inferenced faster than the original video FPS and delay visualizer if so.
 
         Args:
             elapsed_time (float): Time spent on frame inference
@@ -128,7 +128,7 @@ class Visualizer(IVisualizer):
         return ord("q") == cv2.waitKey(self.delay)
 
     def video_delay(self, elapsed_time: float, streamer: BaseStreamer):
-        """Check if video frames were inferenced faster than 30 FPS and delay visualizer if so.
+        """Check if video frames were inferenced faster than the original video FPS and delay visualizer if so.
 
         Args:
             elapsed_time (float): Time spent on frame inference

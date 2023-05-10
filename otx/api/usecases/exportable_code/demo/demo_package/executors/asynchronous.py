@@ -63,7 +63,7 @@ class AsyncExecutor:
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             output = self.render_result(results)
             self.visualizer.show(output)
-            # visualize video not faster then original FPS
+            # visualize video not faster than the original FPS
             self.visualizer.video_delay(time.perf_counter() - start_time, streamer)
         dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)
 

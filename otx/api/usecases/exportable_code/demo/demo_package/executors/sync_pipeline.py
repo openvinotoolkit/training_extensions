@@ -92,6 +92,6 @@ class ChainExecutor:
                 saved_frames.append(output)
             if self.visualizer.is_quit():
                 break
-            # visualize video not faster then original FPS
+            # visualize video not faster than the original FPS
             self.visualizer.video_delay(time.perf_counter() - start_time, streamer)
         dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)
