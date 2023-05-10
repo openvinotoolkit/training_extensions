@@ -1903,6 +1903,23 @@ group_name (Sequence[LabelEntity]): group name</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_greedily">
+<span class="sig-name descname"><span class="pre">resolve_labels_greedily</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scored_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_greedily" title="Permalink to this definition">#</a></dt>
+<dd><p>Resolves hierarchical labels and exclusivity based on a list of ScoredLabels (labels with probability).</p>
+<p>The following two steps are taken:</p>
+<ul class="simple">
+<li><p>select the most likely label from each label group</p></li>
+<li><p>add it and it’s predecessors if they are also most likely labels (greedy approach).</p></li>
+</ul>
+<dl class="simple">
+<dt>Args:</dt><dd><p>scored_labels (List[LabelEntity]): list of labels to resolve</p>
+</dd>
+<dt>Returns:</dt><dd><p>List[ScoredLabel]: List of ScoredLabels (labels with probability)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_probabilistic">
 <span class="sig-name descname"><span class="pre">resolve_labels_probabilistic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scored_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_probabilistic" title="Permalink to this definition">#</a></dt>
 <dd><p>Resolves hierarchical labels and exclusivity based on a list of ScoredLabels (labels with probability).</p>
@@ -5839,6 +5856,15 @@ training if for some reason training was suspended.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        LabelSchemaEntity.get_siblings_in_group()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_greedily">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LabelSchemaEntity.resolve_labels_greedily()
       </span>
      </code>
     </a>
