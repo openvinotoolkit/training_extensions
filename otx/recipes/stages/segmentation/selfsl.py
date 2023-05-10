@@ -16,7 +16,7 @@ hparams = dict(dummy=0)
 
 optimizer = dict(type="SGD", lr=0.001, momentum=0.9, weight_decay=10e-4)
 
-lr_config = dict(policy="customstep", by_epoch=True, gamma=1, step=10)
+lr_config = dict(policy="step", by_epoch=True, gamma=1, step=10)
 
 optimizer_config = dict(_delete_=True, grad_clip=dict(max_norm=40, norm_type=2))
 
