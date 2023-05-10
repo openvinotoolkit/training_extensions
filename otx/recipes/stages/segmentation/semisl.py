@@ -19,7 +19,7 @@ custom_hooks = [
 ]
 
 log_config = dict(
-    interval=1,
+    interval=10,
     hooks=[
         dict(type="TextLoggerHook", by_epoch=True),
     ],

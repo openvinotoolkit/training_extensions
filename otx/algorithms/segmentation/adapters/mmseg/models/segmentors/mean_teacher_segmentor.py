@@ -23,7 +23,14 @@ class MeanTeacherSegmentor(BaseSegmentor):
     It creates two models and ema from one to the other for consistency loss.
     """
 
-    def __init__(self, orig_type=None, unsup_weight=0.1, proto_weight=0.7, aux_weight=0.1, drop_percent=80, num_iters_per_epoch=6000, proto_head=None, **kwargs):
+    def __init__(self, orig_type=None,
+                 unsup_weight=0.1,
+                 proto_weight=0.7,
+                 aux_weight=0.1,
+                 drop_percent=80,
+                 num_iters_per_epoch=6000,
+                 proto_head=None,
+                 **kwargs):
         super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.count_iter = 0
