@@ -1,14 +1,17 @@
 #########################################################
 ## Python Environment with CUDA
 #########################################################
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
-ARG NO_PROXY
-ARG action_runner_url
 ARG ver_cuda="11.7.1"
 
 FROM nvidia/cuda:${ver_cuda}-devel-ubuntu20.04 AS python_base_cuda
 LABEL maintainer="OpenVINO Training Extensions Development Team"
+
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+ARG action_runner_url
+ARG uid
+ARG gid
 
 # Setup proxies
 ENV http_proxy=$HTTP_PROXY
@@ -37,19 +40,15 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # set /tmp folder cleaning schedule at 7PM every day which is older than a day
 RUN echo "0 19 * * * find /tmp/* -mtime +1 -exec rm -rf {} \;" >> ./cron_clean_tmp.txt && \
     crontab cron_clean_tmp.txt && \
-    # Create a non-root user
-    useradd -m validation
+    # Create a non-root user with having given UID & GID
+    groupadd -r -g ${gid} validation && \
+    useradd -l -r -m validation -g ${gid} -u ${uid} && \
+    echo "${gid}:${uid}"
 
 USER validation
 
 WORKDIR /home/validation
 
-# Install Conda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh --quiet && \
-    bash /home/validation/miniconda.sh -b -p /home/validation/conda && \
-    rm ~/miniconda.sh
-ENV PATH "/home/validation/conda/bin:${PATH}"
-RUN conda install python=3.10
 
 #########################################################
 ## OTX Development Env
