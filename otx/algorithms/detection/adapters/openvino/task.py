@@ -440,18 +440,21 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        async_requests_num = get_default_async_reqs_num()
+        if self.config.tiling_parameters.enable_tiling:
+            async_requests_num = 1  # tiling has it's own async configuration
         args = [
             _hparams,
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
             self.model.get_data("openvino.bin"),
             "CPU",
-            get_default_async_reqs_num(),
+            async_requests_num,
         ]
         if self.task_type == TaskType.DETECTION:
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
-            args[-1] = min(2, args[-1])  # a bigger amount of requests may cause a slowdown for IS models
+            args[-1] = min(2, async_requests_num)  # a bigger amount of requests may cause a slowdown for IS models
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
