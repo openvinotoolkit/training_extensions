@@ -106,7 +106,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         self.model = model
         self.converter = converter
         self.callback_exceptions: List[Exception] = []
-        self.model.model_adapter.set_callback(self._async_callback)
+        self.is_callback_set = False
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Detection Inferencer."""
@@ -167,6 +167,10 @@ class BaseInferencerWithConverter(BaseInferencer):
 
     def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
+        if not self.is_callback_set:
+            self.model.model_adapter.set_callback(self._async_callback)
+            self.is_callback_set = True
+
         if not self.model.is_ready():
             self.model.await_any()
         image, metadata = self.pre_process(image)
