@@ -45,7 +45,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         features_to_keep: Optional[List] = None,
         remove_normalize: bool = False,
         merge_bn: bool = True,
-        paired_bn: bool = True,
+        paired_bn: bool = False,
         init_weight: Union[bool, Callable] = False,
         verify_shape: bool = True,
     ):
