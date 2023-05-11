@@ -86,9 +86,11 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         dataset._source_path = path
 
         # make sure empty frame label has the last label index
+        categories = [category.name for category in dataset.categories()[AnnotationType.label]]
+        categories.sort()
         dst_labels = [
-            (float("inf"), category.name) if category.name == self.EMPTY_FRAME_LABEL_NAME else (label, category.name)
-            for label, category in enumerate(dataset.categories()[AnnotationType.label])
+            (float("inf"), category) if category == self.EMPTY_FRAME_LABEL_NAME else (label, category)
+            for label, category in enumerate(categories)
         ]
         dst_labels.sort()
         dst_labels = [name for _, name in dst_labels]
