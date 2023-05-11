@@ -109,10 +109,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         _set_batch_size(cfg, new_batch_size)
         origin_lr = cfg.optimizer.lr
         bs_change_ratio = new_batch_size / default_bs
-        if bs_change_ratio <= 1:
-            cfg.optimizer.lr *= bs_change_ratio
-        else:
-            cfg.optimizer.lr *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
+        cfg.optimizer.lr *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
 
         logger.info("Adapting batch size is done.")
         logger.info(f"Batch size is adapted : {default_bs} -> {new_batch_size}")
