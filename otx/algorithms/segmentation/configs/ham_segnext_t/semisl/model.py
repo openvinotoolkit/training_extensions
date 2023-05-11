@@ -27,7 +27,7 @@ model = dict(
     type="MeanTeacherSegmentor",
     orig_type="OTXEncoderDecoder",
     unsup_weight=0.1,
-    proto_weight=1.0,
+    proto_weight=0.1,
     train_cfg=dict(mix_loss=dict(enable=False, weight=0.1)),
     test_cfg=dict(mode="whole", output_scale=5.0),
     decode_head=dict(
@@ -45,21 +45,7 @@ model = dict(
         # loss_decode=dict(type="CriterionOhem", aux_weight=0, thresh=0.7, min_kept=100000,  ignore_index=255),
         ham_kwargs=dict(MD_S=1, MD_R=16, train_steps=6, eval_steps=7, inv_t=100, rand_init=True),
     ),
-    # auxiliary_head=dict(
-    #     type="FCNHead",
-    #     in_channels=160,
-    #     in_index=2,
-    #     channels=256,
-    #     num_convs=1,
-    #     concat_input=False,
-    #     dropout_ratio=0.1,
-    #     num_classes=19,
-    #     norm_cfg=norm_cfg,
-    #     align_corners=False,
-    #     loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=0.4),
-    # ),
     proto_head=dict(
-        dilations=(1, 6, 12, 18),
         in_channels=256,
         channels=256,
         norm_cfg=norm_cfg,
@@ -67,7 +53,7 @@ model = dict(
         align_corners=False,
         gamma=0.999,
         num_prototype=4,
-        in_proto_channels=1280,
+        in_proto_channels=256,
         loss_decode=dict(type="PixelPrototypeCELoss", loss_ppc_weight=0.01, loss_ppd_weight=0.001, ignore_index=255)
     )
     # model training and testing settings

@@ -14,21 +14,22 @@ from  mmseg.models.losses import accuracy
 
 
 @HEADS.register_module()
-class ProtoNet(ASPPHead):
+class ProtoNet(BaseDecodeHead):
     def __init__(self, gamma, num_prototype, in_proto_channels, num_classes, **kwargs):
         super().__init__(num_classes=num_classes, **kwargs)
         self.gamma = gamma
         self.num_prototype = num_prototype
-        norm_cfg = kwargs.get("norm_cfg")
         self.num_classes = num_classes
         self.prototypes = nn.Parameter(torch.zeros(self.num_classes, self.num_prototype, in_proto_channels),
                                 requires_grad=False)
         trunc_normal_(self.prototypes, std=0.02)
-        _, norm1 = build_norm_layer(norm_cfg, in_proto_channels, postfix=1)
         self.avg_pool = nn.AdaptiveAvgPool2d(256)
         self.proj_head = ProjectionHead(in_proto_channels, in_proto_channels)
         self.feat_norm = nn.LayerNorm(in_proto_channels)
         self.mask_norm = nn.LayerNorm(self.num_classes)
+
+    def __init_prototypes(self):
+        pass
 
     def __forward_aspp(self, inputs):
         x = self._transform_inputs(inputs)
@@ -88,9 +89,11 @@ class ProtoNet(ASPPHead):
 
         return proto_logits, proto_target
 
+    def forward(self, inputs, gt_semantic_seg, orig_size=(512,512)):
+        return self.forward_proto(inputs, gt_semantic_seg, orig_size=(512,512))
+
     def forward_proto(self, inputs, gt_semantic_seg, orig_size=(512,512)):
-        aspp_out = self.__forward_aspp(inputs)
-        c = self.proj_head(aspp_out)
+        c = self.proj_head(inputs)
         _c = rearrange(c, 'b c h w -> (b h w) c')
         _c = self.feat_norm(_c)
         _c = F.normalize(_c, p=2, dim=-1)
@@ -100,8 +103,8 @@ class ProtoNet(ASPPHead):
 
         out_seg = torch.amax(masks, dim=1)
         out_seg = self.mask_norm(out_seg)
-        out_seg = rearrange(out_seg, "(b h w) k -> b k h w", b=aspp_out.shape[0], h=aspp_out.shape[2])
-        gt_seg = F.interpolate(gt_semantic_seg.float(), size=aspp_out.size()[2:], mode='nearest').view(-1)
+        out_seg = rearrange(out_seg, "(b h w) k -> b k h w", b=inputs.shape[0], h=inputs.shape[2])
+        gt_seg = F.interpolate(gt_semantic_seg.float(), size=inputs.size()[2:], mode='nearest').view(-1)
         contrast_logits, contrast_target = self.prototype_learning(_c, out_seg, gt_seg, masks)
         out_seg =  F.interpolate(out_seg, size=orig_size, mode='bilinear')
         proto_out = {"out_seg": out_seg, "contrast_logits": contrast_logits, "contrast_target": contrast_target}
@@ -132,4 +135,3 @@ class ProtoNet(ASPPHead):
         loss['acc_seg'] = accuracy(out_seg, seg_label.squeeze(1), ignore_index=self.ignore_index)
 
         return loss
-

@@ -55,6 +55,7 @@ unlabeled_pipeline = [
             dict(type="RGB2Gray"),
         ],
     ),
+    dict(type='RandomCutOut', prob=0.35, n_holes=(1,8), cutout_ratio=(0.2, 0.4)),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
     dict(type="Collect", keys=["img", "ul_w_img"]),

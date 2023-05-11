@@ -157,32 +157,38 @@ class MeanTeacherSegmentor(BaseSegmentor):
         # extract features from labeled and unlabeled augmented images
         x = self.model_s.extract_feat(aug_img)
         x_u = self.model_s.extract_feat(ul_s_img)
+        head_features_sup = self.model_s.decode_head.forward_features(x)
+        head_features_unsup = self.model_s.decode_head.forward_features(x_u)
+        out_sup = self.model_s.decode_head.forward_cls(head_features_sup)
+        out_unsup = self.model_s.decode_head.forward_cls(head_features_unsup)
         # proto aspp forward + proto learning
         if self.use_prototype_head:
-            proto_out_supervised = self.proto_net.forward_proto(x, aug_gt_seg, orig_size=img.shape[2:])
-            proto_out_unsupervised = self.proto_net.forward_proto(x_u, aug_ul_gt_seg, orig_size=img.shape[2:])
+            proto_out_supervised = self.proto_net.forward_proto(head_features_sup, aug_gt_seg, orig_size=img.shape[2:])
+            proto_out_unsupervised = self.proto_net.forward_proto(head_features_unsup, aug_ul_gt_seg, orig_size=img.shape[2:])
 
         # compute losses
         losses = dict()
-        losses["sum_loss"] = 0
-        loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=aug_gt_seg)
-        loss_decode_u = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg)
-        self.update_summary_loss(losses, loss_decode, loss_decode_u, reweight_unsup)
+        loss_decode = self.model_s.decode_head.forward_train(out_sup, img_metas, gt_semantic_seg=aug_gt_seg, need_forward=False)
+        loss_decode_u = self.model_s.decode_head.forward_train(out_unsup, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg, need_forward=False)
+        # self.update_summary_loss(losses, loss_decode, loss_decode_u, reweight_unsup)
 
         if hasattr(self.model_s, "auxiliary_head"):
             aux_loss = self.model_s.auxiliary_head.forward_train(x, img_metas, gt_semantic_seg=aug_gt_seg)
             aux_loss_u = self.model_s.auxiliary_head.forward_train(x_u, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg)
-            self.update_summary_loss(losses, aux_loss, aux_loss_u, reweight_unsup, loss_weight=self.aux_weight)
+            # self.update_summary_loss(losses, aux_loss, aux_loss_u, reweight_unsup, loss_weight=self.aux_weight)
 
         if self.use_prototype_head:
             loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=aug_gt_seg)
             loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=aug_ul_gt_seg)
-            self.update_summary_loss(losses, loss_proto, loss_proto_u, reweight_unsup, loss_weight=self.proto_weight)
+            # self.update_summary_loss(losses, loss_proto, loss_proto_u, reweight_unsup, loss_weight=self.proto_weight)
+        losses["decode.loss"] = (loss_decode["loss_ce"]
+                                + self.proto_weight * loss_proto["pixel_proto_ce_loss"]
+                                + self.unsup_weight * reweight_unsup * (loss_decode_u["loss_ce"] + self.proto_weight * loss_proto_u["pixel_proto_ce_loss"]))
 
-        losses["decode.acc_seg"] = loss_decode["decode.acc_seg"]
-        losses["decode.acc_seg_ul"] = loss_decode_u["decode.acc_seg"]
-        losses["proto.decode_s"] = loss_proto["pixel_proto_ce_loss"]
-        losses["proto.decode_u"] = loss_proto["pixel_proto_ce_loss"]
+        # losses["decode.acc_seg"] = loss_decode["decode.acc_seg"]
+        # losses["decode.acc_seg_ul"] = loss_decode_u["decode.acc_seg"]
+        # losses["proto.decode_s"] = loss_proto["pixel_proto_ce_loss"].
+        # losses["proto.decode_u"] = loss_proto["pixel_proto_ce_loss"]
 
         return losses
 

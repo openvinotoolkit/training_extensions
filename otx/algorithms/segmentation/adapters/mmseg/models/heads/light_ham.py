@@ -222,6 +222,28 @@ class LightHamHead(BaseDecodeHead):
             self.ham_channels, self.channels, 1, conv_cfg=self.conv_cfg, norm_cfg=self.norm_cfg, act_cfg=self.act_cfg
         )
 
+    def forward_features(self, inputs):
+        """Forward features function."""
+        inputs = self._transform_inputs(inputs)
+
+        inputs = [
+            resize(level, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
+            for level in inputs
+        ]
+
+        inputs = torch.cat(inputs, dim=1)
+        # apply a conv block to squeeze feature map
+        x = self.squeeze(inputs)
+        # apply hamburger module
+        x = self.hamburger(x)
+        return x
+
+    def forward_cls(self, feat):
+        """Forward classifier."""
+        output = self.align(feat)
+        output = self.cls_seg(output)
+        return output
+
     def forward(self, inputs):
         """Forward function."""
         inputs = self._transform_inputs(inputs)
@@ -236,7 +258,6 @@ class LightHamHead(BaseDecodeHead):
         x = self.squeeze(inputs)
         # apply hamburger module
         x = self.hamburger(x)
-
         # apply a conv block to align feature map
         output = self.align(x)
         output = self.cls_seg(output)
