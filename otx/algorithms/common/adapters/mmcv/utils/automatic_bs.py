@@ -88,16 +88,16 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
 
     default_bs = _get_batch_size(cfg)
 
-    bs_search_ago = BsSearchAlgo(
+    bs_search_algo = BsSearchAlgo(
         train_func=train_func_single_iter,
         default_bs=default_bs,
         max_bs=len(datasets[0]),
     )
     if not_increase:
-        new_batch_size = bs_search_ago.auto_decrease_batch_size()
+        new_batch_size = bs_search_algo.auto_decrease_batch_size()
     else:
         drop_last = cfg.data.get("train_dataloader", {}).get("drop_last", False)
-        new_batch_size = bs_search_ago.find_big_enough_batch_size(drop_last)
+        new_batch_size = bs_search_algo.find_big_enough_batch_size(drop_last)
 
     if default_bs != new_batch_size:
         _set_batch_size(cfg, new_batch_size)
