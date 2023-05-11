@@ -77,10 +77,7 @@ def test_adapt_batch_size_not_action_task(mocker, mock_adapt_algo_cls, mock_cfg_
     assert mock_cfg_not_action.data.train_dataloader["samples_per_gpu"] == new_bs
     # check leanring rate is updated depending on adapted batch size
     bs_change_ratio = new_bs / DEFAULT_BS
-    if bs_change_ratio <= 1:
-        assert mock_cfg_not_action.optimizer.lr == pytest.approx(DEFAULT_LR * bs_change_ratio)
-    else:
-        assert mock_cfg_not_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
+    assert mock_cfg_not_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
     # check adapt function gets proper arguments
     assert mock_adapt_algo_cls.call_args.kwargs["default_bs"] == DEFAULT_BS
     assert mock_adapt_algo_cls.call_args.kwargs["max_bs"] == TRAINSET_SIZE
@@ -110,10 +107,7 @@ def test_adapt_batch_size_action_task(mocker, mock_adapt_algo_cls, mock_cfg_acti
     assert mock_cfg_action.data.videos_per_gpu == new_bs
     # check leanring rate is updated depending on adapted batch size
     bs_change_ratio = new_bs / DEFAULT_BS
-    if bs_change_ratio <= 1:
-        assert mock_cfg_action.optimizer.lr == pytest.approx(DEFAULT_LR * bs_change_ratio)
-    else:
-        assert mock_cfg_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
+    assert mock_cfg_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
     # check adapt function gets proper arguments
     assert mock_adapt_algo_cls.call_args.kwargs["default_bs"] == DEFAULT_BS
     assert mock_adapt_algo_cls.call_args.kwargs["max_bs"] == TRAINSET_SIZE
