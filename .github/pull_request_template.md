@@ -1,5 +1,3 @@
-<!-- Contributing guide: https://github.com/openvinotoolkit/training_extensions/blob/develop/CONTRIBUTING.md -->
-
 ### Summary
 
 <!--
