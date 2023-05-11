@@ -33,3 +33,11 @@ class StorageCacheScheme(ConfigurableEnum):
     JPEG_95 = "JPEG/95"
     PNG = "PNG"
     TIFF = "TIFF"
+
+
+class BatchSizeAdaptType(ConfigurableEnum):
+    """This Enum represents the type of adapting batch size."""
+
+    NONE = "None"
+    SAFE = "Safe"
+    FULL = "Full"

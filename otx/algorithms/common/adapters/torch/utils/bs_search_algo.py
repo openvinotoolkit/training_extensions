@@ -101,7 +101,7 @@ class BsSearchAlgo:
 
         return available_bs
 
-    def find_big_enough_batch_size(self) -> int:
+    def find_big_enough_batch_size(self, drop_last: bool = False) -> int:
         """Find a big enough batch size.
 
         This function finds a big enough batch size by training with various batch sizes.
@@ -109,16 +109,19 @@ class BsSearchAlgo:
         The reason why using the word "big enough" is that it tries to find not maxmium but big enough value which uses
         GPU memory between lower and upper bound.
 
+        Args:
+            drop_last (bool): Whether to drop the last incomplete batch.
+
         Raises:
             RuntimeError: If training with batch size 2 can't be run, raise an error.
 
         Returns:
             int: Big enough batch size.
         """
-        current_bs = self._default_bs
+        estimated_bs = self._default_bs
 
         # try default batch size
-        cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
+        cuda_oom, bs_mem_usage = self._try_batch_size(estimated_bs)
         if cuda_oom or bs_mem_usage > self._mem_upper_bound:
             self._default_bs -= 2
             if self._default_bs <= 0:
@@ -127,29 +130,35 @@ class BsSearchAlgo:
             return self.auto_decrease_batch_size()
 
         # try default batch size + 2
-        current_bs += 2
-        if current_bs > self._max_bs:
+        estimated_bs += 2
+        if estimated_bs > self._max_bs:
             return self._default_bs
-        cuda_oom, bs_mem_usage = self._try_batch_size(current_bs)
+        cuda_oom, bs_mem_usage = self._try_batch_size(estimated_bs)
         if cuda_oom or bs_mem_usage > self._mem_upper_bound:
             return self._default_bs
 
         # estimate batch size using equation
         estimation_pct = 0.82
         while True:
-            current_bs = self._estimate_batch_size(estimation_pct)
-            if current_bs in self._bs_try_history:
-                return current_bs
-            cuda_oom, mem_usage = self._try_batch_size(current_bs)
+            estimated_bs = self._estimate_batch_size(estimation_pct)
+            if estimated_bs in self._bs_try_history:
+                break
+            cuda_oom, mem_usage = self._try_batch_size(estimated_bs)
 
             if cuda_oom:
                 estimation_pct -= 0.1
                 if estimation_pct <= 0:
-                    return self._default_bs + 2
+                    estimated_bs = self._default_bs + 2
+                    break
             elif self._mem_lower_bound <= mem_usage <= self._mem_upper_bound:
-                return current_bs
+                break
             else:
                 estimation_pct = 0.82
+
+        if drop_last and (self._max_bs // 2 < estimated_bs < self._max_bs):
+            estimated_bs = self._max_bs // 2
+
+        return estimated_bs
 
     def _estimate_batch_size(self, estimation_pct: float) -> int:
         if len(self._bs_try_history) < 2:

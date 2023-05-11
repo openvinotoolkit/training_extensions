@@ -21,7 +21,7 @@ class MockBsSearchAlgo:
         self.train_func(self.default_bs // 2)
         return self.default_bs // 2
 
-    def find_big_enough_batch_size(self):
+    def find_big_enough_batch_size(self, drop_last: bool):
         self.train_func(self.default_bs)
         self.train_func(self.default_bs + 2)
         return self.default_bs + 2

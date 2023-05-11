@@ -113,3 +113,11 @@ class TestBsSearchAlgo:
         adapted_bs = bs_search_algo.find_big_enough_batch_size()
 
         assert mock_train_func(adapted_bs) <= 8500
+
+    def test_find_big_enough_batch_size_drop_last(self):
+        mock_train_func = self.get_mock_train_func(cuda_oom_bound=10000, max_runnable_bs=180)
+
+        bs_search_algo = BsSearchAlgo(mock_train_func, 64, 200)
+        adapted_bs = bs_search_algo.find_big_enough_batch_size(True)
+
+        assert adapted_bs == 100
