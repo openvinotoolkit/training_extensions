@@ -715,8 +715,8 @@ class Trainer:
     def _set_hyper_parameter(self, environment: TaskEnvironmentManager):
         environment.set_hyper_parameter_using_str_key(self._hp_config["configuration"])
         if self._task.is_mmcv_framework_task():
-            environment.set_hyper_parameter_using_str_key({"learning_parameters.auto_decrease_batch_size": False})
-            environment.set_hyper_parameter_using_str_key({"learning_parameters.auto_adapt_batch_size": False})
+            environment.set_hyper_parameter_using_str_key({"learning_parameters.auto_decrease_batch_size": "None"})
+            environment.set_hyper_parameter_using_str_key({"learning_parameters.auto_adapt_batch_size": "None"})
         environment.set_epoch(self._epoch)
 
     def _prepare_environment(self, hyper_parameters, label_schema):
