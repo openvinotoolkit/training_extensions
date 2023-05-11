@@ -285,6 +285,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
         results=model_results,
         output_path=config_manager.output_path / "cli_report.log",
     )
+    print(f"otx train CLI report has been generated: {config_manager.output_path / 'cli_report.log'}")
 
     # Latest model folder symbolic link to models
     latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
