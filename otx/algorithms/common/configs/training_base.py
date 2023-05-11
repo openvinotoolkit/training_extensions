@@ -193,9 +193,9 @@ class BaseConfig(ConfigurableParameters):
         auto_adapt_batch_size = selectable(
             default_value=BatchSizeAdaptType.NONE,
             header="Adapt batch size according to current GPU memory.",
-            description="Safe => Prevent GPU out of memory. Full => Find a batch size using almost GPU memory.",
-            warning="Enabling this option can change the actual batch size depending on adapt type and current "
-            "GPU Memory. The learning rate also could be adjusted according to the adapted batch size. This process "
+            description="Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.",
+            warning="Enabling this could change the actual batch size depending on the current GPU status. "
+            "The learning rate also could be adjusted according to the adapted batch size. This process "
             "might change a model performance and take some extra computation time to try a few batch size candidates.",
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
