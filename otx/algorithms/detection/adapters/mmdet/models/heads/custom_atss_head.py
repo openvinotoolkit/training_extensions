@@ -321,6 +321,9 @@ class CustomATSSHeadTrackingLossDynamics(CustomATSSHead):
         return pos_inds
 
     def _store_loss_dyns(self, losses: torch.Tensor, key: TrackingLossType) -> None:
+        if len(self.pos_inds) == 0:
+            return
+
         loss_dyns = self.loss_dyns[key]
         for batch_idx, bbox_idx, loss_item in zip(self.batch_inds, self.bbox_inds, losses.detach().cpu()):
             loss_dyns[(batch_idx.item(), bbox_idx.item())].add(loss_item.item())
@@ -343,8 +346,7 @@ class CustomATSSHeadTrackingLossDynamics(CustomATSSHead):
                 cls_score, labels, label_weights, avg_factor=num_total_samples, reduction_override="none"
             )
 
-        if len(self.pos_inds) > 0:
-            self._store_loss_dyns(loss_cls[self.pos_inds].detach().mean(-1), TrackingLossType.cls)
+        self._store_loss_dyns(loss_cls[self.pos_inds].detach().mean(-1), TrackingLossType.cls)
         return self._postprocess_loss(loss_cls, self.loss_cls.reduction, avg_factor=num_total_samples)
 
     def _get_loss_centerness(self, num_total_samples, pos_centerness, centerness_targets):
