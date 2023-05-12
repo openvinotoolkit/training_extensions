@@ -92,10 +92,8 @@ test_dataset = dict(
         type=__dataset_type,
         ann_file=__data_root + "annotations/instances_test.json",
         img_prefix=__data_root + "images/test",
-        pipeline=[
-            dict(type="LoadImageFromFile"),
-            dict(type="LoadAnnotations", with_bbox=True, with_mask=True),
-        ],
+        test_mode=True,
+        pipeline=[dict(type="LoadImageFromFile")],
     ),
     pipeline=test_pipeline,
     **tile_cfg

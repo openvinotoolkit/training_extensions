@@ -4,7 +4,6 @@
 #
 
 import copy
-import tempfile
 import uuid
 from itertools import product
 from multiprocessing import Pool
@@ -67,7 +66,6 @@ class Tile:
         self,
         dataset,
         pipeline,
-        tmp_dir: tempfile.TemporaryDirectory,
         tile_size: int = 400,
         overlap: float = 0.2,
         min_area_ratio: float = 0.9,
@@ -88,7 +86,6 @@ class Tile:
         self.num_images = len(dataset)
         self.num_classes = len(dataset.CLASSES)
         self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
-        self.tmp_folder = tmp_dir.name
         self.nproc = nproc
         self.img2fp32 = False
         for p in pipeline:
@@ -481,10 +478,10 @@ class Tile:
             dict: Annotation info of specified index.
         """
         ann = {}
-        if 'gt_bboxes' in self.tiles[idx]:
-            ann['bboxes'] = self.tiles[idx]['gt_bboxes']
-        if 'gt_masks' in self.tiles[idx]:
-            ann['masks'] = self.tiles[idx]['gt_masks']
-        if 'gt_labels' in self.tiles[idx]:
-            ann['labels'] = self.tiles[idx]['gt_labels']
+        if "gt_bboxes" in self.tiles[idx]:
+            ann["bboxes"] = self.tiles[idx]["gt_bboxes"]
+        if "gt_masks" in self.tiles[idx]:
+            ann["masks"] = self.tiles[idx]["gt_masks"]
+        if "gt_labels" in self.tiles[idx]:
+            ann["labels"] = self.tiles[idx]["gt_labels"]
         return ann

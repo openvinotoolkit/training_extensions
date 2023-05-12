@@ -209,6 +209,7 @@ class OTXDetectionTask(OTXTask, ABC):
         # get prediction on validation set
         self._is_training = False
         val_dataset = dataset.get_subset(Subset.VALIDATION)
+        val_dataset.purpose = DatasetPurpose.INFERENCE
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
