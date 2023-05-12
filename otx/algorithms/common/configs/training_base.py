@@ -368,7 +368,7 @@ class BaseConfig(ConfigurableParameters):
             description="Max object per image",
             default_value=1500,
             min_value=1,
-            max_value=10000,
+            max_value=5000,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
