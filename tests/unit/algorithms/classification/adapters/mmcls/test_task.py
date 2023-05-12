@@ -367,7 +367,7 @@ class TestMMClassificationTask:
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export(self, mocker, precision: ModelPrecision) -> None:
+    def test_export(self, mocker, precision: ModelPrecision, export_type: ExportType=ExportType.OPENVINO) -> None:
         """Test export function.
 
         <Steps>
@@ -387,16 +387,26 @@ class TestMMClassificationTask:
             return_value=True,
         )
 
-        self.mc_cls_task.export(ExportType.OPENVINO, _model, precision, False)
+        self.mc_cls_task.export(export_type, _model, precision, False)
 
-        assert _model.model_format == ModelFormat.OPENVINO
-        assert _model.optimization_type == ModelOptimizationType.MO
+        assert _model.model_format == ModelFormat.ONNX if export_type == ExportType.ONNX else ModelFormat.OPENVINO
         assert _model.precision[0] == precision
-        assert _model.get_data("openvino.bin") is not None
-        assert _model.get_data("openvino.xml") is not None
         assert _model.precision == self.mc_cls_task._precision
+
+        if export_type == ExportType.OPENVINO:
+            assert _model.get_data("openvino.bin") is not None
+            assert _model.get_data("openvino.xml") is not None
+            assert _model.optimization_type == ModelOptimizationType.MO
+        else:
+            assert _model.get_data("model.onnx") is not None
+            assert _model.optimization_type == ModelOptimizationType.ONNX
+
         assert _model.optimization_methods == self.mc_cls_task._optimization_methods
         assert _model.get_data("label_schema.json") is not None
+
+    @e2e_pytest_unit
+    def test_export_onnx(self, mocker) -> None:
+        self.test_export(mocker, ModelPrecision.FP32, ExportType.ONNX)
 
     @e2e_pytest_unit
     def test_explain(self, mocker):
