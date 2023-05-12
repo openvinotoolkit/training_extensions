@@ -18,8 +18,10 @@ from otx.algorithms.common.utils.task_adapt import map_class_names
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
 )
+from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
 
 from .l2sp_detector_mixin import L2SPDetectorMixin
+from .loss_dynamics_mixin import DetLossDynamicsTrackingMixin
 from .sam_detector_mixin import SAMDetectorMixin
 
 logger = get_logger()
@@ -29,8 +31,10 @@ logger = get_logger()
 
 
 @DETECTORS.register_module()
-class CustomATSS(SAMDetectorMixin, L2SPDetectorMixin, ATSS):
+class CustomATSS(SAMDetectorMixin, DetLossDynamicsTrackingMixin, L2SPDetectorMixin, ATSS):
     """SAM optimizer & L2SP regularizer enabled custom ATSS."""
+
+    TRACKING_LOSS_TYPE = (TrackingLossType.cls, TrackingLossType.bbox, TrackingLossType.centerness)
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,10 +49,6 @@ class CustomATSS(SAMDetectorMixin, L2SPDetectorMixin, ATSS):
                     task_adapt["src_classes"],  # chkpt_classes
                 )
             )
-
-    def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore=None, **kwargs):
-        """Forward function for CustomATSS."""
-        return super().forward_train(img, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore=gt_bboxes_ignore)
 
     @staticmethod
     def load_state_dict_pre_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):
