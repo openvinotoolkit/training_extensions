@@ -443,7 +443,9 @@ def format_list_to_str(value_lists: list):
 
 
 # TODO [Eugene] please add unit test for this function
-def adaptive_tile_params(tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, rule="avg"):
+def adaptive_tile_params(
+    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.03, rule="avg"
+):
     """Config tile parameters.
 
     Adapt based on annotation statistics.
@@ -452,6 +454,7 @@ def adaptive_tile_params(tiling_parameters: DetectionConfig.BaseTilingParameters
     Args:
         tiling_parameters (BaseTilingParameters): tiling parameters of the model
         dataset (DatasetEntity): training dataset
+        object_tile_ratio (float, optional): The desired ratio of min object size and tile size. Defaults to 32/1024=0.03.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
                               `avg` mode tile size is computed by averaging all the object areas. Defaults to "avg".
 
@@ -527,6 +530,9 @@ def adaptive_tile_params(tiling_parameters: DetectionConfig.BaseTilingParameters
         tiling_parameters.get_metadata("tile_max_number")["min_value"],
         min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_object),
     )
+    logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
+    logger.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
+    logger.info(f"----> tile_overlap: {max_object_size} / {tile_size} = {tile_overlap}")
 
     tiling_parameters.tile_size = tile_size
     tiling_parameters.tile_max_number = max_object
