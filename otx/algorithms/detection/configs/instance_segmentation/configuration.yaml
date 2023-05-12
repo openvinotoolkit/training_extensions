@@ -571,5 +571,23 @@ tiling_parameters:
     visible_in_ui: true
     warning: null
 
+  tile_sampling_ratio:
+    header: Sampling Ratio for entire tiling
+    description: Since tiling train and validation to all tile from large image, usually it takes lots of time than normal training. The tile_sampling_ratio is ratio for sampling entire tile dataset. Sampling tile dataset would save lots of time for training and validation time. Note that sampling will be applied to training and validation dataset, not test dataset.
+    affects_outcome_of: TRAINING
+    default_value: 1.0
+    min_value: 0.000001
+    max_value: 1.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+
   type: PARAMETER_GROUP
   visible_in_ui: true

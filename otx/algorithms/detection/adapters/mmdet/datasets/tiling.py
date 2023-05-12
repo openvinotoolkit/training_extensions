@@ -8,6 +8,7 @@ import tempfile
 import uuid
 from itertools import product
 from multiprocessing import Pool
+from random import sample
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
@@ -61,6 +62,7 @@ class Tile:
             only works when `test_mode=False`, i.e., we never filter images
             during tests. Defaults to True.
         nproc (int, optional): Processes used for processing masks. Default: 4.
+        sampling_ratio (float): Ratio for sampling entire tile dataset. Default: 1.0.(No sample)
     """
 
     def __init__(
@@ -76,6 +78,7 @@ class Tile:
         max_annotation: int = 5000,
         filter_empty_gt: bool = True,
         nproc: int = 2,
+        sampling_ratio: float = 1.0,
     ):
         self.min_area_ratio = min_area_ratio
         self.filter_empty_gt = filter_empty_gt
@@ -97,7 +100,12 @@ class Tile:
                 break
 
         self.dataset = dataset
-        self.tiles, self.cached_results = self.gen_tile_ann()
+        self.tiles_all, self.cached_results = self.gen_tile_ann()
+        self.sample_num = max(int(len(self.tiles_all) * sampling_ratio), 1)
+        if sampling_ratio < 1.0:
+            self.tiles = sample(self.tiles_all, self.sample_num)
+        else:
+            self.tiles = self.tiles_all
 
     @timeit
     def gen_tile_ann(self) -> Tuple[List[Dict], List[Dict]]:

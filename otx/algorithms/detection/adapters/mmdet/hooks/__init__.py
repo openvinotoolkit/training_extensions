@@ -4,5 +4,6 @@
 #
 
 from .det_class_probability_map_hook import DetClassProbabilityMapHook
+from .tile_sampling_hook import TileSamplingHook
 
-__all__ = ["DetClassProbabilityMapHook"]
+__all__ = ["DetClassProbabilityMapHook", "TileSamplingHook"]
