@@ -350,7 +350,7 @@ class BaseConfig(ConfigurableParameters):
             description="Tile Image Size",
             default_value=400,
             min_value=100,
-            max_value=1024,
+            max_value=4096,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 

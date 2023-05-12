@@ -75,8 +75,10 @@ val_dataset = dict(
         type=__dataset_type,
         ann_file=__data_root + "annotations/instances_val.json",
         img_prefix=__data_root + "images/val",
-        test_mode=True,
-        pipeline=[dict(type="LoadImageFromFile")],
+        pipeline=[
+            dict(type="LoadImageFromFile"),
+            dict(type="LoadAnnotations", with_bbox=True, with_mask=True),
+        ],
     ),
     pipeline=test_pipeline,
     **tile_cfg
