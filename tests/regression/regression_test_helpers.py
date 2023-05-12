@@ -148,7 +148,8 @@ def load_regression_configuration(
         # update data_path using data_root setting
         data_paths = reg_config["data_path"][task_type]
         for key, value in data_paths.items():
-            data_paths[key] = os.path.join(data_root, value)
+            if key != "train_params":
+                data_paths[key] = os.path.join(data_root, value)
 
         result["data_path"] = data_paths
 
