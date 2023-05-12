@@ -172,6 +172,7 @@ class Tile:
 
         num_patches_h = int((height - self.tile_size) / self.stride) + 1
         num_patches_w = int((width - self.tile_size) / self.stride) + 1
+        print(f"image: {height} ~ tile_size: {self.tile_size} -> {num_patches_h}x{num_patches_w} tiles")
         for (_, _), (loc_i, loc_j) in zip(
             product(range(num_patches_h), range(num_patches_w)),
             product(
