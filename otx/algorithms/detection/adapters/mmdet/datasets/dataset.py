@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import tempfile
 from collections import OrderedDict
 from copy import copy
 from typing import Any, Dict, List, Sequence, Tuple, Union
@@ -271,6 +270,7 @@ class OTXDetDataset(CustomDataset):
             if metric not in allowed_metrics:
                 raise KeyError(f"metric {metric} is not supported")
             annotations = [self.get_ann_info(i) for i in range(len(self))]
+            assert len(annotations) == len(results), "annotation length does not match prediction results"
             iou_thrs = [iou_thr] if isinstance(iou_thr, float) else iou_thr
             if metric == "mAP":
                 assert isinstance(iou_thrs, list)
@@ -346,12 +346,10 @@ class ImageTilingDataset(OTXDetDataset):
     ):
         self.dataset = build_dataset(dataset)
         self.CLASSES = self.dataset.CLASSES
-        self.tmp_dir = tempfile.TemporaryDirectory()  # pylint: disable=consider-using-with
 
         self.tile_dataset = Tile(
             self.dataset,
             pipeline,
-            tmp_dir=self.tmp_dir,
             tile_size=tile_size,
             overlap=overlap_ratio,
             min_area_ratio=min_area_ratio,
@@ -365,7 +363,6 @@ class ImageTilingDataset(OTXDetDataset):
         self.pipeline = Compose(pipeline)
         self.test_mode = test_mode
         self.num_samples = len(self.dataset)  # number of original samples
-        self.merged_results: Union[List[Tuple[np.ndarray, list]], List[np.ndarray]] = []
 
     def __len__(self) -> int:
         """Get the length of the dataset."""
@@ -394,21 +391,6 @@ class ImageTilingDataset(OTXDetDataset):
         """
         return self.tile_dataset.get_ann_info(idx)
 
-    def evaluate(self, results, **kwargs) -> Dict[str, float]:
-        """Evaluation on Tile dataset.
-
-        Args:
-            results (list[list | tuple]): Testing results of the dataset.
-            **kwargs: Addition keyword arguments.
-
-        Returns:
-            dict[str, float]: evaluation metric.
-        """
-        # TODO: branching from here
-        # self.merged_results = self.tile_dataset.merge(results)
-        # return self.dataset.evaluate(self.merged_results, **kwargs)
-        return super().evaluate(results, **kwargs)
-
     def merge(self, results) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
         """Merge tile-level results to image-level results.
 
@@ -418,10 +400,4 @@ class ImageTilingDataset(OTXDetDataset):
         Returns:
             merged_results (list[list | tuple]): Merged results of the dataset.
         """
-        self.merged_results = self.tile_dataset.merge(results)
-        return self.merged_results
-
-    def __del__(self):
-        """Delete the temporary directory when the object is deleted."""
-        if getattr(self, "tmp_dir", False):
-            self.tmp_dir.cleanup()
+        return self.tile_dataset.merge(results)

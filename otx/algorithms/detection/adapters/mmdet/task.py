@@ -331,6 +331,9 @@ class MMDetectionTask(OTXDetectionTask):
 
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
+        # TODO: need to figure it out why dataset is set to validation
+        for data_item in cfg.data.test["dataset"]["otx_dataset"]:
+            data_item.subset = Subset.TESTING
 
         samples_per_gpu = 1
 
@@ -415,12 +418,6 @@ class MMDetectionTask(OTXDetectionTask):
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
             cfg.evaluation.pop(key, None)
 
-        metric = None
-        # TODO[EUGENE]: CHANGE LOGIC HERE
-        if inference_parameters and inference_parameters.is_evaluation:
-            metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
-            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
-
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
         while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
             mm_dataset = mm_dataset.dataset
@@ -428,10 +425,15 @@ class MMDetectionTask(OTXDetectionTask):
         if isinstance(mm_dataset, ImageTilingDataset):
             feature_vectors = [feature_vectors[i] for i in range(mm_dataset.num_samples)]
             saliency_maps = [saliency_maps[i] for i in range(mm_dataset.num_samples)]
-            if not mm_dataset.merged_results:
-                eval_predictions = mm_dataset.merge(eval_predictions)
+            eval_predictions = mm_dataset.merge(eval_predictions)
+
+        metric = None
+        if inference_parameters and inference_parameters.is_evaluation:
+            if isinstance(mm_dataset, ImageTilingDataset):
+                metric = mm_dataset.dataset.evaluate(eval_predictions, **cfg.evaluation)
             else:
-                eval_predictions = mm_dataset.merged_results
+                metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
+            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
 
         assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), (
             "Number of elements should be the same, however, number of outputs are "
