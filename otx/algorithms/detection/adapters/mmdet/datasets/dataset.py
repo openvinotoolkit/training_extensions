@@ -303,7 +303,7 @@ class OTXDetDataset(CustomDataset):
 
 # pylint: disable=too-many-arguments
 @DATASETS.register_module()
-class ImageTilingDataset:
+class ImageTilingDataset(OTXDetDataset):
     """A wrapper of tiling dataset.
 
     Suitable for training small object dataset. This wrapper composed of `Tile`
@@ -358,7 +358,7 @@ class ImageTilingDataset:
             iou_threshold=iou_threshold,
             max_per_img=max_per_img,
             max_annotation=max_annotation,
-            filter_empty_gt=False if test_mode else filter_empty_gt,
+            filter_empty_gt=filter_empty_gt if self.dataset.otx_dataset[0].subset != Subset.TESTING else False,
             sampling_ratio=sampling_ratio if self.dataset.otx_dataset[0].subset != Subset.TESTING else 1.0,
         )
         self.flag = np.zeros(len(self), dtype=np.uint8)
@@ -383,6 +383,17 @@ class ImageTilingDataset:
         """
         return self.pipeline(self.tile_dataset[idx])
 
+    def get_ann_info(self, idx):
+        """Get annotation information of a tile.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Annotation information of a tile.
+        """
+        return self.tile_dataset.get_ann_info(idx)
+
     def evaluate(self, results, **kwargs) -> Dict[str, float]:
         """Evaluation on Tile dataset.
 
@@ -393,8 +404,10 @@ class ImageTilingDataset:
         Returns:
             dict[str, float]: evaluation metric.
         """
-        self.merged_results = self.tile_dataset.merge(results)
-        return self.dataset.evaluate(self.merged_results, **kwargs)
+        # TODO: branching from here
+        # self.merged_results = self.tile_dataset.merge(results)
+        # return self.dataset.evaluate(self.merged_results, **kwargs)
+        return super().evaluate(results, **kwargs)
 
     def merge(self, results) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
         """Merge tile-level results to image-level results.

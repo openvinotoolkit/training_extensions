@@ -241,12 +241,11 @@ class Tile:
             gt_labels (np.ndarray): the original image-level labels
         """
         x_1, y_1 = tile_box[0][:2]
-        overlap_ratio = self.tile_boxes_overlap(tile_box, gt_bboxes)
-        match_idx = np.where((overlap_ratio[0] >= self.min_area_ratio))[0]
+        matched_indices = self.tile_boxes_overlap(tile_box, gt_bboxes)
 
-        if len(match_idx):
-            tile_lables = gt_labels[match_idx][:]
-            tile_bboxes = gt_bboxes[match_idx][:]
+        if len(matched_indices):
+            tile_lables = gt_labels[matched_indices][:]
+            tile_bboxes = gt_bboxes[matched_indices][:]
             tile_bboxes[:, 0] -= x_1
             tile_bboxes[:, 1] -= y_1
             tile_bboxes[:, 2] -= x_1
@@ -257,7 +256,7 @@ class Tile:
             tile_bboxes[:, 3] = np.minimum(self.tile_size, tile_bboxes[:, 3])
             tile_result["gt_bboxes"] = tile_bboxes
             tile_result["gt_labels"] = tile_lables
-            tile_result["gt_masks"] = gt_masks[match_idx].crop(tile_box[0]) if gt_masks is not None else []
+            tile_result["gt_masks"] = gt_masks[matched_indices].crop(tile_box[0]) if gt_masks is not None else []
         else:
             tile_result.pop("bbox_fields")
             tile_result.pop("mask_fields")
@@ -278,18 +277,12 @@ class Tile:
             boxes (np.ndarray): boxes in shape (N, 4).
 
         Returns:
-            np.ndarray: overlapping ratio over boxes
+            np.ndarray: matched indices.
         """
-        box_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-
-        width_height = np.minimum(tile_box[:, None, 2:], boxes[:, 2:]) - np.maximum(tile_box[:, None, :2], boxes[:, :2])
-
-        width_height = width_height.clip(min=0)  # [N,M,2]
-        inter = width_height.prod(2)
-
-        # handle empty boxes
-        tile_box_ratio = np.where(inter > 0, inter / box_area, np.zeros(1, dtype=inter.dtype))
-        return tile_box_ratio
+        x1, y1, x2, y2 = tile_box[0]
+        match_indices = (boxes[:, 0] > x1) & (boxes[:, 1] > y1) & (boxes[:, 2] < x2) & (boxes[:, 3] < y2)
+        match_indices = np.argwhere(match_indices == 1).flatten()
+        return match_indices
 
     def multiclass_nms(
         self, boxes: np.ndarray, scores: np.ndarray, idxs: np.ndarray, iou_threshold: float, max_num: int
@@ -485,3 +478,21 @@ class Tile:
         if detection:
             return list(merged_bbox_results)
         return list(zip(merged_bbox_results, merged_mask_results))
+
+    def get_ann_info(self, idx):
+        """Get annotation by index.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Annotation info of specified index.
+        """
+        ann = {}
+        if 'gt_bboxes' in self.tiles[idx]:
+            ann['bboxes'] = self.tiles[idx]['gt_bboxes']
+        if 'gt_masks' in self.tiles[idx]:
+            ann['masks'] = self.tiles[idx]['gt_masks']
+        if 'gt_labels' in self.tiles[idx]:
+            ann['labels'] = self.tiles[idx]['gt_labels']
+        return ann

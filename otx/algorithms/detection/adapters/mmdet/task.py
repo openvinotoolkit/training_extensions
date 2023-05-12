@@ -416,6 +416,7 @@ class MMDetectionTask(OTXDetectionTask):
             cfg.evaluation.pop(key, None)
 
         metric = None
+        # TODO[EUGENE]: CHANGE LOGIC HERE
         if inference_parameters and inference_parameters.is_evaluation:
             metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
             metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
