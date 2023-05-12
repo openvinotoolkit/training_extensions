@@ -139,16 +139,16 @@ class SubDataset:
         num_samples (int): Number of images to pretend to have. It should be positive.
     """
 
-    def __init__(self, fullset, num_sampels: int):
-        if num_sampels <= 0:
-            raise ValueError(f"num_sampels should be positive. But, current value is {num_sampels}.")
+    def __init__(self, fullset, num_samples: int):
+        if num_samples <= 0:
+            raise ValueError(f"num_samples should be positive. But, current value is {num_samples}.")
 
         self.fullset = fullset
-        self.num_sampels = num_sampels
+        self.num_samples = num_samples
 
     def __len__(self) -> int:
         """Get length of subset."""
-        return self.num_sampels
+        return self.num_samples
 
     def __getitem__(self, indx) -> dict:
         """Get dataset at index."""
@@ -168,4 +168,4 @@ class SubDataset:
         To consider that case, return flag array with length of num_samples.
 
         """
-        return np.zeros(self.num_sampels, dtype=np.uint8)
+        return np.zeros(self.num_samples, dtype=np.uint8)

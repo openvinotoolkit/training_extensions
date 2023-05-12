@@ -135,11 +135,11 @@ class TestSubDataset:
         fullset = mocker.MagicMock()
         SubDataset(fullset, 3)
 
-    @pytest.mark.parametrize("num_sampels", [-1, 0])
-    def test_init_w_wrong_num_sampels(self, mocker, num_sampels):
+    @pytest.mark.parametrize("num_samples", [-1, 0])
+    def test_init_w_wrong_num_samples(self, mocker, num_samples):
         fullset = mocker.MagicMock()
         with pytest.raises(ValueError):
-            SubDataset(fullset, num_sampels)
+            SubDataset(fullset, num_samples)
 
     def test_len(self):
         assert len(self.sub_dataset) == self.num_samples
