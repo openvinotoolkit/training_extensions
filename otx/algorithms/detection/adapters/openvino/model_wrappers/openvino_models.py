@@ -67,13 +67,16 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         # pylint: disable-msg=too-many-locals
         # FIXME: here, batch dim of IR must be 1
         boxes = outputs[self.output_blob_name["boxes"]]
-        boxes = boxes.squeeze(0)
+        if boxes.shape[0] == 1:
+            boxes = boxes.squeeze(0)
         assert boxes.ndim == 2
         masks = outputs[self.output_blob_name["masks"]]
-        masks = masks.squeeze(0)
+        if masks.shape[0] == 1:
+            masks = masks.squeeze(0)
         assert masks.ndim == 3
         classes = outputs[self.output_blob_name["labels"]].astype(np.uint32)
-        classes = classes.squeeze(0)
+        if classes.shape[0] == 1:
+            classes = classes.squeeze(0)
         assert classes.ndim == 1
         if self.is_segmentoly:
             scores = outputs[self.output_blob_name["scores"]]
