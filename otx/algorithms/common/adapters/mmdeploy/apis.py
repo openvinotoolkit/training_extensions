@@ -31,7 +31,7 @@ class NaiveExporter:
     """NaiveExporter for non-mmdeploy export."""
 
     @staticmethod
-    def export2openvino(
+    def export2backend(
         output_dir: str,
         model_builder: Callable,
         cfg: mmcv.Config,
@@ -44,6 +44,7 @@ class NaiveExporter:
         opset_version: int = 11,
         dynamic_axes: Optional[Dict[Any, Any]] = None,
         mo_transforms: str = "",
+        export_type: str,
     ):
         """Function for exporting to openvino."""
         input_data = scatter(collate([input_data], samples_per_gpu=1), [-1])[0]
@@ -62,6 +63,9 @@ class NaiveExporter:
             opset_version=opset_version,
             dynamic_axes=dynamic_axes,
         )
+
+        if "ONNX" in export_type:
+            return
 
         def get_normalize_cfg(cfg):
             def _get_normalize_cfg(cfg_):

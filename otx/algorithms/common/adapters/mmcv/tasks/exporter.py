@@ -50,7 +50,7 @@ class Exporter:
                     model_name,
                 )
             else:
-                self.naive_export(cfg.work_dir, model_builder, precision, cfg, model_name)
+                self.naive_export(cfg.work_dir, model_builder, precision, export_type, cfg, model_name)
         except RuntimeError as ex:
             # output_model.model_status = ModelStatus.FAILED
             # raise RuntimeError('Optimization was unsuccessful.') from ex
@@ -98,6 +98,6 @@ class Exporter:
         MMdeployExporter.export2backend(output_dir, model_builder, cfg, deploy_cfg, export_type, model_name=model_name)
 
     @staticmethod
-    def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
+    def naive_export(output_dir, model_builder, precision, export_type, cfg, model_name="model"):
         """Export using pytorch backend."""
         raise NotImplementedError()

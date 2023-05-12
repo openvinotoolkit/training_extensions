@@ -46,7 +46,7 @@ class ClassificationExporter(Exporter):
         return super().run(cfg, **kwargs)
 
     @staticmethod
-    def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
+    def naive_export(output_dir, model_builder, precision, export_type, cfg, model_name="model"):
         """Export procedure with pytorch backend."""
         from mmcls.datasets.pipelines import Compose
 
@@ -62,7 +62,7 @@ class ClassificationExporter(Exporter):
         fake_data = get_fake_data(cfg)
         opset_version = 11
 
-        NaiveExporter.export2openvino(
+        NaiveExporter.export2backend(
             output_dir,
             model_builder,
             cfg,
@@ -72,4 +72,5 @@ class ClassificationExporter(Exporter):
             input_names=["data"],
             output_names=["logits"],
             opset_version=opset_version,
+            export_type=export_type,
         )

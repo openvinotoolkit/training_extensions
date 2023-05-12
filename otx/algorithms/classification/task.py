@@ -246,8 +246,6 @@ class OTXClassificationTask(OTXTask, ABC):
 
         logger.info("Exporting the model")
 
-        export_type = ExportType.ONNX
-
         if export_type == ExportType.ONNX:
             output_model.model_format = ModelFormat.ONNX
             output_model.optimization_type = ModelOptimizationType.ONNX
