@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Action task supports multi GPU training. (<https://github.com/openvinotoolkit/training_extensions/pull/2057>)
 - Support storage cache in Apache Arrow using Datumaro for action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2087>)
 - Add a simplified greedy labels postprocessing for hierarchical classification (<https://github.com/openvinotoolkit/training_extensions/pull/2064>).
+- Support auto adapting batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2119>)
 
 ### Enhancements
 
