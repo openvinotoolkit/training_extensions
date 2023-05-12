@@ -67,6 +67,8 @@ class Tiler:
             range(0, height - self.tile_size + 1, int(self.tile_size * (1 - self.overlap))),
         ):
             coords.append([loc_j, loc_i, loc_j + self.tile_size, loc_i + self.tile_size])
+        print(f"------------------------> Num tiles: {len(coords)}")
+        print(f"------------------------> {height}x{width} ~ {self.tile_size}")
         return coords
 
     def filter_tiles_by_objectness(

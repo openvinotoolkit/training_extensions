@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 from mmdet.datasets.api_wrappers.coco_api import COCO
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
     get_annotation_mmdet_format,
 )
@@ -41,6 +42,8 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
+
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -442,7 +445,7 @@ def format_list_to_str(value_lists: list):
 
 # TODO [Eugene] please add unit test for this function
 def adaptive_tile_params(
-    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"
+    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.03, rule="avg"
 ):
     """Config tile parameters.
 
@@ -452,7 +455,7 @@ def adaptive_tile_params(
     Args:
         tiling_parameters (BaseTilingParameters): tiling parameters of the model
         dataset (DatasetEntity): training dataset
-        object_tile_ratio (float, optional): The desired ratio of object area and tile area. Defaults to 0.01.
+        object_tile_ratio (float, optional): The desired ratio of min object size and tile size. Defaults to 32/1024=0.03.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
                               `avg` mode tile size is computed by averaging all the object areas. Defaults to "avg".
 
@@ -478,12 +481,18 @@ def adaptive_tile_params(
         object_area = np.mean(areas)
     max_area = np.max(areas)
 
-    tile_size = int(math.sqrt(object_area / object_tile_ratio))
-    tile_overlap = max_area / (tile_size**2)
+    logger.info("[Adaptive tiling pararms]")
+    object_size = math.sqrt(object_area)
+    max_object_size = math.sqrt(max_area)
+    logger.info(f"----> {rule}_object_size: {object_size}")
+    logger.info(f"----> max_object_size: {max_object_size}")
+
+    tile_size = int(object_size/object_tile_ratio)
+    tile_overlap = max_object_size / tile_size
 
     if tile_overlap >= tiling_parameters.get_metadata("tile_overlap")["max_value"]:
         # Use the average object area if the tile overlap is too large to prevent 0 stride.
-        tile_overlap = object_area / (tile_size**2)
+        tile_overlap = object_size / tile_size
 
     # validate parameters are in range
     tile_size = max(
@@ -498,6 +507,9 @@ def adaptive_tile_params(
         tiling_parameters.get_metadata("tile_max_number")["min_value"],
         min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_object),
     )
+    logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
+    logger.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
+    logger.info(f"----> tile_overlap: {max_object_size} / {tile_size} = {tile_overlap}")
 
     tiling_parameters.tile_size = tile_size
     tiling_parameters.tile_max_number = max_object
