@@ -146,7 +146,7 @@ def load_regression_configuration(
         result["kpi_e2e_eval_time_criteria"] = reg_config["kpi_e2e_eval_time_criteria"][task_type]
 
         # update data_path using data_root setting
-        data_paths = reg_config["data_path"][task_type][train_type][label_type]
+        data_paths = reg_config["data_path"][task_type]
         for key, value in data_paths.items():
             data_paths[key] = os.path.join(data_root, value)
 
