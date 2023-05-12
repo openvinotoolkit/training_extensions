@@ -19,6 +19,7 @@ class Exporter:
         logger.info("export!")
 
         precision = kwargs.pop("precision", "FP32")
+        export_type = kwargs.pop("type", "OPENVINO")
         if precision not in ("FP32", "FP16", "INT8"):
             raise NotImplementedError
         logger.info(f"Model will be exported with precision {precision}")
@@ -43,6 +44,7 @@ class Exporter:
                     cfg.work_dir,
                     model_builder,
                     precision,
+                    export_type,
                     cfg,
                     deploy_cfg,
                     model_name,
@@ -83,6 +85,7 @@ class Exporter:
         output_dir,
         model_builder,
         precision,
+        export_type,
         cfg,
         deploy_cfg,
         model_name="model",
@@ -92,7 +95,7 @@ class Exporter:
 
         if precision == "FP16":
             deploy_cfg.backend_config.mo_options.flags.append("--compress_to_fp16")
-        MMdeployExporter.export2openvino(output_dir, model_builder, cfg, deploy_cfg, model_name=model_name)
+        MMdeployExporter.export2backend(output_dir, model_builder, cfg, deploy_cfg, export_type, model_name=model_name)
 
     @staticmethod
     def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):

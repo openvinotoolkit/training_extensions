@@ -183,11 +183,12 @@ if is_mmdeploy_enabled():
         """MMdeployExporter for mmdeploy exporting."""
 
         @staticmethod
-        def export2openvino(
+        def export2backend(
             output_dir: str,
             model_builder: Callable,
             cfg: mmcv.Config,
             deploy_cfg: mmcv.Config,
+            export_type: str,
             *,
             model_name: str = "model",
         ):
@@ -234,15 +235,15 @@ if is_mmdeploy_enabled():
                     model_name=model_name,
                 )
             )
-
-            for onnx_path in onnx_paths:
-                deploy_cfg_ = deepcopy(deploy_cfg)
-                update_deploy_cfg(onnx_path, deploy_cfg_)
-                MMdeployExporter.onnx2openvino(
-                    output_dir,
-                    onnx_path,
-                    deploy_cfg_,
-                )
+            if not "ONNX" in export_type:
+                for onnx_path in onnx_paths:
+                    deploy_cfg_ = deepcopy(deploy_cfg)
+                    update_deploy_cfg(onnx_path, deploy_cfg_)
+                    MMdeployExporter.onnx2openvino(
+                        output_dir,
+                        onnx_path,
+                        deploy_cfg_,
+                    )
 
         @staticmethod
         def extract_partition(

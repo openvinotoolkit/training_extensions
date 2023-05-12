@@ -14,6 +14,7 @@ class ExportType(Enum):
     """Represent the type of export format available through this interface."""
 
     OPENVINO = auto()
+    ONNX = auto()
 
 
 class IExportTask(metaclass=abc.ABCMeta):

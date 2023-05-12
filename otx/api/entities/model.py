@@ -80,6 +80,7 @@ class ModelOptimizationType(IntEnum):
     MO = auto()
     NNCF = auto()
     POT = auto()
+    ONNX = auto()
 
 
 class OptimizationMethod(IntEnum):

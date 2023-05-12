@@ -66,6 +66,7 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelPrecision
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
 from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook
 
@@ -549,7 +550,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         return eval_predictions, saliency_maps
 
-    def _export_model(self, precision, dump_features):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
@@ -557,9 +558,10 @@ class MMClassificationTask(OTXClassificationTask):
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
         export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
-        if export_options.get("precision", None) is None:
-            assert len(self._precision) == 1
-            export_options["precision"] = str(self._precision[0])
+
+        assert len(self._precision) == 1
+        export_options["precision"] = str(self._precision[0])
+        export_options["type"] = str(export_format)
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
@@ -573,6 +575,9 @@ class MMClassificationTask(OTXClassificationTask):
 
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
+
+        if export_format == ExportType.ONNX:
+            export_options["deploy_cfg"]["backend_config"] = {"type" : "onnxruntime"}
 
         exporter = ClassificationExporter()
         results = exporter.run(
