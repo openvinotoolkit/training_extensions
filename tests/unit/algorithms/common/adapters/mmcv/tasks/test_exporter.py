@@ -59,7 +59,7 @@ class TestExporter:
     def test_mmdeploy_export(self, mocker):
         from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
 
-        mock_export_openvino = mocker.patch.object(MMdeployExporter, "export2openvino")
+        mock_export_openvino = mocker.patch.object(MMdeployExporter, "export2backend")
 
         Exporter.mmdeploy_export(
             "", None, "FP16", dict(), mmcv.ConfigDict(backend_config=dict(mo_options=dict(flags=[])))

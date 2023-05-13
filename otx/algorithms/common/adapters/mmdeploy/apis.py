@@ -44,7 +44,7 @@ class NaiveExporter:
         opset_version: int = 11,
         dynamic_axes: Optional[Dict[Any, Any]] = None,
         mo_transforms: str = "",
-        export_type: str,
+        export_type: str = "OPENVINO",
     ):
         """Function for exporting to openvino."""
         input_data = scatter(collate([input_data], samples_per_gpu=1), [-1])[0]

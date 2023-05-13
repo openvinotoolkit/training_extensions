@@ -39,7 +39,7 @@ class TestNaiveExporter:
                 assert os.path.exists(openvino_path)
 
     @e2e_pytest_unit
-    def test_export2openvino(self):
+    def test_export2backend(self):
         from otx.algorithms.classification.adapters.mmcls.utils.builder import (
             build_classifier,
         )
@@ -48,7 +48,7 @@ class TestNaiveExporter:
         create_model("mmcls")
 
         with tempfile.TemporaryDirectory() as tempdir:
-            NaiveExporter.export2openvino(
+            NaiveExporter.export2backend(
                 tempdir,
                 build_classifier,
                 config,
@@ -111,7 +111,7 @@ if is_mmdeploy_enabled():
                     assert os.path.exists(openvino_path)
 
         @e2e_pytest_unit
-        def test_export2openvino(self):
+        def test_export2backend(self):
             from otx.algorithms.classification.adapters.mmcls.utils.builder import (
                 build_classifier,
             )
@@ -143,7 +143,7 @@ if is_mmdeploy_enabled():
             create_model("mmcls")
 
             with tempfile.TemporaryDirectory() as tempdir:
-                MMdeployExporter.export2openvino(
+                MMdeployExporter.export2backend(
                     tempdir,
                     build_classifier,
                     config,
@@ -208,11 +208,12 @@ if is_mmdeploy_enabled():
                 return ctx.origin_func(self, *args, **kwargs)
 
             with tempfile.TemporaryDirectory() as tempdir:
-                MMdeployExporter.export2openvino(
+                MMdeployExporter.export2backend(
                     tempdir,
                     build_classifier,
                     config,
                     deploy_config,
+                    "OPENVINO"
                 )
                 files = os.listdir(tempdir)
                 assert "model.onnx" in files

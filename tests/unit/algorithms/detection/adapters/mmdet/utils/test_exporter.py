@@ -46,6 +46,6 @@ def test_run(recipe_cfg, template_dir, mocker):
 def test_naive_export(recipe_cfg, template_dir, mocker):
     exporter = DetectionExporter()
     data_cfg = MPAConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
-    mock_export_ov = mocker.patch.object(NaiveExporter, "export2openvino")
-    exporter.naive_export("", build_detector, "FP32", data_cfg)
+    mock_export_ov = mocker.patch.object(NaiveExporter, "export2backend")
+    exporter.naive_export("", build_detector, "FP32", "OPENVINO", data_cfg)
     mock_export_ov.assert_called_once()
