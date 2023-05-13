@@ -222,32 +222,40 @@ class OTXSegmentationTask(OTXTask, ABC):
     ):
         """Export function of OTX Task."""
         logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
 
-        results = self._export_model(precision, dump_features)
+        if export_type == ExportType.ONNX:
+            output_model.model_format = ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            if precision == ModelPrecision.FP16:
+                raise RuntimeError(f"Export to FP16 ONNX is not supported")
+        elif export_type == ExportType.OPENVINO:
+            output_model.model_format = ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.MO
+        else:
+            raise RuntimeError(f"not supported export type {export_type}")
+
+        results = self._export_model(precision, export_type, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        onnx_file = outputs.get("onnx")
+        if export_type == ExportType.ONNX:
+            onnx_file = outputs.get("onnx")
+            with open(onnx_file, "rb") as f:
+                output_model.set_data("model.onnx", f.read())
+        else:
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
 
-        ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
-        embed_ir_model_data(xml_file, ir_extra_data)
+            ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
+            embed_ir_model_data(xml_file, ir_extra_data)
 
-        if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        with open(onnx_file, "rb") as f:
-            output_model.set_data("model.onnx", f.read())
+            with open(bin_file, "rb") as f:
+                output_model.set_data("openvino.bin", f.read())
+            with open(xml_file, "rb") as f:
+                output_model.set_data("openvino.xml", f.read())
+
         output_model.precision = self._precision
         output_model.optimization_methods = self._optimization_methods
         output_model.has_xai = dump_features
@@ -383,7 +391,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _export_model(self, precision, dump_features):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         """Export model and return the results."""
         raise NotImplementedError
 

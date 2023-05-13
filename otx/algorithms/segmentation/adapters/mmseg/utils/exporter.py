@@ -42,7 +42,7 @@ class SegmentationExporter(Exporter):
         return super().run(cfg, **kwargs)
 
     @staticmethod
-    def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
+    def naive_export(output_dir, model_builder, precision, export_type, cfg, model_name="model"):
         """Export using pytorch backend."""
         from mmseg.apis.inference import LoadImage
         from mmseg.datasets.pipelines import Compose
@@ -59,7 +59,7 @@ class SegmentationExporter(Exporter):
         fake_data = get_fake_data(cfg)
         opset_version = 11
 
-        NaiveExporter.export2openvino(
+        NaiveExporter.export2backend(
             output_dir,
             model_builder,
             cfg,
@@ -69,4 +69,5 @@ class SegmentationExporter(Exporter):
             input_names=["input"],
             output_names=["output"],
             opset_version=opset_version,
+            export_type=export_type,
         )

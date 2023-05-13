@@ -70,6 +70,7 @@ from otx.api.entities.model import (
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
 
 logger = get_logger()
@@ -409,6 +410,7 @@ class MMSegmentationTask(OTXSegmentationTask):
     def _export_model(
         self,
         precision: ModelPrecision = ModelPrecision.FP32,
+        export_format: ExportType = ExportType.ONNX,
         dump_features: bool = True,
     ):
         """Export function of OTX Segmentation Task."""
@@ -420,9 +422,9 @@ class MMSegmentationTask(OTXSegmentationTask):
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
         export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
-        if export_options.get("precision", None) is None:
-            assert len(self._precision) == 1
-            export_options["precision"] = str(self._precision[0])
+        assert len(self._precision) == 1
+        export_options["precision"] = str(self._precision[0])
+        export_options["type"] = str(export_format)
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
@@ -436,6 +438,9 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
+
+        if export_format == ExportType.ONNX:
+            export_options["deploy_cfg"]["backend_config"] = {"type" : "onnxruntime"}
 
         exporter = SegmentationExporter()
         results = exporter.run(
