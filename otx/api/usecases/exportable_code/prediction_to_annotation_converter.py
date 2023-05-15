@@ -432,8 +432,8 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                 contour = list(contour)
                 points = [
                     Point(
-                        x=point[0][0] / metadata["original_shape"][1],
-                        y=point[0][1] / metadata["original_shape"][0],
+                        x=point[0][0] / (metadata["original_shape"][1]-1),
+                        y=point[0][1] / (metadata["original_shape"][0]-1),
                     )
                     for point in contour
                 ]

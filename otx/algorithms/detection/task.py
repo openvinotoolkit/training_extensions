@@ -491,7 +491,7 @@ class OTXDetectionTask(OTXTask, ABC):
                     if len(contour) <= 2 or probability < confidence_threshold:
                         continue
                     if self._task_type == TaskType.INSTANCE_SEGMENTATION:
-                        points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
+                        points = [Point(x=point[0][0] / (width-1), y=point[0][1] / (height-1)) for point in contour]
                     else:
                         box_points = cv2.boxPoints(cv2.minAreaRect(contour))
                         points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
