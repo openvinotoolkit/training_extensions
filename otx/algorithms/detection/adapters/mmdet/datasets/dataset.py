@@ -328,6 +328,7 @@ class ImageTilingDataset(OTXDetDataset):
         max_annotation (int, optional): Limit the number of ground truth by
             randomly select 5000 due to RAM OOM. Defaults to 5000.
         sampling_ratio (flaot): Ratio for sampling entire tile dataset.
+        include_full_img (bool): Whether to include full image in the dataset.
     """
 
     def __init__(
@@ -343,6 +344,7 @@ class ImageTilingDataset(OTXDetDataset):
         filter_empty_gt=True,
         test_mode=False,
         sampling_ratio=1.0,
+        include_full_img=False,
     ):
         self.dataset = build_dataset(dataset)
         self.CLASSES = self.dataset.CLASSES
@@ -358,6 +360,7 @@ class ImageTilingDataset(OTXDetDataset):
             max_annotation=max_annotation,
             filter_empty_gt=filter_empty_gt if self.dataset.otx_dataset[0].subset != Subset.TESTING else False,
             sampling_ratio=sampling_ratio if self.dataset.otx_dataset[0].subset != Subset.TESTING else 1.0,
+            include_full_img=include_full_img if self.dataset.otx_dataset[0].subset != Subset.TESTING else True,
         )
         self.flag = np.zeros(len(self), dtype=np.uint8)
         self.pipeline = Compose(pipeline)
