@@ -101,13 +101,22 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
 
         # construct label tree
         for category_item in category_items:
-            child = [i for i in label_entities if i.name == category_item.name]
+            me = [i for i in label_entities if i.name == category_item.name]
             parent = [i for i in label_entities if i.name == category_item.parent]
+            if len(me) != 1:
+                raise ValueError(
+                    f"Label name must be unique but {len(me)} labels found "
+                    f"for label name '{category_item.name}'."
+                )
             if len(parent) == 0:
-                continue
-            assert len(child) == 1
-            assert len(parent) == 1
-            label_schema.add_child(parent[0], child[0])
+                label_schema.label_tree.add_node(me[0])
+            elif len(parent) == 1:
+                label_schema.add_child(parent[0], me[0])
+            else:
+                raise ValueError(
+                    f"Label name must be unique but {len(parent)} labels found "
+                    f"for label name '{category_item.parent}'."
+                )
 
         return label_schema
 

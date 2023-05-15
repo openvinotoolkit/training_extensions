@@ -278,8 +278,8 @@ class LabelSchemaEntity:
     # pylint: disable=too-many-public-methods, too-many-arguments
     def __init__(
         self,
-        label_tree: LabelTree = None,
-        label_groups: List[LabelGroup] = None,
+        label_tree: Optional[LabelTree] = None,
+        label_groups: Optional[List[LabelGroup]] = None,
     ):
         if label_tree is None:
             label_tree = LabelTree()
