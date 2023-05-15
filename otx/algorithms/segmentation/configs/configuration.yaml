@@ -354,7 +354,7 @@ algo_backend:
     visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
 type: CONFIGURABLE_PARAMETERS
 visible_in_ui: true
 pot_parameters:

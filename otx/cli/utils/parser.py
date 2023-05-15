@@ -85,9 +85,8 @@ def gen_param_help(hyper_parameters: Dict) -> Dict:
                 continue
 
             if "default_value" not in val.keys():
-                if "visible_in_ui" in val and val["visible_in_ui"]:
-                    x = _gen_param_help(prefix + f"{k}.", val)
-                    cur_help.update(x)
+                x = _gen_param_help(prefix + f"{k}.", val)
+                cur_help.update(x)
             else:
                 assert isinstance(val["default_value"], (int, float, str))
                 help_str = "\n".join([f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()])
