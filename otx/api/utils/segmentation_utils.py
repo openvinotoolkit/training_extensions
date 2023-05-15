@@ -229,6 +229,9 @@ def create_annotation_from_segmentation_map(
 
         if hierarchies is not None:
             for contour, hierarchy in zip(contours, hierarchies[0]):
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
+                    continue
+
                 if hierarchy[3] == -1:
                     # In this case a contour does not represent a hole
                     contour = list((point[0][0], point[0][1]) for point in contour)
