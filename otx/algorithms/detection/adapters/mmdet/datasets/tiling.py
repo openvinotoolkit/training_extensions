@@ -62,6 +62,7 @@ class Tile:
             during tests. Defaults to True.
         nproc (int, optional): Processes used for processing masks. Default: 4.
         sampling_ratio (float): Ratio for sampling entire tile dataset. Default: 1.0.(No sample)
+        include_full_img (bool): Whether to include full-size image for inference or training. Default: False.
     """
 
     def __init__(
@@ -77,6 +78,7 @@ class Tile:
         filter_empty_gt: bool = True,
         nproc: int = 2,
         sampling_ratio: float = 1.0,
+        include_full_img: bool = False,
     ):
         self.min_area_ratio = min_area_ratio
         self.filter_empty_gt = filter_empty_gt
@@ -97,7 +99,7 @@ class Tile:
                 break
 
         self.dataset = dataset
-        self.tiles_all, self.cached_results = self.gen_tile_ann()
+        self.tiles_all, self.cached_results = self.gen_tile_ann(include_full_img)
         self.sample_num = max(int(len(self.tiles_all) * sampling_ratio), 1)
         if sampling_ratio < 1.0:
             self.tiles = sample(self.tiles_all, self.sample_num)
@@ -105,12 +107,13 @@ class Tile:
             self.tiles = self.tiles_all
 
     @timeit
-    def gen_tile_ann(self) -> Tuple[List[Dict], List[Dict]]:
+    def gen_tile_ann(self, include_full_img) -> Tuple[List[Dict], List[Dict]]:
         """Generate tile annotations and cache the original image-level annotations.
 
         Returns:
             tiles: a list of tile annotations with some other useful information for data pipeline.
             cache_result: a list of original image-level annotations.
+            include_full_img: whether to include full-size image for inference or training.
         """
         tiles = []
         cache_result = []
@@ -119,7 +122,8 @@ class Tile:
 
         pbar = tqdm(total=len(self.dataset) * 2, desc="Generating tile annotations...")
         for idx, result in enumerate(cache_result):
-            tiles.append(self.gen_single_img(result, dataset_idx=idx))
+            if include_full_img:
+                tiles.append(self.gen_single_img(result, dataset_idx=idx))
             pbar.update(1)
 
         for idx, result in enumerate(cache_result):
