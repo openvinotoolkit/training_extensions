@@ -264,7 +264,7 @@ class TrackingLossDynamicsMixIn:
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._loss_dyns: Dict[TrackingLossType, LossAccumulator] = {}
+        self._loss_dyns: Dict[TrackingLossType, Dict[Tuple[int, int], LossAccumulator]] = {}
 
     def _get_pos_inds(self, labels):
         pos_inds = super()._get_pos_inds(labels)
@@ -292,7 +292,7 @@ class TrackingLossDynamicsMixIn:
         return weight_reduce_loss(losses, reduction=reduction, avg_factor=avg_factor)
 
     @property
-    def loss_dyns(self) -> Dict[TrackingLossType, LossAccumulator]:
+    def loss_dyns(self) -> Dict[TrackingLossType, Dict[Tuple[int, int], LossAccumulator]]:
         """Loss dynamics dict."""
         return self._loss_dyns
 
