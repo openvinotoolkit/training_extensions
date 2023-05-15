@@ -21,7 +21,6 @@ from otx.api.entities.label import Domain
 class TestLossDynamicsTrackingMixin:
     @pytest.fixture()
     def dataloader(self, fxt_det_dataset_entity: DatasetEntity):
-        img_size = 256
         dataloader_cfg = dict(samples_per_gpu=len(fxt_det_dataset_entity), workers_per_gpu=1)
         dataset_cfg = ConfigDict(
             dict(
@@ -71,11 +70,19 @@ class TestLossDynamicsTrackingMixin:
         detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
         return detector
 
+    @pytest.fixture
+    def fxt_custom_ssd(self, fxt_cfg_custom_ssd: Dict, fxt_det_dataset_entity: DatasetEntity) -> CustomATSS:
+        fxt_cfg_custom_ssd["track_loss_dynamics"] = True
+
+        detector = build_detector(fxt_cfg_custom_ssd)
+        detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
+        return detector
+
     @pytest.fixture()
     def detector(self, request: Type[pytest.FixtureRequest]):
         return request.getfixturevalue(request.param)
 
-    TESTCASE = ["fxt_custom_atss"]
+    TESTCASE = ["fxt_custom_atss", "fxt_custom_ssd"]
 
     @torch.no_grad()
     @pytest.mark.parametrize("detector", TESTCASE, indirect=True)

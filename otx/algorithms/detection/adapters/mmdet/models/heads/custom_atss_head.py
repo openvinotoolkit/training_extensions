@@ -2,26 +2,24 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-from collections import defaultdict
 
 import torch
 from mmcv.runner import force_fp32
 from mmdet.core import (
     anchor_inside_flags,
     bbox_overlaps,
-    images_to_levels,
     multi_apply,
     reduce_mean,
     unmap,
 )
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.atss_head import ATSSHead
-from mmdet.models.losses.utils import weight_reduce_loss
 
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     CrossDatasetDetectorHead,
+    TrackingLossDynamicsMixIn,
 )
-from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import LossAccumulator, TrackingLossType
+from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
 from otx.algorithms.detection.adapters.mmdet.models.losses.cross_focal_loss import (
     CrossSigmoidFocalLoss,
 )
@@ -270,12 +268,15 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
 
 
 @HEADS.register_module()
-class CustomATSSHeadTrackingLossDynamics(CustomATSSHead):
+class CustomATSSHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomATSSHead):
     """CustomATSSHead which supports tracking loss dynamics."""
+
+    tracking_loss_types = (TrackingLossType.cls, TrackingLossType.bbox, TrackingLossType.centerness)
 
     def __init__(self, *args, bg_loss_weight=-1, use_qfl=False, qfl_cfg=None, **kwargs):
         super().__init__(*args, bg_loss_weight=bg_loss_weight, use_qfl=use_qfl, qfl_cfg=qfl_cfg, **kwargs)
 
+    @TrackingLossDynamicsMixIn._wrap_loss
     def loss(self, cls_scores, bbox_preds, centernesses, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Compute losses of the head.
 
@@ -297,70 +298,9 @@ class CustomATSSHeadTrackingLossDynamics(CustomATSSHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        self.cur_loss_idx = 0
-        self.loss_dyns = {
-            TrackingLossType.cls: defaultdict(LossAccumulator),
-            TrackingLossType.bbox: defaultdict(LossAccumulator),
-            TrackingLossType.centerness: defaultdict(LossAccumulator),
-        }
-        losses = super().loss(cls_scores, bbox_preds, centernesses, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore)
-        return losses
+        return super().loss(cls_scores, bbox_preds, centernesses, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore)
 
-    def _get_pos_inds(self, labels):
-        pos_inds = super()._get_pos_inds(labels)
-
-        if len(pos_inds) > 0:
-            pos_assigned_gt_inds = self.all_pos_assigned_gt_inds[self.cur_loss_idx].reshape(-1)
-
-            gt_inds = pos_assigned_gt_inds[pos_inds].cpu()
-
-            self.batch_inds = gt_inds // self.max_gt_bboxes_len
-            self.bbox_inds = gt_inds % self.max_gt_bboxes_len
-
-        self.pos_inds = pos_inds
-        return pos_inds
-
-    def _store_loss_dyns(self, losses: torch.Tensor, key: TrackingLossType) -> None:
-        loss_dyns = self.loss_dyns[key]
-        for batch_idx, bbox_idx, loss_item in zip(self.batch_inds, self.bbox_inds, losses.detach().cpu()):
-            loss_dyns[(batch_idx.item(), bbox_idx.item())].add(loss_item.item())
-
-    def _postprocess_loss(self, losses: torch.Tensor, reduction: str, avg_factor: float) -> torch.Tensor:
-        return weight_reduce_loss(losses, reduction=reduction, avg_factor=avg_factor)
-
-    def _get_loss_cls(self, cls_score, labels, label_weights, valid_label_mask, num_total_samples):
-        if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
-            loss_cls = self.loss_cls(
-                cls_score,
-                labels,
-                label_weights,
-                avg_factor=num_total_samples,
-                valid_label_mask=valid_label_mask,
-                reduction_override="none",
-            )
-        else:
-            loss_cls = self.loss_cls(
-                cls_score, labels, label_weights, avg_factor=num_total_samples, reduction_override="none"
-            )
-
-        if len(self.pos_inds) > 0:
-            self._store_loss_dyns(loss_cls[self.pos_inds].detach().mean(-1), TrackingLossType.cls)
-        return self._postprocess_loss(loss_cls, self.loss_cls.reduction, avg_factor=num_total_samples)
-
-    def _get_loss_centerness(self, num_total_samples, pos_centerness, centerness_targets):
-        loss_centerness = self.loss_centerness(
-            pos_centerness, centerness_targets, avg_factor=num_total_samples, reduction_override="none"
-        )
-        self._store_loss_dyns(loss_centerness, TrackingLossType.centerness)
-        return self._postprocess_loss(loss_centerness, self.loss_centerness.reduction, avg_factor=num_total_samples)
-
-    def _get_loss_bbox(self, pos_bbox_targets, pos_bbox_pred, centerness_targets):
-        loss_bbox = self.loss_bbox(
-            pos_bbox_pred, pos_bbox_targets, weight=centerness_targets, avg_factor=1.0, reduction_override="none"
-        )
-        self._store_loss_dyns(loss_bbox, TrackingLossType.bbox)
-        return self._postprocess_loss(loss_bbox, self.loss_centerness.reduction, avg_factor=1.0)
-
+    @TrackingLossDynamicsMixIn._wrap_loss_single
     def loss_single(
         self,
         anchors,
@@ -398,8 +338,7 @@ class CustomATSSHeadTrackingLossDynamics(CustomATSSHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-
-        losses = super().loss_single(
+        return super().loss_single(
             anchors,
             cls_score,
             bbox_pred,
@@ -410,38 +349,38 @@ class CustomATSSHeadTrackingLossDynamics(CustomATSSHead):
             valid_label_mask,
             num_total_samples,
         )
-        self.cur_loss_idx += 1
-        return losses
 
-    def get_targets(
-        self,
-        anchor_list,
-        valid_flag_list,
-        gt_bboxes_list,
-        img_metas,
-        gt_bboxes_ignore_list=None,
-        gt_labels_list=None,
-        label_channels=1,
-        unmap_outputs=True,
-    ):
-        """Get targets for Detection head."""
-        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        self.batch_size = len(gt_bboxes_list)
-        self.max_gt_bboxes_len = max([len(gt_bboxes) for gt_bboxes in gt_bboxes_list])
-        self.cur_batch_idx = 0
-        self.pos_assigned_gt_inds_list = []
-        targets = super().get_targets(
-            anchor_list,
-            valid_flag_list,
-            gt_bboxes_list,
-            img_metas,
-            gt_bboxes_ignore_list,
-            gt_labels_list,
-            label_channels,
-            unmap_outputs,
+    def _get_loss_cls(self, cls_score, labels, label_weights, valid_label_mask, num_total_samples):
+        if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
+            loss_cls = self.loss_cls(
+                cls_score,
+                labels,
+                label_weights,
+                avg_factor=num_total_samples,
+                valid_label_mask=valid_label_mask,
+                reduction_override="none",
+            )
+        else:
+            loss_cls = self.loss_cls(
+                cls_score, labels, label_weights, avg_factor=num_total_samples, reduction_override="none"
+            )
+
+        self._store_loss_dyns(loss_cls[self.pos_inds].detach().mean(-1), TrackingLossType.cls)
+        return self._postprocess_loss(loss_cls, self.loss_cls.reduction, avg_factor=num_total_samples)
+
+    def _get_loss_centerness(self, num_total_samples, pos_centerness, centerness_targets):
+        loss_centerness = self.loss_centerness(
+            pos_centerness, centerness_targets, avg_factor=num_total_samples, reduction_override="none"
         )
-        self.all_pos_assigned_gt_inds = images_to_levels(self.pos_assigned_gt_inds_list, num_level_anchors)
-        return targets
+        self._store_loss_dyns(loss_centerness, TrackingLossType.centerness)
+        return self._postprocess_loss(loss_centerness, self.loss_centerness.reduction, avg_factor=num_total_samples)
+
+    def _get_loss_bbox(self, pos_bbox_targets, pos_bbox_pred, centerness_targets):
+        loss_bbox = self.loss_bbox(
+            pos_bbox_pred, pos_bbox_targets, weight=centerness_targets, avg_factor=1.0, reduction_override="none"
+        )
+        self._store_loss_dyns(loss_bbox, TrackingLossType.bbox)
+        return self._postprocess_loss(loss_bbox, self.loss_centerness.reduction, avg_factor=1.0)
 
     def _get_target_single(
         self,
@@ -523,3 +462,27 @@ class CustomATSSHeadTrackingLossDynamics(CustomATSSHead):
         ########################################################################
 
         return (anchors, labels, label_weights, bbox_targets, bbox_weights, pos_inds, neg_inds)
+
+    @TrackingLossDynamicsMixIn._wrap_get_targets(False)
+    def get_targets(
+        self,
+        anchor_list,
+        valid_flag_list,
+        gt_bboxes_list,
+        img_metas,
+        gt_bboxes_ignore_list=None,
+        gt_labels_list=None,
+        label_channels=1,
+        unmap_outputs=True,
+    ):
+        """Get targets for Detection head."""
+        return super().get_targets(
+            anchor_list,
+            valid_flag_list,
+            gt_bboxes_list,
+            img_metas,
+            gt_bboxes_ignore_list,
+            gt_labels_list,
+            label_channels,
+            unmap_outputs,
+        )
