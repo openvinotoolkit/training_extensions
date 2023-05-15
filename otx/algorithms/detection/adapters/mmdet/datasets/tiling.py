@@ -73,7 +73,7 @@ class Tile:
         min_area_ratio: float = 0.9,
         iou_threshold: float = 0.45,
         max_per_img: int = 1500,
-        max_annotation: int = 5000,
+        max_annotation: int = 2000,
         filter_empty_gt: bool = True,
         nproc: int = 2,
         sampling_ratio: float = 1.0,
