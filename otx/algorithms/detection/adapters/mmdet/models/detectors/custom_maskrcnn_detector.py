@@ -99,14 +99,16 @@ if is_mmdeploy_enabled():
     def custom_mask_rcnn__simple_test(ctx, self, img, img_metas, proposals=None, **kwargs):
         """Function for custom_mask_rcnn__simple_test."""
         assert self.with_bbox, "Bbox head must be implemented."
-        x = self.extract_feat(img)
+        x = backbone_out = self.backbone(img)
+        if self.with_neck:
+            x = self.neck(x)
         if proposals is None:
             proposals, _ = self.rpn_head.simple_test_rpn(x, img_metas)
         out = self.roi_head.simple_test(x, proposals, img_metas, rescale=False)
 
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(x)
-            saliency_map = ActivationMapHook.func(x[-1])
+            saliency_map = ActivationMapHook.func(backbone_out)
             return (*out, feature_vector, saliency_map)
 
         return out
