@@ -271,29 +271,39 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
-        self.precision[0] = precision
-        assert export_type == ExportType.OPENVINO, f"Incorrect export_type={export_type}"
+        if export_type == ExportType.ONNX:
+            output_model.model_format = ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            if precision == ModelPrecision.FP16:
+                raise RuntimeError(f"Export to FP16 ONNX is not supported")
+        elif export_type == ExportType.OPENVINO:
+            output_model.model_format = ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.MO
+        else:
+            raise RuntimeError(f"not supported export type {export_type}")
 
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = self.optimization_type
+        self.precision[0] = precision
         output_model.has_xai = dump_features
 
         # pylint: disable=no-member; need to refactor this
         logger.info("Exporting the OpenVINO model.")
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         self._export_to_onnx(onnx_path)
-        optimize_command = ["mo", "--input_model", onnx_path, "--output_dir", self.config.project.path]
-        if precision == ModelPrecision.FP16:
-            optimize_command.append("--compress_to_fp16")
-        subprocess.run(optimize_command, check=True)
-        bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
-        xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
-        with open(bin_file, "rb") as file:
-            output_model.set_data("openvino.bin", file.read())
-        with open(xml_file, "rb") as file:
-            output_model.set_data("openvino.xml", file.read())
-        with open(onnx_path, "rb") as file:
-            output_model.set_data("model.onnx", file.read())
+
+        if export_type == ExportType.ONNX:
+            with open(onnx_path, "rb") as file:
+                output_model.set_data("model.onnx", file.read())
+        else:
+            optimize_command = ["mo", "--input_model", onnx_path, "--output_dir", self.config.project.path]
+            if precision == ModelPrecision.FP16:
+                optimize_command.append("--compress_to_fp16")
+            subprocess.run(optimize_command, check=True)
+            bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
+            xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
+            with open(bin_file, "rb") as file:
+                output_model.set_data("openvino.bin", file.read())
+            with open(xml_file, "rb") as file:
+                output_model.set_data("openvino.xml", file.read())
 
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods

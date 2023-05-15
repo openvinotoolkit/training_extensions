@@ -59,7 +59,7 @@ def get_args():
     parser.add_argument(
         "--model-type",
         help="Type of the resulting model (OpenVINO or ONNX).",
-        default='openvino',
+        default="openvino",
     )
 
     return parser.parse_args()
