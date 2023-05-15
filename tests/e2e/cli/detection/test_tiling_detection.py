@@ -36,10 +36,10 @@ from tests.test_suite.run_test_command import (
 )
 
 args = {
-    "--train-data-roots": "tests/assets/small_objects",
-    "--val-data-roots": "tests/assets/small_objects",
-    "--test-data-roots": "tests/assets/small_objects",
-    "--input": "tests/assets/small_objects/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
