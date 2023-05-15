@@ -105,7 +105,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             if subset in (Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED, Subset.PSEUDOLABELED):
                 self.dataset[subset] = init_arrow_cache(dataset, **cache_config)
 
-        self.category_items: Dict[DatumAnnotationType, DatumCategories]
+        self.category_items: List[DatumCategories]
         self.label_groups: List[str]
         self.label_entities: List[LabelEntity]
         self.label_schema: LabelSchemaEntity

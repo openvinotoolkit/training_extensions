@@ -70,14 +70,14 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
         return self._generate_classification_label_schema(
             self.category_items,
             self.label_groups,
-            self.label_entities
+            self.label_entities,
         )
 
     def _generate_classification_label_schema(
         self,
         category_items: List[DatumLabelCategories.Category],
         label_groups: List[DatumLabelCategories.LabelGroup],
-        label_entities: List[LabelEntity]
+        label_entities: List[LabelEntity],
     ) -> LabelSchemaEntity:
         """Generate LabelSchema for Classification."""
         label_schema = LabelSchemaEntity()
@@ -105,8 +105,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
             parent = [i for i in label_entities if i.name == category_item.parent]
             if len(me) != 1:
                 raise ValueError(
-                    f"Label name must be unique but {len(me)} labels found "
-                    f"for label name '{category_item.name}'."
+                    f"Label name must be unique but {len(me)} labels found for label name '{category_item.name}'."
                 )
             if len(parent) == 0:
                 label_schema.label_tree.add_node(me[0])
@@ -114,8 +113,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                 label_schema.add_child(parent[0], me[0])
             else:
                 raise ValueError(
-                    f"Label name must be unique but {len(parent)} labels found "
-                    f"for label name '{category_item.parent}'."
+                    f"Label name must be unique but {len(parent)} labels found for label name '{category_item.parent}'."
                 )
 
         return label_schema
