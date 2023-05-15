@@ -45,6 +45,7 @@ class AsyncExecutor:
         for frame in streamer:
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             while results:
+                start_time = time.perf_counter()
                 output = self.render_result(results)
                 next_frame_id_to_show += 1
                 self.visualizer.show(output)
@@ -52,6 +53,8 @@ class AsyncExecutor:
                     saved_frames.append(output)
                 if self.visualizer.is_quit():
                     stop_visualization = True
+                # visualize video not faster than the original FPS
+                self.visualizer.video_delay(time.perf_counter() - start_time, streamer)
                 results = self.async_pipeline.get_result(next_frame_id_to_show)
             if stop_visualization:
                 break
@@ -63,6 +66,8 @@ class AsyncExecutor:
             results = self.async_pipeline.get_result(next_frame_id_to_show)
             output = self.render_result(results)
             self.visualizer.show(output)
+            if self.visualizer.output:
+                saved_frames.append(output)
             # visualize video not faster than the original FPS
             self.visualizer.video_delay(time.perf_counter() - start_time, streamer)
         dump_frames(saved_frames, self.visualizer.output, input_stream, streamer)
@@ -70,6 +75,8 @@ class AsyncExecutor:
     def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:
         """Render for results of inference."""
         predictions, frame_meta = results
+        predictions = np.array([[pred.id, pred.score, *pred.get_coords()] for pred in predictions])
+        predictions.shape = len(predictions), 6
         annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
         current_frame = frame_meta["frame"]
         output = self.visualizer.draw(current_frame, annotation_scene, frame_meta)
