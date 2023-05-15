@@ -356,6 +356,11 @@ def patch_tiling(config, hparams, dataset=None):
 
             config.data.train.filter_empty_gt = False
 
+        config.data.train.sampling_ratio = hparams.tiling_parameters.tile_sampling_ratio
+        config.data.val.sampling_ratio = hparams.tiling_parameters.tile_sampling_ratio
+        if hparams.tiling_parameters.tile_sampling_ratio < 1.0:
+            config.custom_hooks.append(ConfigDict({"type": "TileSamplingHook"}))
+
         tiling_params = ConfigDict(
             tile_size=int(hparams.tiling_parameters.tile_size),
             overlap_ratio=float(hparams.tiling_parameters.tile_overlap),

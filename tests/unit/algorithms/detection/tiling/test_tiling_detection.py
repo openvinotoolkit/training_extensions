@@ -26,6 +26,7 @@ from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.subset import Subset
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_helpers import generate_random_annotated_image
@@ -180,6 +181,21 @@ class TestTilingDetection:
             assert isinstance(data["img"][0], torch.Tensor)
             assert "gt_bboxes" not in data
             assert "gt_labels" not in data
+
+    @e2e_pytest_unit
+    def test_tiling_sampling(self):
+        self.train_data_cfg.sampling_ratio = 0.5
+        dataset = build_dataset(self.train_data_cfg)
+        assert len(dataset) == max(int(len(dataset.tile_dataset.tiles_all) * 0.5), 1)
+
+        self.train_data_cfg.sampling_ratio = 0.01
+        dataset = build_dataset(self.train_data_cfg)
+        assert len(dataset) == max(int(len(dataset.tile_dataset.tiles_all) * 0.01), 1)
+
+        self.test_data_cfg.sampling_ratio = 0.1
+        self.test_data_cfg.dataset.otx_dataset[0].subset = Subset.TESTING
+        dataset = build_dataset(self.test_data_cfg)
+        assert len(dataset) == len(dataset.tile_dataset.tiles_all)
 
     @e2e_pytest_unit
     def test_inference_merge(self):

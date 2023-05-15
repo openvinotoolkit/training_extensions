@@ -388,4 +388,17 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
+        tile_sampling_ratio = configurable_float(
+            header="Sampling Ratio for entire tiling",
+            description="Since tiling train and validation to all tile from large image, "
+            "usually it takes lots of time than normal training."
+            "The tile_sampling_ratio is ratio for sampling entire tile dataset."
+            "Sampling tile dataset would save lots of time for training and validation time."
+            "Note that sampling will be applied to training and validation dataset, not test dataset.",
+            default_value=1.0,
+            min_value=0.000001,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
     tiling_parameters = add_parameter_group(BaseTilingParameters)

@@ -32,6 +32,7 @@ from otx.algorithms.detection.adapters.mmdet.evaluation import eval_segm
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
 
 from .tiling import Tile
@@ -330,6 +331,7 @@ class ImageTilingDataset:
             after NMS, only top max_per_img will be kept. Defaults to 200.
         max_annotation (int, optional): Limit the number of ground truth by
             randomly select 5000 due to RAM OOM. Defaults to 5000.
+        sampling_ratio (flaot): Ratio for sampling entire tile dataset.
     """
 
     def __init__(
@@ -344,6 +346,7 @@ class ImageTilingDataset:
         max_annotation=5000,
         filter_empty_gt=True,
         test_mode=False,
+        sampling_ratio=1.0,
     ):
         self.dataset = build_dataset(dataset)
         self.CLASSES = self.dataset.CLASSES
@@ -360,6 +363,7 @@ class ImageTilingDataset:
             max_per_img=max_per_img,
             max_annotation=max_annotation,
             filter_empty_gt=False if test_mode else filter_empty_gt,
+            sampling_ratio=sampling_ratio if self.dataset.otx_dataset[0].subset != Subset.TESTING else 1.0,
         )
         self.flag = np.zeros(len(self), dtype=np.uint8)
         self.pipeline = Compose(pipeline)
