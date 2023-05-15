@@ -40,6 +40,7 @@ from otx.algorithms.detection.utils.data import (
 )
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.subset import Subset
 
 try:
     from sklearn.cluster import KMeans
@@ -334,12 +335,7 @@ def patch_tiling(config, hparams, dataset=None):
         logger.info("Tiling enabled")
 
         if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
-            adaptive_tile_params(hparams.tiling_parameters, dataset)
-
-        if dataset and dataset.purpose == DatasetPurpose.INFERENCE:
-            config.get("data", ConfigDict()).get("val_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
-            config.get("data", ConfigDict()).get("test_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
-            config.get("data", ConfigDict(samples_per_gpu=1))
+            adaptive_tile_params(hparams.tiling_parameters, dataset.get_subset(Subset.TRAINING))
 
         if hparams.tiling_parameters.enable_tile_classifier:
             logger.info("Tile classifier enabled")
