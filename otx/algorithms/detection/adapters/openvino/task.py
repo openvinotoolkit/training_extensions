@@ -210,6 +210,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         configuration = {
             **attr.asdict(
@@ -247,6 +248,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
 
         configuration = {
@@ -281,6 +283,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
 
         configuration = {
@@ -458,7 +461,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.task_type == TaskType.DETECTION:
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
-            args[-1] = min(2, async_requests_num)  # a bigger amount of requests may cause a slowdown for IS models
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)

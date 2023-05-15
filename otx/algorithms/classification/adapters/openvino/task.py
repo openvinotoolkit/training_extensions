@@ -110,7 +110,12 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 
         self.label_schema = label_schema
         model_adapter = OpenvinoAdapter(
-            create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
+            create_core(),
+            model_file,
+            weight_file,
+            device=device,
+            max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         self.configuration = get_cls_inferencer_configuration(self.label_schema)
         self.model = Model.create_model("otx_classification", model_adapter, self.configuration, preload=True)

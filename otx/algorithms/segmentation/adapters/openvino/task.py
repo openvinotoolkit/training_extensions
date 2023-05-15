@@ -102,7 +102,12 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         """
 
         model_adapter = OpenvinoAdapter(
-            create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
+            create_core(),
+            model_file,
+            weight_file,
+            device=device,
+            max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         self.configuration = {
             **attr.asdict(
