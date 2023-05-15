@@ -236,7 +236,7 @@ def create_annotation_from_segmentation_map(
                         probability = cv2.mean(current_label_soft_prediction, mask)[0]
 
                         # convert the list of points to a closed polygon
-                        points = [Point(x=x / width, y=y / height) for x, y in subcontour]
+                        points = [Point(x=x / (width - 1), y=y / (height - 1)) for x, y in subcontour]
                         polygon = Polygon(points=points)
 
                         if polygon.get_area() > 0:

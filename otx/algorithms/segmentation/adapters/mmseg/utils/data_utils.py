@@ -93,7 +93,7 @@ def create_annotation_from_hard_seg_map(hard_seg_map: np.ndarray, labels: List[L
             if len(contour) <= 2:
                 continue
 
-            points = [Point(x=point[0][0] / (width-1), y=point[0][1] / (height-1)) for point in contour]
+            points = [Point(x=point[0][0] / (width - 1), y=point[0][1] / (height - 1)) for point in contour]
 
             annotations.append(
                 Annotation(
