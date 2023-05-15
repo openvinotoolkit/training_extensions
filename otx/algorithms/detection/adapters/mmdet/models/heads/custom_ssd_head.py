@@ -6,18 +6,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from collections import defaultdict
-
 import torch
 from mmcv.cnn import build_activation_layer
-from mmdet.core import anchor_inside_flags, images_to_levels, unmap
+from mmdet.core import anchor_inside_flags, unmap
 from mmdet.models.builder import HEADS, build_loss
 from mmdet.models.dense_heads.ssd_head import SSDHead
-from mmdet.models.losses import smooth_l1_loss, weight_reduce_loss
+from mmdet.models.losses import smooth_l1_loss
 from torch import nn
 
+from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import TrackingLossDynamicsMixIn
 from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import (
-    LossAccumulator,
     TrackingLossType,
 )
 
@@ -194,46 +192,24 @@ class CustomSSDHead(SSDHead):
 
 
 @HEADS.register_module()
-class CustomSSDHeadTrackingLossDynamics(CustomSSDHead):
+class CustomSSDHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomSSDHead):
     """CustomSSDHead which supports tracking loss dynamics."""
 
+    tracking_loss_types = (TrackingLossType.cls, TrackingLossType.bbox, TrackingLossType.centerness)
+
+    @TrackingLossDynamicsMixIn._wrap_loss
     def loss(self, cls_scores, bbox_preds, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Compute loss from the head and prepare for loss dynamics tracking."""
-        self.cur_loss_idx = 0
-        self.loss_dyns = {
-            TrackingLossType.cls: defaultdict(LossAccumulator),
-            TrackingLossType.bbox: defaultdict(LossAccumulator),
-        }
         return super().loss(cls_scores, bbox_preds, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore)
 
+    @TrackingLossDynamicsMixIn._wrap_loss_single
     def loss_single(
         self, cls_score, bbox_pred, anchor, labels, label_weights, bbox_targets, bbox_weights, num_total_samples
     ):
         """Compute loss of a single image and increase `self.cur_loss_idx` counter for loss dynamics tracking."""
-        losses = super().loss_single(
+        return super().loss_single(
             cls_score, bbox_pred, anchor, labels, label_weights, bbox_targets, bbox_weights, num_total_samples
         )
-        self.cur_loss_idx += 1
-        return losses
-
-    def _store_loss_dyns(self, losses: torch.Tensor, key: TrackingLossType) -> None:
-        loss_dyns = self.loss_dyns[key]
-        for batch_idx, bbox_idx, loss_item in zip(self.batch_inds, self.bbox_inds, losses.detach().cpu()):
-            loss_dyns[(batch_idx.item(), bbox_idx.item())].add(loss_item.item())
-
-    def _get_pos_inds(self, labels):
-        pos_inds = super()._get_pos_inds(labels)
-
-        if len(pos_inds) > 0:
-            pos_assigned_gt_inds = self.all_pos_assigned_gt_inds[self.cur_loss_idx].reshape(-1)
-
-            gt_inds = pos_assigned_gt_inds[pos_inds].cpu()
-
-            self.batch_inds = gt_inds // self.max_gt_bboxes_len
-            self.bbox_inds = gt_inds % self.max_gt_bboxes_len
-
-        self.pos_inds = pos_inds
-        return pos_inds
 
     def _get_loss_cls(self, num_total_samples, loss_cls_all, pos_inds, topk_loss_cls_neg):
         loss_cls_pos = loss_cls_all[pos_inds]
@@ -254,8 +230,9 @@ class CustomSSDHeadTrackingLossDynamics(CustomSSDHead):
         )
 
         self._store_loss_dyns(loss_bbox[self.pos_inds].detach().mean(-1), TrackingLossType.bbox)
-        return weight_reduce_loss(loss_bbox, reduction="mean", avg_factor=num_total_samples)
+        return self._postprocess_loss(loss_bbox, reduction="mean", avg_factor=num_total_samples)
 
+    @TrackingLossDynamicsMixIn._wrap_get_targets(concatenate_last=True)
     def get_targets(
         self,
         anchor_list,
@@ -268,12 +245,8 @@ class CustomSSDHeadTrackingLossDynamics(CustomSSDHead):
         unmap_outputs=True,
         return_sampling_results=False,
     ):
-        """Get targets for Detection head."""
-        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        self.max_gt_bboxes_len = max([len(gt_bboxes) for gt_bboxes in gt_bboxes_list])
-        self.cur_batch_idx = 0
-        self.pos_assigned_gt_inds_list = []
-        targets = super().get_targets(
+        """Get targets."""
+        return super().get_targets(
             anchor_list,
             valid_flag_list,
             gt_bboxes_list,
@@ -284,10 +257,6 @@ class CustomSSDHeadTrackingLossDynamics(CustomSSDHead):
             unmap_outputs,
             return_sampling_results,
         )
-
-        all_pos_assigned_gt_inds = images_to_levels(self.pos_assigned_gt_inds_list, num_level_anchors)
-        self.all_pos_assigned_gt_inds = torch.cat(all_pos_assigned_gt_inds, -1)
-        return targets
 
     def _get_targets_single(
         self,
