@@ -69,40 +69,6 @@ class MeanTeacherSegmentor(BaseSegmentor):
         """Simple test."""
         return self.model_s.simple_test(img, img_meta, **kwargs)
 
-    @staticmethod
-    def cutmix(imgs, gt_seg, mask=None, aug_prob=0., alpha=1.):
-        def rand_bbox(size, lam):
-            W = size[2]
-            H = size[3]
-            cut_rat = np.sqrt(1. - lam)
-            cut_w = np.int(W * cut_rat)
-            cut_h = np.int(H * cut_rat)
-
-            # uniform
-            cx = np.random.randint(W)
-            cy = np.random.randint(H)
-
-            bbx1 = np.clip(cx - cut_w // 2, 0, W)
-            bby1 = np.clip(cy - cut_h // 2, 0, H)
-            bbx2 = np.clip(cx + cut_w // 2, 0, W)
-            bby2 = np.clip(cy + cut_h // 2, 0, H)
-
-            return bbx1, bby1, bbx2, bby2
-
-        r = np.random.rand(1)
-        if r < aug_prob:
-            # generate mixed sample
-            lam = np.random.beta(alpha, alpha)
-            rand_index = torch.randperm(imgs.size(0), device=imgs.device)
-
-            bbx1, bby1, bbx2, bby2 = rand_bbox(imgs.size(), lam)
-            imgs[:, :, bbx1:bbx2, bby1:bby2] = imgs[rand_index, :, bbx1:bbx2, bby1:bby2]
-            gt_seg[:, :, bbx1:bbx2, bby1:bby2] = gt_seg[rand_index, :, bbx1:bbx2, bby1:bby2]
-            if mask is not None:
-                mask[:, :, bbx1:bbx2, bby1:bby2] = mask[rand_index, :, bbx1:bbx2, bby1:bby2]
-
-        return imgs, gt_seg, mask
-
     def aug_test(self, imgs, img_metas, **kwargs):
         """Aug test."""
         return self.model_s.aug_test(imgs, img_metas, **kwargs)
@@ -118,8 +84,8 @@ class MeanTeacherSegmentor(BaseSegmentor):
         if self.semisl_start_iter > self.count_iter or "extra_0" not in kwargs:
             x = self.model_s.extract_feat(img)
             if self.use_prototype_head:
-                head_features = self.model_s.decode_head.forward_features(x)
-                out = self.model_s.decode_head.forward_cls(head_features)
+                head_features = self.model_s.decode_head._forward_feature(x)
+                out = self.model_s.decode_head._forward_cls(head_features)
                 loss_decode = self.model_s.decode_head.forward_train(out, img_metas, gt_semantic_seg=gt_semantic_seg, loss_only=True)
                 self.update_summary_loss(loss_decode)
                 proto_out = self.proto_net(head_features, gt_semantic_seg, orig_size=img.shape[2:])
@@ -147,7 +113,6 @@ class MeanTeacherSegmentor(BaseSegmentor):
             teacher_prob_unsup = torch.softmax(teacher_out, axis=1)
             _, pl_from_teacher = torch.max(teacher_prob_unsup, axis=1, keepdim=True)
 
-
         # drop pixels with high entropy
         drop_percent = self.drop_percent
         percent_unreliable = (100 - drop_percent) * (1 - self.count_iter / self.filter_pixels_iters)
@@ -169,19 +134,29 @@ class MeanTeacherSegmentor(BaseSegmentor):
         x_u = self.model_s.extract_feat(ul_s_img)
         if self.use_prototype_head:
             # for proto head we need to derive head features
-            head_features_sup = self.model_s.decode_head.forward_features(x)
-            head_features_unsup = self.model_s.decode_head.forward_features(x_u)
-            out_sup = self.model_s.decode_head.forward_cls(head_features_sup)
-            out_unsup = self.model_s.decode_head.forward_cls(head_features_unsup)
+            head_features_sup = self.model_s.decode_head._forward_feature(x)
+            head_features_unsup = self.model_s.decode_head._forward_feature(x_u)
+            out_sup = self.model_s.decode_head._forward_cls(head_features_sup)
+            out_unsup = self.model_s.decode_head._forward_cls(head_features_unsup)
             # proto forward + proto learning
             proto_out_supervised = self.proto_net(head_features_sup, gt_semantic_seg, orig_size=img.shape[2:])
             proto_out_unsupervised = self.proto_net(head_features_unsup, pl_from_teacher, orig_size=img.shape[2:])
+            # compute losses
+            loss_decode = self.model_s.decode_head.forward_train(out_sup, img_metas, gt_semantic_seg=gt_semantic_seg, loss_only=True)
+            loss_decode_u = self.model_s.decode_head.forward_train(out_unsup, ul_img_metas, gt_semantic_seg=pl_from_teacher, loss_only=True)
+            self.update_summary_loss(loss_decode)
+            self.update_summary_loss(loss_decode_u, loss_weight=self.unsup_weight * reweight_unsup)
+            # proto loss computation
+            loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=gt_semantic_seg)
+            loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=pl_from_teacher)
+            self.update_summary_loss(loss_proto, oss_weight=self.proto_weight)
+            self.update_summary_loss(loss_proto_u, loss_weight=self.unsup_weight * reweight_unsup * self.proto_weight)
+        else:
+            loss_decode = self.model_s._decode_head_forward_train(out_sup, img_metas, gt_semantic_seg=gt_semantic_seg)
+            loss_decode_u = self.model_s._decode_head_forward_train(out_unsup, ul_img_metas, gt_semantic_seg=pl_from_teacher)
+            self.update_summary_loss(loss_decode)
+            self.update_summary_loss(loss_decode_u, loss_weight=self.unsup_weight * reweight_unsup)
 
-        # compute losses
-        loss_decode = self.model_s.decode_head.forward_train(out_sup, img_metas, gt_semantic_seg=gt_semantic_seg, need_forward=False)
-        loss_decode_u = self.model_s.decode_head.forward_train(out_unsup, ul_img_metas, gt_semantic_seg=pl_from_teacher, need_forward=False)
-        self.update_summary_loss(loss_decode)
-        self.update_summary_loss(loss_decode_u, loss_weight=self.unsup_weight * reweight_unsup)
 
         if hasattr(self.model_s, "auxiliary_head"):
             aux_loss = self.model_s.auxiliary_head.forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
@@ -189,12 +164,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
             self.update_summary_loss(aux_loss, loss_weight=self.aux_weight)
             self.update_summary_loss(aux_loss_u, loss_weight=self.aux_weight * reweight_unsup * self.unsup_weight)
 
-        if self.use_prototype_head:
-            loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=gt_semantic_seg)
-            loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=pl_from_teacher)
-            self.update_summary_loss(loss_proto, oss_weight=self.proto_weight)
-            self.update_summary_loss(loss_proto_u, loss_weight=self.unsup_weight * reweight_unsup * self.proto_weight)
-
+        # add information about accuracy
         self.losses["decode_acc"] = loss_decode["decode.acc_seg"]
         self.losses["decode_acc_unsup"] = loss_decode_u["decode.acc_seg"]
 
