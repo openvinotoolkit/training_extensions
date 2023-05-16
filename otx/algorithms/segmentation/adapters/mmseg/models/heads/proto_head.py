@@ -75,7 +75,6 @@ class ProtoNet(BaseDecodeHead):
         return proto_logits, proto_target
 
     def forward(self, inputs, gt_semantic_seg):
-        breakpoint()
         c = self.proj_head(inputs)
         _c = rearrange(c, 'b c h w -> (b h w) c')
         _c = self.feat_norm(_c)

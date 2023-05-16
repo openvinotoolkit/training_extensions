@@ -36,7 +36,7 @@ hyper_parameters:
       learning_rate_warmup_iters:
         default_value: 20
       num_iters:
-        default_value: 100
+        default_value: 150
     nncf_optimization:
       enable_quantization:
         default_value: true

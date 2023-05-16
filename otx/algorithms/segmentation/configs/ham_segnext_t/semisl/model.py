@@ -1,4 +1,4 @@
-"""Semi-SL model configuration of SegNext-s model for Segmentation Task."""
+"""Semi-SL model configuration of SegNext-t model for Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
