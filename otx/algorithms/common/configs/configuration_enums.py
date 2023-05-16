@@ -33,3 +33,16 @@ class StorageCacheScheme(ConfigurableEnum):
     JPEG_95 = "JPEG/95"
     PNG = "PNG"
     TIFF = "TIFF"
+
+
+class BatchSizeAdaptType(ConfigurableEnum):
+    """This Enum represents the type of adapting batch size.
+
+    None : Not adapt batch size.
+    Safe : Find a batch size preventing GPU out of memory.
+    Full : Find a batch size using almost GPU memory.
+    """
+
+    NONE = "None"
+    SAFE = "Safe"
+    FULL = "Full"

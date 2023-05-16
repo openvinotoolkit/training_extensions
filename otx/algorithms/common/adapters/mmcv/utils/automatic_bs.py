@@ -4,11 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
+from math import sqrt
 from typing import Callable, Dict, List
 
 import numpy as np
 
-from otx.algorithms.common.adapters.torch.utils import adapt_batch_size as adapt_torch_model_bs
+from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
@@ -36,7 +37,7 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
     target[keys[-1]] = value
 
 
-def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False):
+def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False, not_increase: bool = True):
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
     This function just setup for single iteration training to reduce time for adapting.
@@ -49,6 +50,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         meta (Dict): A dict records some meta information of a training.
         datasets (List): List of datasets.
         validate (bool): Whether do vlidation or not.
+        not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
 
     def train_func_single_iter(batch_size):
@@ -64,15 +66,23 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         else:
             copied_cfg.runner["max_epochs"] = 1
 
-        otx_prog_hook_idx = None
+        # Remove some hooks due to reasons below
+        # OTXProgressHook => prevent progress bar from being 0 and 100 repeatably
+        # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
+        # CustomEvalHook => exclude validation in classification task
+        idx_hooks_to_remove = []
+        hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook"]
         for i, hook in enumerate(copied_cfg.custom_hooks):
             if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
                 hook["enable_eval_before_run"] = False
-            elif hook["type"] == "OTXProgressHook":
-                otx_prog_hook_idx = i
+            for hook_to_remove in hooks_to_remove:
+                if hook_to_remove.lower() in hook["type"].lower():
+                    idx_hooks_to_remove.append(i)
 
-        if otx_prog_hook_idx is not None:
-            del copied_cfg.custom_hooks[otx_prog_hook_idx]
+        if idx_hooks_to_remove:
+            idx_hooks_to_remove.sort()
+            for i in reversed(idx_hooks_to_remove):
+                del copied_cfg.custom_hooks[i]
 
         new_datasets = [SubDataset(datasets[0], batch_size)]
 
@@ -84,19 +94,25 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
 
     default_bs = _get_batch_size(cfg)
 
-    available_bs = adapt_torch_model_bs(
+    bs_search_algo = BsSearchAlgo(
         train_func=train_func_single_iter,
-        current_bs=default_bs,
-        trainset_size=len(datasets[0]),
+        default_bs=default_bs,
+        max_bs=len(datasets[0]),
     )
+    if not_increase:
+        new_batch_size = bs_search_algo.auto_decrease_batch_size()
+    else:
+        drop_last = cfg.data.get("train_dataloader", {}).get("drop_last", False)
+        new_batch_size = bs_search_algo.find_big_enough_batch_size(drop_last)
 
-    if default_bs != available_bs:
-        _set_batch_size(cfg, available_bs)
+    if default_bs != new_batch_size:
+        _set_batch_size(cfg, new_batch_size)
         origin_lr = cfg.optimizer.lr
-        cfg.optimizer.lr *= available_bs / default_bs
+        bs_change_ratio = new_batch_size / default_bs
+        cfg.optimizer.lr *= sqrt(bs_change_ratio)  # Using root scale instead of linear scale
 
         logger.info("Adapting batch size is done.")
-        logger.info(f"Batch size is adapted : {default_bs} -> {available_bs}")
+        logger.info(f"Batch size is adapted : {default_bs} -> {new_batch_size}")
         logger.info(f"learning rate is adapted : {origin_lr} -> {cfg.optimizer.lr}")
     else:
         logger.info("Adapting batch size is done. Current batch size is availble.")
@@ -123,16 +139,16 @@ class SubDataset:
         num_samples (int): Number of images to pretend to have. It should be positive.
     """
 
-    def __init__(self, fullset, num_sampels: int):
-        if num_sampels <= 0:
-            raise ValueError(f"num_sampels should be positive. But, current value is {num_sampels}.")
+    def __init__(self, fullset, num_samples: int):
+        if num_samples <= 0:
+            raise ValueError(f"num_samples should be positive. But, current value is {num_samples}.")
 
         self.fullset = fullset
-        self.num_sampels = num_sampels
+        self.num_samples = num_samples
 
     def __len__(self) -> int:
         """Get length of subset."""
-        return self.num_sampels
+        return self.num_samples
 
     def __getitem__(self, indx) -> dict:
         """Get dataset at index."""
@@ -152,4 +168,4 @@ class SubDataset:
         To consider that case, return flag array with length of num_samples.
 
         """
-        return np.zeros(self.num_sampels, dtype=np.uint8)
+        return np.zeros(self.num_samples, dtype=np.uint8)

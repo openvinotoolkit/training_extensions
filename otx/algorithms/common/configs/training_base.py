@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import POTQuantizationPreset, StorageCacheScheme
+from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
@@ -190,13 +190,13 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
-        auto_decrease_batch_size = configurable_boolean(
-            default_value=False,
-            header="Decrease batch size if current batch size isn't fit to CUDA memory.",
-            description="Find a proper batch size by training for an iteration with various batch size a few times.",
-            warning="Enabling this option could reduce the actual batch size if the current setting results in "
-            "out-of-memory error. The learning rate also could be adjusted according to the adapted batch size. "
-            "This process might take some extra computation time to try a few batch size candidates.",
+        auto_adapt_batch_size = selectable(
+            default_value=BatchSizeAdaptType.NONE,
+            header="Adapt batch size according to current GPU memory.",
+            description="Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.",
+            warning="Enabling this could change the actual batch size depending on the current GPU status. "
+            "The learning rate also could be adjusted according to the adapted batch size. This process "
+            "might change a model performance and take some extra computation time to try a few batch size candidates.",
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 

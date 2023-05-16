@@ -3,28 +3,42 @@ name: Weekly Test
 on:
   workflow_dispatch: # run on request (no need for PR)
   schedule:
-    # every 12AM on Sunday
-    - cron: "0 0 * * 0"
+    # # every 12AM on Sunday
+    # - cron: "0 0 * * 0"
+    # every 12AM on Mon to Fri
+    - cron: "0 19 * * 1-5"
 
 jobs:
-  Weekly-Tests:
-    runs-on: [self-hosted, linux, x64, dev]
-    timeout-minutes: 1440
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Install dependencies
-        run: python -m pip install -r requirements/dev.txt
-      - name: Regression Tests
-        run: tox -e tests-all-py310 -- tests/regression
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: .tox/test-results.xml
-        # Use always() to always run this step to publish test results when there are test failures
-        if: ${{ always() }}
+  Regression-Tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: "act"
+            test_dir: "tests/regression/action"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "ano"
+            test_dir: "tests/regression/anomaly"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "cls"
+            test_dir: "tests/regression/classification"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "det"
+            test_dir: "tests/regression/detection"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "iseg"
+            test_dir: "tests/regression/instance_segmentation"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "seg"
+            test_dir: "tests/regression/semantic_segmentation"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+    name: Regression-Test-py310-${{ matrix.task }}
+    uses: ./.github/workflows/run_tests_in_tox.yml
+    with:
+      python-version: "3.10"
+      toxenv-pyver: "py310"
+      toxenv-task: ${{ matrix.task }}
+      tests-dir: ${{ matrix.test_dir }}
+      runs-on: ${{ matrix.runs_on }}
+      timeout-minutes: 1440
+      upload-artifact: true

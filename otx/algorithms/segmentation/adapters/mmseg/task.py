@@ -46,6 +46,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
@@ -368,9 +369,15 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+        if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
             train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+            )
 
         train_segmentor(
             model,

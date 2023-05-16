@@ -21,10 +21,14 @@ on:
       upload-artifact:
         type: boolean
         default: false
-
+      runs-on:
+        type: string
+        default: "['self-hosted', 'Linux', 'X64', 'dev']"
 jobs:
   run_tests_in_tox:
-    runs-on: [self-hosted, linux, x64, dev]
+    # tricky workaround to pass list from the string input type
+    # https://github.com/orgs/community/discussions/11692
+    runs-on: ${{ fromJson(inputs.runs-on) }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository

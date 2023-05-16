@@ -62,6 +62,10 @@ class BaseStreamer(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
+    def fps(self):
+        """Returns a frequency of getting images from source."""
+        raise NotImplementedError
+
 
 def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue) -> None:
     """Private function that is run by the thread.

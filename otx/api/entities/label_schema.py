@@ -278,8 +278,8 @@ class LabelSchemaEntity:
     # pylint: disable=too-many-public-methods, too-many-arguments
     def __init__(
         self,
-        label_tree: LabelTree = None,
-        label_groups: List[LabelGroup] = None,
+        label_tree: Optional[LabelTree] = None,
+        label_groups: Optional[List[LabelGroup]] = None,
     ):
         if label_tree is None:
             label_tree = LabelTree()
@@ -557,6 +557,68 @@ class LabelSchemaEntity:
         """
         label_group = LabelGroup(name="from_label_list", labels=labels)
         return LabelSchemaEntity(label_groups=[label_group])
+
+    def resolve_labels_greedily(self, scored_labels: List[ScoredLabel]) -> List[ScoredLabel]:
+        """Resolves hierarchical labels and exclusivity based on a list of ScoredLabels (labels with probability).
+
+        The following two steps are taken:
+
+        - select the most likely label from each label group
+        - add it and it's predecessors if they are also most likely labels (greedy approach).
+
+        Args:
+            scored_labels (List[LabelEntity]): list of labels to resolve
+
+        Returns:
+            List[ScoredLabel]: List of ScoredLabels (labels with probability)
+        """
+
+        def get_predecessors(lbl: LabelEntity, candidates: List[LabelEntity]) -> List[LabelEntity]:
+            """Returns all the predecessors of the input label or an empty list if one of the predecessors is not a candidate."""
+            predecessors = []
+            last_parent = self.get_parent(lbl)
+            if last_parent is None:
+                return [lbl]
+
+            while last_parent is not None:
+                if last_parent not in candidates:
+                    return []
+                predecessors.append(last_parent)
+                last_parent = self.get_parent(last_parent)
+
+            if predecessors:
+                predecessors.append(lbl)
+            return predecessors
+
+        label_to_prob = {lbl: 0.0 for lbl in self.get_labels(include_empty=True)}
+        for s_lbl in scored_labels:
+            label_to_prob[s_lbl.label] = s_lbl.probability
+
+        candidates = []
+        for g in self.get_groups():
+            if g.is_single_label():
+                candidates.append(g.labels[0])
+            else:
+                max_prob = 0.0
+                max_label = None
+                for lbl in g.labels:
+                    if label_to_prob[lbl] > max_prob:
+                        max_prob = label_to_prob[lbl]
+                        max_label = lbl
+                if max_label is not None:
+                    candidates.append(max_label)
+
+        output_labels = []
+        for lbl in candidates:
+            if lbl in output_labels:
+                continue
+            labels_to_add = get_predecessors(lbl, candidates)
+            for new_lbl in labels_to_add:
+                if new_lbl not in output_labels:
+                    output_labels.append(new_lbl)
+
+        output_scored_labels = [ScoredLabel(lbl, label_to_prob[lbl]) for lbl in output_labels]
+        return output_scored_labels
 
     def resolve_labels_probabilistic(
         self,

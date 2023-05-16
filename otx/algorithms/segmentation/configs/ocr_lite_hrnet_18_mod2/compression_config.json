@@ -21,16 +21,6 @@
     "optimizer": {
       "lr": 1e-4
     },
-    "lr_config": {
-      "_delete_": true,
-      "policy": "customstep",
-      "fixed": null,
-      "fixed_iters": 0,
-      "warmup": null,
-      "warmup_iters": 0,
-      "by_epoch": true,
-      "step": [90]
-    },
     "nncf_config": {
       "compression": [
         {

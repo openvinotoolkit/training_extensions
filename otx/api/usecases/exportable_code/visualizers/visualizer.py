@@ -5,6 +5,7 @@
 #
 
 import abc
+import time
 from typing import Optional
 
 import cv2
@@ -12,6 +13,7 @@ import numpy as np
 
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.utils.shape_drawer import ShapeDrawer
+from otx.api.usecases.exportable_code.streamer import BaseStreamer
 
 
 class IVisualizer(metaclass=abc.ABCMeta):
@@ -45,6 +47,17 @@ class IVisualizer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def is_quit(self) -> bool:
         """Check if user wishes to quit."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def video_delay(self, elapsed_time: float, streamer: BaseStreamer) -> None:
+        """Check if video frames were inferenced faster than the original video FPS and delay visualizer if so.
+
+        Args:
+            elapsed_time (float): Time spent on frame inference
+            streamer (BaseStreamer): Streamer object
+        """
 
         raise NotImplementedError
 
@@ -113,3 +126,17 @@ class Visualizer(IVisualizer):
             return False
 
         return ord("q") == cv2.waitKey(self.delay)
+
+    def video_delay(self, elapsed_time: float, streamer: BaseStreamer):
+        """Check if video frames were inferenced faster than the original video FPS and delay visualizer if so.
+
+        Args:
+            elapsed_time (float): Time spent on frame inference
+            streamer (BaseStreamer): Streamer object
+        """
+        if self.no_show:
+            return
+        if "VIDEO" in str(streamer.get_type()):
+            orig_frame_time = 1 / streamer.fps()
+            if elapsed_time < orig_frame_time:
+                time.sleep(orig_frame_time - elapsed_time)

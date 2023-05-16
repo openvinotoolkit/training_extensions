@@ -9,6 +9,7 @@ on:
 jobs:
   E2E-tests:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - task: "act"

@@ -12,7 +12,7 @@ import numpy as np
 
 from otx.algorithms.detection.utils import generate_label_schema
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
-from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
@@ -91,7 +91,7 @@ def generate_det_dataset(task_type, number_of_images=1):
                 anno.shape = ShapeFactory.shape_as_polygon(anno.shape)
         image = Image(data=image_numpy)
         annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=annos)
-        items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset))
+        items.append(DatasetItemEntityWithID(media=image, annotation_scene=annotation_scene, subset=subset))
     dataset = DatasetEntity(items)
     return dataset, dataset.get_labels()
 

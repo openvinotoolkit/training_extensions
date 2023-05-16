@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
@@ -120,6 +121,8 @@ def load_regression_configuration(
         "model_criteria": 0,
     }
 
+    data_root = os.environ.get("CI_DATA_ROOT", "/storageserver/pvd_data/otx_data_archive/regression_datasets")
+
     if "anomaly" not in task_type:
         if train_type == "" or label_type == "":
             raise ValueError()
@@ -130,12 +133,25 @@ def load_regression_configuration(
         result["kpi_e2e_eval_time_criteria"] = reg_config["kpi_e2e_eval_time_criteria"][task_type][train_type][
             label_type
         ]
-        result["data_path"] = reg_config["data_path"][task_type][train_type][label_type]
+
+        # update data_path using data_root setting
+        data_paths = reg_config["data_path"][task_type][train_type][label_type]
+        for key, value in data_paths.items():
+            data_paths[key] = os.path.join(data_root, value)
+
+        result["data_path"] = data_paths
     else:
         result["regression_criteria"] = reg_config["regression_criteria"][task_type]
         result["kpi_e2e_train_time_criteria"] = reg_config["kpi_e2e_train_time_criteria"][task_type]
         result["kpi_e2e_eval_time_criteria"] = reg_config["kpi_e2e_eval_time_criteria"][task_type]
-        result["data_path"] = reg_config["data_path"][task_type]
+
+        # update data_path using data_root setting
+        data_paths = reg_config["data_path"][task_type]
+        for key, value in data_paths.items():
+            if key != "train_params":
+                data_paths[key] = os.path.join(data_root, value)
+
+        result["data_path"] = data_paths
 
     return result
 

@@ -22,10 +22,7 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import Optional
 
-from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
-from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
@@ -266,29 +263,15 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
 
-    performance = None
-    if config_manager.data_config["val_subset"]["data_roots"]:
-        validation_dataset = dataset.get_subset(Subset.VALIDATION)
-        predicted_validation_dataset = task.infer(
-            validation_dataset.with_empty_annotations(),
-            InferenceParameters(is_evaluation=False),
-        )
-
-        resultset = ResultSetEntity(
-            model=output_model,
-            ground_truth_dataset=validation_dataset,
-            prediction_dataset=predicted_validation_dataset,
-        )
-        task.evaluate(resultset)
-        performance = resultset.performance
-        assert performance is not None
-        print(performance)
-
     end_time = time.time()
     sec = end_time - start_time
     total_time = str(datetime.timedelta(seconds=sec))
     print("otx train time elapsed: ", total_time)
-    model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
+    model_results = {
+        "time elapsed": total_time,
+        "score": output_model.performance,
+        "model_path": str(model_path.absolute()),
+    }
 
     if args.gpus and exit_stack is None:
         multigpu_manager.finalize()
@@ -302,6 +285,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
         results=model_results,
         output_path=config_manager.output_path / "cli_report.log",
     )
+    print(f"otx train CLI report has been generated: {config_manager.output_path / 'cli_report.log'}")
 
     # Latest model folder symbolic link to models
     latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"

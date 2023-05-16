@@ -48,6 +48,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
@@ -86,6 +87,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.core.data import caching
+from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook
 
 logger = get_logger()
 
@@ -148,6 +150,10 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
+
+        # Loss dynamics tracking
+        if getattr(self._hyperparams.algo_backend, "enable_noisy_label_detection", False):
+            LossDynamicsTrackingHook.configure_recipe(self._recipe_cfg, self._output_path)
 
         logger.info("initialized.")
 
@@ -239,10 +245,6 @@ class MMDetectionTask(OTXDetectionTask):
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
-        # FIXME: Currently detection do not support multi batch evaluation. This will be fixed
-        if "val" in cfg.data:
-            cfg.data.val_dataloader["samples_per_gpu"] = 1
-
         # TODO. This should be moved to configurer
         # TODO. Anchor clustering should be checked
         # if hasattr(cfg, "hparams"):
@@ -281,9 +283,15 @@ class MMDetectionTask(OTXDetectionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+        if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
             train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+            )
 
         train_detector(
             model,
@@ -331,10 +339,12 @@ class MMDetectionTask(OTXDetectionTask):
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
 
-        samples_per_gpu = 1
-
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
+        samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
+        # If the batch size and the number of data are not divisible, the metric may score differently.
+        # To avoid this, use 1 if they are not divisible.
+        samples_per_gpu = samples_per_gpu if len(mm_dataset) % samples_per_gpu == 0 else 1
         dataloader = build_dataloader(
             mm_dataset,
             samples_per_gpu=samples_per_gpu,
@@ -369,7 +379,6 @@ class MMDetectionTask(OTXDetectionTask):
             time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
             time_monitor = time_monitor[0] if time_monitor else None
         if time_monitor is not None:
-
             # pylint: disable=unused-argument
             def pre_hook(module, inp):
                 time_monitor.on_test_batch_begin(None, None)
@@ -566,7 +575,6 @@ class MMDetectionTask(OTXDetectionTask):
             time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
             time_monitor = time_monitor[0] if time_monitor else None
         if time_monitor is not None:
-
             # pylint: disable=unused-argument
             def pre_hook(module, inp):
                 time_monitor.on_test_batch_begin(None, None)
