@@ -8,7 +8,6 @@ from typing import Any, Tuple, Union
 
 import numpy as np
 from openvino.model_zoo.model_api.pipelines import AsyncPipeline
-from openvino.model_zoo.model_api.models.utils import Detection
 
 from otx.api.usecases.exportable_code.demo.demo_package.model_container import (
     ModelContainer,
