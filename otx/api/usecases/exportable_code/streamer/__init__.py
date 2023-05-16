@@ -11,6 +11,7 @@ from otx.api.usecases.exportable_code.streamer.streamer import (
     OpenError,
     ThreadedStreamer,
     VideoStreamer,
+    BaseStreamer,
     get_streamer,
 )
 
@@ -22,5 +23,6 @@ __all__ = [
     "VideoStreamer",
     "InvalidInput",
     "OpenError",
+    "BaseStreamer",
     "get_streamer",
 ]

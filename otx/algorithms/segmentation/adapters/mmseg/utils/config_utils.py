@@ -101,9 +101,6 @@ def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
     main_iters = int(hyperparams.learning_parameters.num_iters)
     total_iterations = fixed_iters + warmup_iters + main_iters
 
-    # false positive (mypy)
-    if config.lr_config.get("policy", None) == "customstep":
-        config.lr_config.fixed_iters = fixed_iters
     config.find_unused_parameters = fixed_iters > 0
     config.lr_config.warmup_iters = warmup_iters
     if config.lr_config.warmup_iters == 0:
@@ -122,10 +119,6 @@ def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
 
 def rescale_num_iterations(config: Union[Config, ConfigDict], schedule_scale: float):
     """Rescale number of iterations for lr scheduler."""
-    if config.lr_config.policy == "customstep":
-        config.lr_config.step = [int(schedule_scale * step) for step in config.lr_config.step]
-    elif config.lr_config.policy == "customcos":
-        config.lr_config.periods = [int(schedule_scale * period) for period in config.lr_config.periods]
 
     def _rescale_num_iters(head, schedule_scale):
         losses = head.loss_decode

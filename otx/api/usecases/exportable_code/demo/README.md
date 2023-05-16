@@ -69,20 +69,6 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
    python -m pip install -r requirements.txt
    ```
 
-1. Add `model_wrappers` package to PYTHONPATH:
-
-   On Linux and macOS:
-
-   ```bash
-   export PYTHONPATH=$PYTHONPATH:/path/to/model_wrappers
-   ```
-
-   On Windows:
-
-   ```bash
-   set PYTHONPATH=%PYTHONPATH%;/path/to/model_wrappers
-   ```
-
 ## Usecase
 
 1. Running the `demo.py` application with the `-h` option yields the following usage message:
@@ -95,8 +81,7 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
    -i INPUT, --input INPUT
                            Required. An input to process. The input must be a single image, a folder of images, video file or camera id.
    -m MODELS [MODELS ...], --models MODELS [MODELS ...]
-                           Required. Path to directory with trained model and configuration file. If you provide several models you will start the task chain pipeline with the provided models in the order in
-                           which they were specified.
+                           Optional. Path to directory with trained model and configuration file. If you provide several models you will start the task chain pipeline with the provided models in the order in which they were specified. Default value points to deployed model folder '../model'.
    -it {sync,async}, --inference_type {sync,async}
                            Optional. Type of inference for single model.
    -l, --loop            Optional. Enable reading the input in a loop.
@@ -106,12 +91,10 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
    --output OUTPUT       Optional. Output path to save input data with predictions.
    ```
 
-2. As a `model`, you can use path to model directory from generated zip. You can pass as `input` a single image, a folder of images, a video file, or a web camera id. So you can use the following command to do inference with a pre-trained model:
+2. As a `model` parameter the default value `../model` will be used. Or you can specify the other path to the model directory from generated zip. You can pass as `input` a single image, a folder of images, a video file, or a web camera id. So you can use the following command to do inference with a pre-trained model:
 
    ```bash
-   python3 demo.py \
-   -i <path_to_video>/inputVideo.mp4 \
-   -m <path_to_model_directory>
+   python3 demo.py -i <path_to_video>/inputVideo.mp4
    ```
 
    You can press `Q` to stop inference during demo running.

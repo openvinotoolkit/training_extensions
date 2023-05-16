@@ -1,4 +1,5 @@
 import pytest
+from math import sqrt
 
 from otx.algorithms.common.adapters.mmcv.utils import automatic_bs
 from otx.algorithms.common.adapters.mmcv.utils import adapt_batch_size
@@ -9,24 +10,36 @@ DEFAULT_LR = 0.001
 TRAINSET_SIZE = 100
 
 
-def bs_adapt_func(train_func, current_bs, trainset_size):
-    train_func(current_bs)
-    train_func(current_bs // 2)
-    return current_bs // 2
+class MockBsSearchAlgo:
+    def __init__(self, train_func, default_bs: int, max_bs: int):
+        self.train_func = train_func
+        self.default_bs = default_bs
+        self.max_bs = max_bs
+
+    def auto_decrease_batch_size(self):
+        self.train_func(self.default_bs)
+        self.train_func(self.default_bs // 2)
+        return self.default_bs // 2
+
+    def find_big_enough_batch_size(self, drop_last: bool):
+        self.train_func(self.default_bs)
+        self.train_func(self.default_bs + 2)
+        return self.default_bs + 2
 
 
 @pytest.fixture
-def mock_adapt_func(mocker):
-    mock_func = mocker.patch.object(automatic_bs, "adapt_torch_model_bs")
-    mock_func.side_effect = bs_adapt_func
-    return mock_func
+def mock_adapt_algo_cls(mocker):
+    return mocker.patch.object(automatic_bs, "BsSearchAlgo", side_effect=MockBsSearchAlgo)
 
 
 @pytest.fixture
 def common_cfg(mocker):
     mock_cfg = mocker.MagicMock()
     mock_cfg.runner = {"type": "EpochRunnerWithCancel", "max_epochs": 100}
-    mock_cfg.custom_hooks = [{"type": "AdaptiveTrainSchedulingHook", "enable_eval_before_run": True}]
+    mock_cfg.custom_hooks = [
+        {"type": "AdaptiveTrainSchedulingHook", "enable_eval_before_run": True},
+        {"type": "OTXProgressHook"},
+    ]
     mock_cfg.optimizer.lr = DEFAULT_LR
     return mock_cfg
 
@@ -51,54 +64,64 @@ def mock_dataset(mocker):
     return mock_ds
 
 
-def test_adapt_batch_size_not_action_task(mocker, mock_adapt_func, mock_cfg_not_action, mock_dataset):
+@pytest.mark.parametrize("not_increase", [True, False])
+def test_adapt_batch_size_not_action_task(mocker, mock_adapt_algo_cls, mock_cfg_not_action, mock_dataset, not_increase):
     # prepare
     mock_train_func = mocker.MagicMock()
+    new_bs = DEFAULT_BS // 2 if not_increase else DEFAULT_BS + 2
 
     # execute
-    adapt_batch_size(mock_train_func, mock_cfg_not_action, mock_dataset, False)
+    adapt_batch_size(mock_train_func, mock_cfg_not_action, mock_dataset, False, not_increase)
 
     # check adapted batch size is applied
-    assert mock_cfg_not_action.data.train_dataloader["samples_per_gpu"] == DEFAULT_BS // 2
+    assert mock_cfg_not_action.data.train_dataloader["samples_per_gpu"] == new_bs
     # check leanring rate is updated depending on adapted batch size
-    assert mock_cfg_not_action.optimizer.lr == pytest.approx(DEFAULT_LR / 2)
+    bs_change_ratio = new_bs / DEFAULT_BS
+    assert mock_cfg_not_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
     # check adapt function gets proper arguments
-    assert mock_adapt_func.call_args.kwargs["current_bs"] == DEFAULT_BS
-    assert mock_adapt_func.call_args.kwargs["trainset_size"] == TRAINSET_SIZE
+    assert mock_adapt_algo_cls.call_args.kwargs["default_bs"] == DEFAULT_BS
+    assert mock_adapt_algo_cls.call_args.kwargs["max_bs"] == TRAINSET_SIZE
     # check length of dataset is decreased to reduce time
     assert len(mock_train_func.call_args_list[0].kwargs["dataset"][0]) == DEFAULT_BS
-    assert len(mock_train_func.call_args_list[1].kwargs["dataset"][0]) == DEFAULT_BS // 2
+    assert len(mock_train_func.call_args_list[1].kwargs["dataset"][0]) == new_bs
     # check max epoch is set as 1 to reduce time
     assert mock_train_func.call_args_list[0].kwargs["cfg"].runner["max_epochs"] == 1
     assert mock_train_func.call_args_list[1].kwargs["cfg"].runner["max_epochs"] == 1
     # check eval before run is disabled to reduce time
     assert not mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
     assert not mock_train_func.call_args_list[1].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
+    # check OTXProgressHook is removed
+    assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 1
 
 
-def test_adapt_batch_size_action_task(mocker, mock_adapt_func, mock_cfg_action, mock_dataset):
+@pytest.mark.parametrize("not_increase", [True, False])
+def test_adapt_batch_size_action_task(mocker, mock_adapt_algo_cls, mock_cfg_action, mock_dataset, not_increase):
     # prepare
     mock_train_func = mocker.MagicMock()
+    new_bs = DEFAULT_BS // 2 if not_increase else DEFAULT_BS + 2
 
     # execute
-    adapt_batch_size(mock_train_func, mock_cfg_action, mock_dataset, True)
+    adapt_batch_size(mock_train_func, mock_cfg_action, mock_dataset, True, not_increase)
 
     # check adapted batch size is applied
-    assert mock_cfg_action.data.videos_per_gpu == DEFAULT_BS // 2
+    assert mock_cfg_action.data.videos_per_gpu == new_bs
     # check leanring rate is updated depending on adapted batch size
-    assert mock_cfg_action.optimizer.lr == pytest.approx(DEFAULT_LR / 2)
+    bs_change_ratio = new_bs / DEFAULT_BS
+    assert mock_cfg_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
     # check adapt function gets proper arguments
-    assert mock_adapt_func.call_args.kwargs["current_bs"] == DEFAULT_BS
-    assert mock_adapt_func.call_args.kwargs["trainset_size"] == TRAINSET_SIZE
+    assert mock_adapt_algo_cls.call_args.kwargs["default_bs"] == DEFAULT_BS
+    assert mock_adapt_algo_cls.call_args.kwargs["max_bs"] == TRAINSET_SIZE
     # check length of dataset is decreased to reduce time
     assert len(mock_train_func.call_args_list[0].kwargs["dataset"][0]) == DEFAULT_BS
-    assert len(mock_train_func.call_args_list[1].kwargs["dataset"][0]) == DEFAULT_BS // 2
+    assert len(mock_train_func.call_args_list[1].kwargs["dataset"][0]) == new_bs
     # check max epoch is set as 1 to reduce time
     assert mock_train_func.call_args_list[0].kwargs["cfg"].runner["max_epochs"] == 1
     assert mock_train_func.call_args_list[1].kwargs["cfg"].runner["max_epochs"] == 1
     # check eval before run is enabled if validate is set as True
     assert mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
     assert mock_train_func.call_args_list[1].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
+    # check OTXProgressHook is removed
+    assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 1
 
 
 class TestSubDataset:
@@ -112,11 +135,11 @@ class TestSubDataset:
         fullset = mocker.MagicMock()
         SubDataset(fullset, 3)
 
-    @pytest.mark.parametrize("num_sampels", [-1, 0])
-    def test_init_w_wrong_num_sampels(self, mocker, num_sampels):
+    @pytest.mark.parametrize("num_samples", [-1, 0])
+    def test_init_w_wrong_num_samples(self, mocker, num_samples):
         fullset = mocker.MagicMock()
         with pytest.raises(ValueError):
-            SubDataset(fullset, num_sampels)
+            SubDataset(fullset, num_samples)
 
     def test_len(self):
         assert len(self.sub_dataset) == self.num_samples

@@ -219,7 +219,7 @@ def patch_datasets(
     def update_pipeline(cfg):
         if subset == "train":
             for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
-                get_meta_keys(collect_cfg)
+                get_meta_keys(collect_cfg, ["gt_ann_ids"])
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
             cfg_.type = "LoadImageFromOTXDataset"
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):

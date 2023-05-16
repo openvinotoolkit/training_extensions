@@ -1,6 +1,7 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from typing import Optional
 
 import pytest
 from attr import _make, validators
@@ -214,6 +215,7 @@ class TestPrimitiveParameters:
             float_instance,
             expected_min_value: float = 0.0,
             expected_max_value: float = 255.0,
+            expected_step_size: Optional[float] = None,
             expected_description: str = "Default float description",
             expected_warning: str = None,
             expected_editable: bool = True,
@@ -235,6 +237,7 @@ class TestPrimitiveParameters:
                 "type": ConfigElementType.FLOAT,
                 "min_value": expected_min_value,
                 "max_value": expected_max_value,
+                "step_size": expected_step_size,
                 "auto_hpo_state": expected_auto_hpo_state,
                 "auto_hpo_value": expected_auto_hpo_value,
             }
@@ -251,6 +254,7 @@ class TestPrimitiveParameters:
         # Checking _CountingAttr object returned by "configurable_float" for specified values of optional parameters
         min_value = 0.1
         max_value = 160.2
+        step_size = 0.3
         description = "configurable_float description"
         warning = "configurable_float warning"
         editable = False
@@ -265,6 +269,7 @@ class TestPrimitiveParameters:
             header=header,
             min_value=min_value,
             max_value=max_value,
+            step_size=step_size,
             description=description,
             warning=warning,
             editable=editable,
@@ -278,6 +283,7 @@ class TestPrimitiveParameters:
             float_instance=actual_float,  # type: ignore
             expected_min_value=min_value,
             expected_max_value=max_value,
+            expected_step_size=step_size,
             expected_description=description,
             expected_warning=warning,
             expected_editable=editable,

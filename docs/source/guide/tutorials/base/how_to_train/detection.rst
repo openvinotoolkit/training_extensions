@@ -96,7 +96,7 @@ we need to reformat the dataset according to this structure:
       (Optional)
       └── instances_test.json
   ├──images/
-      (Optional)
+      (The split on folders is optional)
       ├── train
       ├── val
       └── test

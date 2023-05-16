@@ -112,6 +112,15 @@ class TestOTXClassificationDatasetAdapter:
         assert isinstance(hlabel_train_dataset_adapter.get_otx_dataset(), DatasetEntity)
         assert isinstance(hlabel_train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
+        label_tree = hlabel_train_dataset_adapter.get_label_schema().label_tree
+        assert label_tree.num_labels == len(hlabel_train_dataset_adapter.category_items)
+        for label in label_tree.get_labels_in_topological_order():
+            parent = label_tree.get_parent(label)
+            parent_name = "" if parent is None else parent.name
+            assert [i.parent for i in hlabel_train_dataset_adapter.category_items if i.name == label.name][
+                0
+            ] == parent_name
+
         hlabel_test_dataset_adapter = ClassificationDatasetAdapter(
             task_type=self.task_type, test_data_roots=test_data_roots
         )
@@ -119,3 +128,12 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TESTING in hlabel_test_dataset_adapter.dataset
         assert isinstance(hlabel_test_dataset_adapter.get_otx_dataset(), DatasetEntity)
         assert isinstance(hlabel_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+
+        label_tree = hlabel_test_dataset_adapter.get_label_schema().label_tree
+        assert label_tree.num_labels == len(hlabel_test_dataset_adapter.category_items)
+        for label in label_tree.get_labels_in_topological_order():
+            parent = label_tree.get_parent(label)
+            parent_name = "" if parent is None else parent.name
+            assert [i.parent for i in hlabel_test_dataset_adapter.category_items if i.name == label.name][
+                0
+            ] == parent_name

@@ -5,7 +5,7 @@
 
 from .cross_dataset_detector_head import CrossDatasetDetectorHead
 from .custom_anchor_generator import SSDAnchorGeneratorClustered
-from .custom_atss_head import CustomATSSHead
+from .custom_atss_head import CustomATSSHead, CustomATSSHeadTrackingLossDynamics
 from .custom_retina_head import CustomRetinaHead
 from .custom_roi_head import CustomRoIHead
 from .custom_ssd_head import CustomSSDHead
@@ -21,4 +21,6 @@ __all__ = [
     "CustomRoIHead",
     "CustomVFNetHead",
     "CustomYOLOXHead",
+    # Loss dynamics tracking
+    "CustomATSSHeadTrackingLossDynamics",
 ]

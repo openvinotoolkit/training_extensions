@@ -63,6 +63,7 @@ class LoadAnnotationFromOTXDataset:
     def _load_bboxes(results, ann_info):
         results["bbox_fields"].append("gt_bboxes")
         results["gt_bboxes"] = copy.deepcopy(ann_info["bboxes"])
+        results["gt_ann_ids"] = copy.deepcopy(ann_info["ann_ids"])
         return results
 
     @staticmethod

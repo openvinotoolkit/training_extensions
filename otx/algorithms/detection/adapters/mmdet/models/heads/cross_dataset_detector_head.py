@@ -3,10 +3,21 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import functools
+import inspect
+from collections import defaultdict
+from typing import Dict, Tuple
+
 import torch
 from mmdet.core import images_to_levels, multi_apply
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.base_dense_head import BaseDenseHead
+from mmdet.models.losses.utils import weight_reduce_loss
+
+from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import (
+    LossAccumulator,
+    TrackingLossType,
+)
 
 # TODO: Need to fix pylint issues
 # pylint: disable=too-many-locals, too-many-arguments, abstract-method
@@ -243,3 +254,94 @@ class CrossDatasetDetectorHead(BaseDenseHead):
             mask = mask.repeat(len(all_labels[i]), 1)
             valid_label_mask.append(mask)
         return valid_label_mask
+
+
+@HEADS.register_module()
+class TrackingLossDynamicsMixIn:
+    """Mix-In class for tracking loss dynamics."""
+
+    tracking_loss_types: Tuple[TrackingLossType, ...] = ()
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._loss_dyns: Dict[TrackingLossType, Dict[Tuple[int, int], LossAccumulator]] = {}
+
+    def _get_pos_inds(self, labels):
+        pos_inds = super()._get_pos_inds(labels)
+
+        if len(pos_inds) > 0:
+            pos_assigned_gt_inds = self.all_pos_assigned_gt_inds[self.cur_loss_idx].reshape(-1)
+
+            gt_inds = pos_assigned_gt_inds[pos_inds].cpu()
+
+            self.batch_inds = gt_inds // self.max_gt_bboxes_len
+            self.bbox_inds = gt_inds % self.max_gt_bboxes_len
+
+        self.pos_inds = pos_inds
+        return pos_inds
+
+    def _store_loss_dyns(self, losses: torch.Tensor, key: TrackingLossType) -> None:
+        if len(self.pos_inds) == 0:
+            return
+
+        loss_dyns = self.loss_dyns[key]
+        for batch_idx, bbox_idx, loss_item in zip(self.batch_inds, self.bbox_inds, losses.detach().cpu()):
+            loss_dyns[(batch_idx.item(), bbox_idx.item())].add(loss_item.item())
+
+    def _postprocess_loss(self, losses: torch.Tensor, reduction: str, avg_factor: float) -> torch.Tensor:
+        return weight_reduce_loss(losses, reduction=reduction, avg_factor=avg_factor)
+
+    @property
+    def loss_dyns(self) -> Dict[TrackingLossType, Dict[Tuple[int, int], LossAccumulator]]:
+        """Loss dynamics dict."""
+        return self._loss_dyns
+
+    @staticmethod
+    def _wrap_loss(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            self.cur_loss_idx = 0
+            self._loss_dyns = {loss_type: defaultdict(LossAccumulator) for loss_type in self.tracking_loss_types}
+            losses = func(self, *args, **kwargs)
+            return losses
+
+        return wrapper
+
+    @staticmethod
+    def _wrap_loss_single(func):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            losses = func(self, *args, **kwargs)
+            self.cur_loss_idx += 1
+            return losses
+
+        return wrapper
+
+    @staticmethod
+    def _wrap_get_targets(concatenate_last: bool = False):
+        def wrapper_with_option(func):
+            signature = inspect.signature(func)
+
+            @functools.wraps(func)
+            def wrapper(self, *args, **kwargs):
+                anchor_list = gt_bboxes_list = None
+                for idx, key in enumerate(signature.parameters):
+                    if key == "anchor_list":
+                        anchor_list = kwargs.get(key) if key in kwargs else args[idx - 1]
+                    elif key == "gt_bboxes_list":
+                        gt_bboxes_list = kwargs.get(key) if key in kwargs else args[idx - 1]
+
+                assert anchor_list is not None and gt_bboxes_list is not None
+                num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
+                self.max_gt_bboxes_len = max([len(gt_bboxes) for gt_bboxes in gt_bboxes_list])
+                self.cur_batch_idx = 0
+                self.pos_assigned_gt_inds_list = []
+                targets = func(self, *args, **kwargs)
+                self.all_pos_assigned_gt_inds = images_to_levels(self.pos_assigned_gt_inds_list, num_level_anchors)
+                if concatenate_last:
+                    self.all_pos_assigned_gt_inds = torch.cat(self.all_pos_assigned_gt_inds, -1)
+                return targets
+
+            return wrapper
+
+        return wrapper_with_option

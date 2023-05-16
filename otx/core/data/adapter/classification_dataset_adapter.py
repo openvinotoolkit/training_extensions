@@ -36,9 +36,6 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
         self.label_groups = label_information["label_groups"]
         self.label_entities = label_information["label_entities"]
 
-        # Generate label schema
-        self.label_schema = self._generate_classification_label_schema(self.label_groups, self.label_entities)
-
         # Set the DatasetItemEntityWithID
         dataset_items: List[DatasetItemEntityWithID] = []
         for subset, subset_data in self.dataset.items():
@@ -70,14 +67,22 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
-        return self._generate_classification_label_schema(self.label_groups, self.label_entities)
+        return self._generate_classification_label_schema(
+            self.category_items,
+            self.label_groups,
+            self.label_entities,
+        )
 
     def _generate_classification_label_schema(
-        self, label_groups: List[DatumLabelCategories.LabelGroup], label_entities: List[LabelEntity]
+        self,
+        category_items: List[DatumLabelCategories.Category],
+        label_groups: List[DatumLabelCategories.LabelGroup],
+        label_entities: List[LabelEntity],
     ) -> LabelSchemaEntity:
         """Generate LabelSchema for Classification."""
         label_schema = LabelSchemaEntity()
 
+        # construct label group
         if len(label_groups) > 0:
             for label_group in label_groups:
                 group_label_entity_list = []
@@ -93,6 +98,23 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
             label_schema.add_group(self._generate_empty_label_entity())
         else:
             label_schema = self._generate_default_label_schema(label_entities)
+
+        # construct label tree
+        for category_item in category_items:
+            me = [i for i in label_entities if i.name == category_item.name]
+            parent = [i for i in label_entities if i.name == category_item.parent]
+            if len(me) != 1:
+                raise ValueError(
+                    f"Label name must be unique but {len(me)} labels found for label name '{category_item.name}'."
+                )
+            if len(parent) == 0:
+                label_schema.label_tree.add_node(me[0])
+            elif len(parent) == 1:
+                label_schema.add_child(parent[0], me[0])
+            else:
+                raise ValueError(
+                    f"Label name must be unique but {len(parent)} labels found for label name '{category_item.parent}'."
+                )
 
         return label_schema
 

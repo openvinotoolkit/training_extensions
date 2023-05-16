@@ -48,6 +48,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -295,9 +296,15 @@ class MMActionTask(OTXActionTask):
 
         validate = bool(cfg.data.get("val", None))
 
-        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+        if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
             train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, validate)
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                validate,
+                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+            )
 
         train_model(
             model,

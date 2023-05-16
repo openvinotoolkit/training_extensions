@@ -319,6 +319,8 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         if not self.deterministic:
             # deterministic is the same.
             self.deterministic = self.config.get("deterministic", False)
+        self.config["seed"] = self.seed
+        self.config["deterministic"] = self.deterministic
         set_random_seed(self.seed, logger, self.deterministic)
 
     @property

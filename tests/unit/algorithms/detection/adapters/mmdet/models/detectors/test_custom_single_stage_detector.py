@@ -15,66 +15,8 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 class TestCustomSingleStageDetector:
     @e2e_pytest_unit
-    def test_custom_single_stage_detector_build(self):
-        model_cfg = dict(
-            type="CustomSingleStageDetector",
-            backbone=dict(
-                type="mmdet.mobilenetv2_w1", out_indices=(4, 5), frozen_stages=-1, norm_eval=False, pretrained=True
-            ),
-            neck=None,
-            bbox_head=dict(
-                type="CustomSSDHead",
-                num_classes=80,
-                in_channels=(int(96.0), int(320.0)),
-                use_depthwise=True,
-                norm_cfg=dict(type="BN"),
-                act_cfg=dict(type="ReLU"),
-                init_cfg=dict(type="Xavier", layer="Conv2d", distribution="uniform"),
-                loss_balancing=False,
-                anchor_generator=dict(
-                    type="SSDAnchorGeneratorClustered",
-                    strides=(16, 32),
-                    reclustering_anchors=True,
-                    widths=[
-                        [
-                            38.641007923271076,
-                            92.49516032784699,
-                            271.4234764938237,
-                            141.53469410876247,
-                        ],
-                        [
-                            206.04136086566515,
-                            386.6542727907841,
-                            716.9892752215089,
-                            453.75609561761405,
-                            788.4629155558277,
-                        ],
-                    ],
-                    heights=[
-                        [
-                            48.9243877087132,
-                            147.73088476194903,
-                            158.23569788707474,
-                            324.14510379107367,
-                        ],
-                        [
-                            587.6216059488938,
-                            381.60024152086544,
-                            323.5988913027747,
-                            702.7486097568518,
-                            741.4865860938451,
-                        ],
-                    ],
-                ),
-                bbox_coder=dict(
-                    type="DeltaXYWHBBoxCoder",
-                    target_means=(0.0, 0.0, 0.0, 0.0),
-                    target_stds=(0.1, 0.1, 0.2, 0.2),
-                ),
-            ),
-        )
-
-        model = build_detector(model_cfg)
+    def test_custom_single_stage_detector_build(self, fxt_cfg_custom_ssd):
+        model = build_detector(fxt_cfg_custom_ssd)
         assert isinstance(model, CustomSingleStageDetector)
 
     @e2e_pytest_unit

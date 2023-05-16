@@ -9,7 +9,7 @@ from typing import List
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 
-from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.model_template import TaskType
@@ -28,7 +28,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
         # Prepare label information
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
-        dataset_items: List[DatasetItemEntity] = []
+        dataset_items: List[DatasetItemEntityWithID] = []
         used_labels: List[int] = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
@@ -37,7 +37,6 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     assert isinstance(image, Image)
                     shapes = []
                     for ann in datumaro_item.annotations:
-
                         if (
                             self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
                             and ann.type == DatumAnnotationType.polygon
@@ -56,7 +55,12 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                         or subset == Subset.UNLABELED
                         or (subset != Subset.TRAINING and len(datumaro_item.annotations) == 0)
                     ):
-                        dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
+                        dataset_item = DatasetItemEntityWithID(
+                            image,
+                            self._get_ann_scene_entity(shapes),
+                            subset=subset,
+                            id_=datumaro_item.id,
+                        )
                         dataset_items.append(dataset_item)
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)
