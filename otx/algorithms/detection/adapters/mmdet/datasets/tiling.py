@@ -429,7 +429,7 @@ class Tile:
 
         merged_bbox_results: List[np.ndarray] = [np.empty((0, 5), dtype=dtype) for _ in range(self.num_images)]
         merged_mask_results: List[List] = [[] for _ in range(self.num_images)]
-        merged_label_results: List[Union[List, np.ndarray]] = [[] for _ in range(self.num_images)]
+        merged_label_results: List[Union[List, np.ndarray]] = [np.array([]) for _ in range(self.num_images)]
 
         for result, tile in zip(results, self.tiles):
             tile_x1, tile_y1, _, _ = tile["tile_box"]
