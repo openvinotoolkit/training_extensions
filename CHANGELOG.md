@@ -51,7 +51,7 @@ All notable changes to this project will be documented in this file.
 - Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
 - Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
 - Add noisy label detection for multi-class classification task (<https://github.com/openvinotoolkit/training_extensions/pull/1985>, <https://github.com/openvinotoolkit/training_extensions/pull/2034>)
-- Add DeiT template for classification tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2093)
+- Add DeiT template for classification tasks as experimental template (<https://github.com/openvinotoolkit/training_extensions/pull/2093)
 
 ### Enhancements
 

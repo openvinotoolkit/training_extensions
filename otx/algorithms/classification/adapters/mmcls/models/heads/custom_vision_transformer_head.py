@@ -11,12 +11,16 @@ from mmcls.models.heads import VisionTransformerClsHead
 class CustomVisionTransformerClsHead(VisionTransformerClsHead):
     """Custom Vision Transformer classifier head which supports IBLoss loss calculation."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
+
     def loss(self, cls_score, gt_label, feature=None):
         """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.compute_loss.__class__.__name__ == "IBLoss":
+        if self.loss_type == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
