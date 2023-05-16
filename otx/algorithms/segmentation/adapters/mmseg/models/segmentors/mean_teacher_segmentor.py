@@ -29,13 +29,14 @@ class MeanTeacherSegmentor(BaseSegmentor):
                  aux_weight=0.1,
                  drop_percent=80,
                  num_iters_per_epoch=6000,
+                 semisl_start_iter=1,
                  proto_head=None,
                  **kwargs):
         super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.count_iter = 0
         self.filter_pixels_iters = num_iters_per_epoch * 100 # 100 epochs
-        self.semisl_start_iter = num_iters_per_epoch # 1 epoch
+        self.semisl_start_iter = num_iters_per_epoch * semisl_start_iter # 1 epoch
         self.drop_percent = drop_percent
         self.aux_weight = aux_weight
         cfg = kwargs.copy()
@@ -43,12 +44,14 @@ class MeanTeacherSegmentor(BaseSegmentor):
         self.align_corners = cfg["decode_head"].align_corners
         self.model_s = build_segmentor(cfg)
         self.model_t = build_segmentor(cfg)
+        self.use_prototype_head = False
         self.unsup_weight = unsup_weight
-        if proto_head is not None:
+        if proto_head is not None and hasattr(self.model_s.decode_head, "_forward_feature"):
             self.proto_net = ProtoNet(num_classes=self.model_s.decode_head.num_classes, **proto_head)
             self.use_prototype_head = True
-        else:
-            self.use_prototype_head = False
+        elif proto_head is not None:
+            logger.warning("Prototype head isn't supported by this model. "
+                           "_forward_feature() method is required to be presented in the main decode head")
         self.proto_weight = proto_weight
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
@@ -111,24 +114,37 @@ class MeanTeacherSegmentor(BaseSegmentor):
     def forward_train(self, img, img_metas, gt_semantic_seg, **kwargs):
         """Forward train."""
         self.count_iter += 1
-        aug_img, aug_gt_seg, _ = self.cutmix(img, gt_semantic_seg)
+        self.losses["sum_loss"] = 0.0
         if self.semisl_start_iter > self.count_iter or "extra_0" not in kwargs:
-            x = self.model_s.extract_feat(aug_img)
-            loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=aug_gt_seg)
-            return loss_decode
+            x = self.model_s.extract_feat(img)
+            if self.use_prototype_head:
+                head_features = self.model_s.decode_head.forward_features(x)
+                out = self.model_s.decode_head.forward_cls(head_features)
+                loss_decode = self.model_s.decode_head.forward_train(out, img_metas, gt_semantic_seg=gt_semantic_seg, loss_only=True)
+                self.update_summary_loss(loss_decode)
+                proto_out = self.proto_net(head_features, gt_semantic_seg, orig_size=img.shape[2:])
+                loss_proto = self.proto_net.losses(**proto_out, seg_label=gt_semantic_seg)
+                self.update_summary_loss(loss_proto, self.proto_weight)
+            else:
+                loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+                self.update_summary_loss(loss_decode)
 
+            self.losses["decode_acc"] = loss_decode["decode.acc_seg"]
+            return self.losses
+
+        # + unsupervised part
         ul_data = kwargs["extra_0"]
-        ul_s_img = ul_data["img"]
-        ul_w_img = ul_data["ul_w_img"]
+        ul_s_img = ul_data["img"] # strongly augmented
+        ul_w_img = ul_data["ul_w_img"] # weakly augmented
         ul_img_metas = ul_data["img_metas"]
 
         with torch.no_grad():
             teacher_feat = self.model_t.extract_feat(ul_w_img)
-            teacher_logit = self.model_t._decode_head_forward_test(teacher_feat, ul_img_metas)
-            teacher_logit = resize(
-                input=teacher_logit, size=ul_w_img.shape[2:], mode="bilinear", align_corners=self.align_corners
+            teacher_out = self.model_t._decode_head_forward_test(teacher_feat, ul_img_metas)
+            teacher_out = resize(
+                input=teacher_out, size=ul_w_img.shape[2:], mode="bilinear", align_corners=self.align_corners
             )
-            teacher_prob_unsup = torch.softmax(teacher_logit, axis=1)
+            teacher_prob_unsup = torch.softmax(teacher_out, axis=1)
             _, pl_from_teacher = torch.max(teacher_prob_unsup, axis=1, keepdim=True)
 
 
@@ -136,11 +152,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
         drop_percent = self.drop_percent
         percent_unreliable = (100 - drop_percent) * (1 - self.count_iter / self.filter_pixels_iters)
         drop_percent = 100 if percent_unreliable <= 0 else 100 - percent_unreliable
-        batch_size, _, h, w = teacher_logit.shape
-
-        with torch.no_grad():
-            teacher_feat = self.model_t.extract_feat(ul_w_img)
-            teacher_logit = self.model_t._decode_head_forward_test(teacher_feat, ul_img_metas)
+        batch_size, _, h, w = teacher_out.shape
 
         entropy = -torch.sum(teacher_prob_unsup * torch.log(teacher_prob_unsup + 1e-10), dim=1, keepdim=True)
 
@@ -148,55 +160,51 @@ class MeanTeacherSegmentor(BaseSegmentor):
             entropy[pl_from_teacher != 255].detach().cpu().numpy().flatten(), drop_percent
         )
         thresh_mask = entropy.ge(thresh).bool() * (pl_from_teacher != 255).bool()
-        # mix the images, mix thresholding mask also
-        aug_ul_imgs, aug_ul_gt_seg, thresh_mask = self.cutmix(ul_w_img, pl_from_teacher, thresh_mask)
 
-        aug_ul_gt_seg[thresh_mask] = 255
-        reweight_unsup = batch_size * h * w / torch.sum(aug_ul_gt_seg != 255)
+        pl_from_teacher[thresh_mask] = 255
+        reweight_unsup = batch_size * h * w / torch.sum(pl_from_teacher != 255)
 
         # extract features from labeled and unlabeled augmented images
-        x = self.model_s.extract_feat(aug_img)
+        x = self.model_s.extract_feat(img)
         x_u = self.model_s.extract_feat(ul_s_img)
-        head_features_sup = self.model_s.decode_head.forward_features(x)
-        head_features_unsup = self.model_s.decode_head.forward_features(x_u)
-        out_sup = self.model_s.decode_head.forward_cls(head_features_sup)
-        out_unsup = self.model_s.decode_head.forward_cls(head_features_unsup)
-        # proto aspp forward + proto learning
         if self.use_prototype_head:
-            proto_out_supervised = self.proto_net.forward_proto(head_features_sup, aug_gt_seg, orig_size=img.shape[2:])
-            proto_out_unsupervised = self.proto_net.forward_proto(head_features_unsup, aug_ul_gt_seg, orig_size=img.shape[2:])
+            # for proto head we need to derive head features
+            head_features_sup = self.model_s.decode_head.forward_features(x)
+            head_features_unsup = self.model_s.decode_head.forward_features(x_u)
+            out_sup = self.model_s.decode_head.forward_cls(head_features_sup)
+            out_unsup = self.model_s.decode_head.forward_cls(head_features_unsup)
+            # proto forward + proto learning
+            proto_out_supervised = self.proto_net(head_features_sup, gt_semantic_seg, orig_size=img.shape[2:])
+            proto_out_unsupervised = self.proto_net(head_features_unsup, pl_from_teacher, orig_size=img.shape[2:])
 
         # compute losses
-        losses = dict()
-        loss_decode = self.model_s.decode_head.forward_train(out_sup, img_metas, gt_semantic_seg=aug_gt_seg, need_forward=False)
-        loss_decode_u = self.model_s.decode_head.forward_train(out_unsup, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg, need_forward=False)
-        # self.update_summary_loss(losses, loss_decode, loss_decode_u, reweight_unsup)
+        loss_decode = self.model_s.decode_head.forward_train(out_sup, img_metas, gt_semantic_seg=gt_semantic_seg, need_forward=False)
+        loss_decode_u = self.model_s.decode_head.forward_train(out_unsup, ul_img_metas, gt_semantic_seg=pl_from_teacher, need_forward=False)
+        self.update_summary_loss(loss_decode)
+        self.update_summary_loss(loss_decode_u, loss_weight=self.unsup_weight * reweight_unsup)
 
         if hasattr(self.model_s, "auxiliary_head"):
-            aux_loss = self.model_s.auxiliary_head.forward_train(x, img_metas, gt_semantic_seg=aug_gt_seg)
-            aux_loss_u = self.model_s.auxiliary_head.forward_train(x_u, ul_img_metas, gt_semantic_seg=aug_ul_gt_seg)
-            # self.update_summary_loss(losses, aux_loss, aux_loss_u, reweight_unsup, loss_weight=self.aux_weight)
+            aux_loss = self.model_s.auxiliary_head.forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+            aux_loss_u = self.model_s.auxiliary_head.forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
+            self.update_summary_loss(aux_loss, loss_weight=self.aux_weight)
+            self.update_summary_loss(aux_loss_u, loss_weight=self.aux_weight * reweight_unsup * self.unsup_weight)
 
         if self.use_prototype_head:
-            loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=aug_gt_seg)
-            loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=aug_ul_gt_seg)
-            # self.update_summary_loss(losses, loss_proto, loss_proto_u, reweight_unsup, loss_weight=self.proto_weight)
-        losses["decode.loss"] = (loss_decode["loss_ce"]
-                                + self.proto_weight * loss_proto["pixel_proto_ce_loss"]
-                                + self.unsup_weight * reweight_unsup * (loss_decode_u["loss_ce"] + self.proto_weight * loss_proto_u["pixel_proto_ce_loss"]))
+            loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=gt_semantic_seg)
+            loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=pl_from_teacher)
+            self.update_summary_loss(loss_proto, oss_weight=self.proto_weight)
+            self.update_summary_loss(loss_proto_u, loss_weight=self.unsup_weight * reweight_unsup * self.proto_weight)
 
-        # losses["decode.acc_seg"] = loss_decode["decode.acc_seg"]
-        # losses["decode.acc_seg_ul"] = loss_decode_u["decode.acc_seg"]
-        # losses["proto.decode_s"] = loss_proto["pixel_proto_ce_loss"].
-        # losses["proto.decode_u"] = loss_proto["pixel_proto_ce_loss"]
+        self.losses["decode_acc"] = loss_decode["decode.acc_seg"]
+        self.losses["decode_acc_unsup"] = loss_decode_u["decode.acc_seg"]
 
-        return losses
+        return self.losses
 
-    def update_summary_loss(self, losses, loss_s, loss_u, reweight_unsup=1., loss_weight=1.):
-        for (key, value) in loss_s.items():
-            if value is None or "loss" not in key:
+    def update_summary_loss(self, decode_loss, loss_weight=1.):
+        for name, value in decode_loss.items():
+            if value is None or "loss" not in name:
                 continue
-            losses["sum_loss"] += (loss_s[key] + loss_u[key] * self.unsup_weight * reweight_unsup) * loss_weight
+            self.losses["sum_loss"] += value * loss_weight
 
     @staticmethod
     def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # pylint: disable=unused-argument

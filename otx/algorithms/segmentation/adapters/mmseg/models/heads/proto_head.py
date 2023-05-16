@@ -9,6 +9,7 @@ from mmcv.cnn import build_norm_layer
 from mmcv.runner import force_fp32
 from einops import rearrange, repeat
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import distributed_sinkhorn, momentum_update, ProjectionHead, trunc_normal_
+from otx.algorithms.segmentation.adapters.mmseg.models.losses import PixelPrototypeCELoss
 import torch.distributed as dist
 from  mmseg.models.losses import accuracy
 
@@ -27,22 +28,6 @@ class ProtoNet(BaseDecodeHead):
         self.proj_head = ProjectionHead(in_proto_channels, in_proto_channels)
         self.feat_norm = nn.LayerNorm(in_proto_channels)
         self.mask_norm = nn.LayerNorm(self.num_classes)
-
-    def __init_prototypes(self):
-        pass
-
-    def __forward_aspp(self, inputs):
-        x = self._transform_inputs(inputs)
-        aspp_outs = [
-            resize(
-                self.image_pool(x),
-                size=x.size()[2:],
-                mode='bilinear',
-                align_corners=self.align_corners)
-        ]
-        aspp_outs.extend(self.aspp_modules(x))
-        aspp_outs = torch.cat(aspp_outs, dim=1)
-        return aspp_outs
 
     def prototype_learning(self, _c, out_seg, gt_seg, masks):
         pred_seg = torch.max(out_seg, 1)[1]
@@ -89,10 +74,7 @@ class ProtoNet(BaseDecodeHead):
 
         return proto_logits, proto_target
 
-    def forward(self, inputs, gt_semantic_seg, orig_size=(512,512)):
-        return self.forward_proto(inputs, gt_semantic_seg, orig_size=(512,512))
-
-    def forward_proto(self, inputs, gt_semantic_seg, orig_size=(512,512)):
+    def forward(self, inputs, gt_semantic_seg):
         c = self.proj_head(inputs)
         _c = rearrange(c, 'b c h w -> (b h w) c')
         _c = self.feat_norm(_c)
@@ -106,7 +88,7 @@ class ProtoNet(BaseDecodeHead):
         out_seg = rearrange(out_seg, "(b h w) k -> b k h w", b=inputs.shape[0], h=inputs.shape[2])
         gt_seg = F.interpolate(gt_semantic_seg.float(), size=inputs.size()[2:], mode='nearest').view(-1)
         contrast_logits, contrast_target = self.prototype_learning(_c, out_seg, gt_seg, masks)
-        out_seg =  F.interpolate(out_seg, size=orig_size, mode='bilinear')
+        out_seg =  F.interpolate(out_seg, size=gt_semantic_seg.shape[-2:], mode='bilinear')
         proto_out = {"out_seg": out_seg, "contrast_logits": contrast_logits, "contrast_target": contrast_target}
 
         return proto_out
@@ -114,10 +96,11 @@ class ProtoNet(BaseDecodeHead):
     @force_fp32(apply_to=("out_seg", "contrast_logits", "contrast_target",))
     def losses(self, out_seg, contrast_logits, contrast_target, seg_label):
         loss = dict()
-        if not isinstance(self.loss_decode, nn.ModuleList):
-            losses_decode = [self.loss_decode]
-        else:
-            losses_decode = self.loss_decode
+
+        if not isinstance(self.loss_decode, PixelPrototypeCELoss):
+            raise ValueError("decode loss should be PixelPrototypeCELoss")
+
+        losses_decode = self.loss_decode
         for loss_decode in losses_decode:
             if loss_decode.loss_name not in loss:
                 loss[loss_decode.loss_name] = loss_decode(

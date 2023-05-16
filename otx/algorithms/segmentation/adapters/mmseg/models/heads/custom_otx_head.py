@@ -115,7 +115,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             return inputs
 
         def forward_train(
-            self, inputs: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, train_cfg: Dict = dict(), need_forward: bool = True
+            self, inputs: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, train_cfg: Dict = dict(), loss_only: bool = False
         ):
             """Forward function for training.
 
@@ -133,7 +133,8 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             Returns:
                 dict[str, Tensor]: a dictionary of loss components
             """
-            seg_logits = self(inputs) if need_forward else inputs
+            # is loss_only is True -> inputs are already model logits
+            seg_logits = self(inputs) if not loss_only else inputs
             valid_label_mask = get_valid_label_mask_per_batch(img_metas, self.num_classes)
             losses = self.losses(seg_logits, gt_semantic_seg, valid_label_mask=valid_label_mask)
             return losses
