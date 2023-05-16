@@ -8,6 +8,7 @@ from typing import Any, Tuple, Union
 
 import numpy as np
 from openvino.model_zoo.model_api.pipelines import AsyncPipeline
+from openvino.model_zoo.model_api.models.utils import Detection
 
 from otx.api.usecases.exportable_code.demo.demo_package.model_container import (
     ModelContainer,
@@ -17,6 +18,7 @@ from otx.api.usecases.exportable_code.demo.demo_package.utils import (
 )
 from otx.api.usecases.exportable_code.streamer import get_streamer
 from otx.api.usecases.exportable_code.visualizers import Visualizer
+from otx.api.usecases.exportable_code.prediction_to_annotation_converter import DetectionToAnnotationConverter
 from otx.api.utils.vis_utils import dump_frames
 
 
@@ -75,8 +77,10 @@ class AsyncExecutor:
     def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:
         """Render for results of inference."""
         predictions, frame_meta = results
-        predictions = np.array([[pred.id, pred.score, *pred.get_coords()] for pred in predictions])
-        predictions.shape = len(predictions), 6
+        if isinstance(self.converter, DetectionToAnnotationConverter):
+            # Predictions for the detection task
+            predictions = np.array([[pred.id, pred.score, *pred.get_coords()] for pred in predictions])
+            predictions.shape = len(predictions), 6
         annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
         current_frame = frame_meta["frame"]
         output = self.visualizer.draw(current_frame, annotation_scene, frame_meta)
