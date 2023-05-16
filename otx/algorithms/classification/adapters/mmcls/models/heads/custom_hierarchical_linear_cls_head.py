@@ -9,9 +9,11 @@ from mmcls.models.heads import MultiLabelClsHead
 from mmcv.cnn import normal_init
 from torch import nn
 
+from .mixin import OTXHeadMixin
+
 
 @HEADS.register_module()
-class CustomHierarchicalLinearClsHead(MultiLabelClsHead):
+class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
     """Custom Linear classification head for hierarchical classification task.
 
     Args:
@@ -80,6 +82,7 @@ class CustomHierarchicalLinearClsHead(MultiLabelClsHead):
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of CustomHierarchicalLinearClsHead class."""
         img_metas = kwargs.get("img_metas", None)
+        cls_score = self.pre_logits(cls_score)
         gt_label = gt_label.type_as(cls_score)
         cls_score = self.fc(cls_score)
 
@@ -127,6 +130,7 @@ class CustomHierarchicalLinearClsHead(MultiLabelClsHead):
 
     def simple_test(self, img):
         """Test without augmentation."""
+        img = self.pre_logits(img)
         cls_score = self.fc(img)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))

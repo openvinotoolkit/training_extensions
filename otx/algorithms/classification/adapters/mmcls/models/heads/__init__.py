@@ -22,6 +22,7 @@ from .custom_hierarchical_linear_cls_head import CustomHierarchicalLinearClsHead
 from .custom_hierarchical_non_linear_cls_head import CustomHierarchicalNonLinearClsHead
 from .custom_multi_label_linear_cls_head import CustomMultiLabelLinearClsHead
 from .custom_multi_label_non_linear_cls_head import CustomMultiLabelNonLinearClsHead
+from .custom_vision_transformer_head import CustomVisionTransformerClsHead
 from .mmov_cls_head import MMOVClsHead
 from .non_linear_cls_head import NonLinearClsHead
 from .semisl_cls_head import SemiLinearClsHead, SemiNonLinearClsHead
@@ -41,6 +42,7 @@ __all__ = [
     "CustomMultiLabelNonLinearClsHead",
     "SemiLinearMultilabelClsHead",
     "SemiNonLinearMultilabelClsHead",
+    "CustomVisionTransformerClsHead",
     "NonLinearClsHead",
     "SemiLinearClsHead",
     "SemiNonLinearClsHead",

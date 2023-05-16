@@ -9,9 +9,13 @@ from mmcls.models.heads import MultiLabelClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from torch import nn
 
+from .mixin import OTXHeadMixin
+
 
 @HEADS.register_module()
-class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):  # pylint: disable=too-many-instance-attributes
+class CustomHierarchicalNonLinearClsHead(
+    OTXHeadMixin, MultiLabelClsHead
+):  # pylint: disable=too-many-instance-attributes
     """Custom NonLinear classification head for hierarchical classification task.
 
     Args:
@@ -108,6 +112,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):  # pylint: disable=
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of CustomHierarchicalNonLinearClsHead class."""
         img_metas = kwargs.get("img_metas", None)
+        cls_score = self.pre_logits(cls_score)
         gt_label = gt_label.type_as(cls_score)
         cls_score = self.classifier(cls_score)
 
@@ -155,6 +160,7 @@ class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):  # pylint: disable=
 
     def simple_test(self, img):
         """Test without augmentation."""
+        img = self.pre_logits(img)
         cls_score = self.classifier(img)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))

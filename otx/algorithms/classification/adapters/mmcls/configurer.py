@@ -492,8 +492,6 @@ class ClassificationConfigurer:
         if layer.__class__.__name__ in TRANSFORMER_BACKBONES and isinstance(output, (tuple, list)):
             # mmcls.VisionTransformer outputs Tuple[List[...]] and the last index of List is the final logit.
             _, output = output
-            if cfg.model.head.type != "VisionTransformerClsHead":
-                raise ValueError(f"{layer.__class__.__name__ } needs VisionTransformerClsHead as head")
 
         in_channels = output.shape[1]
         if cfg.model.get("neck") is not None:

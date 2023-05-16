@@ -29,6 +29,7 @@ from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
+from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
@@ -281,11 +282,16 @@ class MMClassificationTask(OTXClassificationTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
-        if not dump_saliency_map:
+        model_type = cfg.model.backbone.type.split(".")[-1]  # mmcls.VisionTransformer => VisionTransformer
+        if (
+            not dump_saliency_map or model_type in TRANSFORMER_BACKBONES
+        ):  # TODO: remove latter "or" condition after resolving Issue#2098
             forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
-        if not dump_features:
+        if (
+            not dump_features or model_type in TRANSFORMER_BACKBONES
+        ):  # TODO: remove latter "or" condition after resolving Issue#2098
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)
