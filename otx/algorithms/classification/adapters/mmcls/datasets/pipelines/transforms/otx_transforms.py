@@ -5,8 +5,8 @@
 
 import random
 
-import numpy as np
 import mmcv
+import numpy as np
 from mmcls.datasets.builder import PIPELINES
 from PIL import Image
 from torchvision.transforms import functional as F
@@ -40,10 +40,8 @@ class OTXNormalize:
     def __call__(self, results):
         """Call function of OTXNormalize class."""
         if results.get("load_from_file", False):
-            results['img'] = mmcv.imnormalize(results['img'], self.mean, self.std,
-                                              self.to_rgb)
-            results['img_norm_cfg'] = dict(
-                mean=self.mean, std=self.std, to_rgb=self.to_rgb)
+            results["img"] = mmcv.imnormalize(results["img"], self.mean, self.std, self.to_rgb)
+            results["img_norm_cfg"] = dict(mean=self.mean, std=self.std, to_rgb=self.to_rgb)
         return results
 
 

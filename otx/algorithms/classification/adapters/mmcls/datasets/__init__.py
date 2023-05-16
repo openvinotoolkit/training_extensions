@@ -22,10 +22,10 @@ from .otx_datasets import (
 )
 from .pipelines.transforms import (
     AugMixAugment,
+    OTXNormalize,
     OTXRandAugment,
     PILToTensor,
     RandomRotate,
-    OTXNormalize,
     TwoCropTransform,
 )
 

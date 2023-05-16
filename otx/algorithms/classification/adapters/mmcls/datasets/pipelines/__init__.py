@@ -13,10 +13,10 @@ from .otx_pipelines import (
 )
 from .transforms import (
     AugMixAugment,
+    OTXNormalize,
     OTXRandAugment,
     PILToTensor,
     RandomRotate,
-    OTXNormalize,
     TwoCropTransform,
 )
 
