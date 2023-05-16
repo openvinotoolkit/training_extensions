@@ -14,7 +14,7 @@ from torchvision.transforms import functional as F
 from otx.algorithms.classification.adapters.mmcls.datasets.pipelines.transforms.otx_transforms import (
     PILToTensor,
     RandomRotate,
-    TensorNormalize,
+    OTXNormalize,
 )
 
 
@@ -38,13 +38,13 @@ def test_PILToTensor(data: dict[str, list[str] | Image]) -> None:
 
 
 def test_TensorNormalize(data: dict[str, list[str] | Image]) -> None:
-    """Test TensorNormalize transform."""
+    """Test OTXNormalize transform."""
     mean, std = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
     data = PILToTensor()(data)  # convert to tensor
-    transform = TensorNormalize(mean=mean, std=std)
+    transform = OTXNormalize(mean=mean, std=std)
     result = transform(data.copy())  # copy to avoid modifying the original data
 
-    assert result["TensorNormalize"] is True
+    assert result["OTXNormalize"] is True
     assert result["img_fields"] == ["img"]
     assert torch.equal(result["img"], F.normalize(data["img"], mean, std))
 

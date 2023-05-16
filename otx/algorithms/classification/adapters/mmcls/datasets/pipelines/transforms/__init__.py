@@ -5,14 +5,14 @@
 # flake8: noqa
 
 from .augmix import AugMixAugment
-from .otx_transforms import PILToTensor, RandomRotate, TensorNormalize
+from .otx_transforms import PILToTensor, RandomRotate, OTXNormalize
 from .random_augment import OTXRandAugment
 from .twocrop_transform import TwoCropTransform
 
 __all__ = [
     "AugMixAugment",
     "PILToTensor",
-    "TensorNormalize",
+    "OTXNormalize",
     "RandomRotate",
     "OTXRandAugment",
     "TwoCropTransform",

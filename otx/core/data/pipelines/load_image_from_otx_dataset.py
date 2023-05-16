@@ -50,11 +50,18 @@ class LoadImageFromOTXDataset:
         d_item = results["dataset_item"]
         return d_item.media.path, d_item.roi.id
 
+    def _has_image_array(self, results: Dict[str, Any]) -> bool:
+        """Check the results have image array data."""
+        return results["dataset_item"].media.data is not None
+    
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
         if self.file_client is None:
             self.file_client = mmcv.FileClient(**self.file_client_args)
-
+        
+        # If self._has_image_array == False, image will be loaded from file.
+        results["load_from_file"] = not self._has_image_array(results)
+         
         key = self._get_unique_key(results)
 
         img = self.mem_cache_handler.get(key)

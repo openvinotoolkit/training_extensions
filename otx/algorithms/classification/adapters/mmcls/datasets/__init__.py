@@ -25,14 +25,14 @@ from .pipelines.transforms import (
     OTXRandAugment,
     PILToTensor,
     RandomRotate,
-    TensorNormalize,
+    OTXNormalize,
     TwoCropTransform,
 )
 
 __all__ = [
     "AugMixAugment",
     "PILToTensor",
-    "TensorNormalize",
+    "OTXNormalize",
     "RandomRotate",
     "OTXRandAugment",
     "TwoCropTransform",

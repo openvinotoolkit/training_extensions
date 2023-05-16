@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=False)
 __resize_target_size = 224
 
 __train_pipeline = [
@@ -25,7 +25,7 @@ __train_pipeline = [
     dict(type="AugMixAugment", config_str="augmix-m5-w3-d1"),
     dict(type="RandomRotate", p=0.35, angle=(-10, 10)),
     dict(type="PILImageToNDArray", keys=["img"]),
-    dict(type="Normalize", **__img_norm_cfg),
+    dict(type="OTXNormalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="ToTensor", keys=["gt_label"]),
     dict(type="Collect", keys=["img", "gt_label"]),

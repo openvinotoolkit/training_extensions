@@ -5,6 +5,8 @@
 
 import random
 
+import numpy as np
+import mmcv
 from mmcls.datasets.builder import PIPELINES
 from PIL import Image
 from torchvision.transforms import functional as F
@@ -27,21 +29,21 @@ class PILToTensor:
 
 
 @PIPELINES.register_module()
-class TensorNormalize:
+class OTXNormalize:
     """Normalize tensor object."""
 
-    def __init__(self, mean, std, inplace=False):
-        self.mean = mean
-        self.std = std
-        self.inplace = inplace
+    def __init__(self, mean, std, to_rgb: bool = True) -> None:
+        self.mean = np.array(mean, dtype=np.float32)
+        self.std = np.array(std, dtype=np.float32)
+        self.to_rgb = to_rgb
 
     def __call__(self, results):
-        """Call function of TensorNormalize class."""
-        for key in results.get("img_fields", ["img"]):
-            img = results[key]
-            img = F.normalize(img, self.mean, self.std, self.inplace)
-            results["TensorNormalize"] = True
-            results[key] = img
+        """Call function of OTXNormalize class."""
+        if results.get("load_from_file", False):
+            results['img'] = mmcv.imnormalize(results['img'], self.mean, self.std,
+                                              self.to_rgb)
+            results['img_norm_cfg'] = dict(
+                mean=self.mean, std=self.std, to_rgb=self.to_rgb)
         return results
 
 

@@ -16,7 +16,7 @@ from .transforms import (
     OTXRandAugment,
     PILToTensor,
     RandomRotate,
-    TensorNormalize,
+    OTXNormalize,
     TwoCropTransform,
 )
 
@@ -30,7 +30,7 @@ __all__ = [
     "AugMixAugment",
     "PILToTensor",
     "RandomRotate",
-    "TensorNormalize",
+    "OTXNormalize",
     "OTXRandAugment",
     "TwoCropTransform",
 ]
