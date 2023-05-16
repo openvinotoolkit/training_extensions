@@ -231,7 +231,7 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         save_path = command_line[-1]
         command_line.append("--half-precision")
     if is_onnx:
-        command_line.extend(["--model-type", "onnx"])
+        command_line.extend(["--export-type", "onnx"])
 
     check_run(command_line)
 

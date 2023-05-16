@@ -57,7 +57,7 @@ def get_args():
         help="This flag indicated if model is exported in half precision (FP16).",
     )
     parser.add_argument(
-        "--model-type",
+        "--export-type",
         help="Type of the resulting model (OpenVINO or ONNX).",
         default="openvino",
     )
@@ -112,7 +112,9 @@ def main():
 
     export_precision = ModelPrecision.FP16 if args.half_precision else ModelPrecision.FP32
 
-    export_type = ExportType.OPENVINO if "openvino" == args.model_type.lower() else ExportType.ONNX
+    if not args.export_type.lower() in ["openvino", "onnx"]:
+        raise ValueError("Unsupported export type")
+    export_type = ExportType.OPENVINO if "openvino" == args.export_type.lower() else ExportType.ONNX
     task.export(export_type, exported_model, export_precision, args.dump_features)
 
     if not args.output:
