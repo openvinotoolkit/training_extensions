@@ -286,8 +286,6 @@ class MMDetectionTask(OTXDetectionTask):
             train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
 
-        cfg.data.train_dataloader.samples_per_gpu = 12
-        cfg.data.val_dataloader.samples_per_gpu = 12
         train_detector(
             model,
             datasets,
