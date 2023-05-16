@@ -21,7 +21,10 @@ class LossEqualizer:
                 sum_weight += float(loss_weight)
             assert sum_weight > 0.0
 
-            self.trg_ratios = {loss_name: float(loss_weight) / sum_weight for loss_name, loss_weight in weights.items()}
+            self.trg_ratios = {
+                loss_name: float(loss_weight) / sum_weight
+                for loss_name, loss_weight in weights.items()
+            }
 
         self._smoothed_values = dict()
 

@@ -24,7 +24,11 @@ _base_ = [
 ham_norm_cfg = dict(type="GN", num_groups=32, requires_grad=True)
 model = dict(
     type="OTXEncoderDecoder",
-    backbone=dict(embed_dims=[64, 128, 320, 512], depths=[2, 2, 4, 2], norm_cfg=dict(type="BN", requires_grad=True)),
+    backbone=dict(
+        embed_dims=[64, 128, 320, 512],
+        depths=[2, 2, 4, 2],
+        norm_cfg=dict(type="BN", requires_grad=True),
+    ),
     decode_head=dict(
         type="LightHamHead",
         input_transform="multiple_select",
@@ -37,12 +41,18 @@ model = dict(
         norm_cfg=ham_norm_cfg,
         align_corners=False,
         loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0),
-        ham_kwargs=dict(MD_S=1, MD_R=16, train_steps=6, eval_steps=7, inv_t=100, rand_init=True),
+        ham_kwargs=dict(
+            MD_S=1, MD_R=16, train_steps=6, eval_steps=7, inv_t=100, rand_init=True
+        ),
     ),
     # model training and testing settings
     train_cfg=dict(mix_loss=dict(enable=False, weight=0.1)),
 )
 
-optimizer = dict(paramwise_cfg=dict(custom_keys={"pos_block": dict(decay_mult=0.0), "norm": dict(decay_mult=0.0)}))
+optimizer = dict(
+    paramwise_cfg=dict(
+        custom_keys={"pos_block": dict(decay_mult=0.0), "norm": dict(decay_mult=0.0)}
+    )
+)
 
 load_from = "https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_s_20230227-f33ccdf2.pth"

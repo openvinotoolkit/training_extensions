@@ -84,17 +84,25 @@ class OTXSegmentationTask(OTXTask, ABC):
     """Task class for OTX segmentation."""
 
     # pylint: disable=too-many-instance-attributes, too-many-locals
-    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
+    def __init__(
+        self, task_environment: TaskEnvironment, output_path: Optional[str] = None
+    ):
         super().__init__(task_environment, output_path)
         self._task_config = SegmentationConfig
-        self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(self._task_config)
+        self._hyperparams: ConfigDict = task_environment.get_hyper_parameters(
+            self._task_config
+        )
         self._model_name = task_environment.model_template.name
         self._train_type = self._hyperparams.algo_backend.train_type
         self.metric = "mDice"
         self._label_dictionary = dict(enumerate(sorted(self._labels), 1))
 
         self._model_dir = os.path.join(
-            os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),
+            os.path.abspath(
+                os.path.dirname(
+                    self._task_environment.model_template.model_template_path
+                )
+            ),
             TRAIN_TYPE_DIR_PATH[self._train_type.name],
         )
         if (
@@ -137,11 +145,19 @@ class OTXSegmentationTask(OTXTask, ABC):
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
-        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
+        self._time_monitor = InferenceProgressCallback(
+            len(dataset), update_progress_callback
+        )
 
-        predictions = self._infer_model(dataset, InferenceParameters(is_evaluation=True))
-        prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
-        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
+        predictions = self._infer_model(
+            dataset, InferenceParameters(is_evaluation=True)
+        )
+        prediction_results = zip(
+            predictions["eval_predictions"], predictions["feature_vectors"]
+        )
+        self._add_predictions_to_dataset(
+            prediction_results, dataset, dump_soft_prediction=not is_evaluation
+        )
 
         logger.info("Inference completed")
         return dataset
@@ -198,7 +214,9 @@ class OTXSegmentationTask(OTXTask, ABC):
         self._is_training = False
 
         # Get training metrics group from learning curves
-        training_metrics, best_score = self._generate_training_metrics(self._learning_curves)
+        training_metrics, best_score = self._generate_training_metrics(
+            self._learning_curves
+        )
         performance = Performance(
             score=ScoreMetric(value=best_score, name=self.metric),
             dashboard_metrics=training_metrics,
@@ -264,16 +282,21 @@ class OTXSegmentationTask(OTXTask, ABC):
         logger.info("called evaluate()")
         if evaluation_metric is not None:
             logger.warning(
-                f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use mDice instead."
+                f"Requested to use {evaluation_metric} metric, "
+                "but parameter is ignored. Use mDice instead."
             )
         metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset)
         logger.info(f"mDice after evaluation: {metric.overall_dice.value}")
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
+    def _add_predictions_to_dataset(
+        self, prediction_results, dataset, dump_soft_prediction
+    ):
         """Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTX format."""
-        for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
+        for dataset_item, (prediction, feature_vector) in zip(
+            dataset, prediction_results
+        ):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
             hard_prediction = create_hard_prediction_from_soft_prediction(
                 soft_prediction=soft_prediction,
@@ -288,8 +311,12 @@ class OTXSegmentationTask(OTXTask, ABC):
             dataset_item.append_annotations(annotations=annotations)
 
             if feature_vector is not None:
-                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
+                active_score = TensorEntity(
+                    name="representation_vector", numpy=feature_vector.reshape(-1)
+                )
+                dataset_item.append_metadata_item(
+                    active_score, model=self._task_environment.model
+                )
 
             if dump_soft_prediction:
                 for label_index, label in self._label_dictionary.items():
@@ -305,7 +332,9 @@ class OTXSegmentationTask(OTXTask, ABC):
                         roi=dataset_item.roi,
                         numpy=class_act_map,
                     )
-                    dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
+                    dataset_item.append_metadata_item(
+                        result_media, model=self._task_environment.model
+                    )
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in SegmentationTrainTask."""
@@ -314,7 +343,9 @@ class OTXSegmentationTask(OTXTask, ABC):
             return
         logger.info("called save_model")
         buffer = io.BytesIO()
-        hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
+        hyperparams_str = ids_to_strings(
+            cfg_helper.convert(self._hyperparams, dict, enum_to_str=True)
+        )
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {
@@ -356,8 +387,14 @@ class OTXSegmentationTask(OTXTask, ABC):
             metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
             if key == f"val/{self.metric}":
                 best_score = max(curve.y)
-            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
-            output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
+            visualization_info = LineChartInfo(
+                name=key, x_axis_label="Epoch", y_axis_label=key
+            )
+            output.append(
+                MetricsGroup(
+                    metrics=[metric_curve], visualization_info=visualization_info
+                )
+            )
 
         return output, best_score
 
@@ -381,6 +418,8 @@ class OTXSegmentationTask(OTXTask, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
+    def _explain_model(
+        self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]
+    ):
         """Explain model and return the results."""
         raise NotImplementedError

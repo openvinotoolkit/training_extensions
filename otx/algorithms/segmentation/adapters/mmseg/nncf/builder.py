@@ -57,7 +57,9 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
     if checkpoint is None:
         # load model in this function not in runner
         checkpoint = config.get("load_from")
-    assert checkpoint is not None, "checkpoint is not given. NNCF model must be initialized with pretrained model"
+    assert (
+        checkpoint is not None
+    ), "checkpoint is not given. NNCF model must be initialized with pretrained model"
 
     model = build_segmentor(
         config,
@@ -176,7 +178,10 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
 
     for hook in get_configs_by_pairs(custom_hooks, dict(type="OTXProgressHook")):
         time_monitor = hook.get("time_monitor", None)
-        if time_monitor and getattr(time_monitor, "on_initialization_end", None) is not None:
+        if (
+            time_monitor
+            and getattr(time_monitor, "on_initialization_end", None) is not None
+        ):
             time_monitor.on_initialization_end()
 
     return compression_ctrl, model

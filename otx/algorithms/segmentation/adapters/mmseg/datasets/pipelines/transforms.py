@@ -50,7 +50,9 @@ class Normalize:
 
         for target in ["img", "ul_w_img", "aux_img"]:
             if target in results:
-                results[target] = mmcv.imnormalize(results[target], self.mean, self.std, self.to_rgb)
+                results[target] = mmcv.imnormalize(
+                    results[target], self.mean, self.std, self.to_rgb
+                )
         results["img_norm_cfg"] = dict(mean=self.mean, std=self.std, to_rgb=self.to_rgb)
 
         return results
@@ -107,7 +109,9 @@ class DefaultFormatBundle:
                 continue
 
             out_type = np.float32 if trg_name == "pixel_weights" else np.int64
-            results[trg_name] = DC(to_tensor(results[trg_name][None, ...].astype(out_type)), stack=True)
+            results[trg_name] = DC(
+                to_tensor(results[trg_name][None, ...].astype(out_type)), stack=True
+            )
 
         return results
 
@@ -182,7 +186,9 @@ class TwoCropTransform:
 
             results = deepcopy(results1)
             results["img"] = np.stack((results1["img"], results2["img"]), axis=0)
-            results["gt_semantic_seg"] = np.stack((results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0)
+            results["gt_semantic_seg"] = np.stack(
+                (results1["gt_semantic_seg"], results2["gt_semantic_seg"]), axis=0
+            )
             results["flip"] = [results1["flip"], results2["flip"]]
 
         else:
@@ -217,13 +223,23 @@ class RandomResizedCrop(T.RandomResizedCrop):
         results["img_shape"] = img.size
         for key in results.get("seg_fields", []):
             results[key] = np.array(
-                F.resized_crop(Image.fromarray(results[key]), i, j, height, width, self.size, self.interpolation)
+                F.resized_crop(
+                    Image.fromarray(results[key]),
+                    i,
+                    j,
+                    height,
+                    width,
+                    self.size,
+                    self.interpolation,
+                )
             )
 
         # change order because of difference between numpy and PIL
         w_scale = results["img_shape"][0] / results["ori_shape"][1]
         h_scale = results["img_shape"][1] / results["ori_shape"][0]
-        results["scale_factor"] = np.array([w_scale, h_scale, w_scale, h_scale], dtype=np.float32)
+        results["scale_factor"] = np.array(
+            [w_scale, h_scale, w_scale, h_scale], dtype=np.float32
+        )
 
         return results
 

@@ -44,7 +44,12 @@ class BlurSegmentation(SegmentationModel):
 
     __model__ = "blur_segmentation"
 
-    def __init__(self, model_adapter: ModelAdapter, configuration: Optional[dict] = None, preload: bool = False):
+    def __init__(
+        self,
+        model_adapter: ModelAdapter,
+        configuration: Optional[dict] = None,
+        preload: bool = False,
+    ):
         super().__init__(model_adapter, configuration, preload)
         self.out_channels = 0
 
@@ -55,7 +60,9 @@ class BlurSegmentation(SegmentationModel):
         parameters.update(
             {
                 "soft_threshold": NumericalValue(default_value=0.5, min=0.0, max=1.0),
-                "blur_strength": NumericalValue(value_type=int, default_value=1, min=0, max=25),
+                "blur_strength": NumericalValue(
+                    value_type=int, default_value=1, min=0, max=25
+                ),
             }
         )
 
@@ -73,7 +80,9 @@ class BlurSegmentation(SegmentationModel):
         elif len(layer_shape) == 4:
             self.out_channels = layer_shape[1]
         else:
-            raise Exception(f"Unexpected output layer shape {layer_shape}. Only 4D and 3D output layers are supported")
+            raise Exception(
+                f"Unexpected output layer shape {layer_shape}. Only 4D and 3D output layers are supported"
+            )
 
         return layer_name
 
@@ -83,18 +92,30 @@ class BlurSegmentation(SegmentationModel):
         soft_prediction = np.transpose(predictions, axes=(1, 2, 0))
 
         hard_prediction = create_hard_prediction_from_soft_prediction(
-            soft_prediction=soft_prediction, soft_threshold=self.soft_threshold, blur_strength=self.blur_strength
+            soft_prediction=soft_prediction,
+            soft_threshold=self.soft_threshold,
+            blur_strength=self.blur_strength,
         )
         hard_prediction = cv2.resize(
-            hard_prediction, meta["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
+            hard_prediction,
+            meta["original_shape"][1::-1],
+            0,
+            0,
+            interpolation=cv2.INTER_NEAREST,
         )
         soft_prediction = cv2.resize(
-            soft_prediction, meta["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
+            soft_prediction,
+            meta["original_shape"][1::-1],
+            0,
+            0,
+            interpolation=cv2.INTER_NEAREST,
         )
         meta["soft_prediction"] = soft_prediction
 
         if "feature_vector" not in outputs:
-            warnings.warn("Could not find Feature Vector in OpenVINO output. Please rerun export or retrain the model.")
+            warnings.warn(
+                "Could not find Feature Vector in OpenVINO output. Please rerun export or retrain the model."
+            )
             meta["feature_vector"] = None
         else:
             meta["feature_vector"] = outputs["feature_vector"].reshape(-1)

@@ -27,7 +27,9 @@ class StepScalarScheduler(BaseScalarScheduler):
         by_epoch (bool): Whether to use epoch as the unit of iteration.
     """
 
-    def __init__(self, scales: List[float], num_iters: List[int], by_epoch: bool = False):
+    def __init__(
+        self, scales: List[float], num_iters: List[int], by_epoch: bool = False
+    ):
         super().__init__()
 
         self.by_epoch = by_epoch

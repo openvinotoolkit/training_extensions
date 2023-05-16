@@ -27,7 +27,9 @@ class AngularPWConv(nn.Module):
 
     def forward(self, x):
         """Forward."""
-        weight = normalize(self.weight, dim=1, p=2).view(self.out_features, self.in_features, 1, 1)
+        weight = normalize(self.weight, dim=1, p=2).view(
+            self.out_features, self.in_features, 1, 1
+        )
         out = F.conv2d(x, weight)
 
         if self.clip_output and not torch.onnx.is_in_onnx_export():

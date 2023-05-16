@@ -50,7 +50,10 @@ def get_classes_from_annotation(annot_path):
         content = json.load(input_stream)
         labels_map = content["labels_map"]
 
-        categories = [(v["name"], v["id"]) for v in sorted(labels_map, key=lambda tup: int(tup["id"]))]
+        categories = [
+            (v["name"], v["id"])
+            for v in sorted(labels_map, key=lambda tup: int(tup["id"]))
+        ]
 
     return categories
 
@@ -62,7 +65,9 @@ def abs_path_if_valid(value):
     return None
 
 
-def create_annotation_from_hard_seg_map(hard_seg_map: np.ndarray, labels: List[LabelEntity]):
+def create_annotation_from_hard_seg_map(
+    hard_seg_map: np.ndarray, labels: List[LabelEntity]
+):
     """Creation function from hard seg_map."""
     height, width = hard_seg_map.shape[:2]
     unique_labels = np.unique(hard_seg_map)
@@ -80,7 +85,9 @@ def create_annotation_from_hard_seg_map(hard_seg_map: np.ndarray, labels: List[L
         label_mask = hard_seg_map == label_id
         label_index_map = label_mask.astype(np.uint8)
 
-        contours, hierarchies = cv2.findContours(label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchies = cv2.findContours(
+            label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
+        )
 
         if hierarchies is None:
             continue
@@ -125,7 +132,9 @@ def add_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
             raise ValueError("Found multiple matching labels")
         if len(matching_labels) == 0:
             label_id = label_id if label_id is not None else len(cur_labels)
-            label = LabelEntity(name=label_name, domain=Domain.SEGMENTATION, id=ID(f"{label_id:08}"))
+            label = LabelEntity(
+                name=label_name, domain=Domain.SEGMENTATION, id=ID(f"{label_id:08}")
+            )
             cur_labels.append(label)
 
 
@@ -177,9 +186,14 @@ def create_pseudo_masks(ann_file_path: str, data_root_dir: str, mode="FH"):
                 pseudo_mask = felzenszwalb(img, scale=1000, min_size=1000)
             else:
                 raise ValueError(
-                    (f"{mode} is not supported to create pseudo masks for DetCon." 'Choose one of ["FH"].')
+                    (
+                        f"{mode} is not supported to create pseudo masks for DetCon."
+                        'Choose one of ["FH"].'
+                    )
                 )
-            cv2.imwrite(os.path.join(ann_file_path, save_path), pseudo_mask.astype(np.uint8))
+            cv2.imwrite(
+                os.path.join(ann_file_path, save_path), pseudo_mask.astype(np.uint8)
+            )
 
             # get labels to create meta.json
             labels = np.unique(pseudo_mask)
@@ -192,7 +206,11 @@ def create_pseudo_masks(ann_file_path: str, data_root_dir: str, mode="FH"):
         # Currently, background class is automatically added in the backend.
         # Considering background class, labels_map in meta.json should have one less than the number of labels.
         # If we don't need to consider background class, it will be updated to consider all labels.
-        meta = {"labels_map": [{"name": f"target{i+1}", "id": i + 1} for i in range(max(total_labels))]}
+        meta = {
+            "labels_map": [
+                {"name": f"target{i+1}", "id": i + 1} for i in range(max(total_labels))
+            ]
+        }
         with open(os.path.join(ann_file_path, "meta.json"), "w", encoding="UTF-8") as f:
             json.dump(meta, f, indent=4)
 
@@ -233,10 +251,18 @@ def load_dataset_items(
 
     dataset_items = []
     for item in dataset:
-        annotations = create_annotation_from_hard_seg_map(hard_seg_map=item["gt_semantic_seg"], labels=labels_list)
+        annotations = create_annotation_from_hard_seg_map(
+            hard_seg_map=item["gt_semantic_seg"], labels=labels_list
+        )
         filename = os.path.join(item["img_prefix"], item["img_info"]["filename"])
         image = Image(file_path=filename)
-        annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=annotations)
-        dataset_items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset))
+        annotation_scene = AnnotationSceneEntity(
+            kind=AnnotationSceneKind.ANNOTATION, annotations=annotations
+        )
+        dataset_items.append(
+            DatasetItemEntity(
+                media=image, annotation_scene=annotation_scene, subset=subset
+            )
+        )
 
     return dataset_items

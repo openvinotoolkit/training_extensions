@@ -58,7 +58,9 @@ class OTXEncoderDecoder(EncoderDecoder):
     ):  # pylint: disable=too-many-locals, unused-argument
         """Modify input state_dict according to class name matching before weight loading."""
         logger = get_root_logger("INFO")
-        logger.info(f"----------------- OTXEncoderDecoder.load_state_dict_pre_hook() called w/ prefix: {prefix}")
+        logger.info(
+            f"----------------- OTXEncoderDecoder.load_state_dict_pre_hook() called w/ prefix: {prefix}"
+        )
 
         # Dst to src mapping index
         model_classes = list(model_classes)

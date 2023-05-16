@@ -20,7 +20,11 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 
 from .light_ham import LightHamHead
 
-KNOWN_HEADS = {"FCNHead": FCNHead, "ASPPHead": DepthwiseSeparableASPPHead, "LightHamHead": LightHamHead}
+KNOWN_HEADS = {
+    "FCNHead": FCNHead,
+    "ASPPHead": DepthwiseSeparableASPPHead,
+    "LightHamHead": LightHamHead,
+}
 
 
 def otx_head_factory(*args, base_type="FCNHead", **kwargs):
@@ -80,7 +84,11 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
                     use_concat=aggregator_use_concat,
                 )
 
-                aggregator_min_channels = aggregator_min_channels if aggregator_min_channels is not None else 0
+                aggregator_min_channels = (
+                    aggregator_min_channels
+                    if aggregator_min_channels is not None
+                    else 0
+                )
                 # change arguments temporarily
                 kwargs["in_channels"] = max(in_channels[0], aggregator_min_channels)
                 kwargs["input_transform"] = None
@@ -141,19 +149,29 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             """
             # is loss_only is True -> inputs are already model logits
             seg_logits = self(inputs) if not loss_only else inputs
-            valid_label_mask = get_valid_label_mask_per_batch(img_metas, self.num_classes)
-            losses = self.losses(seg_logits, gt_semantic_seg, valid_label_mask=valid_label_mask)
+            valid_label_mask = get_valid_label_mask_per_batch(
+                img_metas, self.num_classes
+            )
+            losses = self.losses(
+                seg_logits, gt_semantic_seg, valid_label_mask=valid_label_mask
+            )
             return losses
 
         @force_fp32(apply_to=("seg_logit",))
         def losses(
-            self, seg_logit: torch.Tensor, seg_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None
+            self,
+            seg_logit: torch.Tensor,
+            seg_label: torch.Tensor,
+            valid_label_mask: Optional[torch.Tensor] = None,
         ):
             """Compute segmentation loss."""
             loss = dict()
 
             seg_logit = resize(
-                input=seg_logit, size=seg_label.shape[2:], mode="bilinear", align_corners=self.align_corners
+                input=seg_logit,
+                size=seg_label.shape[2:],
+                mode="bilinear",
+                align_corners=self.align_corners,
             )
             if self.sampler is not None:
                 seg_weight = self.sampler.sample(seg_logit, seg_label)
@@ -171,14 +189,24 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
                     valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
                 if loss_decode.loss_name not in loss:
                     loss[loss_decode.loss_name] = loss_decode(
-                        seg_logit, seg_label, weight=seg_weight, ignore_index=self.ignore_index, **valid_label_mask_cfg
+                        seg_logit,
+                        seg_label,
+                        weight=seg_weight,
+                        ignore_index=self.ignore_index,
+                        **valid_label_mask_cfg
                     )
                 else:
                     loss[loss_decode.loss_name] += loss_decode(
-                        seg_logit, seg_label, weight=seg_weight, ignore_index=self.ignore_index, **valid_label_mask_cfg
+                        seg_logit,
+                        seg_label,
+                        weight=seg_weight,
+                        ignore_index=self.ignore_index,
+                        **valid_label_mask_cfg
                     )
 
-            loss["acc_seg"] = accuracy(seg_logit, seg_label, ignore_index=self.ignore_index)
+            loss["acc_seg"] = accuracy(
+                seg_logit, seg_label, ignore_index=self.ignore_index
+            )
 
             return loss
 

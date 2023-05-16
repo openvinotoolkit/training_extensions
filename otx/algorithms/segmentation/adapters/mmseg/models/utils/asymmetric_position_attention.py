@@ -39,7 +39,9 @@ class AsymmetricPositionAttentionModule(nn.Module):
 
         self.in_channels = in_channels
         self.key_channels = key_channels
-        self.value_channels = value_channels if value_channels is not None else in_channels
+        self.value_channels = (
+            value_channels if value_channels is not None else in_channels
+        )
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 

@@ -1,13 +1,17 @@
 """Data Pipeline for Semi-SL model of Segmentation Task."""
 
-__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+__img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True
+)
 __img_scale = (544, 544)
 __crop_size = (512, 512)
 
 __common_pipeline = [
     dict(type="LoadImageFromFile"),
     dict(type="LoadAnnotations"),
-    dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0), keep_ratio=False),
+    dict(
+        type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0), keep_ratio=False
+    ),
     dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type="RandomFlip", prob=0.5, direction="horizontal"),
     dict(type="RandomRotate", prob=0.5, degree=30, pad_val=0, seg_pad_val=255),

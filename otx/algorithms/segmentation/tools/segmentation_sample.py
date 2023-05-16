@@ -74,8 +74,20 @@ def load_test_dataset(data_type):
         width, height = resolution
         image = np.full([height, width, 3], fill_value=128, dtype=np.uint8)
         true_labels = np.full([height, width, 1], fill_value=0, dtype=np.uint8)
-        cv2.rectangle(image, (int(height * 0.1), int(width * 0.1)), (int(height / 2), int(width / 2)), (0, 255, 0), -1)
-        cv2.rectangle(true_labels, (int(height * 0.1), int(width * 0.1)), (int(height / 2), int(width / 2)), 2, -1)
+        cv2.rectangle(
+            image,
+            (int(height * 0.1), int(width * 0.1)),
+            (int(height / 2), int(width / 2)),
+            (0, 255, 0),
+            -1,
+        )
+        cv2.rectangle(
+            true_labels,
+            (int(height * 0.1), int(width * 0.1)),
+            (int(height / 2), int(width / 2)),
+            2,
+            -1,
+        )
         return (image, true_labels)
 
     labels = [
@@ -88,14 +100,18 @@ def load_test_dataset(data_type):
         if label_id == 1:
             image, true_label = gen_circle_image((640, 480))
             if data_type == "new" and subset == Subset.TRAINING:
-                ignored_labels = [LabelEntity(name="rect", domain=Domain.SEGMENTATION, id=2)]
+                ignored_labels = [
+                    LabelEntity(name="rect", domain=Domain.SEGMENTATION, id=2)
+                ]
         else:
             image, true_label = gen_rect_image((640, 480))
 
         height, width = true_label.shape[:2]
         label_mask = true_label == label_id
         label_index_map = label_mask.astype(np.uint8)
-        contours, hierarchies = cv2.findContours(label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchies = cv2.findContours(
+            label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
+        )
         for contour, hierarchy in zip(contours, hierarchies[0]):
             if hierarchy[3] != -1:
                 continue
@@ -108,7 +124,12 @@ def load_test_dataset(data_type):
         return DatasetItemEntity(
             media=Image(data=image),
             annotation_scene=AnnotationSceneEntity(
-                annotations=[Annotation(Polygon(points=points), labels=[ScoredLabel(label=labels[label_id - 1])])],
+                annotations=[
+                    Annotation(
+                        Polygon(points=points),
+                        labels=[ScoredLabel(label=labels[label_id - 1])],
+                    )
+                ],
                 kind=AnnotationSceneKind.ANNOTATION,
             ),
             subset=subset,
@@ -173,7 +194,9 @@ def main(args):
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
 
     logger.info(f"Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items")
-    logger.info(f"Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items")
+    logger.info(
+        f"Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items"
+    )
 
     logger.info("Load model template")
     model_template = parse_model_template(args.template_file_path)
@@ -185,7 +208,10 @@ def main(args):
 
     logger.info("Setup environment")
     environment = TaskEnvironment(
-        model=None, hyper_parameters=params, label_schema=labels_schema, model_template=model_template
+        model=None,
+        hyper_parameters=params,
+        label_schema=labels_schema,
+        model_template=model_template,
     )
 
     logger.info("Create base Task")
@@ -205,7 +231,9 @@ def main(args):
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
 
     logger.info(f"Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items")
-    logger.info(f"Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items")
+    logger.info(
+        f"Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items"
+    )
 
     logger.info("Load model template")
     model_template = parse_model_template(args.template_file_path)
@@ -217,7 +245,10 @@ def main(args):
 
     logger.info("Setup environment")
     environment = TaskEnvironment(
-        model=initial_model, hyper_parameters=params, label_schema=labels_schema, model_template=model_template
+        model=initial_model,
+        hyper_parameters=params,
+        label_schema=labels_schema,
+        model_template=model_template,
     )
 
     environment.model = ModelEntity(
@@ -241,7 +272,8 @@ def main(args):
     logger.info("Get predictions on the validation set")
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
-        validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
+        validation_dataset.with_empty_annotations(),
+        InferenceParameters(is_evaluation=True),
     )
     resultset = ResultSetEntity(
         model=output_model,
@@ -268,7 +300,8 @@ def main(args):
 
         logger.info("Get predictions on the validation set")
         predicted_validation_dataset = openvino_task.infer(
-            validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True),
         )
         resultset = ResultSetEntity(
             model=exported_model,
@@ -288,11 +321,14 @@ def main(args):
                 dataset,
                 environment.get_model_configuration(),
             )
-            openvino_task.optimize(OptimizationType.POT, dataset, optimized_model, OptimizationParameters())
+            openvino_task.optimize(
+                OptimizationType.POT, dataset, optimized_model, OptimizationParameters()
+            )
 
             logger.info("Get predictions on the validation set")
             predicted_validation_dataset = openvino_task.infer(
-                validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
+                validation_dataset.with_empty_annotations(),
+                InferenceParameters(is_evaluation=True),
             )
             resultset = ResultSetEntity(
                 model=optimized_model,

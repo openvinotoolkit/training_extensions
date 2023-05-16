@@ -24,7 +24,12 @@ class PolyScalarScheduler(BaseScalarScheduler):
     """
 
     def __init__(
-        self, start_scale: float, end_scale: float, num_iters: int, power: float = 1.2, by_epoch: bool = False
+        self,
+        start_scale: float,
+        end_scale: float,
+        num_iters: int,
+        power: float = 1.2,
+        by_epoch: bool = False,
     ):
         super().__init__()
 
@@ -54,7 +59,9 @@ class PolyScalarScheduler(BaseScalarScheduler):
             var_a = factor / (num_iters**self._power)
             var_b = -factor * self._power / float(num_iters)
 
-            out_value = var_a * np.power(step, self._power) + var_b * step + self._start_s
+            out_value = (
+                var_a * np.power(step, self._power) + var_b * step + self._start_s
+            )
         else:
             out_value = self._end_s
 

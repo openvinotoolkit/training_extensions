@@ -33,14 +33,19 @@ class DetConLoss(nn.Module):
     """
 
     def __init__(
-        self, temperature: float = 0.1, use_replicator_loss: bool = True, ignore_index: int = 255
+        self,
+        temperature: float = 0.1,
+        use_replicator_loss: bool = True,
+        ignore_index: int = 255,
     ):  # pylint: disable=unused-argument
         super().__init__()
         assert temperature > 0
         self.temperature = torch.tensor(temperature)
         self.use_replicator_loss = use_replicator_loss
 
-    def get_distributed_tensors(self, target1, target2, batch_size, num_samples, num_features, device):
+    def get_distributed_tensors(
+        self, target1, target2, batch_size, num_samples, num_features, device
+    ):
         """Grab tensors across replicas during distributed training."""
         if dist.is_initialized() and self.use_replicator_loss:
             # Grab tensor across replicas and expand first dimension
@@ -64,14 +69,27 @@ class DetConLoss(nn.Module):
         else:
             target1_large = target1
             target2_large = target2
-            labels = F.one_hot(torch.arange(batch_size), num_classes=batch_size).to(device)
+            labels = F.one_hot(torch.arange(batch_size), num_classes=batch_size).to(
+                device
+            )
 
         labels = labels.unsqueeze(dim=2).unsqueeze(dim=1)
 
         return target1_large, target2_large, labels
 
     # pylint: disable=too-many-arguments, too-many-locals
-    def forward(self, pred1, pred2, target1, target2, pind1, pind2, tind1, tind2, local_negatives=True):
+    def forward(
+        self,
+        pred1,
+        pred2,
+        target1,
+        target2,
+        pind1,
+        pind2,
+        tind1,
+        tind2,
+        local_negatives=True,
+    ):
         """Forward loss.
 
         Args:
@@ -95,21 +113,27 @@ class DetConLoss(nn.Module):
 
         def make_same_obj(ind_0, ind_1):
             same_obj = torch.eq(
-                ind_0.reshape([batch_size, num_samples, 1]), ind_1.reshape([batch_size, 1, num_samples])
+                ind_0.reshape([batch_size, num_samples, 1]),
+                ind_1.reshape([batch_size, 1, num_samples]),
             )
             same_obj = same_obj.unsqueeze(2).to(main_dtype)
             return same_obj
 
         same_obj_dict = {}
         for pair, (pind, tind) in zip(
-            ["aa", "ab", "ba", "bb"], list(itertools.product([pind1, pind2], [tind1, tind2]))
+            ["aa", "ab", "ba", "bb"],
+            list(itertools.product([pind1, pind2], [tind1, tind2])),
         ):
             same_obj_dict[pair] = make_same_obj(pind, tind)
 
         # L2 normalize the tensors to use for the cosine-similarity
         def normalize_same_dtype(logit, p=2, dim=1, eps=1e-12, dtype=None):
             # modified from torch.nn.functional.normalize
-            denom = logit.norm(p, dim, keepdim=True, dtype=dtype).clamp_min(eps).expand_as(logit)
+            denom = (
+                logit.norm(p, dim, keepdim=True, dtype=dtype)
+                .clamp_min(eps)
+                .expand_as(logit)
+            )
             return logit / denom
 
         pred1 = normalize_same_dtype(pred1, dim=-1, dtype=main_dtype)
@@ -123,11 +147,16 @@ class DetConLoss(nn.Module):
         # Do our matmuls and mask out appropriately.
         logits_dict = {}
         for pair, (pred, target) in zip(
-            ["aa", "ab", "ba", "bb"], list(itertools.product([pred1, pred2], [target1_large, target2_large]))
+            ["aa", "ab", "ba", "bb"],
+            list(itertools.product([pred1, pred2], [target1_large, target2_large])),
         ):
-            logits_dict[pair] = torch.einsum("abk,uvk->abuv", pred, target) / self.temperature
+            logits_dict[pair] = (
+                torch.einsum("abk,uvk->abuv", pred, target) / self.temperature
+            )
 
-        labels_dict = {key: labels * same_obj for key, same_obj in same_obj_dict.items()}
+        labels_dict = {
+            key: labels * same_obj for key, same_obj in same_obj_dict.items()
+        }
         for pair in ["aa", "bb"]:
             logits_dict[pair] -= infinity_proxy * labels * same_obj_dict[pair]
             labels_dict[pair] *= 0.0
@@ -137,18 +166,28 @@ class DetConLoss(nn.Module):
                 logits_dict[pair] -= infinity_proxy * labels * (1 - same_obj_dict[pair])
 
         labels_concat = [
-            torch.cat([labels_dict["ab"], labels_dict["aa"]], dim=2).reshape((batch_size, num_samples, -1)),
-            torch.cat([labels_dict["ba"], labels_dict["bb"]], dim=2).reshape((batch_size, num_samples, -1)),
+            torch.cat([labels_dict["ab"], labels_dict["aa"]], dim=2).reshape(
+                (batch_size, num_samples, -1)
+            ),
+            torch.cat([labels_dict["ba"], labels_dict["bb"]], dim=2).reshape(
+                (batch_size, num_samples, -1)
+            ),
         ]
 
-        num_positives = [torch.sum(label_concat, dim=-1, keepdim=True) for label_concat in labels_concat]
+        num_positives = [
+            torch.sum(label_concat, dim=-1, keepdim=True)
+            for label_concat in labels_concat
+        ]
 
         labels_concat = [
-            label_concat / torch.maximum(num_positive, torch.tensor(1.0, device=num_positive.device))
+            label_concat
+            / torch.maximum(num_positive, torch.tensor(1.0, device=num_positive.device))
             for label_concat, num_positive in zip(labels_concat, num_positives)
         ]
 
-        obj_areas = [torch.sum(make_same_obj(pind, pind), dim=(2, 3)) for pind in [pind1, pind2]]
+        obj_areas = [
+            torch.sum(make_same_obj(pind, pind), dim=(2, 3)) for pind in [pind1, pind2]
+        ]
 
         weights = [
             torch.greater(num_positive[..., 0], 1e-3).to(torch.float32) / obj_area
@@ -156,12 +195,20 @@ class DetConLoss(nn.Module):
         ]
 
         logits_concat = [
-            torch.cat([logits_dict["ab"], logits_dict["aa"]], dim=2).reshape((batch_size, num_samples, -1)),
-            torch.cat([logits_dict["ba"], logits_dict["bb"]], dim=2).reshape((batch_size, num_samples, -1)),
+            torch.cat([logits_dict["ab"], logits_dict["aa"]], dim=2).reshape(
+                (batch_size, num_samples, -1)
+            ),
+            torch.cat([logits_dict["ba"], logits_dict["bb"]], dim=2).reshape(
+                (batch_size, num_samples, -1)
+            ),
         ]
 
-        loss_a = manual_cross_entropy(logits_concat[0], labels_concat[0], weight=weights[0])
-        loss_b = manual_cross_entropy(logits_concat[1], labels_concat[1], weight=weights[1])
+        loss_a = manual_cross_entropy(
+            logits_concat[0], labels_concat[0], weight=weights[0]
+        )
+        loss_b = manual_cross_entropy(
+            logits_concat[1], labels_concat[1], weight=weights[1]
+        )
         loss = loss_a + loss_b
 
         return loss

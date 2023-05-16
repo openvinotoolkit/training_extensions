@@ -37,7 +37,9 @@ class Matrix_Decomposition_2D_Base(nn.Module):
             Defaults: True.
     """
 
-    def __init__(self, MD_S=1, MD_R=64, train_steps=6, eval_steps=7, inv_t=100, rand_init=True):
+    def __init__(
+        self, MD_S=1, MD_R=64, train_steps=6, eval_steps=7, inv_t=100, rand_init=True
+    ):
         super().__init__()
 
         self.S = MD_S
@@ -168,11 +170,15 @@ class Hamburger(nn.Module):
     def __init__(self, ham_channels=512, ham_kwargs=dict(), norm_cfg=None, **kwargs):
         super().__init__()
 
-        self.ham_in = ConvModule(ham_channels, ham_channels, 1, norm_cfg=None, act_cfg=None)
+        self.ham_in = ConvModule(
+            ham_channels, ham_channels, 1, norm_cfg=None, act_cfg=None
+        )
 
         self.ham = NMF2D(ham_kwargs)
 
-        self.ham_out = ConvModule(ham_channels, ham_channels, 1, norm_cfg=norm_cfg, act_cfg=None)
+        self.ham_out = ConvModule(
+            ham_channels, ham_channels, 1, norm_cfg=norm_cfg, act_cfg=None
+        )
 
     def forward(self, x):
         """Forward function for Hamburger Module."""
@@ -219,7 +225,12 @@ class LightHamHead(BaseDecodeHead):
         self.hamburger = Hamburger(ham_channels, ham_kwargs, **kwargs)
 
         self.align = ConvModule(
-            self.ham_channels, self.channels, 1, conv_cfg=self.conv_cfg, norm_cfg=self.norm_cfg, act_cfg=self.act_cfg
+            self.ham_channels,
+            self.channels,
+            1,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=self.act_cfg,
         )
 
     def _forward_feature(self, inputs):
@@ -227,7 +238,12 @@ class LightHamHead(BaseDecodeHead):
         inputs = self._transform_inputs(inputs)
 
         inputs = [
-            resize(level, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
+            resize(
+                level,
+                size=inputs[0].shape[2:],
+                mode="bilinear",
+                align_corners=self.align_corners,
+            )
             for level in inputs
         ]
 

@@ -24,7 +24,9 @@ class PSPModule(nn.Module):
         assert method in self.methods
         pool_block = self.methods[method]
 
-        self.stages = nn.ModuleList([pool_block(output_size=(size, size)) for size in sizes])
+        self.stages = nn.ModuleList(
+            [pool_block(output_size=(size, size)) for size in sizes]
+        )
 
     def forward(self, feats):
         """Forward."""

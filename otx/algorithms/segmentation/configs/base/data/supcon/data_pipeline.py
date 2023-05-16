@@ -16,7 +16,9 @@
 
 # pylint: disable=invalid-name
 
-__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+__img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True
+)
 __img_scale = (544, 544)
 __resize_target_size = (512, 512)
 
@@ -28,7 +30,14 @@ __train_pipeline = [
         view0=[
             dict(type="NDArrayToPILImage", keys=["img"]),
             dict(type="RandomResizedCrop", size=__resize_target_size),
-            dict(type="RandomColorJitter", brightness=0.4, contrast=0.4, saturation=0.2, hue=0.1, p=0.8),
+            dict(
+                type="RandomColorJitter",
+                brightness=0.4,
+                contrast=0.4,
+                saturation=0.2,
+                hue=0.1,
+                p=0.8,
+            ),
             dict(type="RandomGrayscale", p=0.2),
             dict(type="RandomGaussianBlur", kernel_size=23, p=1.0),
             dict(type="PILImageToNDArray", keys=["img"]),
@@ -38,7 +47,14 @@ __train_pipeline = [
         view1=[
             dict(type="NDArrayToPILImage", keys=["img"]),
             dict(type="RandomResizedCrop", size=__resize_target_size),
-            dict(type="RandomColorJitter", brightness=0.4, contrast=0.4, saturation=0.2, hue=0.1, p=0.8),
+            dict(
+                type="RandomColorJitter",
+                brightness=0.4,
+                contrast=0.4,
+                saturation=0.2,
+                hue=0.1,
+                p=0.8,
+            ),
             dict(type="RandomGrayscale", p=0.2),
             dict(type="RandomGaussianBlur", kernel_size=23, p=0.1),
             dict(type="PILImageToNDArray", keys=["img"]),

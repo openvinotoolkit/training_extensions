@@ -44,7 +44,9 @@ from .configuration_enums import Models
 class SegmentationConfig(BaseConfig):
     """Configurations of OTX Segmentation."""
 
-    header = string_attribute("Configuration for an object semantic segmentation task of OTX")
+    header = string_attribute(
+        "Configuration for an object semantic segmentation task of OTX"
+    )
     description = header
 
     @attrs

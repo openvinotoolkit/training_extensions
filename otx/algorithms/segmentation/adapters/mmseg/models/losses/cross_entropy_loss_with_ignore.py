@@ -63,7 +63,15 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
             **kwargs (Any): Additional keyword arguments.
         """
         if valid_label_mask is None:
-            losses = super().forward(cls_score, label, weight, avg_factor, reduction_override, ignore_index, **kwargs)
+            losses = super().forward(
+                cls_score,
+                label,
+                weight,
+                avg_factor,
+                reduction_override,
+                ignore_index,
+                **kwargs
+            )
             return losses
         else:
             assert reduction_override in (None, "none", "mean", "sum")
@@ -73,13 +81,19 @@ class CrossEntropyLossWithIgnore(CrossEntropyLoss):
                 invalid_labels = (valid_label_mask[i] == 0).nonzero(as_tuple=False)
 
                 for inv_l in invalid_labels:
-                    label[i] = torch.where(label[i] == inv_l.item(), ignore_index, label[i])
+                    label[i] = torch.where(
+                        label[i] == inv_l.item(), ignore_index, label[i]
+                    )
 
-            losses = F.cross_entropy(cls_score, label, reduction="none", ignore_index=ignore_index)
+            losses = F.cross_entropy(
+                cls_score, label, reduction="none", ignore_index=ignore_index
+            )
 
             if weight is not None:
                 weight = weight.float()
-            losses = weight_reduce_loss(losses, weight=weight, reduction=reduction, avg_factor=avg_factor)
+            losses = weight_reduce_loss(
+                losses, weight=weight, reduction=reduction, avg_factor=avg_factor
+            )
 
             return losses
 

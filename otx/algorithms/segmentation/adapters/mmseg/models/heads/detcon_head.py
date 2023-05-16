@@ -53,9 +53,13 @@ class DetConHead(nn.Module):
             dict[str, Tensor]: A dictionary of loss components.
         """
         preds = self.predictor(projs)
-        pred1, pred2 = torch.split(preds.reshape((-1, num_samples, preds.shape[-1])), batch_size)
+        pred1, pred2 = torch.split(
+            preds.reshape((-1, num_samples, preds.shape[-1])), batch_size
+        )
         id1, id2 = torch.split(ids, batch_size)
-        proj1_tgt, proj2_tgt = torch.split(projs_tgt.reshape((-1, num_samples, projs_tgt.shape[-1])), batch_size)
+        proj1_tgt, proj2_tgt = torch.split(
+            projs_tgt.reshape((-1, num_samples, projs_tgt.shape[-1])), batch_size
+        )
         id1_tgt, id2_tgt = torch.split(ids_tgt, batch_size)
 
         loss = self.detcon_loss(

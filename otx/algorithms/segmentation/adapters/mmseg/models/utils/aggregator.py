@@ -18,7 +18,15 @@ class IterativeAggregator(nn.Module):
     Based on: https://github.com/HRNet/Lite-HRNet.
     """
 
-    def __init__(self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=None, merge_norm=None, use_concat=False):
+    def __init__(
+        self,
+        in_channels,
+        min_channels=None,
+        conv_cfg=None,
+        norm_cfg=None,
+        merge_norm=None,
+        use_concat=False,
+    ):
         if norm_cfg is None:
             norm_cfg = dict(type="BN")
         super().__init__()
@@ -116,7 +124,9 @@ class IterativeAggregator(nn.Module):
                 s = self.expanders[i](s)
 
             if last_x is not None:
-                last_x = F.interpolate(last_x, size=s.size()[-2:], mode="bilinear", align_corners=True)
+                last_x = F.interpolate(
+                    last_x, size=s.size()[-2:], mode="bilinear", align_corners=True
+                )
 
                 norm_s = self._norm(s, self.merge_norm)
                 norm_x = self._norm(last_x, self.merge_norm)
@@ -138,7 +148,14 @@ class IterativeAggregator(nn.Module):
 class IterativeConcatAggregator(nn.Module):
     """IterativeConcatAggregator."""
 
-    def __init__(self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=None, merge_norm=None):
+    def __init__(
+        self,
+        in_channels,
+        min_channels=None,
+        conv_cfg=None,
+        norm_cfg=None,
+        merge_norm=None,
+    ):
         if norm_cfg is None:
             norm_cfg = dict(type="BN")
 
@@ -155,7 +172,9 @@ class IterativeConcatAggregator(nn.Module):
             if i == 1:
                 num_input_channels = self.in_channels[i - 1] + self.in_channels[i]
             else:
-                num_input_channels = max(self.in_channels[i - 1], min_channels) + self.in_channels[i]
+                num_input_channels = (
+                    max(self.in_channels[i - 1], min_channels) + self.in_channels[i]
+                )
 
             num_out_channels = max(self.in_channels[i], min_channels)
 
@@ -198,7 +217,9 @@ class IterativeConcatAggregator(nn.Module):
         last_x = None
         for i, s in enumerate(x):
             if last_x is not None:
-                last_x = F.interpolate(last_x, size=s.size()[-2:], mode="bilinear", align_corners=True)
+                last_x = F.interpolate(
+                    last_x, size=s.size()[-2:], mode="bilinear", align_corners=True
+                )
 
                 norm_s = self._norm(s, self.merge_norm)
                 norm_x = self._norm(last_x, self.merge_norm)

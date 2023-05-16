@@ -15,7 +15,9 @@
 # and limitations under the License.
 
 # pylint: disable=invalid-name
-__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+__img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True
+)
 __img_scale = (544, 544)
 __crop_size = (512, 512)
 
