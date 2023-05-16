@@ -157,8 +157,8 @@ class MeanTeacherSegmentor(BaseSegmentor):
             self.update_summary_loss(loss_proto, loss_weight=self.proto_weight)
             self.update_summary_loss(loss_proto_u, loss_weight=self.unsup_weight * reweight_unsup * self.proto_weight)
         else:
-            loss_decode = self.model_s._decode_head_forward_train(out_sup, img_metas, gt_semantic_seg=gt_semantic_seg)
-            loss_decode_u = self.model_s._decode_head_forward_train(out_unsup, ul_img_metas, gt_semantic_seg=pl_from_teacher)
+            loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+            loss_decode_u = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
             self.update_summary_loss(loss_decode)
             self.update_summary_loss(loss_decode_u, loss_weight=self.unsup_weight * reweight_unsup)
 
