@@ -45,7 +45,7 @@ logger = get_logger()
 class SegmentationConfigurer:
     """Patch config to support otx train."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.task_adapt_type: Optional[str] = None
         self.task_adapt_op: str = "REPLACE"
         self.org_model_classes: List[str] = []

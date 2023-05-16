@@ -44,7 +44,7 @@ def mask_to_border(mask):
     return border
 
 
-def mask2bbox(mask):
+def mask2bbox(mask) -> List[List[int]]:
     """Mask to bounding boxes.
 
     Args:
@@ -53,7 +53,7 @@ def mask2bbox(mask):
     Returns:
         List[int]: Bounding box coordinates
     """
-    bboxes: List[int] = []
+    bboxes: List[List[int]] = []
 
     mask = mask_to_border(mask)
     print(np.unique(mask))

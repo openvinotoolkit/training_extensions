@@ -19,7 +19,7 @@ import os
 import time
 from copy import deepcopy
 from functools import partial
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import torch
 from mmaction import __version__
@@ -474,7 +474,7 @@ class MMActionTask(OTXActionTask):
         )
         exporter.export()
 
-        results = {"outputs": {}}
+        results: Dict[str, Dict[str, str]] = {"outputs": {}}
 
         if export_format == ExportType.ONNX:
             onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
