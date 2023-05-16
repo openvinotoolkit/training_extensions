@@ -323,7 +323,7 @@ class TestMMActionTask:
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export(self, mocker, precision: ModelPrecision) -> None:
+    def test_export(self, mocker, precision: ModelPrecision, export_type: ExportType = ExportType.OPENVINO) -> None:
         """Test export function.
 
         <Steps>
@@ -337,14 +337,32 @@ class TestMMActionTask:
         mocker.patch("torch.load", return_value={})
         mocker.patch("torch.nn.Module.load_state_dict", return_value=True)
 
-        self.cls_task.export(ExportType.OPENVINO, _model, precision, False)
+        self.cls_task.export(export_type, _model, precision, False)
 
-        assert _model.model_format == ModelFormat.OPENVINO
-        assert _model.optimization_type == ModelOptimizationType.MO
+        if export_type == ExportType.OPENVINO:
+            assert _model.model_format == ModelFormat.OPENVINO
+            assert _model.optimization_type == ModelOptimizationType.MO
+            assert _model.get_data("openvino.bin") is not None
+            assert _model.get_data("openvino.xml") is not None
+        else:
+            assert _model.model_format == ModelFormat.ONNX
+            assert _model.optimization_type == ModelOptimizationType.ONNX
+            assert _model.get_data("model.onnx") is not None
+
         assert _model.precision[0] == precision
-        assert _model.get_data("openvino.bin") is not None
-        assert _model.get_data("openvino.xml") is not None
+
         assert _model.get_data("confidence_threshold") is not None
         assert _model.precision == self.cls_task._precision
         assert _model.optimization_methods == self.cls_task._optimization_methods
         assert _model.get_data("label_schema.json") is not None
+
+    @e2e_pytest_unit
+    def test_export_onnx(self, mocker) -> None:
+        """Test export function.
+
+        <Steps>
+            1. Create model entity
+            2. Run export to ONNX function
+            3. Check output model attributes
+        """
+        self.test_export(mocker, ModelPrecision.FP32, ExportType.ONNX)

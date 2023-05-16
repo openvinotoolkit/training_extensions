@@ -129,7 +129,7 @@ class TestExporter:
                 )
             )
         )
-        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", False)
+        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", False, False)
         assert isinstance(exporter.model, Recognizer3D)
         assert exporter.input_tensor.shape == torch.Size([1, 1, 3, 32, 224, 224])
         assert exporter.input_metas is None
@@ -144,12 +144,12 @@ class TestExporter:
                 )
             )
         )
-        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", False)
+        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", False, False)
         assert isinstance(exporter.model, AVAFastRCNN)
         assert exporter.input_tensor.shape == torch.Size([1, 3, 32, 224, 224])
         assert exporter.input_metas is not None
 
-        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", True)
+        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", True, False)
         assert exporter.deploy_cfg.backend_config.mo_options["flags"] == ["--compress_to_fp16"]
 
     @e2e_pytest_unit
@@ -174,5 +174,5 @@ class TestExporter:
                 ir_config=dict(input_names=["input"], output_names=["output"]),
             )
         )
-        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", False)
+        exporter = Exporter(recipe_cfg, None, deploy_cfg, "./tmp_dir/openvino", False, False)
         exporter.export()

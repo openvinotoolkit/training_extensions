@@ -245,33 +245,37 @@ class OTXActionTask(OTXTask, ABC):
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
-        # copied from OTX inference_task.py
-        logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
+        if export_type == ExportType.ONNX:
+            output_model.model_format = ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            if precision == ModelPrecision.FP16:
+                raise RuntimeError(f"Export to FP16 ONNX is not supported")
+        elif export_type == ExportType.OPENVINO:
+            output_model.model_format = ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.MO
+        else:
             raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
-        output_model.has_xai = dump_features
 
-        results = self._export_model(precision, dump_features)
+        results = self._export_model(precision, export_type, dump_features)
 
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        onnx_file = outputs.get("onnx")
+        if export_type == ExportType.ONNX:
+            onnx_file = outputs.get("onnx")
+            with open(onnx_file, "rb") as f:
+                output_model.set_data("model.onnx", f.read())
+        else:
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
 
-        if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        with open(onnx_file, "rb") as f:
-            output_model.set_data("model.onnx", f.read())
+            with open(bin_file, "rb") as f:
+                output_model.set_data("openvino.bin", f.read())
+            with open(xml_file, "rb") as f:
+                output_model.set_data("openvino.xml", f.read())
+
         output_model.set_data(
             "confidence_threshold",
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
@@ -287,7 +291,7 @@ class OTXActionTask(OTXTask, ABC):
         logger.info("Exporting completed")
 
     @abstractmethod
-    def _export_model(self, precision: ModelPrecision, dump_features: bool = True):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         raise NotImplementedError
 
     def explain(

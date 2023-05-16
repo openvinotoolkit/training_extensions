@@ -57,7 +57,8 @@ class Exporter:
     """Export class for action recognition model using mmdeploy framework."""
 
     def __init__(
-        self, recipe_cfg: Config, weights: OrderedDict, deploy_cfg: Config, work_dir: str, half_precision: bool
+        self, recipe_cfg: Config, weights: OrderedDict, deploy_cfg: Config, work_dir: str, half_precision: bool,
+        onnx_only: bool,
     ):
         """Initialize Exporter.
 
@@ -80,6 +81,7 @@ class Exporter:
         self.context_info = {"deploy_cfg": deploy_cfg}
         if half_precision:
             self.deploy_cfg.backend_config.mo_options["flags"] = ["--compress_to_fp16"]
+        self.onnx_only = onnx_only
 
     def _get_model(self) -> torch.nn.Module:
         """Prepare torch model for exporting."""
@@ -127,6 +129,9 @@ class Exporter:
                 self.deploy_cfg.ir_config.input_names,
                 self.deploy_cfg.ir_config.output_names,
             )
+
+            if self.onnx_only:
+                return
 
             from_onnx(
                 self.work_dir + ".onnx",
