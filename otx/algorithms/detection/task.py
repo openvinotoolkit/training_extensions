@@ -305,7 +305,7 @@ class OTXDetectionTask(OTXTask, ABC):
             output_model.model_format = ModelFormat.ONNX
             output_model.optimization_type = ModelOptimizationType.ONNX
             if precision == ModelPrecision.FP16:
-                raise RuntimeError(f"Export to FP16 ONNX is not supported")
+                raise RuntimeError("Export to FP16 ONNX is not supported")
         elif export_type == ExportType.OPENVINO:
             output_model.model_format = ModelFormat.OPENVINO
             output_model.optimization_type = ModelOptimizationType.MO
@@ -327,7 +327,7 @@ class OTXDetectionTask(OTXTask, ABC):
             xml_file = outputs.get("xml")
 
             ir_extra_data = get_det_model_api_configuration(
-            self._task_environment.label_schema, self._task_type, self.confidence_threshold
+                self._task_environment.label_schema, self._task_type, self.confidence_threshold
             )
             embed_ir_model_data(xml_file, ir_extra_data)
 

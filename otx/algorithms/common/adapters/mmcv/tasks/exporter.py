@@ -73,8 +73,7 @@ class Exporter:
                         }
                     }
                     for name in os.listdir(cfg.work_dir)
-                    if name.endswith(".onnx")
-                    and name != f"{model_name}.onnx"
+                    if name.endswith(".onnx") and name != f"{model_name}.onnx"
                 ],
             },
             "msg": "",

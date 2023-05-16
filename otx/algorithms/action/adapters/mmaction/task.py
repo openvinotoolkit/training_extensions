@@ -464,8 +464,14 @@ class MMActionTask(OTXActionTask):
         self._precision[0] = precision
         half_precision = precision == ModelPrecision.FP16
 
-        exporter = Exporter(cfg, state_dict, deploy_cfg, f"{self._output_path}/openvino",
-                             half_precision, onnx_only=export_format==ExportType.ONNX)
+        exporter = Exporter(
+            cfg,
+            state_dict,
+            deploy_cfg,
+            f"{self._output_path}/openvino",
+            half_precision,
+            onnx_only=export_format == ExportType.ONNX,
+        )
         exporter.export()
 
         results = {"outputs": {}}

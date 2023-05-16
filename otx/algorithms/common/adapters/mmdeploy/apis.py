@@ -239,7 +239,7 @@ if is_mmdeploy_enabled():
                     model_name=model_name,
                 )
             )
-            if not "ONNX" in export_type:
+            if "ONNX" not in export_type:
                 for onnx_path in onnx_paths:
                     deploy_cfg_ = deepcopy(deploy_cfg)
                     update_deploy_cfg(onnx_path, deploy_cfg_)

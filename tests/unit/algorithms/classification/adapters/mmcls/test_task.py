@@ -367,7 +367,7 @@ class TestMMClassificationTask:
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export(self, mocker, precision: ModelPrecision, export_type: ExportType=ExportType.OPENVINO) -> None:
+    def test_export(self, mocker, precision: ModelPrecision, export_type: ExportType = ExportType.OPENVINO) -> None:
         """Test export function.
 
         <Steps>

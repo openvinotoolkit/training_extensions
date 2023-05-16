@@ -57,7 +57,12 @@ class Exporter:
     """Export class for action recognition model using mmdeploy framework."""
 
     def __init__(
-        self, recipe_cfg: Config, weights: OrderedDict, deploy_cfg: Config, work_dir: str, half_precision: bool,
+        self,
+        recipe_cfg: Config,
+        weights: OrderedDict,
+        deploy_cfg: Config,
+        work_dir: str,
+        half_precision: bool,
         onnx_only: bool,
     ):
         """Initialize Exporter.
@@ -68,6 +73,7 @@ class Exporter:
             deploy_cfg (Config): deploy config which contains deploy info
             work_dir (str): path to save onnx and openvino xml file
             half_precision (bool): whether to use half-precision(FP16)
+            onnx_only (bool): whether to export pnly onnx model
         """
 
         self.task_processor = build_task_processor(recipe_cfg, deploy_cfg, "cpu")

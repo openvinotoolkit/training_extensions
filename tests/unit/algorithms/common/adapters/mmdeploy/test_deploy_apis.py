@@ -208,13 +208,7 @@ if is_mmdeploy_enabled():
                 return ctx.origin_func(self, *args, **kwargs)
 
             with tempfile.TemporaryDirectory() as tempdir:
-                MMdeployExporter.export2backend(
-                    tempdir,
-                    build_classifier,
-                    config,
-                    deploy_config,
-                    "OPENVINO"
-                )
+                MMdeployExporter.export2backend(tempdir, build_classifier, config, deploy_config, "OPENVINO")
                 files = os.listdir(tempdir)
                 assert "model.onnx" in files
                 assert "model.xml" in files

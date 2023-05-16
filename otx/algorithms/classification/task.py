@@ -250,7 +250,7 @@ class OTXClassificationTask(OTXTask, ABC):
             output_model.model_format = ModelFormat.ONNX
             output_model.optimization_type = ModelOptimizationType.ONNX
             if precision == ModelPrecision.FP16:
-                raise RuntimeError(f"Export to FP16 ONNX is not supported")
+                raise RuntimeError("Export to FP16 ONNX is not supported")
         elif export_type == ExportType.OPENVINO:
             output_model.model_format = ModelFormat.OPENVINO
             output_model.optimization_type = ModelOptimizationType.MO

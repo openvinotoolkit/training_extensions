@@ -440,7 +440,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
         if export_format == ExportType.ONNX:
-            export_options["deploy_cfg"]["backend_config"] = {"type" : "onnxruntime"}
+            export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
 
         exporter = SegmentationExporter()
         results = exporter.run(
