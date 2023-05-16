@@ -521,7 +521,7 @@
         "multi_class": {
           "train": {
             "X3D": 0.612,
-            "MoViNet": 0.0
+            "MoViNet": 0.492
           },
           "export": {
             "X3D": 0.589,
@@ -1665,7 +1665,7 @@
         "multi_class": {
           "train": {
             "X3D": 3604.046,
-            "MoViNet": 0.0
+            "MoViNet": 2091.719
           }
         }
       }
@@ -2057,7 +2057,7 @@
         "multi_class": {
           "train": {
             "X3D": 384.374,
-            "MoViNet": 0.0
+            "MoViNet": 244.952
           }
         }
       }
