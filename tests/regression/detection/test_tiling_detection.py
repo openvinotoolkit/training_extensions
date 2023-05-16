@@ -179,7 +179,6 @@ class TestRegressionTilingDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip("Issue#2060: Tiling nncf shows errors")
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
