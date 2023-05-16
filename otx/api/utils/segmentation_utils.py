@@ -229,13 +229,15 @@ def create_annotation_from_segmentation_map(
 
         if hierarchies is not None:
             for contour, hierarchy in zip(contours, hierarchies[0]):
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
+                    continue
+
                 if hierarchy[3] == -1:
                     # In this case a contour does not represent a hole
                     contour = list((point[0][0], point[0][1]) for point in contour)
 
                     # Split contour into subcontours that do not have self intersections.
                     subcontours = get_subcontours(contour)
-
                     for subcontour in subcontours:
                         # compute probability of the shape
                         mask = np.zeros(hard_prediction.shape, dtype=np.uint8)
@@ -249,7 +251,7 @@ def create_annotation_from_segmentation_map(
                         probability = cv2.mean(current_label_soft_prediction, mask)[0]
 
                         # convert the list of points to a closed polygon
-                        points = [Point(x=x / width, y=y / height) for x, y in subcontour]
+                        points = [Point(x=x / (width - 1), y=y / (height - 1)) for x, y in subcontour]
                         polygon = Polygon(points=points)
 
                         if polygon.get_area() > 0:
