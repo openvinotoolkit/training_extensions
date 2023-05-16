@@ -408,6 +408,26 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
             "../model",
             "-i",
             os.path.join(otx_dir, args["--input"]),
+            "--inference_type",
+            "sync",
+            "--no_show",
+            "--output",
+            os.path.join(deployment_dir, "output"),
+        ],
+        cwd=os.path.join(deployment_dir, "python"),
+    )
+    assert os.path.exists(os.path.join(deployment_dir, "output"))
+
+    check_run(
+        [
+            "python3",
+            "demo.py",
+            "-m",
+            "../model",
+            "-i",
+            os.path.join(otx_dir, args["--input"]),
+            "--inference_type",
+            "async",
             "--no_show",
             "--output",
             os.path.join(deployment_dir, "output"),
