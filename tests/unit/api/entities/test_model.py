@@ -105,7 +105,7 @@ class TestModelOptimizationType:
         """
 
         model_optimization_type = ModelOptimizationType
-        assert len(model_optimization_type) == 4
+        assert len(model_optimization_type) == 5
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

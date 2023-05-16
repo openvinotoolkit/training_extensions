@@ -11,6 +11,7 @@ from mmcv.utils import Config
 
 from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.common.adapters.mmdeploy.test_helpers import (
     create_config,
@@ -148,6 +149,7 @@ if is_mmdeploy_enabled():
                     build_classifier,
                     config,
                     deploy_config,
+                    str(ExportType.OPENVINO),
                 )
                 assert [f for f in os.listdir(tempdir) if f.endswith(".xml")]
                 assert [f for f in os.listdir(tempdir) if f.endswith(".bin")]
