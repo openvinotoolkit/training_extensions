@@ -56,10 +56,8 @@ from otx.api.entities.metrics import (
     Performance,
     ScoreMetric,
 )
-from otx.api.entities.model import (  # ModelStatus
+from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.resultset import ResultSetEntity
@@ -246,17 +244,7 @@ class OTXClassificationTask(OTXTask, ABC):
 
         logger.info("Exporting the model")
 
-        if export_type == ExportType.ONNX:
-            output_model.model_format = ModelFormat.ONNX
-            output_model.optimization_type = ModelOptimizationType.ONNX
-            if precision == ModelPrecision.FP16:
-                raise RuntimeError("Export to FP16 ONNX is not supported")
-        elif export_type == ExportType.OPENVINO:
-            output_model.model_format = ModelFormat.OPENVINO
-            output_model.optimization_type = ModelOptimizationType.MO
-        else:
-            raise RuntimeError(f"not supported export type {export_type}")
-
+        self._update_model_export_metadata(output_model, export_type, precision, dump_features)
         results = self._export_model(precision, export_type, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
@@ -282,8 +270,6 @@ class OTXClassificationTask(OTXTask, ABC):
             with open(xml_file, "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
 
-        output_model.precision = self._precision
-        output_model.has_xai = dump_features
         output_model.set_data(
             "label_schema.json",
             label_schema_to_bytes(self._task_environment.label_schema),

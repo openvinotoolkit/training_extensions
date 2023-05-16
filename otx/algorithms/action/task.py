@@ -48,8 +48,6 @@ from otx.api.entities.metrics import (
 )
 from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.model_template import TaskType
@@ -245,17 +243,7 @@ class OTXActionTask(OTXTask, ABC):
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
-        if export_type == ExportType.ONNX:
-            output_model.model_format = ModelFormat.ONNX
-            output_model.optimization_type = ModelOptimizationType.ONNX
-            if precision == ModelPrecision.FP16:
-                raise RuntimeError("Export to FP16 ONNX is not supported")
-        elif export_type == ExportType.OPENVINO:
-            output_model.model_format = ModelFormat.OPENVINO
-            output_model.optimization_type = ModelOptimizationType.MO
-        else:
-            raise RuntimeError(f"not supported export type {export_type}")
-
+        self._update_model_export_metadata(output_model, export_type, precision, dump_features)
         results = self._export_model(precision, export_type, dump_features)
 
         outputs = results.get("outputs")
@@ -281,9 +269,6 @@ class OTXActionTask(OTXTask, ABC):
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
         )
         output_model.set_data("config.json", config_to_bytes(self._hyperparams))
-        output_model.precision = self._precision
-        output_model.optimization_methods = self._optimization_methods
-        output_model.has_xai = dump_features
         output_model.set_data(
             "label_schema.json",
             label_schema_to_bytes(self._task_environment.label_schema),
