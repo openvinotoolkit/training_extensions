@@ -12,7 +12,7 @@ custom_hooks = [
     dict(
         type="DualModelEMAHook",
         momentum=0.99,
-        start_epoch=1,
+        start_epoch=5,
         src_model_name="model_s",
         dst_model_name="model_t",
     ),

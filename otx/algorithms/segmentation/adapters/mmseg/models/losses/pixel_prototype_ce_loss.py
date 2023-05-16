@@ -40,17 +40,17 @@ class PixelPrototypeCELoss(nn.Module, ABC):
                  loss_ppc_weight=0.01,
                  loss_ppd_weight=0.001,
                  ignore_index=255,
-                 ignore_mode=True,
+                 ignore_mode=False,
                  **kwargs):
         super(PixelPrototypeCELoss, self).__init__()
         self._loss_name = 'pixel_proto_ce_loss'
         ignore_index = ignore_index
         self.loss_ppc_weight = loss_ppc_weight
         self.loss_ppd_weight = loss_ppd_weight
-        if not ignore_mode:
-            self.seg_criterion = nn.CrossEntropyLoss(ignore_index=ignore_index)
-        else:
+        if ignore_mode:
             self.seg_criterion = CrossEntropyLossWithIgnore(**kwargs)
+        else:
+            self.seg_criterion = nn.CrossEntropyLoss(ignore_index=ignore_index)
 
         self.ppc_criterion = PPC()
         self.ppd_criterion = PPD()

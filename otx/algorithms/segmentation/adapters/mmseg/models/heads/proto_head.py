@@ -24,7 +24,7 @@ class ProtoNet(BaseDecodeHead):
         self.prototypes = nn.Parameter(torch.zeros(self.num_classes, self.num_prototype, in_proto_channels),
                                 requires_grad=False)
         trunc_normal_(self.prototypes, std=0.02)
-        self.avg_pool = nn.AdaptiveAvgPool2d(256)
+        self.avg_pool = nn.AdaptiveAvgPool2d(in_proto_channels)
         self.proj_head = ProjectionHead(in_proto_channels, in_proto_channels)
         self.feat_norm = nn.LayerNorm(in_proto_channels)
         self.mask_norm = nn.LayerNorm(self.num_classes)
@@ -75,6 +75,7 @@ class ProtoNet(BaseDecodeHead):
         return proto_logits, proto_target
 
     def forward(self, inputs, gt_semantic_seg):
+        breakpoint()
         c = self.proj_head(inputs)
         _c = rearrange(c, 'b c h w -> (b h w) c')
         _c = self.feat_norm(_c)
@@ -100,20 +101,11 @@ class ProtoNet(BaseDecodeHead):
         if not isinstance(self.loss_decode, PixelPrototypeCELoss):
             raise ValueError("decode loss should be PixelPrototypeCELoss")
 
-        losses_decode = self.loss_decode
-        for loss_decode in losses_decode:
-            if loss_decode.loss_name not in loss:
-                loss[loss_decode.loss_name] = loss_decode(
-                    out_seg,
-                    contrast_logits,
-                    contrast_target,
-                    seg_label)
-            else:
-                loss[loss_decode.loss_name] = loss_decode(
-                    out_seg,
-                    contrast_logits,
-                    contrast_target,
-                    seg_label)
+        loss[self.loss_decode.loss_name] = self.loss_decode(
+            out_seg,
+            contrast_logits,
+            contrast_target,
+            seg_label)
 
         loss['acc_seg'] = accuracy(out_seg, seg_label.squeeze(1), ignore_index=self.ignore_index)
 
