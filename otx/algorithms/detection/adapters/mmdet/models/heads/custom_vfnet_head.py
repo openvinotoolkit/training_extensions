@@ -3,18 +3,17 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from collections import defaultdict
-
 import torch
 from mmcv.runner import force_fp32
-from mmdet.core import bbox_overlaps, distance2bbox, images_to_levels, reduce_mean
+from mmdet.core import bbox_overlaps, distance2bbox, reduce_mean
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.vfnet_head import VFNetHead
 
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     CrossDatasetDetectorHead,
+    TrackingLossDynamicsMixIn,
 )
-from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import LossAccumulator, TrackingLossType
+from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
 from otx.algorithms.detection.adapters.mmdet.models.losses.cross_focal_loss import (
     CrossSigmoidFocalLoss,
 )
@@ -243,8 +242,10 @@ class CustomVFNetHead(CrossDatasetDetectorHead, VFNetHead):
 
 
 @HEADS.register_module()
-class CustomVFNetHeadTrackingLossDynamics(CustomVFNetHead):
+class CustomVFNetHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomVFNetHead):
     """CustomVFNetHead which supports tracking loss dynamics."""
+
+    tracking_loss_types = (TrackingLossType.cls, TrackingLossType.bbox, TrackingLossType.bbox_refine)
 
     def __init__(self, *args, bg_loss_weight=-1, **kwargs):
         super().__init__(*args, bg_loss_weight=bg_loss_weight, **kwargs)
@@ -254,6 +255,7 @@ class CustomVFNetHeadTrackingLossDynamics(CustomVFNetHead):
                 "Loss dynamics tracking for VFNetHead with use_atss=False is currently not supported."
             )
 
+    @TrackingLossDynamicsMixIn._wrap_get_targets(concatenate_last=True, flatten=True)
     def get_atss_targets(
         self,
         anchor_list,
@@ -266,12 +268,7 @@ class CustomVFNetHeadTrackingLossDynamics(CustomVFNetHead):
         unmap_outputs=True,
     ):
         """Extract ATSS targets and store `self.all_pos_assigned_gt_inds` for tracking loss dynamics."""
-        num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
-        self.batch_size = len(gt_bboxes_list)
-        self.max_gt_bboxes_len = max([len(gt_bboxes) for gt_bboxes in gt_bboxes_list])
-        self.cur_batch_idx = 0
-        self.pos_assigned_gt_inds_list = []
-        targets = super().get_atss_targets(
+        return super().get_atss_targets(
             anchor_list,
             valid_flag_list,
             gt_bboxes_list,
@@ -281,32 +278,13 @@ class CustomVFNetHeadTrackingLossDynamics(CustomVFNetHead):
             label_channels,
             unmap_outputs,
         )
-        all_pos_assigned_gt_inds = images_to_levels(self.pos_assigned_gt_inds_list, num_level_anchors)
-        self.all_pos_assigned_gt_inds = torch.cat([inds.reshape(-1) for inds in all_pos_assigned_gt_inds])
-        return targets
 
     def _get_target_single(self, *args, **kwargs):
         return CustomATSSHeadTrackingLossDynamics._get_target_single(self, *args, **kwargs)
 
-    def _get_pos_inds(self, flatten_labels, bg_class_ind):
-        pos_inds = super()._get_pos_inds(flatten_labels, bg_class_ind)
-
-        if len(pos_inds) > 0:
-            gt_inds = self.all_pos_assigned_gt_inds[pos_inds].cpu()
-
-            self.batch_inds = gt_inds // self.max_gt_bboxes_len
-            self.bbox_inds = gt_inds % self.max_gt_bboxes_len
-
-        self.pos_inds = pos_inds
-        return pos_inds
-
+    @TrackingLossDynamicsMixIn._wrap_loss
     def loss(self, cls_scores, bbox_preds, bbox_preds_refine, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Obtain detection task losses and store loss dynamics."""
-        self.loss_dyns = {
-            TrackingLossType.cls: defaultdict(LossAccumulator),
-            TrackingLossType.bbox: defaultdict(LossAccumulator),
-            TrackingLossType.bbox_refine: defaultdict(LossAccumulator),
-        }
         return super().loss(
             cls_scores, bbox_preds, bbox_preds_refine, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore
         )
@@ -351,14 +329,9 @@ class CustomVFNetHeadTrackingLossDynamics(CustomVFNetHead):
             )
 
         if len(self.pos_inds) > 0:
-            CustomATSSHeadTrackingLossDynamics._store_loss_dyns(
-                self,
-                loss_cls[self.pos_inds].detach().mean(-1),
-                TrackingLossType.cls,
-            )
-        return CustomATSSHeadTrackingLossDynamics._postprocess_loss(
-            self, loss_cls, self.loss_cls.reduction, avg_factor=num_pos_avg_per_gpu
-        )
+            self._store_loss_dyns(loss_cls[self.pos_inds].detach().mean(-1), TrackingLossType.cls)
+
+        return self._postprocess_loss(loss_cls, self.loss_cls.reduction, avg_factor=num_pos_avg_per_gpu)
 
     def _get_loss_bbox_refine(
         self, pos_decoded_target_preds, pos_decoded_bbox_preds_refine, bbox_weights_rf, bbox_avg_factor_rf
@@ -370,15 +343,9 @@ class CustomVFNetHeadTrackingLossDynamics(CustomVFNetHead):
             avg_factor=bbox_avg_factor_rf,
             reduction_override="none",
         )
-        CustomATSSHeadTrackingLossDynamics._store_loss_dyns(
-            self,
-            loss_bbox_refine.detach(),
-            TrackingLossType.bbox_refine,
-        )
+        self._store_loss_dyns(loss_bbox_refine.detach(), TrackingLossType.bbox_refine)
 
-        return CustomATSSHeadTrackingLossDynamics._postprocess_loss(
-            self, loss_bbox_refine, self.loss_cls.reduction, avg_factor=bbox_avg_factor_rf
-        )
+        return self._postprocess_loss(loss_bbox_refine, self.loss_cls.reduction, avg_factor=bbox_avg_factor_rf)
 
     def _get_loss_bbox(self, pos_decoded_bbox_preds, pos_decoded_target_preds, bbox_weights_ini, bbox_avg_factor_ini):
         loss_bbox = self.loss_bbox(
@@ -388,12 +355,18 @@ class CustomVFNetHeadTrackingLossDynamics(CustomVFNetHead):
             avg_factor=bbox_avg_factor_ini,
             reduction_override="none",
         )
-        CustomATSSHeadTrackingLossDynamics._store_loss_dyns(
-            self,
-            loss_bbox.detach(),
-            TrackingLossType.bbox,
-        )
+        self._store_loss_dyns(loss_bbox.detach(), TrackingLossType.bbox)
 
-        return CustomATSSHeadTrackingLossDynamics._postprocess_loss(
-            self, loss_bbox, self.loss_cls.reduction, avg_factor=bbox_avg_factor_ini
-        )
+        return self._postprocess_loss(loss_bbox, self.loss_cls.reduction, avg_factor=bbox_avg_factor_ini)
+
+    def _get_pos_inds(self, labels, *args, **kwargs):
+        pos_inds = CustomVFNetHead._get_pos_inds(self, labels, *args, **kwargs)
+
+        if len(pos_inds) > 0:
+            gt_inds = self.all_pos_assigned_gt_inds[pos_inds].cpu()
+
+            self.batch_inds = gt_inds // self.max_gt_bboxes_len
+            self.bbox_inds = gt_inds % self.max_gt_bboxes_len
+
+        self.pos_inds = pos_inds
+        return pos_inds

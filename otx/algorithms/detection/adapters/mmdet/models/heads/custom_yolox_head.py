@@ -1,5 +1,4 @@
 """Custom YOLOX head for OTX template."""
-from collections import defaultdict
 
 import torch
 import torch.nn.functional as F
@@ -9,10 +8,10 @@ from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.yolox_head import YOLOXHead
 from mmdet.models.losses.utils import weight_reduce_loss
 
-from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import (
-    LossAccumulator,
-    TrackingLossType,
+from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
+    TrackingLossDynamicsMixIn,
 )
+from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
 
 
 @HEADS.register_module()
@@ -24,9 +23,12 @@ class CustomYOLOXHead(YOLOXHead):
 
 
 @HEADS.register_module()
-class CustomYOLOXHeadTrackingLossDynamics(CustomYOLOXHead):
+class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOXHead):
     """CustomYOLOXHead which supports loss dynamics tracking."""
 
+    tracking_loss_types = (TrackingLossType.cls, TrackingLossType.bbox)
+
+    @TrackingLossDynamicsMixIn._wrap_loss
     @force_fp32(apply_to=("cls_scores", "bbox_preds", "objectnesses"))
     def loss(self, cls_scores, bbox_preds, objectnesses, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Compute loss of the head.
@@ -70,10 +72,6 @@ class CustomYOLOXHeadTrackingLossDynamics(CustomYOLOXHead):
         # Init variables for loss dynamics tracking
         self.cur_batch_idx = 0
         self.max_gt_bboxes_len = max([len(gt_bbox) for gt_bbox in gt_bboxes])
-        self.loss_dyns = {
-            TrackingLossType.cls: defaultdict(LossAccumulator),
-            TrackingLossType.bbox: defaultdict(LossAccumulator),
-        }
 
         (
             pos_masks,
@@ -200,6 +198,7 @@ class CustomYOLOXHeadTrackingLossDynamics(CustomYOLOXHead):
 
         pos_assigned_gt_inds = self.cur_batch_idx * self.max_gt_bboxes_len + sampling_result.pos_assigned_gt_inds
         self.cur_batch_idx += 1
+        self.pos_inds = pos_inds
 
         return (
             foreground_mask,
@@ -210,8 +209,3 @@ class CustomYOLOXHeadTrackingLossDynamics(CustomYOLOXHead):
             num_pos_per_img,
             pos_assigned_gt_inds,
         )
-
-    def _store_loss_dyns(self, losses: torch.Tensor, key: TrackingLossType) -> None:
-        loss_dyns = self.loss_dyns[key]
-        for batch_idx, bbox_idx, loss_item in zip(self.batch_inds, self.bbox_inds, losses.detach().cpu()):
-            loss_dyns[(batch_idx.item(), bbox_idx.item())].add(loss_item.item())
