@@ -16,7 +16,11 @@ All notable changes to this project will be documented in this file.
 
 - Make semantic segmentation OpenVINO models compatible with ModelAPI (<https://github.com/openvinotoolkit/training_extensions/pull/2029>).
 - Support label hierarchy through LabelTree in LabelSchema for classification task (<https://github.com/openvinotoolkit/training_extensions/pull/2149>, <https://github.com/openvinotoolkit/training_extensions/pull/2152>).
+<<<<<<< HEAD
 - Enhance exportable code file structure, video inference and default value for demo (<https://github.com/openvinotoolkit/training_extensions/pull/2051>).
+=======
+- Refactoring of ONNX export functionality (<https://github.com/openvinotoolkit/training_extensions/pull/2155>).
+>>>>>>> 81db95455 (Update changelog)
 
 ### Bug fixes
 
