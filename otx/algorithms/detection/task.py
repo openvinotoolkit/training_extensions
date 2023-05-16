@@ -206,7 +206,7 @@ class OTXDetectionTask(OTXTask, ABC):
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
-        self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
+        self._add_predictions_to_dataset(val_preds, preds_val_dataset, self.confidence_threshold)
 
         result_set = ResultSetEntity(
             model=output_model,
