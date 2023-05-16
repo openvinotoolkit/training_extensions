@@ -112,7 +112,7 @@ def main():
 
     export_precision = ModelPrecision.FP16 if args.half_precision else ModelPrecision.FP32
 
-    if not args.export_type.lower() in ["openvino", "onnx"]:
+    if args.export_type.lower() not in ["openvino", "onnx"]:
         raise ValueError("Unsupported export type")
     export_type = ExportType.OPENVINO if "openvino" == args.export_type.lower() else ExportType.ONNX
     task.export(export_type, exported_model, export_precision, args.dump_features)

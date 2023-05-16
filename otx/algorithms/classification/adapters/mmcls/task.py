@@ -556,11 +556,11 @@ class MMClassificationTask(OTXClassificationTask):
         cfg = self.configure(False, "test", None)
 
         self._precision[0] = precision
+        assert len(self._precision) == 1
         export_options: Dict[str, Any] = {}
         export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
 
-        assert len(self._precision) == 1
-        export_options["precision"] = str(self._precision[0])
+        export_options["precision"] = str(precision)
         export_options["type"] = str(export_format)
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
@@ -573,7 +573,7 @@ class MMClassificationTask(OTXClassificationTask):
                     output_names.append("saliency_map")
         export_options["model_builder"] = getattr(self, "model_builder", build_classifier)
 
-        if self._precision[0] == ModelPrecision.FP16:
+        if precision == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
         if export_format == ExportType.ONNX:
