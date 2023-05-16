@@ -73,7 +73,7 @@ class Exporter:
             deploy_cfg (Config): deploy config which contains deploy info
             work_dir (str): path to save onnx and openvino xml file
             half_precision (bool): whether to use half-precision(FP16)
-            onnx_only (bool): whether to export pnly onnx model
+            onnx_only (bool): whether to export only onnx model
         """
 
         self.task_processor = build_task_processor(recipe_cfg, deploy_cfg, "cpu")

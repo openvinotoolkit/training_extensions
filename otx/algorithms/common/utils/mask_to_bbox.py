@@ -51,7 +51,7 @@ def mask2bbox(mask) -> List[List[int]]:
         mask (np.ndarray): Input binary mask
 
     Returns:
-        List[int]: Bounding box coordinates
+        List[List[int]]: Bounding box coordinates
     """
     bboxes: List[List[int]] = []
 
