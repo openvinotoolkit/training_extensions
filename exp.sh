@@ -26,7 +26,12 @@ otx eval otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcn
 --load-weights ${OUTPUT_PATH}/instance_segmentation_r50_maskrcnn_${DATASET}/openvino/openvino.xml \
 --output ${OUTPUT_PATH}/instance_segmentation_r50_maskrcnn_${DATASET}
 
+<<<<<<< HEAD
 # ###
+=======
+benchmark_app -m ${OUTPUT_PATH}/instance_segmentation_r50_maskrcnn_${DATASET}/openvino/openvino.xml -api sync -niter 100 -nstreams 1 -hint none -nthreads 6
+
+###
 otx train otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml \
 --train-data-roots ${DATASET_PREFIX}/${DATASET} \
 --val-data-roots ${DATASET_PREFIX}/${DATASET} \
