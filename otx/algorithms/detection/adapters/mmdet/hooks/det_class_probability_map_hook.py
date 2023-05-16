@@ -55,6 +55,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
             cls_scores = feature_map
         else:
             cls_scores = self._get_cls_scores_from_feature_map(feature_map)
+        cls_scores = [torch.softmax(t, dim=1) for t in cls_scores]
 
         batch_size, _, height, width = cls_scores[-1].size()
         saliency_maps = torch.empty(batch_size, self._num_cls_out_channels, height, width)
