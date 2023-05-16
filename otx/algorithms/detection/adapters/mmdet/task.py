@@ -293,8 +293,6 @@ class MMDetectionTask(OTXDetectionTask):
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
-        cfg.data.train_dataloader.samples_per_gpu = 12
-        cfg.data.val_dataloader.samples_per_gpu = 12
         train_detector(
             model,
             datasets,
