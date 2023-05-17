@@ -115,7 +115,12 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             return inputs
 
         def forward_train(
-            self, inputs: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, train_cfg: Dict = dict(), loss_only: bool = False
+            self,
+            inputs: torch.Tensor,
+            img_metas: List[Dict],
+            gt_semantic_seg: torch.Tensor,
+            train_cfg: Dict = dict(),
+            loss_only: bool = False,
         ):
             """Forward function for training.
 
@@ -129,6 +134,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
                 gt_semantic_seg (Tensor): Semantic segmentation masks
                     used if the architecture supports semantic segmentation task.
                 train_cfg (dict): The training config.
+                loss_only (bool): If true computes loss only without head forward
 
             Returns:
                 dict[str, Tensor]: a dictionary of loss components

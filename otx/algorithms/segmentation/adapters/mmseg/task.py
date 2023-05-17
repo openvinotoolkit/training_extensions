@@ -16,9 +16,9 @@
 
 import glob
 import io
+import math
 import os
 import time
-import math
 from contextlib import nullcontext
 from copy import deepcopy
 from functools import partial

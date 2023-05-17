@@ -60,7 +60,7 @@ model = dict(
         gamma=0.999,
         num_prototype=4,
         in_proto_channels=512,
-        loss_decode=dict(type="PixelPrototypeCELoss", loss_ppc_weight=0.01, loss_ppd_weight=0.001, ignore_index=255)
+        loss_decode=dict(type="PixelPrototypeCELoss", loss_ppc_weight=0.01, loss_ppd_weight=0.001, ignore_index=255),
     )
     # model training and testing settings
 )
