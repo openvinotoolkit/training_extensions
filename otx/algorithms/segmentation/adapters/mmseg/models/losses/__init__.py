@@ -16,7 +16,6 @@
 
 from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
 from .detcon_loss import DetConLoss
-from .ohem import CriterionOhem
 from .pixel_prototype_ce_loss import PixelPrototypeCELoss
 
-__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore", "CriterionOhem", "PixelPrototypeCELoss"]
+__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore", "PixelPrototypeCELoss"]
