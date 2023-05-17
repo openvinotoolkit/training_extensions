@@ -296,7 +296,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
 
         self.tiler = Tiler(
             tile_size=int(tile_size * tile_ir_scale_factor),
-            overlap=overlap,
+            overlap=overlap / tile_ir_scale_factor,
             max_number=max_number,
             detector=inferencer.model,
             classifier=classifier,
