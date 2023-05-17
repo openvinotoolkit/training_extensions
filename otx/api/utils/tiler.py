@@ -63,10 +63,12 @@ class Tiler:
 
         coords = [[0, 0, width, height]]
         for (loc_j, loc_i) in product(
-            range(0, width - self.tile_size + 1, int(self.tile_size * (1 - self.overlap))),
-            range(0, height - self.tile_size + 1, int(self.tile_size * (1 - self.overlap))),
+            range(0, width, int(self.tile_size * (1 - self.overlap))),
+            range(0, height, int(self.tile_size * (1 - self.overlap))),
         ):
-            coords.append([loc_j, loc_i, loc_j + self.tile_size, loc_i + self.tile_size])
+            x2 = min(loc_j + self.tile_size, width)
+            y2 = min(loc_i + self.tile_size, height)
+            coords.append([loc_j, loc_i, x2, y2])
         return coords
 
     def filter_tiles_by_objectness(
