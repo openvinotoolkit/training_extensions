@@ -387,7 +387,6 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         validate = bool(cfg.data.get("val", None))
 
-<<<<<<< HEAD
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
             train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(
@@ -397,16 +396,6 @@ class MMSegmentationTask(OTXSegmentationTask):
                 isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
-=======
-        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
-            train_func = partial(
-                train_segmentor,
-                meta=deepcopy(meta),
-                model=deepcopy(model),
-                distributed=False,
-            )
-            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
->>>>>>> black files back
 
         train_segmentor(
             model,

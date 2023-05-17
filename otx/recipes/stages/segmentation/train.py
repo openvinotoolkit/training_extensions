@@ -32,7 +32,7 @@ evaluation = dict(
 custom_hooks = [
     dict(
         type="LazyEarlyStoppingHook",
-        patience=15,
+        patience=8,
         iteration_patience=0,
         metric="mDice",
         interval=1,
