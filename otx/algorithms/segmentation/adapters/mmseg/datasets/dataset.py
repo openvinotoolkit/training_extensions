@@ -96,9 +96,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
             """
             dataset = self.otx_dataset
             item = dataset[index]
-            ignored_labels = np.array(
-                [self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels]
-            )
+            ignored_labels = np.array([self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
 
             data_info = dict(
                 dataset_item=item,
@@ -139,16 +137,12 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         # even if we need only checking aspect ratio of the image; due to it
         # this implementation of dataset does not uses such tricks as skipping images with wrong aspect ratios or
         # small image size, since otherwise reading the whole dataset during initialization will be required.
-        self.data_infos = OTXSegDataset._DataInfoProxy(
-            self.otx_dataset, self.project_labels
-        )
+        self.data_infos = OTXSegDataset._DataInfoProxy(self.otx_dataset, self.project_labels)
 
         self.pipeline = Compose(pipeline)
 
     @staticmethod
-    def filter_labels(
-        all_labels: List[LabelEntity], label_names: List[str]
-    ) -> List[LabelEntity]:
+    def filter_labels(all_labels: List[LabelEntity], label_names: List[str]) -> List[LabelEntity]:
         """Filter and collect actual label entities."""
         filtered_labels = []
         for label_name in label_names:
@@ -217,9 +211,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         """
 
         dataset_item = self.otx_dataset[idx]
-        ann_info = get_annotation_mmseg_format(
-            dataset_item, self.project_labels, self.use_otx_adapter
-        )
+        ann_info = get_annotation_mmseg_format(dataset_item, self.project_labels, self.use_otx_adapter)
 
         return ann_info
 
@@ -257,9 +249,7 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
             new_classes = kwargs.get("new_classes", [])
 
         if test_mode is False:
-            self.img_indices = get_old_new_img_indices(
-                classes, new_classes, otx_dataset
-            )
+            self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)
 
         for pipe in pipeline:
             if pipe["type"] == "LoadImageFromOTXDataset" and "use_otx_adapter" in pipe:

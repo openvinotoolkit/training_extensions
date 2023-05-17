@@ -59,9 +59,7 @@ class PolyScalarScheduler(BaseScalarScheduler):
             var_a = factor / (num_iters**self._power)
             var_b = -factor * self._power / float(num_iters)
 
-            out_value = (
-                var_a * np.power(step, self._power) + var_b * step + self._start_s
-            )
+            out_value = var_a * np.power(step, self._power) + var_b * step + self._start_s
         else:
             out_value = self._end_s
 

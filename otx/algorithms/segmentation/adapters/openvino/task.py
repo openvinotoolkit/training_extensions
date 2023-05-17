@@ -126,9 +126,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         self.callback_exceptions: List[Exception] = []
         self.model.model_adapter.set_callback(self._async_callback)
 
-    def pre_process(
-        self, image: np.ndarray
-    ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+    def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Segmentation Inferencer."""
         return self.model.preprocess(image)
 
@@ -139,9 +137,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         hard_prediction = self.model.postprocess(prediction, metadata)
         soft_prediction = metadata["soft_prediction"]
         feature_vector = metadata["feature_vector"]
-        predicted_scene = self.converter.convert_to_annotation(
-            hard_prediction, metadata
-        )
+        predicted_scene = self.converter.convert_to_annotation(hard_prediction, metadata)
 
         return predicted_scene, feature_vector, soft_prediction
 
@@ -201,9 +197,7 @@ class OTXOpenVinoDataLoader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOSegmentationTask(
-    IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask
-):
+class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
     """Task implementation for Segmentation using OpenVINO backend."""
 
     def __init__(self, task_environment: TaskEnvironment):
@@ -259,12 +253,8 @@ class OpenVINOSegmentationTask(
             dataset_item.append_annotations(predicted_scene.annotations)
 
             if feature_vector is not None:
-                feature_vector_media = TensorEntity(
-                    name="representation_vector", numpy=feature_vector.reshape(-1)
-                )
-                dataset_item.append_metadata_item(
-                    feature_vector_media, model=self.model
-                )
+                feature_vector_media = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+                dataset_item.append_metadata_item(feature_vector_media, model=self.model)
 
             if dump_soft_prediction:
                 for label_index, label in self._label_dictionary.items():
@@ -304,9 +294,7 @@ class OpenVINOSegmentationTask(
 
         return dataset
 
-    def evaluate(
-        self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None
-    ):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OpenVINOSegmentationTask."""
         logger.info("Computing mDice")
         metrics = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset)
@@ -325,19 +313,13 @@ class OpenVINOSegmentationTask(
         parameters["type_of_model"] = self.hparams.postprocessing.class_name.value
         parameters["converter_type"] = "SEGMENTATION"
         parameters["model_parameters"] = self.inferencer.configuration
-        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(
-            self.task_environment.label_schema
-        )
+        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
             # model files
-            arch.writestr(
-                os.path.join("model", "model.xml"), self.model.get_data("openvino.xml")
-            )
-            arch.writestr(
-                os.path.join("model", "model.bin"), self.model.get_data("openvino.bin")
-            )
+            arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
+            arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
             arch.writestr(
                 os.path.join("model", "config.json"),
                 json.dumps(parameters, ensure_ascii=False, indent=4),
@@ -377,9 +359,7 @@ class OpenVINOSegmentationTask(
             raise RuntimeError("POT optimize failed, model is None")
 
         if optimization_type is not OptimizationType.POT:
-            raise ValueError(
-                "POT is the only supported optimization type for OpenVino models"
-            )
+            raise ValueError("POT is the only supported optimization type for OpenVino models")
 
         dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
@@ -392,9 +372,7 @@ class OpenVINOSegmentationTask(
             with open(bin_path, "wb") as f:
                 f.write(self.model.get_data("openvino.bin"))
 
-            model_config = ADDict(
-                {"model_name": "openvino_model", "model": xml_path, "weights": bin_path}
-            )
+            model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
 
             model = load_model(model_config)
 
@@ -406,18 +384,12 @@ class OpenVINOSegmentationTask(
 
         engine_config = ADDict({"device": "CPU"})
 
-        optimization_config_path = os.path.join(
-            self._base_dir, "pot_optimization_config.json"
-        )
+        optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
         if os.path.exists(optimization_config_path):
             with open(optimization_config_path, encoding="UTF-8") as f_src:
                 algorithms = ADDict(json.load(f_src))["algorithms"]
         else:
-            algorithms = [
-                ADDict(
-                    {"name": "DefaultQuantization", "params": {"target_device": "ANY"}}
-                )
-            ]
+            algorithms = [ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY"}})]
         for algo in algorithms:
             algo.params.stat_subset_size = self.hparams.pot_parameters.stat_subset_size
             algo.params.shuffle_data = True

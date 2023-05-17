@@ -60,9 +60,7 @@ class BlurSegmentation(SegmentationModel):
         parameters.update(
             {
                 "soft_threshold": NumericalValue(default_value=0.5, min=0.0, max=1.0),
-                "blur_strength": NumericalValue(
-                    value_type=int, default_value=1, min=0, max=25
-                ),
+                "blur_strength": NumericalValue(value_type=int, default_value=1, min=0, max=25),
             }
         )
 
@@ -80,9 +78,7 @@ class BlurSegmentation(SegmentationModel):
         elif len(layer_shape) == 4:
             self.out_channels = layer_shape[1]
         else:
-            raise Exception(
-                f"Unexpected output layer shape {layer_shape}. Only 4D and 3D output layers are supported"
-            )
+            raise Exception(f"Unexpected output layer shape {layer_shape}. Only 4D and 3D output layers are supported")
 
         return layer_name
 
@@ -113,9 +109,7 @@ class BlurSegmentation(SegmentationModel):
         meta["soft_prediction"] = soft_prediction
 
         if "feature_vector" not in outputs:
-            warnings.warn(
-                "Could not find Feature Vector in OpenVINO output. Please rerun export or retrain the model."
-            )
+            warnings.warn("Could not find Feature Vector in OpenVINO output. Please rerun export or retrain the model.")
             meta["feature_vector"] = None
         else:
             meta["feature_vector"] = outputs["feature_vector"].reshape(-1)

@@ -58,9 +58,7 @@ class ProtoNet(BaseDecodeHead):
         pred_seg = torch.max(out_seg, 1)[1]
         mask = gt_seg == pred_seg.view(-1)
 
-        cosine_similarity = torch.mm(
-            _c, self.prototypes.view(-1, self.prototypes.shape[-1]).t()
-        )
+        cosine_similarity = torch.mm(_c, self.prototypes.view(-1, self.prototypes.shape[-1]).t())
 
         proto_logits = cosine_similarity
         proto_target = gt_seg.clone().float()

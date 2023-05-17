@@ -37,9 +37,7 @@ class ProbCompose:
             elif callable(transform):
                 self.transforms.append(transform)
             else:
-                raise TypeError(
-                    f"transform must be callable or a dict, but got {type(transform)}"
-                )
+                raise TypeError(f"transform must be callable or a dict, but got {type(transform)}")
 
     def __call__(self, data):
         """Callback function of ProbCompose."""
@@ -85,9 +83,7 @@ class MaskCompose:
             elif callable(transform):
                 self.transforms.append(transform)
             else:
-                raise TypeError(
-                    f"transform must be callable or a dict, but got {type(transform)}"
-                )
+                raise TypeError(f"transform must be callable or a dict, but got {type(transform)}")
 
     @staticmethod
     def _apply_transforms(data, transforms):

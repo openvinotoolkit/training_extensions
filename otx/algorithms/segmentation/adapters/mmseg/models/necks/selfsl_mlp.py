@@ -60,9 +60,7 @@ class SelfSLMLP(nn.Module):
                 nn.Linear(hid_channels, out_channels),
             )
 
-    def init_weights(
-        self, init_linear: str = "normal", std: float = 0.01, bias: float = 0.0
-    ):
+    def init_weights(self, init_linear: str = "normal", std: float = 0.01, bias: float = 0.0):
         """Initialize SelfSLMLP weights.
 
         Args:
@@ -78,9 +76,7 @@ class SelfSLMLP(nn.Module):
                     normal_init(m, std=std, bias=bias)
                 else:
                     kaiming_init(m, mode="fan_in", nonlinearity="relu")
-            elif isinstance(
-                m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm, nn.SyncBatchNorm)
-            ):
+            elif isinstance(m, (nn.BatchNorm1d, nn.BatchNorm2d, nn.GroupNorm, nn.SyncBatchNorm)):
                 if m.weight is not None:
                     nn.init.constant_(m.weight, 1)
                 if m.bias is not None:

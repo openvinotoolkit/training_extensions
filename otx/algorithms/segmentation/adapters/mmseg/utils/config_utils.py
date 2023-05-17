@@ -114,11 +114,7 @@ def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
         config.runner.max_iters = total_iterations
 
     # rescale the learning schedules
-    schedule_scale = (
-        float(total_iterations) / float(init_num_iterations)
-        if init_num_iterations > 0
-        else 0.0
-    )
+    schedule_scale = float(total_iterations) / float(init_num_iterations) if init_num_iterations > 0 else 0.0
     rescale_num_iterations(config, schedule_scale)
 
 
@@ -138,9 +134,7 @@ def rescale_num_iterations(config: Union[Config, ConfigDict], schedule_scale: fl
                 if not hasattr(loss[target_attr], "num_iters"):
                     continue
 
-                loss[target_attr].num_iters = int(
-                    schedule_scale * loss[target_attr].num_iters
-                )
+                loss[target_attr].num_iters = int(schedule_scale * loss[target_attr].num_iters)
         head.loss_decode = losses
 
     # rescale number of iterations for
@@ -187,12 +181,8 @@ def patch_adaptive_repeat_dataset(
     # rescale the learning schedules
     schedule_scale = float(new_max_epoch) / float(init_max_epoch)
     config.params_config.iters = math.ceil(schedule_scale * config.params_config.iters)
-    config.lr_config.fixed_iters = math.ceil(
-        schedule_scale * config.lr_config.fixed_iters
-    )
-    config.lr_config.warmup_iters = math.ceil(
-        schedule_scale * config.lr_config.warmup_iters
-    )
+    config.lr_config.fixed_iters = math.ceil(schedule_scale * config.lr_config.fixed_iters)
+    config.lr_config.warmup_iters = math.ceil(schedule_scale * config.lr_config.warmup_iters)
     rescale_num_iterations(config, schedule_scale)
 
 
@@ -275,10 +265,7 @@ def set_num_classes(config: Config, num_classes: int):
 
         if isinstance(heads, (tuple, list)):
             for head in heads:
-                if (
-                    hasattr(head, "loss_target")
-                    and head.loss_target == "gt_class_borders"
-                ):
+                if hasattr(head, "loss_target") and head.loss_target == "gt_class_borders":
                     continue
 
                 head.num_classes = num_classes
@@ -311,9 +298,7 @@ def patch_datasets(
     for subset in subsets:
         if subset not in config.data:
             continue
-        config.data[f"{subset}_dataloader"] = config.data.get(
-            f"{subset}_dataloader", ConfigDict()
-        )
+        config.data[f"{subset}_dataloader"] = config.data.get(f"{subset}_dataloader", ConfigDict())
 
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:

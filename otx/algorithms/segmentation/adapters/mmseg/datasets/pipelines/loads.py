@@ -51,9 +51,7 @@ class LoadAnnotationFromOTXDataset:
         dataset_item = results["dataset_item"]
         labels = results["ann_info"]["labels"]
 
-        ann_info = get_annotation_mmseg_format(
-            dataset_item, labels, self.use_otx_adapter
-        )
+        ann_info = get_annotation_mmseg_format(dataset_item, labels, self.use_otx_adapter)
 
         results["gt_semantic_seg"] = ann_info["gt_semantic_seg"]
         results["seg_fields"].append("gt_semantic_seg")

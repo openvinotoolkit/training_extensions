@@ -2,11 +2,11 @@
 
 import functools
 
+import numpy as np
 import torch
 from mmseg.models import SEGMENTORS, build_segmentor
 from mmseg.models.segmentors.base import BaseSegmentor
 from mmseg.ops import resize
-import numpy as np
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads.proto_head import ProtoNet
@@ -23,20 +23,23 @@ class MeanTeacherSegmentor(BaseSegmentor):
     It creates two models and ema from one to the other for consistency loss.
     """
 
-    def __init__(self, orig_type=None,
-                 unsup_weight=0.1,
-                 proto_weight=0.7,
-                 aux_weight=0.1,
-                 drop_percent=80,
-                 num_iters_per_epoch=6000,
-                 semisl_start_iter=1,
-                 proto_head=None,
-                 **kwargs):
+    def __init__(
+        self,
+        orig_type=None,
+        unsup_weight=0.1,
+        proto_weight=0.7,
+        aux_weight=0.1,
+        drop_percent=80,
+        num_iters_per_epoch=6000,
+        semisl_start_iter=1,
+        proto_head=None,
+        **kwargs
+    ):
         super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.count_iter = 0
-        self.filter_pixels_iters = num_iters_per_epoch * 100 # 100 epochs
-        self.semisl_start_iter = num_iters_per_epoch * semisl_start_iter # 1 epoch
+        self.filter_pixels_iters = num_iters_per_epoch * 100  # 100 epochs
+        self.semisl_start_iter = num_iters_per_epoch * semisl_start_iter  # 1 epoch
         self.drop_percent = drop_percent
         self.aux_weight = aux_weight
         cfg = kwargs.copy()
@@ -50,8 +53,10 @@ class MeanTeacherSegmentor(BaseSegmentor):
             self.proto_net = ProtoNet(num_classes=self.model_s.decode_head.num_classes, **proto_head)
             self.use_prototype_head = True
         elif proto_head is not None:
-            logger.warning("Prototype head isn't supported by this model. "
-                           "_forward_feature() method is required to be presented in the main decode head")
+            logger.warning(
+                "Prototype head isn't supported by this model. "
+                "_forward_feature() method is required to be presented in the main decode head"
+            )
         self.proto_weight = proto_weight
         self.losses = dict()
         # Hooks for super_type transparent weight load/save
@@ -62,22 +67,24 @@ class MeanTeacherSegmentor(BaseSegmentor):
         """Encode and decode images."""
         return self.model_s.encode_decode(img, img_metas)
 
-    def decode_proto_network(self, sup_input, gt_semantic_seg, unsup_input=None, pl_from_teacher=None, reweight_unsup=1.0):
-        """Forward prototype network, compute proto loss"""
+    def decode_proto_network(
+        self, sup_input, gt_semantic_seg, unsup_input=None, pl_from_teacher=None, reweight_unsup=1.0
+    ):
+        """Forward prototype network, compute proto loss."""
         # supervised branch
         head_features_sup = self.model_s.decode_head._forward_feature(sup_input)
         proto_out_supervised = self.proto_net(head_features_sup, gt_semantic_seg)
         loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=gt_semantic_seg)
-        self.update_summary_loss(loss_proto, loss_weight=self.proto_weight)
+        self._update_summary_loss(loss_proto, loss_weight=self.proto_weight)
         # unsupervised branch
         if unsup_input and pl_from_teacher:
             head_features_unsup = self.model_s.decode_head._forward_feature(unsup_input)
             proto_out_unsupervised = self.proto_net(head_features_unsup, pl_from_teacher)
             loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=pl_from_teacher)
-            self.update_summary_loss(loss_proto_u, loss_weight=self.unsup_weight * reweight_unsup * self.proto_weight)
+            self._update_summary_loss(loss_proto_u, loss_weight=self.unsup_weight * reweight_unsup * self.proto_weight)
 
     def generate_pseudo_labels(self, ul_w_img, ul_img_metas):
-        """Generate pseudo labels from teacher model, apply filter loss method"""
+        """Generate pseudo labels from teacher model, apply filter loss method."""
         with torch.no_grad():
             teacher_feat = self.model_t.extract_feat(ul_w_img)
             teacher_out = self.model_t._decode_head_forward_test(teacher_feat, ul_img_metas)
@@ -95,9 +102,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         entropy = -torch.sum(teacher_prob_unsup * torch.log(teacher_prob_unsup + 1e-10), dim=1, keepdim=True)
 
-        thresh = np.percentile(
-            entropy[pl_from_teacher != 255].detach().cpu().numpy().flatten(), drop_percent
-        )
+        thresh = np.percentile(entropy[pl_from_teacher != 255].detach().cpu().numpy().flatten(), drop_percent)
         thresh_mask = entropy.ge(thresh).bool() * (pl_from_teacher != 255).bool()
 
         pl_from_teacher[thresh_mask] = 255
@@ -128,7 +133,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
         if self.semisl_start_iter >= self.count_iter or "extra_0" not in kwargs:
             x = self.model_s.extract_feat(img)
             loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
-            self.update_summary_loss(loss_decode)
+            self._update_summary_loss(loss_decode)
             if self.use_prototype_head:
                 self.decode_proto_network(x, gt_semantic_seg)
 
@@ -141,8 +146,8 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         # + unsupervised part
         ul_data = kwargs["extra_0"]
-        ul_s_img = ul_data["img"] # strongly augmented
-        ul_w_img = ul_data["ul_w_img"] # weakly augmented
+        ul_s_img = ul_data["img"]  # strongly augmented
+        ul_w_img = ul_data["ul_w_img"]  # weakly augmented
         ul_img_metas = ul_data["img_metas"]
 
         # generate pseudo labels, filter high entropy pixels, compute loss reweight
@@ -153,8 +158,8 @@ class MeanTeacherSegmentor(BaseSegmentor):
         x_u = self.model_s.extract_feat(ul_s_img)
         loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
         loss_decode_u = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
-        self.update_summary_loss(loss_decode)
-        self.update_summary_loss(loss_decode_u, loss_weight=self.unsup_weight * reweight_unsup)
+        self._update_summary_loss(loss_decode)
+        self._update_summary_loss(loss_decode_u, loss_weight=self.unsup_weight * reweight_unsup)
 
         if self.use_prototype_head:
             # for proto head we need to derive head features
@@ -163,8 +168,8 @@ class MeanTeacherSegmentor(BaseSegmentor):
         if hasattr(self.model_s, "auxiliary_head"):
             aux_loss = self.model_s.auxiliary_head.forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
             aux_loss_u = self.model_s.auxiliary_head.forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
-            self.update_summary_loss(aux_loss, loss_weight=self.aux_weight)
-            self.update_summary_loss(aux_loss_u, loss_weight=self.aux_weight * reweight_unsup * self.unsup_weight)
+            self._update_summary_loss(aux_loss, loss_weight=self.aux_weight)
+            self._update_summary_loss(aux_loss_u, loss_weight=self.aux_weight * reweight_unsup * self.unsup_weight)
 
         # add information about accuracy
         for key in loss_decode:
@@ -174,7 +179,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
         return self.losses
 
-    def update_summary_loss(self, decode_loss, loss_weight=1.):
+    def _update_summary_loss(self, decode_loss, loss_weight=1.0):
         for name, value in decode_loss.items():
             if value is None or "loss" not in name:
                 continue

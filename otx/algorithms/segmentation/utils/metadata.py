@@ -9,9 +9,7 @@ from mmcv.utils import ConfigDict
 from otx.api.entities.label_schema import LabelSchemaEntity
 
 
-def get_seg_model_api_configuration(
-    label_schema: LabelSchemaEntity, hyperparams: ConfigDict
-):
+def get_seg_model_api_configuration(label_schema: LabelSchemaEntity, hyperparams: ConfigDict):
     """Get ModelAPI config."""
     all_labels = ""
     for lbl in label_schema.get_labels(include_empty=False):

@@ -45,9 +45,7 @@ class Mlp(BaseModule):
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.fc1 = nn.Conv2d(in_features, hidden_features, 1)
-        self.dwconv = nn.Conv2d(
-            hidden_features, hidden_features, 3, 1, 1, bias=True, groups=hidden_features
-        )
+        self.dwconv = nn.Conv2d(hidden_features, hidden_features, 3, 1, 1, bias=True, groups=hidden_features)
         self.act = build_activation_layer(act_cfg)
         self.fc2 = nn.Conv2d(hidden_features, out_features, 1)
         self.drop = nn.Dropout(drop)
@@ -210,9 +208,7 @@ class MSCASpatialAttention(BaseModule):
         super().__init__()
         self.proj_1 = nn.Conv2d(in_channels, in_channels, 1)
         self.activation = build_activation_layer(act_cfg)
-        self.spatial_gating_unit = MSCAAttention(
-            in_channels, attention_kernel_sizes, attention_kernel_paddings
-        )
+        self.spatial_gating_unit = MSCAAttention(in_channels, attention_kernel_sizes, attention_kernel_paddings)
         self.proj_2 = nn.Conv2d(in_channels, in_channels, 1)
 
     def forward(self, x):
@@ -267,9 +263,7 @@ class MSCABlock(BaseModule):
     ):
         super().__init__()
         self.norm1 = build_norm_layer(norm_cfg, channels)[1]
-        self.attn = MSCASpatialAttention(
-            channels, attention_kernel_sizes, attention_kernel_paddings, act_cfg
-        )
+        self.attn = MSCASpatialAttention(channels, attention_kernel_sizes, attention_kernel_paddings, act_cfg)
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = build_norm_layer(norm_cfg, channels)[1]
         mlp_hidden_channels = int(channels * mlp_ratio)
@@ -280,24 +274,16 @@ class MSCABlock(BaseModule):
             drop=drop,
         )
         layer_scale_init_value = 1e-2
-        self.layer_scale_1 = nn.Parameter(
-            layer_scale_init_value * torch.ones(channels), requires_grad=True
-        )
-        self.layer_scale_2 = nn.Parameter(
-            layer_scale_init_value * torch.ones(channels), requires_grad=True
-        )
+        self.layer_scale_1 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
+        self.layer_scale_2 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
 
     def forward(self, x, H, W):
         """Forward function."""
 
         B, N, C = x.shape
         x = x.permute(0, 2, 1).view(B, C, H, W)
-        x = x + self.drop_path(
-            self.layer_scale_1.unsqueeze(-1).unsqueeze(-1) * self.attn(self.norm1(x))
-        )
-        x = x + self.drop_path(
-            self.layer_scale_2.unsqueeze(-1).unsqueeze(-1) * self.mlp(self.norm2(x))
-        )
+        x = x + self.drop_path(self.layer_scale_1.unsqueeze(-1).unsqueeze(-1) * self.attn(self.norm1(x)))
+        x = x + self.drop_path(self.layer_scale_2.unsqueeze(-1).unsqueeze(-1) * self.mlp(self.norm2(x)))
         x = x.view(B, C, N).permute(0, 2, 1)
         return x
 
@@ -401,14 +387,9 @@ class MSCAN(BaseModule):
     ):
         super().__init__(init_cfg=init_cfg)
 
-        assert not (
-            init_cfg and pretrained
-        ), "init_cfg and pretrained cannot be set at the same time"
+        assert not (init_cfg and pretrained), "init_cfg and pretrained cannot be set at the same time"
         if isinstance(pretrained, str):
-            warnings.warn(
-                "DeprecationWarning: pretrained is deprecated, "
-                'please use "init_cfg" instead'
-            )
+            warnings.warn("DeprecationWarning: pretrained is deprecated, " 'please use "init_cfg" instead')
             self.init_cfg = dict(type="Pretrained", checkpoint=pretrained)
         elif pretrained is not None:
             raise TypeError("pretrained must be a str or None")
@@ -416,9 +397,7 @@ class MSCAN(BaseModule):
         self.depths = depths
         self.num_stages = num_stages
 
-        dpr = [
-            x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))
-        ]  # stochastic depth decay rule
+        dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
         cur = 0
 
         for i in range(num_stages):

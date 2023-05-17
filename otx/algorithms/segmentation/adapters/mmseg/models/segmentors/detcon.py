@@ -98,9 +98,7 @@ class MaskPooling(nn.Module):
         mask_exists = torch.greater(masks.sum(dim=-1), 1e-3)
         sel_masks = mask_exists.to(torch.float) + 1e-11
 
-        mask_ids = torch.multinomial(
-            sel_masks, num_samples=self.num_samples, replacement=self.replacement
-        )
+        mask_ids = torch.multinomial(sel_masks, num_samples=self.num_samples, replacement=self.replacement)
         sampled_masks = torch.stack([masks[b][mask_ids[b]] for b in range(batch_size)])
 
         return sampled_masks, mask_ids
@@ -118,9 +116,7 @@ class MaskPooling(nn.Module):
         binary_masks = self.pool_masks(masks)
         sampled_masks, sampled_mask_ids = self.sample_masks(binary_masks)
         areas = sampled_masks.sum(dim=-1, keepdim=True)
-        sampled_masks = sampled_masks / torch.maximum(
-            areas, torch.tensor(1.0, device=areas.device)
-        )
+        sampled_masks = sampled_masks / torch.maximum(areas, torch.tensor(1.0, device=areas.device))
 
         return sampled_masks, sampled_mask_ids
 
@@ -214,18 +210,14 @@ class DetConB(nn.Module):
             )
 
         # init backbone
-        for param_ol, param_tgt in zip(
-            self.online_backbone.parameters(), self.target_backbone.parameters()
-        ):
+        for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
             param_tgt.data.copy_(param_ol.data)
             param_tgt.requires_grad = False
             param_ol.requires_grad = True
 
         # init projector
         self.online_projector.init_weights(init_linear="kaiming")
-        for param_ol, param_tgt in zip(
-            self.online_projector.parameters(), self.target_projector.parameters()
-        ):
+        for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
             param_tgt.data.copy_(param_ol.data)
             param_tgt.requires_grad = False
             param_ol.requires_grad = True
@@ -236,19 +228,11 @@ class DetConB(nn.Module):
     @torch.no_grad()
     def _momentum_update(self):
         """Momentum update of the target network."""
-        for param_ol, param_tgt in zip(
-            self.online_backbone.parameters(), self.target_backbone.parameters()
-        ):
-            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (
-                1.0 - self.momentum
-            )
+        for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
+            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
-        for param_ol, param_tgt in zip(
-            self.online_projector.parameters(), self.target_projector.parameters()
-        ):
-            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (
-                1.0 - self.momentum
-            )
+        for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
+            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
     def transform_inputs(self, inputs: Union[List, Tuple]):
         """Transform inputs for decoder.
@@ -260,9 +244,7 @@ class DetConB(nn.Module):
             Tensor: The transformed inputs.
         """
         # TODO (sungchul): consider tensor component, too
-        if self.input_transform == "resize_concat" and isinstance(
-            self.in_index, (list, tuple)
-        ):
+        if self.input_transform == "resize_concat" and isinstance(self.in_index, (list, tuple)):
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
                 resize(
@@ -274,9 +256,7 @@ class DetConB(nn.Module):
                 for x in inputs
             ]
             inputs = torch.cat(upsampled_inputs, dim=1)
-        elif self.input_transform == "multiple_select" and isinstance(
-            self.in_index, (list, tuple)
-        ):
+        elif self.input_transform == "multiple_select" and isinstance(self.in_index, (list, tuple)):
             inputs = [inputs[i] for i in self.in_index]
         else:
             if isinstance(self.in_index, (list, tuple)):
@@ -359,14 +339,10 @@ class DetConB(nn.Module):
 
         with torch.no_grad():
             self._momentum_update()
-            projs_tgt, ids_tgt = self.sample_masked_feats(
-                self.target_backbone(imgs), masks, self.target_projector
-            )
+            projs_tgt, ids_tgt = self.sample_masked_feats(self.target_backbone(imgs), masks, self.target_projector)
 
         # predictor
-        loss = self.predictor(
-            projs, projs_tgt, ids, ids_tgt, batch_size, self.num_samples
-        )
+        loss = self.predictor(projs, projs_tgt, ids, ids_tgt, batch_size, self.num_samples)
 
         if return_embedding:
             return loss, embds, masks
@@ -420,9 +396,7 @@ class DetConB(nn.Module):
         losses = self(**data_batch)
         loss, log_vars = self._parse_losses(losses)
 
-        outputs = dict(
-            loss=loss, log_vars=log_vars, num_samples=len(data_batch["img_metas"])
-        )
+        outputs = dict(loss=loss, log_vars=log_vars, num_samples=len(data_batch["img_metas"]))
 
         return outputs
 
@@ -579,9 +553,7 @@ class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
             img_metas += img_metas
 
         # decode head
-        loss_decode = self._decode_head_forward_train(
-            embds, img_metas, gt_semantic_seg=masks
-        )
+        loss_decode = self._decode_head_forward_train(embds, img_metas, gt_semantic_seg=masks)
         losses.update(loss_decode)
 
         return losses

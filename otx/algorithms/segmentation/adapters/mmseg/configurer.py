@@ -136,9 +136,7 @@ class SegmentationConfigurer:
 
         cfg.model_task = cfg.model.pop("task", "segmentation")
         if cfg.model_task != "segmentation":
-            raise ValueError(
-                f"Given cfg ({cfg.filename}) is not supported by segmentation recipe"
-            )
+            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by segmentation recipe")
 
         super_type = cfg.model.pop("super_type", None)
         if super_type:
@@ -238,13 +236,9 @@ class SegmentationConfigurer:
             else:
                 model_classes = data_classes.copy()
         elif self.task_adapt_op == "MERGE":
-            model_classes = org_model_classes + [
-                cls for cls in data_classes if cls not in org_model_classes
-            ]
+            model_classes = org_model_classes + [cls for cls in data_classes if cls not in org_model_classes]
         else:
-            raise KeyError(
-                f"{self.task_adapt_op} is not supported for task_adapt options!"
-            )
+            raise KeyError(f"{self.task_adapt_op} is not supported for task_adapt options!")
 
         cfg.task_adapt.final = model_classes
         cfg.model.task_adapt = ConfigDict(
@@ -284,11 +278,7 @@ class SegmentationConfigurer:
         if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
             cfg.model.backbone.pretrained = None
         # patch checkpoint if needed (e.g. pretrained weights from mmseg)
-        if (
-            cfg.get("load_from", None)
-            and not model_ckpt
-            and not cfg.get("resume", False)
-        ):
+        if cfg.get("load_from", None) and not model_ckpt and not cfg.get("resume", False):
             cfg.load_from = self.patch_chkpt(cfg.load_from)
 
     @staticmethod
@@ -350,19 +340,14 @@ class SegmentationConfigurer:
 
         def read_label_schema(ckpt_path, name_only=True, file_name="label_schema.json"):
             serialized_label_schema = []
-            if any(
-                ckpt_path.endswith(extension) for extension in (".xml", ".bin", ".pth")
-            ):
+            if any(ckpt_path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
                 label_schema_path = os.path.join(os.path.dirname(ckpt_path), file_name)
                 if os.path.exists(label_schema_path):
                     with open(label_schema_path, encoding="UTF-8") as read_file:
                         serialized_label_schema = json.load(read_file)
             if serialized_label_schema:
                 if name_only:
-                    all_classes = [
-                        labels["name"]
-                        for labels in serialized_label_schema["all_labels"].values()
-                    ]
+                    all_classes = [labels["name"] for labels in serialized_label_schema["all_labels"].values()]
                 else:
                     all_classes = serialized_label_schema
             else:
@@ -437,9 +422,7 @@ class SegmentationConfigurer:
         cfg.distributed = False
         if torch.distributed.is_initialized():
             cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
-            if (
-                training
-            ):  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
+            if training:  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
                 cfg.distributed = True
                 self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
@@ -456,9 +439,7 @@ class SegmentationConfigurer:
         """Settings samples_per_gpu for training and inference."""
 
         dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
-        samples_per_gpu = dataloader_cfg.get(
-            "samples_per_gpu", cfg.data.get("samples_per_gpu", 1)
-        )
+        samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
 
         data_cfg = self.get_data_cfg(cfg, subset)
         if data_cfg.get("otx_dataset") is not None:
@@ -505,9 +486,7 @@ class SegmentationConfigurer:
     @staticmethod
     def configure_distributed(cfg: Config) -> None:
         """Patching for distributed training."""
-        if hasattr(cfg, "dist_params") and cfg.dist_params.get(
-            "linear_scale_lr", False
-        ):
+        if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
             new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
             logger.info(
                 f"enabled linear scaling rule to the learning rate. \
@@ -547,9 +526,7 @@ class SegmentationConfigurer:
                 dataloader_cfg = cfg.data.get(f"{subset}_dataloader", None)
                 if dataloader_cfg is None:
                     raise AttributeError(f"{subset}_dataloader is not found in config.")
-                dataloader_cfg = Config(
-                    cfg_dict={**global_dataloader_cfg, **dataloader_cfg}
-                )
+                dataloader_cfg = Config(cfg_dict={**global_dataloader_cfg, **dataloader_cfg})
                 cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
         _configure_dataloader(cfg)
@@ -563,9 +540,9 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
         super().configure_task(cfg, training)
 
         # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
-        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(
-            self.org_model_classes
-        ) == set(self.model_classes):
+        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
+            self.model_classes
+        ):
             is_cls_incr = False
         else:
             is_cls_incr = True
@@ -585,16 +562,12 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
 class SemiSLSegmentationConfigurer(SegmentationConfigurer):
     """Patch config to support semi supervised learning for semantic segmentation."""
 
-    def configure_data(
-        self, cfg: ConfigDict, training: bool, data_cfg: ConfigDict
-    ) -> None:
+    def configure_data(self, cfg: ConfigDict, training: bool, data_cfg: ConfigDict) -> None:
         """Patch cfg.data."""
         super().configure_data(cfg, training, data_cfg)
         # Set unlabeled data hook
         if training:
-            if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get(
-                "otx_dataset", False
-            ):
+            if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 self.configure_unlabeled_dataloader(cfg)
 
     def configure_task(self, cfg: ConfigDict, training: bool, **kwargs: Any) -> None:
@@ -614,9 +587,7 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
             "segmentation": "mmseg",
         }  # noqa
         if "unlabeled" in cfg.data:
-            task_lib_module = importlib.import_module(
-                f"{model_task[cfg.model_task]}.datasets"
-            )
+            task_lib_module = importlib.import_module(f"{model_task[cfg.model_task]}.datasets")
             dataset_builder = getattr(task_lib_module, "build_dataset")
             dataloader_builder = getattr(task_lib_module, "build_dataloader")
 

@@ -86,9 +86,7 @@ class MMSegmentationTask(OTXSegmentationTask):
     """Task class for OTX segmentation using mmsegmentation training backend."""
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(
-        self, task_environment: TaskEnvironment, output_path: Optional[str] = None
-    ):
+    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         super().__init__(task_environment, output_path)
         self._data_cfg: Optional[Config] = None
         self._recipe_cfg: Optional[Config] = None
@@ -111,9 +109,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
-                update_or_add_custom_hook(
-                    self._recipe_cfg, ConfigDict(override_custom_hook)
-                )
+                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
         if len(self.override_configs) > 0:
             logger.info(f"before override configs merging = {self._recipe_cfg}")
             self._recipe_cfg.merge_from_dict(self.override_configs)
@@ -122,9 +118,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         # add Cancel training hook
         update_or_add_custom_hook(
             self._recipe_cfg,
-            ConfigDict(
-                type="CancelInterfaceHook", init_callback=self.on_hook_initialized
-            ),
+            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
         )
         if self._time_monitor is not None:
             update_or_add_custom_hook(
@@ -136,9 +130,7 @@ class MMSegmentationTask(OTXSegmentationTask):
                     priority=71,
                 ),
             )
-        self._recipe_cfg.log_config.hooks.append(
-            {"type": "OTXLoggerHook", "curves": self._learning_curves}
-        )
+        self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
@@ -260,19 +252,13 @@ class MMSegmentationTask(OTXSegmentationTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
-        feature_model = (
-            model.model_s if self._train_type == TrainType.Semisupervised else model
-        )
+        feature_model = model.model_s if self._train_type == TrainType.Semisupervised else model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
         time_monitor = None
         if cfg.get("custom_hooks", None):
-            time_monitor = [
-                hook.time_monitor
-                for hook in cfg.custom_hooks
-                if hook.type == "OTXProgressHook"
-            ]
+            time_monitor = [hook.time_monitor for hook in cfg.custom_hooks if hook.type == "OTXProgressHook"]
             time_monitor = time_monitor[0] if time_monitor else None
         if time_monitor is not None:
 
@@ -290,9 +276,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         feature_vectors = []
 
         if not dump_features:
-            feature_vector_hook: Union[
-                nullcontext, BaseRecordingForwardHook
-            ] = nullcontext()
+            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)
 
@@ -387,9 +371,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             )
 
         # Model
-        model = self.build_model(
-            cfg, fp16=cfg.get("fp16", False), is_training=self._is_training
-        )
+        model = self.build_model(cfg, fp16=cfg.get("fp16", False), is_training=self._is_training)
         model.train()
         model.CLASSES = target_classes
 
@@ -405,6 +387,7 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         validate = bool(cfg.data.get("val", None))
 
+<<<<<<< HEAD
         if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
             train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
             adapt_batch_size(
@@ -414,6 +397,16 @@ class MMSegmentationTask(OTXSegmentationTask):
                 isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
+=======
+        if self._hyperparams.learning_parameters.auto_decrease_batch_size:
+            train_func = partial(
+                train_segmentor,
+                meta=deepcopy(meta),
+                model=deepcopy(model),
+                distributed=False,
+            )
+            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
+>>>>>>> black files back
 
         train_segmentor(
             model,
@@ -466,20 +459,13 @@ class MMSegmentationTask(OTXSegmentationTask):
             output_names = export_options["deploy_cfg"]["ir_config"]["output_names"]
             if "feature_vector" not in output_names:
                 output_names.append("feature_vector")
-            if (
-                export_options["deploy_cfg"]["codebase_config"]["task"]
-                != "Segmentation"
-            ):
+            if export_options["deploy_cfg"]["codebase_config"]["task"] != "Segmentation":
                 if "saliency_map" not in output_names:
                     output_names.append("saliency_map")
-        export_options["model_builder"] = getattr(
-            self, "model_builder", build_segmentor
-        )
+        export_options["model_builder"] = getattr(self, "model_builder", build_segmentor)
 
         if self._precision[0] == ModelPrecision.FP16:
-            export_options["deploy_cfg"]["backend_config"]["mo_options"][
-                "flags"
-            ].append("--compress_to_fp16")
+            export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
         if export_format == ExportType.ONNX:
             export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
@@ -493,9 +479,7 @@ class MMSegmentationTask(OTXSegmentationTask):
 
     # This should moved somewhere
     def _init_deploy_cfg(self, cfg: Config) -> Union[Config, None]:
-        base_dir = os.path.abspath(
-            os.path.dirname(self._task_environment.model_template.model_template_path)
-        )
+        base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
@@ -557,9 +541,7 @@ class MMSegmentationTask(OTXSegmentationTask):
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error
                 # when converting to OpenVINO IR
-                deploy_cfg.backend_config.model_inputs = [
-                    ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))
-                ]
+                deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
             patch_input_preprocessing(deploy_cfg)
             if not deploy_cfg.backend_config.get("model_inputs", []):
@@ -578,9 +560,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         """Save best model weights in SegmentationTrainTask."""
         logger.info("called save_model")
         buffer = io.BytesIO()
-        hyperparams_str = ids_to_strings(
-            cfg_helper.convert(self._hyperparams, dict, enum_to_str=True)
-        )
+        hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {

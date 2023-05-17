@@ -42,14 +42,10 @@ from otx.api.entities.task_environment import TaskEnvironment
 logger = get_logger()
 
 
-class SegmentationNNCFTask(
-    NNCFBaseTask, MMSegmentationTask
-):  # pylint: disable=too-many-ancestors
+class SegmentationNNCFTask(NNCFBaseTask, MMSegmentationTask):  # pylint: disable=too-many-ancestors
     """SegmentationNNCFTask."""
 
-    def __init__(
-        self, task_environment: TaskEnvironment, output_path: Optional[str] = None
-    ):
+    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         super().__init__()  # type: ignore [call-arg]
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
@@ -83,9 +79,7 @@ class SegmentationNNCFTask(
         output_model: ModelEntity,
     ):
         # Get training metrics group from learning curves
-        training_metrics, best_score = self._generate_training_metrics_group(
-            self._learning_curves
-        )
+        training_metrics, best_score = self._generate_training_metrics_group(self._learning_curves)
         performance = Performance(
             score=ScoreMetric(value=best_score, name=self.metric),
             dashboard_metrics=training_metrics,
@@ -118,12 +112,6 @@ class SegmentationNNCFTask(
             metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
             if key == f"val/{self.metric}":
                 best_score = max(curve.y)
-            visualization_info = LineChartInfo(
-                name=key, x_axis_label="Epoch", y_axis_label=key
-            )
-            output.append(
-                MetricsGroup(
-                    metrics=[metric_curve], visualization_info=visualization_info
-                )
-            )
+            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
+            output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
         return output, best_score
