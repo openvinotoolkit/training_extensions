@@ -482,13 +482,14 @@ def adaptive_tile_params(
     max_area = np.max(areas)
 
     logger.info("[Adaptive tiling pararms]")
+    # object_tile_ratio = 0.03  # 16x16 object in 512x512
+    # object_tile_ratio = 0.06  # 32x32 object in 512x512
     object_size = math.sqrt(object_area)
     max_object_size = math.sqrt(max_area)
-    logger.info(f"----> {rule}_object_size: {object_size}")
-    logger.info(f"----> max_object_size: {max_object_size}")
-
     tile_size = int(object_size/object_tile_ratio)
     tile_overlap = max_object_size / tile_size
+    logger.info(f"----> {rule}_object_size: {object_size}")
+    logger.info(f"----> max_object_size: {max_object_size}")
 
     if tile_overlap >= tiling_parameters.get_metadata("tile_overlap")["max_value"]:
         # Use the average object area if the tile overlap is too large to prevent 0 stride.

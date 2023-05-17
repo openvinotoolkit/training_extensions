@@ -334,7 +334,9 @@ def patch_tiling(config, hparams, dataset=None):
     if hparams.tiling_parameters.enable_tiling:
         logger.info("Tiling enabled")
 
-        if dataset and dataset.purpose == DatasetPurpose.TRAINING and hparams.tiling_parameters.enable_adaptive_params:
+        # FIXME: TRAIN only?
+        #if dataset and dataset.purpose == DatasetPurpose.TRAINING and hparams.tiling_parameters.enable_adaptive_params:
+        if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
             adaptive_tile_params(hparams.tiling_parameters, dataset.get_subset(Subset.TRAINING))
 
         if hparams.tiling_parameters.enable_tile_classifier:
