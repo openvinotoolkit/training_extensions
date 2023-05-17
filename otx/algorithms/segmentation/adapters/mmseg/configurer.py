@@ -204,13 +204,12 @@ class SegmentationConfigurer:
     def configure_decode_head(self, cfg: Config) -> None:
         """Change to incremental loss (ignore mode) and substitute head with otx universal head."""
         ignore = cfg.get("ignore", False)
-
         for head in ("decode_head", "auxiliary_head"):
             decode_head = cfg.model.get(head, None)
             if decode_head is not None:
                 decode_head.base_type = decode_head.type
                 decode_head.type = otx_head_factory
-                if ignore and decode_head.loss_decode.type == "CrossEntropyLoss":
+                if ignore:
                     cfg_loss_decode = ConfigDict(
                         type="CrossEntropyLossWithIgnore",
                         use_sigmoid=False,
