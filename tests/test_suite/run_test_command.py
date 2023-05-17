@@ -19,6 +19,8 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Dict
+import onnx
+import onnxruntime
 
 import pytest
 import yaml
@@ -241,7 +243,10 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         assert os.path.exists(path_to_xml)
         assert os.path.exists(os.path.join(save_path, "openvino.bin"))
     else:
-        assert os.path.exists(os.path.join(save_path, "model.onnx"))
+        path_to_onnx = os.path.join(save_path, "model.onnx")
+        assert os.path.exists(path_to_onnx)
+        onnx.checker.check_model(path_to_onnx)
+        onnxruntime.InferenceSession(path_to_onnx)
         return
 
     if dump_features:
