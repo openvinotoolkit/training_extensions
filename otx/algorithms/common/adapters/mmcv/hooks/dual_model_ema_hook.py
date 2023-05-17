@@ -77,7 +77,7 @@ class DualModelEMAHook(Hook):
     def before_train_epoch(self, runner):
         """Momentum update."""
         if runner.epoch == self.start_epoch:
-            self._copy_model()
+            self._sync_model()
             self.enabled = True
 
         if self.epoch_momentum > 0.0 and self.enabled:
@@ -90,11 +90,7 @@ class DualModelEMAHook(Hook):
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
-        if not self.enabled:
-            return
-
-        if runner.iter % self.interval != 0:
-            # Skip update
+        if not self.enabled or (runner.iter % self.interval != 0):
             return
 
         # EMA
@@ -111,7 +107,7 @@ class DualModelEMAHook(Hook):
             model = model.module
         return model
 
-    def _copy_model(self):
+    def _sync_model(self):
         with torch.no_grad():
             for name, src_param in self.src_params.items():
                 dst_param = self.dst_params[name]
