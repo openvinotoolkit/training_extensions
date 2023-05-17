@@ -69,8 +69,8 @@ def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], ca
         out.release()
         print(f"Video was saved to {video_path}")
     else:
-        if len(filenames) < len(saved_frames):
-            filenames = [f"output_{i}" for i, _ in enumerate(saved_frames)]
+        if len(filenames) != len(saved_frames):
+            filenames = [f"output_{i}.jpeg" for i, _ in enumerate(saved_frames)]
         for filename, frame in zip(filenames, saved_frames):
             image_path = str(output_path / filename)
             cv2.imwrite(image_path, frame)
