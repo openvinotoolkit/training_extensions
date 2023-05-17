@@ -90,7 +90,7 @@
         "multi_class": {
           "--train-data-roots": "segmentation/regression_voc_cls_decr/train",
           "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
-          "--test-data-roots": "segmentation/regression_voc_cls_decr/tests",
+          "--test-data-roots": "segmentation/regression_voc_cls_decr/test",
           "--input": "segmentation/regression_voc_cls_decr/test/images"
         }
       },

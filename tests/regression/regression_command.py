@@ -277,7 +277,7 @@ def regression_train_time_testing(train_time_criteria, e2e_train_time, template,
     }
 
     e2e_train_time_criteria = train_time_criteria[template.name]
-    modified_train_criteria = e2e_train_time_criteria - (e2e_train_time_criteria * threshold)
+    modified_train_criteria = e2e_train_time_criteria + (e2e_train_time_criteria * threshold)
 
     if e2e_train_time > modified_train_criteria:
         regression_result["passed"] = False
@@ -297,7 +297,7 @@ def regression_eval_time_testing(eval_time_criteria, e2e_eval_time, template, th
     }
 
     e2e_eval_time_criteria = eval_time_criteria[template.name]
-    modified_eval_criteria = e2e_eval_time_criteria - (e2e_eval_time_criteria * threshold)
+    modified_eval_criteria = e2e_eval_time_criteria + (e2e_eval_time_criteria * threshold)
 
     if e2e_eval_time > modified_eval_criteria:
         regression_result["passed"] = False
