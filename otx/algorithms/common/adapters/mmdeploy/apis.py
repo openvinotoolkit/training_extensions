@@ -226,6 +226,7 @@ if is_mmdeploy_enabled():
                     input_data,
                     cfg,
                     deploy_cfg,
+                    export_type,
                     model_name=model_name,
                 )
 
@@ -255,6 +256,7 @@ if is_mmdeploy_enabled():
             input_data: Any,
             cfg: mmcv.Config,
             deploy_cfg: mmcv.Config,
+            export_type: str,
             *,
             model_name: str = "model",
         ):
@@ -276,15 +278,16 @@ if is_mmdeploy_enabled():
                 partition_cfgs,
             )
 
-            deploy_cfg_ = deepcopy(deploy_cfg)
-            update_deploy_cfg(partition_onnx[0], deploy_cfg_)
-            MMdeployExporter.onnx2openvino(
-                output_dir,
-                partition_onnx[0],
-                deploy_cfg_,
-            )
-            deploy_cfg["partition_config"]["apply_marks"] = False
-            reset_mark_function_count()
+            if "ONNX" not in export_type:
+                deploy_cfg_ = deepcopy(deploy_cfg)
+                update_deploy_cfg(partition_onnx[0], deploy_cfg_)
+                MMdeployExporter.onnx2openvino(
+                    output_dir,
+                    partition_onnx[0],
+                    deploy_cfg_,
+                )
+                deploy_cfg["partition_config"]["apply_marks"] = False
+                reset_mark_function_count()
 
         @staticmethod
         def torch2onnx(
