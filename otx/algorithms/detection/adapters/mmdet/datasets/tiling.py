@@ -170,19 +170,19 @@ class Tile:
         height, width = img_shape[:2]
         _tile = self.prepare_result(result)
 
-        num_patches_h = int((height - self.tile_size) / self.stride) + 1
-        num_patches_w = int((width - self.tile_size) / self.stride) + 1
+        num_patches_h = int(height / self.stride) + 1
+        num_patches_w = int(width / self.stride) + 1
         for (_, _), (loc_i, loc_j) in zip(
             product(range(num_patches_h), range(num_patches_w)),
             product(
-                range(0, height - self.tile_size + 1, self.stride),
-                range(0, width - self.tile_size + 1, self.stride),
+                range(0, height, self.stride),
+                range(0, width, self.stride),
             ),
         ):
             x_1 = loc_j
-            x_2 = loc_j + self.tile_size
+            x_2 = min(loc_j + self.tile_size, width)
             y_1 = loc_i
-            y_2 = loc_i + self.tile_size
+            y_2 = min(loc_i + self.tile_size, height)
             tile = copy.deepcopy(_tile)
             tile["original_shape_"] = img_shape
             tile["ori_shape"] = (y_2 - y_1, x_2 - x_1, 3)
