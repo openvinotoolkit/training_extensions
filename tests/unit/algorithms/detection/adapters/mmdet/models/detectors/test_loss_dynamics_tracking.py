@@ -5,15 +5,13 @@ import os.path as osp
 from typing import Any, Dict, Type
 
 import datumaro as dm
-import numpy as np
 import pytest
 import torch
 from mmcv import ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models.builder import build_detector
+from mmdet.models.detectors import BaseDetector
 
-from otx.algorithms.detection.adapters.mmdet.models.detectors import CustomATSS
-from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import TrackingLossType
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 
@@ -62,27 +60,21 @@ class TestLossDynamicsTrackingMixin:
 
         return dataloader
 
-    @pytest.fixture
-    def fxt_custom_atss(self, fxt_cfg_custom_atss: Dict, fxt_det_dataset_entity: DatasetEntity) -> CustomATSS:
-        fxt_cfg_custom_atss["track_loss_dynamics"] = True
-
-        detector = build_detector(fxt_cfg_custom_atss)
-        detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
-        return detector
-
-    @pytest.fixture
-    def fxt_custom_ssd(self, fxt_cfg_custom_ssd: Dict, fxt_det_dataset_entity: DatasetEntity) -> CustomATSS:
-        fxt_cfg_custom_ssd["track_loss_dynamics"] = True
-
-        detector = build_detector(fxt_cfg_custom_ssd)
-        detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
-        return detector
-
     @pytest.fixture()
-    def detector(self, request: Type[pytest.FixtureRequest]):
-        return request.getfixturevalue(request.param)
+    def detector(self, request: Type[pytest.FixtureRequest], fxt_det_dataset_entity: DatasetEntity) -> BaseDetector:
+        fxt_cfg_detector = request.getfixturevalue(request.param)
+        fxt_cfg_detector["track_loss_dynamics"] = True
 
-    TESTCASE = ["fxt_custom_atss", "fxt_custom_ssd"]
+        detector = build_detector(fxt_cfg_detector)
+        detector.loss_dyns_tracker.init_with_otx_dataset(fxt_det_dataset_entity)
+        return detector
+
+    TESTCASE = [
+        "fxt_cfg_custom_atss",
+        "fxt_cfg_custom_ssd",
+        "fxt_cfg_custom_vfnet",
+        "fxt_cfg_custom_yolox",
+    ]
 
     @torch.no_grad()
     @pytest.mark.parametrize("detector", TESTCASE, indirect=True)

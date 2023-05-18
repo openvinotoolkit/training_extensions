@@ -37,7 +37,16 @@ class TestLossDynamicsTrackingHeads:
         return head, head_tracking_loss_dyns
 
     @torch.no_grad()
-    @pytest.mark.parametrize("fxt_head_pair", ["fxt_cfg_atss_head", "fxt_cfg_ssd_head"], indirect=True)
+    @pytest.mark.parametrize(
+        "fxt_head_pair",
+        [
+            "fxt_cfg_atss_head",
+            "fxt_cfg_ssd_head",
+            "fxt_cfg_vfnet_head",
+            "fxt_cfg_yolox_head",
+        ],
+        indirect=True,
+    )
     def test_output_equivalance(self, fxt_head_pair, fxt_head_input):
         head, head_with_tracking_loss = fxt_head_pair
         feat, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore = fxt_head_input
@@ -55,5 +64,8 @@ class TestLossDynamicsTrackingHeads:
 
         for actual, expected in zip(losses.values(), expected_losses.values()):
             # actual, expected are list (# of feature pyramid level)
-            for a, e in zip(actual, expected):
-                assert torch.allclose(a, e)
+            if isinstance(actual, list) and isinstance(expected, list):
+                for a, e in zip(actual, expected):
+                    assert torch.allclose(a, e)
+            else:
+                assert torch.allclose(actual, expected)

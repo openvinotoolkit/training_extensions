@@ -137,3 +137,50 @@ def fxt_cfg_ssd_head(n_classes=4, n_channels=64) -> Dict:
     }
 
     return head_cfg
+
+
+@pytest.fixture
+def fxt_cfg_vfnet_head(n_classes=4, n_channels=64) -> Dict:
+    head_cfg = {
+        "type": "CustomVFNetHead",
+        "num_classes": n_classes,
+        "in_channels": n_channels,
+        "stacked_convs": 3,
+        "feat_channels": 256,
+        "strides": [8, 16, 32, 64, 128],
+        "center_sampling": False,
+        "dcn_on_last_conv": False,
+        "use_atss": True,
+        "use_vfl": True,
+        "loss_cls": {
+            "type": "VarifocalLoss",
+            "use_sigmoid": True,
+            "alpha": 0.75,
+            "gamma": 2.0,
+            "iou_weighted": True,
+            "loss_weight": 1.0,
+        },
+        "loss_bbox": {"type": "GIoULoss", "loss_weight": 1.5},
+        "loss_bbox_refine": {"type": "GIoULoss", "loss_weight": 2.0},
+        "train_cfg": mmcv.Config(
+            {
+                "assigner": {"type": "ATSSAssigner", "topk": 9},
+                "allowed_border": -1,
+                "pos_weight": -1,
+                "debug": False,
+            }
+        ),
+    }
+
+    return head_cfg
+
+
+@pytest.fixture
+def fxt_cfg_yolox_head(n_classes=4, n_channels=64):
+    return {
+        "type": "CustomYOLOXHead",
+        "num_classes": n_classes,
+        "in_channels": n_channels,
+        "feat_channels": n_channels,
+        "train_cfg": mmcv.Config({"assigner": {"type": "SimOTAAssigner", "center_radius": 2.5}}),
+    }
