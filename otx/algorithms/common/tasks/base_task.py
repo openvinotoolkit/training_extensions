@@ -335,4 +335,4 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
 
     @staticmethod
     def _get_adaptive_num_workers():
-        return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)
+        return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)  # max available num_workers is 8
