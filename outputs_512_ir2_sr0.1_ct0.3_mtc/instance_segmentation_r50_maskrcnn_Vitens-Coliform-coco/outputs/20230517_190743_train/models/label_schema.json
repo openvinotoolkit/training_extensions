@@ -1,0 +1,35 @@
+{
+    "label_tree": {
+        "type": "tree",
+        "directed": true,
+        "nodes": [],
+        "edges": []
+    },
+    "label_groups": [
+        {
+            "_id": "6464a771c2d7cd9fd7cb2c81",
+            "name": "labels",
+            "label_ids": [
+                "0"
+            ],
+            "relation_type": "EXCLUSIVE"
+        }
+    ],
+    "all_labels": {
+        "0": {
+            "_id": "0",
+            "name": "coliform",
+            "color": {
+                "red": 51,
+                "green": 227,
+                "blue": 144,
+                "alpha": 255
+            },
+            "hotkey": "",
+            "domain": "INSTANCE_SEGMENTATION",
+            "creation_date": "2023-05-17T10:07:45.564000",
+            "is_empty": false,
+            "is_anomalous": false
+        }
+    }
+}

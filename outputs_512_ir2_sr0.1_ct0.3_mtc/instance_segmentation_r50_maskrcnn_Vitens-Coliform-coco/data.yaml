@@ -1,0 +1,13 @@
+data:
+  train:
+    ann-files: null
+    data-roots: /home/sungmanc/datasets/Vitens-Coliform-coco
+  val:
+    ann-files: null
+    data-roots: /home/sungmanc/datasets/Vitens-Coliform-coco
+  test:
+    ann-files: null
+    data-roots: null
+  unlabeled:
+    file-list: null
+    data-roots: null
