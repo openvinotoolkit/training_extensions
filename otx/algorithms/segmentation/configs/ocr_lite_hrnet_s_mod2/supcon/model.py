@@ -69,13 +69,11 @@ model = dict(
         enable_aggregator=True,
         aggregator_merge_norm=None,
         aggregator_use_concat=False,
-        loss_decode=[
-            dict(
-                type="CrossEntropyLoss",
-                use_sigmoid=False,
-                loss_weight=1.0,
-            ),
-        ],
+        loss_decode=dict(
+            type="CrossEntropyLoss",
+            use_sigmoid=False,
+            loss_weight=1.0,
+        ),
         init_cfg=dict(
             type="Normal",
             mean=0,

@@ -69,8 +69,8 @@ class TestDualModelEMAHook:
         """Test before_train_epoch function."""
 
         hook = DualModelEMAHook(epoch_momentum=0.99)
-        runner = MockRunner()
         hook.enabled = True
+        runner = MockRunner()
         hook.before_train_epoch(runner)
         assert hook.momentum == 1 - math.pow((1 - 0.99), (1 / 1000))
         assert hook.epoch_momentum == 0.0

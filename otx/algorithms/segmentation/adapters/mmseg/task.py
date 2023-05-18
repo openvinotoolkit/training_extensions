@@ -235,7 +235,6 @@ class MMSegmentationTask(OTXSegmentationTask):
             persistent_workers=False,
             shuffle=False,
         )
-        cfg.model["loss_decode"]["num_iter"] = len(dataloader)
 
         # Target classes
         if "task_adapt" in cfg:

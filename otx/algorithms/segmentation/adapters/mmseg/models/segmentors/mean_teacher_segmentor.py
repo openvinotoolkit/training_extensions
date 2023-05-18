@@ -77,7 +77,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
         loss_proto = self.proto_net.losses(**proto_out_supervised, seg_label=gt_semantic_seg)
         self._update_summary_loss(loss_proto, loss_weight=self.proto_weight)
         # unsupervised branch
-        if unsup_input and pl_from_teacher:
+        if unsup_input is not None and pl_from_teacher is not None:
             head_features_unsup = self.model_s.decode_head._forward_feature(unsup_input)
             proto_out_unsupervised = self.proto_net(head_features_unsup, pl_from_teacher)
             loss_proto_u = self.proto_net.losses(**proto_out_unsupervised, seg_label=pl_from_teacher)

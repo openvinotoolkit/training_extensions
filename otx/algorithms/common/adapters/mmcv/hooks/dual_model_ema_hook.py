@@ -77,7 +77,7 @@ class DualModelEMAHook(Hook):
     def before_train_epoch(self, runner):
         """Momentum update."""
         if runner.epoch == self.start_epoch:
-            self._sync_model()
+            self._copy_model()
             self.enabled = True
 
         if self.epoch_momentum > 0.0 and self.enabled:
@@ -107,7 +107,7 @@ class DualModelEMAHook(Hook):
             model = model.module
         return model
 
-    def _sync_model(self):
+    def _copy_model(self):
         with torch.no_grad():
             for name, src_param in self.src_params.items():
                 dst_param = self.dst_params[name]
