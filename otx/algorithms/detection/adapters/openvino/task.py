@@ -209,7 +209,8 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             **attr.asdict(
                 hparams.postprocessing,
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
-            )
+            ),
+            "resize_type": "fit_to_window",  # Resize(keep_ratio=True)
         }
 
         model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)

@@ -18,7 +18,7 @@
 
 dataset_type = "CocoDataset"
 
-img_size = (1344, 800)
+img_size = (512, 512)
 
 tile_cfg = dict(
     tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
@@ -27,7 +27,7 @@ tile_cfg = dict(
 img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 train_pipeline = [
-    dict(type="Resize", img_scale=img_size, keep_ratio=False),
+    dict(type="Resize", img_scale=img_size, keep_ratio=True),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **img_norm_cfg),
     dict(type="Pad", size_divisor=32),
@@ -41,7 +41,7 @@ test_pipeline = [
         img_scale=img_size,
         flip=False,
         transforms=[
-            dict(type="Resize", keep_ratio=False),
+            dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
             dict(type="Normalize", **img_norm_cfg),
             dict(type="Pad", size_divisor=32),

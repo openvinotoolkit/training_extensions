@@ -197,7 +197,9 @@ class Tile:
                 continue
             tile_list.append(tile)
         if dataset_idx == 0:
-            print(f"image: {height}x{width} ~ tile_size: {self.tile_size} -> {num_patches_h}x{num_patches_w} tiles -> {len(tile_list)} tiles after filtering")
+            print(
+                f"image: {height}x{width} ~ tile_size: {self.tile_size} -> {num_patches_h}x{num_patches_w} tiles -> {len(tile_list)} tiles after filtering"
+            )
         return tile_list
 
     def prepare_result(self, result: Dict) -> Dict:
