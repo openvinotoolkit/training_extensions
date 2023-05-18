@@ -19,6 +19,7 @@ import logging
 import os
 import shutil
 import tempfile
+import multiprocessing
 from abc import ABC, abstractmethod
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional
@@ -331,3 +332,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     @config.setter
     def config(self, config: Dict[Any, Any]):
         self._config = config
+
+    @staticmethod
+    def _get_adaptive_num_workers():
+        return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)

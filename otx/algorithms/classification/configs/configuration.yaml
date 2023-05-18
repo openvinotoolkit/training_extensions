@@ -258,6 +258,21 @@ learning_parameters:
       Enabling this could change the actual batch size depending on the current GPU status.
       The learning rate also could be adjusted according to the adapted batch size. This process might change
       a model performance and take some extra computation time to try a few batch size candidates.
+  auto_num_workers:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description:
+      Adapt num_workers according to current hardware status automatically.
+    editable: true
+    header: Enable auto adaptive num_workers
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 pot_parameters:

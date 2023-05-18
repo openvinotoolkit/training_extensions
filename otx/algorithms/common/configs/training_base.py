@@ -200,6 +200,13 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        auto_num_workers = configurable_boolean(
+            default_value=False,
+            header="Enable auto adaptive num_workers",
+            description="Adapt num_workers according to current hardware status automatically.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""

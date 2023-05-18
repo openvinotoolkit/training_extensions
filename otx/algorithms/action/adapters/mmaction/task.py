@@ -117,6 +117,9 @@ class MMActionTask(OTXActionTask):
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
+        if self._hyperparams.learning_parameters.auto_num_workers:
+            self._recipe_cfg.data.workers_per_gpu = self._get_adaptive_num_workers()
+
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
 
