@@ -245,8 +245,10 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
     else:
         path_to_onnx = os.path.join(save_path, "model.onnx")
         assert os.path.exists(path_to_onnx)
-        onnx.checker.check_model(path_to_onnx)
-        onnxruntime.InferenceSession(path_to_onnx)
+        # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
+        if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
+            onnx.checker.check_model(path_to_onnx)
+            onnxruntime.InferenceSession(path_to_onnx)
         return
 
     if dump_features:
