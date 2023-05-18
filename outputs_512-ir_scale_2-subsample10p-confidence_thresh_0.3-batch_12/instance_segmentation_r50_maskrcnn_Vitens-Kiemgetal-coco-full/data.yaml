@@ -1,0 +1,13 @@
+data:
+  train:
+    ann-files: null
+    data-roots: /home/sungmanc/datasets/Vitens-Kiemgetal-coco-full
+  val:
+    ann-files: null
+    data-roots: /home/sungmanc/datasets/Vitens-Kiemgetal-coco-full
+  test:
+    ann-files: null
+    data-roots: null
+  unlabeled:
+    file-list: null
+    data-roots: null

@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-__img_size = (1024, 1024)
+__img_size = (512, 512)
 
 # TODO: A comparison experiment is needed to determine which value is appropriate for to_rgb.
 __img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=True)

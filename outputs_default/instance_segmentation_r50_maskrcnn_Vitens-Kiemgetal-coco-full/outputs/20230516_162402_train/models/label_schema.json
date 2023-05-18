@@ -1,0 +1,35 @@
+{
+    "label_tree": {
+        "type": "tree",
+        "directed": true,
+        "nodes": [],
+        "edges": []
+    },
+    "label_groups": [
+        {
+            "_id": "64632fe523415e7cf5b64db2",
+            "name": "labels",
+            "label_ids": [
+                "0"
+            ],
+            "relation_type": "EXCLUSIVE"
+        }
+    ],
+    "all_labels": {
+        "0": {
+            "_id": "0",
+            "name": "kiemgetal",
+            "color": {
+                "red": 145,
+                "green": 124,
+                "blue": 135,
+                "alpha": 255
+            },
+            "hotkey": "",
+            "domain": "INSTANCE_SEGMENTATION",
+            "creation_date": "2023-05-16T07:24:43.741000",
+            "is_empty": false,
+            "is_anomalous": false
+        }
+    }
+}
