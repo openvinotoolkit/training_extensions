@@ -485,14 +485,18 @@ def adaptive_tile_params(
     
     object_size = math.sqrt(object_area)
     max_object_size = math.sqrt(max_area)
-    tile_size = int(object_size/object_tile_ratio)
+    tile_size = int(object_size / object_tile_ratio)
     tile_overlap = max_object_size / tile_size
     logger.info(f"----> {rule}_object_size: {object_size}")
     logger.info(f"----> max_object_size: {max_object_size}")
+    logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
+    logger.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
+    logger.info(f"----> tile_overlap: {max_object_size} / {tile_size} = {tile_overlap}")
 
     if tile_overlap >= tiling_parameters.get_metadata("tile_overlap")["max_value"]:
         # Use the average object area if the tile overlap is too large to prevent 0 stride.
         tile_overlap = object_size / tile_size
+        logger.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
 
     # validate parameters are in range
     tile_size = max(
@@ -507,9 +511,6 @@ def adaptive_tile_params(
         tiling_parameters.get_metadata("tile_max_number")["min_value"],
         min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_object),
     )
-    logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
-    logger.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
-    logger.info(f"----> tile_overlap: {max_object_size} / {tile_size} = {tile_overlap}")
 
     tiling_parameters.tile_size = tile_size
     tiling_parameters.tile_max_number = max_object

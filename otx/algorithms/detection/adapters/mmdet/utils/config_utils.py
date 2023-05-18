@@ -335,7 +335,7 @@ def patch_tiling(config, hparams, dataset=None):
         logger.info("Tiling enabled")
 
         # FIXME: TRAIN only?
-        #if dataset and dataset.purpose == DatasetPurpose.TRAINING and hparams.tiling_parameters.enable_adaptive_params:
+        # if dataset and dataset.purpose == DatasetPurpose.TRAINING and hparams.tiling_parameters.enable_adaptive_params:
         if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
             adaptive_tile_params(hparams.tiling_parameters, dataset.get_subset(Subset.TRAINING))
 
@@ -470,5 +470,12 @@ def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionCon
             ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
             ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
             deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
+<<<<<<< HEAD
             deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, ir_input_shape[2], ir_input_shape[3]]))]
             print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
+=======
+            deploy_cfg.backend_config.model_inputs = [
+                ConfigDict(opt_shapes=ConfigDict(input=[1, 3, ir_input_shape[2], ir_input_shape[3]]))
+            ]
+            print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
+>>>>>>> b6d1460fb (Keep aspect ratio for tiling)
