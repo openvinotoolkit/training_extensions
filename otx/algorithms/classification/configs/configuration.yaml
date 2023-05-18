@@ -261,8 +261,7 @@ learning_parameters:
   auto_num_workers:
     affects_outcome_of: TRAINING
     default_value: false
-    description:
-      Adapt num_workers according to current hardware status automatically.
+    description: Adapt num_workers according to current hardware status automatically.
     editable: true
     header: Enable auto adaptive num_workers
     type: BOOLEAN
