@@ -184,6 +184,7 @@ class TestToolsTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skip(reason="Issue#2167: E2E test is stuck while testing HPO with i-seg tiling tasks")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg/test_hpo"
