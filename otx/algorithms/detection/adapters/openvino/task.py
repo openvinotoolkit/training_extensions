@@ -37,6 +37,7 @@ from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import (
@@ -104,6 +105,8 @@ class BaseInferencerWithConverter(BaseInferencer):
         self.configuration = configuration
         self.model = model
         self.converter = converter
+        self.callback_exceptions: List[Exception] = []
+        self.is_callback_set = False
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Detection Inferencer."""
@@ -137,6 +140,47 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
+    def _async_callback(self, request: Any, callback_args: tuple) -> None:
+        """Fetches the results of async inference."""
+        try:
+            res_copy_func, args = callback_args
+            id, preprocessing_meta, result_handler = args
+            prediction = res_copy_func(request)
+            processed_prediciton = self.post_process(prediction, preprocessing_meta)
+
+            if "feature_vector" not in prediction or "saliency_map" not in prediction:
+                warnings.warn(
+                    "Could not find Feature Vector and Saliency Map in OpenVINO output. "
+                    "Please rerun OpenVINO export or retrain the model."
+                )
+                features = (None, None)
+            else:
+                features = (
+                    copy.deepcopy(prediction["feature_vector"].reshape(-1)),
+                    copy.deepcopy(prediction["saliency_map"][0]),
+                )
+
+            result_handler(id, processed_prediciton, features)
+
+        except Exception as e:
+            self.callback_exceptions.append(e)
+
+    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
+        """Runs async inference."""
+        if not self.is_callback_set:
+            self.model.model_adapter.set_callback(self._async_callback)
+            self.is_callback_set = True
+
+        if not self.model.is_ready():
+            self.model.await_any()
+        image, metadata = self.pre_process(image)
+        callback_data = id, metadata, result_handler
+        self.model.infer_async(image, callback_data)
+
+    def await_all(self) -> None:
+        """Await all running infer requests if any."""
+        self.model.await_all()
+
 
 class OpenVINODetectionInferencer(BaseInferencerWithConverter):
     """Inferencer implementation for OTXDetection using OpenVINO backend."""
@@ -166,6 +210,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         configuration = {
             **attr.asdict(
@@ -203,6 +248,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
 
         configuration = {
@@ -237,6 +283,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
 
         configuration = {
@@ -400,11 +447,16 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        async_requests_num = get_default_async_reqs_num()
+        if self.config.tiling_parameters.enable_tiling:
+            async_requests_num = 1  # tiling has it's own async configuration
         args = [
             _hparams,
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
             self.model.get_data("openvino.bin"),
+            "CPU",
+            async_requests_num,
         ]
         if self.task_type == TaskType.DETECTION:
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
@@ -453,19 +505,21 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             add_saliency_map = not inference_parameters.is_evaluation
             process_saliency_maps = inference_parameters.process_saliency_maps
             explain_predicted_classes = inference_parameters.explain_predicted_classes
+            enable_async_inference = inference_parameters.enable_async_inference
         else:
             update_progress_callback = default_progress_callback
             add_saliency_map = True
             process_saliency_maps = False
             explain_predicted_classes = True
+            enable_async_inference = True
 
-        total_time = 0.0
-        dataset_size = len(dataset)
-        for i, dataset_item in enumerate(dataset, 1):
-            start_time = time.perf_counter()
-            predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
+        if self.config.tiling_parameters.enable_tiling:
+            enable_async_inference = False
+
+        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
+            dataset_item = dataset[id]
             dataset_item.append_annotations(predicted_scene.annotations)
-            feature_vector, saliency_map = features
+            feature_vector, saliency_map = aux_data
             if feature_vector is not None:
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
@@ -489,10 +543,25 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     explain_predicted_classes=explain_predicted_classes,
                     process_saliency_maps=process_saliency_maps,
                 )
+
+        total_time = 0.0
+        dataset_size = len(dataset)
+        for i, dataset_item in enumerate(dataset, 1):
+            start_time = time.perf_counter()
+
+            if enable_async_inference:
+                self.inferencer.enqueue_prediction(dataset_item.numpy, i - 1, add_prediction)
+            else:
+                predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
+                add_prediction(i - 1, predicted_scene, features)
+
             update_progress_callback(int(i / dataset_size * 100), None)
             end_time = time.perf_counter() - start_time
             logger.info(f"{end_time} secs")
             total_time += end_time
+
+        self.inferencer.await_all()
+
         logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
         logger.info(f"Total time: {total_time} secs")
         logger.info("OpenVINO inference completed")

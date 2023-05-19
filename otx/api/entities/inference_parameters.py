@@ -31,6 +31,7 @@ class InferenceParameters:
         process_saliency_maps: Process saliency map to input image resolution and apply colormap
         explain_predicted_classes: If set to True, provide explanations only for predicted classes.
             Otherwise, explain all classes.
+        enable_async_inference: Enables async inference to increase performance.
     """
 
     is_evaluation: bool = False
@@ -39,3 +40,4 @@ class InferenceParameters:
     explainer: str = ""
     process_saliency_maps: bool = False
     explain_predicted_classes: bool = True
+    enable_async_inference: bool = True
