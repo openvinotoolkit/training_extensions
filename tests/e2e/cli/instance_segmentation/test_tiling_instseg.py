@@ -43,7 +43,7 @@ args = {
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
-        "1",
+        "10",
         "--learning_parameters.batch_size",
         "4",
         "--tiling_parameters.enable_tiling",
