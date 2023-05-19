@@ -287,6 +287,14 @@ class TestMultiClassClassificationCLI:
         tmp_dir_path = tmp_dir_path / f"multi_class_cls_auto_adapt_{bs_adapt_type}_batch_size"
         otx_train_testing(template, tmp_dir_path, otx_dir, adapting_bs_args)
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
+        adapting_num_workers_args = copy.deepcopy(args)
+        adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])
+        tmp_dir_path = tmp_dir_path / f"multi_class_cls_auto_adapt_num_workers"
+        otx_train_testing(template, tmp_dir_path, otx_dir, adapting_num_workers_args)
+
 
 # Multi-label training w/ 'car', 'tree', 'bug' classes
 args_m = {

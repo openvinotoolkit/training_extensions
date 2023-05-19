@@ -82,6 +82,15 @@ class TestToolsOTXActionClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, adapting_bs_args)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
+        adapting_num_workers_args = deepcopy(args)
+        adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])
+        tmp_dir_path = tmp_dir_path / f"action_cls_auto_adapt_num_workers"
+        otx_train_testing(template, tmp_dir_path, otx_dir, adapting_num_workers_args)
+
+    @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

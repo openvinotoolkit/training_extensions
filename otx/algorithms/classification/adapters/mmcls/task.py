@@ -53,6 +53,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
+    get_adaptive_num_workers,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -687,6 +688,9 @@ class MMClassificationTask(OTXClassificationTask):
             ),
             runner=runner,
         )
+
+        if self._hyperparams.learning_parameters.auto_num_workers:
+            config.data.workers_per_gpu = get_adaptive_num_workers()
 
         if self._train_type.value == "Semisupervised":
             unlabeled_config = ConfigDict(
