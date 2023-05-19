@@ -44,7 +44,7 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
         max_keep_ckpts=-1,
         sync_buffer=False,
         **kwargs,
-    ):
+    ) -> None:
         self.interval = interval
         self.by_epoch = by_epoch
         self.save_optimizer = save_optimizer

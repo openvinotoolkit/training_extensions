@@ -79,3 +79,8 @@ class TestInferenceTask:
         inference_task.export(ExportType.OPENVINO, output_model, dump_features=False)
         assert output_model.get_data("openvino.bin") is not None  # Should not raise an error
         assert not output_model.has_xai
+
+        # 6. Check if ONNX model can be generated
+        inference_task.export(ExportType.OPENVINO, output_model, dump_features=False)
+        assert output_model.get_data("model.onnx") is not None  # Should not raise an error
+        assert not output_model.has_xai

@@ -26,6 +26,7 @@ def mock_args(mocker, tmp_dir):
     mock_args = mocker.MagicMock()
     mock_args.load_weights = "fake.bin"
     mock_args.output = tmp_dir
+    mock_args.export_type = "openvino"
 
     def mock_contains(self, val):
         return val in self.__dict__

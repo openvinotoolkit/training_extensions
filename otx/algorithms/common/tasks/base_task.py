@@ -36,7 +36,7 @@ from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import MetricsGroup
-from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
+from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision, OptimizationMethod
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
@@ -331,3 +331,22 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     @config.setter
     def config(self, config: Dict[Any, Any]):
         self._config = config
+
+    def _update_model_export_metadata(
+        self, output_model: ModelEntity, export_type: ExportType, precision: ModelPrecision, dump_features: bool
+    ) -> None:
+        """Updates a model entity with format and optimization related attributes."""
+        if export_type == ExportType.ONNX:
+            output_model.model_format = ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            if precision == ModelPrecision.FP16:
+                raise RuntimeError("Export to FP16 ONNX is not supported")
+        elif export_type == ExportType.OPENVINO:
+            output_model.model_format = ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.MO
+        else:
+            raise RuntimeError(f"not supported export type {export_type}")
+
+        output_model.has_xai = dump_features
+        output_model.optimization_methods = self._optimization_methods
+        output_model.precision = [precision]

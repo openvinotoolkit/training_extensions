@@ -134,6 +134,12 @@ class TestMultiClassClassificationCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_onnx(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)

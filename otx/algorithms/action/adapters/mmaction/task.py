@@ -19,7 +19,7 @@ import os
 import time
 from copy import deepcopy
 from functools import partial
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import torch
 from mmaction import __version__
@@ -57,6 +57,7 @@ from otx.api.entities.model import ModelPrecision
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
 
 logger = get_logger()
@@ -447,7 +448,7 @@ class MMActionTask(OTXActionTask):
 
         return predictions, metric
 
-    def _export_model(self, precision: ModelPrecision, dump_features: bool = True):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         """Main export function."""
         self._init_task(export=True)
 
@@ -463,18 +464,27 @@ class MMActionTask(OTXActionTask):
         self._precision[0] = precision
         half_precision = precision == ModelPrecision.FP16
 
-        exporter = Exporter(cfg, state_dict, deploy_cfg, f"{self._output_path}/openvino", half_precision)
+        exporter = Exporter(
+            cfg,
+            state_dict,
+            deploy_cfg,
+            f"{self._output_path}/openvino",
+            half_precision,
+            onnx_only=export_format == ExportType.ONNX,
+        )
         exporter.export()
-        bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
-        xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
-        onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
-        results = {
-            "outputs": {
-                "bin": os.path.join(self._output_path, bin_file),
-                "xml": os.path.join(self._output_path, xml_file),
-                "onnx": os.path.join(self._output_path, onnx_file),
-            }
-        }
+
+        results: Dict[str, Dict[str, str]] = {"outputs": {}}
+
+        if export_format == ExportType.ONNX:
+            onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
+            results["outputs"]["onnx"] = os.path.join(self._output_path, onnx_file)
+        else:
+            bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
+            xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
+            results["outputs"]["bin"] = os.path.join(self._output_path, bin_file)
+            results["outputs"]["xml"] = os.path.join(self._output_path, xml_file)
+
         return results
 
     # This should be removed

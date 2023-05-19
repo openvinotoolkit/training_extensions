@@ -31,6 +31,6 @@ def test_run(mocker):
 def test_naive_export(mocker):
     exporter = SegmentationExporter()
     data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
-    mock_export_ov = mocker.patch.object(NaiveExporter, "export2openvino")
-    exporter.naive_export("", build_segmentor, "FP32", data_cfg)
+    mock_export_ov = mocker.patch.object(NaiveExporter, "export2backend")
+    exporter.naive_export("", build_segmentor, "FP32", "OPENVINO", data_cfg)
     mock_export_ov.assert_called_once()

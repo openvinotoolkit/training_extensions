@@ -249,8 +249,9 @@ class TestExportType:
         Test passes if ExportType Enum class length is equal to expected value and its elements have expected
         sequence numbers
         """
-        assert len(ExportType) == 1
+        assert len(ExportType) == 2
         assert ExportType.OPENVINO.value == 1
+        assert ExportType.ONNX.value == 2
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

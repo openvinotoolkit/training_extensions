@@ -1,3 +1,4 @@
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 import mmcv
 import pytest
 
@@ -29,7 +30,7 @@ class TestExporter:
 
     @e2e_pytest_unit
     def test_run_without_deploy_cfg(self, mocker):
-        def mock_naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
+        def mock_naive_export(output_dir, model_builder, precision, export_type, cfg, model_name="model"):
             pass
 
         self.exporter.naive_export = mock_naive_export
@@ -43,7 +44,9 @@ class TestExporter:
 
     @e2e_pytest_unit
     def test_run_with_deploy_cfg(self, mocker):
-        def mock_mmdeploy_export(output_dir, model_builder, precision, cfg, deploy_cfg, model_name="model"):
+        def mock_mmdeploy_export(
+            output_dir, model_builder, precision, export_type, cfg, deploy_cfg, model_name="model"
+        ):
             pass
 
         self.exporter.mmdeploy_export = mock_mmdeploy_export
@@ -59,10 +62,15 @@ class TestExporter:
     def test_mmdeploy_export(self, mocker):
         from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
 
-        mock_export_openvino = mocker.patch.object(MMdeployExporter, "export2openvino")
+        mock_export_openvino = mocker.patch.object(MMdeployExporter, "export2backend")
 
         Exporter.mmdeploy_export(
-            "", None, "FP16", dict(), mmcv.ConfigDict(backend_config=dict(mo_options=dict(flags=[])))
+            "",
+            None,
+            "FP16",
+            ExportType.OPENVINO,
+            dict(),
+            mmcv.ConfigDict(backend_config=dict(mo_options=dict(flags=[]))),
         )
 
         mock_export_openvino.assert_called_once()

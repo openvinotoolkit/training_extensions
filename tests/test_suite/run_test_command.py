@@ -19,6 +19,8 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Dict
+import onnx
+import onnxruntime
 
 import pytest
 import yaml
@@ -209,7 +211,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/models/label_schema.json")
 
 
-def otx_export_testing(template, root, dump_features=False, half_precision=False, check_ir_meta=False):
+def otx_export_testing(template, root, dump_features=False, half_precision=False, check_ir_meta=False, is_onnx=False):
     template_work_dir = get_template_dir(template, root)
     save_path = f"{template_work_dir}/exported_{template.model_template_id}"
     command_line = [
@@ -230,13 +232,24 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         command_line[-1] += "_fp16"
         save_path = command_line[-1]
         command_line.append("--half-precision")
+    if is_onnx:
+        command_line.extend(["--export-type", "onnx"])
 
     check_run(command_line)
+
     path_to_xml = os.path.join(save_path, "openvino.xml")
-    assert os.path.exists(path_to_xml)
-    assert os.path.exists(os.path.join(save_path, "openvino.bin"))
-    assert os.path.exists(os.path.join(save_path, "model.onnx"))
     assert os.path.exists(os.path.join(save_path, "label_schema.json"))
+    if not is_onnx:
+        assert os.path.exists(path_to_xml)
+        assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+    else:
+        path_to_onnx = os.path.join(save_path, "model.onnx")
+        assert os.path.exists(path_to_onnx)
+        # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
+        if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
+            onnx.checker.check_model(path_to_onnx)
+            onnxruntime.InferenceSession(path_to_onnx)
+        return
 
     if dump_features:
         with open(path_to_xml, encoding="utf-8") as stream:
