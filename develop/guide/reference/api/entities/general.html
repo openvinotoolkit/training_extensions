@@ -1587,7 +1587,7 @@ file_path (Optional[str]): Path to image file.</p>
 <span class="target" id="module-otx.api.entities.inference_parameters"></span><p>This module implements the AnalyseParameters entity.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.inference_parameters.</span></span><span class="sig-name descname"><span class="pre">InferenceParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">is_evaluation:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">update_progress:</span> <span class="pre">~typing.Callable[[int,</span> <span class="pre">~typing.Optional[float]],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">default_progress_callback&gt;,</span> <span class="pre">explainer:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">process_saliency_maps:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">explain_predicted_classes:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.inference_parameters.</span></span><span class="sig-name descname"><span class="pre">InferenceParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">is_evaluation:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">update_progress:</span> <span class="pre">~typing.Callable[[int,</span> <span class="pre">~typing.Optional[float]],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">default_progress_callback&gt;,</span> <span class="pre">explainer:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">process_saliency_maps:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False,</span> <span class="pre">explain_predicted_classes:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">enable_async_inference:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters" title="Permalink to this definition">#</a></dt>
 <dd><p>Inference parameters.</p>
 <dl>
 <dt>Attributes:</dt><dd><dl class="simple">
@@ -1606,8 +1606,14 @@ explain_predicted_classes: If set to True, provide explanations only for predict
 <blockquote>
 <div><p>Otherwise, explain all classes.</p>
 </div></blockquote>
+<p>enable_async_inference: Enables async inference to increase performance.</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters.enable_async_inference">
+<span class="sig-name descname"><span class="pre">enable_async_inference</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters.enable_async_inference" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="otx.api.entities.inference_parameters.InferenceParameters.explain_predicted_classes">
 <span class="sig-name descname"><span class="pre">explain_predicted_classes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#otx.api.entities.inference_parameters.InferenceParameters.explain_predicted_classes" title="Permalink to this definition">#</a></dt>
@@ -5549,6 +5555,15 @@ training if for some reason training was suspended.</p>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.inference_parameters.InferenceParameters.enable_async_inference">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InferenceParameters.enable_async_inference
+      </span>
+     </code>
+    </a>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.api.entities.inference_parameters.InferenceParameters.explain_predicted_classes">
      <code class="docutils literal notranslate">
