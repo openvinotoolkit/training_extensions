@@ -16,6 +16,7 @@
 
 import copy
 import glob
+import multiprocessing
 import os
 import os.path as osp
 import platform
@@ -477,6 +478,11 @@ def patch_persistent_workers(config: Config):
             data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
 
+def get_adaptive_num_workers():
+    """Measure appropriate num_workers value and return it."""
+    return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)  # max available num_workers is 8
+
+
 def patch_from_hyperparams(config: Config, hyperparams):
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
@@ -510,6 +516,9 @@ def patch_from_hyperparams(config: Config, hyperparams):
         ),
         runner=runner,
     )
+
+    if hyperparams.learning_parameters.auto_num_workers:
+        hparams.data.workers_per_gpu = get_adaptive_num_workers()
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)

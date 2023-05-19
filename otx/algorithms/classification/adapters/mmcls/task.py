@@ -53,6 +53,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
+    get_adaptive_num_workers,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -142,9 +143,6 @@ class MMClassificationTask(OTXClassificationTask):
                 ),
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
-
-        if self._hyperparams.learning_parameters.auto_num_workers:
-            self._recipe_cfg.data.workers_per_gpu = self._get_adaptive_num_workers()
 
         # Update recipe with caching modules
         self._update_caching_modules(self._recipe_cfg.data)
@@ -690,6 +688,9 @@ class MMClassificationTask(OTXClassificationTask):
             ),
             runner=runner,
         )
+
+        if self._hyperparams.learning_parameters.auto_num_workers:
+            config.data.workers_per_gpu = get_adaptive_num_workers()
 
         if self._train_type.value == "Semisupervised":
             unlabeled_config = ConfigDict(

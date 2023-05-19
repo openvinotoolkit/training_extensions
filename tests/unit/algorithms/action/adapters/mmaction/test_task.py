@@ -19,9 +19,9 @@ from torch import nn
 
 from otx.algorithms.action.configs.base.configuration import ActionConfig
 from otx.algorithms.action.adapters.mmaction.task import MMActionTask
+from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.api.configuration import ConfigurableParameters
-from otx.algorithms.common.tasks import base_task
 from otx.api.configuration.helper import create
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -222,10 +222,10 @@ class TestMMActionTask:
 
         # mock for testing num_workers
         num_cpu = 20
-        mock_multiprocessing = mocker.patch.object(base_task, "multiprocessing")
+        mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
         mock_multiprocessing.cpu_count.return_value = num_cpu
         num_gpu = 5
-        mock_torch = mocker.patch.object(base_task, "torch")
+        mock_torch = mocker.patch.object(config_utils, "torch")
         mock_torch.cuda.device_count.return_value = num_gpu
 
         _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)

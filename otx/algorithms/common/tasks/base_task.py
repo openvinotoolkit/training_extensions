@@ -16,7 +16,6 @@
 
 import io
 import logging
-import multiprocessing
 import os
 import shutil
 import tempfile
@@ -332,7 +331,3 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     @config.setter
     def config(self, config: Dict[Any, Any]):
         self._config = config
-
-    @staticmethod
-    def _get_adaptive_num_workers():
-        return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)  # max available num_workers is 8
