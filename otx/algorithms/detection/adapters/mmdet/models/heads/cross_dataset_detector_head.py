@@ -318,7 +318,7 @@ class TrackingLossDynamicsMixIn:
         return wrapper
 
     @staticmethod
-    def _wrap_get_targets(concatenate_last: bool = False):
+    def _wrap_get_targets(concatenate_last: bool = False, flatten: bool = False):
         def wrapper_with_option(func):
             signature = inspect.signature(func)
 
@@ -338,6 +338,8 @@ class TrackingLossDynamicsMixIn:
                 self.pos_assigned_gt_inds_list = []
                 targets = func(self, *args, **kwargs)
                 self.all_pos_assigned_gt_inds = images_to_levels(self.pos_assigned_gt_inds_list, num_level_anchors)
+                if flatten:
+                    self.all_pos_assigned_gt_inds = [gt_ind.reshape(-1) for gt_ind in self.all_pos_assigned_gt_inds]
                 if concatenate_last:
                     self.all_pos_assigned_gt_inds = torch.cat(self.all_pos_assigned_gt_inds, -1)
                 return targets

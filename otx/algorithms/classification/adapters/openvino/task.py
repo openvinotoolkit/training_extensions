@@ -19,8 +19,9 @@ import json
 import logging
 import os
 import tempfile
+import time
 import warnings
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import numpy as np
@@ -37,6 +38,7 @@ from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
 )
+from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -108,17 +110,38 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 
         self.label_schema = label_schema
         model_adapter = OpenvinoAdapter(
-            create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
+            create_core(),
+            model_file,
+            weight_file,
+            device=device,
+            max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         self.configuration = get_cls_inferencer_configuration(self.label_schema)
         self.model = Model.create_model("otx_classification", model_adapter, self.configuration, preload=True)
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
+        self.callback_exceptions: List[Exception] = []
+        self.model.model_adapter.set_callback(self._async_callback)
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Classification Inferencer."""
 
         return self.model.preprocess(image)
+
+    def _async_callback(self, request: Any, callback_args: tuple) -> None:
+        """Fetches the results of async inference."""
+        try:
+            res_copy_func, args = callback_args
+            id, preprocessing_meta, result_handler = args
+            prediction = res_copy_func(request)
+
+            processed_prediciton = self.post_process(prediction, preprocessing_meta)
+            aux_data = self.model.postprocess_aux_outputs(prediction, preprocessing_meta)
+            result_handler(id, processed_prediciton, aux_data)
+
+        except Exception as e:
+            self.callback_exceptions.append(e)
 
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
@@ -137,6 +160,18 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         probs, actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
 
         return predictions, probs, actmap, repr_vectors, act_score
+
+    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
+        """Runs async inference."""
+        if not self.model.is_ready():
+            self.model.await_any()
+        image, metadata = self.pre_process(image)
+        callback_data = id, metadata, result_handler
+        self.model.infer_async(image, callback_data)
+
+    def await_all(self) -> None:
+        """Await all running infer requests if any."""
+        self.model.await_all()
 
     def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Classification Inferencer."""
@@ -187,6 +222,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
             self.model.get_data("openvino.bin"),
+            num_requests=get_default_async_reqs_num(),
         )
 
     # pylint: disable-msg=too-many-locals
@@ -199,15 +235,18 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         dump_features = False
         process_saliency_maps = False
         explain_predicted_classes = True
+        enable_async_inference = True
+
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
             dump_features = not inference_parameters.is_evaluation
             process_saliency_maps = inference_parameters.process_saliency_maps
             explain_predicted_classes = inference_parameters.explain_predicted_classes
+            enable_async_inference = inference_parameters.enable_async_inference
 
-        dataset_size = len(dataset)
-        for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, probs, saliency_map, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
+        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
+            dataset_item = dataset[id]
+            probs, saliency_map, repr_vector, act_score = aux_data
             item_labels = predicted_scene.annotations[0].get_labels()
             dataset_item.append_labels(item_labels)
             active_score_media = FloatMetadata(name="active_score", value=act_score, float_type=FloatType.ACTIVE_SCORE)
@@ -235,7 +274,29 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                         "Could not find Feature Vector and Saliency Map in OpenVINO output. "
                         "Please rerun OpenVINO export or retrain the model."
                     )
+
+        dataset_size = len(dataset)
+        total_time = 0.0
+        for i, dataset_item in enumerate(dataset, 1):
+            start_time = time.perf_counter()
+            if enable_async_inference:
+                self.inferencer.enqueue_prediction(dataset_item.numpy, i - 1, add_prediction)
+            else:
+                predicted_scene, probs, saliency_map, repr_vector, act_score = self.inferencer.predict(
+                    dataset_item.numpy
+                )
+                add_prediction(i - 1, predicted_scene, (probs, saliency_map, repr_vector, act_score))
+
+            end_time = time.perf_counter() - start_time
+            total_time += end_time
             update_progress_callback(int(i / dataset_size * 100))
+
+        self.inferencer.await_all()
+
+        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        logger.info(f"Total time: {total_time} secs")
+        logger.info("Classification OpenVINO inference completed")
+
         return dataset
 
     def explain(
