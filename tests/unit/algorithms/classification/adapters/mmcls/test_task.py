@@ -21,6 +21,7 @@ from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTa
 from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import SAMImageClassifier
 from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.api.configuration import ConfigurableParameters
+from otx.algorithms.common.tasks import base_task
 from otx.api.configuration.helper import create
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -138,6 +139,7 @@ class TestMMClassificationTask:
     def setup(self) -> None:
         model_template = parse_model_template(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.learning_parameters.auto_num_workers = True
 
         mc_task_env, self.mc_cls_dataset = init_environment(hyper_parameters, model_template, False, False, 100)
         self.mc_cls_task = MMClassificationTask(mc_task_env)
@@ -189,10 +191,19 @@ class TestMMClassificationTask:
             return_value=nullcontext(),
         )
 
+        # mock for testing num_workers
+        num_cpu = 20
+        mock_multiprocessing = mocker.patch.object(base_task, "multiprocessing")
+        mock_multiprocessing.cpu_count.return_value = num_cpu
+        num_gpu = 5
+        mock_torch = mocker.patch.object(base_task, "torch")
+        mock_torch.cuda.device_count.return_value = num_gpu
+
         _config = ModelConfiguration(ClassificationConfig("header"), self.mc_cls_label_schema)
         output_model = ModelEntity(self.mc_cls_dataset, _config)
         self.mc_cls_task.train(self.mc_cls_dataset, output_model)
         output_model.performance == 1.0
+        assert self.mc_cls_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
 
     @e2e_pytest_unit
     def test_train_multilabel(self, mocker) -> None:
