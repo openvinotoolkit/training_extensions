@@ -36,11 +36,6 @@ def distributed_sinkhorn(out, sinkhorn_iterations=3, epsilon=0.05):
     return L, indexs
 
 
-def l2_normalize(x):
-    """L2 normalization."""
-    return F.normalize(x, p=2, dim=-1)
-
-
 def momentum_update(old_value, new_value, momentum, debug=False):
     """EMA update function."""
     update = momentum * old_value + (1 - momentum) * new_value
@@ -67,10 +62,29 @@ class ProjectionHead(nn.Module):
 
     def forward(self, x):
         """Farward method."""
-        return l2_normalize(self.proj(x))
+        return F.normalize(self.proj(x), p=2, dim=-1)
 
 
-def _no_grad_trunc_normal_(tensor, mean, std, a, b):
+def trunc_normal_(tensor, mean=0.0, std=1.0, a=-2.0, b=2.0):
+    r"""Truncated normal distribution.
+
+    Fills the input Tensor with values drawn from a truncated
+    normal distribution. The values are effectively drawn from the
+    normal distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)`
+    with values outside :math:`[a, b]` redrawn until they are within
+    the bounds. The method used for generating the random values works
+    best when :math:`a \leq \text{mean} \leq b`.
+
+    Args:
+        tensor: an n-dimensional `torch.Tensor`
+        mean: the mean of the normal distribution
+        std: the standard deviation of the normal distribution
+        a: the minimum cutoff value
+        b: the maximum cutoff value
+    Examples:
+        >>> w = torch.empty(3, 5)
+        >>> nn.init.trunc_normal_(w).
+    """
     # Cut & paste from PyTorch official master until it's in a few official releases - RW
     # Method based on https://people.sc.fsu.edu/~jburkardt/presentations/truncated_normal.pdf
     def norm_cdf(x):
@@ -106,26 +120,3 @@ def _no_grad_trunc_normal_(tensor, mean, std, a, b):
         # Clamp to ensure it's in the proper range
         tensor.clamp_(min=a, max=b)
         return tensor
-
-
-def trunc_normal_(tensor, mean=0.0, std=1.0, a=-2.0, b=2.0):
-    r"""Truncated normal distribution.
-
-    Fills the input Tensor with values drawn from a truncated
-    normal distribution. The values are effectively drawn from the
-    normal distribution :math:`\mathcal{N}(\text{mean}, \text{std}^2)`
-    with values outside :math:`[a, b]` redrawn until they are within
-    the bounds. The method used for generating the random values works
-    best when :math:`a \leq \text{mean} \leq b`.
-
-    Args:
-        tensor: an n-dimensional `torch.Tensor`
-        mean: the mean of the normal distribution
-        std: the standard deviation of the normal distribution
-        a: the minimum cutoff value
-        b: the maximum cutoff value
-    Examples:
-        >>> w = torch.empty(3, 5)
-        >>> nn.init.trunc_normal_(w).
-    """
-    return _no_grad_trunc_normal_(tensor, mean, std, a, b)

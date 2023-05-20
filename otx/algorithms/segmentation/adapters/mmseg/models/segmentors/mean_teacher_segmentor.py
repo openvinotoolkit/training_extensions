@@ -25,23 +25,22 @@ class MeanTeacherSegmentor(BaseSegmentor):
 
     def __init__(
         self,
-        orig_type=None,
+        orig_type,
+        num_iters_per_epoch,
         unsup_weight=0.1,
         proto_weight=0.7,
-        aux_weight=0.1,
-        drop_percent=80,
-        num_iters_per_epoch=6000,
-        semisl_start_iter=1,
+        drop_unrel_pixels_percent=20,
+        semisl_start_epoch=1,
         proto_head=None,
         **kwargs
     ):
         super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.count_iter = 0
-        self.filter_pixels_iters = num_iters_per_epoch * 100  # 100 epochs
-        self.semisl_start_iter = num_iters_per_epoch * semisl_start_iter  # 1 epoch
-        self.drop_percent = drop_percent
-        self.aux_weight = aux_weight
+        # filter unreliable pixels during first 100 epochs
+        self.filter_pixels_iters = num_iters_per_epoch * 100
+        self.semisl_start_iter = num_iters_per_epoch * semisl_start_epoch
+        self.drop_unrel_pixels_percent = drop_unrel_pixels_percent
         cfg = kwargs.copy()
         cfg["type"] = orig_type
         self.align_corners = cfg["decode_head"].align_corners
@@ -55,7 +54,8 @@ class MeanTeacherSegmentor(BaseSegmentor):
         elif proto_head is not None:
             logger.warning(
                 "Prototype head isn't supported by this model. "
-                "_forward_feature() method is required to be presented in the main decode head"
+                "_forward_feature() method is required to be presented in the main decode head. "
+                "This function will be disabled and standard Mean Teacher algorithm will be utilized"
             )
         self.proto_weight = proto_weight
         self.losses = dict()
@@ -95,18 +95,20 @@ class MeanTeacherSegmentor(BaseSegmentor):
             _, pl_from_teacher = torch.max(teacher_prob_unsup, axis=1, keepdim=True)
 
         # drop pixels with high entropy
-        drop_percent = self.drop_percent
-        percent_unreliable = (100 - drop_percent) * (1 - self.count_iter / self.filter_pixels_iters)
-        drop_percent = 100 if percent_unreliable <= 0 else 100 - percent_unreliable
-        batch_size, _, h, w = teacher_out.shape
+        percent_unreliable = self.drop_unrel_pixels_percent * (1 - self.count_iter / self.filter_pixels_iters)
+        reweight_unsup = 1.0
+        if percent_unreliable > 0:
+            keep_percent = 100 - percent_unreliable
+            batch_size, _, h, w = teacher_out.shape
 
-        entropy = -torch.sum(teacher_prob_unsup * torch.log(teacher_prob_unsup + 1e-10), dim=1, keepdim=True)
+            entropy = -torch.sum(teacher_prob_unsup * torch.log(teacher_prob_unsup + 1e-10), dim=1, keepdim=True)
 
-        thresh = np.percentile(entropy[pl_from_teacher != 255].detach().cpu().numpy().flatten(), drop_percent)
-        thresh_mask = entropy.ge(thresh).bool() * (pl_from_teacher != 255).bool()
+            thresh = np.percentile(entropy[pl_from_teacher != 255].detach().cpu().numpy().flatten(), keep_percent)
+            thresh_mask = entropy.ge(thresh).bool() * (pl_from_teacher != 255).bool()
 
-        pl_from_teacher[thresh_mask] = 255
-        reweight_unsup = batch_size * h * w / torch.sum(pl_from_teacher != 255)
+            pl_from_teacher[thresh_mask] = 255
+            # reweight unsupervised loss
+            reweight_unsup = batch_size * h * w / torch.sum(pl_from_teacher != 255)
 
         return pl_from_teacher, reweight_unsup
 
@@ -164,12 +166,6 @@ class MeanTeacherSegmentor(BaseSegmentor):
         if self.use_prototype_head:
             # for proto head we need to derive head features
             self.decode_proto_network(x, gt_semantic_seg, x_u, pl_from_teacher, reweight_unsup)
-
-        if hasattr(self.model_s, "auxiliary_head"):
-            aux_loss = self.model_s.auxiliary_head.forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
-            aux_loss_u = self.model_s.auxiliary_head.forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
-            self._update_summary_loss(aux_loss, loss_weight=self.aux_weight)
-            self._update_summary_loss(aux_loss_u, loss_weight=self.aux_weight * reweight_unsup * self.unsup_weight)
 
         # add information about accuracy
         for key in loss_decode:

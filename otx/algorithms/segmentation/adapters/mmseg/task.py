@@ -343,7 +343,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         if self._train_type == TrainType.Semisupervised:
             # forward the knowledge of num iters per epoch to model for filter loss
             bs_per_gpu = cfg.data.train_dataloader["samples_per_gpu"]
-            actual_bs = bs_per_gpu * len(cfg.gpu_ids) if cfg.distributed else bs_per_gpu
+            actual_bs = bs_per_gpu * torch.distributed.get_world_size() if cfg.distributed else bs_per_gpu
             cfg.model.num_iters_per_epoch = math.ceil(len(datasets[0]) / actual_bs)
 
         # FIXME: Currently segmentor does not support multi batch evaluation.
