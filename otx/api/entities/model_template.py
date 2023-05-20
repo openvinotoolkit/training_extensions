@@ -216,6 +216,14 @@ class TaskType(Enum):
         ACTION_DETECTION = 15, TaskInfo(
             domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
         )
+    if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+        VISUAL_PROMPTING = 16, TaskInfo(  # TODO: Is 16 okay when action flag is False?
+            domain=Domain.VISUAL_PROMPTING,
+            is_trainable=True,
+            is_anomaly=False,
+            is_global=False,
+            is_local=True,  # TODO: check whether is it local or not
+        )
 
     def __str__(self) -> str:
         """Returns name."""

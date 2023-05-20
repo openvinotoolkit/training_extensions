@@ -29,6 +29,8 @@ class Domain(Enum):
     if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
         ACTION_CLASSIFICATION = auto()
         ACTION_DETECTION = auto()
+    if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+        VISUAL_PROMPTING = auto()
 
     def __str__(self):
         """Returns Domain name."""
