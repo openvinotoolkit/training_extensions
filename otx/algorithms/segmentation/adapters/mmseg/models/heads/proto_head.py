@@ -30,6 +30,8 @@ class ProtoNet(BaseDecodeHead):
     by nonparametric nearest prototype retrieving. This allows our model
     to directly shape the pixel embedding space, by optimizing the arrangement
     between embedded pixels and anchored prototypes.
+    This network was developed based on two articles: https://arxiv.org/abs/2203.15102
+    and https://arxiv.org/abs/2210.04388
 
     Args:
             gamma (bool): parameter used for momentum update.
