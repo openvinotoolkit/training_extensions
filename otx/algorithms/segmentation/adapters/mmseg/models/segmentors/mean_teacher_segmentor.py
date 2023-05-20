@@ -21,6 +21,16 @@ class MeanTeacherSegmentor(BaseSegmentor):
     """Mean teacher segmentor for semi-supervised learning.
 
     It creates two models and ema from one to the other for consistency loss.
+
+    Args:
+        orig_type (BaseSegmentor): original type of segmentor to build student and teacher models
+        num_iters_per_epoch (int): number of iterations per training epoch.
+        unsup_weight (float): loss weight for unsupervised part. Default: 0.1
+        proto_weight (float): loss weight for pixel prototype cross entropy loss. Default: 0.7
+        drop_unrel_pixels_percent (int): starting precentage of pixels with high entropy
+            to drop from teachers pseudo labels. Default: 20
+        semisl_start_epoch (int): epoch to start learning with unlabeled images. Default: 1
+        proto_head (dict): configuration to constract prototype network. Default: None
     """
 
     def __init__(
@@ -70,7 +80,19 @@ class MeanTeacherSegmentor(BaseSegmentor):
     def decode_proto_network(
         self, sup_input, gt_semantic_seg, unsup_input=None, pl_from_teacher=None, reweight_unsup=1.0
     ):
-        """Forward prototype network, compute proto loss."""
+        """Forward prototype network, compute proto loss.
+
+        If there is no unsupervised part, only supervised loss will be computed.
+
+        Args:
+            sup_input (torch.Tensor): student output from labeled images
+            gt_semantic_seg (torch.Tensor): ground truth semantic segmentation label maps
+            unsup_input (torch.Tensor): student output from unlabeled images. Default: None
+            pl_from_teacher (torch.Tensor): teacher generated pseudo labels. Default: None
+            reweight_unsup (float): reweighting coefficient for unsupervised part after
+                filtering high entropy pixels. Default: 1.0
+        """
+
         # supervised branch
         head_features_sup = self.model_s.decode_head._forward_feature(sup_input)
         proto_out_supervised = self.proto_net(head_features_sup, gt_semantic_seg)
@@ -84,7 +106,14 @@ class MeanTeacherSegmentor(BaseSegmentor):
             self._update_summary_loss(loss_proto_u, loss_weight=self.unsup_weight * reweight_unsup * self.proto_weight)
 
     def generate_pseudo_labels(self, ul_w_img, ul_img_metas):
-        """Generate pseudo labels from teacher model, apply filter loss method."""
+        """Generate pseudo labels from teacher model, apply filter loss method.
+
+        Args:
+            ul_w_img (torch.Tensor): weakly augmented unlabeled images
+            ul_img_metas (dict): unlabeled images meta data
+
+        """
+
         with torch.no_grad():
             teacher_feat = self.model_t.extract_feat(ul_w_img)
             teacher_out = self.model_t._decode_head_forward_test(teacher_feat, ul_img_metas)
@@ -129,7 +158,14 @@ class MeanTeacherSegmentor(BaseSegmentor):
         return self.model_s.forward_dummy(img, **kwargs)
 
     def forward_train(self, img, img_metas, gt_semantic_seg, **kwargs):
-        """Forward train."""
+        """Forward train.
+
+        Args:
+            img (torch.Tensor): labeled images
+            img_metas (dict): labeled images meta data
+            gt_semantic_seg (torch.Tensor): semantic segmentation label maps
+            kwargs (dict): key arguments with unlabeled components and additional information
+        """
         self.count_iter += 1
         self.losses["sum_loss"] = 0.0
         if self.semisl_start_iter >= self.count_iter or "extra_0" not in kwargs:
