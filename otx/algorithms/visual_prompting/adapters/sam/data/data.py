@@ -16,6 +16,7 @@
 
 from typing import Dict, List, Optional, Union
 
+import numpy as np
 import torch
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
@@ -27,12 +28,14 @@ from anomalib.data.utils.transform import get_transforms
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
+from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.dataset_utils import (
     contains_anomalous_images,
     split_local_global_dataset,
 )
+from otx.api.utils.segmentation_utils import mask_from_dataset_item
 
 logger = get_logger(__name__)
 
@@ -110,14 +113,13 @@ class OTXVisualPromptingDataset(Dataset):
                     )
                 if boxes:
                     item["boxes"] = torch.stack(boxes)
-        # elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-        #     if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
-        #         mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
-        #     else:
-        #         mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
-        #     pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
-        #     item["image"] = pre_processed["image"]
-        #     item["mask"] = pre_processed["mask"]
+            if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
+                mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
+            else:
+                mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
+            pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
+            item["image"] = pre_processed["image"]
+            item["mask"] = pre_processed["mask"]
         else:
             raise ValueError(f"Unsupported task type: {self.task_type}")
 

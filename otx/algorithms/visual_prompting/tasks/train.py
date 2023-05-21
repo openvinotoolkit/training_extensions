@@ -15,14 +15,16 @@
 # and limitations under the License.
 
 import io
+import random
 from typing import Optional
 
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from pytorch_lightning import Trainer, seed_everything
-from segment_anything import SamPredictor, sam_model_registry
-from torch import optim
+from segment_anything import sam_model_registry
+from torch import nn, optim
+from torchvision.utils import save_image
 
 from anomalib.models import AnomalyModule
 from anomalib.post_processing import NormalizationMethod, ThresholdMethod
@@ -33,8 +35,6 @@ from anomalib.utils.callbacks import (
 )
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
-
-# from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.visual_prompting.adapters.sam.data import OTXVisualPromptingDataModule
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
@@ -43,7 +43,67 @@ from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 
 from .inference import InferenceTask
 
+ALPHA = 0.8
+GAMMA = 2
+
 logger = get_logger(__name__)
+
+
+def calc_iou(pred_mask: torch.Tensor, gt_mask: torch.Tensor):
+    """Calc_iou."""
+    pred_mask = (pred_mask >= 0.5).float()
+    intersection = torch.sum(torch.mul(pred_mask, gt_mask), dim=(1, 2))
+    union = torch.sum(pred_mask, dim=(1, 2)) + torch.sum(gt_mask, dim=(1, 2)) - intersection
+    epsilon = 1e-7
+    batch_iou = intersection / (union + epsilon)
+
+    batch_iou = batch_iou.unsqueeze(1)
+    return batch_iou
+
+
+class FocalLoss(nn.Module):
+    """FocalLoss."""
+
+    def __init__(self, weight=None, size_average=True):
+        super().__init__()
+
+    def forward(self, inputs, targets, alpha=ALPHA, gamma=GAMMA, smooth=1):
+        """Forward."""
+        inputs = F.sigmoid(inputs)
+        inputs = torch.clamp(inputs, min=0, max=1)
+
+        # flatten label and prediction tensors
+        inputs = inputs.view(-1)
+        targets = targets.view(-1)
+        BCE = F.binary_cross_entropy(inputs, targets.float(), reduction="mean")
+        BCE_EXP = torch.exp(-BCE)
+        focal_loss = alpha * (1 - BCE_EXP) ** gamma * BCE
+
+        return focal_loss
+
+
+class DiceLoss(nn.Module):
+    """DiceLoss."""
+
+    def __init__(self, weight=None, size_average=True):
+        super().__init__()
+
+    def forward(self, inputs, targets, smooth=1):
+        """Forward."""
+        inputs = F.sigmoid(inputs)
+        inputs = torch.clamp(inputs, min=0, max=1)
+        # flatten label and prediction tensors
+        inputs = inputs.view(-1)
+        targets = targets.view(-1)
+
+        intersection = (inputs * targets).sum()
+        dice = (2.0 * intersection + smooth) / (inputs.sum() + targets.sum() + smooth)
+
+        return 1 - dice
+
+
+focal_loss = FocalLoss()
+dice_loss = DiceLoss()
 
 
 class VisualPromptingModel(pl.LightningModule):
@@ -72,20 +132,14 @@ class VisualPromptingModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         """Training_step."""
-        pass
-
-    def configure_optimizers(self):
-        """Configure_optimizers."""
-        optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
-        return optimizer
-
-    def forward(self, images, bboxes):
-        """Forward."""
+        images = batch["image"]
+        boxes = batch["boxes"]
+        gt_masks = batch["mask"]
         _, _, H, W = images.shape
         image_embeddings = self.model.image_encoder(images)
         pred_masks = []
         ious = []
-        for embedding, bbox in zip(image_embeddings, bboxes):
+        for embedding, bbox in zip(image_embeddings, boxes):
             sparse_embeddings, dense_embeddings = self.model.prompt_encoder(
                 points=None,
                 boxes=bbox,
@@ -109,11 +163,33 @@ class VisualPromptingModel(pl.LightningModule):
             pred_masks.append(masks.squeeze(1))
             ious.append(iou_predictions)
 
-        return pred_masks, ious
+        num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
+        loss_focal = torch.tensor(0.0, device=self.model.device)
+        loss_dice = torch.tensor(0.0, device=self.model.device)
+        loss_iou = torch.tensor(0.0, device=self.model.device)
 
-    def get_predictor(self):
-        """Get predictor."""
-        return SamPredictor(self.model)
+        one_hot_masks = F.one_hot(gt_masks.long(), num_classes=4)
+        one_hot_masks = one_hot_masks.permute(0, 3, 1, 2)[:, 1:, :, :].contiguous()
+
+        for pred_mask, gt_mask, iou_prediction in zip(pred_masks, one_hot_masks, iou_predictions):
+            batch_iou = calc_iou(pred_mask, gt_mask)
+            loss_focal += focal_loss(pred_mask, gt_mask, num_masks)
+            loss_dice += dice_loss(pred_mask, gt_mask, num_masks)
+            loss_iou += F.mse_loss(iou_prediction, batch_iou, reduction="sum") / num_masks
+
+            if random.random() < 0.5:
+                save_image(gt_mask.unsqueeze(0).float() * 255, "gt.jpg")
+                save_image((pred_mask >= 0.5).unsqueeze(0).float() * 255, "pred.jpg")
+            loss_total = 20.0 * loss_focal + loss_dice + loss_iou
+
+        loss_total = 20.0 * loss_focal + loss_dice + loss_iou
+        self.log("train_loss", loss_total)
+        return loss_total
+
+    def configure_optimizers(self):
+        """Configure_optimizers."""
+        optimizer = optim.Adam(self.model.parameters(), lr=1e-5)
+        return optimizer
 
 
 class TrainingTask(InferenceTask, ITrainingTask):
