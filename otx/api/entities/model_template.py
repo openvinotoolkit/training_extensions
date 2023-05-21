@@ -262,6 +262,11 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
             TaskType.ACTION_CLASSIFICATION: Domain.ACTION_CLASSIFICATION,
             TaskType.ACTION_DETECTION: Domain.ACTION_DETECTION,
         }
+    if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+        mapping = {
+            **mapping,
+            TaskType.VISUAL_PROMPTING: Domain.VISUAL_PROMPTING,
+        }
 
     try:
         return mapping[task_type]
@@ -600,6 +605,12 @@ if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
         *TRAINABLE_TASK_TYPES,
         TaskType.ACTION_CLASSIFICATION,
         TaskType.ACTION_DETECTION,
+    )
+
+if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+    TRAINABLE_TASK_TYPES = (
+        *TRAINABLE_TASK_TYPES,
+        TaskType.VISUAL_PROMPTING,
     )
 
 

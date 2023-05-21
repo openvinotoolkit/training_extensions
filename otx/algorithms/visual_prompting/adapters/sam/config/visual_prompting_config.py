@@ -14,17 +14,15 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from pathlib import Path
 from typing import Union
 
-import anomalib
-from anomalib.config.config import get_configurable_parameters
 from omegaconf import DictConfig, ListConfig
 
+from anomalib.config.config import get_configurable_parameters
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 
 
-def get_anomalib_config(task_name: str, otx_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
+def get_visual_prompting_config(task_name: str, otx_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
     """Get anomalib configuration.
 
     Create an anomalib config object that matches the values specified in the
@@ -39,24 +37,25 @@ def get_anomalib_config(task_name: str, otx_config: ConfigurableParameters) -> U
         Anomalib config object for the specified model type with overwritten
         default values.
     """
-    config_path = Path(anomalib.__file__).parent / "models" / task_name.lower() / "config.yaml"
-    anomalib_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
+    # TODO: remove hard coding
+    config_path = "/home/cosmos/ws/otx-sam/otx/algorithms/visual_prompting/configs/lightning_sam/config.yaml"
+    visual_prompting_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
     # TODO: remove this hard coding of the config location
-    if anomalib_config.model.name == "draem":
-        anomalib_config.dataset.transform_config.train = (
-            f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
-        )
-        anomalib_config.dataset.transform_config.val = (
-            f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
-        )
-    else:
-        anomalib_config.dataset.transform_config.train = None
-        anomalib_config.dataset.transform_config.val = None
-    update_anomalib_config(anomalib_config, otx_config)
-    return anomalib_config
+    # if anomalib_config.model.name == "draem":
+    #     anomalib_config.dataset.transform_config.train = (
+    #         f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
+    #     )
+    #     anomalib_config.dataset.transform_config.val = (
+    #         f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
+    #     )
+    # else:
+    #     anomalib_config.dataset.transform_config.train = None
+    #     anomalib_config.dataset.transform_config.val = None
+    update_visual_prompting_config(visual_prompting_config, otx_config)
+    return visual_prompting_config
 
 
-def _anomalib_config_mapper(anomalib_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters):
+def _visual_prompting_config_mapper(anomalib_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters):
     """Return mapping from learning parameters to anomalib parameters.
 
     Args:
@@ -76,10 +75,10 @@ def _anomalib_config_mapper(anomalib_config: Union[DictConfig, ListConfig], otx_
             sc_value = sc_value.value if hasattr(sc_value, "value") else sc_value
             anomalib_config.model[name] = sc_value
     for group in groups:
-        update_anomalib_config(anomalib_config.model[group], getattr(otx_config, group))
+        update_visual_prompting_config(anomalib_config.model[group], getattr(otx_config, group))
 
 
-def update_anomalib_config(anomalib_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters):
+def update_visual_prompting_config(anomalib_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters):
     """Update anomalib configuration.
 
     Overwrite the default parameter values in the anomalib config with the
@@ -99,6 +98,6 @@ def update_anomalib_config(anomalib_config: Union[DictConfig, ListConfig], otx_c
     for group in otx_config.groups:
         # Since pot_parameters and nncf_optimization are specific to OTX
         if group == "learning_parameters":
-            _anomalib_config_mapper(anomalib_config, getattr(otx_config, "learning_parameters"))
+            _visual_prompting_config_mapper(anomalib_config, getattr(otx_config, "learning_parameters"))
         elif group not in ["pot_parameters", "nncf_optimization"]:
-            update_anomalib_config(anomalib_config[group], getattr(otx_config, group))
+            update_visual_prompting_config(anomalib_config[group], getattr(otx_config, group))

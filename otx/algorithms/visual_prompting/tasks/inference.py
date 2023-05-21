@@ -24,6 +24,9 @@ from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
+from omegaconf import DictConfig, ListConfig
+from pytorch_lightning import Trainer
+
 from anomalib.models import AnomalyModule, get_model
 from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from anomalib.utils.callbacks import (
@@ -31,17 +34,16 @@ from anomalib.utils.callbacks import (
     MinMaxNormalizationCallback,
     PostProcessingConfigurationCallback,
 )
-from omegaconf import DictConfig, ListConfig
-from pytorch_lightning import Trainer
-
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
     AnomalyInferenceCallback,
     ProgressCallback,
 )
-from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+
+# from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
+from otx.algorithms.visual_prompting.adapters.sam.config import get_visual_prompting_config
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
@@ -113,11 +115,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Union[DictConfig, ListConfig]: Anomalib config.
         """
         self.hyper_parameters: BaseAnomalyConfig = self.task_environment.get_hyper_parameters()
-        config = get_anomalib_config(task_name=self.model_name, otx_config=self.hyper_parameters)
+        config = get_visual_prompting_config(task_name=self.model_name, otx_config=self.hyper_parameters)
         config.project.path = self.project_path
-
-        config.dataset.task = "classification"
-
+        config.dataset.task = "visual_prompting"
         return config
 
     def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:

@@ -55,6 +55,7 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
     "SEGMENTATION": ["cityscapes", "common_semantic_segmentation", "voc", "ade20k2017", "ade20k2020"],
     "ACTION_CLASSIFICATION": ["multi-cvat"],
     "ACTION_DETECTION": ["multi-cvat"],
+    "VISUAL_PROMPTING": ["coco", "voc", "yolo"],
     "ANOMALY_CLASSIFICATION": ["mvtec"],
     "ANOMALY_DETECTION": ["mvtec"],
     "ANOMALY_SEGMENTATION": ["mvtec"],

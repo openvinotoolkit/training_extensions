@@ -16,31 +16,28 @@
 
 from typing import Dict, List, Optional, Union
 
-import numpy as np
 import torch
-from anomalib.data.base.datamodule import collate_fn
-from anomalib.data.utils.transform import get_transforms
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
+from anomalib.data.base.datamodule import collate_fn
+from anomalib.data.utils.transform import get_transforms
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
-from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.dataset_utils import (
     contains_anomalous_images,
     split_local_global_dataset,
 )
-from otx.api.utils.segmentation_utils import mask_from_dataset_item
 
 logger = get_logger(__name__)
 
 
-class OTXAnomalyDataset(Dataset):
+class OTXVisualPromptingDataset(Dataset):
     """Anomaly Dataset Adaptor.
 
     This class converts OTX Dataset into Anomalib dataset that
@@ -94,11 +91,7 @@ class OTXAnomalyDataset(Dataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            # Detection currently relies on image labels only, meaning it'll use image
-            #   threshold to find the predicted bounding boxes.
-            item["image"] = self.transform(image=dataset_item.numpy)["image"]
-        elif self.task_type == TaskType.ANOMALY_DETECTION:
+        if self.task_type == TaskType.VISUAL_PROMPTING:
             item["image"] = self.transform(image=dataset_item.numpy)["image"]
             item["boxes"] = torch.empty((0, 4))
             height, width = self.config.dataset.image_size
@@ -117,14 +110,14 @@ class OTXAnomalyDataset(Dataset):
                     )
                 if boxes:
                     item["boxes"] = torch.stack(boxes)
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
-                mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
-            else:
-                mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
-            pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
-            item["image"] = pre_processed["image"]
-            item["mask"] = pre_processed["mask"]
+        # elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+        #     if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
+        #         mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
+        #     else:
+        #         mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
+        #     pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
+        #     item["image"] = pre_processed["image"]
+        #     item["mask"] = pre_processed["mask"]
         else:
             raise ValueError(f"Unsupported task type: {self.task_type}")
 
@@ -135,7 +128,7 @@ class OTXAnomalyDataset(Dataset):
         return item
 
 
-class OTXAnomalyDataModule(LightningDataModule):
+class OTXVisualPromptingDataModule(LightningDataModule):
     """Anomaly DataModule.
 
     This class converts OTX Dataset into Anomalib dataset and stores
@@ -175,8 +168,8 @@ class OTXAnomalyDataModule(LightningDataModule):
             stage (Optional[str], optional): train/val/test stages.
                 Defaults to None.
         """
-        if not stage == "predict":
-            self.summary()
+        # if not stage == "predict":
+        # self.summary()
 
         if stage == "fit" or stage is None:
             self.train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
@@ -214,7 +207,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
         """
-        dataset = OTXAnomalyDataset(self.config, self.train_otx_dataset, self.task_type)
+        dataset = OTXVisualPromptingDataset(self.config, self.train_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -234,10 +227,10 @@ class OTXAnomalyDataModule(LightningDataModule):
         logger.info(f"Local annotations: {len(local_dataset)}")
         if contains_anomalous_images(local_dataset):
             logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
-            dataset = OTXAnomalyDataset(self.config, local_dataset, self.task_type)
+            dataset = OTXVisualPromptingDataset(self.config, local_dataset, self.task_type)
         else:
             logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
-            dataset = OTXAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
+            dataset = OTXVisualPromptingDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -252,7 +245,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Test Dataloader.
         """
-        dataset = OTXAnomalyDataset(self.config, self.test_otx_dataset, self.task_type)
+        dataset = OTXVisualPromptingDataset(self.config, self.test_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -267,7 +260,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Predict Dataloader.
         """
-        dataset = OTXAnomalyDataset(self.config, self.predict_otx_dataset, self.task_type)
+        dataset = OTXVisualPromptingDataset(self.config, self.predict_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
