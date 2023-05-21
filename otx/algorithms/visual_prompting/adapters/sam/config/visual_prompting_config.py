@@ -1,4 +1,4 @@
-"""Configurable parameter conversion between OTX and Anomalib."""
+"""Configurable parameter conversion between OTX and Visual Prompting."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -40,17 +40,6 @@ def get_visual_prompting_config(task_name: str, otx_config: ConfigurableParamete
     # TODO: remove hard coding
     config_path = "/home/cosmos/ws/otx-sam/otx/algorithms/visual_prompting/configs/lightning_sam/config.yaml"
     visual_prompting_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
-    # TODO: remove this hard coding of the config location
-    # if anomalib_config.model.name == "draem":
-    #     anomalib_config.dataset.transform_config.train = (
-    #         f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
-    #     )
-    #     anomalib_config.dataset.transform_config.val = (
-    #         f"otx/algorithms/adapters/anomalib/configs/{task_name.lower()}/draem/transform_config.yaml"
-    #     )
-    # else:
-    #     anomalib_config.dataset.transform_config.train = None
-    #     anomalib_config.dataset.transform_config.val = None
     update_visual_prompting_config(visual_prompting_config, otx_config)
     return visual_prompting_config
 

@@ -15,8 +15,6 @@
 # and limitations under the License.
 
 from .inference import InferenceTask
-from .nncf import NNCFTask
-from .openvino import OpenVINOTask
 from .train import TrainingTask
 
-__all__ = ["InferenceTask", "TrainingTask", "NNCFTask", "OpenVINOTask"]
+__all__ = ["InferenceTask", "TrainingTask"]
