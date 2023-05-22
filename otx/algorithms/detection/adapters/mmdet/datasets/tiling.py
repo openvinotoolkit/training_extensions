@@ -174,8 +174,8 @@ class Tile:
         height, width = img_shape[:2]
         _tile = self.prepare_result(result)
 
-        num_patches_h = int(height / self.stride) + 1
-        num_patches_w = int(width / self.stride) + 1
+        num_patches_h = (height + self.stride - 1) // self.stride
+        num_patches_w = (width + self.stride - 1) // self.stride
         for (_, _), (loc_i, loc_j) in zip(
             product(range(num_patches_h), range(num_patches_w)),
             product(
@@ -201,7 +201,9 @@ class Tile:
                 continue
             tile_list.append(tile)
         if dataset_idx == 0:
-            print(f"image: {height}x{width} ~ tile_size: {self.tile_size} -> {num_patches_h}x{num_patches_w} tiles -> {len(tile_list)} tiles after filtering")
+            print(
+                f"image: {height}x{width} ~ tile_size: {self.tile_size} -> {num_patches_h}x{num_patches_w} tiles -> {len(tile_list)} tiles after filtering"
+            )
         return tile_list
 
     def prepare_result(self, result: Dict) -> Dict:

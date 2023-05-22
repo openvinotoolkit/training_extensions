@@ -461,38 +461,61 @@ def adaptive_tile_params(
     """
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
 
-    bboxes = np.zeros((0, 4), dtype=np.float32)
+    all_sizes = np.zeros((0), dtype=np.float32)
     labels = dataset.get_labels(include_empty=False)
     domain = labels[0].domain
     max_object = 0
     for dataset_item in dataset:
         result = get_annotation_mmdet_format(dataset_item, labels, domain)
         if len(result["bboxes"]):
-            bboxes = np.concatenate((bboxes, result["bboxes"]), 0)
-            if len(result["bboxes"]) > max_object:
-                max_object = len(result["bboxes"])
+            bboxes = result["bboxes"]
+            sizes = 0.5 * (bboxes[:, 2] - bboxes[:, 0] + bboxes[:, 3] - bboxes[:, 1])
+            all_sizes = np.concatenate((all_sizes, sizes), 0)
+            if len(bboxes) > max_object:
+                max_object = len(bboxes)
 
-    areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
+    log_sizes = np.log(all_sizes)
+    avg_log_size = np.mean(log_sizes)
+    std_log_size = np.std(log_sizes)
+    avg_size = np.exp(avg_log_size)
+    avg_3std_min_size = np.exp(avg_log_size - 3*std_log_size)
+    avg_3std_max_size = np.exp(avg_log_size + 3*std_log_size)
+    min_size = np.exp(np.min(log_sizes))
+    max_size = np.exp(np.max(log_sizes))
+    logger.info(f"----> [stat] log scale avg: {avg_size}")
+    logger.info(f"----> [stat] log scale avg - 3*std: {avg_3std_min_size}")
+    logger.info(f"----> [stat] log scale avg + 3*std: {avg_3std_max_size}")
+    logger.info(f"----> [stat] scale min: {min_size}")
+    logger.info(f"----> [stat] scale max: {max_size}")
+
+    # Refine min/max to reduce outlier effect
+    min_size = max(min_size, avg_3std_min_size)
+    max_size = min(max_size, avg_3std_max_size)
 
     if rule == "min":
-        object_area = np.min(areas)
+        object_size = min_size
     elif rule == "avg":
-        object_area = np.mean(areas)
-    max_area = np.max(areas)
+        object_size = avg_size
 
     logger.info("[Adaptive tiling pararms]")
     object_tile_ratio = tiling_parameters.object_tile_ratio
-    
-    object_size = math.sqrt(object_area)
-    max_object_size = math.sqrt(max_area)
-    tile_size = int(object_size/object_tile_ratio)
-    tile_overlap = max_object_size / tile_size
+    # object_tile_ratio = 0.02  # 10x10 object in 512x512
+    # object_tile_ratio = 0.03  # 16x16 object in 512x512
+    # object_tile_ratio = 0.04  # 20x20 object in 512x512
+    # object_tile_ratio = 0.05  # 26x26 object in 512x512
+    # object_tile_ratio = 0.06  # 32x32 object in 512x512
+    tile_size = int(object_size / object_tile_ratio)
+    tile_overlap = max_size / tile_size
     logger.info(f"----> {rule}_object_size: {object_size}")
-    logger.info(f"----> max_object_size: {max_object_size}")
+    logger.info(f"----> max_object_size: {max_size}")
+    logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
+    logger.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
+    logger.info(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
 
     if tile_overlap >= tiling_parameters.get_metadata("tile_overlap")["max_value"]:
         # Use the average object area if the tile overlap is too large to prevent 0 stride.
         tile_overlap = object_size / tile_size
+        logger.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
 
     # validate parameters are in range
     tile_size = max(
@@ -507,9 +530,6 @@ def adaptive_tile_params(
         tiling_parameters.get_metadata("tile_max_number")["min_value"],
         min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_object),
     )
-    logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
-    logger.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
-    logger.info(f"----> tile_overlap: {max_object_size} / {tile_size} = {tile_overlap}")
 
     tiling_parameters.tile_size = tile_size
     tiling_parameters.tile_max_number = max_object
