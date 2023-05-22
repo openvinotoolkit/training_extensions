@@ -146,7 +146,7 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
         losses.update(rcnn_loss)
         return losses
 
-    def simple_test(self, img, img_metas, proposals=None, rescale=False):
+    def simple_test(self, img, img_metas, proposals=None, rescale=False, full_res_image=False):
         """Simple test.
 
         Tile classifier is used to filter out images without any objects.
@@ -162,6 +162,7 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             tuple: MaskRCNN output
         """
         keep = self.tile_classifier.simple_test(img) > 0.45
+        keep = full_res_image[0] | keep
 
         if not keep:
             tmp_results = []

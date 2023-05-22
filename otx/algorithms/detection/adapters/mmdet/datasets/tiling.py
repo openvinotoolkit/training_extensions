@@ -132,6 +132,7 @@ class Tile:
         Returns:
             Dict: annotation with some other useful information for data pipeline.
         """
+        result["full_res_image"] = True
         result["tile_box"] = (0, 0, result["img_shape"][1], result["img_shape"][0])
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
@@ -179,6 +180,7 @@ class Tile:
             y_1 = loc_i
             y_2 = loc_i + self.tile_size
             tile = copy.deepcopy(_tile)
+            tile["full_res_image"] = False
             tile["original_shape_"] = img_shape
             tile["ori_shape"] = (y_2 - y_1, x_2 - x_1, 3)
             tile["img_shape"] = tile["ori_shape"]
