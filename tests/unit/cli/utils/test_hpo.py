@@ -476,6 +476,16 @@ class TestHpoRunner:
 
 
 class TestTrainer:
+    @pytest.fixture(autouse=True)
+    def setup(self, tmp_dir):
+        self.weight_format = "epoch_{}.pth"
+        self.hpo_workdir = Path(tmp_dir) / "hpo_dir"
+
+    @pytest.fixture
+    def tmp_dir(self):
+        with TemporaryDirectory() as tmp_dir:
+            yield tmp_dir
+
     @e2e_pytest_unit
     def test_init(self, mocker, cls_template_path):
         Trainer(
@@ -489,48 +499,81 @@ class TestTrainer:
             metric="fake",
         )
 
+    @pytest.fixture
+    def mock_task(self, mocker, tmp_dir):
+        fake_project_path = Path(tmp_dir) / "fake_proejct"
+        fake_project_path.mkdir(parents=True)
+        for i in range(1, 5):
+            (fake_project_path / self.weight_format.format(i)).write_text("fake")
+
+        mock_get_train_task = mocker.patch.object(TaskEnvironmentManager, "get_train_task")
+        mock_task = mocker.MagicMock()
+        mock_task.project_path = str(fake_project_path)
+        mock_get_train_task.return_value = mock_task
+
+        return mock_task
+
     @e2e_pytest_unit
-    def test_run(self, mocker, cls_template_path):
-        with TemporaryDirectory() as tmp_dir:
-            # prepare
-            trial_id = "1"
-            weight_format = "epoch_{}.pth"
-            hpo_workdir = Path(tmp_dir) / "hpo_dir"
-            fake_project_path = Path(tmp_dir) / "fake_proejct"
-            fake_project_path.mkdir(parents=True)
-            for i in range(1, 5):
-                (fake_project_path / weight_format.format(i)).write_text("fake")
+    def test_run(self, mocker, cls_template_path, mock_task, tmp_dir):
+        # prepare
+        trial_id = "1"
+        mock_report_func = mocker.MagicMock()
 
-            mock_get_train_task = mocker.patch.object(TaskEnvironmentManager, "get_train_task")
-            mock_task = mocker.MagicMock()
-            mock_task.project_path = str(fake_project_path)
-            mock_get_train_task.return_value = mock_task
+        mocker.patch("otx.cli.utils.hpo.get_dataset_adapter")
+        mocker.patch("otx.cli.utils.hpo.HpoDataset")
 
-            mock_report_func = mocker.MagicMock()
+        # run
+        trainer = Trainer(
+            hp_config={"configuration": {"iterations": 10}, "id": trial_id},
+            report_func=mock_report_func,
+            model_template=find_and_parse_model_template(cls_template_path),
+            data_roots=mocker.MagicMock(),
+            task_type=TaskType.CLASSIFICATION,
+            hpo_workdir=self.hpo_workdir,
+            initial_weight_name="fake",
+            metric="fake",
+        )
+        trainer.run()
 
-            mocker.patch("otx.cli.utils.hpo.get_dataset_adapter")
-            mocker.patch("otx.cli.utils.hpo.HpoDataset")
-
-            # run
-            trainer = Trainer(
-                hp_config={"configuration": {"iterations": 10}, "id": trial_id},
-                report_func=mock_report_func,
-                model_template=find_and_parse_model_template(cls_template_path),
-                data_roots=mocker.MagicMock(),
-                task_type=TaskType.CLASSIFICATION,
-                hpo_workdir=hpo_workdir,
-                initial_weight_name="fake",
-                metric="fake",
-            )
-            trainer.run()
-
-            # check
-            mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report
-            assert hpo_workdir.exists()  # make a directory to copy weight
-            for i in range(1, 5):  # check model weights are copied
-                assert (hpo_workdir / "weight" / trial_id / weight_format.format(i)).exists()
+        # check
+        mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report
+        assert self.hpo_workdir.exists()  # make a directory to copy weight
+        for i in range(1, 5):  # check model weights are copied
+            assert (self.hpo_workdir / "weight" / trial_id / self.weight_format.format(i)).exists()
 
         mock_task.train.assert_called()  # check task.train() is called
+
+    @e2e_pytest_unit
+    def test_run_trial_already_done(self, mocker, cls_template_path, mock_task, tmp_dir):
+        """Test a case where trial to run already training given epoch."""
+        # prepare
+        trial_id = "1"
+        epoch_to_run = 10
+        weight_dir = self.hpo_workdir / "weight" / trial_id
+        # prepare a weight trained more than given epoch
+        weight_dir.mkdir(parents=True)
+        (weight_dir / self.weight_format.format(epoch_to_run+1)).touch()
+        mock_report_func = mocker.MagicMock()
+
+        mocker.patch("otx.cli.utils.hpo.get_dataset_adapter")
+        mocker.patch("otx.cli.utils.hpo.HpoDataset")
+
+        # run
+        trainer = Trainer(
+            hp_config={"configuration": {"iterations": epoch_to_run}, "id": trial_id},
+            report_func=mock_report_func,
+            model_template=find_and_parse_model_template(cls_template_path),
+            data_roots=mocker.MagicMock(),
+            task_type=TaskType.CLASSIFICATION,
+            hpo_workdir=self.hpo_workdir,
+            initial_weight_name="fake",
+            metric="fake",
+        )
+        trainer.run()
+
+        # check
+        mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report
+        mock_task.train.assert_not_called()  # check task.train() is called
 
 
 class TestHpoCallback:

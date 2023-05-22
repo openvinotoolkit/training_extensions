@@ -715,7 +715,7 @@ class TestHyperBand:
         trial = hyper_band.get_next_sample()
         hyper_band.report_score(100, 0.1, trial.id)
         hyper_band.report_score(0, 0, trial.id, done=True)
-        assert trial.get_progress() == trial.iteration
+        assert trial.is_done()
 
     @e2e_pytest_component
     def test_get_best_config(self, hyper_band):
@@ -1051,7 +1051,6 @@ class TestHyperBand:
                 if hyper_band.report_score(score=1, resource=iter, trial_id=trial.id) == TrialStatus.STOP:
                     break
 
-        first_trial = trials_to_estimate[0]
         hyper_band.report_score(score=1, resource=max_validation, trial_id=first_trial.id)
         hyper_band.report_score(score=0, resource=0, trial_id=first_trial.id, done=True)
 

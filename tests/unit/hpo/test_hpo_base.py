@@ -139,7 +139,7 @@ class TestTrial:
         trial.iteration = 10
         trial.register_score(10, 5)
         trial.finalize()
-        assert trial.iteration == trial.get_progress()
+        assert trial.is_done()
 
     @e2e_pytest_component
     def test_finalize_without_registered_score(self, trial):

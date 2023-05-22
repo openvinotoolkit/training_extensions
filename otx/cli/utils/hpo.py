@@ -679,6 +679,12 @@ class Trainer:
         need_to_save_initial_weight = False
         resume_weight_path = self._get_resume_weight_path()
         if resume_weight_path is not None:
+            ret = re.search(r"(\d+)\.pth", resume_weight_path)
+            if ret is not None:
+                resume_epoch = int(ret.group(1))
+                if self._epoch <= resume_epoch:  # given epoch is already done
+                    self._report_func(0, 0, done=True)
+                    return
             environment.resume_model_weight(resume_weight_path, dataset)
         else:
             initial_weight = self._load_fixed_initial_weight()

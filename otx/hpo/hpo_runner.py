@@ -163,9 +163,10 @@ class HpoLoop:
 
     def _terminate_all_running_processes(self):
         for trial in self._running_trials.values():
+            trial.queue.close()
             process = trial.process
             if process.is_alive():
-                logger.warning(f"Kill child process {process.pid}")
+                logger.info(f"Kill child process {process.pid}")
                 process.kill()
 
     def _terminate_signal_handler(self, signum, _frame):
@@ -206,7 +207,7 @@ def _report_score(
     try:
         trial_status = recv_queue.get(timeout=3)
     except queue.Empty:
-        pass
+        return TrialStatus.RUNNING
 
     while not recv_queue.empty():
         trial_status = recv_queue.get_nowait()
