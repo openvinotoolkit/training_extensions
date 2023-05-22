@@ -241,7 +241,7 @@ postprocessing:
   use_ellipse_shapes:
     affects_outcome_of: INFERENCE
     default_value: false
-    description: Use ellipse shape in inference instead of polygon
+    description: Use direct ellipse shape in inference instead of polygon from mask
     editable: true
     header: Use ellipse shapes
     type: BOOLEAN

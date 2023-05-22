@@ -433,7 +433,7 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         annotations = []
-        width, height, _ = metadata["original_shape"]
+        height, width, _ = metadata["original_shape"]
         shape: Union[Polygon, Ellipse]
         for score, class_idx, box, mask in zip(*predictions):
             if self.use_ellipse_shapes:
@@ -451,8 +451,8 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     contour = list(contour)
                     points = [
                         Point(
-                            x=point[0][0] / metadata["original_shape"][1],
-                            y=point[0][1] / metadata["original_shape"][0],
+                            x=point[0][0] / width,
+                            y=point[0][1] / height,
                         )
                         for point in contour
                     ]
@@ -492,7 +492,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         annotations = []
-        width, height, _ = metadata["original_shape"]
+        height, width, _ = metadata["original_shape"]
         shape: Union[Polygon, Ellipse]
         for score, class_idx, box, mask in zip(*predictions):
             if self.use_ellipse_shapes:
@@ -509,8 +509,8 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                         continue
                     points = [
                         Point(
-                            x=point[0] / metadata["original_shape"][1],
-                            y=point[1] / metadata["original_shape"][0],
+                            x=point[0] / width,
+                            y=point[1] / height,
                         )
                         for point in cv2.boxPoints(cv2.minAreaRect(contour))
                     ]

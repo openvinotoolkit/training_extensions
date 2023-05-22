@@ -223,7 +223,7 @@ class BaseConfig(ConfigurableParameters):
         use_ellipse_shapes = configurable_boolean(
             default_value=False,
             header="Use ellipse shapes",
-            description="Use ellipse shape in inference instead of polygon",
+            description="Use direct ellipse shape in inference instead of polygon from mask",
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
@@ -412,8 +412,8 @@ class BaseConfig(ConfigurableParameters):
             header="Object tile ratio",
             description="The desired ratio of min object size and tile size.",
             default_value=0.06,
-            min_value=0.03,
-            max_value=0.09,
+            min_value=0.00,
+            max_value=1.00,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 

@@ -499,11 +499,6 @@ def adaptive_tile_params(
 
     logger.info("[Adaptive tiling pararms]")
     object_tile_ratio = tiling_parameters.object_tile_ratio
-    # object_tile_ratio = 0.02  # 10x10 object in 512x512
-    # object_tile_ratio = 0.03  # 16x16 object in 512x512
-    # object_tile_ratio = 0.04  # 20x20 object in 512x512
-    # object_tile_ratio = 0.05  # 26x26 object in 512x512
-    # object_tile_ratio = 0.06  # 32x32 object in 512x512
     tile_size = int(object_size / object_tile_ratio)
     tile_overlap = max_size / tile_size
     logger.info(f"----> {rule}_object_size: {object_size}")

@@ -484,7 +484,6 @@ class MMDetectionTask(OTXDetectionTask):
         if export_options.get("precision", None) is None:
             assert len(self._precision) == 1
             export_options["precision"] = str(self._precision[0])
-
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
             output_names = export_options["deploy_cfg"]["ir_config"]["output_names"]
