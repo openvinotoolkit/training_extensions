@@ -339,6 +339,11 @@ def patch_tiling(config, hparams, dataset=None):
 
         if hparams.tiling_parameters.enable_tile_classifier:
             logger.info("Tile classifier enabled")
+
+            for subset in ('val', 'test'):
+                if config.data[subset].pipeline[0]['transforms'][-1]['type'] == 'Collect':
+                    config.data[subset].pipeline[0]['transforms'][-1]['keys'].append('full_res_image')
+
             logger.info(f"Patch model from: {config.model.type} to CustomMaskRCNNTileOptimized")
             config.model.type = "CustomMaskRCNNTileOptimized"
 
