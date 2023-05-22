@@ -626,10 +626,8 @@ class MMDetectionTask(OTXDetectionTask):
     # This should moved somewhere
     def _init_deploy_cfg(self, cfg) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
-        if self._hyperparams.tiling_parameters.enable_tiling:
-            deploy_cfg_path = os.path.join(base_dir, "deployment_tile.py")
-            if self._hyperparams.tiling_parameters.enable_tile_classifier:
-                deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
         else:
             deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
