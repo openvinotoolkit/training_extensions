@@ -157,6 +157,7 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             img_metas (list): image meta data
             proposals (list, optional): proposals. Defaults to None.
             rescale (bool, optional): rescale. Defaults to False.
+            full_res_image (bool, optional): if the image is full resolution or not. Defaults to False.
 
         Returns:
             tuple: MaskRCNN output
