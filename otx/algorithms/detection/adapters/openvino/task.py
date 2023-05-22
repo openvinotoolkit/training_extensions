@@ -174,7 +174,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             )
         }
         model = Model.create_model("OTX_SSD", model_adapter, configuration, preload=True)
-        converter = DetectionToAnnotationConverter(label_schema)
+        converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -213,8 +213,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         }
 
         model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
-
-        converter = MaskToAnnotationConverter(label_schema)
+        converter = MaskToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -248,7 +247,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
 
         model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
 
-        converter = RotatedRectToAnnotationConverter(label_schema)
+        converter = RotatedRectToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -400,6 +399,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        _hparams.postprocessing.use_ellipse_shapes = self.config.postprocessing.use_ellipse_shapes
         args = [
             _hparams,
             self.task_environment.label_schema,

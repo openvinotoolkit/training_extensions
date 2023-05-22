@@ -220,6 +220,12 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        use_ellipse_shapes = configurable_boolean(
+            default_value=False,
+            header="Use ellipse shapes",
+            description="Use ellipse shape in inference instead of polygon",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
     @attrs
     class BaseNNCFOptimization(ParameterGroup):
         """BaseNNCFOptimization for OTX Algorithms."""
@@ -400,5 +406,15 @@ class BaseConfig(ConfigurableParameters):
             max_value=1.0,
             affects_outcome_of=ModelLifecycle.NONE,
         )
+        
+        object_tile_ratio = configurable_float(
+            header="Object tile ratio",
+            description="The desired ratio of min object size and tile size.",
+            default_value=0.06,
+            min_value=0.03,
+            max_value=0.09,
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
 
     tiling_parameters = add_parameter_group(BaseTilingParameters)

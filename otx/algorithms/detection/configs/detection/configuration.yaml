@@ -238,6 +238,22 @@ postprocessing:
     value: 0.01
     visible_in_ui: true
     warning: null
+  use_ellipse_shapes:
+    affects_outcome_of: INFERENCE
+    default_value: false
+    description:
+      Use ellipse shape in inference instead of polygon
+    editable: true
+    header: Use ellipse shapes
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: false
+    warning: null
   description: Postprocessing
   header: Postprocessing
   result_based_confidence_threshold:
@@ -535,6 +551,42 @@ tiling_parameters:
       type: UI_RULES
     value: 1500
     visible_in_ui: true
+    warning: null
+
+  tile_sampling_ratio:
+    header: Sampling Ratio for entire tiling
+    description: Since tiling train and validation to all tile from large image, usually it takes lots of time than normal training. The tile_sampling_ratio is ratio for sampling entire tile dataset. Sampling tile dataset would save lots of time for training and validation time. Note that sampling will be applied to training and validation dataset, not test dataset.
+    affects_outcome_of: TRAINING
+    default_value: 1.0
+    min_value: 0.000001
+    max_value: 1.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+
+  object_tile_ratio:
+    header: Object tile ratio
+    description: The desired ratio of min object size and tile size.
+    affects_outcome_of: TRAINING
+    default_value: 0.06
+    min_value: 0.00
+    max_value: 1.00
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.06
+    visible_in_ui: false
     warning: null
 
   type: PARAMETER_GROUP

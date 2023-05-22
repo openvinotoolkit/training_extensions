@@ -54,7 +54,7 @@ test_pipeline = [
 __dataset_type = "CocoDataset"
 __data_root = "data/coco/"
 
-__samples_per_gpu = 4
+__samples_per_gpu = 12
 
 train_dataset = dict(
     type="ImageTilingDataset",

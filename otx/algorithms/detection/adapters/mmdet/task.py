@@ -284,11 +284,14 @@ class MMDetectionTask(OTXDetectionTask):
 
         if self._hyperparams.learning_parameters.auto_decrease_batch_size:
             train_func = partial(train_detector, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-            adapt_batch_size(train_func, cfg, datasets, isinstance(self, NNCFBaseTask))  # nncf needs eval hooks
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+            )
 
-        cfg.data.train_dataloader.samples_per_gpu=12
-        cfg.data.val_dataloader.samples_per_gpu=12
-        
         train_detector(
             model,
             datasets,
@@ -623,8 +626,10 @@ class MMDetectionTask(OTXDetectionTask):
     # This should moved somewhere
     def _init_deploy_cfg(self, cfg) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
-        if self._hyperparams.tiling_parameters.enable_tile_classifier:
-            deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
+        if self._hyperparams.tiling_parameters.enable_tiling:
+            deploy_cfg_path = os.path.join(base_dir, "deployment_tile.py")
+            if self._hyperparams.tiling_parameters.enable_tile_classifier:
+                deploy_cfg_path = os.path.join(base_dir, "deployment_tile_classifier.py")
         else:
             deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None

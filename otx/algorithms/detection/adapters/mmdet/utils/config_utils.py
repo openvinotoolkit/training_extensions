@@ -453,7 +453,6 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     # when converting to OpenVINO IR
     deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
-
 def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionConfig):
     """Patch IR scale factor inplace from hyper parameters to deploy config.
 
