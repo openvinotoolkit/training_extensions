@@ -170,8 +170,8 @@ class Tile:
         height, width = img_shape[:2]
         _tile = self.prepare_result(result)
 
-        num_patches_h = int(height / self.stride) + 1
-        num_patches_w = int(width / self.stride) + 1
+        num_patches_h = (height + self.stride - 1) // self.stride
+        num_patches_w = (width + self.stride - 1) // self.stride
         for (_, _), (loc_i, loc_j) in zip(
             product(range(num_patches_h), range(num_patches_w)),
             product(

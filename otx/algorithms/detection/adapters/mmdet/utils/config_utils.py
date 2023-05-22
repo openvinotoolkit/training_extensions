@@ -441,16 +441,18 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     """
     resize_cfgs = get_configs_by_pairs(
         cfg.data.test.pipeline,
-        dict(type="Resize"),
+        dict(type="MultiScaleFlipAug"),
     )
     assert len(resize_cfgs) == 1
     resize_cfg: ConfigDict = resize_cfgs[0]
-    size = resize_cfg.size
+    size = resize_cfg.img_scale
     if isinstance(size, int):
         size = (size, size)
     assert all(isinstance(i, int) and i > 0 for i in size)
     # default is static shape to prevent an unexpected error
     # when converting to OpenVINO IR
+    logger.info(f"Patching OpenVINO IR input shape: {size}")
+    deploy_cfg.ir_config.input_shape = size
     deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
 
