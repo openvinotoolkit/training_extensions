@@ -7,7 +7,6 @@ _base_ = ["./deployment.py"]
 
 ir_config = dict(
     output_names=["boxes", "labels", "masks", "tile_prob"],
-    input_shape=(512, 512),
 )
 
 partition_config = dict(

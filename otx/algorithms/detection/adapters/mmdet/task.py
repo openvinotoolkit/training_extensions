@@ -637,8 +637,7 @@ class MMDetectionTask(OTXDetectionTask):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
 
             patch_input_preprocessing(cfg, deploy_cfg)
-            if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(cfg, deploy_cfg)
+            patch_input_shape(cfg, deploy_cfg)
             patch_ir_scale_factor(deploy_cfg, self._hyperparams)
 
         return deploy_cfg
