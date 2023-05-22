@@ -444,7 +444,7 @@ def format_list_to_str(value_lists: list):
 
 # TODO [Eugene] please add unit test for this function
 def adaptive_tile_params(
-    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.06, rule="avg"
+    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.03, rule="avg"
 ):
     """Config tile parameters.
 
@@ -454,7 +454,7 @@ def adaptive_tile_params(
     Args:
         tiling_parameters (BaseTilingParameters): tiling parameters of the model
         dataset (DatasetEntity): training dataset
-        object_tile_ratio (float, optional): The desired ratio of min object size and tile size. Defaults to 32/512=0.06.
+        object_tile_ratio (float, optional): The desired ratio of min object size and tile size. Defaults to 16/512=0.03.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
                               `avg` mode tile size is computed by averaging all the object areas. Defaults to "avg".
 
