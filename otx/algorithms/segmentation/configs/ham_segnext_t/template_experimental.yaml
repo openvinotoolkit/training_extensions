@@ -1,6 +1,6 @@
 # Description.
-model_template_id: Custom_Semantic_Segmentation_SegNext_s
-name: SegNext-s
+model_template_id: Custom_Semantic_Segmentation_SegNext_t
+name: SegNext-t
 task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"

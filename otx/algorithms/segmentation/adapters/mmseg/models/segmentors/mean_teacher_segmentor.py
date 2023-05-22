@@ -36,7 +36,7 @@ class MeanTeacherSegmentor(BaseSegmentor):
     def __init__(
         self,
         orig_type,
-        num_iters_per_epoch,
+        num_iters_per_epoch=None,
         unsup_weight=0.1,
         proto_weight=0.7,
         drop_unrel_pixels_percent=20,
@@ -47,13 +47,16 @@ class MeanTeacherSegmentor(BaseSegmentor):
         super().__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.count_iter = 0
-        # filter unreliable pixels during first 100 epochs
-        self.filter_pixels_iters = num_iters_per_epoch * 100
-        self.semisl_start_iter = num_iters_per_epoch * semisl_start_epoch
+        # num_iters_per_epoch will be None during validation
+        # Overwise it should be overwritten in train_task
+        if num_iters_per_epoch is not None:
+            # filter unreliable pixels during first 100 epochs
+            self.filter_pixels_iters = num_iters_per_epoch * 100
+            self.semisl_start_iter = num_iters_per_epoch * semisl_start_epoch
         self.drop_unrel_pixels_percent = drop_unrel_pixels_percent
         cfg = kwargs.copy()
         cfg["type"] = orig_type
-        self.align_corners = cfg["decode_head"].align_corners
+        self.align_corners = cfg["decode_head"].get("align_corners", False)
         self.model_s = build_segmentor(cfg)
         self.model_t = build_segmentor(cfg)
         self.use_prototype_head = False
