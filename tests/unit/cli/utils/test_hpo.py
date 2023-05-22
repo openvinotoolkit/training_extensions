@@ -660,6 +660,11 @@ def test_run_hpo(mocker, mock_environment):
         output = Path(tmp_dir) / "fake"
         mock_get_best_hpo_weight = mocker.patch("otx.cli.utils.hpo.get_best_hpo_weight")
         mock_get_best_hpo_weight.return_value = "mock_best_weight_path"
+        hpo_weight_dir = output / "hpo" / "weight"
+        for i in range(3):
+            trial_weight_dir = hpo_weight_dir / str(i)
+            trial_weight_dir.mkdir(parents=True)
+            (trial_weight_dir / "fake.pth").touch()
 
         def mock_run_hpo(*args, **kwargs):
             return {"config": {"a.b": 1, "c.d": 2}, "id": "1"}
@@ -686,6 +691,7 @@ def test_run_hpo(mocker, mock_environment):
         assert env_hp.a.b == 1
         assert env_hp.c.d == 2
         assert environment.model == "mock_best_weight_path"  # check that best model weight is used
+        assert not list(hpo_weight_dir.rglob("*.pth"))  # check unused weight is removed
 
 
 @e2e_pytest_unit

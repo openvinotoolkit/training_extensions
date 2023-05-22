@@ -582,7 +582,15 @@ def run_hpo(
         logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
         env_manager.load_model_weight(best_hpo_weight, dataset)
 
+    _remove_unused_model_weights(hpo_save_path, best_hpo_weight)
     return env_manager.environment
+
+
+def _remove_unused_model_weights(hpo_save_path: Path, best_hpo_weight: Optional[str] = None):
+    for weight in hpo_save_path.rglob("*.pth"):
+        if best_hpo_weight is not None and str(weight) == best_hpo_weight:
+            continue
+        weight.unlink()
 
 
 def get_best_hpo_weight(hpo_dir: Union[str, Path], trial_id: Union[str, Path]) -> Optional[str]:
