@@ -28,6 +28,7 @@ from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 from otx.api.utils.time_utils import now
 
+
 def convert_bbox_to_ellipse(x1, y1, x2, y2) -> Ellipse:
     """Convert bbox to ellipse."""
     return Ellipse(x1, y1, x2, y2)
@@ -57,10 +58,10 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         labels (List[LabelEntity]): list of labels
     """
 
-    def __init__(self, labels: Union[LabelSchemaEntity, List], configuration: Dict[str, Any]):
+    def __init__(self, labels: Union[LabelSchemaEntity, List], configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False) if isinstance(labels, LabelSchemaEntity) else labels
         self.label_map = dict(enumerate(self.labels))
-        self.use_ellipse_shapes = configuration.use_ellipse_shapes
+        self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Optional[Dict[str, np.ndarray]] = None
@@ -128,6 +129,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             confidence = prediction[1]
             scored_label = ScoredLabel(self.label_map[label], confidence)
             coords = prediction[2:]
+            shape: Union[Ellipse, Rectangle]
             if self.use_ellipse_shapes:
                 shape = convert_bbox_to_ellipse(coords[0], coords[1], coords[2], coords[3])
             else:
@@ -416,7 +418,7 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
     """Converts DetectionBox Predictions ModelAPI to Annotations."""
 
-    def __init__(self, labels: LabelSchemaEntity, configuration: Dict[str, Any]):
+    def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
         self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
 
@@ -432,14 +434,10 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
         """
         annotations = []
         width, height, _ = metadata["original_shape"]
+        shape: Union[Polygon, Ellipse]
         for score, class_idx, box, mask in zip(*predictions):
             if self.use_ellipse_shapes:
-                shape = convert_bbox_to_ellipse(
-                    box[0] / width,
-                    box[1] / height,
-                    box[2] / width,
-                    box[3] / height
-                )
+                shape = convert_bbox_to_ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
             else:
                 mask = mask.astype(np.uint8)
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -479,9 +477,9 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
         labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
-    def __init__(self, labels: LabelSchemaEntity, configuration: Dict[str, Any]):
+    def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
-        self.use_ellipse_shapes = configuration.use_ellipse_shapes
+        self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
@@ -495,14 +493,10 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
         """
         annotations = []
         width, height, _ = metadata["original_shape"]
+        shape: Union[Polygon, Ellipse]
         for score, class_idx, box, mask in zip(*predictions):
             if self.use_ellipse_shapes:
-                shape = convert_bbox_to_ellipse(
-                    box[0] / width,
-                    box[1] / height,
-                    box[2] / width,
-                    box[3] / height
-                )
+                shape = convert_bbox_to_ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
             else:
                 mask = mask.astype(np.uint8)
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)

@@ -61,8 +61,8 @@ from otx.api.entities.model import (
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.ellipse import Ellipse
+from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
@@ -223,10 +223,7 @@ class OTXDetectionTask(OTXTask, ABC):
 
         preds_val_dataset = val_dataset.with_empty_annotations()
         self._add_predictions_to_dataset(
-            val_preds,
-            preds_val_dataset,
-            self.confidence_threshold,
-            use_ellipse_shapes=self.use_ellipse_shapes
+            val_preds, preds_val_dataset, self.confidence_threshold, use_ellipse_shapes=self.use_ellipse_shapes
         )
 
         result_set = ResultSetEntity(
@@ -295,7 +292,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold,
             process_saliency_maps,
             explain_predicted_classes,
-            self.use_ellipse_shapes
+            self.use_ellipse_shapes,
         )
         logger.info("Inference completed")
         return dataset
@@ -434,11 +431,13 @@ class OTXDetectionTask(OTXTask, ABC):
         confidence_threshold=0.0,
         process_saliency_maps=False,
         explain_predicted_classes=True,
-        use_ellipse_shapes=False
+        use_ellipse_shapes=False,
     ):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
-            shapes = self._get_shapes(all_results, dataset_item.width, dataset_item.height, confidence_threshold, use_ellipse_shapes)
+            shapes = self._get_shapes(
+                all_results, dataset_item.width, dataset_item.height, confidence_threshold, use_ellipse_shapes
+            )
             dataset_item.append_annotations(shapes)
 
             if feature_vector is not None:
@@ -467,12 +466,16 @@ class OTXDetectionTask(OTXTask, ABC):
 
     def _get_shapes(self, all_results, width, height, confidence_threshold, use_ellipse_shapes):
         if self._task_type == TaskType.DETECTION:
-            shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold, use_ellipse_shapes)
+            shapes = self._det_add_predictions_to_dataset(
+                all_results, width, height, confidence_threshold, use_ellipse_shapes
+            )
         elif self._task_type in {
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ROTATED_DETECTION,
         }:
-            shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold, use_ellipse_shapes)
+            shapes = self._ins_seg_add_predictions_to_dataset(
+                all_results, width, height, confidence_threshold, use_ellipse_shapes
+            )
         else:
             raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
         return shapes

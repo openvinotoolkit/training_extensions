@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import json
-import math
 import os.path as osp
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -444,9 +443,7 @@ def format_list_to_str(value_lists: list):
 
 
 # TODO [Eugene] please add unit test for this function
-def adaptive_tile_params(
-    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, rule="avg"
-):
+def adaptive_tile_params(tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, rule="avg"):
     """Config tile parameters.
 
     Adapt based on annotation statistics.
@@ -478,8 +475,8 @@ def adaptive_tile_params(
     avg_log_size = np.mean(log_sizes)
     std_log_size = np.std(log_sizes)
     avg_size = np.exp(avg_log_size)
-    avg_3std_min_size = np.exp(avg_log_size - 3*std_log_size)
-    avg_3std_max_size = np.exp(avg_log_size + 3*std_log_size)
+    avg_3std_min_size = np.exp(avg_log_size - 3 * std_log_size)
+    avg_3std_max_size = np.exp(avg_log_size + 3 * std_log_size)
     min_size = np.exp(np.min(log_sizes))
     max_size = np.exp(np.max(log_sizes))
     logger.info(f"----> [stat] log scale avg: {avg_size}")

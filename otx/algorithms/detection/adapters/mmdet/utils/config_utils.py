@@ -335,7 +335,7 @@ def patch_tiling(config, hparams, dataset=None):
         logger.info("Tiling enabled")
 
         # FIXME: TRAIN only?
-        # if dataset and dataset.purpose == DatasetPurpose.TRAINING and hparams.tiling_parameters.enable_adaptive_params:
+        # if dataset and dataset.purpose == DatasetPurpose.TRAINING and hparams.tiling_parameters.enable_adaptive_params
         if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
             adaptive_tile_params(hparams.tiling_parameters, dataset.get_subset(Subset.TRAINING))
 
@@ -454,6 +454,7 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     logger.info(f"Patching OpenVINO IR input shape: {size}")
     deploy_cfg.ir_config.input_shape = size
     deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
+
 
 def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionConfig):
     """Patch IR scale factor inplace from hyper parameters to deploy config.
