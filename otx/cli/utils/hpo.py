@@ -447,7 +447,7 @@ class HpoRunner:
                 self._fixed_hp[batch_size_name] = self._train_dataset_size
                 self._environment.set_hyper_parameter_using_str_key(self._fixed_hp)
 
-    def run_hpo(self, train_func: Callable, data_roots: Dict[str, Dict]) -> Dict[str, Any]:
+    def run_hpo(self, train_func: Callable, data_roots: Dict[str, Dict]) -> Union[Dict[str, Any], None]:
         """Run HPO and provides optimized hyper parameters.
 
         Args:
@@ -455,7 +455,7 @@ class HpoRunner:
             data_roots (Dict[str, Dict]): dataset path of each dataset type
 
         Returns:
-            Dict[str, Any]: optimized hyper parameters
+            Union[Dict[str, Any], None]: Optimized hyper parameters. If there is no best hyper parameter, return None.
         """
         self._environment.save_initial_weight(self._get_initial_model_weight_path())
         hpo_algo = self._get_hpo_algo()
@@ -474,7 +474,8 @@ class HpoRunner:
             resource_type,  # type: ignore
         )
         best_config = hpo_algo.get_best_config()
-        self._restore_fixed_hp(best_config["config"])
+        if best_config is not None:
+            self._restore_fixed_hp(best_config["config"])
         hpo_algo.print_result()
 
         return best_config
@@ -574,13 +575,16 @@ def run_hpo(
     logger.info("completed hyper-parameter optimization")
 
     env_manager = TaskEnvironmentManager(environment)
-    env_manager.set_hyper_parameter_using_str_key(best_config["config"])
-    best_hpo_weight = get_best_hpo_weight(hpo_save_path, best_config["id"])
-    if best_hpo_weight is None:
-        logger.warning("Can not find the best HPO weight. Best HPO wegiht won't be used.")
-    else:
-        logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
-        env_manager.load_model_weight(best_hpo_weight, dataset)
+    best_hpo_weight = None
+
+    if best_config is not None:
+        env_manager.set_hyper_parameter_using_str_key(best_config["config"])
+        best_hpo_weight = get_best_hpo_weight(hpo_save_path, best_config["id"])
+        if best_hpo_weight is None:
+            logger.warning("Can not find the best HPO weight. Best HPO wegiht won't be used.")
+        else:
+            logger.debug(f"{best_hpo_weight} will be loaded as best HPO weight")
+            env_manager.load_model_weight(best_hpo_weight, dataset)
 
     _remove_unused_model_weights(hpo_save_path, best_hpo_weight)
     return env_manager.environment

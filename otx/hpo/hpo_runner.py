@@ -71,6 +71,7 @@ class HpoLoop:
         self._mp = multiprocessing.get_context("spawn")
         self._report_queue = self._mp.Queue()
         self._uid_index = 0
+        self._trial_fault_count = 0
         self._resource_manager = get_resource_manager(
             resource_type, num_parallel_trial, num_gpu_for_single_trial, available_gpu
         )
@@ -83,7 +84,7 @@ class HpoLoop:
         """Run a HPO loop."""
         logger.info("HPO loop starts.")
         try:
-            while not self._hpo_algo.is_done():
+            while not self._hpo_algo.is_done() and self._trial_fault_count < 3:
                 if self._resource_manager.have_available_resource():
                     trial = self._hpo_algo.get_next_sample()
                     if trial is not None:
@@ -97,6 +98,9 @@ class HpoLoop:
             self._terminate_all_running_processes()
             raise e
         logger.info("HPO loop is done.")
+
+        if self._trial_fault_count >= 3:
+            logger.warning("HPO trials exited abnormally more than three times. HPO is suspended.")
 
         self._get_reports()
         self._join_all_processes()
@@ -131,6 +135,8 @@ class HpoLoop:
         trial_to_remove = []
         for uid, trial in self._running_trials.items():
             if not trial.process.is_alive():
+                if trial.process.exitcode != 0:
+                    self._trial_fault_count += 1
                 trial.queue.close()
                 trial.process.join()
                 trial_to_remove.append(uid)
@@ -188,6 +194,7 @@ class HpoLoop:
 
 def _run_train(train_func: Callable, hp_config: Dict, report_func: Callable):
     # set multi process method as default
+    raise RuntimeError
     multiprocessing.set_start_method(None, True)  # type: ignore
     train_func(hp_config, report_func)
 
