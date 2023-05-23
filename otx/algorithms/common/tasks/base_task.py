@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import io
+import logging
 import os
 import shutil
 import tempfile
@@ -28,14 +29,14 @@ from torch import distributed as dist
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.configs.training_base import TrainType
-from otx.algorithms.common.utils import UncopiableDefaultDict
+from otx.algorithms.common.utils import UncopiableDefaultDict, set_random_seed
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import MetricsGroup
-from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
+from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision, OptimizationMethod
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
@@ -113,6 +114,8 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         self._precision = [ModelPrecision.FP32]
         self._optimization_methods: List[OptimizationMethod] = []
         self._is_training = False
+        self.seed: Optional[int] = None
+        self.deterministic: bool = False
 
         self.override_configs: Dict[str, str] = {}
 
@@ -136,7 +139,10 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         if not dist.is_initialized():
             torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
             dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
-            logger.info(f"Dist info: rank {dist.get_rank()} / {dist.get_world_size()} world_size")
+            rank = dist.get_rank()
+            logger.info(f"Dist info: rank {rank} / {dist.get_world_size()} world_size")
+            if rank != 0:
+                logging.disable(logging.WARNING)
 
     def _get_tmp_dir(self):
         self._work_dir_is_temp = True
@@ -180,7 +186,12 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
 
     @abstractmethod
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
     ):
         """Train function for OTX task."""
         raise NotImplementedError
@@ -300,6 +311,18 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         is_in_docker = is_in_docker or os.path.exists("/.dockerenv")
         return is_in_docker
 
+    def set_seed(self):
+        """Set seed and deterministic."""
+        if self.seed is None:
+            # If the seed is not present via task.train, it will be found in the recipe.
+            self.seed = self.config.get("seed", 5)
+        if not self.deterministic:
+            # deterministic is the same.
+            self.deterministic = self.config.get("deterministic", False)
+        self.config["seed"] = self.seed
+        self.config["deterministic"] = self.deterministic
+        set_random_seed(self.seed, logger, self.deterministic)
+
     @property
     def config(self):
         """Config of OTX task."""
@@ -308,3 +331,22 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     @config.setter
     def config(self, config: Dict[Any, Any]):
         self._config = config
+
+    def _update_model_export_metadata(
+        self, output_model: ModelEntity, export_type: ExportType, precision: ModelPrecision, dump_features: bool
+    ) -> None:
+        """Updates a model entity with format and optimization related attributes."""
+        if export_type == ExportType.ONNX:
+            output_model.model_format = ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            if precision == ModelPrecision.FP16:
+                raise RuntimeError("Export to FP16 ONNX is not supported")
+        elif export_type == ExportType.OPENVINO:
+            output_model.model_format = ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.MO
+        else:
+            raise RuntimeError(f"not supported export type {export_type}")
+
+        output_model.has_xai = dump_features
+        output_model.optimization_methods = self._optimization_methods
+        output_model.precision = [precision]

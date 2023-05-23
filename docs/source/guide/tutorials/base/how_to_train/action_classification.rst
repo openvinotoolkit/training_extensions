@@ -27,10 +27,10 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -75,7 +75,7 @@ According to the `documentation <https://mmaction2.readthedocs.io/en/latest/supp
     │   │   │   │   ├── ...
     │   │   │   │   ├── winKen_wave_u_cm_np1_ri_bad_1
 
-Once you have the dataset structured properly, copy ``mmaction2/data`` folder, which contains hmdb51 dataset, to ``training_extensions/data``. 
+Once you have the dataset structured properly, copy ``mmaction2/data`` folder, which contains hmdb51 dataset, to ``training_extensions/data``.
 Then, you can now convert it to the `CVAT <https://www.cvat.ai/>`_ format using the following command:
 
 .. code-block::
@@ -142,7 +142,7 @@ To see the list of supported templates, run the following command:
 
 All commands will be run on the X3D model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
-2. Prepare an OpenVINO™ Training Extensions workspace for 
+2. Prepare an OpenVINO™ Training Extensions workspace for
 the action classification task by running the following command:
 
 .. code-block::
@@ -160,7 +160,7 @@ the action classification task by running the following command:
 It will create **otx-workspace-ACTION_CLASSIFICATION** with all necessary configs for X3D and prepare ``data.yaml`` to simplify CLI commands.
 
 
-3. To begin training, simply run ``otx train`` 
+3. To begin training, simply run ``otx train``
 from **within the workspace directory**:
 
 .. code-block::
@@ -177,7 +177,7 @@ After that, you have the PyTorch action classification model trained with OpenVI
 Validation
 ***********
 
-1. To evaluate the trained model on a specific dataset, use the ``otx eval`` command with 
+1. To evaluate the trained model on a specific dataset, use the ``otx eval`` command with
 the following arguments:
 
 The eval function receives test annotation information and model snapshot, trained in the previous step.
@@ -226,7 +226,7 @@ and save the exported model to the ``openvino`` folder.
   2023-02-21 22:54:32,518 - mmaction - INFO - Model architecture: X3D
   Successfully exported ONNX model: /tmp/OTX-task-a7wekgbc/openvino.onnx
   mo --input_model=/tmp/OTX-task-a7wekgbc/openvino.onnx --mean_values=[0.0, 0.0, 0.0] --scale_values=[255.0, 255.0, 255.0] --output_dir=/tmp/OTX-task-a7wekgbc --output=logits --data_type=FP32 --source_layout=??c??? --input_shape=[1, 1, 3, 8, 224, 224]
-  [ WARNING ]  Use of deprecated cli option --data_type detected. Option use in the following releases will be fatal. 
+  [ WARNING ]  Use of deprecated cli option --data_type detected. Option use in the following releases will be fatal.
   [ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
   Find more information about API v2.0 and IR v11 at https://docs.openvino.ai/latest/openvino_2_0_transition_guide.html
   [ SUCCESS ] Generated IR version 11 model.

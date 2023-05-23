@@ -59,11 +59,11 @@ def get_annotation_mmdet_format(
     gt_bboxes = []
     gt_labels = []
     gt_polygons = []
+    gt_ann_ids = []
 
     label_idx = {label.id: i for i, label in enumerate(labels)}
 
-    for annotation in dataset_item.get_annotations(labels=labels, include_empty=False):
-
+    for annotation in dataset_item.get_annotations(labels=labels, include_empty=False, preserve_id=True):
         box = ShapeFactory.shape_as_rectangle(annotation.shape)
 
         if min(box.width * width, box.height * height) < min_size:
@@ -80,18 +80,22 @@ def get_annotation_mmdet_format(
             polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
             gt_polygons.extend([[polygon] for _ in range(n)])
         gt_labels.extend(class_indices)
+        item_id = getattr(dataset_item, "id_", None)
+        gt_ann_ids.append((item_id, annotation.id_))
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
             bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
             labels=np.array(gt_labels, dtype=int),
             masks=PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
+            ann_ids=gt_ann_ids,
         )
     else:
         ann_info = dict(
             bboxes=np.zeros((0, 4), dtype=np.float32),
             labels=np.array([], dtype=int),
             masks=[],
+            ann_ids=[],
         )
     return ann_info
 
@@ -324,6 +328,8 @@ class ImageTilingDataset:
             boxes in tiles' overlap areas. Defaults to 0.45.
         max_per_img (int, optional): if there are more than max_per_img bboxes
             after NMS, only top max_per_img will be kept. Defaults to 200.
+        max_annotation (int, optional): Limit the number of ground truth by
+            randomly select 5000 due to RAM OOM. Defaults to 5000.
     """
 
     def __init__(
@@ -335,6 +341,7 @@ class ImageTilingDataset:
         overlap_ratio=0.2,
         iou_threshold=0.45,
         max_per_img=200,
+        max_annotation=5000,
         filter_empty_gt=True,
         test_mode=False,
     ):
@@ -351,6 +358,7 @@ class ImageTilingDataset:
             min_area_ratio=min_area_ratio,
             iou_threshold=iou_threshold,
             max_per_img=max_per_img,
+            max_annotation=max_annotation,
             filter_empty_gt=False if test_mode else filter_empty_gt,
         )
         self.flag = np.zeros(len(self), dtype=np.uint8)

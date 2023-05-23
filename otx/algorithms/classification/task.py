@@ -56,10 +56,8 @@ from otx.api.entities.metrics import (
     Performance,
     ScoreMetric,
 )
-from otx.api.entities.model import (  # ModelStatus
+from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.resultset import ResultSetEntity
@@ -176,7 +174,12 @@ class OTXClassificationTask(OTXTask, ABC):
         return dataset
 
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
     ):
         """Train function for OTX classification task.
 
@@ -190,6 +193,8 @@ class OTXClassificationTask(OTXTask, ABC):
             self._should_stop = False
             self._is_training = False
             return
+        self.seed = seed
+        self.deterministic = deterministic
 
         # Set OTX LoggerHook & Time Monitor
         if train_parameters:
@@ -238,37 +243,33 @@ class OTXClassificationTask(OTXTask, ABC):
         """Export function of OTX Classification Task."""
 
         logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
 
-        results = self._export_model(precision, dump_features)
+        self._update_model_export_metadata(output_model, export_type, precision, dump_features)
+        results = self._export_model(precision, export_type, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        onnx_file = outputs.get("onnx")
+        if export_type == ExportType.ONNX:
+            onnx_file = outputs.get("onnx")
+            with open(onnx_file, "rb") as f:
+                output_model.set_data("model.onnx", f.read())
+        else:
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
 
-        inference_config = get_cls_inferencer_configuration(self._task_environment.label_schema)
-        deploy_cfg = get_cls_deploy_config(self._task_environment.label_schema, inference_config)
-        ir_extra_data = get_cls_model_api_configuration(self._task_environment.label_schema, inference_config)
-        ir_extra_data[("otx_config",)] = json.dumps(deploy_cfg, ensure_ascii=False)
-        embed_ir_model_data(xml_file, ir_extra_data)
+            inference_config = get_cls_inferencer_configuration(self._task_environment.label_schema)
+            deploy_cfg = get_cls_deploy_config(self._task_environment.label_schema, inference_config)
+            ir_extra_data = get_cls_model_api_configuration(self._task_environment.label_schema, inference_config)
+            ir_extra_data[("otx_config",)] = json.dumps(deploy_cfg, ensure_ascii=False)
+            embed_ir_model_data(xml_file, ir_extra_data)
 
-        if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        with open(onnx_file, "rb") as f:
-            output_model.set_data("model.onnx", f.read())
-        output_model.precision = self._precision
-        output_model.has_xai = dump_features
+            with open(bin_file, "rb") as f:
+                output_model.set_data("openvino.bin", f.read())
+            with open(xml_file, "rb") as f:
+                output_model.set_data("openvino.xml", f.read())
+
         output_model.set_data(
             "label_schema.json",
             label_schema_to_bytes(self._task_environment.label_schema),
@@ -499,7 +500,7 @@ class OTXClassificationTask(OTXTask, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _export_model(self, precision, dump_features):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         """Export model and return the results."""
         raise NotImplementedError
 

@@ -9,6 +9,7 @@ import pytest
 from mmcv import ConfigDict
 
 from otx.algorithms.segmentation.adapters.mmseg.task import MMSegmentationTask
+from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 from otx.api.configuration.helper import create
 from otx.api.entities.model_template import (
     parse_model_template,
@@ -38,7 +39,8 @@ class TestMMSegmentationTask:
     @e2e_pytest_unit
     def test_build_model(self, mocker):
         mocker.patch("otx.algorithms.segmentation.adapters.mmseg.utils.builder.build_segmentor")
-        self.mmseg_task._recipe_cfg.model.decode_head.type = "CustomFCNHead"
+        self.mmseg_task._recipe_cfg.model.decode_head.base_type = "FCNHead"
+        self.mmseg_task._recipe_cfg.model.decode_head.type = otx_head_factory
         self.mmseg_task._recipe_cfg.model.task_adapt = ConfigDict(
             op="REPLACE",
             type="mpa",

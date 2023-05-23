@@ -63,6 +63,7 @@ class LoadAnnotationFromOTXDataset:
     def _load_bboxes(results, ann_info):
         results["bbox_fields"].append("gt_bboxes")
         results["gt_bboxes"] = copy.deepcopy(ann_info["bboxes"])
+        results["gt_ann_ids"] = copy.deepcopy(ann_info["ann_ids"])
         return results
 
     @staticmethod
@@ -78,8 +79,8 @@ class LoadAnnotationFromOTXDataset:
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadAnnotationFromOTXDataset."""
-        dataset_item = results["dataset_item"]
-        label_list = results["ann_info"]["label_list"]
+        dataset_item = results.pop("dataset_item")
+        label_list = results.pop("ann_info")["label_list"]
         ann_info = get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
         if self.with_bbox:
             results = self._load_bboxes(results, ann_info)

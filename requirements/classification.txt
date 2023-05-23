@@ -2,6 +2,6 @@
 # Classification Requirements.
 mmcv-full==1.7.0
 mmcls==0.25.0
-timm
-otxdeploy==0.12.1  # FIXME: mmdeploy==? when PyPI packages are available
+timm==0.6.12
+mmdeploy==0.14.0
 pytorchcv

@@ -48,19 +48,21 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
         )
 
         if self.training and self._num_init_iter < self.attrs.max_init_iter:
-            n_dims = inputs.dim() - 2
-            gamma = gamma.unsqueeze(0)
-            beta = beta.unsqueeze(0)
-            for _ in range(n_dims):
-                gamma = gamma.unsqueeze(-1)
-                beta = beta.unsqueeze(-1)
-            output = inputs * gamma + beta
-            self._num_init_iter += 1
-            if self._num_init_iter >= self.attrs.max_init_iter:
-                # Adapt weight & bias using the first batch statistics
-                # to undo normalization approximately
-                gamma.data = gamma.data * mean
-                beta.data = beta.data + (mean / (variance + self.attrs.epsilon))
+            # no parameters update for adaptive phase
+            with torch.no_grad():
+                n_dims = inputs.dim() - 2
+                gamma = gamma.unsqueeze(0)
+                beta = beta.unsqueeze(0)
+                for _ in range(n_dims):
+                    gamma = gamma.unsqueeze(-1)
+                    beta = beta.unsqueeze(-1)
+                output = inputs * gamma + beta
+                self._num_init_iter += 1
+                if self._num_init_iter >= self.attrs.max_init_iter:
+                    # Adapt weight & bias using the first batch statistics
+                    # to undo normalization approximately
+                    gamma.data = gamma.data * mean
+                    beta.data = beta.data + (mean / (variance + self.attrs.epsilon))
 
         return output
 

@@ -16,6 +16,7 @@
 
 # pylint: disable=too-many-nested-blocks, invalid-name
 
+import json
 from operator import itemgetter
 from typing import Any, Dict
 
@@ -103,6 +104,13 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     for lbl in label_schema.get_labels(include_empty=False):
         all_labels += lbl.name.replace(" ", "_") + " "
     all_labels = all_labels.strip()
-
     mapi_config[("model_info", "labels")] = all_labels
+
+    hierarchical_config = {}
+    hierarchical_config["cls_heads_info"] = get_multihead_class_info(label_schema)
+    hierarchical_config["label_tree_edges"] = []
+    for edge in label_schema.label_tree.edges:  # (child, parent)
+        hierarchical_config["label_tree_edges"].append((edge[0].name.replace(" ", "_"), edge[1].name.replace(" ", "_")))
+
+    mapi_config[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
     return mapi_config

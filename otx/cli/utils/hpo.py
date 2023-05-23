@@ -703,9 +703,9 @@ class Trainer:
         dataset_adapter = get_dataset_adapter(
             self._task.task_type,
             self._model_template.hyper_parameters.parameter_overrides["algo_backend"]["train_type"]["default_value"],
-            train_data_roots=self._data_roots["train_subset"]["data_root"],
-            val_data_roots=self._data_roots["val_subset"]["data_root"] if "val_subset" in self._data_roots else None,
-            unlabeled_data_roots=self._data_roots["unlabeled_subset"]["data_root"]
+            train_data_roots=self._data_roots["train_subset"]["data_roots"],
+            val_data_roots=self._data_roots["val_subset"]["data_roots"] if "val_subset" in self._data_roots else None,
+            unlabeled_data_roots=self._data_roots["unlabeled_subset"]["data_roots"]
             if "unlabeled_subset" in self._data_roots
             else None,
         )
@@ -714,6 +714,9 @@ class Trainer:
 
     def _set_hyper_parameter(self, environment: TaskEnvironmentManager):
         environment.set_hyper_parameter_using_str_key(self._hp_config["configuration"])
+        if self._task.is_mmcv_framework_task():
+            environment.set_hyper_parameter_using_str_key({"learning_parameters.auto_decrease_batch_size": "None"})
+            environment.set_hyper_parameter_using_str_key({"learning_parameters.auto_adapt_batch_size": "None"})
         environment.set_epoch(self._epoch)
 
     def _prepare_environment(self, hyper_parameters, label_schema):

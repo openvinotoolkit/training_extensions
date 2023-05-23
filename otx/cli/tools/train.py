@@ -22,11 +22,7 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import Optional
 
-from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
-from otx.api.entities.model_template import TaskType
-from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
@@ -54,10 +50,12 @@ def get_args():
         "--train-data-roots",
         help="Comma-separated paths to training data folders.",
     )
+    parser.add_argument("--train-ann-files", help="Comma-separated paths to train annotation files.")
     parser.add_argument(
         "--val-data-roots",
         help="Comma-separated paths to validation data folders.",
     )
+    parser.add_argument("--val-ann-files", help="Comma-separated paths to train annotation files.")
     parser.add_argument(
         "--unlabeled-data-roots",
         help="Comma-separated paths to unlabeled data folders",
@@ -136,6 +134,16 @@ def get_args():
         "(e.g. 7KiB = 7 * 2^10, 3MB = 3 * 10^6, and 2G = 2 * 2^30).",
     )
     parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Set deterministic to True, default=False.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Set seed for training.",
+    )
+    parser.add_argument(
         "--data",
         type=str,
         default=None,
@@ -179,18 +187,21 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     if not config_manager.check_workspace():
         config_manager.build_workspace(new_workspace_path=args.workspace)
 
+    # Update Hyper Parameter Configs
+    hyper_parameters = config_manager.get_hyparams_config(override_param=override_param)
+
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
-    dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
+    dataset_config = config_manager.get_dataset_config(
+        subsets=["train", "val", "unlabeled"],
+        hyper_parameters=hyper_parameters,
+    )
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     template = config_manager.template
     task_class = get_impl_class(template.entrypoints.base)
-
-    # Update Hyper Parameter Configs
-    hyper_parameters = config_manager.get_hyparams_config(override_param=override_param)
 
     environment = TaskEnvironment(
         model=None,
@@ -226,9 +237,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(train, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
-        if template.task_type in (TaskType.ACTION_CLASSIFICATION, TaskType.ACTION_DETECTION):
-            print("Multi-GPU training for action tasks isn't supported yet. A single GPU will be used for a training.")
-        elif (
+        if (
             multigpu_manager.is_available()
             and not template.task_type.is_anomaly  # anomaly tasks don't use this way for multi-GPU training
         ):
@@ -247,34 +256,27 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
-    task.train(dataset, output_model, train_parameters=TrainParameters())
+    task.train(
+        dataset, output_model, train_parameters=TrainParameters(), seed=args.seed, deterministic=args.deterministic
+    )
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
-
-    performance = None
-    if config_manager.data_config["val_subset"]["data_root"]:
-        validation_dataset = dataset.get_subset(Subset.VALIDATION)
-        predicted_validation_dataset = task.infer(
-            validation_dataset.with_empty_annotations(),
-            InferenceParameters(is_evaluation=False),
-        )
-
-        resultset = ResultSetEntity(
-            model=output_model,
-            ground_truth_dataset=validation_dataset,
-            prediction_dataset=predicted_validation_dataset,
-        )
-        task.evaluate(resultset)
-        performance = resultset.performance
-        assert performance is not None
-        print(performance)
 
     end_time = time.time()
     sec = end_time - start_time
     total_time = str(datetime.timedelta(seconds=sec))
     print("otx train time elapsed: ", total_time)
-    model_results = {"time elapsed": total_time, "score": performance, "model_path": str(model_path.absolute())}
+    model_results = {
+        "time elapsed": total_time,
+        "score": output_model.performance,
+        "model_path": str(model_path.absolute()),
+    }
+
+    if args.gpus and exit_stack is None:
+        multigpu_manager.finalize()
+    elif is_multigpu_child_process():
+        return
 
     get_otx_report(
         model_template=config_manager.template,
@@ -283,6 +285,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
         results=model_results,
         output_path=config_manager.output_path / "cli_report.log",
     )
+    print(f"otx train CLI report has been generated: {config_manager.output_path / 'cli_report.log'}")
 
     # Latest model folder symbolic link to models
     latest_path = config_manager.workspace_root / "outputs" / "latest_trained_model"
@@ -294,8 +297,6 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     if not is_multigpu_child_process():
         task.cleanup()
-    elif args.gpus and exit_stack is None:
-        multigpu_manager.finalize()
 
     return dict(retcode=0, template=template.name)
 

@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Sequence, Union
 import numpy as np
 from bson import ObjectId
 
-from otx.api.entities.graph import Graph, MultiDiGraph
+from otx.api.entities.graph import MultiDiGraph
 from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -132,44 +132,6 @@ class LabelGroup:
     def __repr__(self) -> str:
         """Returns the string representation of the LabelGroup."""
         return f"LabelGroup(id={self.id_}, name={self.name}, group_type={self.group_type}," f" labels={self.labels})"
-
-
-class LabelGraph(Graph):
-    """Represents connectivity between labels as a graph. For example exclusivity or hierarchy.
-
-    Args:
-        directed (bool): whether the relationships are directed or undirected
-            (symmetrical)
-    """
-
-    def __init__(self, directed: bool):
-        super().__init__(directed)
-
-    def add_edges(self, edges):
-        """Add edges between Labels."""
-        self._graph.add_edges_from(edges)
-
-    @property
-    def num_labels(self):
-        """Returns the number of nodes in the graph."""
-        return self.num_nodes()
-
-    @property
-    def type(self):
-        """Returns the type of the LabelGraph."""
-        return "graph"
-
-    def subgraph(self, labels: Sequence[LabelEntity]) -> "LabelGraph":
-        """Return the subgraph containing the given labels."""
-        new_graph = LabelGraph(self.directed)
-        new_graph.set_graph(self.get_graph().subgraph(labels).copy())
-        return new_graph
-
-    def __eq__(self, other) -> bool:
-        """Returns True if the LabelGraph is equal to the other LabelGraph."""
-        if isinstance(other, LabelGraph):
-            return super().__eq__(other)
-        return False
 
 
 class LabelTree(MultiDiGraph):
@@ -316,8 +278,8 @@ class LabelSchemaEntity:
     # pylint: disable=too-many-public-methods, too-many-arguments
     def __init__(
         self,
-        label_tree: LabelTree = None,
-        label_groups: List[LabelGroup] = None,
+        label_tree: Optional[LabelTree] = None,
+        label_groups: Optional[List[LabelGroup]] = None,
     ):
         if label_tree is None:
             label_tree = LabelTree()
@@ -595,6 +557,68 @@ class LabelSchemaEntity:
         """
         label_group = LabelGroup(name="from_label_list", labels=labels)
         return LabelSchemaEntity(label_groups=[label_group])
+
+    def resolve_labels_greedily(self, scored_labels: List[ScoredLabel]) -> List[ScoredLabel]:
+        """Resolves hierarchical labels and exclusivity based on a list of ScoredLabels (labels with probability).
+
+        The following two steps are taken:
+
+        - select the most likely label from each label group
+        - add it and it's predecessors if they are also most likely labels (greedy approach).
+
+        Args:
+            scored_labels (List[LabelEntity]): list of labels to resolve
+
+        Returns:
+            List[ScoredLabel]: List of ScoredLabels (labels with probability)
+        """
+
+        def get_predecessors(lbl: LabelEntity, candidates: List[LabelEntity]) -> List[LabelEntity]:
+            """Returns all the predecessors of the input label or an empty list if one of the predecessors is not a candidate."""
+            predecessors = []
+            last_parent = self.get_parent(lbl)
+            if last_parent is None:
+                return [lbl]
+
+            while last_parent is not None:
+                if last_parent not in candidates:
+                    return []
+                predecessors.append(last_parent)
+                last_parent = self.get_parent(last_parent)
+
+            if predecessors:
+                predecessors.append(lbl)
+            return predecessors
+
+        label_to_prob = {lbl: 0.0 for lbl in self.get_labels(include_empty=True)}
+        for s_lbl in scored_labels:
+            label_to_prob[s_lbl.label] = s_lbl.probability
+
+        candidates = []
+        for g in self.get_groups():
+            if g.is_single_label():
+                candidates.append(g.labels[0])
+            else:
+                max_prob = 0.0
+                max_label = None
+                for lbl in g.labels:
+                    if label_to_prob[lbl] > max_prob:
+                        max_prob = label_to_prob[lbl]
+                        max_label = lbl
+                if max_label is not None:
+                    candidates.append(max_label)
+
+        output_labels = []
+        for lbl in candidates:
+            if lbl in output_labels:
+                continue
+            labels_to_add = get_predecessors(lbl, candidates)
+            for new_lbl in labels_to_add:
+                if new_lbl not in output_labels:
+                    output_labels.append(new_lbl)
+
+        output_scored_labels = [ScoredLabel(lbl, label_to_prob[lbl]) for lbl in output_labels]
+        return output_scored_labels
 
     def resolve_labels_probabilistic(
         self,

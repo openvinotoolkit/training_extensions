@@ -34,10 +34,10 @@ from tests.test_suite.run_test_command import (
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--val-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--test-data-roots": "tests/assets/imagenet_dataset_class_incremental",
-    "--input": "tests/assets/imagenet_dataset/label_0",
+    "--train-data-roots": "tests/assets/classification_dataset",
+    "--val-data-roots": "tests/assets/classification_dataset",
+    "--test-data-roots": "tests/assets/classification_dataset",
+    "--input": "tests/assets/classification_dataset/0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -49,7 +49,7 @@ args = {
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
-    "--train-data-roots": "tests/assets/imagenet_dataset",
+    "--train-data-roots": "tests/assets/classification_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -121,14 +121,22 @@ class TestMultiClassClassificationCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
+        if template.name == "deit-tiny" and dump_features:
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_export_testing(template, tmp_dir_path, dump_features)
+        otx_export_testing(template, tmp_dir_path, dump_features, check_ir_meta=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_export_testing(template, tmp_dir_path, half_precision=True)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_onnx(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_class_cls"
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -139,36 +147,48 @@ class TestMultiClassClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -264,6 +284,23 @@ class TestMultiClassClassificationCLI:
                 has_export_dir = True
         assert has_export_dir
 
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("bs_adapt_type", ["Safe", "Full"])
+    def test_otx_train_auto_adapt_batch_size(self, template, tmp_dir_path, bs_adapt_type):
+        adapting_bs_args = copy.deepcopy(args)
+        adapting_bs_args["train_params"].extend(["--learning_parameters.auto_adapt_batch_size", bs_adapt_type])
+        tmp_dir_path = tmp_dir_path / f"multi_class_cls_auto_adapt_{bs_adapt_type}_batch_size"
+        otx_train_testing(template, tmp_dir_path, otx_dir, adapting_bs_args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
+        adapting_num_workers_args = copy.deepcopy(args)
+        adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])
+        tmp_dir_path = tmp_dir_path / f"multi_class_cls_auto_adapt_num_workers"
+        otx_train_testing(template, tmp_dir_path, otx_dir, adapting_num_workers_args)
+
 
 # Multi-label training w/ 'car', 'tree', 'bug' classes
 args_m = {
@@ -310,36 +347,48 @@ class TestMultilabelClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -425,36 +474,48 @@ class TestHierarchicalClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_all_classes(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_all_classes_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_all_classes_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_explain_process_saliency_maps_openvino(self, template, tmp_dir_path):
+        if template.name == "deit-tiny":
+            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_process_saliency_maps_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 

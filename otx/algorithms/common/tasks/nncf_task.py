@@ -112,7 +112,12 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
             self._optimization_methods = [OptimizationMethod.FILTER_PRUNING]
             self._precision = [ModelPrecision.FP32]
             return
-        raise RuntimeError("Not selected optimization algorithm")
+        # FIXEME: Error rasing should be re-enabled after Geti issue resolved
+        # raise RuntimeError("Not selected optimization algorithm")
+        logger.warning("Not selected optimization algorithm. Defaults to quantization")
+        self._nncf_preset = "nncf_quantization"
+        self._optimization_methods = [OptimizationMethod.QUANTIZATION]
+        self._precision = [ModelPrecision.INT8]
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
         logger.info("init data cfg.")
@@ -162,7 +167,7 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
         # last batch size of 1 causes undefined behaviour for batch normalization
         # when initializing and training NNCF
         if self._data_cfg is not None:
-            data_loader = self._recipe_cfg.data.get("train_dataloader", {})
+            data_loader = self._recipe_cfg.data.get("train_dataloader", ConfigDict())
             samples_per_gpu = data_loader.get("samples_per_gpu", self._recipe_cfg.data.get("samples_per_gpu"))
             otx_dataset = get_configs_by_keys(self._data_cfg.data.train, "otx_dataset")
             assert len(otx_dataset) == 1

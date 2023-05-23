@@ -20,8 +20,9 @@ import json
 import multiprocessing
 import os
 import tempfile
+import time
 import warnings
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import attr
@@ -36,9 +37,15 @@ from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.api.configuration.helper.utils import config_to_bytes
+from otx.api.configuration.helper.utils import (
+    config_to_bytes,
+    flatten_config_values,
+    flatten_detection_config_groups,
+    merge_a_into_b,
+)
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -78,9 +85,9 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from otx.api.utils import Tiler
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.detection_utils import detection2array
+from otx.api.utils.tiler import Tiler
 
 logger = get_logger()
 
@@ -98,6 +105,8 @@ class BaseInferencerWithConverter(BaseInferencer):
         self.configuration = configuration
         self.model = model
         self.converter = converter
+        self.callback_exceptions: List[Exception] = []
+        self.is_callback_set = False
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Detection Inferencer."""
@@ -131,27 +140,46 @@ class BaseInferencerWithConverter(BaseInferencer):
         """Forward function of OpenVINO Detection Inferencer."""
         return self.model.infer_sync(image)
 
-    # TODO [Eugene]: implement unittest for tiling predict
-    def predict_tile(
-        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
-    ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
-        """Run prediction by tiling image to small patches.
+    def _async_callback(self, request: Any, callback_args: tuple) -> None:
+        """Fetches the results of async inference."""
+        try:
+            res_copy_func, args = callback_args
+            id, preprocessing_meta, result_handler = args
+            prediction = res_copy_func(request)
+            processed_prediciton = self.post_process(prediction, preprocessing_meta)
 
-        Args:
-            image (np.ndarray): input image
-            tile_size (int): tile crop size
-            overlap (float): overlap ratio between tiles
-            max_number (int): max number of predicted objects allowed
+            if "feature_vector" not in prediction or "saliency_map" not in prediction:
+                warnings.warn(
+                    "Could not find Feature Vector and Saliency Map in OpenVINO output. "
+                    "Please rerun OpenVINO export or retrain the model."
+                )
+                features = (None, None)
+            else:
+                features = (
+                    copy.deepcopy(prediction["feature_vector"].reshape(-1)),
+                    copy.deepcopy(prediction["saliency_map"][0]),
+                )
 
-        Returns:
-            detections: AnnotationSceneEntity
-            features: list including saliency map and feature vector
-        """
-        segm = isinstance(self.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=segm)
-        detections, features = tiler.predict(image)
-        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
-        return detections, features
+            result_handler(id, processed_prediciton, features)
+
+        except Exception as e:
+            self.callback_exceptions.append(e)
+
+    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
+        """Runs async inference."""
+        if not self.is_callback_set:
+            self.model.model_adapter.set_callback(self._async_callback)
+            self.is_callback_set = True
+
+        if not self.model.is_ready():
+            self.model.await_any()
+        image, metadata = self.pre_process(image)
+        callback_data = id, metadata, result_handler
+        self.model.infer_async(image, callback_data)
+
+    def await_all(self) -> None:
+        """Await all running infer requests if any."""
+        self.model.await_all()
 
 
 class OpenVINODetectionInferencer(BaseInferencerWithConverter):
@@ -182,6 +210,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         configuration = {
             **attr.asdict(
@@ -219,6 +248,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
 
         configuration = {
@@ -253,6 +283,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             weight_file,
             device=device,
             max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
 
         configuration = {
@@ -267,6 +298,77 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
         converter = RotatedRectToAnnotationConverter(label_schema)
 
         super().__init__(configuration, model, converter)
+
+
+class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
+    """Wrapper for OpenVINO Tiling.
+
+    Args:
+        inferencer (BaseInferencerWithConverter): inferencer to wrap
+        tile_size (int): tile size
+        overlap (float): overlap ratio between tiles
+        max_number (int): maximum number of objects per image
+        tile_ir_scale_factor (float, optional): scale factor for tile size
+        tile_classifier_model_file (Union[str, bytes, None], optional): tile classifier xml. Defaults to None.
+        tile_classifier_weight_file (Union[str, bytes, None], optional): til classifier weight bin. Defaults to None.
+        device (str, optional): device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
+        num_requests (int, optional): number of request for OpenVINO adapter. Defaults to 1.
+        mode (str, optional): run inference in sync or async mode. Defaults to "async".
+    """
+
+    def __init__(
+        self,
+        inferencer: BaseInferencerWithConverter,
+        tile_size: int = 400,
+        overlap: float = 0.5,
+        max_number: int = 100,
+        tile_ir_scale_factor: float = 1.0,
+        tile_classifier_model_file: Union[str, bytes, None] = None,
+        tile_classifier_weight_file: Union[str, bytes, None] = None,
+        device: str = "CPU",
+        num_requests: int = 1,
+        mode: str = "async",
+    ):  # pylint: disable=too-many-arguments
+        assert mode in ["async", "sync"], "mode should be async or sync"
+        classifier = None
+        if tile_classifier_model_file is not None or tile_classifier_weight_file is not None:
+            adapter = OpenvinoAdapter(
+                create_core(),
+                tile_classifier_model_file,
+                tile_classifier_weight_file,
+                device=device,
+                max_num_requests=num_requests,
+            )
+            classifier = Model(model_adapter=adapter, preload=True)
+
+        self.tiler = Tiler(
+            tile_size=int(tile_size * tile_ir_scale_factor),
+            overlap=overlap,
+            max_number=max_number,
+            detector=inferencer.model,
+            classifier=classifier,
+            mode=mode,
+            segm=bool(isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))),
+        )
+
+        super().__init__(inferencer.configuration, inferencer.model, inferencer.converter)
+
+    def predict(
+        self, image: np.ndarray, mode: str = "async"
+    ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
+        """Run prediction by tiling image to small patches.
+
+        Args:
+            image (np.ndarray): input image
+            mode (str, optional): run inference in sync or async mode. Defaults to 'async'.
+
+        Returns:
+            detections: AnnotationSceneEntity
+            features: list including saliency map and feature vector
+        """
+        detections, features = self.tiler.predict(image, mode)
+        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
+        return detections, features
 
 
 class OTXOpenVinoDataLoader(DataLoader):
@@ -307,22 +409,36 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         """Hparams of OpenVINO Detection Task."""
         return self.task_environment.get_hyper_parameters(DetectionConfig)
 
-    def load_config(self) -> Dict:
+    def load_config(self) -> ADDict:
         """Load configurable parameters from model adapter.
 
         Returns:
-            Dict: config dictionary
+            ADDict: config dictionary
         """
+        config = vars(self.hparams)
+        flatten_detection_config_groups(config)
         try:
             if self.model is not None and self.model.get_data("config.json"):
-                return json.loads(self.model.get_data("config.json"))
+                json_dict = json.loads(self.model.get_data("config.json"))
+                flatten_config_values(json_dict)
+                # NOTE: for backward compatibility
+                json_dict["tiling_parameters"]["tile_ir_scale_factor"] = json_dict["tiling_parameters"].get(
+                    "tile_ir_scale_factor", 1.0
+                )
+                config = merge_a_into_b(json_dict, config)
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Failed to load config.json: {e}")
-        return {}
+        config = ADDict(config)
+        return config
 
     def load_inferencer(
         self,
-    ) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer, OpenVINORotatedRectInferencer]:
+    ) -> Union[
+        OpenVINODetectionInferencer,
+        OpenVINOMaskInferencer,
+        OpenVINORotatedRectInferencer,
+        OpenVINOTileClassifierWrapper,
+    ]:
         """load_inferencer function of OpenVINO Detection Task."""
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
@@ -331,19 +447,50 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        async_requests_num = get_default_async_reqs_num()
+        if self.config.tiling_parameters.enable_tiling:
+            async_requests_num = 1  # tiling has it's own async configuration
         args = [
             _hparams,
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
             self.model.get_data("openvino.bin"),
+            "CPU",
+            async_requests_num,
         ]
         if self.task_type == TaskType.DETECTION:
-            return OpenVINODetectionInferencer(*args)
+            inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
-            return OpenVINOMaskInferencer(*args)
+            inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
-            return OpenVINORotatedRectInferencer(*args)
-        raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
+            inferencer = OpenVINORotatedRectInferencer(*args)
+        if self.config.tiling_parameters.enable_tiling:
+            logger.info("Tiling is enabled. Wrap inferencer with tile inference.")
+            tile_classifier_model_file, tile_classifier_weight_file = None, None
+            if self.config.tiling_parameters.enable_tile_classifier:
+                logger.info("Tile classifier is enabled. Load tile classifier model.")
+                tile_classifier_model_file = self.model.get_data("tile_classifier.xml")
+                tile_classifier_weight_file = self.model.get_data("tile_classifier.bin")
+            inferencer = OpenVINOTileClassifierWrapper(
+                inferencer,
+                self.config.tiling_parameters.tile_size,
+                self.config.tiling_parameters.tile_overlap,
+                self.config.tiling_parameters.tile_max_number,
+                self.config.tiling_parameters.tile_ir_scale_factor,
+                tile_classifier_model_file,
+                tile_classifier_weight_file,
+            )
+        if not isinstance(
+            inferencer,
+            (
+                OpenVINODetectionInferencer,
+                OpenVINOMaskInferencer,
+                OpenVINORotatedRectInferencer,
+                OpenVINOTileClassifierWrapper,
+            ),
+        ):
+            raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
+        return inferencer
 
     def infer(
         self,
@@ -358,34 +505,21 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             add_saliency_map = not inference_parameters.is_evaluation
             process_saliency_maps = inference_parameters.process_saliency_maps
             explain_predicted_classes = inference_parameters.explain_predicted_classes
+            enable_async_inference = inference_parameters.enable_async_inference
         else:
             update_progress_callback = default_progress_callback
             add_saliency_map = True
             process_saliency_maps = False
             explain_predicted_classes = True
+            enable_async_inference = True
 
-        tile_enabled = bool(self.config and self.config["tiling_parameters"]["enable_tiling"]["value"])
+        if self.config.tiling_parameters.enable_tiling:
+            enable_async_inference = False
 
-        if tile_enabled:
-            tile_size = self.config["tiling_parameters"]["tile_size"]["value"]
-            tile_overlap = self.config["tiling_parameters"]["tile_overlap"]["value"]
-            max_number = self.config["tiling_parameters"]["tile_max_number"]["value"]
-            logger.info("Run inference with tiling")
-
-        dataset_size = len(dataset)
-        for i, dataset_item in enumerate(dataset, 1):
-            if tile_enabled:
-                predicted_scene, features = self.inferencer.predict_tile(
-                    dataset_item.numpy,
-                    tile_size=tile_size,
-                    overlap=tile_overlap,
-                    max_number=max_number,
-                )
-            else:
-                predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
-
+        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
+            dataset_item = dataset[id]
             dataset_item.append_annotations(predicted_scene.annotations)
-            feature_vector, saliency_map = features
+            feature_vector, saliency_map = aux_data
             if feature_vector is not None:
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
@@ -396,7 +530,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
 
-                predicted_scored_labels = []
+                predicted_scored_labels: List = []
                 for bbox in predicted_scene.annotations:
                     predicted_scored_labels += bbox.get_labels()
 
@@ -409,7 +543,27 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     explain_predicted_classes=explain_predicted_classes,
                     process_saliency_maps=process_saliency_maps,
                 )
+
+        total_time = 0.0
+        dataset_size = len(dataset)
+        for i, dataset_item in enumerate(dataset, 1):
+            start_time = time.perf_counter()
+
+            if enable_async_inference:
+                self.inferencer.enqueue_prediction(dataset_item.numpy, i - 1, add_prediction)
+            else:
+                predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
+                add_prediction(i - 1, predicted_scene, features)
+
             update_progress_callback(int(i / dataset_size * 100), None)
+            end_time = time.perf_counter() - start_time
+            logger.info(f"{end_time} secs")
+            total_time += end_time
+
+        self.inferencer.await_all()
+
+        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        logger.info(f"Total time: {total_time} secs")
         logger.info("OpenVINO inference completed")
         return dataset
 
@@ -446,7 +600,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
-            predicted_scored_labels = []
+            predicted_scored_labels: List = []
             for bbox in predicted_scene.annotations:
                 predicted_scored_labels += bbox.get_labels()
 
@@ -486,7 +640,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters["converter_type"] = str(self.task_type)
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
-        parameters["tiling_parameters"] = self.config["tiling_parameters"]
+        if self.config.tiling_parameters.get("type"):
+            self.config.tiling_parameters["type"] = str(self.config.tiling_parameters["type"])
+        parameters["tiling_parameters"] = self.config.tiling_parameters
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
@@ -495,12 +651,17 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 raise ValueError("Deploy failed, model is None")
             arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
+            if self.config.tiling_parameters.enable_tiling and self.config.tiling_parameters.enable_tile_classifier:
+                arch.writestr(os.path.join("model", "tile_classifier.xml"), self.model.get_data("tile_classifier.xml"))
+                arch.writestr(os.path.join("model", "tile_classifier.bin"), self.model.get_data("tile_classifier.bin"))
             arch.writestr(
                 os.path.join("model", "config.json"),
                 json.dumps(parameters, ensure_ascii=False, indent=4),
             )
             # model_wrappers files
             for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
+                if "__pycache__" in root:
+                    continue
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(
@@ -517,8 +678,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 os.path.join("python", "requirements.txt"),
             )
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
-            arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
             arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+            arch.write(os.path.join(work_dir, "README.md"), os.path.join(".", "README.md"))
         output_model.exportable_code = zip_buffer.getvalue()
         logger.info("Deploying completed")
 

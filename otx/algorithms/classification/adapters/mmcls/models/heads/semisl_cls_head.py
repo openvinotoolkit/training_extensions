@@ -11,8 +11,10 @@ from otx.algorithms.classification.adapters.mmcls.models.heads.non_linear_cls_he
     NonLinearClsHead,
 )
 
+from .mixin import OTXHeadMixin
 
-class SemiClsHead:
+
+class SemiClsHead(OTXHeadMixin):
     """Classification head for Semi-SL.
 
     Args:
@@ -76,6 +78,8 @@ class SemiClsHead:
         """
         label_u, mask = None, None
         if isinstance(x, dict):
+            for key in x.keys():
+                x[key] = self.pre_logits(x[key])
             outputs = final_layer(x["labeled"])  # Logit of Labeled Img
             batch_size = len(outputs)
 

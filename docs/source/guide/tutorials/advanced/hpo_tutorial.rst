@@ -1,17 +1,17 @@
 Simple HPO Tutorial
 ============================
 
-This tutorial provides a step-by-step guide on how to use Hyper-Parameter Optimization (HPO) for classification tasks. 
+This tutorial provides a step-by-step guide on how to use Hyper-Parameter Optimization (HPO) for classification tasks.
 In this tutorial, we will optimize the learning rate and batch size using HPO.
 
 *************************
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -46,8 +46,8 @@ First, let's build a workspace. You can do this by running the following command
 Set hpo_config.yaml
 *************************
 
-Before running HPO, you can configure HPO using the ``hpo_config.yaml`` file. 
-This file contains all the information that the HPO module needs, including the hyperparameters that you want to optimize. 
+Before running HPO, you can configure HPO using the ``hpo_config.yaml`` file.
+This file contains all the information that the HPO module needs, including the hyperparameters that you want to optimize.
 The file is located in the workspace you have made and comes with default values.
 
 Here's the default hpo_config.yaml:
@@ -70,7 +70,7 @@ Here's the default hpo_config.yaml:
           - 128
           - 2
 
-Although this default configuration can be used for HPO, the search space for the learning rate is too wide. 
+Although this default configuration can be used for HPO, the search space for the learning rate is too wide.
 Therefore, we will modify the configuration file slightly to make the search space more reasonable. You can easily modify the configuration file to optimize different hyperparameters.
 
 Here's the updated ``hpo_config.yaml``:
@@ -82,7 +82,7 @@ Here's the updated ``hpo_config.yaml``:
     ...
       learning_parameters.learning_rate:
         param_type: quniform
-        range: 
+        range:
           - 0.001
           - 0.01
           - 0.001

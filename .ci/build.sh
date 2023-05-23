@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VER_CUDA="11.7.1"
-ACTIONS_RUNNER_URL="https://github.com/actions/runner/releases/download/v2.299.1/actions-runner-linux-x64-2.299.1.tar.gz"
+ACTIONS_RUNNER_URL="https://github.com/actions/runner/releases/download/v2.304.0/actions-runner-linux-x64-2.304.0.tar.gz"
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -55,8 +55,10 @@ docker build -f .ci/Dockerfile \
 --build-arg NO_PROXY="${no_proxy:?}" \
 --build-arg ver_cuda="$VER_CUDA" \
 --build-arg action_runner_url="$ACTIONS_RUNNER_URL" \
---tag registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG" \
---tag registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:latest .; RET=$?
+--build-arg gid="$(id -g)" \
+--build-arg uid="$UID" \
+--tag "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG" \
+--tag "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:latest .; RET=$?
 
 
 if [ $RET -ne 0 ]; then
@@ -67,12 +69,12 @@ fi
 echo "Successfully built docker image."
 
 if [ "$PUSH" == "yes" ]; then
-    docker push registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG"; RET=$?
+    docker push "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG"; RET=$?
     if [ $RET -ne 0 ]; then
         echo "failed to push a docker image to registry. $RET"
         exit 1
     fi
-    docker push registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:latest; RET=$?
+    docker push "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:latest; RET=$?
     if [ $RET -ne 0 ]; then
         echo "failed to push a docker image to registry. $RET"
         exit 1

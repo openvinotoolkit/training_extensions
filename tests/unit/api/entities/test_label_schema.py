@@ -12,7 +12,6 @@ from otx.api.entities.id import ID
 from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import (
     LabelEntity,
-    LabelGraph,
     LabelGroup,
     LabelGroupDoesNotExistException,
     LabelGroupExistsException,
@@ -567,247 +566,6 @@ class Edges:
 
 
 edges = Edges()
-
-
-@pytest.mark.components(OtxSdkComponent.OTX_API)
-class TestLabelGraph:
-    @staticmethod
-    def non_directed_label_graph() -> LabelGraph:
-        non_directed_graph = LabelGraph(directed=False)
-        non_directed_graph.add_edges([edges.edge_0_to_0_1, edges.edge_0_1_to_0_2])
-        return non_directed_graph
-
-    @staticmethod
-    def directed_label_graph() -> LabelGraph:
-        directed_graph = LabelGraph(directed=True)
-        directed_graph.add_edges([edges.edge_0_to_0_1, edges.edge_0_1_to_0_2, edges.edge_0_2_to_0])
-        return directed_graph
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_graph_initialization(self):
-        """
-        <b>Description:</b>
-        Check LabelGraph class object initialization
-
-        <b>Input data:</b>
-        LabelGraph objects with specified "directed" parameter and added edges
-
-        <b>Expected results:</b>
-        Test passes if LabelGraph object "directed" attribute and "num_labels" and "type" properties are equal to
-        expected
-
-        <b>Steps</b>
-        1. Check "directed" attribute and "num_labels" and "type" properties of non-directed LabelGraph object
-        2. Check "directed" attribute and "num_labels" and "type" properties of directed LabelGraph object
-        """
-        # Checks for non-directed LabelGraph
-        non_directed_graph = LabelGraph(directed=False)
-        # Check for initiated non-directed LabelGraph
-        CommonGraphMethods().check_graph_non_list_attributes(
-            [
-                {"attribute": non_directed_graph.directed, "expected_value": False},
-                {"attribute": non_directed_graph.num_labels, "expected_value": 0},
-                {"attribute": non_directed_graph.num_nodes(), "expected_value": 0},
-                {"attribute": non_directed_graph.type, "expected_value": "graph"},
-            ]
-        )
-        # Check for non-directed LabelGraph with added edges and nodes
-        non_directed_graph.add_edges([(labels.label_0, labels.label_0_1), (labels.label_0_1, labels.label_0_2)])
-        CommonGraphMethods().check_graph_non_list_attributes(
-            [
-                {"attribute": non_directed_graph.directed, "expected_value": False},
-                {"attribute": non_directed_graph.num_labels, "expected_value": 3},
-                {"attribute": non_directed_graph.num_nodes(), "expected_value": 3},
-                {"attribute": non_directed_graph.type, "expected_value": "graph"},
-            ]
-        )
-        expected_nodes = [labels.label_0, labels.label_0_1, labels.label_0_2]
-        CommonGraphMethods().check_graph_list_attributes(
-            [
-                {
-                    "attribute": non_directed_graph.edges,
-                    "expected_type": EdgeDataView,
-                    "expected_value": [
-                        (labels.label_0, labels.label_0_1, {}),
-                        (labels.label_0_1, labels.label_0_2, {}),
-                    ],
-                },
-                {
-                    "attribute": non_directed_graph.nodes,
-                    "expected_type": NodeView,
-                    "expected_value": expected_nodes,
-                },
-            ]
-        )
-        # Checks for directed LabelGraph
-        directed_graph = LabelGraph(directed=True)
-        # Check for initiated directed LabelGraph
-        CommonGraphMethods().check_graph_non_list_attributes(
-            [
-                {"attribute": directed_graph.directed, "expected_value": True},
-                {"attribute": directed_graph.num_labels, "expected_value": 0},
-                {"attribute": directed_graph.num_nodes(), "expected_value": 0},
-                {"attribute": directed_graph.type, "expected_value": "graph"},
-            ]
-        )
-        # Check for directed LabelGraph with added edges and nodes
-        directed_graph.add_edges([edges.edge_0_to_0_1, edges.edge_0_1_to_0_2, edges.edge_0_2_to_0])
-        CommonGraphMethods().check_graph_non_list_attributes(
-            [
-                {"attribute": directed_graph.directed, "expected_value": True},
-                {"attribute": directed_graph.num_labels, "expected_value": 3},
-                {"attribute": directed_graph.num_nodes(), "expected_value": 3},
-                {"attribute": directed_graph.type, "expected_value": "graph"},
-            ]
-        )
-        expected_nodes = [labels.label_0, labels.label_0_1, labels.label_0_2]
-        CommonGraphMethods().check_graph_list_attributes(
-            [
-                {
-                    "attribute": directed_graph.edges,
-                    "expected_type": OutMultiEdgeDataView,
-                    "expected_value": [
-                        (labels.label_0, labels.label_0_1, 0, {}),
-                        (labels.label_0_1, labels.label_0_2, 0, {}),
-                        (labels.label_0_2, labels.label_0, 0, {}),
-                    ],
-                },
-                {
-                    "attribute": directed_graph.nodes,
-                    "expected_type": NodeView,
-                    "expected_value": expected_nodes,
-                },
-            ]
-        )
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_graph_subgraph(self):
-        """
-        <b>Description:</b>
-        Check "subgraph" method of LabelGraph class object
-
-        <b>Input data:</b>
-        LabelGraph objects with specified directed parameter and added edges
-
-        <b>Expected results:</b>
-        Test passes if subgraph method returns expected LabelGraph instance for LabelGraph object
-
-        <b>Steps</b>
-        1. Check LabelGraph instance returned by subgraph method for non-directed LabelGraph object
-        2. Check LabelGraph instance returned by subgraph method for directed LabelGraph object
-        """
-        # Checks for non-directed LabelGraph
-        non_directed_graph = self.non_directed_label_graph()
-        # Checking subgraph with one node not included to parent graph
-        non_directed_subgraph = non_directed_graph.subgraph(
-            [labels.label_0_1, labels.label_0_2, labels.non_included_label]
-        )
-        CommonGraphMethods().check_graph_non_list_attributes(
-            [
-                {"attribute": non_directed_subgraph.directed, "expected_value": False},
-                {"attribute": non_directed_subgraph.num_labels, "expected_value": 2},
-                {"attribute": non_directed_subgraph.num_nodes(), "expected_value": 2},
-                {"attribute": non_directed_subgraph.type, "expected_value": "graph"},
-            ]
-        )
-        CommonGraphMethods().check_graph_list_attributes(
-            [
-                {
-                    "attribute": non_directed_subgraph.edges,
-                    "expected_type": EdgeDataView,
-                    "expected_value": [(labels.label_0_1, labels.label_0_2, {})],
-                },
-                {
-                    "attribute": non_directed_subgraph.nodes,
-                    "expected_type": NodeView,
-                    "expected_value": [labels.label_0_1, labels.label_0_2],
-                },
-            ]
-        )
-
-        # Checks for directed LabelGraph
-        directed_graph = self.directed_label_graph()
-        # Checking subgraph with one node not included to parent graph
-        directed_subgraph = directed_graph.subgraph([labels.label_0_1, labels.label_0_2, labels.non_included_label])
-        CommonGraphMethods().check_graph_non_list_attributes(
-            [
-                {"attribute": directed_subgraph.directed, "expected_value": True},
-                {"attribute": directed_subgraph.num_labels, "expected_value": 2},
-                {"attribute": directed_subgraph.num_nodes(), "expected_value": 2},
-                {"attribute": directed_subgraph.type, "expected_value": "graph"},
-            ]
-        )
-        CommonGraphMethods().check_graph_list_attributes(
-            [
-                {
-                    "attribute": directed_subgraph.edges,
-                    "expected_type": OutMultiEdgeDataView,
-                    "expected_value": [(labels.label_0_1, labels.label_0_2, 0, {})],
-                },
-                {
-                    "attribute": directed_subgraph.nodes,
-                    "expected_type": NodeView,
-                    "expected_value": [labels.label_0_1, labels.label_0_2],
-                },
-            ]
-        )
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_graph_eq(self):
-        """
-        <b>Description:</b>
-        Check __eq__ method of LabelGraph class object
-
-        <b>Input data:</b>
-        LabelGraph objects with specified directed parameter and added edges
-
-        <b>Expected results:</b>
-        Test passes if __eq__ method returns expected values
-
-        <b>Steps</b>
-        1. Check __eq__ method for non-directed LabelGraph object
-        2. Check __eq__ method for directed LabelGraph object
-        """
-        # Checks for non-directed LabelGraph
-        # Checking __eq__ method for equal non-directed LabelGraph
-        non_directed_graph = self.non_directed_label_graph()
-        equal_non_directed_graph = self.non_directed_label_graph()
-        assert non_directed_graph == equal_non_directed_graph
-        # Checking __eq__ method for equal non-directed and directed LabelGraph objects
-        directed_graph = LabelGraph(directed=True)
-        directed_graph.add_edges([edges.edge_0_to_0_1, edges.edge_0_1_to_0_2])
-        assert non_directed_graph != directed_graph
-        # Checking __eq__ method for non-directed LabelGraph objects with different edges
-        non_directed_graph_different_edges = self.non_directed_label_graph()
-        non_directed_graph_different_edges.add_edge(labels.label_0, labels.label_0_2)
-        assert non_directed_graph != non_directed_graph_different_edges
-        # Checking __eq__ method for non-directed LabelGraph objects with different nodes
-        non_directed_graph_different_nodes = self.non_directed_label_graph()
-        non_directed_graph_different_nodes.add_node(labels.non_included_label)
-        assert non_directed_graph != non_directed_graph_different_nodes
-        # Checking __eq__ method by comparing non-directed LabelGraph with different type object
-        assert non_directed_graph != str
-        # Checks for directed LabelGraph
-        # Checking __eq__ method for equal directed LabelGraph
-        directed_graph = self.directed_label_graph()
-        equal_directed_graph = self.directed_label_graph()
-        assert directed_graph == equal_directed_graph
-        # Checking __eq__ method for directed LabelGraph objects with different edges
-        directed_graph_different_edges = self.directed_label_graph()
-        directed_graph_different_edges.add_edge(labels.label_0_1, labels.label_0)
-        assert directed_graph != directed_graph_different_edges
-        # Checking __eq__ method for directed LabelGraph objects with different nodes
-        directed_graph_different_nodes = self.directed_label_graph()
-        directed_graph_different_nodes.add_node(labels.non_included_label)
-        assert directed_graph != directed_graph_different_nodes
-        # Checking __eq__ method by comparing directed LabelGraph with different type object
-        assert directed_graph != str
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -2022,17 +1780,17 @@ class TestLabelSchemaEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_label_schema_resolve_labels_probabilistic(self):
+    def test_label_schema_resolve_labels(self):
         """
         <b>Description:</b>
-        Check LabelSchemaEntity class resolve_labels_probabilistic method
+        Check LabelSchemaEntity label resolving algorithms
 
         <b>Input data:</b>
         LabelSchemaEntity objects with specified label_tree and label_groups parameters
 
         <b>Expected results:</b>
-        Test passes if LabelSchemaEntity object returned by resolve_labels_probabilistic
-        method is equal expected
+        Test passes if labels list returned by resolving methods
+        is equal expected
         """
         label_schema = LabelSchemaEntity()
         labels_1 = [
@@ -2080,10 +1838,15 @@ class TestLabelSchemaEntity:
             ScoredLabel(labels_2[1], 0.5),
         ]
         resloved_labels = label_schema.resolve_labels_probabilistic(predicted_labels)
-        assert [
+
+        ref_labels = [
             ScoredLabel(labels_1[1], 0.5),
             ScoredLabel(labels_2[1], 0.5),
-        ] == resloved_labels
+        ]
+        assert ref_labels == resloved_labels
+
+        resloved_labels_greedy = label_schema.resolve_labels_greedily(predicted_labels)
+        assert ref_labels == resloved_labels_greedy
 
         # supress children of non-maximum labels
         predicted_labels = [
@@ -2092,4 +1855,62 @@ class TestLabelSchemaEntity:
             ScoredLabel(labels_3[0], 0.4),
         ]
         resloved_labels = label_schema.resolve_labels_probabilistic(predicted_labels)
-        assert [ScoredLabel(labels_2[1], 0.5)] == resloved_labels
+        ref_labels = [ScoredLabel(labels_2[1], 0.5)]
+        assert ref_labels == resloved_labels
+
+        resloved_labels_greedy = label_schema.resolve_labels_greedily(predicted_labels)
+        assert ref_labels == resloved_labels_greedy
+
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_label_schema_resolve_labels_greedy(self):
+        """
+        <b>Description:</b>
+        Check LabelSchemaEntity label gredy resolving algorithm
+
+        <b>Input data:</b>
+        LabelSchemaEntity objects with specified label_tree and label_groups parameters
+
+        <b>Expected results:</b>
+        Test passes if labels list returned by resolving method
+        is equal expected
+        """
+
+        label_schema = LabelSchemaEntity()
+        g1_labels = [
+            LabelEntity("A", Domain.CLASSIFICATION),
+            LabelEntity("B", Domain.CLASSIFICATION),
+            LabelEntity("C", Domain.CLASSIFICATION),
+        ]
+        g2_labels = [LabelEntity("D", Domain.CLASSIFICATION), LabelEntity("E", Domain.CLASSIFICATION)]
+        g3_labels = [LabelEntity("F", Domain.CLASSIFICATION), LabelEntity("G", Domain.CLASSIFICATION)]
+        g4_labels = [LabelEntity("H", Domain.CLASSIFICATION)]
+
+        label_schema.add_group(LabelGroup(name="labels1", labels=g1_labels, group_type=LabelGroupType.EXCLUSIVE))
+        label_schema.add_group(LabelGroup(name="labels2", labels=g2_labels, group_type=LabelGroupType.EXCLUSIVE))
+        label_schema.add_group(LabelGroup(name="labels3", labels=g3_labels, group_type=LabelGroupType.EXCLUSIVE))
+        label_schema.add_group(LabelGroup(name="labels4", labels=g4_labels, group_type=LabelGroupType.EXCLUSIVE))
+
+        label_schema.add_child(g1_labels[0], g2_labels[0])
+        label_schema.add_child(g1_labels[0], g2_labels[1])
+
+        label_schema.add_child(g1_labels[1], g3_labels[0])
+        label_schema.add_child(g1_labels[1], g3_labels[1])
+
+        predicted_labels = [
+            ScoredLabel(g1_labels[0], 0.6),
+            ScoredLabel(g1_labels[1], 0.3),
+            ScoredLabel(g1_labels[2], 0.1),
+            ScoredLabel(g2_labels[0], 0.2),
+            ScoredLabel(g2_labels[1], 0.8),
+            ScoredLabel(g3_labels[0], 0.7),
+            ScoredLabel(g3_labels[1], 0.3),
+            ScoredLabel(g4_labels[0], 0.9),
+        ]
+
+        ref_labels = [
+            ScoredLabel(g1_labels[0], 0.6),
+            ScoredLabel(g2_labels[1], 0.8),
+            ScoredLabel(g4_labels[0], 0.9),
+        ]
+
+        assert ref_labels == label_schema.resolve_labels_greedily(predicted_labels)

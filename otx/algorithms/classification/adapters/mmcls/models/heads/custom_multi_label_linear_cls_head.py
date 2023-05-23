@@ -10,9 +10,11 @@ from mmcls.models.heads import MultiLabelClsHead
 from mmcv.cnn import normal_init
 from torch import nn
 
+from .mixin import OTXHeadMixin
+
 
 @HEADS.register_module()
-class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
+class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
     """Custom Linear classification head for multilabel task.
 
     Args:
@@ -73,6 +75,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of CustomMultiLabelLinearClsHead."""
         img_metas = kwargs.get("img_metas", False)
+        cls_score = self.pre_logits(cls_score)
         gt_label = gt_label.type_as(cls_score)
         cls_score = self.fc(cls_score) * self.scale
 
@@ -96,6 +99,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
 
     def simple_test(self, img):
         """Test without augmentation."""
+        img = self.pre_logits(img)
         cls_score = self.fc(img) * self.scale
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))

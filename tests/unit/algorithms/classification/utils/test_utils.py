@@ -91,4 +91,5 @@ def test_get_cls_model_api_configuration(default_hierarchical_data):
     model_api_cfg = get_cls_model_api_configuration(label_schema, config)
 
     assert len(model_api_cfg) > 0
-    model_api_cfg[("model_info", "confidence_threshold")] = str(config["confidence_threshold"])
+    assert model_api_cfg[("model_info", "confidence_threshold")] == str(config["confidence_threshold"])
+    assert ("model_info", "hierarchical_config") in model_api_cfg

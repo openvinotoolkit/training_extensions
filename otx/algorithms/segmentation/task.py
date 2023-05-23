@@ -29,11 +29,13 @@ from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
     TrainingProgressCallback,
 )
+from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
 )
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
+from otx.algorithms.segmentation.utils.metadata import get_seg_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -54,8 +56,6 @@ from otx.api.entities.metrics import (
 )
 from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.result_media import ResultMediaEntity
@@ -147,7 +147,12 @@ class OTXSegmentationTask(OTXTask, ABC):
         return dataset
 
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
     ):
         """Train function for OTX segmentation task.
 
@@ -161,6 +166,8 @@ class OTXSegmentationTask(OTXTask, ABC):
             self._should_stop = False
             self._is_training = False
             return
+        self.seed = seed
+        self.deterministic = deterministic
 
         # Set OTX LoggerHook & Time Monitor
         if train_parameters:
@@ -213,32 +220,30 @@ class OTXSegmentationTask(OTXTask, ABC):
     ):
         """Export function of OTX Task."""
         logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
 
-        results = self._export_model(precision, dump_features)
+        self._update_model_export_metadata(output_model, export_type, precision, dump_features)
+        results = self._export_model(precision, export_type, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        onnx_file = outputs.get("onnx")
+        if export_type == ExportType.ONNX:
+            onnx_file = outputs.get("onnx")
+            with open(onnx_file, "rb") as f:
+                output_model.set_data("model.onnx", f.read())
+        else:
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
 
-        if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        with open(onnx_file, "rb") as f:
-            output_model.set_data("model.onnx", f.read())
-        output_model.precision = self._precision
-        output_model.optimization_methods = self._optimization_methods
-        output_model.has_xai = dump_features
+            ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
+            embed_ir_model_data(xml_file, ir_extra_data)
+
+            with open(bin_file, "rb") as f:
+                output_model.set_data("openvino.bin", f.read())
+            with open(xml_file, "rb") as f:
+                output_model.set_data("openvino.xml", f.read())
+
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info("Exporting completed")
 
@@ -268,7 +273,6 @@ class OTXSegmentationTask(OTXTask, ABC):
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
         """Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTX format."""
-
         for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
             hard_prediction = create_hard_prediction_from_soft_prediction(
@@ -372,7 +376,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _export_model(self, precision, dump_features):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         """Export model and return the results."""
         raise NotImplementedError
 

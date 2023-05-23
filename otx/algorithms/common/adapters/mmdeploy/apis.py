@@ -31,7 +31,7 @@ class NaiveExporter:
     """NaiveExporter for non-mmdeploy export."""
 
     @staticmethod
-    def export2openvino(
+    def export2backend(
         output_dir: str,
         model_builder: Callable,
         cfg: mmcv.Config,
@@ -44,6 +44,7 @@ class NaiveExporter:
         opset_version: int = 11,
         dynamic_axes: Optional[Dict[Any, Any]] = None,
         mo_transforms: str = "",
+        export_type: str = "OPENVINO",
     ):
         """Function for exporting to openvino."""
         input_data = scatter(collate([input_data], samples_per_gpu=1), [-1])[0]
@@ -62,6 +63,9 @@ class NaiveExporter:
             opset_version=opset_version,
             dynamic_axes=dynamic_axes,
         )
+
+        if "ONNX" in export_type:
+            return
 
         def get_normalize_cfg(cfg):
             def _get_normalize_cfg(cfg_):
@@ -174,6 +178,7 @@ if is_mmdeploy_enabled():
     import mmdeploy.apis.openvino as openvino_api
     from mmdeploy.apis import build_task_processor, extract_model, torch2onnx
     from mmdeploy.apis.openvino import get_input_info_from_cfg, get_mo_options_from_cfg
+    from mmdeploy.core import reset_mark_function_count
 
     # from mmdeploy.core import FUNCTION_REWRITER
     from mmdeploy.utils import get_ir_config, get_partition_config
@@ -182,11 +187,12 @@ if is_mmdeploy_enabled():
         """MMdeployExporter for mmdeploy exporting."""
 
         @staticmethod
-        def export2openvino(
+        def export2backend(
             output_dir: str,
             model_builder: Callable,
             cfg: mmcv.Config,
             deploy_cfg: mmcv.Config,
+            export_type: str,
             *,
             model_name: str = "model",
         ):
@@ -213,6 +219,17 @@ if is_mmdeploy_enabled():
             else:
                 input_data = np.zeros(input_data_cfg["shape"], dtype=np.uint8)
 
+            partition_cfgs = get_partition_config(deploy_cfg)
+            if partition_cfgs:
+                MMdeployExporter.extract_partition(
+                    output_dir,
+                    input_data,
+                    cfg,
+                    deploy_cfg,
+                    export_type,
+                    model_name=model_name,
+                )
+
             onnx_paths = []
             onnx_paths.append(
                 MMdeployExporter.torch2onnx(
@@ -223,29 +240,54 @@ if is_mmdeploy_enabled():
                     model_name=model_name,
                 )
             )
+            if "ONNX" not in export_type:
+                for onnx_path in onnx_paths:
+                    deploy_cfg_ = deepcopy(deploy_cfg)
+                    update_deploy_cfg(onnx_path, deploy_cfg_)
+                    MMdeployExporter.onnx2openvino(
+                        output_dir,
+                        onnx_path,
+                        deploy_cfg_,
+                    )
+
+        @staticmethod
+        def extract_partition(
+            output_dir: str,
+            input_data: Any,
+            cfg: mmcv.Config,
+            deploy_cfg: mmcv.Config,
+            export_type: str,
+            *,
+            model_name: str = "model",
+        ):
+            """Function for extracting partition."""
+
+            model_onnx = MMdeployExporter.torch2onnx(
+                output_dir,
+                input_data,
+                cfg,
+                deploy_cfg,
+                model_name=model_name,
+            )
 
             partition_cfgs = get_partition_config(deploy_cfg)
-            if partition_cfgs:
-                partition_cfgs = partition_cfgs.get("partition_cfg", None)
-                onnx_paths.extend(
-                    MMdeployExporter.partition_onnx(
-                        output_dir,
-                        onnx_paths[0],
-                        partition_cfgs,
-                    )
-                )
+            partition_cfgs = partition_cfgs.get("partition_cfg", None)
+            partition_onnx = MMdeployExporter.partition_onnx(
+                output_dir,
+                model_onnx,
+                partition_cfgs,
+            )
 
-            for i, onnx_path in enumerate(onnx_paths):
-                mo_options = {}
-                if i > 0:
-                    mo_options = partition_cfgs[i - 1].get("mo_options", {})
+            if "ONNX" not in export_type:
                 deploy_cfg_ = deepcopy(deploy_cfg)
-                update_deploy_cfg(onnx_path, deploy_cfg_, mo_options)
+                update_deploy_cfg(partition_onnx[0], deploy_cfg_)
                 MMdeployExporter.onnx2openvino(
                     output_dir,
-                    onnx_path,
+                    partition_onnx[0],
                     deploy_cfg_,
                 )
+                deploy_cfg["partition_config"]["apply_marks"] = False
+                reset_mark_function_count()
 
         @staticmethod
         def torch2onnx(

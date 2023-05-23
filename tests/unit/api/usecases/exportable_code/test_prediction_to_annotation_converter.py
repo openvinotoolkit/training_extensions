@@ -594,7 +594,7 @@ class TestSegmentationToAnnotation:
         label_group = LabelGroup(name="Segmentation labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
         converter = SegmentationToAnnotationConverter(label_schema=label_schema)
-        soft_predictions = np.array(
+        soft_prediction = np.array(
             [
                 (
                     [0.8, 0.1, 0.2],
@@ -627,7 +627,7 @@ class TestSegmentationToAnnotation:
         metadata = {
             "non-required key": 1,
             "other non-required key": 2,
-            "soft_predictions": soft_predictions,
+            "soft_prediction": soft_prediction,
         }
 
         predictions_to_annotations = converter.convert_to_annotation(predictions=hard_predictions, metadata=metadata)
@@ -637,12 +637,12 @@ class TestSegmentationToAnnotation:
             expected_label=labels[0],
             expected_probability=0.8333333333333333,
             expected_points=[
-                Point(0.0, 0.25),
-                Point(0.0, 0.5),
-                Point(0.0, 0.75),
-                Point(0.25, 0.75),
-                Point(0.25, 0.5),
-                Point(0.25, 0.25),
+                Point(0.0, 0.3333333333333333),
+                Point(0.0, 0.6666666666666666),
+                Point(0.0, 1.0),
+                Point(0.3333333333333333, 1.0),
+                Point(0.3333333333333333, 0.6666666666666666),
+                Point(0.3333333333333333, 0.3333333333333333),
             ],
         )
         check_annotation(
@@ -650,14 +650,14 @@ class TestSegmentationToAnnotation:
             expected_label=labels[1],
             expected_probability=0.8125,
             expected_points=[
-                Point(0.5, 0.0),
-                Point(0.5, 0.25),
-                Point(0.5, 0.5),
-                Point(0.5, 0.75),
-                Point(0.75, 0.75),
-                Point(0.75, 0.5),
-                Point(0.75, 0.25),
-                Point(0.75, 0.0),
+                Point(0.6666666666666666, 0.0),
+                Point(0.6666666666666666, 0.3333333333333333),
+                Point(0.6666666666666666, 0.6666666666666666),
+                Point(0.6666666666666666, 1.0),
+                Point(1.0, 1.0),
+                Point(1.0, 0.6666666666666666),
+                Point(1.0, 0.3333333333333333),
+                Point(1.0, 0.0),
             ],
         )
 

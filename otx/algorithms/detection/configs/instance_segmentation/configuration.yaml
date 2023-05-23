@@ -101,7 +101,7 @@ learning_parameters:
     warning: null
   num_workers:
     affects_outcome_of: NONE
-    default_value: 0
+    default_value: 2
     description:
       Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
@@ -116,7 +116,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 0
+    value: 2
     visible_in_ui: true
     warning: null
   enable_early_stopping:
@@ -198,6 +198,43 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: This will automatically control the patience and interval when early stopping is enabled.
+  auto_adapt_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: Safe
+    description: Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
+    editable: true
+    enum_name: BatchSizeAdaptType
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    options:
+      NONE: "None"
+      SAFE: "Safe"
+      FULL: "Full"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Safe
+    visible_in_ui: true
+    warning:
+      Enabling this could change the actual batch size depending on the current GPU status.
+      The learning rate also could be adjusted according to the adapted batch size. This process might change
+      a model performance and take some extra computation time to try a few batch size candidates.
+  auto_num_workers:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Adapt num_workers according to current hardware status automatically.
+    editable: true
+    header: Enable auto adaptive num_workers
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -260,7 +297,7 @@ algo_backend:
       rules: []
       type: UI_RULES
     value: Incremental
-    visible_in_ui: True
+    visible_in_ui: false
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
@@ -278,8 +315,30 @@ algo_backend:
       type: UI_RULES
     visible_in_ui: false
     warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme for storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
 type: CONFIGURABLE_PARAMETERS
 visible_in_ui: true
 pot_parameters:
@@ -428,6 +487,22 @@ tiling_parameters:
     visible_in_ui: true
     warning: Tiling trades off speed for accuracy as it increases the number of images to be processed.
 
+  enable_tile_classifier:
+    header: Enable tile classifier
+    description: Enabling tile classifier enhances the speed of tiling inference by incorporating a tile classifier into the instance segmentation model. This feature prevents the detector from making predictions on tiles that do not contain any objects, thus optimizing its speed performance.
+    default_value: false
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: The tile classifier prioritizes inference speed over training speed, it requires more training in order to achieve its optimized performance.
+
   enable_adaptive_params:
     header: Enable adaptive tiling parameters
     description: Config tile size and tile overlap adaptively based on annotated dataset statistic
@@ -468,7 +543,7 @@ tiling_parameters:
     affects_outcome_of: TRAINING
     default_value: 0.2
     min_value: 0.0
-    max_value: 1.0
+    max_value: 0.9
     type: FLOAT
     editable: true
     ui_rules:
@@ -495,6 +570,24 @@ tiling_parameters:
       rules: []
       type: UI_RULES
     value: 1500
+    visible_in_ui: true
+    warning: null
+
+  tile_ir_scale_factor:
+    header: OpenVINO IR Scale Factor
+    description: The purpose of the scale parameter is to optimize the performance and efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and input size, the scale parameter allows for more efficient parallelization of the workload and improve the overall performance and efficiency of the inference process on OpenVINO.
+    affects_outcome_of: TRAINING
+    default_value: 2.0
+    min_value: 1.0
+    max_value: 4.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 2.0
     visible_in_ui: true
     warning: null
 

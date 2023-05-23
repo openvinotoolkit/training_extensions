@@ -19,6 +19,7 @@ import os
 import time
 from contextlib import nullcontext
 from copy import deepcopy
+from functools import partial
 from typing import Any, Dict, Optional, Union
 
 import torch
@@ -28,6 +29,7 @@ from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
+from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
@@ -40,6 +42,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_data_pipeline,
@@ -50,10 +53,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
+    get_adaptive_num_workers,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
-from otx.algorithms.common.utils import set_random_seed
+from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -62,6 +67,7 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelPrecision
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
 from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook
 
@@ -105,7 +111,7 @@ class MMClassificationTask(OTXClassificationTask):
             self._recipe_cfg.model.head.hierarchical_info = self._hierarchical_info
         self._config = self._recipe_cfg
 
-        set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
+        self.set_seed()
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
@@ -278,11 +284,16 @@ class MMClassificationTask(OTXClassificationTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
-        if not dump_saliency_map:
+        model_type = cfg.model.backbone.type.split(".")[-1]  # mmcls.VisionTransformer => VisionTransformer
+        if (
+            not dump_saliency_map or model_type in TRANSFORMER_BACKBONES
+        ):  # TODO: remove latter "or" condition after resolving Issue#2098
             forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
-        if not dump_features:
+        if (
+            not dump_features or model_type in TRANSFORMER_BACKBONES
+        ):  # TODO: remove latter "or" condition after resolving Issue#2098
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
         else:
             feature_vector_hook = FeatureVectorHook(feature_model)
@@ -402,6 +413,16 @@ class MMClassificationTask(OTXClassificationTask):
                     priority="ABOVE_NORMAL",
                     **eval_cfg,
                 )
+            )
+
+        if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
+            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
         train_model(
@@ -530,17 +551,18 @@ class MMClassificationTask(OTXClassificationTask):
 
         return eval_predictions, saliency_maps
 
-    def _export_model(self, precision, dump_features):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
 
         self._precision[0] = precision
+        assert len(self._precision) == 1
         export_options: Dict[str, Any] = {}
-        export_options["deploy_cfg"] = self._init_deploy_cfg()
-        if export_options.get("precision", None) is None:
-            assert len(self._precision) == 1
-            export_options["precision"] = str(self._precision[0])
+        export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
+
+        export_options["precision"] = str(precision)
+        export_options["type"] = str(export_format)
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
@@ -552,8 +574,11 @@ class MMClassificationTask(OTXClassificationTask):
                     output_names.append("saliency_map")
         export_options["model_builder"] = getattr(self, "model_builder", build_classifier)
 
-        if self._precision[0] == ModelPrecision.FP16:
+        if precision == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
+
+        if export_format == ExportType.ONNX:
+            export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
 
         exporter = ClassificationExporter()
         results = exporter.run(
@@ -562,7 +587,7 @@ class MMClassificationTask(OTXClassificationTask):
         )
         return results
 
-    def _init_deploy_cfg(self) -> Union[Config, None]:
+    def _init_deploy_cfg(self, cfg: Config) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
@@ -571,7 +596,7 @@ class MMClassificationTask(OTXClassificationTask):
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Normalize"),
                 )
                 assert len(normalize_cfg) == 1
@@ -614,7 +639,7 @@ class MMClassificationTask(OTXClassificationTask):
 
             def patch_input_shape(deploy_cfg):
                 resize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Resize"),
                 )
                 assert len(resize_cfg) == 1
@@ -668,6 +693,9 @@ class MMClassificationTask(OTXClassificationTask):
             ),
             runner=runner,
         )
+
+        if self._hyperparams.learning_parameters.auto_num_workers:
+            config.data.workers_per_gpu = get_adaptive_num_workers()
 
         if self._train_type.value == "Semisupervised":
             unlabeled_config = ConfigDict(

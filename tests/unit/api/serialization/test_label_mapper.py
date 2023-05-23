@@ -12,7 +12,6 @@ import pytest
 from otx.api.entities.id import ID
 from otx.api.entities.label import Color, Domain, LabelEntity
 from otx.api.entities.label_schema import (
-    LabelGraph,
     LabelGroup,
     LabelGroupType,
     LabelSchemaEntity,
@@ -21,7 +20,7 @@ from otx.api.entities.label_schema import (
 from otx.api.serialization.datetime_mapper import DatetimeMapper
 from otx.api.serialization.label_mapper import (
     ColorMapper,
-    LabelGraphMapper,
+    LabelTreeMapper,
     LabelGroupMapper,
     LabelMapper,
     LabelSchemaMapper,
@@ -221,7 +220,7 @@ class TestLabelGroupMapper:
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
-class TestLabelGraphMapper:
+class TestLabelTreeMapper:
     label_0 = LabelEntity(name="label_0", domain=Domain.SEGMENTATION, id=ID("0"))
     label_0_1 = LabelEntity(name="label_0_1", domain=Domain.SEGMENTATION, id=ID("0_1"))
     label_0_2 = LabelEntity(name="label_0_2", domain=Domain.SEGMENTATION, id=ID("0_2"))
@@ -235,42 +234,17 @@ class TestLabelGraphMapper:
     def test_label_graph_forward(self):
         """
         <b>Description:</b>
-        Check "LabelGraphMapper" class "forward" method
+        Check "LabelTreeMapper" class "forward" method
 
         <b>Input data:</b>
-        "LabelGraph" and "LabelTree" objects
+        "LabelTree" and "LabelTree" objects
 
         <b>Expected results:</b>
         Test passes if dictionary returned by "forward" method is equal to expected
 
         <b>Steps</b>
-        1. Check dictionary returned by "forward" method for "LabelGraph" object
-        2. Check dictionary returned by "forward" method for "LabelTree" object
+        1. Check dictionary returned by "forward" method for "LabelTree" object
         """
-        # Checking dictionary returned by "forward" for "LabelGraph"
-        label_graph = LabelGraph(directed=False)
-        label_graph.add_edges(
-            [
-                (self.label_0, self.label_0_1),
-                (self.label_0, self.label_0_2),
-                (self.label_0_1, self.label_0_1_1),
-                (self.label_0_1, self.label_0_1_2),
-                (self.label_0_1_1, self.label_0_1_2),
-            ]
-        )
-        forward = LabelGraphMapper.forward(label_graph)
-        assert forward == {
-            "type": "graph",
-            "directed": False,
-            "nodes": ["0", "0_1", "0_2", "0_1_1", "0_1_2"],
-            "edges": [
-                ("0", "0_1"),
-                ("0", "0_2"),
-                ("0_1", "0_1_1"),
-                ("0_1", "0_1_2"),
-                ("0_1_1", "0_1_2"),
-            ],
-        }
         # Checking dictionary returned by "forward" for "LabelTree"
         label_tree = LabelTree()
         for parent, child in [
@@ -281,7 +255,7 @@ class TestLabelGraphMapper:
             (self.label_0_2, self.label_0_2_1),
         ]:
             label_tree.add_child(parent, child)
-        forward = LabelGraphMapper.forward(label_tree)
+        forward = LabelTreeMapper.forward(label_tree)
         assert forward == {
             "type": "tree",
             "directed": True,
@@ -301,44 +275,19 @@ class TestLabelGraphMapper:
     def test_label_graph_backward(self):
         """
         <b>Description:</b>
-        Check "LabelGraphMapper" class "backward" method
+        Check "LabelTreeMapper" class "backward" method
 
         <b>Input data:</b>
         Dictionary object to deserialize, labels list
 
         <b>Expected results:</b>
-        Test passes if "LabelGraph" or "LabelTree" object returned by "backward" method is equal to expected
+        Test passes if "LabelTree" or "LabelTree" object returned by "backward" method is equal to expected
 
         <b>Steps</b>
-        1. Check dictionary returned by "backward" method for "LabelGraph" object
-        2. Check dictionary returned by "backward" method for "LabelTree" object
-        3. Check that "ValueError" exception is raised when unsupported type is specified as "type" key in dictionary
+        1. Check dictionary returned by "backward" method for "LabelTree" object
+        2. Check that "ValueError" exception is raised when unsupported type is specified as "type" key in dictionary
         object of "instance" parameter for "backward" method
         """
-        # Checking dictionary returned by "backward" for "LabelGraph"
-        forward = {
-            "type": "graph",
-            "directed": False,
-            "nodes": ["0", "0_1", "0_2", "0_1_1"],
-            "edges": [("0", "0_1"), ("0", "0_2"), ("0_1", "0_1_1"), ("0_1_1", "0_2")],
-        }
-        labels = {
-            ID("0"): self.label_0,
-            ID("0_1"): self.label_0_1,
-            ID("0_2"): self.label_0_2,
-            ID("0_1_1"): self.label_0_1_1,
-        }
-        expected_backward = LabelGraph(directed=False)
-        expected_backward.add_edges(
-            [
-                (self.label_0, self.label_0_1),
-                (self.label_0, self.label_0_2),
-                (self.label_0_1, self.label_0_1_1),
-                (self.label_0_1_1, self.label_0_2),
-            ]
-        )
-        actual_backward = LabelGraphMapper.backward(instance=forward, all_labels=labels)
-        assert actual_backward == expected_backward
         # Checking dictionary returned by "backward" for "LabelTree"
         forward = {
             "type": "tree",
@@ -362,7 +311,7 @@ class TestLabelGraphMapper:
             (self.label_0_2, self.label_0_2_1),
         ]:
             expected_backward.add_child(parent, child)
-        actual_backward = LabelGraphMapper.backward(instance=forward, all_labels=labels)
+        actual_backward = LabelTreeMapper.backward(instance=forward, all_labels=labels)
         assert actual_backward == expected_backward
         # Checking "ValueError" exception raised when unsupported type specified as "type" in dictionary "instance" for
         # "backward"
@@ -373,4 +322,4 @@ class TestLabelGraphMapper:
             "edges": [("0_1", "0"), ("0_2", "0"), ("0_1_1", "0_1"), ("0_2_1", "0_2")],
         }
         with pytest.raises(ValueError):
-            LabelGraphMapper.backward(instance=forward, all_labels=labels)
+            LabelTreeMapper.backward(instance=forward, all_labels=labels)

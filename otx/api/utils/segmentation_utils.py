@@ -21,7 +21,9 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.utils.shape_factory import ShapeFactory
 
 
-def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
+def mask_from_dataset_item(
+    dataset_item: DatasetItemEntity, labels: List[LabelEntity], use_otx_adapter: bool = True
+) -> np.ndarray:
     """Creates a mask from dataset item.
 
     The mask will be two dimensional, and the value of each pixel matches the class index with offset 1. The background
@@ -37,13 +39,25 @@ def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEn
         Numpy array of mask
     """
     # todo: cache this so that it does not have to be redone for all the same media
-    mask = mask_from_annotation(
-        dataset_item.get_annotations(),
-        labels,
-        dataset_item.width,
-        dataset_item.height,
-    )
+    if use_otx_adapter:
+        mask = mask_from_annotation(dataset_item.get_annotations(), labels, dataset_item.width, dataset_item.height)
+    else:
+        mask = mask_from_file(dataset_item)
+    return mask
 
+
+def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
+    """Loads masks directly from annotation image.
+
+    Only Common Sematic Segmentation format is supported.
+    """
+
+    mask_form_file = dataset_item.media.path
+    if mask_form_file is None:
+        raise ValueError("Mask file doesn't exist or corrupted")
+    mask_form_file = mask_form_file.replace("images", "masks")
+    mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
+    mask = np.expand_dims(mask, axis=2)
     return mask
 
 
@@ -67,7 +81,6 @@ def mask_from_annotation(
         2d numpy array of mask
     """
 
-    labels = sorted(labels)  # type: ignore
     mask = np.zeros(shape=(height, width), dtype=np.uint8)
     for annotation in annotations:
         shape = annotation.shape
@@ -216,13 +229,15 @@ def create_annotation_from_segmentation_map(
 
         if hierarchies is not None:
             for contour, hierarchy in zip(contours, hierarchies[0]):
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
+                    continue
+
                 if hierarchy[3] == -1:
                     # In this case a contour does not represent a hole
                     contour = list((point[0][0], point[0][1]) for point in contour)
 
                     # Split contour into subcontours that do not have self intersections.
                     subcontours = get_subcontours(contour)
-
                     for subcontour in subcontours:
                         # compute probability of the shape
                         mask = np.zeros(hard_prediction.shape, dtype=np.uint8)
@@ -236,7 +251,7 @@ def create_annotation_from_segmentation_map(
                         probability = cv2.mean(current_label_soft_prediction, mask)[0]
 
                         # convert the list of points to a closed polygon
-                        points = [Point(x=x / width, y=y / height) for x, y in subcontour]
+                        points = [Point(x=x / (width - 1), y=y / (height - 1)) for x, y in subcontour]
                         polygon = Polygon(points=points)
 
                         if polygon.get_area() > 0:

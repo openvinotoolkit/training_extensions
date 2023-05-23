@@ -10,10 +10,11 @@ from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from torch import nn
 
 from .custom_multi_label_linear_cls_head import AnglularLinear
+from .mixin import OTXHeadMixin
 
 
 @HEADS.register_module()
-class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
+class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
     """Non-linear classification head for multilabel task.
 
     Args:
@@ -102,6 +103,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
     def forward_train(self, cls_score, gt_label, **kwargs):
         """Forward_train fuction of CustomMultiLabelNonLinearClsHead."""
         img_metas = kwargs.get("img_metas", False)
+        cls_score = self.pre_logits(cls_score)
         gt_label = gt_label.type_as(cls_score)
         cls_score = self.classifier(cls_score) * self.scale
 
@@ -125,6 +127,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
 
     def simple_test(self, img):
         """Test without augmentation."""
+        img = self.pre_logits(img)
         cls_score = self.classifier(img) * self.scale
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))

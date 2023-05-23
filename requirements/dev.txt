@@ -7,3 +7,5 @@ pytest
 coverage
 pytest-timeout
 pytest-mock
+onnx==1.13.0
+onnxruntime==1.14.1

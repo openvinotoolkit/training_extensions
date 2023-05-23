@@ -1,0 +1,50 @@
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        type: string
+        default: "3.10"
+      toxenv-pyver:
+        description: "[py38, py39, py310]"
+        type: string
+        default: "py310"
+      toxenv-task:
+        description: "[all, act, ano, cls, det, seg, iseg]"
+        type: string
+        default: "all"
+      tests-dir:
+        type: string
+        default: ""
+      timeout-minutes:
+        type: number
+        default: 720
+      upload-artifact:
+        type: boolean
+        default: false
+      runs-on:
+        type: string
+        default: "['self-hosted', 'Linux', 'X64', 'dev']"
+jobs:
+  run_tests_in_tox:
+    # tricky workaround to pass list from the string input type
+    # https://github.com/orgs/community/discussions/11692
+    runs-on: ${{ fromJson(inputs.runs-on) }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: E2E Tests
+        run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }} -- ${{ inputs.tests-dir }}
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}
+          path: .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ inputs.upload-artifact && always() }}

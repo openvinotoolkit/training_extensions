@@ -19,6 +19,7 @@ from torch import nn
 
 from otx.algorithms.action.configs.base.configuration import ActionConfig
 from otx.algorithms.action.adapters.mmaction.task import MMActionTask
+from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create
@@ -129,6 +130,13 @@ class MockExporter:
             f.write(dummy_data)
 
 
+def mock_data_pipeline(config: Config, *args, **kwargs):
+    config.data = {}
+    for subset in ["train", "val", "test", "unlabeled"]:
+        config.data[f"{subset}_dataloader"] = {}
+    return True
+
+
 class TestMMActionTask:
     """Test class for MMActionTask.
 
@@ -152,6 +160,7 @@ class TestMMActionTask:
 
         cls_model_template = parse_model_template(os.path.join(DEFAULT_ACTION_CLS_DIR, "template.yaml"))
         cls_hyper_parameters = create(cls_model_template.hyper_parameters.data)
+        cls_hyper_parameters.learning_parameters.auto_num_workers = True
         cls_task_env = init_environment(cls_hyper_parameters, cls_model_template, self.cls_label_schema)
         self.cls_task = MMActionTask(task_environment=cls_task_env)
 
@@ -199,7 +208,7 @@ class TestMMActionTask:
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("cls"))
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            return_value=True,
+            side_effect=mock_data_pipeline,
         )
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
@@ -211,10 +220,19 @@ class TestMMActionTask:
         )
         mocker.patch("torch.load", return_value={"state_dict": np.ndarray([1, 1, 1])})
 
+        # mock for testing num_workers
+        num_cpu = 20
+        mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
+        mock_multiprocessing.cpu_count.return_value = num_cpu
+        num_gpu = 5
+        mock_torch = mocker.patch.object(config_utils, "torch")
+        mock_torch.cuda.device_count.return_value = num_gpu
+
         _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)
         output_model = ModelEntity(self.cls_dataset, _config)
         self.cls_task.train(self.cls_dataset, output_model)
         output_model.performance == 1.0
+        assert self.cls_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
 
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_dataset",
@@ -227,7 +245,7 @@ class TestMMActionTask:
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("det"))
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            return_value=True,
+            side_effect=mock_data_pipeline,
         )
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
@@ -237,6 +255,7 @@ class TestMMActionTask:
         output_model = ModelEntity(self.det_dataset, _config)
         self.det_task.train(self.det_dataset, output_model)
         output_model.performance == 1.0
+        assert self.cls_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
 
     @e2e_pytest_unit
     def test_infer(self, mocker) -> None:
@@ -260,7 +279,7 @@ class TestMMActionTask:
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("cls"))
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            return_value=True,
+            side_effect=mock_data_pipeline,
         )
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
@@ -283,7 +302,7 @@ class TestMMActionTask:
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("det"))
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            return_value=True,
+            side_effect=mock_data_pipeline,
         )
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
@@ -323,7 +342,7 @@ class TestMMActionTask:
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export(self, mocker, precision: ModelPrecision) -> None:
+    def test_export(self, mocker, precision: ModelPrecision, export_type: ExportType = ExportType.OPENVINO) -> None:
         """Test export function.
 
         <Steps>
@@ -337,14 +356,32 @@ class TestMMActionTask:
         mocker.patch("torch.load", return_value={})
         mocker.patch("torch.nn.Module.load_state_dict", return_value=True)
 
-        self.cls_task.export(ExportType.OPENVINO, _model, precision, False)
+        self.cls_task.export(export_type, _model, precision, False)
 
-        assert _model.model_format == ModelFormat.OPENVINO
-        assert _model.optimization_type == ModelOptimizationType.MO
+        if export_type == ExportType.OPENVINO:
+            assert _model.model_format == ModelFormat.OPENVINO
+            assert _model.optimization_type == ModelOptimizationType.MO
+            assert _model.get_data("openvino.bin") is not None
+            assert _model.get_data("openvino.xml") is not None
+        else:
+            assert _model.model_format == ModelFormat.ONNX
+            assert _model.optimization_type == ModelOptimizationType.ONNX
+            assert _model.get_data("model.onnx") is not None
+
         assert _model.precision[0] == precision
-        assert _model.get_data("openvino.bin") is not None
-        assert _model.get_data("openvino.xml") is not None
+
         assert _model.get_data("confidence_threshold") is not None
         assert _model.precision == self.cls_task._precision
         assert _model.optimization_methods == self.cls_task._optimization_methods
         assert _model.get_data("label_schema.json") is not None
+
+    @e2e_pytest_unit
+    def test_export_onnx(self, mocker) -> None:
+        """Test export function.
+
+        <Steps>
+            1. Create model entity
+            2. Run export to ONNX function
+            3. Check output model attributes
+        """
+        self.test_export(mocker, ModelPrecision.FP32, ExportType.ONNX)

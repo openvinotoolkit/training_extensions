@@ -3,14 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from collections import defaultdict
+from typing import Any, Dict, List
+
 import datumaro as dm
 import numpy as np
 import pandas as pd
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.dataset_item import DatasetItemEntityWithID
-from otx.api.entities.datasets import DatasetEntity
-from otx.core.data.noisy_label_detection import LossDynamicsTracker, LossDynamicsTrackingMixin
+from otx.core.data.noisy_label_detection import (
+    LossDynamicsTracker,
+    LossDynamicsTrackingMixin,
+)
 
 logger = get_logger()
 
@@ -27,38 +32,19 @@ class SAMClassifierMixin:
 class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
     """Loss dynamics tracker for multi-class classification task."""
 
+    TASK_NAME = "OTX-MultiClassCls"
+
     def __init__(self) -> None:
         super().__init__()
+        self._loss_dynamics: Dict[Any, List] = defaultdict(list)
 
-    def init_with_otx_dataset(self, otx_dataset: DatasetEntity[DatasetItemEntityWithID]) -> None:
-        """DatasetEntity should be injected to the tracker for the initialization."""
-        otx_labels = otx_dataset.get_labels()
-        label_categories = dm.LabelCategories.from_iterable([label_entity.name for label_entity in otx_labels])
-        self.otx_label_map = {label_entity.id_: idx for idx, label_entity in enumerate(otx_labels)}
-
-        def _convert_anns(item: DatasetItemEntityWithID):
-            labels = [
-                dm.Label(label=self.otx_label_map[label.id_])
-                for ann in item.get_annotations()
-                for label in ann.get_labels()
-            ]
-            return labels
-
-        self._export_dataset = dm.Dataset.from_iterable(
-            [
-                dm.DatasetItem(
-                    id=item.id_,
-                    subset="train",
-                    media=dm.Image(path=item.media.path, size=(item.media.height, item.media.width)),
-                    annotations=_convert_anns(item),
-                )
-                for item in otx_dataset
-            ],
-            infos={"purpose": "noisy_label_detection", "task": "OTX-MultiClassCls"},
-            categories={dm.AnnotationType.label: label_categories},
-        )
-
-        super().init_with_otx_dataset(otx_dataset)
+    def _convert_anns(self, item: DatasetItemEntityWithID):
+        labels = [
+            dm.Label(label=self.otx_label_map[label.id_])
+            for ann in item.get_annotations()
+            for label in ann.get_labels()
+        ]
+        return labels
 
     def accumulate(self, outputs, iter) -> None:
         """Accumulate training loss dynamics for each training step."""

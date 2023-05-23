@@ -62,6 +62,10 @@ class BaseStreamer(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
+    def fps(self):
+        """Returns a frequency of getting images from source."""
+        raise NotImplementedError
+
 
 def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue) -> None:
     """Private function that is run by the thread.
@@ -163,6 +167,10 @@ class VideoStreamer(BaseStreamer):
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 else:
                     break
+
+    def fps(self):
+        """Returns a frequency of getting images from source."""
+        return self.cap.get(cv2.CAP_PROP_FPS)
 
     def get_type(self) -> MediaType:
         """Returns the type of media."""

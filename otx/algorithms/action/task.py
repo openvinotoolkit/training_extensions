@@ -48,8 +48,6 @@ from otx.api.entities.metrics import (
 )
 from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.model_template import TaskType
@@ -67,6 +65,7 @@ from otx.api.usecases.evaluation.f_measure import FMeasure
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.vis_utils import get_actmap
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
 logger = get_logger()
 
@@ -98,7 +97,12 @@ class OTXActionTask(OTXTask, ABC):
         self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
     ):
         """Train function for OTX action task.
 
@@ -112,6 +116,8 @@ class OTXActionTask(OTXTask, ABC):
             self._should_stop = False
             self._is_training = False
             return
+        self.seed = seed
+        self.deterministic = deterministic
 
         # Set OTX LoggerHook & Time Monitor
         if train_parameters:
@@ -237,41 +243,32 @@ class OTXActionTask(OTXTask, ABC):
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
-        # copied from OTX inference_task.py
-        logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
-        output_model.has_xai = dump_features
-
-        results = self._export_model(precision, dump_features)
+        self._update_model_export_metadata(output_model, export_type, precision, dump_features)
+        results = self._export_model(precision, export_type, dump_features)
 
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        onnx_file = outputs.get("onnx")
+        if export_type == ExportType.ONNX:
+            onnx_file = outputs.get("onnx")
+            with open(onnx_file, "rb") as f:
+                output_model.set_data("model.onnx", f.read())
+        else:
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
 
-        if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        with open(onnx_file, "rb") as f:
-            output_model.set_data("model.onnx", f.read())
+            with open(bin_file, "rb") as f:
+                output_model.set_data("openvino.bin", f.read())
+            with open(xml_file, "rb") as f:
+                output_model.set_data("openvino.xml", f.read())
+
         output_model.set_data(
             "confidence_threshold",
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
         )
         output_model.set_data("config.json", config_to_bytes(self._hyperparams))
-        output_model.precision = self._precision
-        output_model.optimization_methods = self._optimization_methods
-        output_model.has_xai = dump_features
         output_model.set_data(
             "label_schema.json",
             label_schema_to_bytes(self._task_environment.label_schema),
@@ -279,7 +276,7 @@ class OTXActionTask(OTXTask, ABC):
         logger.info("Exporting completed")
 
     @abstractmethod
-    def _export_model(self, precision: ModelPrecision, dump_features: bool = True):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         raise NotImplementedError
 
     def explain(
@@ -430,6 +427,9 @@ class OTXActionTask(OTXTask, ABC):
 
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in ActionTrainTask."""
+        if is_multigpu_child_process():
+            return
+
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))

@@ -1,8 +1,8 @@
 Semantic Segmentation model
 ================================
 
-This tutorial demonstrates how to train and optimize a semantic segmentation model using the VOC2012 dataset from the PASCAL Visual Object Classes Challenge 2012. 
-The trained model will be used to segment images by assigning a label to each pixel of the input image. 
+This tutorial demonstrates how to train and optimize a semantic segmentation model using the VOC2012 dataset from the PASCAL Visual Object Classes Challenge 2012.
+The trained model will be used to segment images by assigning a label to each pixel of the input image.
 
 To learn more about Segmentation task, refer to :doc:`../../../explanation/algorithms/segmentation/semantic_segmentation`.
 
@@ -24,10 +24,10 @@ The process has been tested on the following configuration.
 Setup virtual environment
 *************************
 
-1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/quick_start_guide/installation>` 
+1. You can follow the installation process from a :doc:`quick start guide <../../../get_started/installation>`
 to create a universal virtual environment for OpenVINO™ Training Extensions.
 
-2. Activate your virtual 
+2. Activate your virtual
 environment:
 
 .. code-block::
@@ -81,7 +81,7 @@ The list of supported templates for semantic segmentation is available with the 
 .. code-block::
 
   (otx) ...$ otx find --task segmentation
-  
+
   +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
   |     TASK     |                          ID                         |        NAME        |                                BASE PATH                                 |
   +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
@@ -98,7 +98,7 @@ The list of supported templates for semantic segmentation is available with the 
 To have a specific example in this tutorial, all commands will be run on the :ref:`Lite-HRNet-18-mod2 <semantic_segmentation_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 
 
-2.  Next, we need to create train/validation sets. 
+2.  Next, we need to create train/validation sets.
 OpenVINO™ Training Extensions supports auto-split functionality for semantic segmentation.
 
 .. note::

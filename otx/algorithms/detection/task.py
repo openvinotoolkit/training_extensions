@@ -37,7 +37,7 @@ from otx.algorithms.detection.utils import get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
 from otx.api.entities.annotation import Annotation
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -54,8 +54,6 @@ from otx.api.entities.metrics import (
 )
 from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
     ModelPrecision,
 )
 from otx.api.entities.model_template import TaskType
@@ -106,7 +104,45 @@ class OTXDetectionTask(OTXTask, ABC):
         else:
             self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
-    def _load_model_ckpt(self, model: Optional[ModelEntity]):
+    def _load_tiling_parameters(self, model_data):
+        """Load tiling parameters from PyTorch model.
+
+        Args:
+            model_data: The model data.
+
+        Raises:
+            RuntimeError: If tile classifier is enabled but not found in the trained model.
+        """
+        loaded_tiling_parameters = model_data.get("config", {}).get("tiling_parameters", {})
+        if loaded_tiling_parameters.get("enable_tiling", {}).get("value", False):
+            logger.info("Load tiling parameters")
+            hparams = self._hyperparams.tiling_parameters
+            hparams.enable_tiling = loaded_tiling_parameters["enable_tiling"]["value"]
+            hparams.tile_size = loaded_tiling_parameters["tile_size"]["value"]
+            hparams.tile_overlap = loaded_tiling_parameters["tile_overlap"]["value"]
+            hparams.tile_max_number = loaded_tiling_parameters["tile_max_number"]["value"]
+            hparams.tile_ir_scale_factor = loaded_tiling_parameters["tile_ir_scale_factor"]["value"]
+            # check backward compatibility
+            enable_tile_classifier = loaded_tiling_parameters.get("enable_tile_classifier", {}).get("value", False)
+            if enable_tile_classifier:
+                found_tile_classifier = any(
+                    layer_name.startswith("tile_classifier") for layer_name in model_data["model"]["state_dict"].keys()
+                )
+                if not found_tile_classifier:
+                    raise RuntimeError(
+                        "Tile classifier is enabled but not found in the trained model. Please retrain your model."
+                    )
+                hparams.enable_tile_classifier = loaded_tiling_parameters["enable_tile_classifier"]["value"]
+
+    def _load_model_ckpt(self, model: Optional[ModelEntity]) -> Optional[Dict]:
+        """Load model checkpoint from model entity.
+
+        Args:
+            model (Optional[ModelEntity]): The model entity.
+
+        Returns:
+            dict: The model checkpoint including model weights and other parameters.
+        """
         if model and "weights.pth" in model.model_adapters:
             # If a model has been trained and saved for the task already, create empty model and load weights here
             buffer = io.BytesIO(model.get_data("weights.pth"))
@@ -116,21 +152,17 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
-
-            # Get config
-            if model_data.get("config"):
-                tiling_parameters = model_data.get("config").get("tiling_parameters")
-                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
-                    logger.info("Load tiling parameters")
-                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
-                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
-                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
-                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
+            self._load_tiling_parameters(model_data)
             return model_data
         return None
 
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
     ):
         """Train function for OTX detection task.
 
@@ -144,6 +176,8 @@ class OTXDetectionTask(OTXTask, ABC):
             self._should_stop = False
             self._is_training = False
             return
+        self.seed = seed
+        self.deterministic = deterministic
 
         # Set OTX LoggerHook & Time Monitor
         if train_parameters:
@@ -152,6 +186,7 @@ class OTXDetectionTask(OTXTask, ABC):
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
 
+        dataset.purpose = DatasetPurpose.TRAINING
         results = self._train_model(dataset)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
@@ -236,6 +271,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         logger.info(f"Confidence threshold {self.confidence_threshold}")
 
+        dataset.purpose = DatasetPurpose.INFERENCE
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
 
         self._add_predictions_to_dataset(
@@ -262,42 +298,55 @@ class OTXDetectionTask(OTXTask, ABC):
     ):
         """Export function of OTX Detection Task."""
         logger.info("Exporting the model")
-        if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f"not supported export type {export_type}")
-        output_model.model_format = ModelFormat.OPENVINO
-        output_model.optimization_type = ModelOptimizationType.MO
 
-        results = self._export_model(precision, dump_features)
+        self._update_model_export_metadata(output_model, export_type, precision, dump_features)
+
+        results = self._export_model(precision, export_type, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
-        bin_file = outputs.get("bin")
-        xml_file = outputs.get("xml")
-        onnx_file = outputs.get("onnx")
+        if export_type == ExportType.ONNX:
+            onnx_file = outputs.get("onnx")
+            with open(onnx_file, "rb") as f:
+                output_model.set_data("model.onnx", f.read())
+        else:
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
 
-        ir_extra_data = get_det_model_api_configuration(
-            self._task_environment.label_schema, self._task_type, self.confidence_threshold
-        )
-        embed_ir_model_data(xml_file, ir_extra_data)
+            ir_extra_data = get_det_model_api_configuration(
+                self._task_environment.label_schema, self._task_type, self.confidence_threshold
+            )
+            embed_ir_model_data(xml_file, ir_extra_data)
 
-        if xml_file is None or bin_file is None or onnx_file is None:
-            raise RuntimeError("invalid status of exporting. bin and xml or onnx should not be None")
-        with open(bin_file, "rb") as f:
-            output_model.set_data("openvino.bin", f.read())
-        with open(xml_file, "rb") as f:
-            output_model.set_data("openvino.xml", f.read())
-        with open(onnx_file, "rb") as f:
-            output_model.set_data("model.onnx", f.read())
+            with open(bin_file, "rb") as f:
+                output_model.set_data("openvino.bin", f.read())
+            with open(xml_file, "rb") as f:
+                output_model.set_data("openvino.xml", f.read())
+
+        if self._hyperparams.tiling_parameters.enable_tile_classifier:
+            tile_classifier = None
+            for partition in outputs.get("partitioned", {}):
+                if partition.get("tile_classifier"):
+                    tile_classifier = partition.get("tile_classifier")
+                    break
+            if tile_classifier is None:
+                raise RuntimeError("invalid status of exporting. tile_classifier should not be None")
+            if export_type == ExportType.ONNX:
+                with open(tile_classifier["onnx"], "rb") as f:
+                    output_model.set_data("tile_classifier.onnx", f.read())
+            else:
+                with open(tile_classifier["bin"], "rb") as f:
+                    output_model.set_data("tile_classifier.bin", f.read())
+                with open(tile_classifier["xml"], "rb") as f:
+                    output_model.set_data("tile_classifier.xml", f.read())
+
         output_model.set_data(
             "confidence_threshold",
             np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
         )
         output_model.set_data("config.json", config_to_bytes(self._hyperparams))
-        output_model.precision = self._precision
-        output_model.optimization_methods = self._optimization_methods
-        output_model.has_xai = dump_features
         output_model.set_data(
             "label_schema.json",
             label_schema_to_bytes(self._task_environment.label_schema),
@@ -305,17 +354,40 @@ class OTXDetectionTask(OTXTask, ABC):
         logger.info("Exporting completed")
 
     @abstractmethod
-    def _export_model(self, precision: ModelPrecision, dump_features: bool):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         """Main export function using training backend."""
         raise NotImplementedError
 
-    @abstractmethod
     def explain(
         self,
         dataset: DatasetEntity,
         explain_parameters: Optional[ExplainParameters] = None,
     ) -> DatasetEntity:
         """Main explain function of OTX Task."""
+        logger.info("explain()")
+
+        update_progress_callback = default_progress_callback
+        process_saliency_maps = False
+        explain_predicted_classes = True
+        if explain_parameters is not None:
+            update_progress_callback = explain_parameters.update_progress  # type: ignore
+            process_saliency_maps = explain_parameters.process_saliency_maps
+            explain_predicted_classes = explain_parameters.explain_predicted_classes
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
+
+        outputs = self._explain_model(dataset, explain_parameters)
+        detections = outputs["detections"]
+        explain_results = outputs["saliency_maps"]
+
+        self._add_explanations_to_dataset(
+            detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
+        )
+        logger.info("Explain completed")
+        return dataset
+
+    @abstractmethod
+    def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
         raise NotImplementedError
 
     def evaluate(
@@ -424,7 +496,7 @@ class OTXDetectionTask(OTXTask, ABC):
                     if len(contour) <= 2 or probability < confidence_threshold:
                         continue
                     if self._task_type == TaskType.INSTANCE_SEGMENTATION:
-                        points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
+                        points = [Point(x=point[0][0] / (width - 1), y=point[0][1] / (height - 1)) for point in contour]
                     else:
                         box_points = cv2.boxPoints(cv2.minAreaRect(contour))
                         points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]

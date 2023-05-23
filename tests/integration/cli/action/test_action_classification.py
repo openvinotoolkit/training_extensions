@@ -4,8 +4,10 @@
 #
 
 import os
+from copy import deepcopy
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -28,6 +30,7 @@ args = {
 
 otx_dir = os.getcwd()
 
+MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
@@ -64,6 +67,49 @@ class TestToolsOTXActionClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_fp16(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "action_cls"
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_onnx(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "action_cls"
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_cls"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("bs_adapt_type", ["Safe", "Full"])
+    def test_otx_train_auto_adapt_batch_size(self, template, tmp_dir_path, bs_adapt_type):
+        adapting_bs_args = deepcopy(args)
+        adapting_bs_args["train_params"].extend(["--learning_parameters.auto_adapt_batch_size", bs_adapt_type])
+        tmp_dir_path = tmp_dir_path / f"action_cls_auto_adapt_{bs_adapt_type}_batch_size"
+        otx_train_testing(template, tmp_dir_path, otx_dir, adapting_bs_args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
+        adapting_num_workers_args = deepcopy(args)
+        adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])
+        tmp_dir_path = tmp_dir_path / f"action_cls_auto_adapt_num_workers"
+        otx_train_testing(template, tmp_dir_path, otx_dir, adapting_num_workers_args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "action_cls/test_multi_gpu"
+        args1 = deepcopy(args)
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)

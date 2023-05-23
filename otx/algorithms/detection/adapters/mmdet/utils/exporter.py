@@ -41,7 +41,7 @@ class DetectionExporter(Exporter):
         return super().run(cfg, **kwargs)
 
     @staticmethod
-    def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
+    def naive_export(output_dir, model_builder, precision, export_type, cfg, model_name="model"):
         """Export using torch.onnx directly."""
         from mmdet.apis.inference import LoadImage
         from mmdet.datasets.pipelines import Compose
@@ -58,7 +58,7 @@ class DetectionExporter(Exporter):
         fake_data = get_fake_data(cfg)
         opset_version = 11
 
-        NaiveExporter.export2openvino(
+        NaiveExporter.export2backend(
             output_dir,
             model_builder,
             cfg,
@@ -68,4 +68,5 @@ class DetectionExporter(Exporter):
             input_names=["image"],
             output_names=["boxes", "labels"],
             opset_version=opset_version,
+            export_type=export_type,
         )

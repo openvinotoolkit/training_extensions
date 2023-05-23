@@ -3,9 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import os
 import sys
 from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
+
+os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
 
 # pylint: disable=no-name-in-module, import-error
 from otx.api.usecases.exportable_code.demo.demo_package import (
@@ -38,11 +41,12 @@ def build_argparser():
     args.add_argument(
         "-m",
         "--models",
-        help="Required. Path to directory with trained model and configuration file. "
+        help="Optional. Path to directory with trained model and configuration file. "
         "If you provide several models you will start the task chain pipeline with "
-        "the provided models in the order in which they were specified.",
+        "the provided models in the order in which they were specified. Default value "
+        "points to deployed model folder '../model'.",
         nargs="+",
-        required=True,
+        default=[Path("../model")],
         type=Path,
     )
     args.add_argument(
@@ -74,6 +78,12 @@ def build_argparser():
         default="CPU",
         type=str,
     )
+    args.add_argument(
+        "--output",
+        default=None,
+        type=str,
+        help="Optional. Output path to save input data with predictions.",
+    )
 
     return parser
 
@@ -96,6 +106,10 @@ def get_inferencer_class(type_inference, models):
 def main():
     """Main function that is used to run demo."""
     args = build_argparser().parse_args()
+
+    if args.loop and args.output:
+        raise ValueError("--loop and --output cannot be both specified")
+
     # create models
     models = []
     for model_dir in args.models:
@@ -105,7 +119,7 @@ def main():
     inferencer = get_inferencer_class(args.inference_type, models)
 
     # create visualizer
-    visualizer = create_visualizer(models[-1].task_type, no_show=args.no_show)
+    visualizer = create_visualizer(models[-1].task_type, no_show=args.no_show, output=args.output)
 
     if len(models) == 1:
         models = models[0]

@@ -14,6 +14,8 @@ from otx.algorithms.classification.adapters.mmcls.models.heads.custom_multi_labe
     CustomMultiLabelNonLinearClsHead,
 )
 
+from .mixin import OTXHeadMixin
+
 
 def generate_aux_mlp(aux_mlp_cfg: dict, in_channels: int):
     """Generate auxiliary MLP."""
@@ -96,7 +98,7 @@ class LossBalancer:
         return total_loss
 
 
-class SemiMultilabelClsHead:
+class SemiMultilabelClsHead(OTXHeadMixin):
     """Multilabel Classification head for Semi-SL.
 
     Args:
@@ -167,6 +169,8 @@ class SemiMultilabelClsHead:
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        for key in x.keys():
+            x[key] = self.pre_logits(x[key])
         logits = final_cls_layer(x["labeled_weak"])
         features_weak = torch.cat((final_emb_layer(x["labeled_weak"]), final_emb_layer(x["unlabeled_weak"])))
         features_strong = torch.cat((final_emb_layer(x["labeled_strong"]), final_emb_layer(x["unlabeled_strong"])))

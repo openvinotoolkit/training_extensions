@@ -48,7 +48,7 @@ test_pipeline = [
         img_scale=(416, 416),
         flip=False,
         transforms=[
-            dict(type="Resize", keep_ratio=False),
+            dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
             dict(type="Pad", size=(416, 416), pad_val=114.0),
             dict(type="Normalize", **__img_norm_cfg),
@@ -74,7 +74,7 @@ data = dict(
             ann_file=__data_root + "annotations/instances_train2017.json",
             img_prefix=__data_root + "train2017/",
             pipeline=[
-                dict(type="LoadImageFromFile", to_float32=True),
+                dict(type="LoadImageFromFile", to_float32=False),
                 dict(type="LoadAnnotations", with_bbox=True),
             ],
         ),

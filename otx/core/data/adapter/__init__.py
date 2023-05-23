@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-return-statements, too-many-arguments
 import importlib
 import os
 
@@ -98,9 +98,14 @@ def get_dataset_adapter(
     task_type: TaskType,
     train_type: TrainType,
     train_data_roots: str = None,
+    train_ann_files: str = None,
     val_data_roots: str = None,
+    val_ann_files: str = None,
     test_data_roots: str = None,
+    test_ann_files: str = None,
     unlabeled_data_roots: str = None,
+    unlabeled_file_list: str = None,
+    **kwargs,
 ):
     """Returns a dataset class by task type.
 
@@ -110,9 +115,14 @@ def get_dataset_adapter(
         train_type: train type such as Incremental and Selfsupervised.
             Selfsupervised is only supported for SEGMENTATION.
         train_data_roots: the path of data root for training data
+        train_ann_files: the path of annotation file for training data
         val_data_roots: the path of data root for validation data
+        val_ann_files: the path of annotation file for validation data
         test_data_roots: the path of data root for test data
+        test_ann_files: the path of annotation file for test data
         unlabeled_data_roots: the path of data root for unlabeled data
+        unlabeled_file_list: the path of unlabeled file list
+        kwargs: optional kwargs
     """
 
     train_type_to_be_called = TrainType.Incremental.value
@@ -125,7 +135,12 @@ def get_dataset_adapter(
     return getattr(module, ADAPTERS[task_type][train_type_to_be_called]["class"])(
         task_type=task_type,
         train_data_roots=train_data_roots,
+        train_ann_files=train_ann_files,
         val_data_roots=val_data_roots,
+        val_ann_files=val_ann_files,
         test_data_roots=test_data_roots,
+        test_ann_files=test_ann_files,
         unlabeled_data_roots=unlabeled_data_roots,
+        unlabeled_file_list=unlabeled_file_list,
+        **kwargs,
     )

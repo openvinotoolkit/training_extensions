@@ -28,6 +28,10 @@ from otx.algorithms.segmentation.adapters.mmseg.datasets.dataset import (
 class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
     """Pipeline element that loads an image from a OTX Dataset on the fly."""
 
+    def __init__(self, to_float32: bool = False, use_otx_adapter: bool = True):
+        self.use_otx_adapter = use_otx_adapter
+        super().__init__(to_float32)
+
 
 @PIPELINES.register_module()
 class LoadAnnotationFromOTXDataset:
@@ -39,15 +43,15 @@ class LoadAnnotationFromOTXDataset:
 
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, use_otx_adapter=True):
+        self.use_otx_adapter = use_otx_adapter
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results["dataset_item"]
         labels = results["ann_info"]["labels"]
 
-        ann_info = get_annotation_mmseg_format(dataset_item, labels)
+        ann_info = get_annotation_mmseg_format(dataset_item, labels, self.use_otx_adapter)
 
         results["gt_semantic_seg"] = ann_info["gt_semantic_seg"]
         results["seg_fields"].append("gt_semantic_seg")

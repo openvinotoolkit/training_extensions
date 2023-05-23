@@ -19,6 +19,7 @@ class Exporter:
         logger.info("export!")
 
         precision = kwargs.pop("precision", "FP32")
+        export_type = kwargs.pop("type", "OPENVINO")
         if precision not in ("FP32", "FP16", "INT8"):
             raise NotImplementedError
         logger.info(f"Model will be exported with precision {precision}")
@@ -43,12 +44,13 @@ class Exporter:
                     cfg.work_dir,
                     model_builder,
                     precision,
+                    export_type,
                     cfg,
                     deploy_cfg,
                     model_name,
                 )
             else:
-                self.naive_export(cfg.work_dir, model_builder, precision, cfg, model_name)
+                self.naive_export(cfg.work_dir, model_builder, precision, export_type, cfg, model_name)
         except RuntimeError as ex:
             # output_model.model_status = ModelStatus.FAILED
             # raise RuntimeError('Optimization was unsuccessful.') from ex
@@ -64,13 +66,14 @@ class Exporter:
                 "onnx": os.path.join(cfg.work_dir, f"{model_name}.onnx"),
                 "partitioned": [
                     {
-                        "bin": os.path.join(cfg.work_dir, name.replace(".xml", ".bin")),
-                        "xml": os.path.join(cfg.work_dir, name),
+                        f"{os.path.splitext(name)[0]}": {
+                            "bin": os.path.join(cfg.work_dir, name.replace(".onnx", ".bin")),
+                            "xml": os.path.join(cfg.work_dir, name.replace(".onnx", ".xml")),
+                            "onnx": os.path.join(cfg.work_dir, name),
+                        }
                     }
                     for name in os.listdir(cfg.work_dir)
-                    if name.endswith(".xml")
-                    and name != f"{model_name}.xml"
-                    and name.replace(".xml", ".bin") in os.listdir(cfg.work_dir)
+                    if name.endswith(".onnx") and name != f"{model_name}.onnx"
                 ],
             },
             "msg": "",
@@ -81,6 +84,7 @@ class Exporter:
         output_dir,
         model_builder,
         precision,
+        export_type,
         cfg,
         deploy_cfg,
         model_name="model",
@@ -90,9 +94,9 @@ class Exporter:
 
         if precision == "FP16":
             deploy_cfg.backend_config.mo_options.flags.append("--compress_to_fp16")
-        MMdeployExporter.export2openvino(output_dir, model_builder, cfg, deploy_cfg, model_name=model_name)
+        MMdeployExporter.export2backend(output_dir, model_builder, cfg, deploy_cfg, export_type, model_name=model_name)
 
     @staticmethod
-    def naive_export(output_dir, model_builder, precision, cfg, model_name="model"):
+    def naive_export(output_dir, model_builder, precision, export_type, cfg, model_name="model"):
         """Export using pytorch backend."""
         raise NotImplementedError()

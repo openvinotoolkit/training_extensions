@@ -23,6 +23,8 @@ from otx.api.configuration.elements import (
     selectable,
     string_attribute,
 )
+from otx.api.configuration.elements.primitive_parameters import configurable_boolean
+from otx.api.configuration.enums.model_lifecycle import ModelLifecycle
 
 # pylint: disable=invalid-name
 
@@ -73,6 +75,15 @@ class DetectionConfig(BaseConfig):
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
         header = string_attribute("Parameters for the MPA algo-backend")
         description = header
+
+        enable_noisy_label_detection = configurable_boolean(
+            default_value=False,
+            header="Enable loss dynamics tracking for noisy label detection",
+            description="Set to True to enable loss dynamics tracking for each sample to detect noisy labeled samples.",
+            editable=False,
+            visible_in_ui=False,
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
 
     @attrs
     class __TilingParameters(BaseConfig.BaseTilingParameters):

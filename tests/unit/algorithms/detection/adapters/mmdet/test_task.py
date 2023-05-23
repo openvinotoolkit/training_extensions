@@ -5,28 +5,24 @@
 #
 
 import os
-import json
 from contextlib import nullcontext
-from copy import deepcopy
 from typing import Any, Dict
 
 import numpy as np
 import pytest
 import torch
-from mmcv.utils import Config
 from torch import nn
 
+from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector import CustomATSS
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model import (
     ModelConfiguration,
@@ -35,7 +31,7 @@ from otx.api.entities.model import (
     ModelOptimizationType,
     ModelPrecision,
 )
-from otx.api.entities.model_template import InstantiationType, parse_model_template, TaskFamily, TaskType
+from otx.api.entities.model_template import parse_model_template, TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -133,8 +129,8 @@ class MockExporter:
         }
 
 
-class TestMMActionTask:
-    """Test class for MMActionTask.
+class TestMMDetectionTask:
+    """Test class for MMDetectionTask.
 
     Details are explained in each test function.
     """
@@ -143,6 +139,7 @@ class TestMMActionTask:
     def setup(self) -> None:
         model_template = parse_model_template(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.learning_parameters.auto_num_workers = True
         task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.DETECTION)
 
         self.det_task = MMDetectionTask(task_env)
@@ -218,10 +215,19 @@ class TestMMActionTask:
             return_value=nullcontext(),
         )
 
+        # mock for testing num_workers
+        num_cpu = 20
+        mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
+        mock_multiprocessing.cpu_count.return_value = num_cpu
+        num_gpu = 5
+        mock_torch = mocker.patch.object(config_utils, "torch")
+        mock_torch.cuda.device_count.return_value = num_gpu
+
         _config = ModelConfiguration(DetectionConfig(), self.det_label_schema)
         output_model = ModelEntity(self.det_dataset, _config)
         self.det_task.train(self.det_dataset, output_model)
         output_model.performance == 1.0
+        assert self.det_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
 
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.train_detector",
@@ -235,6 +241,7 @@ class TestMMActionTask:
         output_model = ModelEntity(self.iseg_dataset, _config)
         self.iseg_task.train(self.iseg_dataset, output_model)
         output_model.performance == 1.0
+        assert self.det_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
 
     @e2e_pytest_unit
     def test_infer(self, mocker) -> None:
@@ -301,7 +308,7 @@ class TestMMActionTask:
 
     @pytest.mark.parametrize("precision", [ModelPrecision.FP16, ModelPrecision.FP32])
     @e2e_pytest_unit
-    def test_export(self, mocker, precision: ModelPrecision) -> None:
+    def test_export(self, mocker, precision: ModelPrecision, export_type: ExportType = ExportType.OPENVINO) -> None:
         """Test export function.
 
         <Steps>
@@ -321,17 +328,27 @@ class TestMMActionTask:
             return_value=True,
         )
 
-        self.det_task.export(ExportType.OPENVINO, _model, precision, False)
+        self.det_task.export(export_type, _model, precision, False)
 
-        assert _model.model_format == ModelFormat.OPENVINO
-        assert _model.optimization_type == ModelOptimizationType.MO
+        assert _model.model_format == ModelFormat.ONNX if export_type == ExportType.ONNX else ModelFormat.OPENVINO
         assert _model.precision[0] == precision
-        assert _model.get_data("openvino.bin") is not None
-        assert _model.get_data("openvino.xml") is not None
-        assert _model.get_data("confidence_threshold") is not None
         assert _model.precision == self.det_task._precision
+
+        if export_type == ExportType.OPENVINO:
+            assert _model.get_data("openvino.bin") is not None
+            assert _model.get_data("openvino.xml") is not None
+            assert _model.optimization_type == ModelOptimizationType.MO
+        else:
+            assert _model.get_data("model.onnx") is not None
+            assert _model.optimization_type == ModelOptimizationType.ONNX
+
+        assert _model.get_data("confidence_threshold") is not None
         assert _model.optimization_methods == self.det_task._optimization_methods
         assert _model.get_data("label_schema.json") is not None
+
+    @e2e_pytest_unit
+    def test_export_onnx(self, mocker) -> None:
+        self.test_export(mocker, ModelPrecision.FP32, ExportType.ONNX)
 
     @e2e_pytest_unit
     def test_explain(self, mocker):

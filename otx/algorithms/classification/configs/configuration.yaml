@@ -205,6 +205,20 @@ learning_parameters:
     value: 0
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
+  use_adaptive_interval:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
+    editable: false
+    header: Use adaptive validation interval
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: This will automatically control the patience and interval when early stopping is enabled.
   enable_supcon:
     affects_outcome_of: TRAINING
     default_value: false
@@ -213,6 +227,43 @@ learning_parameters:
       and accuracy for small datasets.
     editable: true
     header: Enable Supervised Contrastive helper loss
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  auto_adapt_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: None
+    description: Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
+    editable: true
+    enum_name: BatchSizeAdaptType
+    header: Decrease batch size if current batch size isn't fit to CUDA memory.
+    options:
+      NONE: "None"
+      SAFE: "Safe"
+      FULL: "Full"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: None
+    visible_in_ui: true
+    warning:
+      Enabling this could change the actual batch size depending on the current GPU status.
+      The learning rate also could be adjusted according to the adapted batch size. This process might change
+      a model performance and take some extra computation time to try a few batch size candidates.
+  auto_num_workers:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Adapt num_workers according to current hardware status automatically.
+    editable: true
+    header: Enable auto adaptive num_workers
     type: BOOLEAN
     ui_rules:
       action: DISABLE_EDITING
@@ -352,7 +403,7 @@ algo_backend:
       rules: []
       type: UI_RULES
     value: Incremental
-    visible_in_ui: True
+    visible_in_ui: false
     warning: null
   mem_cache_size:
     affects_outcome_of: TRAINING
@@ -363,6 +414,28 @@ algo_backend:
     max_value: 9223372036854775807
     min_value: 0
     type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme for storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
@@ -386,4 +459,4 @@ algo_backend:
     visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false

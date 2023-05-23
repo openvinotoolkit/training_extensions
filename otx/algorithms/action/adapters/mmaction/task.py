@@ -18,7 +18,8 @@ import glob
 import os
 import time
 from copy import deepcopy
-from typing import Optional, Union
+from functools import partial
+from typing import Dict, Optional, Union
 
 import torch
 from mmaction import __version__
@@ -34,6 +35,7 @@ from otx.algorithms.action.adapters.mmaction import (
 )
 from otx.algorithms.action.task import OTXActionTask
 from otx.algorithms.common.adapters.mmcv.utils import (
+    adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
     patch_adaptive_interval_training,
@@ -46,7 +48,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
-from otx.algorithms.common.utils import set_random_seed
+from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -55,6 +57,7 @@ from otx.api.entities.model import ModelPrecision
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
 
 logger = get_logger()
@@ -80,7 +83,7 @@ class MMActionTask(OTXActionTask):
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
-        set_random_seed(self._recipe_cfg.get("seed", 5), logger, self._recipe_cfg.get("deterministic", False))
+        self.set_seed()
 
         # Belows may go to the configure function
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
@@ -156,8 +159,9 @@ class MMActionTask(OTXActionTask):
 
         recipe_cfg.work_dir = self._output_path
         recipe_cfg.resume = self._resume
-        recipe_cfg.distributed = False
         recipe_cfg.omnisource = False
+
+        self._configure_device(recipe_cfg, training)
 
         if data_cfg is not None:
             recipe_cfg.merge_from_dict(data_cfg)
@@ -193,6 +197,35 @@ class MMActionTask(OTXActionTask):
 
         self._config = recipe_cfg
         return recipe_cfg
+
+    def _configure_device(self, cfg: Config, training: bool):
+        """Setting device for training and inference."""
+        cfg.distributed = False
+        if torch.distributed.is_initialized():
+            cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
+            if training:  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
+                cfg.distributed = True
+                self.configure_distributed(cfg)
+        elif "gpu_ids" not in cfg:
+            cfg.gpu_ids = range(1)
+
+        # consider "cuda" and "cpu" device only
+        if not torch.cuda.is_available():
+            cfg.device = "cpu"
+            cfg.gpu_ids = range(-1, 0)
+        else:
+            cfg.device = "cuda"
+
+    @staticmethod
+    def configure_distributed(cfg: Config):
+        """Patching for distributed training."""
+        if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
+            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            logger.info(
+                f"enabled linear scaling rule to the learning rate. \
+                changed LR from {cfg.optimizer.lr} to {new_lr}"
+            )
+            cfg.optimizer.lr = new_lr
 
     # pylint: disable=too-many-branches, too-many-statements
     def _train_model(
@@ -263,6 +296,17 @@ class MMActionTask(OTXActionTask):
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
+
+        if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
+            train_func = partial(train_model, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                validate,
+                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+            )
+
         train_model(
             model,
             datasets,
@@ -385,7 +429,7 @@ class MMActionTask(OTXActionTask):
                     with torch.no_grad():
                         result = model(return_loss=False, **data)
                     eval_predictions.extend(result)
-                    for _ in range(len(data)):
+                    for _ in range(videos_per_gpu):
                         prog_bar.update()
         prog_bar.file.write("\n")
 
@@ -404,32 +448,43 @@ class MMActionTask(OTXActionTask):
 
         return predictions, metric
 
-    def _export_model(self, precision: ModelPrecision, dump_features: bool = True):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         """Main export function."""
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
-        deploy_cfg = self._init_deploy_cfg()
+        deploy_cfg = self._init_deploy_cfg(cfg)
 
         state_dict = torch.load(self._model_ckpt)
         if "model" in state_dict.keys():
             state_dict = state_dict["model"]
+        if "state_dict" in state_dict.keys():
+            state_dict = state_dict["state_dict"]
 
         self._precision[0] = precision
         half_precision = precision == ModelPrecision.FP16
 
-        exporter = Exporter(cfg, state_dict, deploy_cfg, f"{self._output_path}/openvino", half_precision)
+        exporter = Exporter(
+            cfg,
+            state_dict,
+            deploy_cfg,
+            f"{self._output_path}/openvino",
+            half_precision,
+            onnx_only=export_format == ExportType.ONNX,
+        )
         exporter.export()
-        bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
-        xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
-        onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
-        results = {
-            "outputs": {
-                "bin": os.path.join(self._output_path, bin_file),
-                "xml": os.path.join(self._output_path, xml_file),
-                "onnx": os.path.join(self._output_path, onnx_file),
-            }
-        }
+
+        results: Dict[str, Dict[str, str]] = {"outputs": {}}
+
+        if export_format == ExportType.ONNX:
+            onnx_file = [f for f in os.listdir(self._output_path) if f.endswith(".onnx")][0]
+            results["outputs"]["onnx"] = os.path.join(self._output_path, onnx_file)
+        else:
+            bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
+            xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
+            results["outputs"]["bin"] = os.path.join(self._output_path, bin_file)
+            results["outputs"]["xml"] = os.path.join(self._output_path, xml_file)
+
         return results
 
     # This should be removed
@@ -440,7 +495,7 @@ class MMActionTask(OTXActionTask):
         self.override_configs.update(config)
 
     # This should moved somewhere
-    def _init_deploy_cfg(self) -> Union[Config, None]:
+    def _init_deploy_cfg(self, cfg: Config) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
@@ -449,7 +504,7 @@ class MMActionTask(OTXActionTask):
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(
-                    self._recipe_cfg.data.test.pipeline,
+                    cfg.data.test.pipeline,
                     dict(type="Normalize"),
                 )
                 assert len(normalize_cfg) == 1

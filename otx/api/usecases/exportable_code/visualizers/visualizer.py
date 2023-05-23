@@ -5,6 +5,7 @@
 #
 
 import abc
+import time
 from typing import Optional
 
 import cv2
@@ -12,6 +13,7 @@ import numpy as np
 
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.utils.shape_drawer import ShapeDrawer
+from otx.api.usecases.exportable_code.streamer import BaseStreamer
 
 
 class IVisualizer(metaclass=abc.ABCMeta):
@@ -48,6 +50,17 @@ class IVisualizer(metaclass=abc.ABCMeta):
 
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def video_delay(self, elapsed_time: float, streamer: BaseStreamer) -> None:
+        """Check if video frames were inferenced faster than the original video FPS and delay visualizer if so.
+
+        Args:
+            elapsed_time (float): Time spent on frame inference
+            streamer (BaseStreamer): Streamer object
+        """
+
+        raise NotImplementedError
+
 
 class Visualizer(IVisualizer):
     """Visualize the predicted output by drawing the annotations on the input image.
@@ -66,6 +79,7 @@ class Visualizer(IVisualizer):
         is_one_label: bool = False,
         no_show: bool = False,
         delay: Optional[int] = None,
+        output: Optional[str] = None,
     ) -> None:
         self.window_name = "Window" if window_name is None else window_name
         self.shape_drawer = ShapeDrawer(show_count, is_one_label)
@@ -74,6 +88,7 @@ class Visualizer(IVisualizer):
         self.no_show = no_show
         if delay is None:
             self.delay = 1
+        self.output = output
 
     def draw(
         self,
@@ -111,3 +126,17 @@ class Visualizer(IVisualizer):
             return False
 
         return ord("q") == cv2.waitKey(self.delay)
+
+    def video_delay(self, elapsed_time: float, streamer: BaseStreamer):
+        """Check if video frames were inferenced faster than the original video FPS and delay visualizer if so.
+
+        Args:
+            elapsed_time (float): Time spent on frame inference
+            streamer (BaseStreamer): Streamer object
+        """
+        if self.no_show:
+            return
+        if "VIDEO" in str(streamer.get_type()):
+            orig_frame_time = 1 / streamer.fps()
+            if elapsed_time < orig_frame_time:
+                time.sleep(orig_frame_time - elapsed_time)

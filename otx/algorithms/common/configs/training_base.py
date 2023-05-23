@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import POTQuantizationPreset
+from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
@@ -190,6 +190,23 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        auto_adapt_batch_size = selectable(
+            default_value=BatchSizeAdaptType.NONE,
+            header="Adapt batch size according to current GPU memory.",
+            description="Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.",
+            warning="Enabling this could change the actual batch size depending on the current GPU status. "
+            "The learning rate also could be adjusted according to the adapted batch size. This process "
+            "might change a model performance and take some extra computation time to try a few batch size candidates.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        auto_num_workers = configurable_boolean(
+            default_value=False,
+            header="Enable auto adaptive num_workers",
+            description="Adapt num_workers according to current hardware status automatically.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""
@@ -281,7 +298,7 @@ class BaseConfig(ConfigurableParameters):
             header="train type",
             description="Training scheme option that determines how to train the model",
             editable=False,
-            visible_in_ui=True,
+            visible_in_ui=False,
         )
 
         mem_cache_size = configurable_integer(
@@ -294,6 +311,14 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        storage_cache_scheme = selectable(
+            default_value=StorageCacheScheme.NONE,
+            header="Scheme for storage cache",
+            description="Scheme for storage cache",
+            editable=False,
+            visible_in_ui=False,
+        )
+
     @attrs
     class BaseTilingParameters(ParameterGroup):
         """BaseTilingParameters for OTX Algorithms."""
@@ -304,6 +329,18 @@ class BaseConfig(ConfigurableParameters):
             header="Enable tiling",
             description="Set to True to allow tiny objects to be better detected.",
             warning="Tiling trades off speed for accuracy as it increases the number of images to be processed.",
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        enable_tile_classifier = configurable_boolean(
+            default_value=False,
+            header="Enable tile classifier",
+            description="Enabling tile classifier enhances the speed of tiling inference by incorporating a tile "
+            "classifier into the instance segmentation model. This feature prevents the detector from "
+            "making predictions on tiles that do not contain any objects, thus optimizing its "
+            "speed performance.",
+            warning="The tile classifier prioritizes inference speed over training speed, it requires more training "
+            "in order to achieve its optimized performance.",
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
@@ -329,7 +366,7 @@ class BaseConfig(ConfigurableParameters):
             description="Overlap between each two neighboring tiles.",
             default_value=0.2,
             min_value=0.0,
-            max_value=1.0,
+            max_value=0.9,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
@@ -339,6 +376,22 @@ class BaseConfig(ConfigurableParameters):
             default_value=1500,
             min_value=1,
             max_value=10000,
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        tile_ir_scale_factor = configurable_float(
+            header="OpenVINO IR Scale Factor",
+            description="The purpose of the scale parameter is to optimize the performance and "
+            "efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and "
+            "input size, the scale parameter allows for more efficient parallelization of the workload and "
+            "improve the overall performance and efficiency of the inference process on OpenVINO.",
+            warning="Setting the scale factor value too high may cause the application "
+            "to crash or result in out-of-memory errors. It is recommended to "
+            "adjust the scale factor value carefully based on the available "
+            "hardware resources and the needs of the application.",
+            default_value=2.0,
+            min_value=1.0,
+            max_value=4.0,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 

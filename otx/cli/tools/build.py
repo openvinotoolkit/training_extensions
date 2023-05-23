@@ -42,14 +42,17 @@ def get_args():
         "--train-data-roots",
         help="Comma-separated paths to training data folders.",
     )
+    parser.add_argument("--train-ann-files", help="Comma-separated paths to train annotation files.")
     parser.add_argument(
         "--val-data-roots",
         help="Comma-separated paths to validation data folders.",
     )
+    parser.add_argument("--val-ann-files", help="Comma-separated paths to train annotation files.")
     parser.add_argument(
         "--test-data-roots",
         help="Comma-separated paths to test data folders.",
     )
+    parser.add_argument("--test-ann-files", help="Comma-separated paths to train annotation files.")
     parser.add_argument(
         "--unlabeled-data-roots",
         help="Comma-separated paths to unlabeled data folders",
@@ -77,6 +80,16 @@ def get_args():
         "--backbone",
         help="Available Backbone Type can be found using 'otx find --backbone {framework}'.\n"
         "If there is an already created backbone configuration yaml file, enter the corresponding path.",
+    )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Set deterministic to True, default=False.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Set seed for configuration.",
     )
 
     return parser.parse_args()

@@ -11,7 +11,7 @@ files representing those objects.
 from .convert import convert
 from .create import create
 from .substitute import substitute_values, substitute_values_for_lifecycle
-from .utils import config_to_bytes
+from .utils import config_to_bytes, flatten_config_values, merge_a_into_b
 from .validate import validate
 
 __all__ = [
@@ -21,4 +21,6 @@ __all__ = [
     "convert",
     "substitute_values",
     "substitute_values_for_lifecycle",
+    "flatten_config_values",
+    "merge_a_into_b",
 ]

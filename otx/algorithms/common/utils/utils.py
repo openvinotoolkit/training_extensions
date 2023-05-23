@@ -22,7 +22,6 @@ from collections import defaultdict
 from typing import Callable, Optional, Tuple
 
 import numpy as np
-import torch
 import yaml
 
 
@@ -106,6 +105,8 @@ def set_random_seed(seed, logger, deterministic=False):
             to True and `torch.backends.cudnn.benchmark` to False.
             Default: False.
     """
+    import torch
+
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -115,3 +116,13 @@ def set_random_seed(seed, logger, deterministic=False):
     if deterministic:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
+
+
+def get_default_async_reqs_num() -> int:
+    """Returns a default number of infer request for OV models."""
+    reqs_num = os.cpu_count()
+    if reqs_num is not None:
+        reqs_num = max(1, int(reqs_num / 2))
+        return reqs_num
+    else:
+        return 1

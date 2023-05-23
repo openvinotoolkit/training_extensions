@@ -45,7 +45,7 @@ class ParameterGroup:
         on_setattr=attr.setters.frozen,
     )
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         """Update parameter and group after __init__.
 
         This method is called after the __init__ method to update the parameter and group fields of the ParameterGroup

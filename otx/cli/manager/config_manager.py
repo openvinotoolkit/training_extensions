@@ -24,6 +24,7 @@ from otx.cli.utils.errors import (
     NotSupportedError,
 )
 from otx.cli.utils.importing import get_otx_root_path
+from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
 
@@ -157,9 +158,14 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self.rebuild = True
                 model = model if model else self.template.name
                 self.template = self._get_template(str(self.task_type), model=model)
+                self.train_type = self._get_train_type()
+            else:
+                # FIXME: Inside the workspace, ignore the --train-type args.
+                self.train_type = self._get_train_type(ignore_args=True)
         elif self.template and Path(self.template).exists():
             # No workspace -> template O
             self.template = parse_model_template(self.template)
+            self.train_type = self._get_train_type()
         else:
             task_type = self.task_type
             if not task_type and not model:
@@ -167,9 +173,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     raise ConfigValueError("Can't find the argument 'train_data_roots'")
                 task_type = self.auto_task_detection(self.args.train_data_roots)
             self.template = self._get_template(task_type, model=model)
+            self.train_type = self._get_train_type()
         self.task_type = self.template.task_type
         self.model = self.template.name
-        self.train_type = self._get_train_type()
 
     def _check_rebuild(self):
         """Checking for Rebuild status."""
@@ -194,7 +200,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             use_auto_split = data_yaml["data"]["train"]["data-roots"] and not data_yaml["data"]["val"]["data-roots"]
             # FIXME: Hardcoded for Self-Supervised Learning
             if use_auto_split and str(self.train_type).upper() != "SELFSUPERVISED":
-                splitted_dataset = self.auto_split_data(data_yaml["data"]["train"]["data-roots"], str(self.task_type))
+                splitted_dataset = self.auto_split_data(
+                    data_yaml["data"]["train"]["data-roots"], str(self.task_type), self.args.train_ann_files
+                )
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
@@ -256,11 +264,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 return task_key
         raise ConfigValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
-    def auto_split_data(self, data_roots: str, task: str):
+    def auto_split_data(self, data_roots: str, task: str, ann_file: Optional[str] = None):
         """Automatically Split train data --> train/val dataset."""
         self.data_format = self.dataset_manager.get_data_format(data_roots)
         dataset = self.dataset_manager.import_dataset(data_root=data_roots, data_format=self.data_format)
         train_dataset = self.dataset_manager.get_train_dataset(dataset)
+        if ann_file is not None:
+            train_dataset = self.dataset_manager.import_dataset(ann_file, data_format=self.data_format, subset="train")
         val_dataset = self.dataset_manager.get_val_dataset(dataset)
         splitted_dataset = None
         if self.data_format in AUTOSPLIT_SUPPORTED_FORMAT:
@@ -284,13 +294,21 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if self.mode in ("train", "optimize"):
             if self.args.train_data_roots:
                 data_yaml["data"]["train"]["data-roots"] = self.args.train_data_roots
+            if self.args.train_ann_files:
+                data_yaml["data"]["train"]["ann-files"] = self.args.train_ann_files
             if self.args.val_data_roots:
                 data_yaml["data"]["val"]["data-roots"] = self.args.val_data_roots
+            if self.args.val_ann_files:
+                data_yaml["data"]["val"]["ann-files"] = self.args.val_ann_files
             if self.args.unlabeled_data_roots:
                 data_yaml["data"]["unlabeled"]["data-roots"] = self.args.unlabeled_data_roots
+            if self.args.unlabeled_file_list:
+                data_yaml["data"]["unlabeled"]["file-list"] = self.args.unlabeled_file_list
         elif self.mode == "test":
             if self.args.test_data_roots:
                 data_yaml["data"]["test"]["data-roots"] = self.args.test_data_roots
+            if self.args.test_ann_files:
+                data_yaml["data"]["test"]["ann-files"] = self.args.test_ann_files
         return data_yaml
 
     def _save_data(
@@ -326,6 +344,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             data_config["data"]["unlabeled"]["data-roots"] = str(
                 Path(data_config["data"]["unlabeled"]["data-roots"]).absolute()
             )
+        if data_config["data"]["unlabeled"]["file-list"] is not None:
+            data_config["data"]["unlabeled"]["file-list"] = str(
+                Path(data_config["data"]["unlabeled"]["file-list"]).absolute()
+            )
 
     def _create_empty_data_cfg(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """Create default dictionary to represent the dataset."""
@@ -350,21 +372,40 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         override_parameters(updated_hyper_parameters, hyper_parameters)
         return create(hyper_parameters)
 
-    def get_dataset_config(self, subsets: List[str]) -> dict:
+    def get_dataset_config(self, subsets: List[str], hyper_parameters: Optional[ConfigurableParameters] = None) -> dict:
         """Returns dataset_config in a format suitable for each subset.
 
         Args:
             subsets (list, str): Defaults to ["train", "val", "unlabeled"].
+            hyper_parameters (ConfigurableParameters): Set of hyper parameters.
 
         Returns:
             dict: dataset_config
         """
         if str(self.train_type).upper() == "INCREMENTAL" and "unlabeled" in subsets:
             subsets.remove("unlabeled")
-        dataset_config = {"task_type": self.task_type, "train_type": self.train_type}
+        dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
-            if f"{subset}_subset" in self.data_config and self.data_config[f"{subset}_subset"]["data_root"]:
-                dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_root"]})
+            if f"{subset}_subset" in self.data_config:
+                if self.data_config[f"{subset}_subset"]["data_roots"]:
+                    dataset_config.update({f"{subset}_data_roots": self.data_config[f"{subset}_subset"]["data_roots"]})
+                if "ann_files" in self.data_config[f"{subset}_subset"]:
+                    dataset_config.update({f"{subset}_ann_files": self.data_config[f"{subset}_subset"]["ann_files"]})
+                if "file_list" in self.data_config[f"{subset}_subset"]:
+                    dataset_config.update({f"{subset}_file_list": self.data_config[f"{subset}_subset"]["file_list"]})
+        if hyper_parameters is not None:
+            dataset_config["cache_config"] = {}
+            algo_backend = getattr(hyper_parameters, "algo_backend", None)
+            if algo_backend:
+                storage_cache_scheme = getattr(algo_backend, "storage_cache_scheme", None)
+                if storage_cache_scheme is not None:
+                    storage_cache_scheme = str(storage_cache_scheme)
+                dataset_config["cache_config"]["scheme"] = storage_cache_scheme
+
+            learning_parameters = getattr(hyper_parameters, "learning_parameters", None)
+            if learning_parameters:
+                num_workers = getattr(learning_parameters, "num_workers", 0)
+                dataset_config["cache_config"]["num_workers"] = num_workers
         return dataset_config
 
     def update_data_config(self, data_yaml: dict) -> None:
@@ -374,20 +415,26 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         Args:
             data_yaml (dict): data.yaml format
         """
-        if data_yaml["data"]["train"]["data-roots"]:
-            self.data_config["train_subset"] = {"data_root": data_yaml["data"]["train"]["data-roots"]}
-        if data_yaml["data"]["val"]["data-roots"]:
-            self.data_config["val_subset"] = {"data_root": data_yaml["data"]["val"]["data-roots"]}
-        if data_yaml["data"]["test"]["data-roots"]:
-            self.data_config["test_subset"] = {"data_root": data_yaml["data"]["test"]["data-roots"]}
+        if "data-roots" in data_yaml["data"]["train"]:
+            self.data_config["train_subset"] = {"data_roots": data_yaml["data"]["train"]["data-roots"]}
+            if "ann-files" in data_yaml["data"]["train"]:
+                self.data_config["train_subset"]["ann_files"] = data_yaml["data"]["train"]["ann-files"]
+        if "data-roots" in data_yaml["data"]["val"]:
+            self.data_config["val_subset"] = {"data_roots": data_yaml["data"]["val"]["data-roots"]}
+            if "ann-files" in data_yaml["data"]["val"]:
+                self.data_config["val_subset"]["ann_files"] = data_yaml["data"]["val"]["ann-files"]
+        if "data-roots" in data_yaml["data"]["test"]:
+            self.data_config["test_subset"] = {"data_roots": data_yaml["data"]["test"]["data-roots"]}
+            if "ann-files" in data_yaml["data"]["test"]:
+                self.data_config["test_subset"]["ann_files"] = data_yaml["data"]["test"]["ann-files"]
         if "unlabeled" in data_yaml["data"] and data_yaml["data"]["unlabeled"]["data-roots"]:
             self.data_config["unlabeled_subset"] = {
-                "data_root": data_yaml["data"]["unlabeled"]["data-roots"],
+                "data_roots": data_yaml["data"]["unlabeled"]["data-roots"],
                 "file_list": data_yaml["data"]["unlabeled"]["file-list"],
             }
         # FIXME: Hardcoded for Self-Supervised Learning
         if self.mode in ("train", "optimize") and str(self.train_type).upper() == "SELFSUPERVISED":
-            self.data_config["val_subset"] = {"data_root": None}
+            self.data_config["val_subset"] = {"data_roots": None}
 
     def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:
         """Returns the appropriate template for each situation.
@@ -423,6 +470,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
 
         # Create OTX-workspace
+        if is_multigpu_child_process():
+            return
         # Check whether the workspace is existed or not
         if self.check_workspace() and not self.rebuild:
             return
@@ -510,6 +559,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     )
 
                     config = MPAConfig.fromfile(str(target_dir / file_name))
+                    self._patch_cli_configs(config)
                     config.dump(str(dest_dir / file_name))
                 except Exception as exc:
                     raise CliException(f"{self.task_type} requires mmcv-full to be installed.") from exc
@@ -517,3 +567,15 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 config = OmegaConf.load(str(target_dir / file_name))
                 (dest_dir / file_name).write_text(OmegaConf.to_yaml(config))
             print(f"[*] \t- Updated: {str(dest_dir / file_name)}")
+
+    def _patch_cli_configs(self, config):
+        """Patch for CLI configurations."""
+        if config.get("ignore", None):
+            # FIXME: In the CLI, there is currently no case for using the ignore label.
+            # so the workspace's model patches ignore to False.
+            config.ignore = False
+            print("In the CLI, Update ignore to false in model configuration.")
+        if hasattr(config, "deterministic") and hasattr(self.args, "deterministic"):
+            config.deterministic = self.args.deterministic
+        if hasattr(config, "seed") and hasattr(self.args, "seed") and self.args.seed:
+            config.seed = self.args.seed
