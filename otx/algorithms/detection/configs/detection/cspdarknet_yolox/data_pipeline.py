@@ -48,7 +48,7 @@ test_pipeline = [
         img_scale=(416, 416),
         flip=False,
         transforms=[
-            dict(type="Resize", keep_ratio=False),
+            dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
             dict(type="Pad", size=(416, 416), pad_val=114.0),
             dict(type="Normalize", **__img_norm_cfg),
