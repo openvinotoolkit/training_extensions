@@ -82,18 +82,22 @@ class HpoLoop:
     def run(self):
         """Run a HPO loop."""
         logger.info("HPO loop starts.")
-        while not self._hpo_algo.is_done():
-            if self._resource_manager.have_available_resource():
-                trial = self._hpo_algo.get_next_sample()
-                if trial is not None:
-                    self._start_trial_process(trial)
+        try:
+            while not self._hpo_algo.is_done():
+                if self._resource_manager.have_available_resource():
+                    trial = self._hpo_algo.get_next_sample()
+                    if trial is not None:
+                        self._start_trial_process(trial)
 
-            self._remove_finished_process()
-            self._get_reports()
+                self._remove_finished_process()
+                self._get_reports()
 
-            time.sleep(1)
-
+                time.sleep(1)
+        except Exception as e:
+            self._terminate_all_running_processes()
+            raise e
         logger.info("HPO loop is done.")
+
         self._get_reports()
         self._join_all_processes()
 
