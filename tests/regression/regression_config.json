@@ -92,6 +92,11 @@
           "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
           "--test-data-roots": "segmentation/regression_voc_cls_decr/test",
           "--input": "segmentation/regression_voc_cls_decr/test/images"
+        },
+        "supcon": {
+          "--train-data-roots": "segmentation/regression_voc_cls_decr/train",
+          "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
+          "--test-data-roots": "segmentation/regression_voc_cls_decr/test"
         }
       },
       "class_incr": {
@@ -424,6 +429,14 @@
             "Lite-HRNet-18-mod2": 0.087,
             "Lite-HRNet-18": 0.302,
             "Lite-HRNet-x-mod3": 0.041
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-s-mod2": 0.691,
+            "Lite-HRNet-18-mod2": 0.676,
+            "Lite-HRNet-18": 0.682,
+            "Lite-HRNet-x-mod3": 0.698
           }
         }
       },
@@ -1601,6 +1614,14 @@
             "Lite-HRNet-18": 446.99,
             "Lite-HRNet-x-mod3": 667.493
           }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-s-mod2": 241.88,
+            "Lite-HRNet-18-mod2": 279.19,
+            "Lite-HRNet-18": 279.71,
+            "Lite-HRNet-x-mod3": 454.31
+          }
         }
       },
       "class_incr": {
@@ -1992,6 +2013,14 @@
             "Lite-HRNet-18-mod2": 42.2,
             "Lite-HRNet-18": 43.046,
             "Lite-HRNet-x-mod3": 59.053
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-s-mod2": 13.835,
+            "Lite-HRNet-18-mod2": 16.39,
+            "Lite-HRNet-18": 16.23,
+            "Lite-HRNet-x-mod3": 26.549
           }
         }
       },

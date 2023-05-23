@@ -415,3 +415,73 @@ class TestRegressionSegmentation:
         result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
+
+class TestRegressionSupconSegmentation:
+    def setup_method(self):
+        self.label_type = "supcon"
+        self.performance = {}
+
+    def teardown_method(self):
+        with open(f"{result_dir}/result.json", "w") as result_file:
+            json.dump(result_dict, result_file, indent=4)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        self.performance[template.name] = {}
+
+        tmp_dir_path = tmp_dir_path / "supcon_seg"
+        config_supcon = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, self.label_type)
+        args_supcon = config_supcon["data_path"]
+
+        args_supcon["train_params"] = [
+            "params",
+            "--learning_parameters.num_iters",
+            REGRESSION_TEST_EPOCHS,
+            "--learning_parameters.enable_supcon",
+            "True",
+        ]
+        # Supcon
+        train_start_time = timer()
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_supcon)
+        train_elapsed_time = timer() - train_start_time
+
+        # Evaluation with supcon + supervised training
+        infer_start_time = timer()
+        test_result = regression_eval_testing(
+            template,
+            tmp_dir_path,
+            otx_dir,
+            args_supcon,
+            config_supcon["regression_criteria"]["train"],
+            self.performance[template.name],
+        )
+        infer_elapsed_time = timer() - infer_start_time
+
+        self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"].append(self.performance)
+
+        assert test_result["passed"] is True, test_result["log"]
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_kpi_test(self, template):
+        config_supcon = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, self.label_type)
+        results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
+        performance = get_template_performance(results, template)
+
+        kpi_train_result = regression_train_time_testing(
+            train_time_criteria=config_supcon["kpi_e2e_train_time_criteria"]["train"],
+            e2e_train_time=performance[template.name][TIME_LOG["train_time"]],
+            template=template,
+        )
+
+        kpi_eval_result = regression_eval_time_testing(
+            eval_time_criteria=config_supcon["kpi_e2e_eval_time_criteria"]["train"],
+            e2e_eval_time=performance[template.name][TIME_LOG["infer_time"]],
+            template=template,
+        )
+
+        assert kpi_train_result["passed"] is True, kpi_train_result["log"]
+        assert kpi_eval_result["passed"] is True, kpi_eval_result["log"]
