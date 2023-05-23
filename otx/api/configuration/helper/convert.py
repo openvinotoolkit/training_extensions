@@ -131,7 +131,7 @@ def convert(
     if target == str:
         result = yaml.dump(config_dict)
     elif target == dict:
-        result = config_dict
+        result = config_dict  # type: ignore
     elif target == DictConfig:
         result = OmegaConf.create(config_dict)
     else:
