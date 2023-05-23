@@ -151,8 +151,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 def create_converter(
-    converter_type: Domain,
-    labels: LabelSchemaEntity,
+    converter_type: Domain, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None
 ) -> IPredictionToAnnotationConverter:
     """Simple factory for converters based on type of tasks.
 
@@ -163,7 +162,7 @@ def create_converter(
 
     converter: IPredictionToAnnotationConverter
     if converter_type == Domain.DETECTION:
-        converter = DetectionToAnnotationConverter(labels)
+        converter = DetectionToAnnotationConverter(labels, configuration)
     elif converter_type == Domain.SEGMENTATION:
         converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
@@ -175,9 +174,9 @@ def create_converter(
     elif converter_type == Domain.ANOMALY_SEGMENTATION:
         converter = AnomalySegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.INSTANCE_SEGMENTATION:
-        converter = MaskToAnnotationConverter(labels)
+        converter = MaskToAnnotationConverter(labels, configuration)
     elif converter_type == Domain.ROTATED_DETECTION:
-        converter = RotatedRectToAnnotationConverter(labels)
+        converter = RotatedRectToAnnotationConverter(labels, configuration)
     else:
         raise ValueError(f"Unknown converter type: {converter_type}")
 

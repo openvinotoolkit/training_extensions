@@ -72,7 +72,7 @@ def create_otx_dataset(height: int, width: int, labels: List[str], domain: Domai
     image, anno_list = generate_random_annotated_image(width, height, labels)
     image = Image(data=image)
     annotation_scene = AnnotationSceneEntity(annotations=anno_list, kind=AnnotationSceneKind.ANNOTATION)
-    dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene)
+    dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=Subset.TRAINING)
     return DatasetEntity([dataset_item]), labels
 
 
@@ -99,6 +99,7 @@ class TestTilingDetection:
         self.train_data_cfg = ConfigDict(
             dict(
                 type="ImageTilingDataset",
+                filter_empty_gt=False,
                 pipeline=[
                     dict(type="Resize", img_scale=(self.height, self.width), keep_ratio=False),
                     dict(type="RandomFlip", flip_ratio=0.5),
@@ -129,6 +130,7 @@ class TestTilingDetection:
         self.test_data_cfg = ConfigDict(
             dict(
                 type="ImageTilingDataset",
+                filter_empty_gt=False,
                 pipeline=[
                     dict(
                         type="MultiScaleFlipAug",
@@ -171,10 +173,9 @@ class TestTilingDetection:
 
         dataset = build_dataset(self.test_data_cfg)
         stride = int((1 - self.tile_cfg["overlap_ratio"]) * self.tile_cfg["tile_size"])
-        num_tile_rows = ((self.height - self.tile_cfg["tile_size"]) // stride) + 1
-        num_tile_cols = ((self.width - self.tile_cfg["tile_size"]) // stride) + 1
-        # +1 for the original image
-        assert len(dataset) == (num_tile_rows * num_tile_cols) + 1, "Incorrect number of tiles"
+        num_tile_rows = (self.height + stride - 1) // stride
+        num_tile_cols = (self.width + stride - 1) // stride
+        assert len(dataset) == (num_tile_rows * num_tile_cols), "Incorrect number of tiles"
 
         test_dataloader = build_dataloader(dataset, **self.dataloader_cfg)
         for data in test_dataloader:
@@ -288,7 +289,7 @@ class TestTilingDetection:
             dict(type="LoadImageFromFile"),
             dict(
                 type="MultiScaleFlipAug",
-                img_scale=(800, 800),
+                img_scale=(512, 512),
                 flip=False,
                 transforms=[
                     dict(type="Resize", keep_ratio=False),

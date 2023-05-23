@@ -69,8 +69,9 @@ class TestDetectionToAnnotationConverter:
             LabelEntity("Zero", domain=Domain.DETECTION),
             LabelEntity("One", domain=Domain.DETECTION),
         ]
+        configuration = {"use_ellipse_shapes": False, "confidence_threshold": 0.01}
 
-        converter = DetectionToAnnotationConverter(labels)
+        converter = DetectionToAnnotationConverter(labels, configuration)
 
         annotation_scene = converter.convert_to_annotation(test_boxes)
 
@@ -121,8 +122,9 @@ class TestDetectionToAnnotationConverter:
             LabelEntity("Zero", domain=Domain.DETECTION),
             LabelEntity("One", domain=Domain.DETECTION),
         ]
+        configuration = {"use_ellipse_shapes": False, "confidence_threshold": 0.01}
 
-        converter = DetectionToAnnotationConverter(labels)
+        converter = DetectionToAnnotationConverter(labels, configuration)
 
         annotation_scene = converter.convert_to_annotation(test_boxes)
 
@@ -162,7 +164,8 @@ class TestDetectionToAnnotationConverter:
             LabelEntity("Zero", domain=Domain.DETECTION),
             LabelEntity("One", domain=Domain.DETECTION),
         ]
-        converter = DetectionToAnnotationConverter(labels)
+        configuration = {"use_ellipse_shapes": False, "confidence_threshold": 0.01}
+        converter = DetectionToAnnotationConverter(labels, configuration)
 
         with pytest.raises(ValueError):
             converter.convert_to_annotation(np.ndarray((1203, 5)))
@@ -239,7 +242,8 @@ class TestCreateConverter:
         ]
         label_group = LabelGroup(name="Detection labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = create_converter(converter_type=Domain.DETECTION, labels=label_schema)
+        configuration = {"use_ellipse_shapes": False, "confidence_threshold": 0.01}
+        converter = create_converter(converter_type=Domain.DETECTION, labels=label_schema, configuration=configuration)
         assert isinstance(converter, DetectionToAnnotationConverter)
         assert converter.labels == labels
         # Checking "SegmentationToAnnotationConverter" returned by "create_converter" function when "SEGMENTATION"is
