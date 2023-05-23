@@ -343,8 +343,10 @@ def patch_tiling(config, hparams, dataset=None):
             config.model.type = "CustomMaskRCNNTileOptimized"
 
             for subset in ("val", "test"):
-                if config.data[subset].pipeline[0]["transforms"][-1]["type"] == "Collect":
-                    config.data[subset].pipeline[0]["transforms"][-1]["keys"].append("full_res_image")
+                if "transforms" in config.data[subset].pipeline[0]:
+                    transforms = config.data[subset].pipeline[0]["transforms"]
+                    if transforms[-1]["type"] == "Collect":
+                        transforms["keys"].append("full_res_image")
 
             if config.model.backbone.type == "efficientnet_b2b":
                 learning_rate = 0.002
