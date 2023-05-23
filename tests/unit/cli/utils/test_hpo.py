@@ -552,7 +552,7 @@ class TestTrainer:
         weight_dir = self.hpo_workdir / "weight" / trial_id
         # prepare a weight trained more than given epoch
         weight_dir.mkdir(parents=True)
-        (weight_dir / self.weight_format.format(epoch_to_run+1)).touch()
+        (weight_dir / self.weight_format.format(epoch_to_run + 1)).touch()
         mock_report_func = mocker.MagicMock()
 
         mocker.patch("otx.cli.utils.hpo.get_dataset_adapter")

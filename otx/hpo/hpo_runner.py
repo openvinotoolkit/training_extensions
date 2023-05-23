@@ -18,13 +18,13 @@ import logging
 import multiprocessing
 import os
 import queue
-import time
-import sys
 import signal
+import sys
+import time
 from copy import deepcopy
+from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Dict, Literal, Optional, Union
-from dataclasses import dataclass
 
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
@@ -34,7 +34,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class RunningTrial:
-    """Data class for a running trial"""
+    """Data class for a running trial."""
+
     process: multiprocessing.Process
     trial: Trial
     queue: multiprocessing.Queue
@@ -205,13 +206,11 @@ def _report_score(
     recv_queue: multiprocessing.Queue,
     send_queue: multiprocessing.Queue,
     uid: Any,
-    done: bool = False
+    done: bool = False,
 ):
     logger.debug(f"score : {score}, progress : {progress}, uid : {uid}, pid : {os.getpid()}, done : {done}")
     try:
-        send_queue.put_nowait(
-            {"score": score, "progress": progress, "uid": uid, "pid": os.getpid(), "done": done}
-        )
+        send_queue.put_nowait({"score": score, "progress": progress, "uid": uid, "pid": os.getpid(), "done": done})
     except ValueError:
         return TrialStatus.STOP
 
