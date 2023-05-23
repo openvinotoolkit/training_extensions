@@ -289,7 +289,6 @@ class MMDetectionTask(OTXDetectionTask):
                 cfg,
                 datasets,
                 isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
-                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
         train_detector(
