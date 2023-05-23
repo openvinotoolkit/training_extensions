@@ -35,12 +35,12 @@ class Exporter:
             pipeline += cfg.data.test.get("pipeline", [])
             cfg.data.test.pipeline = pipeline
         for pipeline in cfg.data.test.pipeline:
-            if pipeline.get('transforms', None):
+            if pipeline.get("transforms", None):
                 transforms = pipeline.transforms
-                if transforms[-1].type == 'Collect':
-                    for collect_key in transforms[-1]['keys']:
-                        if collect_key != 'img':
-                            transforms[-1]['keys'].remove(collect_key)
+                if transforms[-1].type == "Collect":
+                    for collect_key in transforms[-1]["keys"]:
+                        if collect_key != "img":
+                            transforms[-1]["keys"].remove(collect_key)
 
         model_builder = kwargs.get("model_builder")
         try:
