@@ -316,6 +316,8 @@ class MMDetectionTask(OTXDetectionTask):
         inference_parameters: Optional[InferenceParameters] = None,
     ):
         """Main infer function."""
+        for item in dataset:
+            item.subset = Subset.TESTING
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -336,9 +338,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
-        # TODO: need to figure it out why dataset is set to validation
-        for data_item in cfg.data.test["dataset"]["otx_dataset"]:
-            data_item.subset = Subset.TESTING
 
         samples_per_gpu = 1
 
