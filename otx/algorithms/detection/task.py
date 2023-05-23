@@ -21,6 +21,7 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import cv2
 import numpy as np
+import psutil
 import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import ConfigDict
@@ -180,7 +181,8 @@ class OTXDetectionTask(OTXTask, ABC):
 
         Actual training is processed by _train_model fucntion
         """
-        logger.info("train()")
+        logger.info(f"train()")
+        logger.info(f"------> system virtual mem: {psutil.virtual_memory()}")
         # Check for stop signal when training has stopped.
         # If should_stop is true, training was cancelled and no new
         if self._should_stop:
