@@ -62,6 +62,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         self.labels = labels.get_labels(include_empty=False) if isinstance(labels, LabelSchemaEntity) else labels
         self.label_map = dict(enumerate(self.labels))
         self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+        self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Optional[Dict[str, np.ndarray]] = None
@@ -130,6 +131,10 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             scored_label = ScoredLabel(self.label_map[label], confidence)
             coords = prediction[2:]
             shape: Union[Ellipse, Rectangle]
+
+            if confidence < self.confidence_threshold:
+                continue
+
             if self.use_ellipse_shapes:
                 shape = convert_bbox_to_ellipse(coords[0], coords[1], coords[2], coords[3])
             else:
@@ -421,6 +426,7 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
         self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+        self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
@@ -436,6 +442,8 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
         height, width, _ = metadata["original_shape"]
         shape: Union[Polygon, Ellipse]
         for score, class_idx, box, mask in zip(*predictions):
+            if score < self.confidence_threshold:
+                continue
             if self.use_ellipse_shapes:
                 shape = convert_bbox_to_ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
                 annotations.append(
@@ -486,6 +494,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
         self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+        self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
@@ -501,6 +510,8 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
         height, width, _ = metadata["original_shape"]
         shape: Union[Polygon, Ellipse]
         for score, class_idx, box, mask in zip(*predictions):
+            if score < self.confidence_threshold:
+                continue
             if self.use_ellipse_shapes:
                 shape = convert_bbox_to_ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
                 annotations.append(
