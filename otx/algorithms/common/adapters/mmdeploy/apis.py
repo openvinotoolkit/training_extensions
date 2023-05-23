@@ -254,7 +254,7 @@ if is_mmdeploy_enabled():
             model_name: str = "model",
         ):
             """Function for extracting partition."""
-
+            reset_mark_function_count()
             model_onnx = MMdeployExporter.torch2onnx(
                 output_dir,
                 input_data,
