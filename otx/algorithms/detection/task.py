@@ -117,7 +117,10 @@ class OTXDetectionTask(OTXTask, ABC):
         """
         loaded_postprocessing = model_data.get("config", {}).get("postprocessing", {})
         hparams = self._hyperparams.postprocessing
-        hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
+        if hasattr(loaded_postprocessing, "use_ellipse_shapes"):
+            hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
+        else:
+            hparams.use_ellipse_shapes = False
 
     def _load_tiling_parameters(self, model_data):
         """Load tiling parameters from PyTorch model.
@@ -546,7 +549,13 @@ class OTXDetectionTask(OTXTask, ABC):
         return shapes
 
     def _add_explanations_to_dataset(
-        self, detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
+        self,
+        detections,
+        explain_results,
+        dataset,
+        process_saliency_maps,
+        explain_predicted_classes,
+        use_ellipse_shapes=False,
     ):
         """Add saliency map to the dataset."""
         for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
@@ -555,7 +564,7 @@ class OTXDetectionTask(OTXTask, ABC):
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
-            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4)
+            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4, use_ellipse_shapes)
             predicted_scored_labels = []
             for shape in shapes:
                 predicted_scored_labels += shape.get_labels()

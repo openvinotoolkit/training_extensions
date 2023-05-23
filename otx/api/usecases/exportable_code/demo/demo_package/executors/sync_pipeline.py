@@ -42,7 +42,7 @@ class ChainExecutor:
         self.visualizer = visualizer
         self.converters = []
         for model in self.models:
-            self.converters.append(create_output_converter(model.task_type, model.labels))
+            self.converters.append(create_output_converter(model.task_type, model.labels, model.model_parameters))
 
     # pylint: disable=too-many-locals
     def single_run(self, input_image: np.ndarray) -> AnnotationSceneEntity:

@@ -316,6 +316,7 @@ class MMDetectionTask(OTXDetectionTask):
         inference_parameters: Optional[InferenceParameters] = None,
     ):
         """Main infer function."""
+        original_subset = dataset[0].subset
         for item in dataset:
             item.subset = Subset.TESTING
         self._data_cfg = ConfigDict(
@@ -463,6 +464,11 @@ class MMDetectionTask(OTXDetectionTask):
             f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
         )
         prediction_results = zip(predictions, output["feature_vectors"], output["saliency_maps"])
+        # FIXME. This is temporary solution.
+        # All task(e.g. classification, segmentation) should change item's type to Subset.TESTING
+        # when the phase is inference.
+        for item in dataset:
+            item.subset = original_subset
         return prediction_results, metric
 
     # pylint: disable=too-many-statements
@@ -509,6 +515,9 @@ class MMDetectionTask(OTXDetectionTask):
         explain_parameters: Optional[ExplainParameters] = None,
     ) -> Dict[str, Any]:
         """Main explain function of MMDetectionTask."""
+
+        for item in dataset:
+            item.subset = Subset.TESTING
 
         explainer_hook_selector = {
             "classwisesaliencymap": DetClassProbabilityMapHook,
