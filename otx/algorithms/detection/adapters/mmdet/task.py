@@ -338,7 +338,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         cfg = self.configure(False, "test", None)
         logger.info("infer!")
-        breakpoint()
 
         samples_per_gpu = 1
 
