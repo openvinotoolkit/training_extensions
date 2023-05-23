@@ -438,6 +438,12 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
         for score, class_idx, box, mask in zip(*predictions):
             if self.use_ellipse_shapes:
                 shape = convert_bbox_to_ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
+                annotations.append(
+                    Annotation(
+                        shape,
+                        labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
+                    )
+                )
             else:
                 mask = mask.astype(np.uint8)
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -457,12 +463,12 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                         for point in contour
                     ]
                     shape = Polygon(points=points)
-            annotations.append(
-                Annotation(
-                    shape,
-                    labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
-                )
-            )
+                    annotations.append(
+                        Annotation(
+                            shape,
+                            labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
+                        )
+                    )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
