@@ -480,11 +480,11 @@ tiling_parameters:
       type: UI_RULES
     value: true
     visible_in_ui: true
-    warning: Tiling trades off speed for accuracy as it increases the number of images to be processed.
+    warning: Tiling trades off speed for accuracy as it increases the number of images to be processed. In turn, it's memory efficient as smaller resolution patches are handled at onces so that the possibility of OOM issues could be reduced.
 
   enable_adaptive_params:
     header: Enable adaptive tiling parameters
-    description: Config tile size and tile overlap adaptively based on annotated dataset statistic
+    description: Config tile size and tile overlap adaptively based on annotated dataset statistic. Manual settings well be ignored if it's turned on. Please turn off this option in order to tune tiling parameters manually.
     default_value: true
     editable: true
     affects_outcome_of: TRAINING
@@ -500,7 +500,7 @@ tiling_parameters:
 
   tile_size:
     header: Tile Image Size
-    description: Tile Image Size
+    description: Tile image size. (tile_size x tile_size) sub images will be the unit of computation.
     affects_outcome_of: TRAINING
     default_value: 400
     min_value: 100
@@ -518,7 +518,7 @@ tiling_parameters:
 
   tile_overlap:
     header: Tile Overlap
-    description: Overlap between each two neighboring tiles.
+    description: Overlap ratio between each two neighboring tiles. Recommend to set as large_object_size / tile_size.
     affects_outcome_of: TRAINING
     default_value: 0.2
     min_value: 0.0
@@ -535,8 +535,8 @@ tiling_parameters:
     warning: null
 
   tile_max_number:
-    header: Max object per image
-    description: Max object per image
+    header: Max object per tile
+    description: Maximum number of objects per tile
     affects_outcome_of: TRAINING
     default_value: 1500
     min_value: 1
