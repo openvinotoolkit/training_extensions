@@ -51,7 +51,7 @@ args = {
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "2"],
+    "train_params": ["params", "--learning_parameters.num_iters", "5", "--learning_parameters.batch_size", "2"],
 }
 
 # Training params for resume, num_iters*2
