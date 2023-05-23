@@ -129,7 +129,7 @@ class HpoLoop:
             ),
         )
         os.environ = origin_env
-        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)
+        self._running_trials[uid] = RunningTrial(process, trial, trial_queue)  # type: ignore
         process.start()
 
     def _remove_finished_process(self):
@@ -195,7 +195,6 @@ class HpoLoop:
 
 def _run_train(train_func: Callable, hp_config: Dict, report_func: Callable):
     # set multi process method as default
-    raise RuntimeError
     multiprocessing.set_start_method(None, True)  # type: ignore
     train_func(hp_config, report_func)
 
