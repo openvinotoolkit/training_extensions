@@ -416,6 +416,7 @@ class TestRegressionSegmentation:
 
         assert test_result["passed"] is True, test_result["log"]
 
+
 class TestRegressionSupconSegmentation:
     def setup_method(self):
         self.label_type = "supcon"
