@@ -411,7 +411,7 @@ class BaseConfig(ConfigurableParameters):
         object_tile_ratio = configurable_float(
             header="Object tile ratio",
             description="The desired ratio of min object size and tile size.",
-            default_value=0.06,
+            default_value=0.03,
             min_value=0.00,
             max_value=1.00,
             affects_outcome_of=ModelLifecycle.NONE,

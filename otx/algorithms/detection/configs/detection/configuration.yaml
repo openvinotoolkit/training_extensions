@@ -574,7 +574,7 @@ tiling_parameters:
     header: Object tile ratio
     description: The desired ratio of min object size and tile size.
     affects_outcome_of: TRAINING
-    default_value: 0.06
+    default_value: 0.03
     min_value: 0.00
     max_value: 1.00
     type: FLOAT
@@ -584,7 +584,7 @@ tiling_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 0.06
+    value: 0.03
     visible_in_ui: false
     warning: null
 
