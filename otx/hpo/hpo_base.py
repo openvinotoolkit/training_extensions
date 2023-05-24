@@ -183,6 +183,7 @@ class Trial:
         self._train_environment = train_environment
         self._iteration = None
         self.status: TrialStatus = TrialStatus.READY
+        self._done = False
 
     @property
     def id(self):
@@ -204,6 +205,8 @@ class Trial:
         """Setter for iteration."""
         check_positive(val, "iteration")
         self._iteration = val
+        if self.get_progress() < val:
+            self._done = False
 
     @property
     def train_environment(self):
@@ -279,21 +282,16 @@ class Trial:
             json.dump(results, f)
 
     def finalize(self):
-        """Let the trial know that training is done.
-
-        If the trial isn't trained until given resource, then make it pretend to train until resouce.
-        """
-        if self.get_progress() < self.iteration:
-            best_score = self.get_best_score()
-            if best_score is None:
-                raise RuntimeError(f"Although {self.id} trial doesn't report any score but it's done")
-            self.register_score(best_score, self.iteration)
+        """Set done as True."""
+        if not self.score:
+            raise RuntimeError(f"Trial{self.id} didn't report any score but tries to be done.")
+        self._done = True
 
     def is_done(self):
         """Check the trial is done."""
         if self.iteration is None:
             raise ValueError("iteration isn't set yet.")
-        return self.get_progress() >= self.iteration
+        return self._done or self.get_progress() >= self.iteration
 
 
 class TrialStatus(IntEnum):

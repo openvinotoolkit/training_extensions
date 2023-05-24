@@ -715,7 +715,7 @@ class TestHyperBand:
         trial = hyper_band.get_next_sample()
         hyper_band.report_score(100, 0.1, trial.id)
         hyper_band.report_score(0, 0, trial.id, done=True)
-        assert trial.get_progress() == trial.iteration
+        assert trial.is_done()
 
     @e2e_pytest_component
     def test_get_best_config(self, hyper_band):
@@ -932,6 +932,7 @@ class TestHyperBand:
         hyper_band.report_score(score=0, resource=0, trial_id=first_trial.id, done=True)
 
         assert hyper_band.maximum_resource == max_validation
+        assert first_trial.estimating_max_resource
 
     @e2e_pytest_component
     @pytest.mark.parametrize("num_trial_to_estimate", [10, 30, 100])
@@ -961,6 +962,8 @@ class TestHyperBand:
                     break
 
         first_trial = trials_to_estimate[0]
+        assert first_trial.estimating_max_resource
+
         hyperband.report_score(score=1, resource=max_validation, trial_id=first_trial.id)
         hyperband.report_score(score=0, resource=0, trial_id=first_trial.id, done=True)
 
@@ -1006,6 +1009,8 @@ class TestHyperBand:
                     break
 
         first_trial = trials_to_estimate[0]
+        assert first_trial.estimating_max_resource
+
         hyperband.report_score(score=1, resource=max_validation, trial_id=first_trial.id)
         hyperband.report_score(score=0, resource=0, trial_id=first_trial.id, done=True)
 
@@ -1051,7 +1056,6 @@ class TestHyperBand:
                 if hyper_band.report_score(score=1, resource=iter, trial_id=trial.id) == TrialStatus.STOP:
                     break
 
-        first_trial = trials_to_estimate[0]
         hyper_band.report_score(score=1, resource=max_validation, trial_id=first_trial.id)
         hyper_band.report_score(score=0, resource=0, trial_id=first_trial.id, done=True)
 
@@ -1067,6 +1071,7 @@ class TestHyperBand:
 
         expected_min = hyper_band.maximum_resource * (good_hyperband_args["reduction_factor"] ** -s_max)
 
+        assert first_trial.estimating_max_resource
         assert min(iter_set) == expected_min
         assert hyper_band.maximum_resource == max_validation
 

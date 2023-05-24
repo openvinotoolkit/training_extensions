@@ -53,6 +53,7 @@ class AshaTrial(Trial):
         super().__init__(trial_id, configuration, train_environment)
         self._rung: Optional[int] = None
         self._bracket: Optional[int] = None
+        self.estimating_max_resource: bool = False
 
     @property
     def rung(self):
@@ -708,6 +709,7 @@ class HyperBand(HpoBase):
             if len(self._trials) == 1:  # first trial to estimate
                 trial.bracket = 0
                 trial.iteration = self.num_full_iterations
+                trial.estimating_max_resource = True
             elif self._minimum_resource is not None:
                 trial.iteration = self._minimum_resource
             else:
@@ -917,7 +919,7 @@ class HyperBand(HpoBase):
         """
         trial = self._trials[trial_id]
         if done:
-            if self.maximum_resource is None:
+            if self.maximum_resource is None and trial.estimating_max_resource:
                 self.maximum_resource = trial.get_progress()
                 self.num_full_iterations = self.maximum_resource
                 if not self._need_to_find_resource_value():
