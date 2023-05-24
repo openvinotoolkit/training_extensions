@@ -90,9 +90,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
         dataset_adapter = SelfSLSegmentationDatasetAdapter(
-            task_type=self.task_type,
-            train_data_roots=self.train_data_roots,
-            pseudo_mask_dir=self.pseudo_mask_dir
+            task_type=self.task_type, train_data_roots=self.train_data_roots, pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         spy_create_pseudo_masks.assert_called()
@@ -109,9 +107,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         """
         shutil.rmtree(self.pseudo_mask_dir, ignore_errors=True)
         dataset_adapter = SelfSLSegmentationDatasetAdapter(
-            task_type=self.task_type,
-            train_data_roots=self.train_data_roots,
-            pseudo_mask_dir=self.pseudo_mask_dir
+            task_type=self.task_type, train_data_roots=self.train_data_roots, pseudo_mask_dir=self.pseudo_mask_dir
         )
         assert os.path.isdir(self.pseudo_mask_dir)
         assert len(os.listdir(self.pseudo_mask_dir)) == 4
@@ -121,8 +117,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
         _ = dataset_adapter._import_dataset(
-            train_data_roots=self.train_data_roots,
-            pseudo_mask_dir=self.pseudo_mask_dir
+            train_data_roots=self.train_data_roots, pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         spy_create_pseudo_masks.assert_called()
@@ -134,9 +129,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
         _ = SelfSLSegmentationDatasetAdapter(
-            task_type=self.task_type,
-            train_data_roots=self.train_data_roots,
-            pseudo_mask_dir=self.pseudo_mask_dir
+            task_type=self.task_type, train_data_roots=self.train_data_roots, pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         spy_create_pseudo_masks.assert_not_called()
@@ -156,9 +149,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         mocker.patch("otx.core.data.adapter.segmentation_dataset_adapter.os.makedirs")
         mocker.patch("otx.core.data.adapter.segmentation_dataset_adapter.cv2.imwrite")
         dataset_adapter = SelfSLSegmentationDatasetAdapter(
-            task_type=self.task_type,
-            train_data_roots=self.train_data_roots,
-            pseudo_mask_dir=self.pseudo_mask_dir
+            task_type=self.task_type, train_data_roots=self.train_data_roots, pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         pseudo_mask = dataset_adapter.create_pseudo_masks(img=np.ones((2, 2)), pseudo_mask_path="")
