@@ -64,7 +64,7 @@ train_dataset = dict(
         img_prefix=__data_root + "images/train",
         pipeline=[
             dict(type="LoadImageFromFile"),
-            dict(type="LoadAnnotations", with_bbox=True, with_mask=True),
+            dict(type="LoadAnnotations", with_bbox=True),
         ],
     ),
     pipeline=train_pipeline,
@@ -79,7 +79,7 @@ val_dataset = dict(
         img_prefix=__data_root + "images/val",
         pipeline=[
             dict(type="LoadImageFromFile"),
-            dict(type="LoadAnnotations", with_bbox=True, with_mask=True),
+            dict(type="LoadAnnotations", with_bbox=True),
         ],
     ),
     pipeline=test_pipeline,
