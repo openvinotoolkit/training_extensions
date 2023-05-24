@@ -328,7 +328,9 @@ class BaseConfig(ConfigurableParameters):
             default_value=False,
             header="Enable tiling",
             description="Set to True to allow tiny objects to be better detected.",
-            warning="Tiling trades off speed for accuracy as it increases the number of images to be processed.",
+            warning="Tiling trades off speed for accuracy as it increases the number of images to be processed. "
+            "Important: In the current version, depending on the dataset size and the available hardware resources, "
+            "a model may not train successfully when tiling is enabled.",
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
