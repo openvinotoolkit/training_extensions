@@ -65,14 +65,16 @@ def mock_dataset(mocker):
 @pytest.mark.parametrize("not_increase", [True, False])
 @pytest.mark.parametrize("is_action_task", [True, False])
 @pytest.mark.parametrize("is_iter_based_runner", [True, False])
-def test_adapt_batch_size(mocker, mock_adapt_algo_cls, common_cfg, mock_dataset, not_increase, is_action_task, is_iter_based_runner):
+def test_adapt_batch_size(
+    mocker, mock_adapt_algo_cls, common_cfg, mock_dataset, not_increase, is_action_task, is_iter_based_runner
+):
     # prepare
     mock_train_func = mocker.MagicMock()
     new_bs = DEFAULT_BS // 2 if not_increase else DEFAULT_BS + 2
 
     max_eph_name = "max_epochs"
     if is_iter_based_runner:
-        common_cfg.runner = {'type': 'IterBasedRunnerWithCancel', 'max_iters': 100}
+        common_cfg.runner = {"type": "IterBasedRunnerWithCancel", "max_iters": 100}
         max_eph_name = "max_iters"
 
     if is_action_task:

@@ -122,6 +122,7 @@ def _set_batch_size(cfg, batch_size: int):
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
 
+
 def _set_max_epoch(cfg, max_epoch: int):
     if cfg.runner.get("type") == "AccuracyAwareRunner":  # nncf case
         if "nncf_config" in cfg.runner:
