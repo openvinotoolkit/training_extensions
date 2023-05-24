@@ -43,10 +43,7 @@ from otx.cli.utils.nncf import is_checkpoint_nncf
 
 model_adapter_keys = (
     "confidence_threshold",
-    "image_threshold",
-    "pixel_threshold",
-    "min",
-    "max",
+    "metadata",
     "config.json",
     "tile_classifier.xml",
     "tile_classifier.bin",
@@ -173,7 +170,10 @@ def read_deployed_model(
 
         for key in model_adapter_keys:
             if key in model_parameters:
-                model_adapters[key] = ModelAdapter(struct.pack("f", model_parameters[key]))
+                if key == "metadata":  # anomaly tasks now use metadata for storing all parameters
+                    model_adapters[key] = ModelAdapter(json.dumps(model_parameters[key]).encode())
+                else:
+                    model_adapters[key] = ModelAdapter(struct.pack("f", model_parameters[key]))
             if key.endswith(".xml") or key.endswith(".bin"):
                 model_adapters[key] = ModelAdapter(read_binary(osp.join(model_path, key)))
 

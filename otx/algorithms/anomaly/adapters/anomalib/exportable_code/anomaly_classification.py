@@ -30,9 +30,9 @@ class AnomalyClassification(AnomalyBase):
         anomaly_map: np.ndarray = outputs[self.output_blob_name].squeeze()
         pred_score = anomaly_map.reshape(-1).max()
 
-        meta["image_threshold"] = self.image_threshold  # pylint: disable=no-member
-        meta["min"] = self.min  # pylint: disable=no-member
-        meta["max"] = self.max  # pylint: disable=no-member
+        meta["image_threshold"] = self.metadata["image_threshold"]  # pylint: disable=no-member
+        meta["min"] = self.metadata["min"]  # pylint: disable=no-member
+        meta["max"] = self.metadata["max"]  # pylint: disable=no-member
         meta["threshold"] = self.threshold  # pylint: disable=no-member
 
         anomaly_map = self._normalize(anomaly_map, meta["image_threshold"], meta["min"], meta["max"])
