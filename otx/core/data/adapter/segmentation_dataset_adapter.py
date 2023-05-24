@@ -6,6 +6,7 @@
 
 import json
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import cv2
@@ -168,7 +169,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
-        pseudo_mask_dir: str = "detcon_mask",
+        pseudo_mask_dir: Path = None,
     ) -> Dict[Subset, DatumDataset]:
         """Import custom Self-SL dataset for using DetCon.
 
@@ -185,11 +186,13 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
             test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data.
             unlabeled_file_list (Optional[str]): Path of unlabeled file list
-            pseudo_mask_dir (str): Directory to save pseudo masks. Defaults to "detcon_mask".
+            pseudo_mask_dir (Path): Directory to save pseudo masks. Defaults to None.
 
         Returns:
             DatumaroDataset: Datumaro Dataset
         """
+        if pseudo_mask_dir is None:
+            ValueError("pseudo_mask_dir must be set.")
         if train_data_roots is None:
             raise ValueError("train_data_root must be set.")
 
@@ -211,7 +214,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
             if not os.path.isfile(pseudo_mask_path):
                 # Create pseudo mask
-                pseudo_mask = self.create_pseudo_masks(item.media.data, pseudo_mask_path)  # type: ignore
+                pseudo_mask = self.create_pseudo_masks(item.media.data, str(pseudo_mask_path))  # type: ignore
             else:
                 # Load created pseudo mask
                 pseudo_mask = cv2.imread(str(pseudo_mask_path), cv2.IMREAD_GRAYSCALE)
@@ -243,12 +246,12 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         return dataset
 
-    def create_pseudo_masks(self, img: np.array, pseudo_mask_path: str, mode: str = "FH") -> None:
+    def create_pseudo_masks(self, img: np.ndarray, pseudo_mask_path: str, mode: str = "FH") -> None:
         """Create pseudo masks for self-sl for semantic segmentation using DetCon.
 
         Args:
-            img (np.array) : A sample to create a pseudo mask.
-            pseudo_mask_path (str): The path to save a pseudo mask.
+            img (np.ndarray) : A sample to create a pseudo mask.
+            pseudo_mask_path (Path): The path to save a pseudo mask.
             mode (str): The mode to create a pseudo mask. Defaults to "FH".
 
         Returns:
@@ -259,6 +262,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         else:
             raise ValueError((f'{mode} is not supported to create pseudo masks for DetCon. Choose one of ["FH"].'))
 
-        cv2.imwrite(str(pseudo_mask_path), pseudo_mask.astype(np.uint8))
+        cv2.imwrite(pseudo_mask_path, pseudo_mask.astype(np.uint8))
 
         return pseudo_mask

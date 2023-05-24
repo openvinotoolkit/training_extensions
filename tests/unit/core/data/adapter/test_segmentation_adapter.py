@@ -4,6 +4,7 @@
 #
 import os
 import shutil
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -66,7 +67,7 @@ class TestOTXSegmentationDatasetAdapter:
 
 
 class TestSelfSLSegmentationDatasetAdapter:
-    def setup_method(self, method) -> None:
+    def setup_class(self) -> None:
         self.root_path = os.getcwd()
         task = "segmentation"
 
@@ -74,7 +75,10 @@ class TestSelfSLSegmentationDatasetAdapter:
         data_root_dict: dict = TASK_NAME_TO_DATA_ROOT[task]
         self.train_data_roots: str = os.path.join(self.root_path, data_root_dict["train"], "images")
 
-        self.pseudo_mask_roots = os.path.abspath(self.train_data_roots.replace("images", "detcon_mask"))
+        self.pseudo_mask_dir = Path(os.path.abspath(self.train_data_roots.replace("images", "detcon_mask")))
+
+    def teardown_class(self) -> None:
+        shutil.rmtree(self.pseudo_mask_dir, ignore_errors=True)
 
     @e2e_pytest_unit
     def test_import_dataset_create_all_masks(self, mocker):
@@ -82,12 +86,13 @@ class TestSelfSLSegmentationDatasetAdapter:
 
         This test is for when all masks are not created and it is required to create masks.
         """
-        shutil.rmtree(self.pseudo_mask_roots, ignore_errors=True)
+        shutil.rmtree(self.pseudo_mask_dir, ignore_errors=True)
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
         dataset_adapter = SelfSLSegmentationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
+            pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         spy_create_pseudo_masks.assert_called()
@@ -102,20 +107,22 @@ class TestSelfSLSegmentationDatasetAdapter:
         and it is required to either create or just load masks.
         In this test, remove a mask created before and check if `create_pseudo_masks` is called once.
         """
-        shutil.rmtree(self.pseudo_mask_roots, ignore_errors=True)
+        shutil.rmtree(self.pseudo_mask_dir, ignore_errors=True)
         dataset_adapter = SelfSLSegmentationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
+            pseudo_mask_dir=self.pseudo_mask_dir
         )
-        assert os.path.isdir(self.pseudo_mask_roots)
-        assert len(os.listdir(self.pseudo_mask_roots)) == 4
+        assert os.path.isdir(self.pseudo_mask_dir)
+        assert len(os.listdir(self.pseudo_mask_dir)) == 4
 
         # remove a mask
-        os.remove(os.path.join(self.pseudo_mask_roots, f"000{idx_remove}.png"))
+        os.remove(os.path.join(self.pseudo_mask_dir, f"000{idx_remove}.png"))
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
         _ = dataset_adapter._import_dataset(
             train_data_roots=self.train_data_roots,
+            pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         spy_create_pseudo_masks.assert_called()
@@ -129,6 +136,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         _ = SelfSLSegmentationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
+            pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         spy_create_pseudo_masks.assert_not_called()
@@ -150,6 +158,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         dataset_adapter = SelfSLSegmentationDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=self.train_data_roots,
+            pseudo_mask_dir=self.pseudo_mask_dir
         )
 
         pseudo_mask = dataset_adapter.create_pseudo_masks(img=np.ones((2, 2)), pseudo_mask_path="")
