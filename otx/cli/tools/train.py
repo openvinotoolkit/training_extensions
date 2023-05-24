@@ -23,7 +23,6 @@ from pathlib import Path
 from typing import Optional
 
 from otx.api.entities.model import ModelEntity
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
