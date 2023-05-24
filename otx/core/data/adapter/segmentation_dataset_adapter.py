@@ -205,7 +205,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         # Load pseudo masks
         total_labels = []
-        print(pseudo_mask_dir)
         os.makedirs(pseudo_mask_dir, exist_ok=True)
         for item in dataset[Subset.TRAINING]:
             img_path = item.media.path
