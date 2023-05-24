@@ -1667,7 +1667,7 @@
       "class_incr": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 4367.131,
+            "MaskRCNN-ResNet50": 5154.329,
             "MaskRCNN-EfficientNetB2B": 4342.104
           }
         }
@@ -2059,8 +2059,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 121.861,
-            "MaskRCNN-EfficientNetB2B": 109.647
+            "MaskRCNN-ResNet50": 142.759,
+            "MaskRCNN-EfficientNetB2B": 119.753
           }
         }
       },
