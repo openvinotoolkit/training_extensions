@@ -163,6 +163,8 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             tuple: MaskRCNN output
         """
         keep = self.tile_classifier.simple_test(img) > 0.45
+        if isinstance(full_res_image, bool):
+            full_res_image = [full_res_image]
         keep = full_res_image[0] | keep
 
         if not keep:
