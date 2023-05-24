@@ -53,6 +53,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         cache_config: Optional[Dict[str, Any]] = None,
+        **kwargs
     ):
         super().__init__(
             task_type,
@@ -65,6 +66,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
             unlabeled_data_roots,
             unlabeled_file_list,
             cache_config,
+            **kwargs
         )
         self.updated_label_id: Dict[int, int] = {}
 
@@ -199,23 +201,20 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         self.is_train_phase = True
 
         # Load pseudo masks
-        img_dir = None
         total_labels = []
+        os.makedirs(pseudo_mask_dir, exist_ok=True)
         for item in dataset[Subset.TRAINING]:
             img_path = item.media.path
-            if img_dir is None:
-                # Get image directory
-                img_dir = train_data_roots.split("/")[-1]
-            pseudo_mask_path = img_path.replace(img_dir, pseudo_mask_dir)
-            if pseudo_mask_path.endswith(".jpg"):
-                pseudo_mask_path = pseudo_mask_path.replace(".jpg", ".png")
+            pseudo_mask_path = pseudo_mask_dir / os.path.basename(img_path)
+            if pseudo_mask_path.suffix == ".jpg":
+                pseudo_mask_path = pseudo_mask_path.with_name(f"{pseudo_mask_path.stem}.png")
 
             if not os.path.isfile(pseudo_mask_path):
                 # Create pseudo mask
                 pseudo_mask = self.create_pseudo_masks(item.media.data, pseudo_mask_path)  # type: ignore
             else:
                 # Load created pseudo mask
-                pseudo_mask = cv2.imread(pseudo_mask_path, cv2.IMREAD_GRAYSCALE)
+                pseudo_mask = cv2.imread(str(pseudo_mask_path), cv2.IMREAD_GRAYSCALE)
 
             # Set annotations into each item
             annotations = []
@@ -229,18 +228,17 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
                 )
             item.annotations = annotations
 
-        pseudo_mask_roots = train_data_roots.replace(img_dir, pseudo_mask_dir)  # type: ignore
-        if not os.path.isfile(os.path.join(pseudo_mask_roots, "dataset_meta.json")):
+        if not os.path.isfile(os.path.join(pseudo_mask_dir, "dataset_meta.json")):
             # Save dataset_meta.json for newly created pseudo masks
             # FIXME: Because background class is ignored when generating polygons, meta is set with len(labels)-1.
             # It must be considered to set the whole labels later.
             # (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
             meta = {"label_map": {i + 1: f"target{i+1}" for i in range(max(total_labels))}}
-            with open(os.path.join(pseudo_mask_roots, "dataset_meta.json"), "w", encoding="UTF-8") as f:
+            with open(os.path.join(pseudo_mask_dir, "dataset_meta.json"), "w", encoding="UTF-8") as f:
                 json.dump(meta, f, indent=4)
 
         # Make categories for pseudo masks
-        label_map = parse_meta_file(os.path.join(pseudo_mask_roots, "dataset_meta.json"))
+        label_map = parse_meta_file(os.path.join(pseudo_mask_dir, "dataset_meta.json"))
         dataset[Subset.TRAINING].define_categories(make_categories(label_map))
 
         return dataset
@@ -261,7 +259,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         else:
             raise ValueError((f'{mode} is not supported to create pseudo masks for DetCon. Choose one of ["FH"].'))
 
-        os.makedirs(os.path.dirname(pseudo_mask_path), exist_ok=True)
-        cv2.imwrite(pseudo_mask_path, pseudo_mask.astype(np.uint8))
+        cv2.imwrite(str(pseudo_mask_path), pseudo_mask.astype(np.uint8))
 
         return pseudo_mask
