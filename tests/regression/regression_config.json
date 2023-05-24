@@ -443,7 +443,7 @@
       "class_incr": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.660,
+            "Lite-HRNet-s-mod2": 0.66,
             "Lite-HRNet-18-mod2": 0.768,
             "Lite-HRNet-18": 0.669,
             "Lite-HRNet-x-mod3": 0.712
@@ -749,7 +749,7 @@
           "PADIM": 0.94
         },
         "cable": {
-          "STFPM": 0.707,
+          "STFPM": 0.636,
           "PADIM": 0.673
         },
         "capsule": {
@@ -793,7 +793,7 @@
           "PADIM": 0.857
         },
         "transistor": {
-          "STFPM": 0.55,
+          "STFPM": 0.39,
           "PADIM": 0.81
         },
         "wood": {
@@ -808,7 +808,7 @@
       "pot": {
         "bottle": {
           "STFPM": 0.759,
-          "PADIM": 0.88
+          "PADIM": 0.781
         },
         "cable": {
           "STFPM": 0.613,
@@ -911,8 +911,8 @@
           "PADIM": 0.019
         },
         "tile": {
-          "STFPM": 0.014,
-          "PADIM": 0.038
+          "STFPM": 0.0,
+          "PADIM": 0.015
         },
         "toothbrush": {
           "STFPM": 0.0,
@@ -974,7 +974,7 @@
         },
         "tile": {
           "STFPM": 0.014,
-          "PADIM": 0.143
+          "PADIM": 0.08
         },
         "toothbrush": {
           "STFPM": 0.059,
@@ -1036,7 +1036,7 @@
         },
         "tile": {
           "STFPM": 0.014,
-          "PADIM": 0.143
+          "PADIM": 0.08
         },
         "toothbrush": {
           "STFPM": 0.059,
@@ -1061,8 +1061,8 @@
           "PADIM": 0.276
         },
         "cable": {
-          "STFPM": 0.122,
-          "PADIM": 0.083
+          "STFPM": 0.05,
+          "PADIM": 0.05
         },
         "capsule": {
           "STFPM": 0.017,
@@ -1074,7 +1074,7 @@
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.014
+          "PADIM": 0.0
         },
         "hazelnut": {
           "STFPM": 0.0,
@@ -1097,7 +1097,7 @@
           "PADIM": 0.029
         },
         "tile": {
-          "STFPM": 0.065,
+          "STFPM": 0.02,
           "PADIM": 0.07
         },
         "toothbrush": {
@@ -1136,7 +1136,7 @@
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.02
+          "PADIM": 0.01
         },
         "hazelnut": {
           "STFPM": 0.007,
@@ -1159,8 +1159,8 @@
           "PADIM": 0.004
         },
         "tile": {
-          "STFPM": 0.013,
-          "PADIM": 0.143
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "toothbrush": {
           "STFPM": 0.015,
@@ -1212,7 +1212,7 @@
         },
         "metal_nut": {
           "STFPM": 0.367,
-          "PADIM": 0.454
+          "PADIM": 0.386
         },
         "pill": {
           "STFPM": 0.203,
@@ -1227,7 +1227,7 @@
           "PADIM": 0.232
         },
         "toothbrush": {
-          "STFPM": 0.246,
+          "STFPM": 0.203,
           "PADIM": 0.478
         },
         "transistor": {
@@ -1405,7 +1405,7 @@
           "PADIM": 0.281
         },
         "screw": {
-          "STFPM": 0.085,
+          "STFPM": 0.03,
           "PADIM": 0.051
         },
         "tile": {
@@ -1459,15 +1459,15 @@
           "PADIM": 0.347
         },
         "metal_nut": {
-          "STFPM": 0.387,
-          "PADIM": 0.353
+          "STFPM": 0.006,
+          "PADIM": 0.105
         },
         "pill": {
           "STFPM": 0.135,
           "PADIM": 0.241
         },
         "screw": {
-          "STFPM": 0.036,
+          "STFPM": 0.011,
           "PADIM": 0.037
         },
         "tile": {
@@ -1772,7 +1772,7 @@
         },
         "cable": {
           "STFPM": 1099.243,
-          "PADIM": 77.289
+          "PADIM": 97.758
         },
         "capsule": {
           "STFPM": 442.791,
@@ -1783,8 +1783,8 @@
           "PADIM": 76.309
         },
         "grid": {
-          "STFPM": 466.608,
-          "PADIM": 70.806
+          "STFPM": 606.42,
+          "PADIM": 98.1
         },
         "hazelnut": {
           "STFPM": 442.13,
@@ -1808,7 +1808,7 @@
         },
         "tile": {
           "STFPM": 967.902,
-          "PADIM": 72.959
+          "PADIM": 83.676
         },
         "toothbrush": {
           "STFPM": 552.189,
@@ -1859,7 +1859,7 @@
           "PADIM": 166.385
         },
         "metal_nut": {
-          "STFPM": 968.054,
+          "STFPM": 1124.054,
           "PADIM": 163.375
         },
         "pill": {
@@ -2107,8 +2107,8 @@
           "PADIM": 18.455
         },
         "cable": {
-          "STFPM": 18.392,
-          "PADIM": 16.792
+          "STFPM": 20.231,
+          "PADIM": 20.494
         },
         "capsule": {
           "STFPM": 17.804,
@@ -2119,8 +2119,8 @@
           "PADIM": 22.427
         },
         "grid": {
-          "STFPM": 17.394,
-          "PADIM": 17.446
+          "STFPM": 25.84,
+          "PADIM": 24.198
         },
         "hazelnut": {
           "STFPM": 23.11,
@@ -2171,8 +2171,8 @@
           "PADIM": 17.691
         },
         "cable": {
-          "STFPM": 23.461,
-          "PADIM": 22.65
+          "STFPM": 28.371,
+          "PADIM": 27.715
         },
         "capsule": {
           "STFPM": 21.189,
@@ -2207,8 +2207,8 @@
           "PADIM": 24.962
         },
         "tile": {
-          "STFPM": 18.517,
-          "PADIM": 17.563
+          "STFPM": 26.288,
+          "PADIM": 23.913
         },
         "toothbrush": {
           "STFPM": 17.988,
@@ -2259,8 +2259,8 @@
           "PADIM": 32.192
         },
         "metal_nut": {
-          "STFPM": 43.693,
-          "PADIM": 35.058
+          "STFPM": 62.213,
+          "PADIM": 49.135
         },
         "pill": {
           "STFPM": 51.913,
