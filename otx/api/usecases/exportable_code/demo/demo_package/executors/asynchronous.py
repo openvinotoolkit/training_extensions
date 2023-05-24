@@ -30,7 +30,7 @@ class AsyncExecutor:
     def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
         self.model = model.core_model
         self.visualizer = visualizer
-        self.converter = create_output_converter(model.task_type, model.labels)
+        self.converter = create_output_converter(model.task_type, model.labels, model.model_parameters)
         self.async_pipeline = AsyncPipeline(self.model)
 
     def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
