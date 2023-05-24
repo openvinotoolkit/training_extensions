@@ -329,15 +329,21 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
-    def _get_polygon_entity(self, annotation: DatumAnnotation, width: int, height: int) -> Annotation:
+    def _get_polygon_entity(
+        self, annotation: DatumAnnotation, width: int, height: int, num_polygons: int = -1
+    ) -> Annotation:
         """Get polygon entity."""
+        polygon = Polygon(
+            points=[
+                Point(x=annotation.points[i] / width, y=annotation.points[i + 1] / height)
+                for i in range(0, len(annotation.points), 2)
+            ]
+        )
+        step = 1 if num_polygons == -1 else len(polygon.points) // num_polygons
+        points = [polygon.points[i] for i in range(0, len(polygon.points), step)]
+
         return Annotation(
-            Polygon(
-                points=[
-                    Point(x=annotation.points[i] / width, y=annotation.points[i + 1] / height)
-                    for i in range(0, len(annotation.points), 2)
-                ]
-            ),
+            Polygon(points),
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 

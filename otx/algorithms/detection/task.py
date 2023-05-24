@@ -59,6 +59,7 @@ from otx.api.entities.model import (
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
@@ -89,20 +90,35 @@ class OTXDetectionTask(OTXTask, ABC):
         )
         self._anchors: Dict[str, int] = {}
 
-        if hasattr(self._hyperparams, "postprocessing") and hasattr(
-            self._hyperparams.postprocessing, "confidence_threshold"
-        ):
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
+        if hasattr(self._hyperparams, "postprocessing"):
+            if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
+                self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         else:
             self.confidence_threshold = 0.0
 
         if task_environment.model is not None:
             self._load_model()
 
+        self.use_ellipse_shapes = self._hyperparams.postprocessing.use_ellipse_shapes
+
         if self._hyperparams.tiling_parameters.enable_tiling:
             self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
         else:
             self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
+
+    def _load_postprocessing(self, model_data):
+        """Load postprocessing configs form PyTorch model.
+
+        Args:
+            model_data: The model data.
+
+        """
+        loaded_postprocessing = model_data.get("config", {}).get("postprocessing", {})
+        hparams = self._hyperparams.postprocessing
+        if hasattr(loaded_postprocessing, "use_ellipse_shapes"):
+            hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
+        else:
+            hparams.use_ellipse_shapes = False
 
     def _load_tiling_parameters(self, model_data):
         """Load tiling parameters from PyTorch model.
@@ -122,6 +138,7 @@ class OTXDetectionTask(OTXTask, ABC):
             hparams.tile_overlap = loaded_tiling_parameters["tile_overlap"]["value"]
             hparams.tile_max_number = loaded_tiling_parameters["tile_max_number"]["value"]
             hparams.tile_ir_scale_factor = loaded_tiling_parameters["tile_ir_scale_factor"]["value"]
+            hparams.object_tile_ratio = loaded_tiling_parameters["object_tile_ratio"]["value"]
             # check backward compatibility
             enable_tile_classifier = loaded_tiling_parameters.get("enable_tile_classifier", {}).get("value", False)
             if enable_tile_classifier:
@@ -152,6 +169,7 @@ class OTXDetectionTask(OTXTask, ABC):
             self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
+            self._load_postprocessing(model_data)
             self._load_tiling_parameters(model_data)
             return model_data
         return None
@@ -208,10 +226,13 @@ class OTXDetectionTask(OTXTask, ABC):
         # get prediction on validation set
         self._is_training = False
         val_dataset = dataset.get_subset(Subset.VALIDATION)
+        val_dataset.purpose = DatasetPurpose.INFERENCE
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
-        self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
+        self._add_predictions_to_dataset(
+            val_preds, preds_val_dataset, self.confidence_threshold, use_ellipse_shapes=self.use_ellipse_shapes
+        )
 
         result_set = ResultSetEntity(
             model=output_model,
@@ -273,9 +294,13 @@ class OTXDetectionTask(OTXTask, ABC):
 
         dataset.purpose = DatasetPurpose.INFERENCE
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
-
         self._add_predictions_to_dataset(
-            prediction_results, dataset, self.confidence_threshold, process_saliency_maps, explain_predicted_classes
+            prediction_results,
+            dataset,
+            self.confidence_threshold,
+            process_saliency_maps,
+            explain_predicted_classes,
+            self.use_ellipse_shapes,
         )
         logger.info("Inference completed")
         return dataset
@@ -413,10 +438,13 @@ class OTXDetectionTask(OTXTask, ABC):
         confidence_threshold=0.0,
         process_saliency_maps=False,
         explain_predicted_classes=True,
+        use_ellipse_shapes=False,
     ):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
-            shapes = self._get_shapes(all_results, dataset_item.width, dataset_item.height, confidence_threshold)
+            shapes = self._get_shapes(
+                all_results, dataset_item.width, dataset_item.height, confidence_threshold, use_ellipse_shapes
+            )
             dataset_item.append_annotations(shapes)
 
             if feature_vector is not None:
@@ -443,19 +471,23 @@ class OTXDetectionTask(OTXTask, ABC):
                     process_saliency_maps=process_saliency_maps,
                 )
 
-    def _get_shapes(self, all_results, width, height, confidence_threshold):
+    def _get_shapes(self, all_results, width, height, confidence_threshold, use_ellipse_shapes):
         if self._task_type == TaskType.DETECTION:
-            shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+            shapes = self._det_add_predictions_to_dataset(
+                all_results, width, height, confidence_threshold, use_ellipse_shapes
+            )
         elif self._task_type in {
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ROTATED_DETECTION,
         }:
-            shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+            shapes = self._ins_seg_add_predictions_to_dataset(
+                all_results, width, height, confidence_threshold, use_ellipse_shapes
+            )
         else:
             raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
         return shapes
 
-    def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
+    def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold, use_ellipse_shapes):
         shapes = []
         for label_idx, detections in enumerate(all_results):
             for i in range(detections.shape[0]):
@@ -464,50 +496,70 @@ class OTXDetectionTask(OTXTask, ABC):
                 coords /= np.array([width, height, width, height], dtype=float)
                 coords = np.clip(coords, 0, 1)
 
-                if probability < confidence_threshold:
+                if (probability < confidence_threshold) or (coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0):
                     continue
 
                 assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                    continue
-
-                shapes.append(
-                    Annotation(
-                        Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
-                        labels=assigned_label,
+                if not use_ellipse_shapes:
+                    shapes.append(
+                        Annotation(
+                            Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
+                            labels=assigned_label,
+                        )
                     )
-                )
+                else:
+                    shapes.append(
+                        Annotation(
+                            Ellipse(coords[0], coords[1], coords[2], coords[3]),
+                            labels=assigned_label,
+                        )
+                    )
         return shapes
 
-    def _ins_seg_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
+    def _ins_seg_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold, use_ellipse_shapes):
         shapes = []
         for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
-            for mask, probability in zip(masks, boxes[:, 4]):
-                if isinstance(mask, dict):
-                    mask = mask_util.decode(mask)
-                mask = mask.astype(np.uint8)
-                probability = float(probability)
-                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-                if hierarchies is None:
+            for mask, box in zip(masks, boxes):
+                probability = float(box[4])
+
+                if probability < confidence_threshold:
                     continue
-                for contour, hierarchy in zip(contours, hierarchies[0]):
-                    if hierarchy[3] != -1:
+
+                labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
+                if not use_ellipse_shapes:
+                    if isinstance(mask, dict):
+                        mask = mask_util.decode(mask)
+                    mask = mask.astype(np.uint8)
+
+                    contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                    if hierarchies is None:
                         continue
-                    if len(contour) <= 2 or probability < confidence_threshold:
-                        continue
-                    if self._task_type == TaskType.INSTANCE_SEGMENTATION:
-                        points = [Point(x=point[0][0] / (width - 1), y=point[0][1] / (height - 1)) for point in contour]
-                    else:
-                        box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                        points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
-                    labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                    polygon = Polygon(points=points)
-                    if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
-                        shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+                    for contour, hierarchy in zip(contours, hierarchies[0]):
+                        if hierarchy[3] != -1:
+                            continue
+                        if len(contour) <= 2:
+                            continue
+                        if self._task_type == TaskType.INSTANCE_SEGMENTATION:
+                            points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
+                        else:
+                            box_points = cv2.boxPoints(cv2.minAreaRect(contour))
+                            points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
+                        polygon = Polygon(points=points)
+                        if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
+                            shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+                else:
+                    ellipse = Ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
+                    shapes.append(Annotation(ellipse, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
     def _add_explanations_to_dataset(
-        self, detections, explain_results, dataset, process_saliency_maps, explain_predicted_classes
+        self,
+        detections,
+        explain_results,
+        dataset,
+        process_saliency_maps,
+        explain_predicted_classes,
+        use_ellipse_shapes=False,
     ):
         """Add saliency map to the dataset."""
         for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
@@ -516,7 +568,7 @@ class OTXDetectionTask(OTXTask, ABC):
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
-            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4)
+            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4, use_ellipse_shapes)
             predicted_scored_labels = []
             for shape in shapes:
                 predicted_scored_labels += shape.get_labels()
@@ -583,7 +635,6 @@ class OTXDetectionTask(OTXTask, ABC):
             "confidence_threshold": self.confidence_threshold,
             "VERSION": 1,
         }
-
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data(

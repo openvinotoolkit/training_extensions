@@ -227,6 +227,13 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        use_ellipse_shapes = configurable_boolean(
+            default_value=False,
+            header="Use ellipse shapes",
+            description="Use direct ellipse shape in inference instead of polygon from mask",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
     @attrs
     class BaseNNCFOptimization(ParameterGroup):
         """BaseNNCFOptimization for OTX Algorithms."""
@@ -357,7 +364,7 @@ class BaseConfig(ConfigurableParameters):
             description="Tile Image Size",
             default_value=400,
             min_value=100,
-            max_value=1024,
+            max_value=4096,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
@@ -375,7 +382,7 @@ class BaseConfig(ConfigurableParameters):
             description="Max object per image",
             default_value=1500,
             min_value=1,
-            max_value=10000,
+            max_value=5000,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
@@ -392,6 +399,28 @@ class BaseConfig(ConfigurableParameters):
             default_value=2.0,
             min_value=1.0,
             max_value=4.0,
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        tile_sampling_ratio = configurable_float(
+            header="Sampling Ratio for entire tiling",
+            description="Since tiling train and validation to all tile from large image, "
+            "usually it takes lots of time than normal training."
+            "The tile_sampling_ratio is ratio for sampling entire tile dataset."
+            "Sampling tile dataset would save lots of time for training and validation time."
+            "Note that sampling will be applied to training and validation dataset, not test dataset.",
+            default_value=1.0,
+            min_value=0.000001,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        object_tile_ratio = configurable_float(
+            header="Object tile ratio",
+            description="The desired ratio of min object size and tile size.",
+            default_value=0.03,
+            min_value=0.00,
+            max_value=1.00,
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
