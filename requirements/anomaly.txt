@@ -2,5 +2,5 @@
 # Anomaly Requirements.
 torchvision<0.15.1
 torchtext<0.15.1
-anomalib==0.4.0
+anomalib==0.5.0
 kornia==0.6.9
