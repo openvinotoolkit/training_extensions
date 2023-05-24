@@ -79,12 +79,12 @@ class MockDataset(DatasetEntity):
     """Mock class for mm_dataset."""
 
     def __init__(self, dataset: DatasetEntity, task_type: str):
-        self.dataset = dataset
+        self.otx_dataset = dataset
         self.task_type = task_type
         self.CLASSES = ["1", "2", "3"]
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.otx_dataset)
 
     def evaluate(self, prediction, *args, **kwargs):
         if self.task_type == "det":
@@ -97,11 +97,11 @@ class MockDataLoader:
     """Mock class for data loader."""
 
     def __init__(self, dataset: DatasetEntity):
-        self.dataset = dataset
-        self.iter = iter(self.dataset)
+        self.otx_dataset = dataset
+        self.iter = iter(self.otx_dataset)
 
     def __len__(self) -> int:
-        return len(self.dataset)
+        return len(self.otx_dataset)
 
     def __next__(self) -> Dict[str, DatasetItemEntity]:
         return {"imgs": next(self.iter)}

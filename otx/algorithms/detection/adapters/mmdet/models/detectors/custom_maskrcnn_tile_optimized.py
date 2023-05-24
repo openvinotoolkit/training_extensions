@@ -86,7 +86,7 @@ class TileClassifier(torch.nn.Module):
 
         out = self.forward(img)
         with no_nncf_trace():
-            return self.sigmoid(out)[0][0]
+            return self.sigmoid(out).flatten()
 
 
 # pylint: disable=too-many-ancestors
@@ -146,6 +146,20 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
         losses.update(rcnn_loss)
         return losses
 
+    @staticmethod
+    def make_fake_results(num_classes):
+        """Make fake results.
+
+        Returns:
+            tuple: MaskRCNN output
+        """
+        bbox_results = []
+        mask_results = []
+        for _ in range(num_classes):
+            bbox_results.append(np.empty((0, 5), dtype=np.float32))
+            mask_results.append([])
+        return bbox_results, mask_results
+
     def simple_test(self, img, img_metas, proposals=None, rescale=False, full_res_image=False):
         """Simple test.
 
@@ -167,26 +181,26 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             full_res_image = [full_res_image]
         keep = full_res_image[0] | keep
 
-        if not keep:
-            tmp_results = []
-            num_classes = 1
-            bbox_results = []
-            mask_results = []
-            for _ in range(num_classes):
-                bbox_results.append(np.empty((0, 5), dtype=np.float32))
-                mask_results.append([])
-            tmp_results.append((bbox_results, mask_results))
-            return tmp_results
+        results = []
+        for _ in range(len(img)):
+            fake_result = CustomMaskRCNNTileOptimized.make_fake_results(self.roi_head.bbox_head.num_classes)
+            results.append(fake_result)
 
-        assert self.with_bbox, "Bbox head must be implemented."
-        x = self.extract_feat(img)
+        if any(keep):
+            img = img[keep]
+            img_metas = [item for keep, item in zip(keep, img_metas) if keep]
+            assert self.with_bbox, "Bbox head must be implemented."
+            x = self.extract_feat(img)
 
-        if proposals is None:
-            proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
-        else:
-            proposal_list = proposals
-
-        return self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale)
+            if proposals is None:
+                proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
+            else:
+                proposal_list = proposals
+            maskrcnn_results = self.roi_head.simple_test(x, proposal_list, img_metas, rescale=rescale)
+            for i, keep_flag in enumerate(keep):
+                if keep_flag:
+                    results[i] = maskrcnn_results.pop(0)
+        return results
 
 
 if is_mmdeploy_enabled():
