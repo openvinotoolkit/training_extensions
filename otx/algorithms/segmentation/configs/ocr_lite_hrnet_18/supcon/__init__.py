@@ -1,4 +1,4 @@
-"""Initialization of OCR-Lite-HRnet-18-mod2 model for SupCon Segmentation Task."""
+"""Initialization of OCR-Lite-HRnet-18 model for SupCon Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
