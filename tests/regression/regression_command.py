@@ -162,7 +162,7 @@ def regression_deployment_testing(
     for k in exported_performance.keys():
         if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(deployed_performance[k], 3)
-            if exported_performance[k] < modified_criteria:
+            if deployed_performance[k] < modified_criteria:
                 regression_result["passed"] = False
                 regression_result[
                     "log"
