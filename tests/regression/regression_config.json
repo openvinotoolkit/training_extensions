@@ -401,33 +401,33 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.787,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.692,
             "Lite-HRNet-18": 0.801,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.693
           },
           "export": {
-            "Lite-HRNet-s-mod2": 0.786,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.692
           },
           "deploy": {
-            "Lite-HRNet-s-mod2": 0.786,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.692
           },
           "nncf": {
-            "Lite-HRNet-s-mod2": 0.787,
-            "Lite-HRNet-18-mod2": 0.8,
+            "Lite-HRNet-s-mod2": 0.678,
+            "Lite-HRNet-18-mod2": 0.707,
             "Lite-HRNet-18": 0.79,
-            "Lite-HRNet-x-mod3": 0.779
+            "Lite-HRNet-x-mod3": 0.668
           },
           "pot": {
             "Lite-HRNet-s-mod2": 0.725,
-            "Lite-HRNet-18-mod2": 0.087,
-            "Lite-HRNet-18": 0.302,
+            "Lite-HRNet-18-mod2": 0.269,
+            "Lite-HRNet-18": 0.115,
             "Lite-HRNet-x-mod3": 0.041
           }
         },
@@ -443,19 +443,19 @@
       "class_incr": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.792,
+            "Lite-HRNet-s-mod2": 0.660,
             "Lite-HRNet-18-mod2": 0.768,
-            "Lite-HRNet-18": 0.795,
-            "Lite-HRNet-x-mod3": 0.805
+            "Lite-HRNet-18": 0.669,
+            "Lite-HRNet-x-mod3": 0.712
           }
         }
       },
       "semi_supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.818,
-            "Lite-HRNet-18-mod2": 0.837,
-            "Lite-HRNet-18": 0.833,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-18-mod2": 0.696,
+            "Lite-HRNet-18": 0.742,
             "Lite-HRNet-x-mod3": 0.802
           }
         }
