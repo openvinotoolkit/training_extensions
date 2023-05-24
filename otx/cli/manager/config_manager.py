@@ -220,10 +220,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if arg_algo_backend:
                 train_type = arg_algo_backend.get("train_type", {"value": "Incremental"})  # type: ignore
                 return train_type.get("value", "Incremental")
-            if (
-                hasattr(self.args, "train_type")
-                and self.mode in ("build", "train", "optimize")
-            ):
+            if hasattr(self.args, "train_type") and self.mode in ("build", "train", "optimize"):
                 self._configure_train_type()
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
                     raise NotSupportedError(f"{self.train_type} is not currently supported by otx.")
@@ -246,9 +243,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
     def _configure_train_type(self):
         def _check_is_only_images(dir):
             import glob
+
             pngs = glob.glob(f"{dir}/*.png")
             jpgs = glob.glob(f"{dir}/*.jpg")
             return len(pngs) > 0 or len(jpgs) > 0
+
         # if user explicitly passed train type via args
         if self.args.train_type is not None:
             self.train_type = self.args.train_type
@@ -256,7 +255,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         path_to_train_data = Path(self.args.train_data_roots)
         if not Path.is_dir(path_to_train_data):
-            raise ValueError("train-data-roots isn't a directory or it doesn't exist. Please, check command line and directory path.")
+            raise ValueError(
+                "train-data-roots isn't a directory or it doesn't exist. Please, check command line and directory path."
+            )
 
         if _check_is_only_images(path_to_train_data):
             print("[*] Selfsupervised training type detected")
@@ -267,25 +268,32 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             unlabeled_path = Path(self.args.unlabeled_data_roots)
             if Path.is_dir(unlabeled_path):
                 if not unlabeled_path.stat():
-                    raise ValueError("unlabeled_images isn't directory or it doesn't exist. Please, check command line.")
+                    raise ValueError(
+                        "unlabeled_images isn't directory or it doesn't exist. Please, check command line."
+                    )
                 self.train_type = "Semisupervised"
                 return
             else:
-                raise ValueError("Unlabeled images isn't a directory or it doesn't exist. Please, check command line and directory path.")
+                raise ValueError(
+                    "Unlabeled images isn't a directory or it doesn't exist. "
+                    "Please, check command line and directory path."
+                )
 
         is_unlabeled_exists = Path.exists(path_to_train_data / "unlabeled_images")
         if is_unlabeled_exists:
             if not any(Path(path_to_train_data / "unlabeled_images").iterdir()):
-               print("WARNING: unlabeled_images folder is detected, but there is no files. Training continues with incremental supervised training type")
-               self.train_type = "Incremental"
-               return
+                print(
+                    "WARNING: unlabeled_images folder is detected, but there is no files. "
+                    "Training continues with incremental supervised training type"
+                )
+                self.train_type = "Incremental"
+                return
             # If unlabeled_images folder is presented we run semisupervised training
             self.train_type = "Semisupervised"
-            self.args.unlabeled_data_roots=str(Path(path_to_train_data / "unlabeled_images"))
+            self.args.unlabeled_data_roots = str(Path(path_to_train_data / "unlabeled_images"))
             return
 
         self.train_type = "Incremental"
-
 
     def _get_task_type_from_data_format(self, data_format: str) -> str:
         """Detect task type.
