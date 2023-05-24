@@ -119,9 +119,6 @@ class MMClassificationTask(OTXClassificationTask):
         if not export:
             self._recipe_cfg.merge_from_dict(self._init_hparam())
 
-        if self._recipe_cfg.get("override_configs", None):
-            self.override_configs.update(self._recipe_cfg.override_configs)
-
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
