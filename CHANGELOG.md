@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.4.0\]
+
+### New features
+
+### Enhancements
+
+### Bug fixes
+
+- Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
+
+### Known issues
+
+
 ## \[v1.3.0\]
 
 ### New features
@@ -72,7 +85,6 @@ All notable changes to this project will be documented in this file.
 ### Bug fixes
 
 - Fix backward compatibility with OpenVINO SSD-like detection models from OTE 0.5 (<https://github.com/openvinotoolkit/training_extensions/pull/1970>)
-- Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
 
 ### Known issues
 
