@@ -828,13 +828,44 @@ and its variants only. Default: False</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">MeanTeacherSegmentor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orig_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsup_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semisl_start_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.adapters.mmseg.</span></span><span class="sig-name descname"><span class="pre">MeanTeacherSegmentor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">orig_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iters_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsup_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_unrel_pixels_percent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">semisl_start_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proto_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor" title="Permalink to this definition">#</a></dt>
 <dd><p>Mean teacher segmentor for semi-supervised learning.</p>
 <p>It creates two models and ema from one to the other for consistency loss.</p>
+<dl>
+<dt>Args:</dt><dd><p>orig_type (BaseSegmentor): original type of segmentor to build student and teacher models
+num_iters_per_epoch (int): number of iterations per training epoch.
+unsup_weight (float): loss weight for unsupervised part. Default: 0.1
+proto_weight (float): loss weight for pixel prototype cross entropy loss. Default: 0.7
+drop_unrel_pixels_percent (int): starting precentage of pixels with high entropy</p>
+<blockquote>
+<div><p>to drop from teachers pseudo labels. Default: 20</p>
+</div></blockquote>
+<p>semisl_start_epoch (int): epoch to start learning with unlabeled images. Default: 1
+proto_head (dict): configuration to constract prototype network. Default: None</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.aug_test">
 <span class="sig-name descname"><span class="pre">aug_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.aug_test" title="Permalink to this definition">#</a></dt>
 <dd><p>Aug test.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.decode_proto_network">
+<span class="sig-name descname"><span class="pre">decode_proto_network</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sup_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsup_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_from_teacher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reweight_unsup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.decode_proto_network" title="Permalink to this definition">#</a></dt>
+<dd><p>Forward prototype network, compute proto loss.</p>
+<p>If there is no unsupervised part, only supervised loss will be computed.</p>
+<dl>
+<dt>Args:</dt><dd><p>sup_input (torch.Tensor): student output from labeled images
+gt_semantic_seg (torch.Tensor): ground truth semantic segmentation label maps
+unsup_input (torch.Tensor): student output from unlabeled images. Default: None
+pl_from_teacher (torch.Tensor): teacher generated pseudo labels. Default: None
+reweight_unsup (float): reweighting coefficient for unsupervised part after</p>
+<blockquote>
+<div><p>filtering high entropy pixels. Default: 1.0</p>
+</div></blockquote>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -859,6 +890,24 @@ and its variants only. Default: False</p>
 <dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.forward_train">
 <span class="sig-name descname"><span class="pre">forward_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_metas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_semantic_seg</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.forward_train" title="Permalink to this definition">#</a></dt>
 <dd><p>Forward train.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>img (torch.Tensor): labeled images
+img_metas (dict): labeled images meta data
+gt_semantic_seg (torch.Tensor): semantic segmentation label maps
+kwargs (dict): key arguments with unlabeled components and additional information</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.generate_pseudo_labels">
+<span class="sig-name descname"><span class="pre">generate_pseudo_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ul_w_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ul_img_metas</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.generate_pseudo_labels" title="Permalink to this definition">#</a></dt>
+<dd><p>Generate pseudo labels from teacher model, apply filter loss method.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>ul_w_img (torch.Tensor): weakly augmented unlabeled images
+ul_img_metas (dict): unlabeled images meta data</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1320,6 +1369,15 @@ gt_semantic_seg (Tensor): Ground truth masks.</p>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.decode_proto_network">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MeanTeacherSegmentor.decode_proto_network()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.encode_decode">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1351,6 +1409,15 @@ gt_semantic_seg (Tensor): Ground truth masks.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        MeanTeacherSegmentor.forward_train()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.adapters.mmseg.MeanTeacherSegmentor.generate_pseudo_labels">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       MeanTeacherSegmentor.generate_pseudo_labels()
       </span>
      </code>
     </a>
