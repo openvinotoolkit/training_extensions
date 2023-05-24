@@ -1505,7 +1505,7 @@
         },
         "multi_label": {
           "train": {
-            "EfficientNet-V2-S": 241.508,
+            "EfficientNet-V2-S": 214.508,
             "MobileNet-V3-large-1x": 185.442,
             "EfficientNet-B0": 187.332
           }
