@@ -1,6 +1,8 @@
 import argparse
 import os
 import tempfile
+import os
+import shutil
 
 import pytest
 from omegaconf import DictConfig, OmegaConf
@@ -478,6 +480,30 @@ class TestConfigManager:
 
         config_manager.template.hyper_parameters.parameter_overrides = {}
         assert config_manager._get_train_type(ignore_args=True) == "Incremental"
+
+        config_manager.args.train_type = None
+        config_manager.args.unlabeled_data_roots = None
+        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
+        config_manager.args.unlabeled_data_roots = "tests/assets/unlabeled_dataset/a"
+        assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
+        config_manager.args.unlabeled_data_roots = "non_exist_dir"
+        try:
+            config_manager._get_train_type(ignore_args=False)
+            assert False
+        except ValueError:
+            assert True
+        config_manager.args.unlabeled_data_roots = None
+        config_manager.args.train_data_roots = "tests/assets/unlabeled_dataset/a"
+        assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
+        try:
+            os.mkdir("tests/assets/classification_dataset/unlabeled_images")
+            config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+            assert config_manager._get_train_type(ignore_args=False) == "Incremental"
+            os.mkdir("tests/assets/classification_dataset/unlabeled_images/some")
+            assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
+        finally:
+            shutil.rmtree("tests/assets/classification_dataset/unlabeled_images")
 
     @e2e_pytest_unit
     def test_auto_task_detection(self, mocker):
