@@ -129,10 +129,12 @@ def _set_max_epoch(cfg, max_epoch: int):
             _set_value_at_dict_in_dict(
                 cfg.runner["nncf_config"], "accuracy_aware_training.params.maximal_total_epochs", max_epoch
             )
-    elif "iterbased" in cfg.runner["type"].lower():
-        cfg.runner["max_iters"] = max_epoch
     else:
-        cfg.runner["max_epochs"] = max_epoch
+        runner_type = cfg.runner.get("type")
+        if runner_type is not None and "iterbased" in runner_type.lower():
+            cfg.runner["max_iters"] = max_epoch
+        else:
+            cfg.runner["max_epochs"] = max_epoch
 
 
 class SubDataset:
