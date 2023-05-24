@@ -53,7 +53,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         cache_config: Optional[Dict[str, Any]] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             task_type,
@@ -66,7 +66,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
             unlabeled_data_roots,
             unlabeled_file_list,
             cache_config,
-            **kwargs
+            **kwargs,
         )
         self.updated_label_id: Dict[int, int] = {}
 
