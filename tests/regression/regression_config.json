@@ -212,7 +212,7 @@
           "pot": {
             "EfficientNet-V2-S": 0.711,
             "MobileNet-V3-large-1x": 0.692,
-            "EfficientNet-B0": 0.808
+            "EfficientNet-B0": 0.725
           }
         },
         "multi_label": {
@@ -244,29 +244,29 @@
         },
         "h_label": {
           "train": {
-            "EfficientNet-V2-S": 0.714,
-            "MobileNet-V3-large-1x": 0.647,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-V2-S": 0.602,
+            "MobileNet-V3-large-1x": 0.547,
+            "EfficientNet-B0": 0.636
           },
           "export": {
-            "EfficientNet-V2-S": 0.714,
-            "MobileNet-V3-large-1x": 0.647,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-V2-S": 0.602,
+            "MobileNet-V3-large-1x": 0.547,
+            "EfficientNet-B0": 0.636
           },
           "deploy": {
-            "EfficientNet-V2-S": 0.714,
-            "MobileNet-V3-large-1x": 0.647,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-V2-S": 0.602,
+            "MobileNet-V3-large-1x": 0.547,
+            "EfficientNet-B0": 0.636
           },
           "nncf": {
-            "EfficientNet-V2-S": 0.731,
+            "EfficientNet-V2-S": 0.594,
             "MobileNet-V3-large-1x": 0.622,
-            "EfficientNet-B0": 0.758
+            "EfficientNet-B0": 0.638
           },
           "pot": {
-            "EfficientNet-V2-S": 0.653,
-            "MobileNet-V3-large-1x": 0.633,
-            "EfficientNet-B0": 0.739
+            "EfficientNet-V2-S": 0.577,
+            "MobileNet-V3-large-1x": 0.472,
+            "EfficientNet-B0": 0.605
           }
         },
         "supcon": {
@@ -401,33 +401,33 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.787,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.692,
             "Lite-HRNet-18": 0.801,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.693
           },
           "export": {
-            "Lite-HRNet-s-mod2": 0.786,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.692
           },
           "deploy": {
-            "Lite-HRNet-s-mod2": 0.786,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.692
           },
           "nncf": {
-            "Lite-HRNet-s-mod2": 0.787,
-            "Lite-HRNet-18-mod2": 0.8,
+            "Lite-HRNet-s-mod2": 0.678,
+            "Lite-HRNet-18-mod2": 0.707,
             "Lite-HRNet-18": 0.79,
-            "Lite-HRNet-x-mod3": 0.779
+            "Lite-HRNet-x-mod3": 0.668
           },
           "pot": {
             "Lite-HRNet-s-mod2": 0.725,
-            "Lite-HRNet-18-mod2": 0.087,
-            "Lite-HRNet-18": 0.302,
+            "Lite-HRNet-18-mod2": 0.269,
+            "Lite-HRNet-18": 0.115,
             "Lite-HRNet-x-mod3": 0.041
           }
         },
@@ -443,19 +443,19 @@
       "class_incr": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.792,
+            "Lite-HRNet-s-mod2": 0.660,
             "Lite-HRNet-18-mod2": 0.768,
-            "Lite-HRNet-18": 0.795,
-            "Lite-HRNet-x-mod3": 0.805
+            "Lite-HRNet-18": 0.669,
+            "Lite-HRNet-x-mod3": 0.712
           }
         }
       },
       "semi_supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.818,
-            "Lite-HRNet-18-mod2": 0.837,
-            "Lite-HRNet-18": 0.833,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-18-mod2": 0.696,
+            "Lite-HRNet-18": 0.742,
             "Lite-HRNet-x-mod3": 0.802
           }
         }
@@ -1498,46 +1498,46 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 93.257,
+            "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.732,
-            "EfficientNet-B0": 70.02
+            "EfficientNet-B0": 82.521
           }
         },
         "multi_label": {
           "train": {
-            "EfficientNet-V2-S": 163.202,
-            "MobileNet-V3-large-1x": 148.559,
-            "EfficientNet-B0": 144.651
+            "EfficientNet-V2-S": 214.508,
+            "MobileNet-V3-large-1x": 185.442,
+            "EfficientNet-B0": 187.332
           }
         },
         "h_label": {
           "train": {
-            "EfficientNet-V2-S": 92.564,
+            "EfficientNet-V2-S": 149.627,
             "MobileNet-V3-large-1x": 76.041,
-            "EfficientNet-B0": 73.195
+            "EfficientNet-B0": 87.159
           }
         },
         "supcon": {
           "train": {
-            "EfficientNet-V2-S": 122.369,
-            "MobileNet-V3-large-1x": 115.94,
-            "EfficientNet-B0": 105.109
+            "EfficientNet-V2-S": 136.036,
+            "MobileNet-V3-large-1x": 134.635,
+            "EfficientNet-B0": 124.474
           }
         }
       },
       "class_incr": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 106.703,
+            "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 80.603,
-            "EfficientNet-B0": 74.543
+            "EfficientNet-B0": 82.521
           }
         },
         "multi_label": {
           "train": {
-            "EfficientNet-V2-S": 179.346,
-            "MobileNet-V3-large-1x": 163.404,
-            "EfficientNet-B0": 163.371
+            "EfficientNet-V2-S": 214.508,
+            "MobileNet-V3-large-1x": 185.442,
+            "EfficientNet-B0": 187.332
           }
         },
         "h_label": {
@@ -1560,9 +1560,9 @@
       "self_supervised": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 34.063,
-            "MobileNet-V3-large-1x": 27.925,
-            "EfficientNet-B0": 27.623
+            "EfficientNet-V2-S": 141.137,
+            "MobileNet-V3-large-1x": 72.239,
+            "EfficientNet-B0": 82.521
           }
         }
       }
