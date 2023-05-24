@@ -192,7 +192,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
             DatumaroDataset: Datumaro Dataset
         """
         if pseudo_mask_dir is None:
-            ValueError("pseudo_mask_dir must be set.")
+            raise ValueError("pseudo_mask_dir must be set.")
         if train_data_roots is None:
             raise ValueError("train_data_root must be set.")
 
@@ -205,6 +205,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         # Load pseudo masks
         total_labels = []
+        print(pseudo_mask_dir)
         os.makedirs(pseudo_mask_dir, exist_ok=True)
         for item in dataset[Subset.TRAINING]:
             img_path = item.media.path
