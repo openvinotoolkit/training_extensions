@@ -34,10 +34,7 @@
               "num_bn_adaptation_samples": 500
             }
           },
-          "ignored_scopes": [
-            "{re}.*cross_resolution_weighting.*__mul__.*",
-            "{re}.*spatial_weighting.*__mul__.*"
-          ]
+          "ignored_scopes": []
         }
       ],
       "accuracy_aware_training": {

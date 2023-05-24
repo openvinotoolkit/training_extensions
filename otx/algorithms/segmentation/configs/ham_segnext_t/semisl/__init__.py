@@ -1,4 +1,4 @@
-"""Segmentation losses."""
+"""Initialization of SegNext-s model for Semi-SL Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -13,9 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
-from .detcon_loss import DetConLoss
-from .pixel_prototype_ce_loss import PixelPrototypeCELoss
-
-__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore", "PixelPrototypeCELoss"]

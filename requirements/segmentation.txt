@@ -6,3 +6,4 @@ scikit-image
 mmdeploy==0.14.0
 timm==0.6.12
 pytorchcv
+einops==0.6.1

@@ -128,7 +128,11 @@ class SegmentationConfigurer:
         Patch for OMZ backbones
         """
         if ir_options is None:
-            ir_options = {"ir_model_path": None, "ir_weight_path": None, "ir_weight_init": False}
+            ir_options = {
+                "ir_model_path": None,
+                "ir_weight_path": None,
+                "ir_weight_init": False,
+            }
 
         cfg.model_task = cfg.model.pop("task", "segmentation")
         if cfg.model_task != "segmentation":
@@ -153,7 +157,11 @@ class SegmentationConfigurer:
             recursively_update_cfg(
                 cfg,
                 is_mmov_model,
-                {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
+                {
+                    "model_path": ir_model_path,
+                    "weight_path": ir_weight_path,
+                    "init_weight": ir_weight_init,
+                },
             )
 
     def configure_data(
@@ -196,19 +204,17 @@ class SegmentationConfigurer:
     def configure_decode_head(self, cfg: Config) -> None:
         """Change to incremental loss (ignore mode) and substitute head with otx universal head."""
         ignore = cfg.get("ignore", False)
-        if ignore:
-            cfg_loss_decode = ConfigDict(
-                type="CrossEntropyLossWithIgnore",
-                use_sigmoid=False,
-                loss_weight=1.0,
-            )
-
         for head in ("decode_head", "auxiliary_head"):
             decode_head = cfg.model.get(head, None)
             if decode_head is not None:
                 decode_head.base_type = decode_head.type
                 decode_head.type = otx_head_factory
                 if ignore:
+                    cfg_loss_decode = ConfigDict(
+                        type="CrossEntropyLossWithIgnore",
+                        use_sigmoid=False,
+                        loss_weight=1.0,
+                    )
                     decode_head.loss_decode = cfg_loss_decode
 
     # pylint: disable=too-many-branches
@@ -251,6 +257,9 @@ class SegmentationConfigurer:
             # For SupConDetCon
             if "SupConDetCon" in cfg.model.type:
                 cfg.model.num_classes = len(model_classes)
+
+        if "auxiliary_head" in cfg.model:
+            cfg.model.auxiliary_head.num_classes = len(model_classes)
 
         # Task classes
         self.org_model_classes = org_model_classes
@@ -598,7 +607,10 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
             updated = False
             for custom_hook in custom_hooks:
                 if custom_hook["type"] == "ComposedDataLoadersHook":
-                    custom_hook["data_loaders"] = [*custom_hook["data_loaders"], unlabeled_dataloader]
+                    custom_hook["data_loaders"] = [
+                        *custom_hook["data_loaders"],
+                        unlabeled_dataloader,
+                    ]
                     updated = True
             if not updated:
                 custom_hooks.append(

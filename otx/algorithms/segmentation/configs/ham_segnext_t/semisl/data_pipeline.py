@@ -1,4 +1,4 @@
-"""Segmentation losses."""
+"""Data Pipeline of SegNext model for Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,8 +14,5 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
-from .detcon_loss import DetConLoss
-from .pixel_prototype_ce_loss import PixelPrototypeCELoss
-
-__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore", "PixelPrototypeCELoss"]
+# pylint: disable=invalid-name
+_base_ = ["../../base/data/semisl/data_pipeline.py"]

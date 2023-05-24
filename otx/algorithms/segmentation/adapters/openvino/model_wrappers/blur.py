@@ -44,7 +44,12 @@ class BlurSegmentation(SegmentationModel):
 
     __model__ = "blur_segmentation"
 
-    def __init__(self, model_adapter: ModelAdapter, configuration: Optional[dict] = None, preload: bool = False):
+    def __init__(
+        self,
+        model_adapter: ModelAdapter,
+        configuration: Optional[dict] = None,
+        preload: bool = False,
+    ):
         super().__init__(model_adapter, configuration, preload)
         self.out_channels = 0
 
@@ -83,13 +88,23 @@ class BlurSegmentation(SegmentationModel):
         soft_prediction = np.transpose(predictions, axes=(1, 2, 0))
 
         hard_prediction = create_hard_prediction_from_soft_prediction(
-            soft_prediction=soft_prediction, soft_threshold=self.soft_threshold, blur_strength=self.blur_strength
+            soft_prediction=soft_prediction,
+            soft_threshold=self.soft_threshold,
+            blur_strength=self.blur_strength,
         )
         hard_prediction = cv2.resize(
-            hard_prediction, meta["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
+            hard_prediction,
+            meta["original_shape"][1::-1],
+            0,
+            0,
+            interpolation=cv2.INTER_NEAREST,
         )
         soft_prediction = cv2.resize(
-            soft_prediction, meta["original_shape"][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST
+            soft_prediction,
+            meta["original_shape"][1::-1],
+            0,
+            0,
+            interpolation=cv2.INTER_NEAREST,
         )
         meta["soft_prediction"] = soft_prediction
 

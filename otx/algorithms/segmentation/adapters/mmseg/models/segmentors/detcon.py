@@ -247,7 +247,12 @@ class DetConB(nn.Module):
         if self.input_transform == "resize_concat" and isinstance(self.in_index, (list, tuple)):
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
-                resize(input=x, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
+                resize(
+                    input=x,
+                    size=inputs[0].shape[2:],
+                    mode="bilinear",
+                    align_corners=self.align_corners,
+                )
                 for x in inputs
             ]
             inputs = torch.cat(upsampled_inputs, dim=1)
@@ -272,7 +277,12 @@ class DetConB(nn.Module):
         x = self.online_backbone(img)
         return x
 
-    def sample_masked_feats(self, feats: Union[torch.Tensor, List, Tuple], masks: torch.Tensor, projector: nn.Module):
+    def sample_masked_feats(
+        self,
+        feats: Union[torch.Tensor, List, Tuple],
+        masks: torch.Tensor,
+        projector: nn.Module,
+    ):
         """Sampled features from mask.
 
         Args:
@@ -300,7 +310,11 @@ class DetConB(nn.Module):
 
     # pylint: disable=too-many-locals
     def forward_train(
-        self, img: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, return_embedding: bool = False
+        self,
+        img: torch.Tensor,
+        img_metas: List[Dict],
+        gt_semantic_seg: torch.Tensor,
+        return_embedding: bool = False,
     ):
         """Forward function for training.
 
@@ -347,7 +361,12 @@ class DetConB(nn.Module):
             return self.forward_train(img, img_metas, **kwargs)
         raise AttributeError("Self-SL doesn't support `forward_test` for evaluation.")
 
-    def train_step(self, data_batch: Dict[str, Any], optimizer: Union[torch.optim.Optimizer, Dict], **kwargs):
+    def train_step(
+        self,
+        data_batch: Dict[str, Any],
+        optimizer: Union[torch.optim.Optimizer, Dict],
+        **kwargs,
+    ):
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
@@ -470,7 +489,13 @@ class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
         test_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
-        super().__init__(backbone=backbone, decode_head=decode_head, train_cfg=train_cfg, test_cfg=test_cfg, **kwargs)
+        super().__init__(
+            backbone=backbone,
+            decode_head=decode_head,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg,
+            **kwargs,
+        )
 
         self.detconb = DetConB(
             backbone=backbone,
@@ -519,7 +544,10 @@ class SupConDetConB(OTXEncoderDecoder):  # pylint: disable=too-many-ancestors
         else:
             # supcon training
             loss_detcon, embds, masks = self.detconb.forward_train(
-                img=img, img_metas=img_metas, gt_semantic_seg=gt_semantic_seg, return_embedding=True
+                img=img,
+                img_metas=img_metas,
+                gt_semantic_seg=gt_semantic_seg,
+                return_embedding=True,
             )
             losses.update(dict(loss_detcon=loss_detcon["loss"]))
             img_metas += img_metas

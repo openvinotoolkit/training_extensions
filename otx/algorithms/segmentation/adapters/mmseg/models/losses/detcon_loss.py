@@ -33,7 +33,10 @@ class DetConLoss(nn.Module):
     """
 
     def __init__(
-        self, temperature: float = 0.1, use_replicator_loss: bool = True, ignore_index: int = 255
+        self,
+        temperature: float = 0.1,
+        use_replicator_loss: bool = True,
+        ignore_index: int = 255,
     ):  # pylint: disable=unused-argument
         super().__init__()
         assert temperature > 0
@@ -71,7 +74,18 @@ class DetConLoss(nn.Module):
         return target1_large, target2_large, labels
 
     # pylint: disable=too-many-arguments, too-many-locals
-    def forward(self, pred1, pred2, target1, target2, pind1, pind2, tind1, tind2, local_negatives=True):
+    def forward(
+        self,
+        pred1,
+        pred2,
+        target1,
+        target2,
+        pind1,
+        pind2,
+        tind1,
+        tind2,
+        local_negatives=True,
+    ):
         """Forward loss.
 
         Args:
@@ -95,14 +109,16 @@ class DetConLoss(nn.Module):
 
         def make_same_obj(ind_0, ind_1):
             same_obj = torch.eq(
-                ind_0.reshape([batch_size, num_samples, 1]), ind_1.reshape([batch_size, 1, num_samples])
+                ind_0.reshape([batch_size, num_samples, 1]),
+                ind_1.reshape([batch_size, 1, num_samples]),
             )
             same_obj = same_obj.unsqueeze(2).to(main_dtype)
             return same_obj
 
         same_obj_dict = {}
         for pair, (pind, tind) in zip(
-            ["aa", "ab", "ba", "bb"], list(itertools.product([pind1, pind2], [tind1, tind2]))
+            ["aa", "ab", "ba", "bb"],
+            list(itertools.product([pind1, pind2], [tind1, tind2])),
         ):
             same_obj_dict[pair] = make_same_obj(pind, tind)
 
@@ -123,7 +139,8 @@ class DetConLoss(nn.Module):
         # Do our matmuls and mask out appropriately.
         logits_dict = {}
         for pair, (pred, target) in zip(
-            ["aa", "ab", "ba", "bb"], list(itertools.product([pred1, pred2], [target1_large, target2_large]))
+            ["aa", "ab", "ba", "bb"],
+            list(itertools.product([pred1, pred2], [target1_large, target2_large])),
         ):
             logits_dict[pair] = torch.einsum("abk,uvk->abuv", pred, target) / self.temperature
 

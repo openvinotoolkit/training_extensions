@@ -74,8 +74,20 @@ def load_test_dataset(data_type):
         width, height = resolution
         image = np.full([height, width, 3], fill_value=128, dtype=np.uint8)
         true_labels = np.full([height, width, 1], fill_value=0, dtype=np.uint8)
-        cv2.rectangle(image, (int(height * 0.1), int(width * 0.1)), (int(height / 2), int(width / 2)), (0, 255, 0), -1)
-        cv2.rectangle(true_labels, (int(height * 0.1), int(width * 0.1)), (int(height / 2), int(width / 2)), 2, -1)
+        cv2.rectangle(
+            image,
+            (int(height * 0.1), int(width * 0.1)),
+            (int(height / 2), int(width / 2)),
+            (0, 255, 0),
+            -1,
+        )
+        cv2.rectangle(
+            true_labels,
+            (int(height * 0.1), int(width * 0.1)),
+            (int(height / 2), int(width / 2)),
+            2,
+            -1,
+        )
         return (image, true_labels)
 
     labels = [
@@ -108,7 +120,12 @@ def load_test_dataset(data_type):
         return DatasetItemEntity(
             media=Image(data=image),
             annotation_scene=AnnotationSceneEntity(
-                annotations=[Annotation(Polygon(points=points), labels=[ScoredLabel(label=labels[label_id - 1])])],
+                annotations=[
+                    Annotation(
+                        Polygon(points=points),
+                        labels=[ScoredLabel(label=labels[label_id - 1])],
+                    )
+                ],
                 kind=AnnotationSceneKind.ANNOTATION,
             ),
             subset=subset,
@@ -185,7 +202,10 @@ def main(args):
 
     logger.info("Setup environment")
     environment = TaskEnvironment(
-        model=None, hyper_parameters=params, label_schema=labels_schema, model_template=model_template
+        model=None,
+        hyper_parameters=params,
+        label_schema=labels_schema,
+        model_template=model_template,
     )
 
     logger.info("Create base Task")
@@ -217,7 +237,10 @@ def main(args):
 
     logger.info("Setup environment")
     environment = TaskEnvironment(
-        model=initial_model, hyper_parameters=params, label_schema=labels_schema, model_template=model_template
+        model=initial_model,
+        hyper_parameters=params,
+        label_schema=labels_schema,
+        model_template=model_template,
     )
 
     environment.model = ModelEntity(
@@ -241,7 +264,8 @@ def main(args):
     logger.info("Get predictions on the validation set")
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
-        validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
+        validation_dataset.with_empty_annotations(),
+        InferenceParameters(is_evaluation=True),
     )
     resultset = ResultSetEntity(
         model=output_model,
@@ -268,7 +292,8 @@ def main(args):
 
         logger.info("Get predictions on the validation set")
         predicted_validation_dataset = openvino_task.infer(
-            validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True),
         )
         resultset = ResultSetEntity(
             model=exported_model,
@@ -292,7 +317,8 @@ def main(args):
 
             logger.info("Get predictions on the validation set")
             predicted_validation_dataset = openvino_task.infer(
-                validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
+                validation_dataset.with_empty_annotations(),
+                InferenceParameters(is_evaluation=True),
             )
             resultset = ResultSetEntity(
                 model=optimized_model,

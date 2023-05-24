@@ -217,7 +217,15 @@ class RandomResizedCrop(T.RandomResizedCrop):
         results["img_shape"] = img.size
         for key in results.get("seg_fields", []):
             results[key] = np.array(
-                F.resized_crop(Image.fromarray(results[key]), i, j, height, width, self.size, self.interpolation)
+                F.resized_crop(
+                    Image.fromarray(results[key]),
+                    i,
+                    j,
+                    height,
+                    width,
+                    self.size,
+                    self.interpolation,
+                )
             )
 
         # change order because of difference between numpy and PIL

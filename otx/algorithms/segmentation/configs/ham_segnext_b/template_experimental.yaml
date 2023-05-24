@@ -4,7 +4,7 @@ name: SegNext-B
 task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Semantic Segmentation with large architecture which based on the MSCAN backbone for the better accuracy.
+summary: Class-Incremental Semantic Segmentation with larger architecture which based on the MSCAN backbone for the better accuracy.
 application: ~
 
 # Algo backend.
@@ -36,7 +36,7 @@ hyper_parameters:
       learning_rate_warmup_iters:
         default_value: 20
       num_iters:
-        default_value: 100
+        default_value: 150
     nncf_optimization:
       enable_quantization:
         default_value: true
