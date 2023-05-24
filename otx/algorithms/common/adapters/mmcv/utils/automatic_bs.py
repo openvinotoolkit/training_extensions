@@ -56,17 +56,9 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
     def train_func_single_iter(batch_size):
         copied_cfg = deepcopy(cfg)
         _set_batch_size(copied_cfg, batch_size)
+        _set_max_epoch(copied_cfg, 1)  # setup for training a single iter to reduce time
 
-        # setup for training a single iter to reduce time
-        if copied_cfg.runner.get("type") == "AccuracyAwareRunner":  # nncf case
-            if "nncf_config" in copied_cfg.runner:
-                _set_value_at_dict_in_dict(
-                    copied_cfg.runner["nncf_config"], "accuracy_aware_training.params.maximal_total_epochs", 1
-                )
-        else:
-            copied_cfg.runner["max_epochs"] = 1
-
-        # Remove some hooks due to reasons below
+        # Remove hooks due to reasons below
         # OTXProgressHook => prevent progress bar from being 0 and 100 repeatably
         # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
         # CustomEvalHook => exclude validation in classification task
@@ -115,7 +107,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         logger.info(f"Batch size is adapted : {default_bs} -> {new_batch_size}")
         logger.info(f"learning rate is adapted : {origin_lr} -> {cfg.optimizer.lr}")
     else:
-        logger.info("Adapting batch size is done. Current batch size is availble.")
+        logger.info("Adapting batch size is done. Batch size isn't changed.")
 
 
 def _get_batch_size(cfg) -> int:
@@ -129,6 +121,17 @@ def _set_batch_size(cfg, batch_size: int):
         cfg.data.videos_per_gpu = batch_size
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
+
+def _set_max_epoch(cfg, max_epoch: int):
+    if cfg.runner.get("type") == "AccuracyAwareRunner":  # nncf case
+        if "nncf_config" in cfg.runner:
+            _set_value_at_dict_in_dict(
+                cfg.runner["nncf_config"], "accuracy_aware_training.params.maximal_total_epochs", max_epoch
+            )
+    elif "iterbased" in cfg.runner["type"].lower():
+        cfg.runner["max_iters"] = max_epoch
+    else:
+        cfg.runner["max_epochs"] = max_epoch
 
 
 class SubDataset:
