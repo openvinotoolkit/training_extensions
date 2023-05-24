@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## \[v1.2.2\]
 
+### Enhancements
+
+- Improve warning message for tiling configurable parameter
+
 ## \[v1.2.1\]
 
 ### Enhancements
