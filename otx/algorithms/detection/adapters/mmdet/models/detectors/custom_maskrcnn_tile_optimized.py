@@ -160,7 +160,7 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             mask_results.append([])
         return bbox_results, mask_results
 
-    def simple_test(self, img, img_metas, proposals=None, rescale=False):
+    def simple_test(self, img, img_metas, proposals=None, rescale=False, full_res_image=False):
         """Simple test.
 
         Tile classifier is used to filter out images without any objects.
@@ -171,12 +171,15 @@ class CustomMaskRCNNTileOptimized(CustomMaskRCNN):
             img_metas (list): image meta data
             proposals (list, optional): proposals. Defaults to None.
             rescale (bool, optional): rescale. Defaults to False.
+            full_res_image (bool, optional): if the image is full resolution or not. Defaults to False.
 
         Returns:
             tuple: MaskRCNN output
         """
-
         keep = self.tile_classifier.simple_test(img) > 0.45
+        if isinstance(full_res_image, bool):
+            full_res_image = [full_res_image]
+        keep = full_res_image[0] | keep
 
         results = []
         for _ in range(len(img)):
