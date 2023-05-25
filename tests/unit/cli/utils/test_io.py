@@ -66,10 +66,7 @@ def test_read_binary(tmp_dir):
 def model_adapter_keys():
     return (
         "confidence_threshold",
-        "image_threshold",
-        "pixel_threshold",
-        "min",
-        "max",
+        "metadata",
         "config.json",
     )
 
