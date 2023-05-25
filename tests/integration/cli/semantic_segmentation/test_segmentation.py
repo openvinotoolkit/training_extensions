@@ -57,6 +57,13 @@ args_semisl = {
     ],
 }
 
+args_semisl_auto_config = {
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train_with_unlabeled",
+    "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
+    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+}
+
 args_selfsl = {
     "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
     "--input": "tests/assets/segmentation/custom/images/training",
@@ -69,6 +76,11 @@ args_selfsl = {
         "--algo_backend.train_type",
         "Selfsupervised",
     ],
+}
+
+args_selfsl_auto = {
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
 # Training params for resume, num_iters*2
@@ -200,6 +212,15 @@ class TestSegmentationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
+    def test_otx_train_semisl_auto_config(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation/test_semisl_auto"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_auto_config)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        # Check that semi-sl launched
+        assert os.path.exists(f"{template_dir}/semisl")
+
+    @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
@@ -213,6 +234,15 @@ class TestSegmentationCLI:
     def test_otx_train_selfsl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_selfsl_auto_config(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl_auto"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_auto)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        # Check that self-sl launched
+        assert os.path.exists(f"{template_dir}/selfsl")
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")

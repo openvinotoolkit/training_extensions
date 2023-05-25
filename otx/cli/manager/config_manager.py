@@ -63,6 +63,7 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
 }
 
 TASK_TYPE_TO_SUB_DIR_NAME = {
+    "Auto": "",
     "Incremental": "",
     "Semisupervised": "semisl",
     "Selfsupervised": "selfsl",
@@ -218,8 +219,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             args_hyper_parameters = gen_params_dict_from_args(self.args)
             arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
             if arg_algo_backend:
-                train_type = arg_algo_backend.get("train_type", {"value": "Incremental"})  # type: ignore
-                return train_type.get("value", "Incremental")
+                predifined_train_type = arg_algo_backend.get("train_type", {"value": "Auto"})  # type: ignore
+                self.train_type = predifined_train_type["value"]
+                if predifined_train_type["value"] == "Auto":
+                    # auto train type detection
+                    self._configure_train_type()
+                return self.train_type
             if hasattr(self.args, "train_type") and self.mode in ("build", "train", "optimize"):
                 self._configure_train_type()
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
@@ -242,34 +247,54 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
     def _configure_train_type(self):
         def _check_is_only_images(dir):
+            """Check if a directory contains only images."""
             import glob
 
             pngs = glob.glob(f"{dir}/*.png")
             jpgs = glob.glob(f"{dir}/*.jpg")
             return len(pngs) > 0 or len(jpgs) > 0
 
+        def _check_semisl_requirements(train_dir, unlabeled_dir, thershold=0.07):
+            """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
+            import os
+
+            all_unlabeled_images = len(os.listdir(unlabeled_dir))
+            if all_unlabeled_images <= 1:
+                return False
+            all_train_images = len(os.listdir(train_dir))
+            print(all_unlabeled_images, all_train_images)
+            if all_unlabeled_images >= thershold * all_train_images:
+                return True
+            return False
+
         # if user explicitly passed train type via args
-        if self.args.train_type is not None:
+        if self.args.train_type is not None and self.args.train_type != "Auto":
             self.train_type = self.args.train_type
             return
 
         path_to_train_data = Path(self.args.train_data_roots)
         if not Path.is_dir(path_to_train_data):
             raise ValueError(
-                "train-data-roots isn't a directory or it doesn't exist. Please, check command line and directory path."
+                "train-data-roots isn't a directory or it doesn't exist. "
+                "Please, check command line and directory path."
             )
 
-        if _check_is_only_images(path_to_train_data):
+        if self.args.val_data_roots is None or _check_is_only_images(path_to_train_data):
+            # If we don't have validation data or folder with images only was passed to cmd
+            # Then we start self-supervised training
             print("[*] Selfsupervised training type detected")
             self.train_type = "Selfsupervised"
             return
+
         # if user explicitly passed unlabeled images folder
         if self.args.unlabeled_data_roots is not None:
             unlabeled_path = Path(self.args.unlabeled_data_roots)
             if Path.is_dir(unlabeled_path):
-                if not unlabeled_path.stat():
-                    raise ValueError(
-                        "unlabeled_images isn't directory or it doesn't exist. Please, check command line."
+                if not _check_semisl_requirements(path_to_train_data, unlabeled_path):
+                    print(
+                        "WARNING: There are none or too litle images to start Semi-SL training."
+                        "It should be more that relative threshold"
+                        "Start Supervised training instead."
                     )
                 self.train_type = "Semisupervised"
                 return
@@ -281,10 +306,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         is_unlabeled_exists = Path.exists(path_to_train_data / "unlabeled_images")
         if is_unlabeled_exists:
-            if not any(Path(path_to_train_data / "unlabeled_images").iterdir()):
+            if not _check_semisl_requirements(path_to_train_data, Path(path_to_train_data / "unlabeled_images")):
                 print(
-                    "WARNING: unlabeled_images folder is detected, but there is no files. "
-                    "Training continues with incremental supervised training type"
+                    "WARNING: There are none or too litle images to start Semi-SL training."
+                    "It should be more that relative threshold"
+                    "Start Supervised training instead."
                 )
                 self.train_type = "Incremental"
                 return

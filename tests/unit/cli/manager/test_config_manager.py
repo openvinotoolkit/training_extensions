@@ -484,26 +484,47 @@ class TestConfigManager:
         config_manager.args.train_type = None
         config_manager.args.unlabeled_data_roots = None
         config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        config_manager.args.val_data_roots = "tests/assets/classification_dataset"
         assert config_manager._get_train_type(ignore_args=False) == "Incremental"
         config_manager.args.unlabeled_data_roots = "tests/assets/unlabeled_dataset/a"
         assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
+        # test unlabeled_data_roots doesn't exist
         config_manager.args.unlabeled_data_roots = "non_exist_dir"
         try:
             config_manager._get_train_type(ignore_args=False)
             assert False
         except ValueError:
             assert True
+        config_manager.args.train_data_roots = "non_exist_dir"
+        config_manager.args.val_data_roots = "tests/assets/classification_dataset"
         config_manager.args.unlabeled_data_roots = None
+        try:
+            config_manager._get_train_type(ignore_args=False)
+            assert False
+        except ValueError:
+            assert True
         config_manager.args.train_data_roots = "tests/assets/unlabeled_dataset/a"
+        config_manager.args.val_data_roots = "tests/assets/unlabeled_dataset/a"
+        # test folder with only images
+        assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
+        config_manager.args.val_data_roots = None
+        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        # test val_data_roots is None -> self-sl
         assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
         try:
             os.mkdir("tests/assets/classification_dataset/unlabeled_images")
             config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+            config_manager.args.val_data_roots = "tests/assets/classification_dataset"
+            # test empty unlabeled folder
             assert config_manager._get_train_type(ignore_args=False) == "Incremental"
             os.mkdir("tests/assets/classification_dataset/unlabeled_images/some")
-            assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
+            # test unsufficient number of images
+            assert config_manager._get_train_type(ignore_args=False) == "Incremental"
         finally:
             shutil.rmtree("tests/assets/classification_dataset/unlabeled_images")
+        config_manager.args.train_data_roots = "tests/assets/common_semantic_segmentation_dataset/train_with_unlabeled"
+        # test auto semisl detection
+        assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
 
     @e2e_pytest_unit
     def test_auto_task_detection(self, mocker):

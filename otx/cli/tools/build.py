@@ -66,7 +66,7 @@ def get_args():
         "--train-type",
         help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}.",
         type=str,
-        default="Incremental",
+        default="Auto",
     )
     parser.add_argument(
         "--workspace",
