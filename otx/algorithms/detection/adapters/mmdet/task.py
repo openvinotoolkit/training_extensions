@@ -172,12 +172,7 @@ class MMDetectionTask(OTXDetectionTask):
         return model
 
     # pylint: disable=too-many-arguments
-    def configure(
-        self,
-        training=True,
-        subset="train",
-        ir_options=None,
-    ):
+    def configure(self, training=True, subset="train", ir_options=None, train_dataset=None):
         """Patch mmcv configs for OTX detection settings."""
 
         # deepcopy all configs to make sure
@@ -202,8 +197,23 @@ class MMDetectionTask(OTXDetectionTask):
         else:
             configurer = DetectionConfigurer()
         cfg = configurer.configure(
-            recipe_cfg, self._model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
+            recipe_cfg,
+            train_dataset,
+            self._model_ckpt,
+            data_cfg,
+            training,
+            subset,
+            ir_options,
+            data_classes,
+            model_classes,
         )
+        if should_cluster_anchors(self._recipe_cfg):
+            if train_dataset is not None:
+                self._anchors = cfg.model.bbox_head.anchor_generator
+                self._update_anchors(self._recipe_cfg.model.bbox_head.anchor_generator, self._anchors)
+            elif self._anchors is not None:
+                self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
+                self._update_anchors(self._recipe_cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
         return cfg
 
@@ -231,7 +241,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task(dataset)
 
-        cfg = self.configure(True, "train", None)
+        cfg = self.configure(True, "train", None, get_dataset(dataset, Subset.TRAINING))
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -245,14 +255,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Data
         datasets = [build_dataset(cfg.data.train)]
-
-        # TODO. This should be moved to configurer
-        # TODO. Anchor clustering should be checked
-        # if hasattr(cfg, "hparams"):
-        #     if cfg.hparams.get("adaptive_anchor", False):
-        #         num_ratios = cfg.hparams.get("num_anchor_ratios", 5)
-        #         proposal_ratio = extract_anchor_ratio(datasets[0], num_ratios)
-        #         self.configure_anchor(cfg, proposal_ratio)
 
         # Target classes
         if "task_adapt" in cfg:
@@ -271,8 +273,6 @@ class MMDetectionTask(OTXDetectionTask):
                 mmdet_version=__version__ + get_git_hash()[:7],
                 CLASSES=target_classes,
             )
-            # if "proposal_ratio" in locals():
-            #     cfg.checkpoint_config.meta.update({"anchor_ratio": proposal_ratio})
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))

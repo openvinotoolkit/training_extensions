@@ -15,6 +15,7 @@ from .config_utils import (
     patch_tiling,
     prepare_for_training,
     set_hyperparams,
+    should_cluster_anchors,
 )
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "patch_input_preprocessing",
     "patch_input_shape",
     "patch_ir_scale_factor",
+    "should_cluster_anchors",
 ]
