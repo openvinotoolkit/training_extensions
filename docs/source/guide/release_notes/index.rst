@@ -1,6 +1,18 @@
 Releases
 ========
 
+***************
+[v1.3.0] (2Q23)
+***************
+
+- Support direct annotation input for COCO format
+- Action task supports multi GPU training
+- Support storage cache in Apache Arrow using Datumaro for action tasks
+- Add a simplified greedy labels postprocessing for hierarchical classification
+- Support auto adapting batch size
+- Support auto adapting num_workers
+- Support noisy label detection for detection tasks
+
 *************
 v1.2.0 (1Q23)
 *************
