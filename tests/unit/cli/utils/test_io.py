@@ -137,7 +137,8 @@ def mock_zip_file(model_adapter_keys, tmp_dir) -> str:
     with (model_dir_in_zip / "config.json").open("w") as f:
         model_config = {"model_parameters": {}}
         for key in model_adapter_keys:
-            model_config["model_parameters"][key] = 0.1234
+            if key != "metadata":
+                model_config["model_parameters"][key] = 0.1234
         model_config["model_parameters"]["labels"] = {"fake": "fake"}
         json.dump(model_config, f)
 
@@ -156,7 +157,8 @@ def test_read_zip_model(mocker, model_adapter_keys, mock_zip_file):
     assert model_adapters["openvino.xml"].data == b"xml_model"
     assert model_adapters["openvino.bin"].data == b"bin_model"
     for key in model_adapter_keys:
-        assert model_adapters[key].data == struct.pack("f", 0.1234)
+        if key != "metadata":
+            assert model_adapters[key].data == struct.pack("f", 0.1234)
 
 
 @e2e_pytest_unit
