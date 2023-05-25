@@ -431,22 +431,6 @@ class TestToolsMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        pytest.skip("Demo for multi-label classification is not supported now.")
-        otx_demo_testing(template, tmp_dir_path, otx_dir, args_m)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_openvino(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        pytest.skip("Demo for multi-label classification is not supported now.")
-        otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
@@ -457,14 +441,6 @@ class TestToolsMultilabelClassification:
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_deployment(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        pytest.xfail("Demo for multi-label classification is not supported now.")
-        otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -633,22 +609,6 @@ class TestToolsHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        pytest.skip("Demo for hierarchical classification is not supported now.")
-        otx_demo_testing(template, tmp_dir_path, otx_dir, args_h)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_openvino(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        pytest.skip("Demo for hierarchical classification is not supported now.")
-        otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
@@ -659,14 +619,6 @@ class TestToolsHierarchicalClassification:
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.0)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_deployment(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        pytest.skip("Demo for hierarchical classification is not supported now.")
-        otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
