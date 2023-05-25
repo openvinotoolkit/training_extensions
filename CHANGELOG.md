@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
-- Improve warning message for tiling configurable parameter
+- Improve warning message for tiling configurable parameter (<https://github.com/openvinotoolkit/training_extensions/pull/2193>)
 
 ## \[v1.2.1\]
 
