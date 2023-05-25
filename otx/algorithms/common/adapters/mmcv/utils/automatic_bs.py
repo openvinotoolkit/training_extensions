@@ -145,9 +145,9 @@ class SubDataset:
 
         self.fullset = fullset
         self.num_samples = num_samples
-        self.img_indices =  {  # for class incremental case
+        self.img_indices = {  # for class incremental case
             "old": [i for i in range(num_samples // 2)],
-            "new": [i for i in range(num_samples // 2, num_samples)]
+            "new": [i for i in range(num_samples // 2, num_samples)],
         }
 
     def __len__(self) -> int:
