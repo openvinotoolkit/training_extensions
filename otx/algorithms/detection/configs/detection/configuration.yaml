@@ -480,7 +480,7 @@ tiling_parameters:
       type: UI_RULES
     value: true
     visible_in_ui: true
-    warning: Tiling trades off speed for accuracy as it increases the number of images to be processed. In turn, it's memory efficient as smaller resolution patches are handled at onces so that the possibility of OOM issues could be reduced.
+    warning: "Tiling trades off speed for accuracy as it increases the number of images to be processed. In turn, it's memory efficient as smaller resolution patches are handled at onces so that the possibility of OOM issues could be reduced. Important: In the current version, depending on the dataset size and the available hardware resources, a model may not train successfully when tiling is enabled."
 
   enable_adaptive_params:
     header: Enable adaptive tiling parameters
