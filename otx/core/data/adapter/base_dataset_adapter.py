@@ -82,6 +82,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         cache_config: Optional[Dict[str, Any]] = None,
+        **kwargs,
     ):
         self.task_type = task_type
         self.domain = task_type.domain
@@ -97,6 +98,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             test_ann_files=test_ann_files,
             unlabeled_data_roots=unlabeled_data_roots,
             unlabeled_file_list=unlabeled_file_list,
+            **kwargs,
         )
 
         cache_config = cache_config if cache_config is not None else {}
