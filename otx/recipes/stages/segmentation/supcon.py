@@ -10,5 +10,5 @@ custom_hooks = [
         priority=75,
         start=1,
     ),
-    dict(type="TwoCropTransformHook", interval=5)
+    dict(type="TwoCropTransformHook", interval=5),
 ]
