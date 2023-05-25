@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Add a simplified greedy labels postprocessing for hierarchical classification (<https://github.com/openvinotoolkit/training_extensions/pull/2064>).
 - Support auto adapting batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2119>)
 - Support auto adapting num_workers (<https://github.com/openvinotoolkit/training_extensions/pull/2165>)
+- Support noisy label detection for detection tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2109>, <https://github.com/openvinotoolkit/training_extensions/pull/2115>, <https://github.com/openvinotoolkit/training_extensions/pull/2123>, <https://github.com/openvinotoolkit/training_extensions/pull/2183>)
 
 ### Enhancements
 
