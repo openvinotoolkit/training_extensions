@@ -30,28 +30,6 @@ def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
     self = self.to(device_backup)
 
 
-# pylint: disable=protected-access
-def nncf_train_step(self, data, optimizer):
-    """A helper function for train_step method of mmcv models."""
-    from nncf.torch.dynamic_graph.io_handling import replicate_same_tensors
-
-    with self._compressed_context as ctx:
-        ctx.base_module_thread_local_replica = self
-        _, data = replicate_same_tensors(((), data))
-        if not self._in_user_dummy_forward:
-            # If a user supplies own dummy forward, he is responsible for
-            # correctly wrapping inputs inside it as well.
-            _, data = self._strip_traced_tensors((), data)
-            _, data = self._wrap_inputs_fn((), data)
-        retval = self.get_nncf_wrapped_model().train_step(data, optimizer)
-        retval = replicate_same_tensors(retval)
-        if not self._in_user_dummy_forward:
-            retval = self._wrap_outputs_fn(retval)
-
-    # TODO: deal with kd_loss_handler in forward method of NNCFNetwork
-    return retval
-
-
 def no_nncf_trace_wrapper(self, fn, *args, **kwargs):  # pylint: disable=unused-argument,invalid-name
     """A wrapper function not to trace in NNCF."""
 

@@ -70,18 +70,6 @@ def is_checkpoint_nncf(path):
         return False
 
 
-def get_uncompressed_model(module):
-    """Get uncompressed original model."""
-
-    if not is_nncf_enabled():
-        return module
-    from nncf.torch.nncf_network import NNCFNetwork
-
-    if isinstance(module, NNCFNetwork):
-        return module.get_nncf_wrapped_model()
-    return module
-
-
 class AccuracyAwareLrUpdater:
     """AccuracyAwareLrUpdater."""
 

@@ -7,18 +7,8 @@ from copy import deepcopy
 
 from otx.algorithms.common.adapters.nncf import (
     NNCF_PATCHER,
-    is_nncf_enabled,
     no_nncf_trace_wrapper,
 )
-
-if is_nncf_enabled():
-    from nncf.torch.nncf_network import NNCFNetwork
-
-    # pylint: disable-next=ungrouped-imports
-    from otx.algorithms.common.adapters.nncf.patches import nncf_train_step
-
-    # add wrapper train_step method
-    NNCFNetwork.train_step = nncf_train_step
 
 
 # pylint: disable-next=unused-argument,invalid-name

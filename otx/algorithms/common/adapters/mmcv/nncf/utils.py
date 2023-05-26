@@ -1,8 +1,10 @@
 """NNCF utils."""
+import copy
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import inspect
 import os
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -135,6 +137,7 @@ def wrap_nncf_model(  # noqa: C901
     check_nncf_is_enabled()
 
     from nncf import NNCFConfig
+    from nncf.config.utils import is_accuracy_aware_training
     from nncf.torch import (
         create_compressed_model,
         load_state,
@@ -261,6 +264,11 @@ def wrap_nncf_model(  # noqa: C901
     if "log_dir" in nncf_config:
         os.makedirs(nncf_config["log_dir"], exist_ok=True)
 
+    uncompressed_model_accuracy = None
+    if is_accuracy_aware_training(nncf_config) and model_eval_fn is not None:
+        # Evaluate model before compressing
+        uncompressed_model_accuracy = model_eval_fn(model)
+
     compression_ctrl, model = create_compressed_model(
         model,
         nncf_config,
@@ -268,6 +276,17 @@ def wrap_nncf_model(  # noqa: C901
         wrap_inputs_fn=wrap_inputs_fn,
         compression_state=compression_state,
     )
+
+    if uncompressed_model_accuracy is not None:
+        try:     # TODO: temporary try-except for NNCF 2.4 backward compatability
+            model.nncf._uncompressed_model_accuracy = uncompressed_model_accuracy
+        except:
+            pass
+
+    # Hiding signature of the forward method is required for model export to work
+    model.__class__.forward.__signature__ = inspect.Signature([
+        inspect.Parameter('args', inspect.Parameter.VAR_POSITIONAL),
+        inspect.Parameter('kwargs', inspect.Parameter.VAR_KEYWORD)])
 
     if resuming_state_dict:
         load_state(model, resuming_state_dict, is_resume=True)
