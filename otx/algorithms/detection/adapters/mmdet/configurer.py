@@ -248,7 +248,6 @@ class DetectionConfigurer:
 
             if self.data_classes != self.model_classes:
                 self.configure_task_data_pipeline(cfg)
-            # TODO[JAEGUK]: configure_anchor is not working
             if cfg["task_adapt"].get("use_mpa_anchor", False):
                 self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "mpa":
@@ -706,9 +705,8 @@ class SemiSLDetectionConfigurer(DetectionConfigurer):
 
             if self.data_classes != self.model_classes:
                 self.configure_task_data_pipeline(cfg)
-            # TODO[JAEGUK]: configure_anchor is not working
             if cfg["task_adapt"].get("use_mpa_anchor", False):
-                self.configure_anchor(cfg)
+                self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "mpa":
                 self.configure_bbox_head(cfg)
             else:

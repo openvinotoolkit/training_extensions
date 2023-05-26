@@ -210,10 +210,8 @@ class MMDetectionTask(OTXDetectionTask):
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
                 self._anchors = cfg.model.bbox_head.anchor_generator
-                self._update_anchors(self._recipe_cfg.model.bbox_head.anchor_generator, self._anchors)
             elif self._anchors is not None:
                 self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
-                self._update_anchors(self._recipe_cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
         return cfg
 
@@ -658,9 +656,9 @@ class MMDetectionTask(OTXDetectionTask):
             "confidence_threshold": self.confidence_threshold,
             "VERSION": 1,
         }
-        if self._recipe_cfg is not None and should_cluster_anchors(self._recipe_cfg):
+        if self.config is not None and should_cluster_anchors(self.config):
             modelinfo["anchors"] = {}
-            self._update_anchors(modelinfo["anchors"], self._recipe_cfg.model.bbox_head.anchor_generator)
+            self._update_anchors(modelinfo["anchors"], self.config.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
