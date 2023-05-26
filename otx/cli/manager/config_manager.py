@@ -406,6 +406,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if learning_parameters:
                 num_workers = getattr(learning_parameters, "num_workers", 0)
                 dataset_config["cache_config"]["num_workers"] = num_workers
+        if str(self.task_type).upper() == "SEGMENTATION" and str(self.train_type).upper() == "SELFSUPERVISED":
+            # FIXME: manually set a path to save pseudo masks in workspace
+            train_type_rel_path = TASK_TYPE_TO_SUB_DIR_NAME[self.train_type]
+            train_type_dir = self.workspace_root / train_type_rel_path
+            dataset_config["pseudo_mask_dir"] = train_type_dir / "detcon_mask"
         return dataset_config
 
     def update_data_config(self, data_yaml: dict) -> None:

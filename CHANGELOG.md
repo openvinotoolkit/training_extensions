@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
-- n/a
+- Fix a bug that auto adapt batch size doesn't work with cls incr case (<https://github.com/openvinotoolkit/training_extensions/pull/2199>)
 
 ### Known issues
 
@@ -40,6 +40,7 @@ All notable changes to this project will be documented in this file.
 ### Bug fixes
 
 - Fix async mode inference for demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2154>)
+- Fix a bug that auto adapt batch size doesn't work with cls incr case (<https://github.com/openvinotoolkit/training_extensions/pull/2199>)
 
 ### Known issues
 

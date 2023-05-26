@@ -133,7 +133,10 @@ class TestSubDataset:
 
     def test_init(self, mocker):
         fullset = mocker.MagicMock()
-        SubDataset(fullset, 3)
+        subset = SubDataset(fullset, 3)
+
+        # test for class incremental case. If below assert can't be passed, ClsIncrSampler can't work well.
+        assert len(subset.img_indices["new"]) / len(subset.img_indices["old"]) + 1 <= self.num_samples
 
     @pytest.mark.parametrize("num_samples", [-1, 0])
     def test_init_w_wrong_num_samples(self, mocker, num_samples):
