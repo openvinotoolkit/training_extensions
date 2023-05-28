@@ -6,7 +6,7 @@ dataset:
   task: segmentation
   train_batch_size: 2
   eval_batch_size: 2
-  num_workers: 0
+  num_workers: 4
   image_size: 1024 # dimensions to which images are resized (mandatory)
   center_crop: null # dimensions to which images are center-cropped after resizing (optional)
   normalization: imagenet # data distribution to which the images will be normalized: [none, imagenet]

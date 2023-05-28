@@ -90,6 +90,8 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
+        # self.trainer.validate(model=self.model, datamodule=datamodule)
+        
 
         self.save_model(output_model)
 

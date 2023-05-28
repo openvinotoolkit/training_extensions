@@ -112,16 +112,19 @@ class OTXPytorchLightningDataset(Dataset):
         Returns:
             Dict[str, Union[int, Tensor]]: Dataset item.
         """
+        from torchvision.utils import save_image
+        import torch
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        height, width = self.config.dataset.image_size
+        # height, width = self.config.dataset.image_size
 
         # load annotations for item
         bboxes = []
         labels = []
         polygons = []
 
+        width, height = dataset_item.width, dataset_item.height
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
             box = ShapeFactory.shape_as_rectangle(annotation.shape)
             if min(box.width * width, box.height * height) < -1:
@@ -137,11 +140,21 @@ class OTXPytorchLightningDataset(Dataset):
             polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
             polygons.extend([[polygon] for _ in range(n)])
             labels.extend(class_indices)
+            # temp_masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
+            # save_image(torch.from_numpy(temp_masks).argmax(0).float(), "what.jpg")
 
         masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
         bboxes = np.array(bboxes)
-
         image, masks, bboxes = self.transform(dataset_item.numpy, masks, bboxes)
+        # from torchvision.utils import draw_segmentation_masks
+        # from torchvision.utils import draw_bounding_boxes
+        # from torchvision.transforms.functional import convert_image_dtype
+        # img = convert_image_dtype(image, torch.uint8)
+
+        # seg_img = draw_segmentation_masks(img, torch.stack(masks).argmax(0).bool(), alpha=0.8, colors="blue")
+        # det_img = draw_bounding_boxes(seg_img, torch.tensor(bboxes), colors="red")
+        # save_image((det_img / 255).float(), "vis_img.jpg")
+
         item["image"] = image
         item["mask"] = masks
         item["bbox"] = bboxes

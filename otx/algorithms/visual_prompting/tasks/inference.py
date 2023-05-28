@@ -70,6 +70,8 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+torch.set_float32_matmul_precision('high')
+
 ALPHA = 0.8
 GAMMA = 2
 
@@ -267,6 +269,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 num_images = images.size(0)
 
                 pred_masks, _ = self.forward(images, bboxes)
+                
                 for pred_mask, gt_mask in zip(pred_masks, gt_masks):
                     batch_stats = smp.metrics.get_stats(
                         pred_mask,
@@ -278,12 +281,12 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     batch_f1 = smp.metrics.f1_score(*batch_stats, reduction="micro-imagewise")
                     ious.update(batch_iou, num_images)
                     f1_scores.update(batch_f1, num_images)
+                print(f"IoU: {batch_iou.item():.4f}, F1: {batch_f1.item():.4f}")
                 result = dict(iou=ious.avg, f1_score=f1_scores.avg)
-                print(result)
                 return result
 
             def configure_optimizers(self):
-                optimizer = optim.Adam(self.parameters(), lr=2e-4)
+                optimizer = optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-4)
                 return optimizer
 
         self.model = SegmentAnything()
