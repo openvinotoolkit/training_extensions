@@ -43,7 +43,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                         ):
                             if self._is_normal_polygon(ann):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
-                        if self.task_type in (TaskType.DETECTION, TaskType.VISUAL_PROMPTING) and ann.type == DatumAnnotationType.bbox:
+                        if self.task_type is TaskType.DETECTION and ann.type == DatumAnnotationType.bbox:
                             if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 

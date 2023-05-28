@@ -15,11 +15,11 @@
 # and limitations under the License.
 
 from typing import Dict, List, Optional, Union
-
+import cv2
 import numpy as np
-import torch
-from anomalib.data.base.datamodule import collate_fn
-from anomalib.data.utils.transform import get_transforms
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.transform import ResizeAndPad, collate_fn
+from otx.api.utils.shape_factory import ShapeFactory
+from PIL import Image, ImageDraw
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
@@ -64,12 +64,12 @@ class OTXPytorchLightningDataset(Dataset):
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType):
         self.config = config
         self.dataset = dataset
+        self.labels = dataset.get_labels()
+        self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
         self.task_type = task_type
 
         # TODO: distinguish between train and val config here
-        self.transform = get_transforms(
-            config=config.dataset.transform_config.train, image_size=tuple(config.dataset.image_size), to_tensor=True
-        )
+        self.transform = ResizeAndPad(max(config.dataset.image_size))
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -78,6 +78,27 @@ class OTXPytorchLightningDataset(Dataset):
             int: Size of the dataset.
         """
         return len(self.dataset)
+
+    @staticmethod
+    def polygons_to_mask(polygons, height, width):
+        # Initialize the mask as an array of zeros
+        mask = np.zeros((len(polygons), height, width), dtype=np.uint8)
+
+        # Loop over the polygons
+        for i, polygon in enumerate(polygons):
+            # Create an empty mask for this polygon
+            poly_mask = np.zeros((height, width), dtype=np.uint8)
+            
+            # Convert the polygon to a numpy array and reshape to ROWSx1x2
+            poly_array = np.array(polygon).reshape((-1, 1, 2)).astype(int)
+            
+            # Draw the polygon onto the mask
+            cv2.fillPoly(poly_mask, [poly_array], 1)
+            
+            # Add the mask for this polygon to the overall mask
+            mask[i] = poly_mask
+
+        return mask
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
         """Get dataset item.
@@ -94,36 +115,37 @@ class OTXPytorchLightningDataset(Dataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        item["image"] = self.transform(image=dataset_item.numpy)["image"]
-        item["boxes"] = torch.empty((0, 4))
         height, width = self.config.dataset.image_size
-        boxes = []
-        for annotation in dataset_item.get_annotations():
-            if isinstance(annotation.shape, Rectangle) and not Rectangle.is_full_box(annotation.shape):
-                boxes.append(
-                    Tensor(
-                        [
-                            annotation.shape.x1 * width,
-                            annotation.shape.y1 * height,
-                            annotation.shape.x2 * width,
-                            annotation.shape.y2 * height,
-                        ]
-                    )
-                )
-            if boxes:
-                item["boxes"] = torch.stack(boxes)
-        if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
-            mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
-        else:
-            mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
-        pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
-        item["image"] = pre_processed["image"]
-        item["mask"] = pre_processed["mask"]
 
-        if len(dataset_item.get_shapes_labels()) > 0 and dataset_item.get_shapes_labels()[0].is_anomalous:
-            item["label"] = 1
-        else:
-            item["label"] = 0
+        # load annotations for item
+        bboxes = []
+        labels = []
+        polygons = []
+
+        for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
+            box = ShapeFactory.shape_as_rectangle(annotation.shape)
+            if min(box.width * width, box.height * height) < -1:
+                continue
+
+            class_indices = [
+                self.label_idx[label.id] for label in annotation.get_labels(include_empty=False)
+            ]
+
+            n = len(class_indices)
+            bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
+            polygon = ShapeFactory.shape_as_polygon(annotation.shape)
+            polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
+            polygons.extend([[polygon] for _ in range(n)])
+            labels.extend(class_indices)
+
+        masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
+        bboxes = np.array(bboxes)
+
+        image, masks, bboxes = self.transform(dataset_item.numpy, masks, bboxes)
+        item["image"] = image
+        item["mask"] = masks
+        item["bbox"] = bboxes
+        item["label"] = labels
         return item
 
 
@@ -224,12 +246,8 @@ class OTXPytorchLightningDataModule(LightningDataModule):
         global_dataset, local_dataset = split_local_global_dataset(self.val_otx_dataset)
         logger.info(f"Global annotations: {len(global_dataset)}")
         logger.info(f"Local annotations: {len(local_dataset)}")
-        if contains_anomalous_images(local_dataset):
-            logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
-            dataset = OTXPytorchLightningDataset(self.config, local_dataset, self.task_type)
-        else:
-            logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
-            dataset = OTXPytorchLightningDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
+        logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
+        dataset = OTXPytorchLightningDataset(self.config, local_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,

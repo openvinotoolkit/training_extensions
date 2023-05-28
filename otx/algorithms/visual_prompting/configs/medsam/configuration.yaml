@@ -5,7 +5,7 @@ dataset:
     affects_outcome_of: NONE
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: 8
+    default_value: 0
     description:
       Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
@@ -56,7 +56,7 @@ learning_parameters:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: 32
+    default_value: 2
     description:
       The number of training samples seen in each iteration of training.
       Increasing this value improves training time and may make the training more
