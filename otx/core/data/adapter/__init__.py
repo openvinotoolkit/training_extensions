@@ -96,6 +96,18 @@ if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
             },
         }
     )
+# TODO: update to real template
+if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+    ADAPTERS.update(
+        {
+            TaskType.VISUAL_PROMPTING: {
+                "Incremental": {
+                    "module_name": "detection_dataset_adapter",
+                    "class": "DetectionDatasetAdapter",
+                }
+            },
+        }
+    )
 
 
 def get_dataset_adapter(
