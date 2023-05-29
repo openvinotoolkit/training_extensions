@@ -70,9 +70,13 @@ class TrainingTask(InferenceTask, ITrainingTask):
         config.trainer.deterministic = deterministic
 
         logger.info("Training Configs '%s'", config)
-
+        # from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
+        from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
+        
         datamodule = OTXPytorchLightningDataModule(config=config, dataset=dataset, task_type=self.task_type)
         callbacks = [
+            # LearningRateMonitor(logging_interval='step'),
+            ModelCheckpoint(monitor="iou", mode="max"),
             ProgressCallback(parameters=train_parameters),
             MinMaxNormalizationCallback(),
             MetricsConfigurationCallback(
@@ -90,8 +94,8 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
-        # self.trainer.validate(model=self.model, datamodule=datamodule)
-        
+        logger.info("Evaluation with best checkpoint.")
+        self.trainer.validate(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)
 

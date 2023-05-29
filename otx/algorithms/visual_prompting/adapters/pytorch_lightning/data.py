@@ -223,14 +223,10 @@ class OTXPytorchLightningDataModule(LightningDataModule):
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
             dataset = self.dataset.get_subset(subset)
             num_items = len(dataset)
-            num_normal = len([item for item in dataset if not item.get_shapes_labels()[0].is_anomalous])
-            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].is_anomalous])
             logger.info(
-                "'%s' subset size: Total '%d' images. Normal: '%d', images. Anomalous: '%d' images",
+                "'%s' subset size: Total '%d' images.",
                 subset,
                 num_items,
-                num_normal,
-                num_anomalous,
             )
 
     def train_dataloader(

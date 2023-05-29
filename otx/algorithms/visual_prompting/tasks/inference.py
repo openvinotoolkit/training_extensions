@@ -181,7 +181,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         import pytorch_lightning as pl
         # define the LightningModule
         class SegmentAnything(pl.LightningModule):
-            def __init__(self, model_type='vit_b', ckpt_path='sam_vit_b_01ec64.pth'):
+            def __init__(self, model_type='vit_b', ckpt_path='/home/cosmos/sam-ws/otx-sam/sam_vit_b_01ec64.pth'):
                 super().__init__()
                 self.model = sam_model_registry[model_type](checkpoint=ckpt_path)
                 self.model.train()
@@ -252,14 +252,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     loss_dice += dice_loss(pred_mask, gt_mask, num_masks)
                     loss_iou += F.mse_loss(iou_prediction, batch_iou, reduction='sum') / num_masks
                 loss_total = 20. * loss_focal + loss_dice + loss_iou
-
-                # Logging to TensorBoard (if installed) by default
-                self.log("train_loss", loss_total)
                 return loss_total
 
             def validation_step(self, batch, batch_idx):
-                # this is the validation loop
-
                 ious = AverageMeter()
                 f1_scores = AverageMeter()
     
@@ -281,8 +276,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     batch_f1 = smp.metrics.f1_score(*batch_stats, reduction="micro-imagewise")
                     ious.update(batch_iou, num_images)
                     f1_scores.update(batch_f1, num_images)
-                print(f"IoU: {batch_iou.item():.4f}, F1: {batch_f1.item():.4f}")
                 result = dict(iou=ious.avg, f1_score=f1_scores.avg)
+                self.log_dict(result, batch_size=2, on_epoch=True, prog_bar=True)
                 return result
 
             def configure_optimizers(self):
