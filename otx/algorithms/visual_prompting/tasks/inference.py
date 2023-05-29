@@ -257,28 +257,39 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             def validation_step(self, batch, batch_idx):
                 ious = AverageMeter()
                 f1_scores = AverageMeter()
-    
+
                 images = batch['image']
                 bboxes = batch['bbox']
                 gt_masks = batch['mask']
-                num_images = images.size(0)
+                num_images = len(images)
 
-                pred_masks, _ = self.forward(images, bboxes)
-                
-                for pred_mask, gt_mask in zip(pred_masks, gt_masks):
-                    batch_stats = smp.metrics.get_stats(
-                        pred_mask,
-                        gt_mask.int(),
-                        mode='binary',
-                        threshold=0.5,
-                    )
-                    batch_iou = smp.metrics.iou_score(*batch_stats, reduction="micro-imagewise")
-                    batch_f1 = smp.metrics.f1_score(*batch_stats, reduction="micro-imagewise")
-                    ious.update(batch_iou, num_images)
-                    f1_scores.update(batch_f1, num_images)
-                result = dict(iou=ious.avg, f1_score=f1_scores.avg)
-                self.log_dict(result, batch_size=2, on_epoch=True, prog_bar=True)
-                return result
+                if images != []:
+                    pred_masks, _ = self.forward(images, bboxes)
+
+                    # from torchvision.utils import draw_segmentation_masks, save_image
+                    # from torchvision.transforms.functional import convert_image_dtype
+                    # img = convert_image_dtype(images[0], torch.uint8)
+                    # seg_img = draw_segmentation_masks(img.cpu(), (pred_masks[0] > 0.5).int().argmax(0).bool().cpu(), alpha=0.6, colors="blue")
+                    # gt_img = draw_segmentation_masks(img.cpu(), gt_masks[0].argmax(0).bool().cpu(), alpha=0.6, colors="blue")
+                    
+                    # save_image((seg_img / 255).float(), f"plot/origin_seg_img_{batch_idx}.jpg")
+                    # save_image((seg_img / 255).float(), f"plot/1epoch_seg_img_{batch_idx}.jpg")
+                    # save_image((gt_img / 255).float(), f"plot/gt_img_{batch_idx}.jpg")
+
+                    for pred_mask, gt_mask in zip(pred_masks, gt_masks):
+                        batch_stats = smp.metrics.get_stats(
+                            pred_mask,
+                            gt_mask.int(),
+                            mode='binary',
+                            threshold=0.5,
+                        )
+                        batch_iou = smp.metrics.iou_score(*batch_stats, reduction="micro-imagewise")
+                        batch_f1 = smp.metrics.f1_score(*batch_stats, reduction="micro-imagewise")
+                        ious.update(batch_iou, num_images)
+                        f1_scores.update(batch_f1, num_images)
+                    result = dict(iou=ious.avg, f1_score=f1_scores.avg)
+                    self.log_dict(result, batch_size=2, on_epoch=True, prog_bar=True)
+                    return result
 
             def configure_optimizers(self):
                 optimizer = optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-4)

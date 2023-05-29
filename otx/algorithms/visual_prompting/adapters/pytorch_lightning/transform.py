@@ -7,11 +7,12 @@ def collate_fn(batch):
     index = [item['index'] for item in batch]
     image = torch.stack([item['image'] for item in batch])
     bbox = [torch.tensor(item['bbox']) for item in batch]
-    mask = [torch.stack(item['mask']) for item in batch]
-    label = [item['label'] for item in batch]
+    mask = [torch.stack(item['mask']) for item in batch if item['mask'] != []]
+    label = [item['label'] for item in batch] if batch else []
+    if mask:
+        return {'index': index, 'image': image, 'bbox': bbox, 'mask': mask, 'label': label}
+    return {'index': -1, 'image': [], 'bbox': [], 'mask': [], 'label': []}
     
-    return {'index': index, 'image': image, 'bbox': bbox, 'mask': mask, 'label': label}
-
 
 
 class ResizeAndPad:

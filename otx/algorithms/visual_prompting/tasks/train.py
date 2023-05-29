@@ -78,18 +78,18 @@ class TrainingTask(InferenceTask, ITrainingTask):
             # LearningRateMonitor(logging_interval='step'),
             ModelCheckpoint(monitor="iou", mode="max"),
             ProgressCallback(parameters=train_parameters),
-            MinMaxNormalizationCallback(),
-            MetricsConfigurationCallback(
-                task=config.dataset.task,
-                image_metrics=config.metrics.image,
-                pixel_metrics=config.metrics.get("pixel"),
-            ),
-            PostProcessingConfigurationCallback(
-                normalization_method=NormalizationMethod.MIN_MAX,
-                threshold_method=ThresholdMethod.ADAPTIVE,
-                manual_image_threshold=config.metrics.threshold.manual_image,
-                manual_pixel_threshold=config.metrics.threshold.manual_pixel,
-            ),
+            # MinMaxNormalizationCallback(),
+            # MetricsConfigurationCallback(
+            #     task=config.dataset.task,
+            #     image_metrics=config.metrics.image,
+            #     pixel_metrics=config.metrics.get("pixel"),
+            # ),
+            # PostProcessingConfigurationCallback(
+            #     normalization_method=NormalizationMethod.MIN_MAX,
+            #     threshold_method=ThresholdMethod.ADAPTIVE,
+            #     manual_image_threshold=config.metrics.threshold.manual_image,
+            #     manual_pixel_threshold=config.metrics.threshold.manual_pixel,
+            # ),
         ]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
