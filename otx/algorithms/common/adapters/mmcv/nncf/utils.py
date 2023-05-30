@@ -148,6 +148,13 @@ def wrap_nncf_model(  # noqa: C901
             # redefined PTInitializingDataLoader because
             # of DataContainer format in mmdet
             kwargs = {k: v.data[0] if isinstance(v, DataContainer) else v for k, v in dataloader_output.items()}
+            kwargs["return_loss"] = False
+            kwargs["img_metas"] = [kwargs["img_metas"]]
+            kwargs["img"] = [kwargs["img"]]
+            if "gt_semantic_seg" in kwargs:
+                # train data. Make validation format
+                del kwargs["gt_semantic_seg"]
+
             return (), kwargs
 
     nncf_config = NNCFConfig(config.nncf_config)
