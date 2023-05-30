@@ -22,3 +22,5 @@ evaluation:
 task_adapt:
   type: "mpa"
   op: "REPLACE"
+
+channel_last: False

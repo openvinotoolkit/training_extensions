@@ -221,6 +221,8 @@ class MMClassificationTask(OTXClassificationTask):
         model = model_builder(cfg, **kwargs)
         if bool(fp16):
             wrap_fp16_model(model)
+        if bool(cfg.get("channel_last", False)):
+            model = model.to(memory_format=torch.channels_last)
         return model
 
     def _infer_model(
@@ -264,6 +266,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        
         model.eval()
         feature_model = model
         model = build_data_parallel(model, cfg, distributed=False)

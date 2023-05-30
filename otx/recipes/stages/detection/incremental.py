@@ -40,3 +40,5 @@ adaptive_validation_interval = dict(
     enable_adaptive_interval_hook=True,
     enable_eval_before_run=True,
 )
+
+channel_last = False
