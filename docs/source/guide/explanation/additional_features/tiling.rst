@@ -9,11 +9,38 @@ However, it's important to consider the trade-off associated with image tiling. 
 
 By leveraging image tiling, the OpenVINO Training Extension empowers detection and instance segmentation algorithms to effectively detect and localize small and crowded objects in large-resolution images, ultimately leading to improved overall performance and accuracy.
 
+Tiling Strategies 
+**********************************
 Below we provided an example of tiling used on one of the image from `DOTA https://captain-whu.github.io/DOTA/dataset.html`_
 
 .. image:: ../../../../utils/images/dota_tiling_example.jpg
   :width: 800
   :alt: this image uploaded from this `source <https://captain-whu.github.io/DOTA/dataset.html>`_
+
+
+In this example, the full image is cropped into 9 tiles. During training, only the tiles with annotations (bounding boxes or masks) are used for training.
+
+During evaluation in training, only the tiles with annotations are used for evaluation, and evaluation is performed at the tile level.
+
+During testing, each tile is processed and predicted separately. The tiles are then stitched back together to form the full image, and the tile predictions are merged to form the full image prediction.
+
+The tiling strategy is implemented in the OpenVINO Training Extension through the following steps:
+
+.. code-block:: 
+
+    * Training: Create an ImageTilingDataset with annotated tiles -> Train with annotated tile images -> Evaluate on annotated tiles
+    * Testing: Create an ImageTilingDataset including all tiles -> Test with all tile images -> Stitching -> Merge tile-level predictions -> Full Image Prediction
+
+.. note::
+
+    While running `ote eval` on models trained with tiling enabled, the evaluation will be performed on all tiles, this process including mergeing all the tile-level prediction. 
+    The below context will be provided during evaluation:
+
+    .. code-block:: 
+        
+        [>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 650/650, 17.2 task/s, elapsed: 38s, ETA:     0s
+        ==== merge: 7.326097726821899 sec ====
+
 
 
 
