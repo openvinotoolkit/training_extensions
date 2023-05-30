@@ -129,6 +129,7 @@ class TestTilingTileClassifier:
         output_model = ModelEntity(self.dataset, task_env.get_model_configuration())
         task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
         task._model_ckpt = model_ckpt
+        task._init_task()
         task.save_model(output_model)
         for filename, model_adapter in output_model.model_adapters.items():
             with open(os.path.join(tmp_dir_path, filename), "wb") as write_file:
@@ -160,6 +161,7 @@ class TestTilingTileClassifier:
         output_model = ModelEntity(self.dataset, task_env.get_model_configuration())
         task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
         task._model_ckpt = tile_classifier_ckpt
+        task._init_task()
         task.save_model(output_model)
         for filename, model_adapter in output_model.model_adapters.items():
             with open(os.path.join(tmp_dir_path, filename), "wb") as write_file:

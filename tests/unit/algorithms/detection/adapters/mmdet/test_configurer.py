@@ -5,6 +5,7 @@ import pytest
 import tempfile
 from mmcv.utils import ConfigDict
 
+from otx.api.entities.model_template import TaskType
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,
@@ -12,7 +13,10 @@ from otx.algorithms.detection.adapters.mmdet.configurer import (
     SemiSLDetectionConfigurer,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.algorithms.detection.test_helpers import DEFAULT_DET_TEMPLATE_DIR
+from tests.unit.algorithms.detection.test_helpers import (
+    DEFAULT_DET_TEMPLATE_DIR,
+    generate_det_dataset,
+)
 
 
 class TestDetectionConfigurer:
@@ -21,6 +25,7 @@ class TestDetectionConfigurer:
         self.configurer = DetectionConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
     @e2e_pytest_unit
     def test_configure(self, mocker):
@@ -37,13 +42,13 @@ class TestDetectionConfigurer:
 
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg)
-        returned_value = self.configurer.configure(model_cfg, "", data_cfg, True)
+        returned_value = self.configurer.configure(model_cfg, self.det_dataset, "", data_cfg, True)
         mock_cfg_base.assert_called_once_with(model_cfg, data_cfg, None, None)
         mock_cfg_device.assert_called_once_with(model_cfg, True)
         mock_cfg_model.assert_called_once_with(model_cfg, None)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_regularization.assert_called_once_with(model_cfg, True)
-        mock_cfg_task.assert_called_once_with(model_cfg, True)
+        mock_cfg_task.assert_called_once_with(model_cfg, self.det_dataset, True)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
         mock_cfg_fp16_optimizer.assert_called_once_with(model_cfg)
@@ -161,19 +166,24 @@ class TestDetectionConfigurer:
 
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
+        ssd_dir = os.path.join("otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
+        ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
+        ssd_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        model_cfg = copy.deepcopy(ssd_cfg)
+        self.configurer.configure_task(model_cfg, self.det_dataset, True)
+        assert model_cfg.model.bbox_head.anchor_generator != ssd_cfg.model.bbox_head.anchor_generator
+
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(model_cfg, True)
-
         model_cfg.model.bbox_head.type = "ATSSHead"
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg, self.det_dataset, True)
 
         model_cfg.model.bbox_head.type = "VFNetHead"
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg, self.det_dataset, True)
 
         model_cfg.model.bbox_head.type = "YOLOXHead"
         model_cfg.data.train.type = "MultiImageMixDataset"
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg, self.det_dataset, True)
 
         def mock_configure_classes(*args, **kwargs):
             return True
@@ -182,7 +192,7 @@ class TestDetectionConfigurer:
         self.configurer.model_classes = []
         self.configurer.data_classes = ["red", "green"]
         self.configurer.configure_classes = mock_configure_classes
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg, self.det_dataset, True)
 
     @e2e_pytest_unit
     def test_configure_hook(self):
@@ -244,12 +254,13 @@ class TestIncrDetectionConfigurer:
         self.configurer = IncrDetectionConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
     def test_configure_task(self, mocker):
         mocker.patch.object(DetectionConfigurer, "configure_task")
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg, self.det_dataset, True)
         assert self.model_cfg.custom_hooks[1].type == "TaskAdaptHook"
         assert self.model_cfg.custom_hooks[1].sampler_flag is False
 
@@ -260,6 +271,7 @@ class TestSemiSLDetectionConfigurer:
         self.configurer = SemiSLDetectionConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
     def test_configure_data(self, mocker):
         mocker.patch.object(DetectionConfigurer, "configure_data")
@@ -272,7 +284,7 @@ class TestSemiSLDetectionConfigurer:
 
     def test_configure_task(self):
         self.model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg, self.det_dataset, True)
 
         self.model_cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg, self.det_dataset, True)
