@@ -51,12 +51,12 @@ class TestMMSegmentationTask:
         model = self.mmseg_task.build_model(self.mmseg_task._recipe_cfg, fp16=True)
         assert isinstance(model, torch.nn.Module)
         assert model.fp16_enabled
-        
+
         self.mmseg_task._recipe_cfg["channel_last"] = True
         new_model = self.mmseg_task.build_model(self.mmseg_task._recipe_cfg, True)
         dummy_model = model.backbone.features[0]
         dummy_model_channel_last = new_model.backbone.features[0]
-        
+
         dummy_tensor = torch.randn((1, 3, 224, 224))
         dummy_output = dummy_model(dummy_tensor)
         dummy_output_channel_last = dummy_model_channel_last(dummy_tensor)

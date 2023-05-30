@@ -266,7 +266,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
-        
+
         model.eval()
         feature_model = model
         model = build_data_parallel(model, cfg, distributed=False)
