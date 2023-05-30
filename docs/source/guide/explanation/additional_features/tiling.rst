@@ -11,7 +11,7 @@ By leveraging image tiling, the OpenVINO Training Extension empowers detection a
 
 Tiling Strategies 
 **********************************
-Below we provided an example of tiling used on one of the image from `DOTA https://captain-whu.github.io/DOTA/dataset.html`_
+Below we provided an example of tiling used on one of the image from `DOTA <https://captain-whu.github.io/DOTA/dataset.html>`_.
 
 .. image:: ../../../../utils/images/dota_tiling_example.jpg
   :width: 800
@@ -37,7 +37,7 @@ The tiling strategy is implemented in the OpenVINO Training Extension through th
     The below context will be provided during evaluation:
 
     .. code-block:: 
-        
+
         [>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 650/650, 17.2 task/s, elapsed: 38s, ETA:     0s
         ==== merge: 7.326097726821899 sec ====
 
@@ -85,9 +85,30 @@ Customizing Tiling Parameters
 Users have the flexibility to customize the tiling process by disabling adaptive tiling parameters and setting the following parameters:
 
 .. code-block:: 
-
-    params --tiling_parameters.enable_adaptive_params 0 \  # disable automatic tiling parameter optimization
+    
+    otx train Custom_Object_Detection_Gen3_SSD --train-data-roots tests/assets/small_objects --val-data-roots tests/assets/small_objects
+    params --tiling_parameters.enable_tiling 1          \  # enable tiling
+           --tiling_parameters.enable_adaptive_params 0 \  # disable automatic tiling parameter optimization
            --tiling_parameters.tile_size 512 \             # tile size configured to 512x512
            --tiling_parameters.tile_overlap 0.1 \          # 10% overlap between tiles
 
 By specifying these parameters, you can disable automatic tiling parameter optimization, configure the tile size to 512x512, and set a 10% overlap between tiles.
+
+Run Tiling on OpenVINO Exported Model
+**************************************
+
+After training a model with tiling enabled, you can export the model to OpenVINO IR format using the following command:
+
+.. code-block:: 
+
+    otx export Custom_Object_Detection_Gen3_SSD --load-weights <path_to_trained_model>/weights.pth --output <path_to_exported_model>
+
+
+After exporting the model, you can run inference on the exported model using the following command:
+
+.. code-block:: 
+
+    ote eval Custom_Object_Detection_Gen3_SSD --test-data-roots tests/assets/small_objects --load-weights <path_to_exported_model>/openvino.xml
+
+.. warning::
+    Tiling trades off speed for accuracy as it increases the number of images to be processed. Therefore, it is normal to see a longer training and inference time when tiling is enabled.

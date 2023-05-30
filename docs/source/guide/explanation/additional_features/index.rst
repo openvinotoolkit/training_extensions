@@ -12,3 +12,4 @@ Additional Features
    xai
    noisy_label_detection
    fast_data_loading
+   tiling
