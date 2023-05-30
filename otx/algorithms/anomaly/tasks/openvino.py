@@ -167,9 +167,9 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
         # This always assumes that threshold is available in the task environment's model
-        meta_data = self.get_meta_data()
+        meta_data = self.get_metadata()
         for idx, dataset_item in enumerate(dataset):
-            image_result = self.inferencer.predict(dataset_item.numpy, meta_data=meta_data)
+            image_result = self.inferencer.predict(dataset_item.numpy, metadata=meta_data)
 
             # TODO: inferencer should return predicted label and mask
             pred_label = image_result.pred_score >= 0.5
@@ -205,25 +205,19 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
         return dataset
 
-    def get_meta_data(self) -> Dict:
+    def get_metadata(self) -> Dict:
         """Get Meta Data."""
-        meta_data = {}
+        metadata = {}
         if self.task_environment.model is not None:
-            model: ModelEntity = self.task_environment.model
-            image_threshold = np.frombuffer(model.get_data("image_threshold"), dtype=np.float32)
-            pixel_threshold = np.frombuffer(model.get_data("pixel_threshold"), dtype=np.float32)
-            min_value = np.frombuffer(model.get_data("min"), dtype=np.float32)
-            max_value = np.frombuffer(model.get_data("max"), dtype=np.float32)
-            meta_data = {
-                "image_threshold": image_threshold,
-                "pixel_threshold": pixel_threshold,
-                "min": min_value,
-                "max": max_value,
-            }
+            metadata = json.loads(self.task_environment.model.get_data("metadata").decode())
+            metadata["image_threshold"] = np.array(metadata["image_threshold"], dtype=np.float32).item()
+            metadata["pixel_threshold"] = np.array(metadata["pixel_threshold"], dtype=np.float32).item()
+            metadata["min"] = np.array(metadata["min"], dtype=np.float32).item()
+            metadata["max"] = np.array(metadata["max"], dtype=np.float32).item()
         else:
             raise ValueError("Cannot access meta-data. self.task_environment.model is empty.")
 
-        return meta_data
+        return metadata
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate the performance of the model.
@@ -330,10 +324,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        output_model.set_data("image_threshold", self.task_environment.model.get_data("image_threshold"))
-        output_model.set_data("pixel_threshold", self.task_environment.model.get_data("pixel_threshold"))
-        output_model.set_data("min", self.task_environment.model.get_data("min"))
-        output_model.set_data("max", self.task_environment.model.get_data("max"))
+        output_model.set_data("metadata", self.task_environment.model.get_data("metadata"))
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
@@ -355,11 +346,11 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
         return OpenVINOInferencer(
-            config=OmegaConf.create(self.config.to_dict()),
             path=(
                 self.task_environment.model.get_data("openvino.xml"),
                 self.task_environment.model.get_data("openvino.bin"),
             ),
+            metadata=self.get_metadata(),
         )
 
     @staticmethod
@@ -391,29 +382,17 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             raise Exception("task_environment.model is None. Cannot get configuration.")
 
         configuration = {
-            "image_threshold": np.frombuffer(
-                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
-            ).item(),
-            "min": np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32).item(),
-            "max": np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32).item(),
+            "metadata": self.get_metadata(),
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
             "threshold": 0.5,
         }
+
         if "transforms" not in self.config.keys():
             configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)
             configuration["scale_values"] = list(np.array([0.229, 0.224, 0.225]) * 255)
         else:
             configuration["mean_values"] = self.config.transforms.mean
             configuration["scale_values"] = self.config.transforms.std
-
-        if "pixel_threshold" in self.task_environment.model.model_adapters.keys():
-            configuration["pixel_threshold"] = np.frombuffer(
-                self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32
-            ).item()
-        else:
-            configuration["pixel_threshold"] = np.frombuffer(
-                self.task_environment.model.get_data("image_threshold"), dtype=np.float32
-            ).item()
 
         return configuration
 

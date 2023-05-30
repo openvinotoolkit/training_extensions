@@ -8,7 +8,7 @@ from typing import Union
 
 import numpy as np
 from openvino.model_zoo.model_api.models import SegmentationModel
-from openvino.model_zoo.model_api.models.types import NumericalValue
+from openvino.model_zoo.model_api.models.types import DictValue, NumericalValue
 
 
 class AnomalyBase(SegmentationModel):
@@ -23,10 +23,7 @@ class AnomalyBase(SegmentationModel):
         parameters["resize_type"].update_default_value("standard")
         parameters.update(
             {
-                "image_threshold": NumericalValue(description="Image-level Threshold value to locate anomaly"),
-                "pixel_threshold": NumericalValue(description="Pixel-level Threshold value to locate anomaly"),
-                "min": NumericalValue(description="Threshold value to locate anomaly"),
-                "max": NumericalValue(description="Threshold value to locate anomaly"),
+                "metadata": DictValue(description="Metadata for inference"),
                 "threshold": NumericalValue(description="Threshold used to classify anomaly"),
             }
         )
