@@ -18,7 +18,15 @@ class IterativeAggregator(nn.Module):
     Based on: https://github.com/HRNet/Lite-HRNet.
     """
 
-    def __init__(self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=None, merge_norm=None, use_concat=False):
+    def __init__(
+        self,
+        in_channels,
+        min_channels=None,
+        conv_cfg=None,
+        norm_cfg=None,
+        merge_norm=None,
+        use_concat=False,
+    ):
         if norm_cfg is None:
             norm_cfg = dict(type="BN")
         super().__init__()
@@ -138,7 +146,14 @@ class IterativeAggregator(nn.Module):
 class IterativeConcatAggregator(nn.Module):
     """IterativeConcatAggregator."""
 
-    def __init__(self, in_channels, min_channels=None, conv_cfg=None, norm_cfg=None, merge_norm=None):
+    def __init__(
+        self,
+        in_channels,
+        min_channels=None,
+        conv_cfg=None,
+        norm_cfg=None,
+        merge_norm=None,
+    ):
         if norm_cfg is None:
             norm_cfg = dict(type="BN")
 

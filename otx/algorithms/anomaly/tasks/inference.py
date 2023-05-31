@@ -16,6 +16,7 @@
 
 import ctypes
 import io
+import json
 import os
 import shutil
 import subprocess  # nosec
@@ -24,6 +25,7 @@ from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
+from anomalib.data.utils.transform import get_transforms
 from anomalib.models import AnomalyModule, get_model
 from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from anomalib.utils.callbacks import (
@@ -346,17 +348,43 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
-        if hasattr(self.model, "image_threshold"):
-            output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
-        if hasattr(self.model, "pixel_threshold"):
-            output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
+        image_threshold = (
+            self.model.image_threshold.value.cpu().numpy().tolist() if hasattr(self.model, "image_threshold") else 0.5
+        )
+        pixel_threshold = (
+            self.model.pixel_threshold.value.cpu().numpy().tolist() if hasattr(self.model, "pixel_threshold") else 0.5
+        )
+        min = None
+        max = None
         if hasattr(self.model, "normalization_metrics"):
-            output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
-            output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
+            min = self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tolist()
+            max = self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tolist()
         else:
             logger.warning(
                 "The model was not trained before saving. This will lead to incorrect normalization of the heatmaps."
             )
+        transform = get_transforms(
+            config=self.config.dataset.transform_config.train,
+            image_size=tuple(self.config.dataset.image_size),
+            to_tensor=True,
+        )
+        if hasattr(self, "trainer") and hasattr(self.trainer, "datamodule"):
+            if hasattr(self.trainer.datamodule, "test_otx_dataset"):
+                transform = self.trainer.datamodule.test_dataloader().dataset.transform
+            else:
+                transform = self.trainer.datamodule.train_dataloader().dataset.transform
+        metadata = {
+            "transform": transform.to_dict(),
+            "image_threshold": image_threshold,
+            "pixel_threshold": pixel_threshold,
+            "image_shape": list(self.config.model.input_size),
+        }
+        if min is not None and max is not None:
+            metadata["min"] = min
+            metadata["max"] = max
+        # Set the task type for inferencer
+        metadata["task"] = str(self.task_type).lower().split("_")[-1]
+        output_model.set_data("metadata", json.dumps(metadata).encode())
 
     @staticmethod
     def _is_docker() -> bool:

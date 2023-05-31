@@ -99,6 +99,7 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     mapi_config[("model_info", "model_type")] = "Classification"
     mapi_config[("model_info", "confidence_threshold")] = str(inference_config["confidence_threshold"])
     mapi_config[("model_info", "multilabel")] = str(inference_config["multilabel"])
+    mapi_config[("model_info", "hierarchical")] = str(inference_config["hierarchical"])
 
     all_labels = ""
     for lbl in label_schema.get_labels(include_empty=False):
@@ -110,7 +111,7 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     hierarchical_config["cls_heads_info"] = get_multihead_class_info(label_schema)
     hierarchical_config["label_tree_edges"] = []
     for edge in label_schema.label_tree.edges:  # (child, parent)
-        hierarchical_config["label_tree_edges"].append((edge[0].name.replace(" ", "_"), edge[1].name.replace(" ", "_")))
+        hierarchical_config["label_tree_edges"].append((edge[0].name, edge[1].name))
 
     mapi_config[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
     return mapi_config

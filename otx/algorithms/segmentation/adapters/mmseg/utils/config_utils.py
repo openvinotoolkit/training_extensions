@@ -152,7 +152,10 @@ def rescale_num_iterations(config: Union[Config, ConfigDict], schedule_scale: fl
 
 
 def patch_adaptive_repeat_dataset(
-    config: Union[Config, ConfigDict], num_samples: int, decay: float = 0.002, factor: float = 10
+    config: Union[Config, ConfigDict],
+    num_samples: int,
+    decay: float = 0.002,
+    factor: float = 10,
 ):
     """Patch the repeat times and training epochs adatively."""
     if config.data.train.type != "RepeatDataset":

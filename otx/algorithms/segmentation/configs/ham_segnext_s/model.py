@@ -24,7 +24,11 @@ _base_ = [
 ham_norm_cfg = dict(type="GN", num_groups=32, requires_grad=True)
 model = dict(
     type="OTXEncoderDecoder",
-    backbone=dict(embed_dims=[64, 128, 320, 512], depths=[2, 2, 4, 2], norm_cfg=dict(type="BN", requires_grad=True)),
+    backbone=dict(
+        embed_dims=[64, 128, 320, 512],
+        depths=[2, 2, 4, 2],
+        norm_cfg=dict(type="BN", requires_grad=True),
+    ),
     decode_head=dict(
         type="LightHamHead",
         input_transform="multiple_select",

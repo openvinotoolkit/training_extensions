@@ -29,9 +29,9 @@ class AnomalySegmentation(AnomalyBase):
         """
         anomaly_map: np.ndarray = outputs[self.output_blob_name].squeeze()
 
-        meta["pixel_threshold"] = self.pixel_threshold  # pylint: disable=no-member
-        meta["min"] = self.min  # pylint: disable=no-member
-        meta["max"] = self.max  # pylint: disable=no-member
+        meta["pixel_threshold"] = self.metadata["pixel_threshold"]  # pylint: disable=no-member
+        meta["min"] = self.metadata["min"]  # pylint: disable=no-member
+        meta["max"] = self.metadata["max"]  # pylint: disable=no-member
         meta["threshold"] = self.threshold  # pylint: disable=no-member
 
         anomaly_map = self._normalize(anomaly_map, meta["pixel_threshold"], meta["min"], meta["max"])

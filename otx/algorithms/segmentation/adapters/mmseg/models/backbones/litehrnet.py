@@ -46,7 +46,15 @@ from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
 class NeighbourSupport(nn.Module):
     """Neighbour support module."""
 
-    def __init__(self, channels, kernel_size=3, key_ratio=8, value_ratio=8, conv_cfg=None, norm_cfg=None):
+    def __init__(
+        self,
+        channels,
+        kernel_size=3,
+        key_ratio=8,
+        value_ratio=8,
+        conv_cfg=None,
+        norm_cfg=None,
+    ):
         super().__init__()
 
         self.in_channels = channels
@@ -127,7 +135,12 @@ class CrossResolutionWeighting(nn.Module):
     """Cross resolution weighting."""
 
     def __init__(
-        self, channels, ratio=16, conv_cfg=None, norm_cfg=None, act_cfg=(dict(type="ReLU"), dict(type="Sigmoid"))
+        self,
+        channels,
+        ratio=16,
+        conv_cfg=None,
+        norm_cfg=None,
+        act_cfg=(dict(type="ReLU"), dict(type="Sigmoid")),
     ):
         super().__init__()
 
@@ -175,7 +188,14 @@ class CrossResolutionWeighting(nn.Module):
 class SpatialWeighting(nn.Module):
     """Spatial weighting."""
 
-    def __init__(self, channels, ratio=16, conv_cfg=None, act_cfg=(dict(type="ReLU"), dict(type="Sigmoid")), **kwargs):
+    def __init__(
+        self,
+        channels,
+        ratio=16,
+        conv_cfg=None,
+        act_cfg=(dict(type="ReLU"), dict(type="Sigmoid")),
+        **kwargs,
+    ):
         super().__init__()
 
         if isinstance(act_cfg, dict):
@@ -213,7 +233,15 @@ class SpatialWeighting(nn.Module):
 class SpatialWeightingV2(nn.Module):
     """The original repo: https://github.com/DeLightCMU/PSA."""
 
-    def __init__(self, channels, ratio=16, conv_cfg=None, norm_cfg=None, enable_norm=False, **kwargs):
+    def __init__(
+        self,
+        channels,
+        ratio=16,
+        conv_cfg=None,
+        norm_cfg=None,
+        enable_norm=False,
+        **kwargs,
+    ):
         super().__init__()
 
         self.in_channels = channels
@@ -367,7 +395,11 @@ class ConditionalChannelWeighting(nn.Module):
         self.spatial_weighting = nn.ModuleList(
             [
                 spatial_weighting_module(
-                    channels=channel, ratio=4, conv_cfg=conv_cfg, norm_cfg=norm_cfg, enable_norm=True
+                    channels=channel,
+                    ratio=4,
+                    conv_cfg=conv_cfg,
+                    norm_cfg=norm_cfg,
+                    enable_norm=True,
                 )
                 for channel in branch_channels
             ]
@@ -378,7 +410,12 @@ class ConditionalChannelWeighting(nn.Module):
             self.neighbour_weighting = nn.ModuleList(
                 [
                     NeighbourSupport(
-                        channel, kernel_size=3, key_ratio=8, value_ratio=4, conv_cfg=conv_cfg, norm_cfg=norm_cfg
+                        channel,
+                        kernel_size=3,
+                        key_ratio=8,
+                        value_ratio=4,
+                        conv_cfg=conv_cfg,
+                        norm_cfg=norm_cfg,
                     )
                     for channel in branch_channels
                 ]
@@ -1172,10 +1209,18 @@ class LiteHRNet(BaseModule):
             num_channels = self.stages_spec["num_channels"][i]
             num_channels = [num_channels[i] for i in range(len(num_channels))]
 
-            setattr(self, f"transition{i}", self._make_transition_layer(num_channels_last, num_channels))
+            setattr(
+                self,
+                f"transition{i}",
+                self._make_transition_layer(num_channels_last, num_channels),
+            )
 
             stage, num_channels_last = self._make_stage(
-                self.stages_spec, i, num_channels, multiscale_output=True, dropout=dropout
+                self.stages_spec,
+                i,
+                num_channels,
+                multiscale_output=True,
+                dropout=dropout,
             )
             setattr(self, f"stage{i}", stage)
 
@@ -1316,7 +1361,13 @@ class LiteHRNet(BaseModule):
                             ),
                             build_norm_layer(self.norm_cfg, in_channels)[1],
                             build_conv_layer(
-                                self.conv_cfg, in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=False
+                                self.conv_cfg,
+                                in_channels,
+                                out_channels,
+                                kernel_size=1,
+                                stride=1,
+                                padding=0,
+                                bias=False,
                             ),
                             build_norm_layer(self.norm_cfg, out_channels)[1],
                             nn.ReLU(),
@@ -1326,7 +1377,14 @@ class LiteHRNet(BaseModule):
 
         return nn.ModuleList(transition_layers)
 
-    def _make_stage(self, stages_spec, stage_index, in_channels, multiscale_output=True, dropout=None):
+    def _make_stage(
+        self,
+        stages_spec,
+        stage_index,
+        in_channels,
+        multiscale_output=True,
+        dropout=None,
+    ):
         num_modules = stages_spec["num_modules"][stage_index]
         num_branches = stages_spec["num_branches"][stage_index]
         num_blocks = stages_spec["num_blocks"][stage_index]

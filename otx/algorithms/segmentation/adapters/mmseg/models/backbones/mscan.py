@@ -33,7 +33,14 @@ class Mlp(BaseModule):
             Defaults: 0.0.
     """
 
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_cfg=dict(type="GELU"), drop=0.0):
+    def __init__(
+        self,
+        in_features,
+        hidden_features=None,
+        out_features=None,
+        act_cfg=dict(type="GELU"),
+        drop=0.0,
+    ):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -70,15 +77,31 @@ class StemConv(BaseModule):
     """
 
     def __init__(
-        self, in_channels, out_channels, act_cfg=dict(type="GELU"), norm_cfg=dict(type="SyncBN", requires_grad=True)
+        self,
+        in_channels,
+        out_channels,
+        act_cfg=dict(type="GELU"),
+        norm_cfg=dict(type="SyncBN", requires_grad=True),
     ):
         super().__init__()
 
         self.proj = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels // 2, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
+            nn.Conv2d(
+                in_channels,
+                out_channels // 2,
+                kernel_size=(3, 3),
+                stride=(2, 2),
+                padding=(1, 1),
+            ),
             build_norm_layer(norm_cfg, out_channels // 2)[1],
             build_activation_layer(act_cfg),
-            nn.Conv2d(out_channels // 2, out_channels, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1)),
+            nn.Conv2d(
+                out_channels // 2,
+                out_channels,
+                kernel_size=(3, 3),
+                stride=(2, 2),
+                padding=(1, 1),
+            ),
             build_norm_layer(norm_cfg, out_channels)[1],
         )
 
@@ -103,15 +126,35 @@ class MSCAAttention(BaseModule):
             Defaults: [2, [0, 3], [0, 5], [0, 10]].
     """
 
-    def __init__(self, channels, kernel_sizes=[5, [1, 7], [1, 11], [1, 21]], paddings=[2, [0, 3], [0, 5], [0, 10]]):
+    def __init__(
+        self,
+        channels,
+        kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
+        paddings=[2, [0, 3], [0, 5], [0, 10]],
+    ):
         super().__init__()
-        self.conv0 = nn.Conv2d(channels, channels, kernel_size=kernel_sizes[0], padding=paddings[0], groups=channels)
+        self.conv0 = nn.Conv2d(
+            channels,
+            channels,
+            kernel_size=kernel_sizes[0],
+            padding=paddings[0],
+            groups=channels,
+        )
         for i, (kernel_size, padding) in enumerate(zip(kernel_sizes[1:], paddings[1:])):
             kernel_size_ = [kernel_size, kernel_size[::-1]]
             padding_ = [padding, padding[::-1]]
             conv_name = [f"conv{i}_1", f"conv{i}_2"]
             for i_kernel, i_pad, i_conv in zip(kernel_size_, padding_, conv_name):
-                self.add_module(i_conv, nn.Conv2d(channels, channels, tuple(i_kernel), padding=i_pad, groups=channels))
+                self.add_module(
+                    i_conv,
+                    nn.Conv2d(
+                        channels,
+                        channels,
+                        tuple(i_kernel),
+                        padding=i_pad,
+                        groups=channels,
+                    ),
+                )
         self.conv3 = nn.Conv2d(channels, channels, 1)
 
     def forward(self, x):
@@ -224,7 +267,12 @@ class MSCABlock(BaseModule):
         self.drop_path = DropPath(drop_path) if drop_path > 0.0 else nn.Identity()
         self.norm2 = build_norm_layer(norm_cfg, channels)[1]
         mlp_hidden_channels = int(channels * mlp_ratio)
-        self.mlp = Mlp(in_features=channels, hidden_features=mlp_hidden_channels, act_cfg=act_cfg, drop=drop)
+        self.mlp = Mlp(
+            in_features=channels,
+            hidden_features=mlp_hidden_channels,
+            act_cfg=act_cfg,
+            drop=drop,
+        )
         layer_scale_init_value = 1e-2
         self.layer_scale_1 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
         self.layer_scale_2 = nn.Parameter(layer_scale_init_value * torch.ones(channels), requires_grad=True)
@@ -257,11 +305,22 @@ class OverlapPatchEmbed(BaseModule):
     """
 
     def __init__(
-        self, patch_size=7, stride=4, in_channels=3, embed_dim=768, norm_cfg=dict(type="SyncBN", requires_grad=True)
+        self,
+        patch_size=7,
+        stride=4,
+        in_channels=3,
+        embed_dim=768,
+        norm_cfg=dict(type="SyncBN", requires_grad=True),
     ):
         super().__init__()
 
-        self.proj = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=stride, padding=patch_size // 2)
+        self.proj = nn.Conv2d(
+            in_channels,
+            embed_dim,
+            kernel_size=patch_size,
+            stride=stride,
+            padding=patch_size // 2,
+        )
         self.norm = build_norm_layer(norm_cfg, embed_dim)[1]
 
     def forward(self, x):

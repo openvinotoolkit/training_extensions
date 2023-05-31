@@ -31,7 +31,9 @@ from otx.api.utils.segmentation_utils import mask_from_dataset_item
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 def get_annotation_mmseg_format(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity], use_otx_adapter: bool = True
+    dataset_item: DatasetItemEntity,
+    labels: List[LabelEntity],
+    use_otx_adapter: bool = True,
 ) -> dict:
     """Function to convert a OTX annotation to mmsegmentation format.
 
@@ -259,7 +261,12 @@ class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
             classes = ["background"] + classes
         else:
             classes = []
-        super().__init__(otx_dataset=otx_dataset, pipeline=pipeline, classes=classes, use_otx_adapter=use_otx_adapter)
+        super().__init__(
+            otx_dataset=otx_dataset,
+            pipeline=pipeline,
+            classes=classes,
+            use_otx_adapter=use_otx_adapter,
+        )
 
         self.CLASSES = [label.name for label in self.project_labels]
         if "background" not in self.CLASSES:

@@ -117,7 +117,10 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
             )
         }
         self.model = Model.create_model(
-            hparams.postprocessing.class_name.value, model_adapter, self.configuration, preload=True
+            hparams.postprocessing.class_name.value,
+            model_adapter,
+            self.configuration,
+            preload=True,
         )
         self.converter = SegmentationToAnnotationConverter(label_schema)
         self.callback_exceptions: List[Exception] = []
@@ -226,7 +229,9 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         )
 
     def infer(
-        self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
+        self,
+        dataset: DatasetEntity,
+        inference_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
         """Infer function of OpenVINOSegmentationTask."""
         if inference_parameters is not None:
@@ -315,7 +320,10 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             # model files
             arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
-            arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
+            arch.writestr(
+                os.path.join("model", "config.json"),
+                json.dumps(parameters, ensure_ascii=False, indent=4),
+            )
             # model_wrappers files
             for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
                 if "__pycache__" in root:
@@ -323,7 +331,12 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(
-                        file_path, os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1])
+                        file_path,
+                        os.path.join(
+                            "python",
+                            "model_wrappers",
+                            file_path.split("model_wrappers/")[1],
+                        ),
                     )
             # other python files
             arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
@@ -401,7 +414,10 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
 
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self.task_environment.label_schema),
+        )
 
         # set model attributes for quantized model
         output_model.model_format = ModelFormat.OPENVINO

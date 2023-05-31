@@ -219,15 +219,25 @@ class LightHamHead(BaseDecodeHead):
         self.hamburger = Hamburger(ham_channels, ham_kwargs, **kwargs)
 
         self.align = ConvModule(
-            self.ham_channels, self.channels, 1, conv_cfg=self.conv_cfg, norm_cfg=self.norm_cfg, act_cfg=self.act_cfg
+            self.ham_channels,
+            self.channels,
+            1,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=self.act_cfg,
         )
 
-    def forward(self, inputs):
-        """Forward function."""
+    def _forward_feature(self, inputs):
+        """Forward features function."""
         inputs = self._transform_inputs(inputs)
 
         inputs = [
-            resize(level, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
+            resize(
+                level,
+                size=inputs[0].shape[2:],
+                mode="bilinear",
+                align_corners=self.align_corners,
+            )
             for level in inputs
         ]
 
@@ -236,8 +246,16 @@ class LightHamHead(BaseDecodeHead):
         x = self.squeeze(inputs)
         # apply hamburger module
         x = self.hamburger(x)
+        return x
 
-        # apply a conv block to align feature map
-        output = self.align(x)
+    def _forward_cls(self, feat):
+        """Forward classifier."""
+        output = self.align(feat)
         output = self.cls_seg(output)
+        return output
+
+    def forward(self, inputs):
+        """Forward function."""
+        feats = self._forward_feature(inputs)
+        output = self._forward_cls(feats)
         return output

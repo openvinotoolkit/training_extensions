@@ -3,10 +3,8 @@ name: Weekly Test
 on:
   workflow_dispatch: # run on request (no need for PR)
   schedule:
-    # # every 12AM on Sunday
-    # - cron: "0 0 * * 0"
-    # every 12AM on Mon to Fri
-    - cron: "0 19 * * 1-5"
+    # every 12AM on Sunday
+    - cron: "0 0 * * 0"
 
 jobs:
   Regression-Tests:
@@ -14,23 +12,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - task: "act"
-            test_dir: "tests/regression/action"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
-          - task: "ano"
-            test_dir: "tests/regression/anomaly"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
-          - task: "cls"
-            test_dir: "tests/regression/classification"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
-          - task: "det"
-            test_dir: "tests/regression/detection"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
           - task: "iseg"
             test_dir: "tests/regression/instance_segmentation"
             runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
           - task: "seg"
             test_dir: "tests/regression/semantic_segmentation"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "det"
+            test_dir: "tests/regression/detection"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "ano"
+            test_dir: "tests/regression/anomaly"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "act"
+            test_dir: "tests/regression/action"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
+          - task: "cls"
+            test_dir: "tests/regression/classification"
             runs_on: "['self-hosted', 'Linux', 'X64', 'dmount']"
     name: Regression-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
@@ -40,5 +38,5 @@ jobs:
       toxenv-task: ${{ matrix.task }}
       tests-dir: ${{ matrix.test_dir }}
       runs-on: ${{ matrix.runs_on }}
-      timeout-minutes: 1440
+      timeout-minutes: 2880
       upload-artifact: true

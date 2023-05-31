@@ -16,6 +16,7 @@
 
 import glob
 import io
+import math
 import os
 import time
 from contextlib import nullcontext
@@ -57,7 +58,9 @@ from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     SemiSLSegmentationConfigurer,
 )
 from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
-from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import SegmentationExporter
+from otx.algorithms.segmentation.adapters.mmseg.utils.exporter import (
+    SegmentationExporter,
+)
 from otx.algorithms.segmentation.task import OTXSegmentationTask
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -165,7 +168,14 @@ class MMSegmentationTask(OTXSegmentationTask):
         else:
             configurer = SegmentationConfigurer()
         cfg = configurer.configure(
-            recipe_cfg, self._model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
+            recipe_cfg,
+            self._model_ckpt,
+            data_cfg,
+            training,
+            subset,
+            ir_options,
+            data_classes,
+            model_classes,
         )
         self._config = cfg
         return cfg
@@ -329,6 +339,12 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         # Data
         datasets = [build_dataset(cfg.data.train)]
+
+        if self._train_type == TrainType.Semisupervised:
+            # forward the knowledge of num iters per epoch to model for filter loss
+            bs_per_gpu = cfg.data.train_dataloader["samples_per_gpu"]
+            actual_bs = bs_per_gpu * torch.distributed.get_world_size() if cfg.distributed else bs_per_gpu
+            cfg.model.num_iters_per_epoch = math.ceil(len(datasets[0]) / actual_bs)
 
         # FIXME: Currently segmentor does not support multi batch evaluation.
         # For the Self-SL case, there is no val data. So, need to check the

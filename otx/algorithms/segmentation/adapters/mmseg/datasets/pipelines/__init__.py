@@ -18,4 +18,10 @@ from .compose import MaskCompose, ProbCompose
 from .loads import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset
 from .transforms import TwoCropTransform
 
-__all__ = ["MaskCompose", "ProbCompose", "LoadImageFromOTXDataset", "LoadAnnotationFromOTXDataset", "TwoCropTransform"]
+__all__ = [
+    "MaskCompose",
+    "ProbCompose",
+    "LoadImageFromOTXDataset",
+    "LoadAnnotationFromOTXDataset",
+    "TwoCropTransform",
+]

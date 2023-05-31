@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.4.0\]
+
+### New features
+
+### Enhancements
+
+### Bug fixes
+
+- Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
 ## \[v1.3.0\]
 
 ### New features
@@ -68,6 +83,7 @@ All notable changes to this project will be documented in this file.
 - Action task refactoring (<https://github.com/openvinotoolkit/training_extensions/pull/1993>)
 - Optimize data preprocessing time and enhance overall performance in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2020>)
 - Support automatic batch size decrease when there is no enough GPU memory (<https://github.com/openvinotoolkit/training_extensions/pull/2022>)
+- Refine HPO usability (<https://github.com/openvinotoolkit/training_extensions/pull/2175>)
 
 ### Bug fixes
 

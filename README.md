@@ -112,14 +112,14 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.2.0 (2Q23)
+### v1.3.0 (2Q23)
 
-- Add generating feature cli_report.log in output for otx training (<https://github.com/openvinotoolkit/training_extensions/pull/1959>)
-- Support multiple python versions up to 3.10 (<https://github.com/openvinotoolkit/training_extensions/pull/1978>)
-- Support export of onnx models (<https://github.com/openvinotoolkit/training_extensions/pull/1976>)
-- Add option to save images after inference in OTX CLI demo together with demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2005>)
-- Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2009>)
-- Add noisy label detection for multi-class classification task (<https://github.com/openvinotoolkit/training_extensions/pull/1985>, <https://github.com/openvinotoolkit/training_extensions/pull/2034>)
+- Support direct annotation input for COCO format (<https://github.com/openvinotoolkit/training_extensions/pull/1921>)
+- Action task supports multi GPU training. (<https://github.com/openvinotoolkit/training_extensions/pull/2057>)
+- Support storage cache in Apache Arrow using Datumaro for action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2087>)
+- Add a simplified greedy labels postprocessing for hierarchical classification (<https://github.com/openvinotoolkit/training_extensions/pull/2064>).
+- Support auto adapting batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2119>)
+- Support auto adapting num_workers (<https://github.com/openvinotoolkit/training_extensions/pull/2165>)
 
 ### Release History
 

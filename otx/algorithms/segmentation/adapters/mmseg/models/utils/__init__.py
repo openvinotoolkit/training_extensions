@@ -13,6 +13,7 @@ from .channel_shuffle import channel_shuffle
 from .local_attention import LocalAttentionModule
 from .loss_equalizer import LossEqualizer
 from .normalize import normalize
+from .proto_utils import ProjectionHead, distributed_sinkhorn, momentum_update, trunc_normal_
 from .psp_layer import PSPModule
 
 __all__ = [
@@ -25,4 +26,8 @@ __all__ = [
     "AsymmetricPositionAttentionModule",
     "AngularPWConv",
     "normalize",
+    "distributed_sinkhorn",
+    "momentum_update",
+    "ProjectionHead",
+    "trunc_normal_",
 ]

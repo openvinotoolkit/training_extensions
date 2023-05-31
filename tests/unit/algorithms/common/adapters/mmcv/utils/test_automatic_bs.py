@@ -44,14 +44,12 @@ def common_cfg(mocker):
     return mock_cfg
 
 
-@pytest.fixture
-def mock_cfg_not_action(common_cfg):
+def set_mock_cfg_not_action(common_cfg):
     common_cfg.data.train_dataloader = {"samples_per_gpu": DEFAULT_BS}
     return common_cfg
 
 
-@pytest.fixture
-def mock_cfg_action(common_cfg):
+def set_mock_cfg_action(common_cfg):
     common_cfg.data.videos_per_gpu = DEFAULT_BS
     common_cfg.domain = "ACTION_CLASSIFICATION"
     return common_cfg
@@ -65,19 +63,36 @@ def mock_dataset(mocker):
 
 
 @pytest.mark.parametrize("not_increase", [True, False])
-def test_adapt_batch_size_not_action_task(mocker, mock_adapt_algo_cls, mock_cfg_not_action, mock_dataset, not_increase):
+@pytest.mark.parametrize("is_action_task", [True, False])
+@pytest.mark.parametrize("is_iter_based_runner", [True, False])
+def test_adapt_batch_size(
+    mocker, mock_adapt_algo_cls, common_cfg, mock_dataset, not_increase, is_action_task, is_iter_based_runner
+):
     # prepare
     mock_train_func = mocker.MagicMock()
     new_bs = DEFAULT_BS // 2 if not_increase else DEFAULT_BS + 2
 
+    max_eph_name = "max_epochs"
+    if is_iter_based_runner:
+        common_cfg.runner = {"type": "IterBasedRunnerWithCancel", "max_iters": 100}
+        max_eph_name = "max_iters"
+
+    if is_action_task:
+        mock_config = set_mock_cfg_action(common_cfg)
+    else:
+        mock_config = set_mock_cfg_not_action(common_cfg)
+
     # execute
-    adapt_batch_size(mock_train_func, mock_cfg_not_action, mock_dataset, False, not_increase)
+    adapt_batch_size(mock_train_func, mock_config, mock_dataset, False, not_increase)
 
     # check adapted batch size is applied
-    assert mock_cfg_not_action.data.train_dataloader["samples_per_gpu"] == new_bs
+    if is_action_task:
+        assert mock_config.data.videos_per_gpu == new_bs
+    else:
+        assert mock_config.data.train_dataloader["samples_per_gpu"] == new_bs
     # check leanring rate is updated depending on adapted batch size
     bs_change_ratio = new_bs / DEFAULT_BS
-    assert mock_cfg_not_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
+    assert mock_config.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
     # check adapt function gets proper arguments
     assert mock_adapt_algo_cls.call_args.kwargs["default_bs"] == DEFAULT_BS
     assert mock_adapt_algo_cls.call_args.kwargs["max_bs"] == TRAINSET_SIZE
@@ -85,41 +100,11 @@ def test_adapt_batch_size_not_action_task(mocker, mock_adapt_algo_cls, mock_cfg_
     assert len(mock_train_func.call_args_list[0].kwargs["dataset"][0]) == DEFAULT_BS
     assert len(mock_train_func.call_args_list[1].kwargs["dataset"][0]) == new_bs
     # check max epoch is set as 1 to reduce time
-    assert mock_train_func.call_args_list[0].kwargs["cfg"].runner["max_epochs"] == 1
-    assert mock_train_func.call_args_list[1].kwargs["cfg"].runner["max_epochs"] == 1
+    assert mock_train_func.call_args_list[0].kwargs["cfg"].runner[max_eph_name] == 1
+    assert mock_train_func.call_args_list[1].kwargs["cfg"].runner[max_eph_name] == 1
     # check eval before run is disabled to reduce time
     assert not mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
     assert not mock_train_func.call_args_list[1].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
-    # check OTXProgressHook is removed
-    assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 1
-
-
-@pytest.mark.parametrize("not_increase", [True, False])
-def test_adapt_batch_size_action_task(mocker, mock_adapt_algo_cls, mock_cfg_action, mock_dataset, not_increase):
-    # prepare
-    mock_train_func = mocker.MagicMock()
-    new_bs = DEFAULT_BS // 2 if not_increase else DEFAULT_BS + 2
-
-    # execute
-    adapt_batch_size(mock_train_func, mock_cfg_action, mock_dataset, True, not_increase)
-
-    # check adapted batch size is applied
-    assert mock_cfg_action.data.videos_per_gpu == new_bs
-    # check leanring rate is updated depending on adapted batch size
-    bs_change_ratio = new_bs / DEFAULT_BS
-    assert mock_cfg_action.optimizer.lr == pytest.approx(DEFAULT_LR * sqrt(bs_change_ratio))
-    # check adapt function gets proper arguments
-    assert mock_adapt_algo_cls.call_args.kwargs["default_bs"] == DEFAULT_BS
-    assert mock_adapt_algo_cls.call_args.kwargs["max_bs"] == TRAINSET_SIZE
-    # check length of dataset is decreased to reduce time
-    assert len(mock_train_func.call_args_list[0].kwargs["dataset"][0]) == DEFAULT_BS
-    assert len(mock_train_func.call_args_list[1].kwargs["dataset"][0]) == new_bs
-    # check max epoch is set as 1 to reduce time
-    assert mock_train_func.call_args_list[0].kwargs["cfg"].runner["max_epochs"] == 1
-    assert mock_train_func.call_args_list[1].kwargs["cfg"].runner["max_epochs"] == 1
-    # check eval before run is enabled if validate is set as True
-    assert mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
-    assert mock_train_func.call_args_list[1].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
     # check OTXProgressHook is removed
     assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 1
 

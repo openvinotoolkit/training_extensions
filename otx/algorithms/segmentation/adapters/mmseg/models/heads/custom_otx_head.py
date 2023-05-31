@@ -20,7 +20,11 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
 
 from .light_ham import LightHamHead
 
-KNOWN_HEADS = {"FCNHead": FCNHead, "ASPPHead": DepthwiseSeparableASPPHead, "LightHamHead": LightHamHead}
+KNOWN_HEADS = {
+    "FCNHead": FCNHead,
+    "ASPPHead": DepthwiseSeparableASPPHead,
+    "LightHamHead": LightHamHead,
+}
 
 
 def otx_head_factory(*args, base_type="FCNHead", **kwargs):
@@ -115,7 +119,12 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
             return inputs
 
         def forward_train(
-            self, inputs: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor, train_cfg: Dict
+            self,
+            inputs: torch.Tensor,
+            img_metas: List[Dict],
+            gt_semantic_seg: torch.Tensor,
+            train_cfg: Dict = dict(),
+            loss_only: bool = False,
         ):
             """Forward function for training.
 
@@ -129,24 +138,32 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
                 gt_semantic_seg (Tensor): Semantic segmentation masks
                     used if the architecture supports semantic segmentation task.
                 train_cfg (dict): The training config.
+                loss_only (bool): If true computes loss only without head forward
 
             Returns:
                 dict[str, Tensor]: a dictionary of loss components
             """
-            seg_logits = self(inputs)
+            # is loss_only is True -> inputs are already model logits
+            seg_logits = self(inputs) if not loss_only else inputs
             valid_label_mask = get_valid_label_mask_per_batch(img_metas, self.num_classes)
             losses = self.losses(seg_logits, gt_semantic_seg, valid_label_mask=valid_label_mask)
             return losses
 
         @force_fp32(apply_to=("seg_logit",))
         def losses(
-            self, seg_logit: torch.Tensor, seg_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None
+            self,
+            seg_logit: torch.Tensor,
+            seg_label: torch.Tensor,
+            valid_label_mask: Optional[torch.Tensor] = None,
         ):
             """Compute segmentation loss."""
             loss = dict()
 
             seg_logit = resize(
-                input=seg_logit, size=seg_label.shape[2:], mode="bilinear", align_corners=self.align_corners
+                input=seg_logit,
+                size=seg_label.shape[2:],
+                mode="bilinear",
+                align_corners=self.align_corners,
             )
             if self.sampler is not None:
                 seg_weight = self.sampler.sample(seg_logit, seg_label)

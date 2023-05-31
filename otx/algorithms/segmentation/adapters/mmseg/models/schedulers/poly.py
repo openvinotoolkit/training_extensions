@@ -24,7 +24,12 @@ class PolyScalarScheduler(BaseScalarScheduler):
     """
 
     def __init__(
-        self, start_scale: float, end_scale: float, num_iters: int, power: float = 1.2, by_epoch: bool = False
+        self,
+        start_scale: float,
+        end_scale: float,
+        num_iters: int,
+        power: float = 1.2,
+        by_epoch: bool = False,
     ):
         super().__init__()
 
