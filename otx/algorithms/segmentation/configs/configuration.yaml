@@ -320,7 +320,6 @@ algo_backend:
       Incremental: "Incremental"
       Semisupervised: "Semisupervised"
       Selfsupervised: "Selfsupervised"
-      Auto: "Auto"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING

@@ -387,7 +387,7 @@ algo_backend:
   header: Algo backend parameters
   train_type:
     affects_outcome_of: TRAINING
-    default_value: Auto
+    default_value: Incremental
     description: Training scheme option that determines how to train the model
     editable: True
     enum_name: TrainType
@@ -396,14 +396,13 @@ algo_backend:
       Incremental: "Incremental"
       Semisupervised: "Semisupervised"
       Selfsupervised: "Selfsupervised"
-      Auto: "Auto"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: Auto
+    value: Incremental
     visible_in_ui: false
     warning: null
   mem_cache_size:

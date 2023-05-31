@@ -63,7 +63,6 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
 }
 
 TASK_TYPE_TO_SUB_DIR_NAME = {
-    "Auto": "",
     "Incremental": "",
     "Semisupervised": "semisl",
     "Selfsupervised": "selfsl",
@@ -214,24 +213,21 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.update_data_config(data_yaml)
 
     def _get_train_type(self, ignore_args: bool = False) -> str:
-        """Check and return the train_type received as input args."""
+        """Check and return the train_type received as input args.
+
+        If value passed to args.train_type -> return this train type.
+        Configure train type if None in args.
+        If ignore_args passed -> use value in model template
+        """
+
         if not ignore_args:
-            args_hyper_parameters = gen_params_dict_from_args(self.args)
-            arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
-            if arg_algo_backend:
-                predifined_train_type = arg_algo_backend.get("train_type", {"value": "Auto"})  # type: ignore
-                self.train_type = predifined_train_type["value"]
-                if predifined_train_type["value"] == "Auto":
-                    # auto train type detection
-                    self._configure_train_type()
-                return self.train_type
             if hasattr(self.args, "train_type") and self.mode in ("build", "train", "optimize"):
                 self._configure_train_type()
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
                     raise NotSupportedError(f"{self.train_type} is not currently supported by otx.")
-            if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
                 return self.train_type
 
+        # if ignore_args -> use train type from template file
         algo_backend = self.template.hyper_parameters.parameter_overrides.get("algo_backend", False)
         if algo_backend:
             train_type = algo_backend.get("train_type", {"default_value": "Incremental"})
@@ -246,6 +242,15 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         return self._get_task_type_from_data_format(self.data_format)
 
     def _configure_train_type(self):
+        """Auto train type detection.
+
+        If self.args.train_type is not None -> use args.train_type
+        If train_data_roots contains only set of images -> Self-SL
+        If unlabeled-data-roots were passed to CLI -> use Semi-SL
+        If unlabeled_images presented in dataset structure and it is sufficient to start Semi-SL -> Semi-SL
+        Overwise set Incremental training type.
+        """
+
         def _check_is_only_images(dir):
             """Check if a directory contains only images."""
             import glob
@@ -256,19 +261,18 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         def _check_semisl_requirements(train_dir, unlabeled_dir, thershold=0.07):
             """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
-            import os
-
             all_unlabeled_images = len(os.listdir(unlabeled_dir))
             if all_unlabeled_images <= 1:
+                # the folder is empty or only 1 image there
                 return False
             all_train_images = len(os.listdir(train_dir))
-            print(all_unlabeled_images, all_train_images)
+            # check if number of unlabeled images is more than relative thershold
             if all_unlabeled_images >= thershold * all_train_images:
                 return True
             return False
 
         # if user explicitly passed train type via args
-        if self.args.train_type is not None and self.args.train_type != "Auto":
+        if self.args.train_type is not None:
             self.train_type = self.args.train_type
             return
 
@@ -279,8 +283,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 "Please, check command line and directory path."
             )
 
-        if self.args.val_data_roots is None or _check_is_only_images(path_to_train_data):
-            # If we don't have validation data or folder with images only was passed to cmd
+        if _check_is_only_images(path_to_train_data):
+            # If train folder with images only was passed to args
             # Then we start self-supervised training
             print("[*] Selfsupervised training type detected")
             self.train_type = "Selfsupervised"
@@ -304,19 +308,25 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     "Please, check command line and directory path."
                 )
 
-        is_unlabeled_exists = Path.exists(path_to_train_data / "unlabeled_images")
-        if is_unlabeled_exists:
-            if not _check_semisl_requirements(path_to_train_data, Path(path_to_train_data / "unlabeled_images")):
+        unlabeled_folder_name = [
+            item
+            for item in os.listdir(path_to_train_data)
+            if (item.startswith("unlabeled") and os.path.isdir(os.path.join(path_to_train_data, item)))
+        ]
+        if unlabeled_folder_name:
+            # if in directory we have several unlabeled data folders -> retrive first
+            path_to_unlabeled_data = Path(path_to_train_data / unlabeled_folder_name[0])
+            if not _check_semisl_requirements(path_to_unlabeled_data):
                 print(
-                    "WARNING: There are none or too litle images to start Semi-SL training."
-                    "It should be more that relative threshold"
+                    "WARNING: There are none or too litle images to start Semi-SL training. "
+                    "It should be more than relative threshold (at least 7% of labeled images) "
                     "Start Supervised training instead."
                 )
                 self.train_type = "Incremental"
                 return
             # If unlabeled_images folder is presented we run semisupervised training
             self.train_type = "Semisupervised"
-            self.args.unlabeled_data_roots = str(Path(path_to_train_data / "unlabeled_images"))
+            self.args.unlabeled_data_roots = str(path_to_unlabeled_data)
             return
 
         self.train_type = "Incremental"

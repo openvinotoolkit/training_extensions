@@ -78,11 +78,6 @@ args_selfsl = {
     ],
 }
 
-args_selfsl_auto = {
-    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
-}
-
 # Training params for resume, num_iters*2
 resume_params = [
     "params",
