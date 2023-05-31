@@ -78,7 +78,7 @@ class TestSelfSLSegmentationDatasetAdapter:
 
     @e2e_pytest_unit
     def test_import_dataset_create_all_masks(self, mocker):
-        """Test _import_dataset when creating all masks.
+        """Test _import_datasets when creating all masks.
 
         This test is for when all masks are not created and it is required to create masks.
         """
@@ -96,7 +96,7 @@ class TestSelfSLSegmentationDatasetAdapter:
     @e2e_pytest_unit
     @pytest.mark.parametrize("idx_remove", [1, 2, 3])
     def test_import_dataset_create_some_uncreated_masks(self, mocker, idx_remove: int):
-        """Test _import_dataset when there are both uncreated and created masks.
+        """Test _import_datasets when there are both uncreated and created masks.
 
         This test is for when there are both created and uncreated masks
         and it is required to either create or just load masks.
@@ -114,7 +114,7 @@ class TestSelfSLSegmentationDatasetAdapter:
         os.remove(os.path.join(self.pseudo_mask_roots, f"000{idx_remove}.png"))
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
-        _ = dataset_adapter._import_dataset(
+        _ = dataset_adapter._import_datasets(
             train_data_roots=self.train_data_roots,
         )
 
@@ -123,7 +123,7 @@ class TestSelfSLSegmentationDatasetAdapter:
 
     @e2e_pytest_unit
     def test_import_dataset_just_load_masks(self, mocker):
-        """Test _import_dataset when just loading all masks."""
+        """Test _import_datasets when just loading all masks."""
         spy_create_pseudo_masks = mocker.spy(SelfSLSegmentationDatasetAdapter, "create_pseudo_masks")
 
         _ = SelfSLSegmentationDatasetAdapter(

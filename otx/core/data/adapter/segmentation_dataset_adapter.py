@@ -156,7 +156,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
     """Self-SL for segmentation adapter inherited from SegmentationDatasetAdapter."""
 
     # pylint: disable=protected-access
-    def _import_dataset(
+    def _import_datasets(
         self,
         train_data_roots: Optional[str] = None,
         train_ann_files: Optional[str] = None,
@@ -166,6 +166,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
+        encryption_key: Optional[str] = None,
         pseudo_mask_dir: str = "detcon_mask",
     ) -> Dict[Subset, DatumDataset]:
         """Import custom Self-SL dataset for using DetCon.
@@ -183,6 +184,8 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
             test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data.
             unlabeled_file_list (Optional[str]): Path of unlabeled file list
+            encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+                                        (only required for DatumaroBinary format)
             pseudo_mask_dir (str): Directory to save pseudo masks. Defaults to "detcon_mask".
 
         Returns:

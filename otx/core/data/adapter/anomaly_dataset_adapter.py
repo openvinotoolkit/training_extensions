@@ -34,7 +34,7 @@ from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited from BaseDatasetAdapter."""
 
-    def _import_dataset(
+    def _import_datasets(
         self,
         train_data_roots: Optional[str] = None,
         train_ann_files: Optional[str] = None,
@@ -44,6 +44,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
+        encryption_key: Optional[str] = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import MVTec dataset.
 
@@ -56,6 +57,8 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
             test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data
             unlabeled_file_list (Optional[str]): Path of unlabeled file list
+            encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+                                        (only required for DatumaroBinary format)
 
         Returns:
             DatumaroDataset: Datumaro Dataset

@@ -62,7 +62,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         unlabeled_data_roots (Optional[str]): Path for unlabeled data
         unlabeled_file_list (Optional[str]): Path of unlabeled file list
         encryption_key (Optional[str]): Encryption key to load an encrypted dataset
-                                        (DatumaroBinary format)
+                                        (only required for DatumaroBinary format)
 
     Since all adapters can be used for training and validation,
     the default value of train/val/test_data_roots was set to None.
