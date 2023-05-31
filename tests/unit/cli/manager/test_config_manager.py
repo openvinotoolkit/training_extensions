@@ -459,16 +459,9 @@ class TestConfigManager:
     @e2e_pytest_unit
     def test__get_train_type(self, mocker):
         mock_args = mocker.MagicMock()
-        mock_params_dict = {"algo_backend": {"train_type": {"value": "Semisupervised"}}}
-        mock_configure_dataset = mocker.patch(
-            "otx.cli.manager.config_manager.gen_params_dict_from_args", return_value=mock_params_dict
-        )
         config_manager = ConfigManager(args=mock_args)
         config_manager.mode = "build"
-        assert config_manager._get_train_type() == "Semisupervised"
-
         config_manager.args.train_type = "Incremental"
-        mock_configure_dataset.return_value = {}
         assert config_manager._get_train_type() == "Incremental"
 
         mock_template = mocker.MagicMock()
@@ -509,8 +502,8 @@ class TestConfigManager:
         assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
         config_manager.args.val_data_roots = None
         config_manager.args.train_data_roots = "tests/assets/classification_dataset"
-        # test val_data_roots is None -> self-sl
-        assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
+        # test val_data_roots is None -> Incremental (auto_split)
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
         try:
             os.mkdir("tests/assets/classification_dataset/unlabeled_images")
             config_manager.args.train_data_roots = "tests/assets/classification_dataset"
