@@ -149,6 +149,7 @@ def get_args():
         default=None,
         help="The data.yaml path want to use in train task.",
     )
+    parser.add_argument("--encryption-key", type=str, default=None, help="Encryption key for a")
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
