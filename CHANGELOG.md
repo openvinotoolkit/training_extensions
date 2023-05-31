@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Bug fixes
 
 - Fix a bug that auto adapt batch size doesn't work with cls incr case (<https://github.com/openvinotoolkit/training_extensions/pull/2199>)
+- Fix a bug that persistent worker is True even if num_workers is zero (<https://github.com/openvinotoolkit/training_extensions/pull/2208>)
 
 ### Known issues
 
