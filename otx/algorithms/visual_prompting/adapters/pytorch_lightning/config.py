@@ -39,7 +39,7 @@ def get_visual_promtping_config(task_name: str, otx_config: ConfigurableParamete
         Anomalib config object for the specified model type with overwritten
         default values.
     """
-    config_path = "/home/cosmos/sam-ws/otx-sam/otx/algorithms/visual_prompting/configs/medsam/config.yaml"
+    config_path = "/home/jeom/sam-ws/otx-sam/otx/algorithms/visual_prompting/configs/medsam/config.yaml"
     anomalib_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
     # TODO: remove this hard coding of the config location
     # if anomalib_config.model.name == "draem":

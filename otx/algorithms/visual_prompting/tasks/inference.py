@@ -181,7 +181,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         import pytorch_lightning as pl
         # define the LightningModule
         class SegmentAnything(pl.LightningModule):
-            def __init__(self, model_type='vit_b', ckpt_path='/home/cosmos/sam-ws/otx-sam/sam_vit_b_01ec64.pth'):
+            def __init__(self, model_type='vit_b', ckpt_path='/home/jeom/sam-ws/otx-sam/sam_vit_b_01ec64.pth'):
                 super().__init__()
                 self.model = sam_model_registry[model_type](checkpoint=ckpt_path)
                 self.model.train()
@@ -266,16 +266,16 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 if images != []:
                     pred_masks, _ = self.forward(images, bboxes)
 
-                    # from torchvision.utils import draw_segmentation_masks, save_image
-                    # from torchvision.transforms.functional import convert_image_dtype
-                    # img = convert_image_dtype(images[0], torch.uint8)
-                    # seg_img = draw_segmentation_masks(img.cpu(), (pred_masks[0] > 0.5).int().argmax(0).bool().cpu(), alpha=0.6, colors="blue")
-                    # gt_img = draw_segmentation_masks(img.cpu(), gt_masks[0].argmax(0).bool().cpu(), alpha=0.6, colors="blue")
+                    from torchvision.utils import draw_segmentation_masks, save_image
+                    from torchvision.transforms.functional import convert_image_dtype
+                    img = convert_image_dtype(images[0], torch.uint8)
+                    seg_img = draw_segmentation_masks(img.cpu(), (pred_masks[0] > 0.5).int().argmax(0).bool().cpu(), alpha=0.6, colors="blue")
+                    gt_img = draw_segmentation_masks(img.cpu(), gt_masks[0].argmax(0).bool().cpu(), alpha=0.6, colors="blue")
                     
                     # save_image((seg_img / 255).float(), f"plot/origin_seg_img_{batch_idx}.jpg")
                     # save_image((seg_img / 255).float(), f"plot/1epoch_seg_img_{batch_idx}.jpg")
                     # save_image((gt_img / 255).float(), f"plot/gt_img_{batch_idx}.jpg")
-
+                    breakpoint()
                     for pred_mask, gt_mask in zip(pred_masks, gt_masks):
                         batch_stats = smp.metrics.get_stats(
                             pred_mask,
