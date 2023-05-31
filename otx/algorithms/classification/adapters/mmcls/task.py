@@ -252,14 +252,16 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
+        workers_per_gpu = cfg.data.test_dataloader.get("workers_per_gpu", 0)
         dataloader = build_dataloader(
             mm_dataset,
             samples_per_gpu=cfg.data.test_dataloader.get("samples_per_gpu", 1),
-            workers_per_gpu=cfg.data.test_dataloader.get("workers_per_gpu", 0),
+            workers_per_gpu=workers_per_gpu,
             num_gpus=len(cfg.gpu_ids),
             dist=cfg.distributed,
             seed=cfg.get("seed", None),
             shuffle=False,
+            persistent_workers=(workers_per_gpu > 0),
         )
 
         # Model
