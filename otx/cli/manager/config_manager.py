@@ -316,7 +316,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         if unlabeled_folder_name:
             # if in directory we have several unlabeled data folders -> retrive first
             path_to_unlabeled_data = Path(path_to_train_data / unlabeled_folder_name[0])
-            if not _check_semisl_requirements(path_to_unlabeled_data):
+            if not _check_semisl_requirements(path_to_train_data, path_to_unlabeled_data):
                 print(
                     "WARNING: There are none or too litle images to start Semi-SL training. "
                     "It should be more than relative threshold (at least 7% of labeled images) "
