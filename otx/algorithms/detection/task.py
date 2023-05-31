@@ -233,7 +233,7 @@ class OTXDetectionTask(OTXTask, ABC):
             val_preds,
             preds_val_dataset,
             confidence_threshold=confidence_threshold,
-            use_ellipse_shapes=self.use_ellipse_shapes
+            use_ellipse_shapes=self.use_ellipse_shapes,
         )
 
         result_set = ResultSetEntity(
