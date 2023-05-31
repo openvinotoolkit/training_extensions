@@ -148,14 +148,19 @@ def wrap_nncf_model(  # noqa: C901
             # redefined PTInitializingDataLoader because
             # of DataContainer format in mmdet
             kwargs = {k: v.data[0] if isinstance(v, DataContainer) else v for k, v in dataloader_output.items()}
+            # TODO: Check ignore scopes for models!
+            # We substituted training to validation inference pipeline.
+            # The graphs for model have been changed. Now, we may don't need some ignored scopes in NNCF config.
             kwargs["return_loss"] = False
             kwargs["img_metas"] = [kwargs["img_metas"]]
             kwargs["img"] = [kwargs["img"]]
-            if "gt_semantic_seg" in kwargs:
-                # train data. Make validation format
-                del kwargs["gt_semantic_seg"]
+            # delete labels
+            new_kwargs = dict()
+            for key, val in kwargs.items():
+                if not key.startswith("gt_"):
+                    new_kwargs[key] = val
 
-            return (), kwargs
+            return (), new_kwargs
 
     nncf_config = NNCFConfig(config.nncf_config)
     resuming_state_dict = None
