@@ -144,9 +144,17 @@ class NNCFTask(InferenceTask, IOptimizationTask):
                     pl_modules[key] = model_data["model"][key]
             model_data["model"] = nncf_modules
 
+            dataloader = None
+            if hasattr(self, "trainer") and hasattr(self.trainer, "datamodule"):
+                if self.trainer.datamodule.train_dataset is not None:
+                    dataloader = self.trainer.datamodule.train_dataloader()
+                elif self.trainer.datamodule.test_dataset is not None:
+                    dataloader = self.trainer.datamodule.test_dataloader()
+
             self.compression_ctrl, model.model = wrap_nncf_model(
                 model.model,
                 self.optimization_config["nncf_config"],
+                dataloader=dataloader,  # type:ignore
                 init_state_dict=model_data,
             )
             # Load extra parameters of pytorch_lighting model
