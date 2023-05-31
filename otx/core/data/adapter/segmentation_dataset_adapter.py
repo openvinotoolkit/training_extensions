@@ -6,7 +6,7 @@
 
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -27,7 +27,6 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
@@ -41,33 +40,6 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
     It converts DatumaroDataset --> DatasetEntity for semantic segmentation task
     """
 
-    def __init__(
-        self,
-        task_type: TaskType,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        cache_config: Optional[Dict[str, Any]] = None,
-    ):
-        super().__init__(
-            task_type,
-            train_data_roots,
-            train_ann_files,
-            val_data_roots,
-            val_ann_files,
-            test_data_roots,
-            test_ann_files,
-            unlabeled_data_roots,
-            unlabeled_file_list,
-            cache_config,
-        )
-        self.updated_label_id: Dict[int, int] = {}
-
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
         # Prepare label information
@@ -76,6 +48,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
+        self.updated_label_id: Dict[int, int] = {}
 
         if hasattr(self, "data_type_candidates"):
             if self.data_type_candidates[0] == "voc":
