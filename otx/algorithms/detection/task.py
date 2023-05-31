@@ -232,8 +232,15 @@ class OTXDetectionTask(OTXTask, ABC):
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
+        if self._hyperparams.postprocessing.result_based_confidence_threshold:
+            confidence_threshold = 0.0  # Use all predictions to compute best threshold
+        else:
+            confidence_threshold = self.confidence_threshold
         self._add_predictions_to_dataset(
-            val_preds, preds_val_dataset, self.confidence_threshold, use_ellipse_shapes=self.use_ellipse_shapes
+            val_preds,
+            preds_val_dataset,
+            confidence_threshold=confidence_threshold,
+            use_ellipse_shapes=self.use_ellipse_shapes
         )
 
         result_set = ResultSetEntity(
