@@ -236,10 +236,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
             # FIXME: Because background class is ignored when generating polygons, meta is set with len(labels)-1.
             # It must be considered to set the whole labels later.
             # (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
-            if total_labels == [0]:
-                # FIXME: When there is only 'background', 'background' should be saved.
-                # This is just for test case.
-                total_labels = [1]
             meta = {"label_map": {i + 1: f"target{i+1}" for i in range(max(total_labels))}}
             with open(os.path.join(pseudo_mask_dir, "dataset_meta.json"), "w", encoding="UTF-8") as f:
                 json.dump(meta, f, indent=4)
