@@ -175,16 +175,6 @@ class TestMMDetectionTask:
         model = self.det_task.build_model(_mock_recipe_cfg, True)
         assert isinstance(model, CustomATSS)
 
-        _mock_recipe_cfg["channel_last"] = True
-        new_model = self.det_task.build_model(_mock_recipe_cfg, True)
-        dummy_model = model.backbone.features[0]
-        dummy_model_channel_last = new_model.backbone.features[0]
-
-        dummy_tensor = torch.randn((1, 3, 224, 224))
-        dummy_output = dummy_model(dummy_tensor)
-        dummy_output_channel_last = dummy_model_channel_last(dummy_tensor)
-        assert dummy_output.stride() != dummy_output_channel_last.stride()
-
     @e2e_pytest_unit
     def test_train(self, mocker) -> None:
         """Test train function."""

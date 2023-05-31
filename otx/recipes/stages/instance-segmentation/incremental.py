@@ -23,5 +23,3 @@ adaptive_validation_interval = dict(
     enable_eval_before_run=True,
 )
 adaptive_ema = dict(epoch_momentum=0.4)
-
-channel_last = False

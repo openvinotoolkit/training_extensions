@@ -51,4 +51,3 @@ find_unused_parameters = False
 gpu_ids = range(0, 1)
 
 dist_params = dict(backend="nccl")
-channel_last = False

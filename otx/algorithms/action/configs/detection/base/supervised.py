@@ -43,4 +43,3 @@ find_unused_parameters = False
 # Temporary solution, gpu_ids is not used in otx
 gpu_ids = [0]
 seed = 2
-channel_last = False

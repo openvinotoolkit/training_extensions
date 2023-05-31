@@ -38,4 +38,3 @@ task_adapt = dict(
 )
 
 ignore = True
-channel_last = False

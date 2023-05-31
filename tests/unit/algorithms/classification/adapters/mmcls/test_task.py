@@ -158,6 +158,7 @@ class TestMMClassificationTask:
         """Test build_model function."""
         _mock_recipe_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         _mock_recipe_cfg.model.pop("task")
+        _mock_recipe_cfg["channel_last"] = False
         model = self.mc_cls_task.build_model(_mock_recipe_cfg, True)
         assert isinstance(model, SAMImageClassifier)
 
