@@ -47,7 +47,7 @@ hyper_parameters:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: Auto
+        default_value: Incremental
 
 # Training resources.
 max_nodes: 1
