@@ -62,7 +62,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         self.labels = labels.get_labels(include_empty=False) if isinstance(labels, LabelSchemaEntity) else labels
         self.label_map = dict(enumerate(self.labels))
         self.use_ellipse_shapes = False
-        self.confidence_threshold = 0.
+        self.confidence_threshold = 0.0
         if configuration is not None:
             if "use_ellipse_shapes" in configuration:
                 self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
@@ -430,7 +430,7 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
         self.use_ellipse_shapes = False
-        self.confidence_threshold = 0.
+        self.confidence_threshold = 0.0
         if configuration is not None:
             if "use_ellipse_shapes" in configuration:
                 self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
@@ -503,7 +503,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
         self.use_ellipse_shapes = False
-        self.confidence_threshold = 0.
+        self.confidence_threshold = 0.0
         if configuration is not None:
             if "use_ellipse_shapes" in configuration:
                 self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
