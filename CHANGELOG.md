@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.2.3\]
+
+### Bug fixes
+
+- Hotfix: use 0 confidence threshold when computing best threshold based on F1
+
 ## \[v1.2.2\]
 
 ### Enhancements
