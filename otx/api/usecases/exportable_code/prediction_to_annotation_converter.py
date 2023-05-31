@@ -61,8 +61,13 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: Union[LabelSchemaEntity, List], configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False) if isinstance(labels, LabelSchemaEntity) else labels
         self.label_map = dict(enumerate(self.labels))
-        self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
-        self.confidence_threshold = configuration["confidence_threshold"]
+        self.use_ellipse_shapes = False
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "use_ellipse_shapes" in configuration:
+                self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Optional[Dict[str, np.ndarray]] = None
@@ -424,8 +429,13 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
 
     def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
-        self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
-        self.confidence_threshold = configuration["confidence_threshold"]
+        self.use_ellipse_shapes = False
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "use_ellipse_shapes" in configuration:
+                self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
@@ -492,8 +502,13 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
 
     def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
-        self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
-        self.confidence_threshold = configuration["confidence_threshold"]
+        self.use_ellipse_shapes = False
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "use_ellipse_shapes" in configuration:
+                self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
