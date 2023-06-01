@@ -251,9 +251,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         If unlabeled_images presented in dataset structure and it is sufficient to start Semi-SL -> Semi-SL
         Overwise set Incremental training type.
         """
+
         def _count_imgs_in_dir(dir, recursive=False):
-            """count number of images in directory recursively"""
+            """count number of images in directory recursively."""
             import glob
+
             valid_suff = ["jpg", "png", "jpeg", "gif"]
             num_valid_imgs = 0
             for files in glob.iglob(f"{dir}/**", recursive=recursive):
