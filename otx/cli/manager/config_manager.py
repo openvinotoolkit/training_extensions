@@ -8,6 +8,7 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import logging
 
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import IDataset
@@ -254,10 +255,13 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         def _check_is_only_images(dir):
             """Check if a directory contains only images."""
             import glob
-
-            pngs = glob.glob(f"{dir}/*.png")
-            jpgs = glob.glob(f"{dir}/*.jpg")
-            return len(pngs) > 0 or len(jpgs) > 0
+            valid_suff = ["jpg", "png", "jpeg", "gif"]
+            num_valid_imgs = 0
+            for files in glob.iglob(f'{dir}/*'):
+                suff = files.split(".")[-1]
+                if suff.lower() in valid_suff:
+                    num_valid_imgs += 1
+            return num_valid_imgs > 0
 
         def _check_semisl_requirements(train_dir, unlabeled_dir, thershold=0.07):
             """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
@@ -295,13 +299,14 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             unlabeled_path = Path(self.args.unlabeled_data_roots)
             if Path.is_dir(unlabeled_path):
                 if not _check_semisl_requirements(path_to_train_data, unlabeled_path):
-                    print(
+                    logging.warning(
                         "WARNING: There are none or too litle images to start Semi-SL training. "
                         "It should be more than relative threshold (at least 7% of labeled images) "
                         "Start Supervised training instead."
                     )
                     self.train_type = "Incremental"
                     return
+                print(f"[*] Semisupervised training type detected with unalabeled data: {unlabeled_path}")
                 self.train_type = "Semisupervised"
                 return
             else:
@@ -319,7 +324,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             # if in directory we have several unlabeled data folders -> retrive first
             path_to_unlabeled_data = Path(path_to_train_data / unlabeled_folder_name[0])
             if not _check_semisl_requirements(path_to_train_data, path_to_unlabeled_data):
-                print(
+                logging.warning(
                     "WARNING: There are none or too litle images to start Semi-SL training. "
                     "It should be more than relative threshold (at least 7% of labeled images) "
                     "Start Supervised training instead."
@@ -327,6 +332,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 self.train_type = "Incremental"
                 return
             # If unlabeled_images folder is presented we run semisupervised training
+            print(f"[*] Semisupervised training type detected with unalabeled data: {path_to_unlabeled_data}")
             self.train_type = "Semisupervised"
             self.args.unlabeled_data_roots = str(path_to_unlabeled_data)
             return
