@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from __future__ import annotations
+
 import io
 import json
 import os
@@ -35,6 +37,7 @@ from anomalib.utils.callbacks.nncf.utils import (
     wrap_nncf_model,
 )
 from pytorch_lightning import Trainer
+from torch.utils.data.dataloader import DataLoader
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
@@ -144,7 +147,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
                     pl_modules[key] = model_data["model"][key]
             model_data["model"] = nncf_modules
 
-            dataloader = None
+            dataloader: DataLoader | None = None
             if hasattr(self, "trainer") and hasattr(self.trainer, "datamodule"):
                 if self.trainer.datamodule.train_dataset is not None:
                     dataloader = self.trainer.datamodule.train_dataloader()
