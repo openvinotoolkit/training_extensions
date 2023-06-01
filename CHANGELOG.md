@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
--
+- n/a
 
 ### Bug fixes
 
@@ -49,6 +49,23 @@ All notable changes to this project will be documented in this file.
 - OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
   (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
 
+## \[v1.2.3\]
+
+### Bug fixes
+
+- Hotfix: use 0 confidence threshold when computing best threshold based on F1
+
+## \[v1.2.2\]
+
+### Enhancements
+
+- Improve warning message for tiling configurable parameter
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
 ## \[v1.2.1\]
 
 ### Enhancements
@@ -57,12 +74,14 @@ All notable changes to this project will be documented in this file.
 - Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>, <https://github.com/openvinotoolkit/training_extensions/pull/2111>)
 - Optimize YOLOX data pipeline (<https://github.com/openvinotoolkit/training_extensions/pull/2075>)
 - Tiling Spatial Concatenation for OpenVINO IR (<https://github.com/openvinotoolkit/training_extensions/pull/2052>)
+- Optimize counting train & inference speed and memory consumption (<https://github.com/openvinotoolkit/training_extensions/pull/2172>)
 
 ### Bug fixes
 
 - Bug fix: value of validation variable is changed after auto decrease batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2053>)
 - Fix tiling 0 stride issue in parameter adapter (<https://github.com/openvinotoolkit/training_extensions/pull/2078>)
 - Fix Tiling NNCF (<https://github.com/openvinotoolkit/training_extensions/pull/2081>)
+- Do not skip full img tile classifier + Fix Sequencial Export Issue (<https://github.com/openvinotoolkit/training_extensions/pull/2174>)
 
 ## \[v1.2.0\]
 
