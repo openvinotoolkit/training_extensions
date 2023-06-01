@@ -265,15 +265,35 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         def _check_semisl_requirements(train_dir, unlabeled_dir, thershold=0.07):
             """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
-            all_unlabeled_images = len(os.listdir(unlabeled_dir))
-            if all_unlabeled_images <= 1:
-                # the folder is empty or only 1 image there
-                return False
+            if unlabeled_dir is None:
+                unlabeled_folder_name = [
+                    os.path.join(train_dir, item)
+                    for item in os.listdir(train_dir)
+                    if (item.startswith("unlabeled") and os.path.isdir(os.path.join(train_dir, item)))
+                ]
+                if unlabeled_folder_name:
+                    unlabeled_valid_path = unlabeled_folder_name[0]
+                else:
+                    return False
+            else:
+                if not os.path.isdir(unlabeled_dir) or not os.listdir(unlabeled_dir):
+                    raise ValueError(
+                        "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. "
+                        "Please, check command line and directory path."
+                    )
+                unlabeled_valid_path = unlabeled_dir
+
+            all_unlabeled_images = len(os.listdir(unlabeled_valid_path))
             all_train_images = len(os.listdir(train_dir))
             # check if number of unlabeled images is more than relative thershold
-            if all_unlabeled_images >= thershold * all_train_images:
-                return True
-            return False
+            if all_unlabeled_images > 1 and all_unlabeled_images >= thershold * all_train_images:
+                return unlabeled_valid_path
+
+            logging.warning(
+                        "WARNING: There are none or too litle images to start Semi-SL training. "
+                        "It should be more than relative threshold (at least 7% of labeled images) "
+                        "Start Supervised training instead."
+                    )
 
         # if user explicitly passed train type via args
         if self.args.train_type is not None:
@@ -295,46 +315,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             return
 
         # if user explicitly passed unlabeled images folder
-        if self.args.unlabeled_data_roots is not None:
-            unlabeled_path = Path(self.args.unlabeled_data_roots)
-            if Path.is_dir(unlabeled_path):
-                if not _check_semisl_requirements(path_to_train_data, unlabeled_path):
-                    logging.warning(
-                        "WARNING: There are none or too litle images to start Semi-SL training. "
-                        "It should be more than relative threshold (at least 7% of labeled images) "
-                        "Start Supervised training instead."
-                    )
-                    self.train_type = "Incremental"
-                    return
-                print(f"[*] Semisupervised training type detected with unalabeled data: {unlabeled_path}")
-                self.train_type = "Semisupervised"
-                return
-            else:
-                raise ValueError(
-                    "Unlabeled images isn't a directory or it doesn't exist. "
-                    "Please, check command line and directory path."
-                )
-
-        unlabeled_folder_name = [
-            item
-            for item in os.listdir(path_to_train_data)
-            if (item.startswith("unlabeled") and os.path.isdir(os.path.join(path_to_train_data, item)))
-        ]
-        if unlabeled_folder_name:
-            # if in directory we have several unlabeled data folders -> retrive first
-            path_to_unlabeled_data = Path(path_to_train_data / unlabeled_folder_name[0])
-            if not _check_semisl_requirements(path_to_train_data, path_to_unlabeled_data):
-                logging.warning(
-                    "WARNING: There are none or too litle images to start Semi-SL training. "
-                    "It should be more than relative threshold (at least 7% of labeled images) "
-                    "Start Supervised training instead."
-                )
-                self.train_type = "Incremental"
-                return
-            # If unlabeled_images folder is presented we run semisupervised training
-            print(f"[*] Semisupervised training type detected with unalabeled data: {path_to_unlabeled_data}")
+        valid_unlabeled_path = _check_semisl_requirements(path_to_train_data, self.args.unlabeled_data_roots)
+        if valid_unlabeled_path:
+            print(f"[*] Semisupervised training type detected with unalabeled data: {valid_unlabeled_path}")
             self.train_type = "Semisupervised"
-            self.args.unlabeled_data_roots = str(path_to_unlabeled_data)
             return
 
         self.train_type = "Incremental"
