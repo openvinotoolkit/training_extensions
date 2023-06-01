@@ -504,23 +504,17 @@ class TestConfigManager:
         config_manager.args.unlabeled_data_roots = "non_exist_dir"
         with pytest.raises(ValueError):
             config_manager._get_train_type(ignore_args=False)
-        try:
-            config_manager.args.unlabeled_data_roots = None
-            os.mkdir("tests/assets/classification_dataset/unlabeled_images")
-            # unlabeled root is empty
-            config_manager.args.train_data_roots = "tests/assets/classification_dataset"
-            assert config_manager._get_train_type(ignore_args=False) == "Incremental"
-            Path('tests/assets/classification_dataset/unlabeled_images/file.jpg').touch()
-            # number of images in unlabeled root is unsufficient
-            assert config_manager._get_train_type(ignore_args=False) == "Incremental"
-            config_manager.args.unlabeled_data_roots = "tests/assets/classification_dataset/unlabeled_images"
-            assert config_manager._get_train_type(ignore_args=False) == "Incremental"
-            # number of images in unlabeled root is sufficient
-            Path('tests/assets/classification_dataset/unlabeled_images/file2.jpg').touch()
-            Path('tests/assets/classification_dataset/unlabeled_images/file3.jpg').touch()
-            assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
-        finally:
-            shutil.rmtree("tests/assets/classification_dataset/unlabeled_images")
+        tempdir = tempfile.mkdtemp()
+        # unlabeled root is empty
+        config_manager.args.unlabeled_data_roots = str(tempdir)
+        with pytest.raises(ValueError):
+            config_manager._get_train_type(ignore_args=False)
+        Path(f"{tempdir}/file.jpg").touch()
+        # number of images in unlabeled root is unsufficient
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
+        Path(f"{tempdir}/file1.jpg").touch()
+        Path(f"{tempdir}/file2.jpg").touch()
+        assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
 
     @e2e_pytest_unit
     def test_auto_selfsl_detection(self, mocker):

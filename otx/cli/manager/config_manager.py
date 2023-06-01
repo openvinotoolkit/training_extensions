@@ -3,12 +3,12 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+import logging
 import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import logging
 
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import IDataset
@@ -251,63 +251,62 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         If unlabeled_images presented in dataset structure and it is sufficient to start Semi-SL -> Semi-SL
         Overwise set Incremental training type.
         """
-
-        def _check_is_only_images(dir):
-            """Check if a directory contains only images."""
+        def _count_imgs_in_dir(dir, recursive=False):
+            """count number of images in directory recursively"""
             import glob
             valid_suff = ["jpg", "png", "jpeg", "gif"]
             num_valid_imgs = 0
-            for files in glob.iglob(f'{dir}/*'):
+            for files in glob.iglob(f"{dir}/**", recursive=recursive):
                 suff = files.split(".")[-1]
                 if suff.lower() in valid_suff:
                     num_valid_imgs += 1
-            return num_valid_imgs > 0
 
-        def _check_semisl_requirements(train_dir, unlabeled_dir, thershold=0.07):
+            return num_valid_imgs
+
+        def _check_semisl_requirements(unlabeled_dir):
             """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
             if unlabeled_dir is None:
-                unlabeled_folder_name = [
-                    os.path.join(train_dir, item)
-                    for item in os.listdir(train_dir)
-                    if (item.startswith("unlabeled") and os.path.isdir(os.path.join(train_dir, item)))
-                ]
-                if unlabeled_folder_name:
-                    unlabeled_valid_path = unlabeled_folder_name[0]
-                else:
-                    return False
-            else:
-                if not os.path.isdir(unlabeled_dir) or not os.listdir(unlabeled_dir):
-                    raise ValueError(
-                        "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. "
-                        "Please, check command line and directory path."
-                    )
-                unlabeled_valid_path = unlabeled_dir
+                return False
 
-            all_unlabeled_images = len(os.listdir(unlabeled_valid_path))
-            all_train_images = len(os.listdir(train_dir))
+            if not os.path.isdir(unlabeled_dir) or not os.listdir(unlabeled_dir):
+                raise ValueError(
+                    "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. "
+                    "Please, check command line and directory path."
+                )
+
+            all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir, recursive=True)
             # check if number of unlabeled images is more than relative thershold
-            if all_unlabeled_images > 1 and all_unlabeled_images >= thershold * all_train_images:
-                return unlabeled_valid_path
+            if all_unlabeled_images > 1:
+                return unlabeled_dir
 
             logging.warning(
-                        "WARNING: There are none or too litle images to start Semi-SL training. "
-                        "It should be more than relative threshold (at least 7% of labeled images) "
-                        "Start Supervised training instead."
-                    )
+                "WARNING: There are none or too litle images to start Semi-SL training. "
+                "It should be more than relative threshold (at least 7% of labeled images) "
+                "Start Supervised training instead."
+            )
 
         # if user explicitly passed train type via args
         if self.args.train_type is not None:
             self.train_type = self.args.train_type
             return
 
-        path_to_train_data = Path(self.args.train_data_roots)
-        if not Path.is_dir(path_to_train_data) or not os.listdir(path_to_train_data):
+        if self.mode == "build" and self.args.train_data_roots is None:
+            # Case, when we want to build environment with tempate without dataset path
+            # Set train_type to Incremental by default
+            self.train_type = "Incremental"
+            return
+
+        if (
+            self.args.train_data_roots is None
+            or not os.path.isdir(self.args.train_data_roots)
+            or not os.listdir(self.args.train_data_roots)
+        ):
             raise ValueError(
                 "train-data-roots isn't a directory, it doesn't exist or it is empty. "
                 "Please, check command line and directory path."
             )
 
-        if _check_is_only_images(path_to_train_data):
+        if _count_imgs_in_dir(self.args.train_data_roots):
             # If train folder with images only was passed to args
             # Then we start self-supervised training
             print("[*] Selfsupervised training type detected")
@@ -315,9 +314,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             return
 
         # if user explicitly passed unlabeled images folder
-        valid_unlabeled_path = _check_semisl_requirements(path_to_train_data, self.args.unlabeled_data_roots)
+        valid_unlabeled_path = _check_semisl_requirements(self.args.unlabeled_data_roots)
         if valid_unlabeled_path:
-            print(f"[*] Semisupervised training type detected with unalabeled data: {valid_unlabeled_path}")
+            print(f"[*] Semisupervised training type detected with unlabeled data: {valid_unlabeled_path}")
             self.train_type = "Semisupervised"
             return
 
