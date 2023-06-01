@@ -463,11 +463,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
         if str(self.train_type).upper() == "INCREMENTAL" and "unlabeled" in subsets:
             subsets.remove("unlabeled")
-        dataset_config: Dict[str, Any] = {
-            "task_type": self.task_type,
-            "train_type": self.train_type,
-            "encryption_key": self.encryption_key,
-        }
+        dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
         for subset in subsets:
             if f"{subset}_subset" in self.data_config:
                 if self.data_config[f"{subset}_subset"]["data_roots"]:
@@ -662,23 +658,3 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             config.deterministic = self.args.deterministic
         if hasattr(config, "seed") and hasattr(self.args, "seed") and self.args.seed:
             config.seed = self.args.seed
-
-    @property
-    def encryption_key(self):
-        """Get encryption key from CLI argument or OS environment variables. If it is not specified, return None."""
-        key_from_args = getattr(self.args, "encryption_key", None)
-        key_from_envs = os.environ.get("ENCRYPTION_KEY", None)
-
-        if key_from_args is not None and key_from_envs is not None:
-            raise ValueError(
-                "You have to choose either one of the two, whether encryption_key is "
-                "specified as a CLI argument (--encryption-key=<key>) or specified in "
-                "an environment variable (ENCRYPTION_KEY=<key>). "
-            )
-
-        if key_from_args is not None:
-            return key_from_args
-        if key_from_envs is not None:
-            return key_from_envs
-
-        return None
