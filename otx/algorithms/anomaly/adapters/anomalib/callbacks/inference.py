@@ -20,7 +20,6 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from anomalib.models import AnomalyModule
-from anomalib.post_processing import anomaly_map_to_color_map
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
@@ -82,7 +81,7 @@ class AnomalyInferenceCallback(Callback):
                     name="Anomaly Map",
                     type="anomaly_map",
                     annotation_scene=dataset_item.annotation_scene,
-                    numpy=anomaly_map_to_color_map(anomaly_map.squeeze().numpy(), normalize=False),
+                    numpy=(anomaly_map * 255).astype(np.uint8),
                 )
             )
 
