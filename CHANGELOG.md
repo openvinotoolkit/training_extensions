@@ -49,6 +49,12 @@ All notable changes to this project will be documented in this file.
 - OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
   (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
 
+## \[v1.2.3\]
+
+### Bug fixes
+
+- Hotfix: use 0 confidence threshold when computing best threshold based on F1
+
 ## \[v1.2.2\]
 
 ### Enhancements
