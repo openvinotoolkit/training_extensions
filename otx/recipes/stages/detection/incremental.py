@@ -4,6 +4,7 @@ task_adapt = dict(
     type="mpa",
     op="REPLACE",
     efficient_mode=False,
+    use_mpa_anchor=True,
 )
 
 runner = dict(max_epochs=30)

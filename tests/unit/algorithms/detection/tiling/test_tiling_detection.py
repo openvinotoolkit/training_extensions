@@ -242,6 +242,7 @@ class TestTilingDetection:
         output_model = ModelEntity(self.otx_dataset, task_env.get_model_configuration())
         task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
         model_ckpt = os.path.join(tmp_dir_path, "maskrcnn.pth")
+        task._init_task()
         torch.save(detector.state_dict(), model_ckpt)
         task._model_ckpt = model_ckpt
         task.save_model(output_model)
