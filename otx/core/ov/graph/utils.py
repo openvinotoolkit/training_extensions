@@ -31,8 +31,8 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
     type_patterns = type_patterns if type_patterns else [["Multiply", "Add"]]
     type_mappings = type_mappings if type_mappings else [{"gamma": 0, "beta": 1}]
     assert len(type_patterns) == len(type_mappings)
-    batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
-    constant_cls = OPS.get_by_type_version("Constant", 0)
+    batchnorm_cls = OPS.get_by_type_version("BatchNormInference")
+    constant_cls = OPS.get_by_type_version("Constant")
 
     for node in list(graph.nodes.keys()):
         if node not in graph:
@@ -160,8 +160,8 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
 def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = None):
     """Handle function paired batchnorm."""
     types = types if types else ["Convolution", "GroupConvolution"]
-    batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
-    constant_cls = OPS.get_by_type_version("Constant", 0)
+    batchnorm_cls = OPS.get_by_type_version("BatchNormInference")
+    constant_cls = OPS.get_by_type_version("Constant")
 
     for node in list(graph.nodes.keys()):
         if node.type not in types:

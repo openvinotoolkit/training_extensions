@@ -271,13 +271,14 @@ def _convert(reporter, model, output_dir, namespace, mo_props, requested_precisi
         mo_cmd = [
             *mo_props.cmd_prefix,
             f"--framework={model_format}",
-            f"--data_type={data_type}",
             f"--output_dir={output_dir / model.subdirectory / model_precision}",
             f"--model_name={model.name}",
             f"--input={','.join(input.name for input in model.input_info)}".format(),
             *expanded_mo_args,
             *mo_props.extra_args,
         ]
+        if "FP16" in data_type:
+            mo_cmd.append("--compress_to_fp16")
 
         reporter.print_section_heading(
             "{}Converting {} to IR ({})",

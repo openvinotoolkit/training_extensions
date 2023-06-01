@@ -44,11 +44,9 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
     def from_ov(cls, ov_op):
         """Operation's from_ov function."""
         op_type = ov_op.get_type_name()
-        op_version = ov_op.get_version()
         op_name = get_op_name(ov_op)
         assert cls.TYPE and cls.VERSION >= 0
         assert op_type == cls.TYPE
-        assert op_version == cls.VERSION
 
         attrs = ov_op.get_attributes()
         if "shape" not in attrs:

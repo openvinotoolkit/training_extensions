@@ -18,13 +18,13 @@ def test_cls_base_parser():
     graph = get_graph()
     assert {
         "inputs": ["data"],
-        "outputs": ["/features/features#18/features#18#2/Clip"],
+        "outputs": ["Clip_166"],
     } == cls_base_parser(graph, "backbone")
     assert {
-        "inputs": ["/GlobalAveragePool"],
-        "outputs": ["/Flatten"],
+        "inputs": ["GlobalAveragePool_167"],
+        "outputs": ["Reshape_173"],
     } == cls_base_parser(graph, "neck")
     assert {
-        "inputs": ["/classifier/classifier#1/Gemm/WithoutBiases"],
+        "inputs": ["Gemm_174/WithoutBiases"],
         "outputs": ["prob/sink_port_0"],
     } == cls_base_parser(graph, "head")

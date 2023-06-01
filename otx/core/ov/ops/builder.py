@@ -23,35 +23,28 @@ class OperationRegistry(Registry):
             if layer_name is None:
                 layer_name = obj.__name__
             layer_type = obj.TYPE
-            layer_version = obj.VERSION
-            assert layer_type and layer_version >= 0
             if self._add_name_as_attr:
                 setattr(obj, self.REGISTERED_NAME_ATTR, layer_name)
-            self._register(obj, layer_name, layer_type, layer_version)
+            self._register(obj, layer_name, layer_type)
             return obj
 
         return wrap
 
-    def _register(self, obj, name, types, version):
+    def _register(self, obj, name, types):
         """Register function from obj and obj name."""
         super()._register(obj, name)
         if types not in self._registry_dict_by_type:
-            self._registry_dict_by_type[types] = {}
-        if version in self._registry_dict_by_type[types]:
-            raise KeyError(f"{version} is already registered in {types}")
-        self._registry_dict_by_type[types][version] = obj
+            self._registry_dict_by_type[types] = obj
 
     def get_by_name(self, name):
         """Get obj from name."""
         return self.get(name)
 
-    def get_by_type_version(self, types, version):
+    def get_by_type_version(self, types):
         """Get obj from type and version."""
         if types not in self._registry_dict_by_type:
             raise KeyError(f"type {types} is not registered in {self._name}")
-        if version not in self._registry_dict_by_type[types]:
-            raise KeyError(f"version {version} is not registered in {types} of {self._name}")
-        return self._registry_dict_by_type[types][version]
+        return self._registry_dict_by_type[types]
 
 
 OPS = OperationRegistry("ov ops")
