@@ -1,4 +1,5 @@
 import argparse
+import os
 import tempfile
 
 import pytest
@@ -31,18 +32,19 @@ def test_set_workspace():
     assert set_workspace(task, name=name) == expected_path
 
 
-class TestConfigManager:
-    @pytest.fixture
-    def config_manager(self, mocker):
-        args = mocker.MagicMock()
-        args.template = "."
-        args.config_path = "path/to/config.yaml"
-        args.workspace_path = "path/to/workspace"
-        args.mode = "train"
-        args.task_type = "classification"
-        args.train_type = "incremental"
-        return ConfigManager(args)
+@pytest.fixture
+def config_manager(mocker):
+    args = mocker.MagicMock()
+    args.template = "."
+    args.config_path = "path/to/config.yaml"
+    args.workspace_path = "path/to/workspace"
+    args.mode = "train"
+    args.task_type = "classification"
+    args.train_type = "incremental"
+    return ConfigManager(args)
 
+
+class TestConfigManager:
     def get_default_template(self, otx_root, task_type):
         otx_registry = Registry(otx_root).filter(task_type=task_type)
         return otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
@@ -548,3 +550,39 @@ class TestConfigManager:
         assert "train_data_roots" in dataset_config
         assert "val_data_roots" in dataset_config
         assert "test_data_roots" in dataset_config
+
+
+class TestConfigManagerEncryptionKey:
+    encryption_key = "dummy_key"
+
+    @pytest.fixture(scope="function")
+    def fxt_with_args(self, config_manager):
+        config_manager.args.encryption_key = self.encryption_key
+        return config_manager
+
+    @pytest.fixture
+    def fxt_with_envs(self, config_manager, mocker):
+        config_manager.args.encryption_key = None
+        k = mocker.patch.dict(os.environ, {"ENCRYPTION_KEY": self.encryption_key})
+        yield config_manager
+
+    @pytest.fixture
+    def fxt_with_both(self, fxt_with_args, mocker):
+        k = mocker.patch.dict(os.environ, {"ENCRYPTION_KEY": self.encryption_key})
+        yield fxt_with_args
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "testcase, expected",
+        [("fxt_with_args", True), ("fxt_with_envs", True), ("config_manager", False)],
+    )
+    def test_encryption_key(self, testcase, expected, request):
+        config_manager = request.getfixturevalue(testcase)
+
+        actual = config_manager.encryption_key == self.encryption_key
+        assert actual == expected
+
+    @e2e_pytest_unit
+    def test_encryption_key_error_raise(self, fxt_with_both):
+        with pytest.raises(ValueError):
+            assert fxt_with_both.encryption_key == self.encryption_key

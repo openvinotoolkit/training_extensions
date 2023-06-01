@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
+- Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
+
 ### Enhancements
 
 - Introduce channel_last parameter to improve the performance (<https://github.com/openvinotoolkit/training_extensions/pull/2205>)
