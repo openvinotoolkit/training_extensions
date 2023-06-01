@@ -1,4 +1,4 @@
-openvino==2022.3.0
+openvino==2023.0
 openmodelzoo-modelapi==2022.3.0
 otx @ git+https://github.com/openvinotoolkit/training_extensions/@a70d8f486f2dab289dffb6879606a2dfd827964d#egg=otx
 numpy>=1.21.0,<=1.23.5  # np.bool was removed in 1.24.0 which was used in openvino runtime
