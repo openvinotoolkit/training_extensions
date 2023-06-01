@@ -117,7 +117,7 @@ class OTXDetectionTask(OTXTask, ABC):
         """
         loaded_postprocessing = model_data.get("config", {}).get("postprocessing", {})
         hparams = self._hyperparams.postprocessing
-        if hasattr(loaded_postprocessing, "use_ellipse_shapes"):
+        if "use_ellipse_shapes" in loaded_postprocessing:
             hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
         else:
             hparams.use_ellipse_shapes = False
