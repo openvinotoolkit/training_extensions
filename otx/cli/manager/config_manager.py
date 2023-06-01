@@ -277,9 +277,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             return
 
         path_to_train_data = Path(self.args.train_data_roots)
-        if not Path.is_dir(path_to_train_data):
+        if not Path.is_dir(path_to_train_data) or not os.listdir(path_to_train_data):
             raise ValueError(
-                "train-data-roots isn't a directory or it doesn't exist. "
+                "train-data-roots isn't a directory, it doesn't exist or it is empty. "
                 "Please, check command line and directory path."
             )
 
@@ -296,10 +296,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if Path.is_dir(unlabeled_path):
                 if not _check_semisl_requirements(path_to_train_data, unlabeled_path):
                     print(
-                        "WARNING: There are none or too litle images to start Semi-SL training."
-                        "It should be more that relative threshold"
+                        "WARNING: There are none or too litle images to start Semi-SL training. "
+                        "It should be more than relative threshold (at least 7% of labeled images) "
                         "Start Supervised training instead."
                     )
+                    self.train_type = "Incremental"
+                    return
                 self.train_type = "Semisupervised"
                 return
             else:
