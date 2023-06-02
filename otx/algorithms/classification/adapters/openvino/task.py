@@ -77,11 +77,8 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 
-try:
-    from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-    from openvino.model_zoo.model_api.models import Model
-except ImportError:
-    warnings.warn("ModelAPI was not found.")
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
 
 logger = logging.getLogger(__name__)
 
@@ -118,24 +115,21 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
             plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         self.configuration = get_cls_inferencer_configuration(self.label_schema)
-        self.model = Model.create_model("otx_classification", model_adapter, self.configuration, preload=True)
+        self.model = Model.create_model(model_adapter, "otx_classification", self.configuration, preload=True)
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
         self.callback_exceptions: List[Exception] = []
-        self.model.model_adapter.set_callback(self._async_callback)
+        self.model.inference_adapter.set_callback(self._async_callback)
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Classification Inferencer."""
-
         return self.model.preprocess(image)
 
     def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
-            res_copy_func, args = callback_args
-            id, preprocessing_meta, result_handler = args
-            prediction = res_copy_func(request)
-
+            id, preprocessing_meta, result_handler = callback_args
+            prediction = self.model.inference_adapter.copy_raw_result(request)# request#res_copy_func(request)
             processed_prediciton = self.post_process(prediction, preprocessing_meta)
             aux_data = self.model.postprocess_aux_outputs(prediction, preprocessing_meta)
             result_handler(id, processed_prediciton, aux_data)
@@ -167,7 +161,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
             self.model.await_any()
         image, metadata = self.pre_process(image)
         callback_data = id, metadata, result_handler
-        self.model.infer_async(image, callback_data)
+        self.model.inference_adapter.infer_async(image, callback_data)
 
     def await_all(self) -> None:
         """Await all running infer requests if any."""

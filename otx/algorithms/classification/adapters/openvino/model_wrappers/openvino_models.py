@@ -20,16 +20,11 @@ from typing import Any, Dict
 
 import numpy as np
 
-try:
-    from openvino.model_zoo.model_api.models.classification import Classification
-    from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
-except ImportError:
-    import warnings
-
-    warnings.warn("ModelAPI was not found.")
+from openvino.model_api.models import ClassificationModel
+from openvino.model_api.models.types import BooleanValue, DictValue
 
 
-class OTXClassification(Classification):
+class OTXClassification(ClassificationModel):
     """OTX classification class for openvino."""
 
     __model__ = "otx_classification"
@@ -86,18 +81,18 @@ class OTXClassification(Classification):
 
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
         """Post-process."""
-        logits = outputs[self.out_layer_name].squeeze()
+        logits = outputs[self.out_layer_names[-1]].squeeze()
         if self.multilabel:
             return get_multilabel_predictions(logits)
         if self.hierarchical:
             return get_hierarchical_predictions(logits, self.multihead_class_info)
 
-        return get_multiclass_predictions(logits)
+        return get_multiclass_predictions(logits, activate=False)
 
     # pylint: disable=unused-argument
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         """Post-process for auxiliary outputs."""
-        logits = outputs[self.out_layer_name].squeeze()
+        logits = outputs[self.out_layer_names[-1]].squeeze()
         if self.multilabel:
             probs = sigmoid_numpy(logits)
         elif self.hierarchical:
