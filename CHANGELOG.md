@@ -53,6 +53,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
+- Return raw anomaly map instead of colormap as metadata to prevent applying colormap conversion twice (<https://github.com/openvinotoolkit/training_extensions/pull/2217>)
 - Hotfix: use 0 confidence threshold when computing best threshold based on F1
 
 ## \[v1.2.2\]
