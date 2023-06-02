@@ -1,6 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # OpenVINO Requirements.                                                      #
-nncf==2.4.0
+nncf@ git+https://github.com/openvinotoolkit/nncf@263ec98825c1d639c61e635b755df0d1dace2f3d#egg=nncf
 onnx==1.13.0
 openmodelzoo-modelapi==2022.3.0
 openvino==2023.0
