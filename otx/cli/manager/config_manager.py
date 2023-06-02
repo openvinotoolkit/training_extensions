@@ -253,7 +253,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
 
         def _count_imgs_in_dir(dir, recursive=False):
-            """count number of images in directory recursively."""
+            """Count number of images in directory recursively."""
             import glob
 
             valid_suff = ["jpg", "png", "jpeg", "gif"]
