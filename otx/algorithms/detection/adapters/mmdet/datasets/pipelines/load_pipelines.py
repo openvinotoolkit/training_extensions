@@ -18,9 +18,8 @@ from typing import Any, Dict, Optional
 from mmdet.datasets.builder import PIPELINES
 
 import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
-from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
-    get_annotation_mmdet_format,
-)
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import get_annotation_mmdet_format
+from otx.algorithms.detection.adapters.mmrotate.datasets.dataset import get_annotation_mmrotate_format
 from otx.api.entities.label import Domain
 
 
@@ -48,6 +47,8 @@ class LoadAnnotationFromOTXDataset:
         with_seg: bool = False,
         poly2mask: bool = True,
         with_text: bool = False,
+        with_angle: bool = False,
+        angle_version: str = "oc",
         domain: Optional[Domain] = None,
     ):
         self.with_bbox = with_bbox
@@ -56,6 +57,8 @@ class LoadAnnotationFromOTXDataset:
         self.with_seg = with_seg
         self.poly2mask = poly2mask
         self.with_text = with_text
+        self.with_angle = with_angle
+        self.angle_version = angle_version
         self.domain = domain
         self.min_size = min_size
 
@@ -81,7 +84,12 @@ class LoadAnnotationFromOTXDataset:
         """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results.pop("dataset_item")
         label_list = results.pop("ann_info")["label_list"]
-        ann_info = get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
+        if self.with_angle:
+            ann_info = get_annotation_mmrotate_format(
+                dataset_item, label_list, self.domain, self.min_size, self.angle_version
+            )
+        else:
+            ann_info = get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
         if self.with_bbox:
             results = self._load_bboxes(results, ann_info)
             if results is None or len(results["gt_bboxes"]) == 0:

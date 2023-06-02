@@ -7,3 +7,4 @@ mmcls==0.25.0
 timm==0.6.12
 mmdeploy==0.14.0
 scikit-image
+mmrotate==0.3.4

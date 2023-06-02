@@ -21,7 +21,7 @@ import time
 from contextlib import nullcontext
 from copy import deepcopy
 from functools import partial
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from mmcv.runner import wrap_fp16_model
@@ -207,6 +207,22 @@ class MMDetectionTask(OTXDetectionTask):
         self._config = cfg
         return cfg
 
+    def record_info_to_checkpoint_meta(self, cfg: Config, classes: List[str]) -> Dict[str, Any]:
+        """Record info to checkpoint meta.
+
+        Args:
+            cfg (Config): detection configuration
+            classes (list): list of dataset classes
+
+        Returns:
+            meta: meta information
+        """
+        if cfg.checkpoint_config is not None:
+            cfg.checkpoint_config.meta = dict(
+                mmdet_version=__version__ + get_git_hash()[:7],
+                CLASSES=classes,
+            )
+
     # pylint: disable=too-many-branches, too-many-statements
     def _train_model(
         self,
@@ -260,19 +276,14 @@ class MMDetectionTask(OTXDetectionTask):
         else:
             target_classes = datasets[0].CLASSES
 
+        self.record_info_to_checkpoint_meta(cfg, target_classes)
+
         # Metadata
         meta = dict()
         meta["env_info"] = env_info
         # meta['config'] = cfg.pretty_text
         meta["seed"] = cfg.seed
         meta["exp_name"] = cfg.work_dir
-        if cfg.checkpoint_config is not None:
-            cfg.checkpoint_config.meta = dict(
-                mmdet_version=__version__ + get_git_hash()[:7],
-                CLASSES=target_classes,
-            )
-            # if "proposal_ratio" in locals():
-            #     cfg.checkpoint_config.meta.update({"anchor_ratio": proposal_ratio})
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))

@@ -24,6 +24,7 @@ import numpy as np
 import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import ConfigDict
+from mmrotate.core import obb2poly_np
 
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
@@ -450,7 +451,10 @@ class OTXDetectionTask(OTXTask, ABC):
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ROTATED_DETECTION,
         }:
-            shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+            if self._config.task == "mmrotate":
+                shapes = self._rbox_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+            else:
+                shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
         else:
             raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
         return shapes
@@ -504,6 +508,35 @@ class OTXDetectionTask(OTXTask, ABC):
                     polygon = Polygon(points=points)
                     if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+        return shapes
+
+    def _rbox_add_predictions_to_dataset(
+        self, all_results: List, width: int, height: int, confidence_threshold: float
+    ) -> List[Annotation]:
+        """Convert rotated bounding box to polygon shape.
+
+        Args:
+            all_results (list): list of predicted detection results
+            width (int): image width
+            height (int): image height
+            confidence_threshold (float): confidence threshold
+
+        Returns:
+            list: list of polygon shapes
+        """
+        shapes = []
+        for label_idx, detections in enumerate(all_results):
+            polygons = obb2poly_np(detections, self._config.angle_version)
+            for polygon in polygons:
+                probability = float(polygon[-1])
+                if probability < confidence_threshold:
+                    continue
+                points = polygon[:-1].reshape(-1, 2)
+                points = [Point(x=point[0] / width, y=point[1] / height) for point in points]
+                labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
+                polygon = Polygon(points=points)
+                if polygon.get_area() > 1e-12:
+                    shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
     def _add_explanations_to_dataset(

@@ -83,8 +83,10 @@ class DetectionConfigurer:
         Patchings in this function are handled task level previously
         This function might need to be re-orgianized
         """
-
-        options_for_patch_datasets = {"type": "OTXDetDataset"}
+        if cfg.task == "mmrotate":
+            options_for_patch_datasets = {"type": "OTXRotatedDataset", "angle_version": cfg.angle_version}
+        else:
+            options_for_patch_datasets = {"type": "OTXDetDataset"}
 
         patch_default_config(cfg)
         patch_runner(cfg)
@@ -341,7 +343,8 @@ class DetectionConfigurer:
 
         Most of patching are related with hyper-params in focal loss
         """
-        if cfg.get("task", "detection") == "detection":
+        task_type = cfg.get("task", "detection")
+        if task_type == "detection" or task_type == "mmrotate":
             bbox_head = cfg.model.bbox_head
         else:
             bbox_head = cfg.model.roi_head.bbox_head
