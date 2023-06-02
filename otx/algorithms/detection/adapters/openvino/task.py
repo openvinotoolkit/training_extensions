@@ -219,7 +219,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             )
         }
         model = Model.create_model("OTX_SSD", model_adapter, configuration, preload=True)
-        converter = DetectionToAnnotationConverter(label_schema)
+        converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -255,12 +255,12 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             **attr.asdict(
                 hparams.postprocessing,
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
-            )
+            ),
+            "resize_type": "fit_to_window",  # Resize(keep_ratio=True)
         }
 
         model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
-
-        converter = MaskToAnnotationConverter(label_schema)
+        converter = MaskToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -295,7 +295,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
 
         model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
 
-        converter = RotatedRectToAnnotationConverter(label_schema)
+        converter = RotatedRectToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -343,7 +343,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
 
         self.tiler = Tiler(
             tile_size=int(tile_size * tile_ir_scale_factor),
-            overlap=overlap,
+            overlap=overlap / tile_ir_scale_factor,
             max_number=max_number,
             detector=inferencer.model,
             classifier=classifier,
@@ -447,6 +447,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        _hparams.postprocessing.use_ellipse_shapes = self.config.postprocessing.use_ellipse_shapes
         async_requests_num = get_default_async_reqs_num()
         if self.config.tiling_parameters.enable_tiling:
             async_requests_num = 1  # tiling has it's own async configuration

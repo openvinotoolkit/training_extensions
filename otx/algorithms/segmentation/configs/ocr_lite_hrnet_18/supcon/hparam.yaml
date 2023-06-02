@@ -1,0 +1,8 @@
+# Hyperparameters.
+hyper_parameters:
+  parameter_overrides:
+    learning_parameters:
+      enable_supcon:
+        default_value: True
+      learning_rate_warmup_iters:
+        default_value: 50

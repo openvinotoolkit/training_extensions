@@ -28,7 +28,7 @@ class SyncExecutor:
     def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
         self.model = model
         self.visualizer = visualizer
-        self.converter = create_output_converter(model.task_type, model.labels)
+        self.converter = create_output_converter(model.task_type, model.labels, model.model_parameters)
 
     def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
         """Run demo using input stream (image, video stream, camera)."""

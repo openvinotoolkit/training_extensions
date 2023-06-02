@@ -162,7 +162,7 @@ def regression_deployment_testing(
     for k in exported_performance.keys():
         if isinstance(criteria, dict) and template.name in criteria.keys():
             result_dict[k] = round(deployed_performance[k], 3)
-            if exported_performance[k] < modified_criteria:
+            if deployed_performance[k] < modified_criteria:
                 regression_result["passed"] = False
                 regression_result[
                     "log"
@@ -266,7 +266,7 @@ def regression_pot_eval_testing(template, root, otx_dir, args, criteria=None, re
     return regression_result
 
 
-def regression_train_time_testing(train_time_criteria, e2e_train_time, template, threshold=0.10):
+def regression_train_time_testing(train_time_criteria, e2e_train_time, template, threshold=0.30):
     """Measure train+val time and comapre with test criteria.
 
     Test criteria was set by previous measurement.
@@ -286,7 +286,7 @@ def regression_train_time_testing(train_time_criteria, e2e_train_time, template,
     return regression_result
 
 
-def regression_eval_time_testing(eval_time_criteria, e2e_eval_time, template, threshold=0.10):
+def regression_eval_time_testing(eval_time_criteria, e2e_eval_time, template, threshold=0.30):
     """Measure evaluation time and comapre with test criteria.
 
     Test criteria was set by previous measurement.

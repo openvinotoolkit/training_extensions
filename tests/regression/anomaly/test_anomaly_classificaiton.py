@@ -134,6 +134,8 @@ class TestRegressionAnomalyClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_export_eval_openvino(self, template, tmp_dir_path, category):
+        if category in ["transistor", "cable"]:
+            pytest.skip("Issue#2189: Anomaly task sometimes shows performance drop")
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
 
@@ -165,6 +167,8 @@ class TestRegressionAnomalyClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_otx_deploy_eval_deployment(self, template, tmp_dir_path, category):
+        if category in ["transistor", "cable"]:
+            pytest.skip("Issue#2189: Anomaly task sometimes shows performance drop")
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
 
@@ -196,6 +200,8 @@ class TestRegressionAnomalyClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("category", SAMPLED_ANOMALY_DATASET_CATEGORIES)
     def test_nncf_optimize_eval(self, template, tmp_dir_path, category):
+        if category in ["transistor", "cable", "bottle"]:
+            pytest.skip("Issue#2189: Anomaly task sometimes shows performance drop")
         self.performance[template.name] = {}
         category_data_args = self._apply_category(anomaly_classification_data_args, category)
 

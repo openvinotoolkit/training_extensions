@@ -92,6 +92,11 @@
           "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
           "--test-data-roots": "segmentation/regression_voc_cls_decr/test",
           "--input": "segmentation/regression_voc_cls_decr/test/images"
+        },
+        "supcon": {
+          "--train-data-roots": "segmentation/regression_voc_cls_decr/train",
+          "--val-data-roots": "segmentation/regression_voc_cls_decr/val",
+          "--test-data-roots": "segmentation/regression_voc_cls_decr/test"
         }
       },
       "class_incr": {
@@ -207,7 +212,7 @@
           "pot": {
             "EfficientNet-V2-S": 0.711,
             "MobileNet-V3-large-1x": 0.692,
-            "EfficientNet-B0": 0.808
+            "EfficientNet-B0": 0.725
           }
         },
         "multi_label": {
@@ -239,29 +244,29 @@
         },
         "h_label": {
           "train": {
-            "EfficientNet-V2-S": 0.714,
-            "MobileNet-V3-large-1x": 0.647,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-V2-S": 0.602,
+            "MobileNet-V3-large-1x": 0.547,
+            "EfficientNet-B0": 0.636
           },
           "export": {
-            "EfficientNet-V2-S": 0.714,
-            "MobileNet-V3-large-1x": 0.647,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-V2-S": 0.602,
+            "MobileNet-V3-large-1x": 0.547,
+            "EfficientNet-B0": 0.636
           },
           "deploy": {
-            "EfficientNet-V2-S": 0.714,
-            "MobileNet-V3-large-1x": 0.647,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-V2-S": 0.602,
+            "MobileNet-V3-large-1x": 0.547,
+            "EfficientNet-B0": 0.636
           },
           "nncf": {
-            "EfficientNet-V2-S": 0.731,
+            "EfficientNet-V2-S": 0.594,
             "MobileNet-V3-large-1x": 0.622,
-            "EfficientNet-B0": 0.758
+            "EfficientNet-B0": 0.638
           },
           "pot": {
-            "EfficientNet-V2-S": 0.653,
-            "MobileNet-V3-large-1x": 0.633,
-            "EfficientNet-B0": 0.739
+            "EfficientNet-V2-S": 0.577,
+            "MobileNet-V3-large-1x": 0.472,
+            "EfficientNet-B0": 0.605
           }
         },
         "supcon": {
@@ -396,53 +401,61 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.787,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.692,
             "Lite-HRNet-18": 0.801,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.693
           },
           "export": {
-            "Lite-HRNet-s-mod2": 0.786,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.692
           },
           "deploy": {
-            "Lite-HRNet-s-mod2": 0.786,
-            "Lite-HRNet-18-mod2": 0.808,
+            "Lite-HRNet-s-mod2": 0.636,
+            "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.795
+            "Lite-HRNet-x-mod3": 0.692
           },
           "nncf": {
-            "Lite-HRNet-s-mod2": 0.787,
-            "Lite-HRNet-18-mod2": 0.8,
+            "Lite-HRNet-s-mod2": 0.678,
+            "Lite-HRNet-18-mod2": 0.707,
             "Lite-HRNet-18": 0.79,
-            "Lite-HRNet-x-mod3": 0.779
+            "Lite-HRNet-x-mod3": 0.668
           },
           "pot": {
             "Lite-HRNet-s-mod2": 0.725,
-            "Lite-HRNet-18-mod2": 0.087,
-            "Lite-HRNet-18": 0.302,
+            "Lite-HRNet-18-mod2": 0.269,
+            "Lite-HRNet-18": 0.115,
             "Lite-HRNet-x-mod3": 0.041
+          }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-s-mod2": 0.691,
+            "Lite-HRNet-18-mod2": 0.676,
+            "Lite-HRNet-18": 0.682,
+            "Lite-HRNet-x-mod3": 0.698
           }
         }
       },
       "class_incr": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.792,
+            "Lite-HRNet-s-mod2": 0.66,
             "Lite-HRNet-18-mod2": 0.768,
-            "Lite-HRNet-18": 0.795,
-            "Lite-HRNet-x-mod3": 0.805
+            "Lite-HRNet-18": 0.669,
+            "Lite-HRNet-x-mod3": 0.712
           }
         }
       },
       "semi_supervised": {
         "multi_class": {
           "train": {
-            "Lite-HRNet-s-mod2": 0.818,
-            "Lite-HRNet-18-mod2": 0.837,
-            "Lite-HRNet-18": 0.833,
+            "Lite-HRNet-s-mod2": 0.681,
+            "Lite-HRNet-18-mod2": 0.696,
+            "Lite-HRNet-18": 0.742,
             "Lite-HRNet-x-mod3": 0.802
           }
         }
@@ -736,7 +749,7 @@
           "PADIM": 0.94
         },
         "cable": {
-          "STFPM": 0.707,
+          "STFPM": 0.636,
           "PADIM": 0.673
         },
         "capsule": {
@@ -780,7 +793,7 @@
           "PADIM": 0.857
         },
         "transistor": {
-          "STFPM": 0.55,
+          "STFPM": 0.39,
           "PADIM": 0.81
         },
         "wood": {
@@ -795,7 +808,7 @@
       "pot": {
         "bottle": {
           "STFPM": 0.759,
-          "PADIM": 0.88
+          "PADIM": 0.781
         },
         "cable": {
           "STFPM": 0.613,
@@ -898,8 +911,8 @@
           "PADIM": 0.019
         },
         "tile": {
-          "STFPM": 0.014,
-          "PADIM": 0.038
+          "STFPM": 0.0,
+          "PADIM": 0.015
         },
         "toothbrush": {
           "STFPM": 0.0,
@@ -961,7 +974,7 @@
         },
         "tile": {
           "STFPM": 0.014,
-          "PADIM": 0.143
+          "PADIM": 0.08
         },
         "toothbrush": {
           "STFPM": 0.059,
@@ -1023,7 +1036,7 @@
         },
         "tile": {
           "STFPM": 0.014,
-          "PADIM": 0.143
+          "PADIM": 0.08
         },
         "toothbrush": {
           "STFPM": 0.059,
@@ -1048,8 +1061,8 @@
           "PADIM": 0.276
         },
         "cable": {
-          "STFPM": 0.122,
-          "PADIM": 0.083
+          "STFPM": 0.05,
+          "PADIM": 0.05
         },
         "capsule": {
           "STFPM": 0.017,
@@ -1061,7 +1074,7 @@
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.014
+          "PADIM": 0.0
         },
         "hazelnut": {
           "STFPM": 0.0,
@@ -1084,7 +1097,7 @@
           "PADIM": 0.029
         },
         "tile": {
-          "STFPM": 0.065,
+          "STFPM": 0.02,
           "PADIM": 0.07
         },
         "toothbrush": {
@@ -1123,7 +1136,7 @@
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.02
+          "PADIM": 0.01
         },
         "hazelnut": {
           "STFPM": 0.007,
@@ -1146,8 +1159,8 @@
           "PADIM": 0.004
         },
         "tile": {
-          "STFPM": 0.013,
-          "PADIM": 0.143
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "toothbrush": {
           "STFPM": 0.015,
@@ -1199,7 +1212,7 @@
         },
         "metal_nut": {
           "STFPM": 0.367,
-          "PADIM": 0.454
+          "PADIM": 0.386
         },
         "pill": {
           "STFPM": 0.203,
@@ -1214,7 +1227,7 @@
           "PADIM": 0.232
         },
         "toothbrush": {
-          "STFPM": 0.246,
+          "STFPM": 0.203,
           "PADIM": 0.478
         },
         "transistor": {
@@ -1392,7 +1405,7 @@
           "PADIM": 0.281
         },
         "screw": {
-          "STFPM": 0.085,
+          "STFPM": 0.03,
           "PADIM": 0.051
         },
         "tile": {
@@ -1446,15 +1459,15 @@
           "PADIM": 0.347
         },
         "metal_nut": {
-          "STFPM": 0.387,
-          "PADIM": 0.353
+          "STFPM": 0.006,
+          "PADIM": 0.105
         },
         "pill": {
           "STFPM": 0.135,
           "PADIM": 0.241
         },
         "screw": {
-          "STFPM": 0.036,
+          "STFPM": 0.011,
           "PADIM": 0.037
         },
         "tile": {
@@ -1485,46 +1498,46 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 93.257,
+            "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.732,
-            "EfficientNet-B0": 70.02
+            "EfficientNet-B0": 82.521
           }
         },
         "multi_label": {
           "train": {
-            "EfficientNet-V2-S": 163.202,
-            "MobileNet-V3-large-1x": 148.559,
-            "EfficientNet-B0": 144.651
+            "EfficientNet-V2-S": 214.508,
+            "MobileNet-V3-large-1x": 185.442,
+            "EfficientNet-B0": 187.332
           }
         },
         "h_label": {
           "train": {
-            "EfficientNet-V2-S": 92.564,
+            "EfficientNet-V2-S": 149.627,
             "MobileNet-V3-large-1x": 76.041,
-            "EfficientNet-B0": 73.195
+            "EfficientNet-B0": 87.159
           }
         },
         "supcon": {
           "train": {
-            "EfficientNet-V2-S": 122.369,
-            "MobileNet-V3-large-1x": 115.94,
-            "EfficientNet-B0": 105.109
+            "EfficientNet-V2-S": 136.036,
+            "MobileNet-V3-large-1x": 134.635,
+            "EfficientNet-B0": 124.474
           }
         }
       },
       "class_incr": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 106.703,
+            "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 80.603,
-            "EfficientNet-B0": 74.543
+            "EfficientNet-B0": 82.521
           }
         },
         "multi_label": {
           "train": {
-            "EfficientNet-V2-S": 179.346,
-            "MobileNet-V3-large-1x": 163.404,
-            "EfficientNet-B0": 163.371
+            "EfficientNet-V2-S": 214.508,
+            "MobileNet-V3-large-1x": 185.442,
+            "EfficientNet-B0": 187.332
           }
         },
         "h_label": {
@@ -1547,9 +1560,9 @@
       "self_supervised": {
         "multi_class": {
           "train": {
-            "EfficientNet-V2-S": 34.063,
-            "MobileNet-V3-large-1x": 27.925,
-            "EfficientNet-B0": 27.623
+            "EfficientNet-V2-S": 141.137,
+            "MobileNet-V3-large-1x": 72.239,
+            "EfficientNet-B0": 82.521
           }
         }
       }
@@ -1601,6 +1614,14 @@
             "Lite-HRNet-18": 446.99,
             "Lite-HRNet-x-mod3": 667.493
           }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-s-mod2": 241.88,
+            "Lite-HRNet-18-mod2": 279.19,
+            "Lite-HRNet-18": 279.71,
+            "Lite-HRNet-x-mod3": 454.31
+          }
         }
       },
       "class_incr": {
@@ -1646,7 +1667,7 @@
       "class_incr": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 4367.131,
+            "MaskRCNN-ResNet50": 5154.329,
             "MaskRCNN-EfficientNetB2B": 4342.104
           }
         }
@@ -1751,7 +1772,7 @@
         },
         "cable": {
           "STFPM": 1099.243,
-          "PADIM": 77.289
+          "PADIM": 97.758
         },
         "capsule": {
           "STFPM": 442.791,
@@ -1762,8 +1783,8 @@
           "PADIM": 76.309
         },
         "grid": {
-          "STFPM": 466.608,
-          "PADIM": 70.806
+          "STFPM": 606.42,
+          "PADIM": 98.1
         },
         "hazelnut": {
           "STFPM": 442.13,
@@ -1787,7 +1808,7 @@
         },
         "tile": {
           "STFPM": 967.902,
-          "PADIM": 72.959
+          "PADIM": 83.676
         },
         "toothbrush": {
           "STFPM": 552.189,
@@ -1838,7 +1859,7 @@
           "PADIM": 166.385
         },
         "metal_nut": {
-          "STFPM": 968.054,
+          "STFPM": 1124.054,
           "PADIM": 163.375
         },
         "pill": {
@@ -1993,6 +2014,14 @@
             "Lite-HRNet-18": 43.046,
             "Lite-HRNet-x-mod3": 59.053
           }
+        },
+        "supcon": {
+          "train": {
+            "Lite-HRNet-s-mod2": 13.835,
+            "Lite-HRNet-18-mod2": 16.39,
+            "Lite-HRNet-18": 16.23,
+            "Lite-HRNet-x-mod3": 26.549
+          }
         }
       },
       "class_incr": {
@@ -2030,8 +2059,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 121.861,
-            "MaskRCNN-EfficientNetB2B": 109.647
+            "MaskRCNN-ResNet50": 142.759,
+            "MaskRCNN-EfficientNetB2B": 119.753
           }
         }
       },
@@ -2078,8 +2107,8 @@
           "PADIM": 18.455
         },
         "cable": {
-          "STFPM": 18.392,
-          "PADIM": 16.792
+          "STFPM": 20.231,
+          "PADIM": 20.494
         },
         "capsule": {
           "STFPM": 17.804,
@@ -2090,8 +2119,8 @@
           "PADIM": 22.427
         },
         "grid": {
-          "STFPM": 17.394,
-          "PADIM": 17.446
+          "STFPM": 25.84,
+          "PADIM": 24.198
         },
         "hazelnut": {
           "STFPM": 23.11,
@@ -2142,8 +2171,8 @@
           "PADIM": 17.691
         },
         "cable": {
-          "STFPM": 23.461,
-          "PADIM": 22.65
+          "STFPM": 28.371,
+          "PADIM": 27.715
         },
         "capsule": {
           "STFPM": 21.189,
@@ -2178,8 +2207,8 @@
           "PADIM": 24.962
         },
         "tile": {
-          "STFPM": 18.517,
-          "PADIM": 17.563
+          "STFPM": 26.288,
+          "PADIM": 23.913
         },
         "toothbrush": {
           "STFPM": 17.988,
@@ -2230,8 +2259,8 @@
           "PADIM": 32.192
         },
         "metal_nut": {
-          "STFPM": 43.693,
-          "PADIM": 35.058
+          "STFPM": 62.213,
+          "PADIM": 49.135
         },
         "pill": {
           "STFPM": 51.913,

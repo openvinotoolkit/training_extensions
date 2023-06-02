@@ -15,13 +15,13 @@
 # and limitations under the License.
 
 import json
-import math
 import os.path as osp
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
 from mmdet.datasets.api_wrappers.coco_api import COCO
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
     get_annotation_mmdet_format,
 )
@@ -41,6 +41,8 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
+
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -442,7 +444,7 @@ def format_list_to_str(value_lists: list):
 
 # TODO [Eugene] please add unit test for this function
 def adaptive_tile_params(
-    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.01, rule="avg"
+    tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.03, rule="avg"
 ):
     """Config tile parameters.
 
@@ -452,38 +454,63 @@ def adaptive_tile_params(
     Args:
         tiling_parameters (BaseTilingParameters): tiling parameters of the model
         dataset (DatasetEntity): training dataset
-        object_tile_ratio (float, optional): The desired ratio of object area and tile area. Defaults to 0.01.
+        object_tile_ratio (float, optional): The desired ratio of object size and tile size. Defaults to 16/512=0.03.
         rule (str, optional): min or avg.  In `min` mode, tile size is computed based on the smallest object, and in
                               `avg` mode tile size is computed by averaging all the object areas. Defaults to "avg".
 
     """
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
 
-    bboxes = np.zeros((0, 4), dtype=np.float32)
+    all_sizes = np.zeros((0), dtype=np.float32)
     labels = dataset.get_labels(include_empty=False)
     domain = labels[0].domain
     max_object = 0
     for dataset_item in dataset:
         result = get_annotation_mmdet_format(dataset_item, labels, domain)
         if len(result["bboxes"]):
-            bboxes = np.concatenate((bboxes, result["bboxes"]), 0)
-            if len(result["bboxes"]) > max_object:
-                max_object = len(result["bboxes"])
+            bboxes = result["bboxes"]
+            sizes = 0.5 * (bboxes[:, 2] - bboxes[:, 0] + bboxes[:, 3] - bboxes[:, 1])
+            all_sizes = np.concatenate((all_sizes, sizes), 0)
+            if len(bboxes) > max_object:
+                max_object = len(bboxes)
 
-    areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
+    log_sizes = np.log(all_sizes)
+    avg_log_size = np.mean(log_sizes)
+    std_log_size = np.std(log_sizes)
+    avg_size = np.exp(avg_log_size)
+    avg_3std_min_size = np.exp(avg_log_size - 3 * std_log_size)
+    avg_3std_max_size = np.exp(avg_log_size + 3 * std_log_size)
+    min_size = np.exp(np.min(log_sizes))
+    max_size = np.exp(np.max(log_sizes))
+    logger.info(f"----> [stat] log scale avg: {avg_size}")
+    logger.info(f"----> [stat] log scale avg - 3*std: {avg_3std_min_size}")
+    logger.info(f"----> [stat] log scale avg + 3*std: {avg_3std_max_size}")
+    logger.info(f"----> [stat] scale min: {min_size}")
+    logger.info(f"----> [stat] scale max: {max_size}")
+
+    # Refine min/max to reduce outlier effect
+    min_size = max(min_size, avg_3std_min_size)
+    max_size = min(max_size, avg_3std_max_size)
 
     if rule == "min":
-        object_area = np.min(areas)
+        object_size = min_size
     elif rule == "avg":
-        object_area = np.mean(areas)
-    max_area = np.max(areas)
+        object_size = avg_size
 
-    tile_size = int(math.sqrt(object_area / object_tile_ratio))
-    tile_overlap = max_area / (tile_size**2)
+    logger.info("[Adaptive tiling pararms]")
+    object_tile_ratio = tiling_parameters.object_tile_ratio
+    tile_size = int(object_size / object_tile_ratio)
+    tile_overlap = max_size / tile_size
+    logger.info(f"----> {rule}_object_size: {object_size}")
+    logger.info(f"----> max_object_size: {max_size}")
+    logger.info(f"----> object_tile_ratio: {object_tile_ratio}")
+    logger.info(f"----> tile_size: {object_size} / {object_tile_ratio} = {tile_size}")
+    logger.info(f"----> tile_overlap: {max_size} / {tile_size} = {tile_overlap}")
 
     if tile_overlap >= tiling_parameters.get_metadata("tile_overlap")["max_value"]:
         # Use the average object area if the tile overlap is too large to prevent 0 stride.
-        tile_overlap = object_area / (tile_size**2)
+        tile_overlap = object_size / tile_size
+        logger.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
 
     # validate parameters are in range
     tile_size = max(
