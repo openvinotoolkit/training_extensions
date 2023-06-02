@@ -33,6 +33,9 @@ class ModelContainer:
 
         try:
             config_data = model_adapter.model.get_rt_info(["otx_config"])
+            if type(config_data) != str:
+                # OV 2023.0 return OVAny which needs to be casted with astype()
+                config_data = config_data.astype(str)
             self.parameters = json.loads(config_data)
         except RuntimeError:
             self.parameters = get_parameters(model_dir / "config.json")
