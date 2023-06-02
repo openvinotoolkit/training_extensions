@@ -3,6 +3,7 @@
 nncf@ git+https://github.com/openvinotoolkit/nncf@263ec98825c1d639c61e635b755df0d1dace2f3d#egg=nncf
 onnx==1.13.0
 openmodelzoo-modelapi==2022.3.0
+openvino-model-api==0.1.0
 openvino==2023.0
 openvino-dev==2023.0
 openvino-telemetry>=2022.1.0
