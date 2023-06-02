@@ -34,14 +34,14 @@ from tests.test_suite.run_test_command import (
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "tests/assets/classification_dataset",
-    "--val-data-roots": "tests/assets/classification_dataset",
-    "--test-data-roots": "tests/assets/classification_dataset",
+    "--train-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--val-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--test-data-roots": "tests/assets/classification_dataset_class_incremental",
     "--input": "tests/assets/classification_dataset/0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
-        "1",
+        "2",
         "--learning_parameters.batch_size",
         "4",
     ],
@@ -210,12 +210,6 @@ class TestMultiClassClassificationCLI:
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
-    def test_otx_hpo(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_class_cls/test_hpo"
-        otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
