@@ -28,8 +28,10 @@ from anomalib.utils.callbacks import (
 from pytorch_lightning import Trainer, seed_everything
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.data import OTXPytorchLightningDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import (
+    OTXPytorchLightningDataModule,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.train_parameters import TrainParameters
@@ -71,7 +73,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         logger.info("Training Configs '%s'", config)
         # from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
-        from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
+        from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
         
         datamodule = OTXPytorchLightningDataModule(config=config, dataset=dataset, task_type=self.task_type)
         callbacks = [

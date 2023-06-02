@@ -22,8 +22,7 @@ import subprocess  # nosec
 import tempfile
 from glob import glob
 from typing import Dict, List, Optional, Union
-from segment_anything import sam_model_registry
-from segment_anything import SamPredictor
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.sam import sam_model_registry
 from torch import optim, nn, utils, Tensor
 import segmentation_models_pytorch as smp
 
@@ -181,9 +180,15 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         import pytorch_lightning as pl
         # define the LightningModule
         class SegmentAnything(pl.LightningModule):
-            def __init__(self, model_type='vit_b', ckpt_path='/home/jeom/sam-ws/otx-sam/sam_vit_b_01ec64.pth'):
+            ckpt_paths = {
+                "vit_b": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
+                "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
+                "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth"
+            }
+            def __init__(self, model_type: str = "vit_b"):
                 super().__init__()
-                self.model = sam_model_registry[model_type](checkpoint=ckpt_path)
+                self.model_type = model_type
+                self.model = sam_model_registry[model_type](checkpoint=self.ckpt_paths[model_type])
                 self.model.train()
                 # if self.cfg.model.freeze.image_encoder:
                 if False:
@@ -275,7 +280,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     # save_image((seg_img / 255).float(), f"plot/origin_seg_img_{batch_idx}.jpg")
                     # save_image((seg_img / 255).float(), f"plot/1epoch_seg_img_{batch_idx}.jpg")
                     # save_image((gt_img / 255).float(), f"plot/gt_img_{batch_idx}.jpg")
-                    breakpoint()
                     for pred_mask, gt_mask in zip(pred_masks, gt_masks):
                         batch_stats = smp.metrics.get_stats(
                             pred_mask,

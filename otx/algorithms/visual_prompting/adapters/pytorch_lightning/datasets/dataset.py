@@ -15,12 +15,11 @@
 # and limitations under the License.
 
 from typing import Dict, List, Optional, Union
+
 import cv2
 import numpy as np
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.transform import ResizeAndPad, collate_fn
-from otx.api.utils.shape_factory import ShapeFactory
-from PIL import Image, ImageDraw
 from omegaconf import DictConfig, ListConfig
+from PIL import Image, ImageDraw
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
@@ -36,6 +35,9 @@ from otx.api.utils.dataset_utils import (
     split_local_global_dataset,
 )
 from otx.api.utils.segmentation_utils import mask_from_dataset_item
+from otx.api.utils.shape_factory import ShapeFactory
+
+from .pipelines import ResizeAndPad, collate_fn
 
 logger = get_logger(__name__)
 
@@ -112,8 +114,8 @@ class OTXPytorchLightningDataset(Dataset):
         Returns:
             Dict[str, Union[int, Tensor]]: Dataset item.
         """
-        from torchvision.utils import save_image
         import torch
+        from torchvision.utils import save_image
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
