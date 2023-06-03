@@ -69,7 +69,10 @@ def get_annotation_mmrotate_format(
         polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
         polygon[::2] = np.clip(polygon[::2], 0, width)
         polygon[1::2] = np.clip(polygon[1::2], 0, height)
-        x, y, w, h, a = poly2obb_np(polygon, angle_version)
+        rbox = poly2obb_np(polygon, angle_version)
+        if rbox is None:
+            continue
+        x, y, w, h, a = rbox
         gt_bboxes.append([x, y, w, h, a])
         gt_labels.extend(class_indices)
         item_id = getattr(dataset_item, "id_", None)
@@ -83,7 +86,7 @@ def get_annotation_mmrotate_format(
         )
     else:
         ann_info = dict(
-            bboxes=np.zeros((0, 4), dtype=np.float32),
+            bboxes=np.zeros((0, 5), dtype=np.float32),
             labels=np.array([], dtype=int),
             ann_ids=[],
         )
