@@ -4,10 +4,10 @@
 #
 
 import copy
-import tempfile
 import uuid
 from itertools import product
 from multiprocessing import Pool
+from random import sample
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
@@ -61,21 +61,24 @@ class Tile:
             only works when `test_mode=False`, i.e., we never filter images
             during tests. Defaults to True.
         nproc (int, optional): Processes used for processing masks. Default: 4.
+        sampling_ratio (float): Ratio for sampling entire tile dataset. Default: 1.0.(No sample)
+        include_full_img (bool): Whether to include full-size image for inference or training. Default: False.
     """
 
     def __init__(
         self,
         dataset,
         pipeline,
-        tmp_dir: tempfile.TemporaryDirectory,
         tile_size: int = 400,
         overlap: float = 0.2,
         min_area_ratio: float = 0.9,
         iou_threshold: float = 0.45,
         max_per_img: int = 1500,
-        max_annotation: int = 5000,
+        max_annotation: int = 2000,
         filter_empty_gt: bool = True,
         nproc: int = 2,
+        sampling_ratio: float = 1.0,
+        include_full_img: bool = False,
     ):
         self.min_area_ratio = min_area_ratio
         self.filter_empty_gt = filter_empty_gt
@@ -88,7 +91,6 @@ class Tile:
         self.num_images = len(dataset)
         self.num_classes = len(dataset.CLASSES)
         self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
-        self.tmp_folder = tmp_dir.name
         self.nproc = nproc
         self.img2fp32 = False
         for p in pipeline:
@@ -97,15 +99,21 @@ class Tile:
                 break
 
         self.dataset = dataset
-        self.tiles, self.cached_results = self.gen_tile_ann()
+        self.tiles_all, self.cached_results = self.gen_tile_ann(include_full_img)
+        self.sample_num = max(int(len(self.tiles_all) * sampling_ratio), 1)
+        if sampling_ratio < 1.0:
+            self.tiles = sample(self.tiles_all, self.sample_num)
+        else:
+            self.tiles = self.tiles_all
 
     @timeit
-    def gen_tile_ann(self) -> Tuple[List[Dict], List[Dict]]:
+    def gen_tile_ann(self, include_full_img) -> Tuple[List[Dict], List[Dict]]:
         """Generate tile annotations and cache the original image-level annotations.
 
         Returns:
             tiles: a list of tile annotations with some other useful information for data pipeline.
             cache_result: a list of original image-level annotations.
+            include_full_img: whether to include full-size image for inference or training.
         """
         tiles = []
         cache_result = []
@@ -114,7 +122,8 @@ class Tile:
 
         pbar = tqdm(total=len(self.dataset) * 2, desc="Generating tile annotations...")
         for idx, result in enumerate(cache_result):
-            tiles.append(self.gen_single_img(result, dataset_idx=idx))
+            if include_full_img:
+                tiles.append(self.gen_single_img(result, dataset_idx=idx))
             pbar.update(1)
 
         for idx, result in enumerate(cache_result):
@@ -132,6 +141,7 @@ class Tile:
         Returns:
             Dict: annotation with some other useful information for data pipeline.
         """
+        result["full_res_image"] = True
         result["tile_box"] = (0, 0, result["img_shape"][1], result["img_shape"][0])
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
@@ -165,20 +175,21 @@ class Tile:
         height, width = img_shape[:2]
         _tile = self.prepare_result(result)
 
-        num_patches_h = int((height - self.tile_size) / self.stride) + 1
-        num_patches_w = int((width - self.tile_size) / self.stride) + 1
+        num_patches_h = (height + self.stride - 1) // self.stride
+        num_patches_w = (width + self.stride - 1) // self.stride
         for (_, _), (loc_i, loc_j) in zip(
             product(range(num_patches_h), range(num_patches_w)),
             product(
-                range(0, height - self.tile_size + 1, self.stride),
-                range(0, width - self.tile_size + 1, self.stride),
+                range(0, height, self.stride),
+                range(0, width, self.stride),
             ),
         ):
             x_1 = loc_j
-            x_2 = loc_j + self.tile_size
+            x_2 = min(loc_j + self.tile_size, width)
             y_1 = loc_i
-            y_2 = loc_i + self.tile_size
+            y_2 = min(loc_i + self.tile_size, height)
             tile = copy.deepcopy(_tile)
+            tile["full_res_image"] = False
             tile["original_shape_"] = img_shape
             tile["ori_shape"] = (y_2 - y_1, x_2 - x_1, 3)
             tile["img_shape"] = tile["ori_shape"]
@@ -191,6 +202,9 @@ class Tile:
             if self.filter_empty_gt and len(tile["gt_labels"]) == 0:
                 continue
             tile_list.append(tile)
+        if dataset_idx == 0:
+            print(f"image: {height}x{width} ~ tile_size: {self.tile_size}")
+            print(f"{num_patches_h}x{num_patches_w} tiles -> {len(tile_list)} tiles after filtering")
         return tile_list
 
     def prepare_result(self, result: Dict) -> Dict:
@@ -233,12 +247,11 @@ class Tile:
             gt_labels (np.ndarray): the original image-level labels
         """
         x_1, y_1 = tile_box[0][:2]
-        overlap_ratio = self.tile_boxes_overlap(tile_box, gt_bboxes)
-        match_idx = np.where((overlap_ratio[0] >= self.min_area_ratio))[0]
+        matched_indices = self.tile_boxes_overlap(tile_box, gt_bboxes)
 
-        if len(match_idx):
-            tile_lables = gt_labels[match_idx][:]
-            tile_bboxes = gt_bboxes[match_idx][:]
+        if len(matched_indices):
+            tile_lables = gt_labels[matched_indices][:]
+            tile_bboxes = gt_bboxes[matched_indices][:]
             tile_bboxes[:, 0] -= x_1
             tile_bboxes[:, 1] -= y_1
             tile_bboxes[:, 2] -= x_1
@@ -249,7 +262,7 @@ class Tile:
             tile_bboxes[:, 3] = np.minimum(self.tile_size, tile_bboxes[:, 3])
             tile_result["gt_bboxes"] = tile_bboxes
             tile_result["gt_labels"] = tile_lables
-            tile_result["gt_masks"] = gt_masks[match_idx].crop(tile_box[0]) if gt_masks is not None else []
+            tile_result["gt_masks"] = gt_masks[matched_indices].crop(tile_box[0]) if gt_masks is not None else []
         else:
             tile_result.pop("bbox_fields")
             tile_result.pop("mask_fields")
@@ -270,18 +283,12 @@ class Tile:
             boxes (np.ndarray): boxes in shape (N, 4).
 
         Returns:
-            np.ndarray: overlapping ratio over boxes
+            np.ndarray: matched indices.
         """
-        box_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-
-        width_height = np.minimum(tile_box[:, None, 2:], boxes[:, 2:]) - np.maximum(tile_box[:, None, :2], boxes[:, :2])
-
-        width_height = width_height.clip(min=0)  # [N,M,2]
-        inter = width_height.prod(2)
-
-        # handle empty boxes
-        tile_box_ratio = np.where(inter > 0, inter / box_area, np.zeros(1, dtype=inter.dtype))
-        return tile_box_ratio
+        x1, y1, x2, y2 = tile_box[0]
+        match_indices = (boxes[:, 0] > x1) & (boxes[:, 1] > y1) & (boxes[:, 2] < x2) & (boxes[:, 3] < y2)
+        match_indices = np.argwhere(match_indices == 1).flatten()
+        return match_indices
 
     def multiclass_nms(
         self, boxes: np.ndarray, scores: np.ndarray, idxs: np.ndarray, iou_threshold: float, max_num: int
@@ -431,7 +438,7 @@ class Tile:
 
         merged_bbox_results: List[np.ndarray] = [np.empty((0, 5), dtype=dtype) for _ in range(self.num_images)]
         merged_mask_results: List[List] = [[] for _ in range(self.num_images)]
-        merged_label_results: List[Union[List, np.ndarray]] = [[] for _ in range(self.num_images)]
+        merged_label_results: List[Union[List, np.ndarray]] = [np.array([]) for _ in range(self.num_images)]
 
         for result, tile in zip(results, self.tiles):
             tile_x1, tile_y1, _, _ = tile["tile_box"]
@@ -477,3 +484,21 @@ class Tile:
         if detection:
             return list(merged_bbox_results)
         return list(zip(merged_bbox_results, merged_mask_results))
+
+    def get_ann_info(self, idx):
+        """Get annotation by index.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            dict: Annotation info of specified index.
+        """
+        ann = {}
+        if "gt_bboxes" in self.tiles[idx]:
+            ann["bboxes"] = self.tiles[idx]["gt_bboxes"]
+        if "gt_masks" in self.tiles[idx]:
+            ann["masks"] = self.tiles[idx]["gt_masks"]
+        if "gt_labels" in self.tiles[idx]:
+            ann["labels"] = self.tiles[idx]["gt_labels"]
+        return ann

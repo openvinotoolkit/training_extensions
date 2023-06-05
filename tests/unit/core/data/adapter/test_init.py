@@ -11,6 +11,9 @@ from tests.unit.core.data.test_helpers import (
     TASK_NAME_TO_TASK_TYPE,
 )
 
+from pathlib import Path
+import shutil
+
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("task_name", TASK_NAME_TO_TASK_TYPE.keys())
@@ -63,18 +66,27 @@ def test_get_dataset_adapter_selfsl_segmentation(task_name, train_type):
     task_type = TASK_NAME_TO_TASK_TYPE[task_name]
     data_root = TASK_NAME_TO_DATA_ROOT[task_name]
 
-    get_dataset_adapter(
-        task_type=task_type,
-        train_type=train_type,
-        train_data_roots=os.path.join(root_path, data_root["train"]),
-    )
+    with pytest.raises(ValueError, match=r"pseudo_mask_dir must be set."):
+        get_dataset_adapter(
+            task_type=task_type,
+            train_type=train_type,
+            train_data_roots=os.path.join(root_path, data_root["train"]),
+        )
 
-    with pytest.raises(ValueError):
         get_dataset_adapter(
             task_type=task_type,
             train_type=train_type,
             test_data_roots=os.path.join(root_path, data_root["test"]),
         )
+
+    tmp_supcon_mask_dir = Path("/tmp/selfsl_supcon_unit_test")
+    get_dataset_adapter(
+        task_type=task_type,
+        train_type=train_type,
+        train_data_roots=os.path.join(root_path, data_root["train"]),
+        pseudo_mask_dir=tmp_supcon_mask_dir,
+    )
+    shutil.rmtree(str(tmp_supcon_mask_dir))
 
 
 # TODO: direct annotation function is only supported in COCO format for now.
