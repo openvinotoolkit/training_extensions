@@ -221,6 +221,8 @@ class MMClassificationTask(OTXClassificationTask):
         model = model_builder(cfg, **kwargs)
         if bool(fp16):
             wrap_fp16_model(model)
+        if bool(cfg.get("channel_last", False)):
+            model = model.to(memory_format=torch.channels_last)
         return model
 
     def _infer_model(
@@ -252,18 +254,21 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
+        workers_per_gpu = cfg.data.test_dataloader.get("workers_per_gpu", 0)
         dataloader = build_dataloader(
             mm_dataset,
             samples_per_gpu=cfg.data.test_dataloader.get("samples_per_gpu", 1),
-            workers_per_gpu=cfg.data.test_dataloader.get("workers_per_gpu", 0),
+            workers_per_gpu=workers_per_gpu,
             num_gpus=len(cfg.gpu_ids),
             dist=cfg.distributed,
             seed=cfg.get("seed", None),
             shuffle=False,
+            persistent_workers=(workers_per_gpu > 0),
         )
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+
         model.eval()
         feature_model = model
         model = build_data_parallel(model, cfg, distributed=False)

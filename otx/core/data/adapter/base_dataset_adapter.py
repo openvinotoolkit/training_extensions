@@ -61,6 +61,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         test_ann_files (Optional[str]): Path for test annotation file
         unlabeled_data_roots (Optional[str]): Path for unlabeled data
         unlabeled_file_list (Optional[str]): Path of unlabeled file list
+        encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+                                        (only required for DatumaroBinary format)
 
     Since all adapters can be used for training and validation,
     the default value of train/val/test_data_roots was set to None.
@@ -82,13 +84,15 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         cache_config: Optional[Dict[str, Any]] = None,
+        encryption_key: Optional[str] = None,
+        **kwargs,
     ):
         self.task_type = task_type
         self.domain = task_type.domain
         self.data_type: str
         self.is_train_phase: bool
 
-        self.dataset = self._import_dataset(
+        self.dataset = self._import_datasets(
             train_data_roots=train_data_roots,
             train_ann_files=train_ann_files,
             val_data_roots=val_data_roots,
@@ -97,6 +101,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             test_ann_files=test_ann_files,
             unlabeled_data_roots=unlabeled_data_roots,
             unlabeled_file_list=unlabeled_file_list,
+            encryption_key=encryption_key,
+            **kwargs,
         )
 
         cache_config = cache_config if cache_config is not None else {}
@@ -110,7 +116,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         self.label_entities: List[LabelEntity]
         self.label_schema: LabelSchemaEntity
 
-    def _import_dataset(
+    def _import_datasets(
         self,
         train_data_roots: Optional[str] = None,
         train_ann_files: Optional[str] = None,
@@ -120,8 +126,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
+        encryption_key: Optional[str] = None,
     ) -> Dict[Subset, DatumDataset]:
-        """Import dataset by using Datumaro.import_from() method.
+        """Import datasets by using Datumaro.import_from() method.
 
         Args:
             train_data_roots (Optional[str]): Path for training data
@@ -132,6 +139,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             test_ann_files (Optional[str]): Path for test annotation files
             unlabeled_data_roots (Optional[str]): Path for unlabeled data
             unlabeled_file_list (Optional[str]): Path for unlabeled file list
+            encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+                                            (DatumaroBinary format)
 
         Returns:
             DatumDataset: Datumaro Dataset
@@ -142,53 +151,19 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         # Construct dataset for training, validation, testing, unlabeled
         if train_data_roots is not None:
-            # Find self.data_type and task_type
-            self.data_type_candidates = self._detect_dataset_format(path=train_data_roots)
-            self.data_type = self._select_data_type(self.data_type_candidates)
-
-            dataset_kwargs = {"path": train_data_roots, "format": self.data_type}
-            if train_ann_files is not None:
-                if self.data_type not in ("coco"):
-                    raise NotImplementedError(
-                        f"Specifying '--train-ann-files' is not supported for data type '{self.data_type}'"
-                    )
-                dataset_kwargs["path"] = train_ann_files
-                dataset_kwargs["subset"] = "train"
-            train_dataset = DatumDataset.import_from(**dataset_kwargs)
-
-            # Prepare subsets by using Datumaro dataset
+            train_dataset = self._import_dataset(train_data_roots, train_ann_files, encryption_key, Subset.TRAINING)
             dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
             self.is_train_phase = True
 
             # If validation is manually defined --> set the validation data according to user's input
             if val_data_roots:
-                val_data_candidates = self._detect_dataset_format(path=val_data_roots)
-                val_data_type = self._select_data_type(val_data_candidates)
-                dataset_kwargs = {"path": val_data_roots, "format": val_data_type}
-                if val_ann_files is not None:
-                    if val_data_type not in ("coco"):
-                        raise NotImplementedError(
-                            f"Specifying '--val-ann-files' is not supported for data type '{val_data_type}'"
-                        )
-                    dataset_kwargs["path"] = val_ann_files
-                    dataset_kwargs["subset"] = "val"
-                val_dataset = DatumDataset.import_from(**dataset_kwargs)
+                val_dataset = self._import_dataset(val_data_roots, val_ann_files, encryption_key, Subset.VALIDATION)
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", val_dataset)
             elif "val" in train_dataset.subsets():
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
 
         if test_data_roots is not None and train_data_roots is None:
-            self.data_type_candidates = self._detect_dataset_format(path=test_data_roots)
-            self.data_type = self._select_data_type(self.data_type_candidates)
-            dataset_kwargs = {"path": test_data_roots, "format": self.data_type}
-            if test_ann_files is not None:
-                if self.data_type not in ("coco"):
-                    raise NotImplementedError(
-                        f"Specifying '--test-ann-files' is not supported for data type '{self.data_type}'"
-                    )
-                dataset_kwargs["path"] = test_ann_files
-                dataset_kwargs["subset"] = "test"
-            test_dataset = DatumDataset.import_from(**dataset_kwargs)
+            test_dataset = self._import_dataset(test_data_roots, test_ann_files, encryption_key, Subset.TESTING)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
             self.is_train_phase = False
 
@@ -196,6 +171,30 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             dataset[Subset.UNLABELED] = DatumDataset.import_from(unlabeled_data_roots, format="image_dir")
             if unlabeled_file_list is not None:
                 self._filter_unlabeled_data(dataset[Subset.UNLABELED], unlabeled_file_list)
+        return dataset
+
+    def _import_dataset(self, data_roots: str, ann_files: str, encryption_key: Optional[str], mode: Subset):
+        # Find self.data_type and task_type
+        mode_to_str = {Subset.TRAINING: "train", Subset.VALIDATION: "val", Subset.TESTING: "test"}
+        str_mode = mode_to_str[mode]
+
+        self.data_type_candidates = self._detect_dataset_format(path=data_roots)
+        self.data_type = self._select_data_type(self.data_type_candidates)
+
+        dataset_kwargs = {"path": data_roots, "format": self.data_type}
+        if ann_files is not None:
+            if self.data_type not in ("coco"):
+                raise NotImplementedError(
+                    f"Specifying '--{str_mode}-ann-files' is not supported for data type '{self.data_type}'"
+                )
+            dataset_kwargs["path"] = ann_files
+            dataset_kwargs["subset"] = str_mode
+
+        if encryption_key is not None:
+            dataset_kwargs["encryption_key"] = encryption_key
+
+        dataset = DatumDataset.import_from(**dataset_kwargs)
+
         return dataset
 
     @abstractmethod
@@ -329,15 +328,21 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
-    def _get_polygon_entity(self, annotation: DatumAnnotation, width: int, height: int) -> Annotation:
+    def _get_polygon_entity(
+        self, annotation: DatumAnnotation, width: int, height: int, num_polygons: int = -1
+    ) -> Annotation:
         """Get polygon entity."""
+        polygon = Polygon(
+            points=[
+                Point(x=annotation.points[i] / width, y=annotation.points[i + 1] / height)
+                for i in range(0, len(annotation.points), 2)
+            ]
+        )
+        step = 1 if num_polygons == -1 else len(polygon.points) // num_polygons
+        points = [polygon.points[i] for i in range(0, len(polygon.points), step)]
+
         return Annotation(
-            Polygon(
-                points=[
-                    Point(x=annotation.points[i] / width, y=annotation.points[i + 1] / height)
-                    for i in range(0, len(annotation.points), 2)
-                ]
-            ),
+            Polygon(points),
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
@@ -380,7 +385,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             path = getattr(datumaro_media, "path", None)
             size = datumaro_media._size  # pylint: disable=protected-access
 
-            if path and os.path.exists(path):
+            if path and os.path.exists(path) and not datumaro_media.is_encrypted:
                 return Image(file_path=path, size=size)
 
             def helper():

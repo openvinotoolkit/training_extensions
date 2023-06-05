@@ -29,7 +29,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
     VIDEO_FRAME_SEP = "##"
     EMPTY_FRAME_LABEL_NAME = "EmptyFrame"
 
-    def _import_dataset(
+    def _import_datasets(
         self,
         train_data_roots: Optional[str] = None,
         train_ann_files: Optional[str] = None,
@@ -39,6 +39,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
+        encryption_key: Optional[str] = None,
     ) -> Dict[Subset, DatumDataset]:
         """Import multiple videos that have CVAT format annotation.
 
@@ -51,6 +52,8 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
             test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data
             unlabeled_file_list (Optional[str]): Path of unlabeled file list
+            encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+                                        (only required for DatumaroBinary format)
 
         Returns:
             DatumDataset: Datumaro Dataset

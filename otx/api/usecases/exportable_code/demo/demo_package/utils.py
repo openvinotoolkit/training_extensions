@@ -5,7 +5,7 @@
 
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType, task_type_to_label_domain
@@ -40,11 +40,11 @@ def get_parameters(path: Optional[Path]) -> dict:
     return parameters
 
 
-def create_output_converter(task_type: TaskType, labels: LabelSchemaEntity):
+def create_output_converter(task_type: TaskType, labels: LabelSchemaEntity, model_params: Dict[Any, Any]):
     """Create annotation converter according to kind of task."""
 
     converter_type = task_type_to_label_domain(task_type)
-    return create_converter(converter_type, labels)
+    return create_converter(converter_type, labels, model_params)
 
 
 def create_visualizer(_task_type: TaskType, no_show: bool = False, output: Optional[str] = None):

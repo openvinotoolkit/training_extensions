@@ -172,12 +172,7 @@ class MMDetectionTask(OTXDetectionTask):
         return model
 
     # pylint: disable=too-many-arguments
-    def configure(
-        self,
-        training=True,
-        subset="train",
-        ir_options=None,
-    ):
+    def configure(self, training=True, subset="train", ir_options=None, train_dataset=None):
         """Patch mmcv configs for OTX detection settings."""
 
         # deepcopy all configs to make sure
@@ -202,8 +197,21 @@ class MMDetectionTask(OTXDetectionTask):
         else:
             configurer = DetectionConfigurer()
         cfg = configurer.configure(
-            recipe_cfg, self._model_ckpt, data_cfg, training, subset, ir_options, data_classes, model_classes
+            recipe_cfg,
+            train_dataset,
+            self._model_ckpt,
+            data_cfg,
+            training,
+            subset,
+            ir_options,
+            data_classes,
+            model_classes,
         )
+        if should_cluster_anchors(self._recipe_cfg):
+            if train_dataset is not None:
+                self._anchors = cfg.model.bbox_head.anchor_generator
+            elif self._anchors is not None:
+                self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
         return cfg
 
@@ -247,7 +255,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task(dataset)
 
-        cfg = self.configure(True, "train", None)
+        cfg = self.configure(True, "train", None, get_dataset(dataset, Subset.TRAINING))
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -261,14 +269,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Data
         datasets = [build_dataset(cfg.data.train)]
-
-        # TODO. This should be moved to configurer
-        # TODO. Anchor clustering should be checked
-        # if hasattr(cfg, "hparams"):
-        #     if cfg.hparams.get("adaptive_anchor", False):
-        #         num_ratios = cfg.hparams.get("num_anchor_ratios", 5)
-        #         proposal_ratio = extract_anchor_ratio(datasets[0], num_ratios)
-        #         self.configure_anchor(cfg, proposal_ratio)
 
         # Target classes
         if "task_adapt" in cfg:
@@ -330,6 +330,9 @@ class MMDetectionTask(OTXDetectionTask):
         inference_parameters: Optional[InferenceParameters] = None,
     ):
         """Main infer function."""
+        original_subset = dataset[0].subset
+        for item in dataset:
+            item.subset = Subset.TESTING
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -435,11 +438,6 @@ class MMDetectionTask(OTXDetectionTask):
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
             cfg.evaluation.pop(key, None)
 
-        metric = None
-        if inference_parameters and inference_parameters.is_evaluation:
-            metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
-            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
-
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
         while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
             mm_dataset = mm_dataset.dataset
@@ -447,10 +445,15 @@ class MMDetectionTask(OTXDetectionTask):
         if isinstance(mm_dataset, ImageTilingDataset):
             feature_vectors = [feature_vectors[i] for i in range(mm_dataset.num_samples)]
             saliency_maps = [saliency_maps[i] for i in range(mm_dataset.num_samples)]
-            if not mm_dataset.merged_results:
-                eval_predictions = mm_dataset.merge(eval_predictions)
+            eval_predictions = mm_dataset.merge(eval_predictions)
+
+        metric = None
+        if inference_parameters and inference_parameters.is_evaluation:
+            if isinstance(mm_dataset, ImageTilingDataset):
+                metric = mm_dataset.dataset.evaluate(eval_predictions, **cfg.evaluation)
             else:
-                eval_predictions = mm_dataset.merged_results
+                metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
+            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
 
         assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), (
             "Number of elements should be the same, however, number of outputs are "
@@ -476,6 +479,11 @@ class MMDetectionTask(OTXDetectionTask):
             f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
         )
         prediction_results = zip(predictions, output["feature_vectors"], output["saliency_maps"])
+        # FIXME. This is temporary solution.
+        # All task(e.g. classification, segmentation) should change item's type to Subset.TESTING
+        # when the phase is inference.
+        for item in dataset:
+            item.subset = original_subset
         return prediction_results, metric
 
     # pylint: disable=too-many-statements
@@ -527,6 +535,9 @@ class MMDetectionTask(OTXDetectionTask):
         explain_parameters: Optional[ExplainParameters] = None,
     ) -> Dict[str, Any]:
         """Main explain function of MMDetectionTask."""
+
+        for item in dataset:
+            item.subset = Subset.TESTING
 
         explainer_hook_selector = {
             "classwisesaliencymap": DetClassProbabilityMapHook,
@@ -649,8 +660,7 @@ class MMDetectionTask(OTXDetectionTask):
             deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
 
             patch_input_preprocessing(cfg, deploy_cfg)
-            if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(cfg, deploy_cfg)
+            patch_input_shape(cfg, deploy_cfg)
             patch_ir_scale_factor(deploy_cfg, self._hyperparams)
 
         return deploy_cfg
@@ -669,9 +679,9 @@ class MMDetectionTask(OTXDetectionTask):
             "confidence_threshold": self.confidence_threshold,
             "VERSION": 1,
         }
-        if self._recipe_cfg is not None and should_cluster_anchors(self._recipe_cfg):
+        if self.config is not None and should_cluster_anchors(self.config):
             modelinfo["anchors"] = {}
-            self._update_anchors(modelinfo["anchors"], self._recipe_cfg.model.bbox_head.anchor_generator)
+            self._update_anchors(modelinfo["anchors"], self.config.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())

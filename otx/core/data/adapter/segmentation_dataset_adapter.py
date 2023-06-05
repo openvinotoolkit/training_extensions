@@ -6,7 +6,8 @@
 
 import json
 import os
-from typing import Any, Dict, List, Optional
+from pathlib import Path
+from typing import Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -27,7 +28,6 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
@@ -41,33 +41,6 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
     It converts DatumaroDataset --> DatasetEntity for semantic segmentation task
     """
 
-    def __init__(
-        self,
-        task_type: TaskType,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        cache_config: Optional[Dict[str, Any]] = None,
-    ):
-        super().__init__(
-            task_type,
-            train_data_roots,
-            train_ann_files,
-            val_data_roots,
-            val_ann_files,
-            test_data_roots,
-            test_ann_files,
-            unlabeled_data_roots,
-            unlabeled_file_list,
-            cache_config,
-        )
-        self.updated_label_id: Dict[int, int] = {}
-
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
         # Prepare label information
@@ -76,6 +49,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
 
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
+        self.updated_label_id: Dict[int, int] = {}
 
         if hasattr(self, "data_type_candidates"):
             if self.data_type_candidates[0] == "voc":
@@ -156,7 +130,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
     """Self-SL for segmentation adapter inherited from SegmentationDatasetAdapter."""
 
     # pylint: disable=protected-access
-    def _import_dataset(
+    def _import_datasets(
         self,
         train_data_roots: Optional[str] = None,
         train_ann_files: Optional[str] = None,
@@ -166,7 +140,8 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
-        pseudo_mask_dir: str = "detcon_mask",
+        encryption_key: Optional[str] = None,
+        pseudo_mask_dir: Path = None,
     ) -> Dict[Subset, DatumDataset]:
         """Import custom Self-SL dataset for using DetCon.
 
@@ -183,11 +158,15 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
             test_ann_files (Optional[str]): Path for test annotation file
             unlabeled_data_roots (Optional[str]): Path for unlabeled data.
             unlabeled_file_list (Optional[str]): Path of unlabeled file list
-            pseudo_mask_dir (str): Directory to save pseudo masks. Defaults to "detcon_mask".
+            encryption_key (Optional[str]): Encryption key to load an encrypted dataset
+                                        (only required for DatumaroBinary format)
+            pseudo_mask_dir (Path): Directory to save pseudo masks. Defaults to None.
 
         Returns:
             DatumaroDataset: Datumaro Dataset
         """
+        if pseudo_mask_dir is None:
+            raise ValueError("pseudo_mask_dir must be set.")
         if train_data_roots is None:
             raise ValueError("train_data_root must be set.")
 
@@ -199,23 +178,20 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         self.is_train_phase = True
 
         # Load pseudo masks
-        img_dir = None
         total_labels = []
+        os.makedirs(pseudo_mask_dir, exist_ok=True)
         for item in dataset[Subset.TRAINING]:
             img_path = item.media.path
-            if img_dir is None:
-                # Get image directory
-                img_dir = train_data_roots.split("/")[-1]
-            pseudo_mask_path = img_path.replace(img_dir, pseudo_mask_dir)
-            if pseudo_mask_path.endswith(".jpg"):
-                pseudo_mask_path = pseudo_mask_path.replace(".jpg", ".png")
+            pseudo_mask_path = pseudo_mask_dir / os.path.basename(img_path)
+            if pseudo_mask_path.suffix == ".jpg":
+                pseudo_mask_path = pseudo_mask_path.with_name(f"{pseudo_mask_path.stem}.png")
 
             if not os.path.isfile(pseudo_mask_path):
                 # Create pseudo mask
-                pseudo_mask = self.create_pseudo_masks(item.media.data, pseudo_mask_path)  # type: ignore
+                pseudo_mask = self.create_pseudo_masks(item.media.data, str(pseudo_mask_path))  # type: ignore
             else:
                 # Load created pseudo mask
-                pseudo_mask = cv2.imread(pseudo_mask_path, cv2.IMREAD_GRAYSCALE)
+                pseudo_mask = cv2.imread(str(pseudo_mask_path), cv2.IMREAD_GRAYSCALE)
 
             # Set annotations into each item
             annotations = []
@@ -229,28 +205,27 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
                 )
             item.annotations = annotations
 
-        pseudo_mask_roots = train_data_roots.replace(img_dir, pseudo_mask_dir)  # type: ignore
-        if not os.path.isfile(os.path.join(pseudo_mask_roots, "dataset_meta.json")):
+        if not os.path.isfile(os.path.join(pseudo_mask_dir, "dataset_meta.json")):
             # Save dataset_meta.json for newly created pseudo masks
             # FIXME: Because background class is ignored when generating polygons, meta is set with len(labels)-1.
             # It must be considered to set the whole labels later.
             # (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
             meta = {"label_map": {i + 1: f"target{i+1}" for i in range(max(total_labels))}}
-            with open(os.path.join(pseudo_mask_roots, "dataset_meta.json"), "w", encoding="UTF-8") as f:
+            with open(os.path.join(pseudo_mask_dir, "dataset_meta.json"), "w", encoding="UTF-8") as f:
                 json.dump(meta, f, indent=4)
 
         # Make categories for pseudo masks
-        label_map = parse_meta_file(os.path.join(pseudo_mask_roots, "dataset_meta.json"))
+        label_map = parse_meta_file(os.path.join(pseudo_mask_dir, "dataset_meta.json"))
         dataset[Subset.TRAINING].define_categories(make_categories(label_map))
 
         return dataset
 
-    def create_pseudo_masks(self, img: np.array, pseudo_mask_path: str, mode: str = "FH") -> None:
+    def create_pseudo_masks(self, img: np.ndarray, pseudo_mask_path: str, mode: str = "FH") -> None:
         """Create pseudo masks for self-sl for semantic segmentation using DetCon.
 
         Args:
-            img (np.array) : A sample to create a pseudo mask.
-            pseudo_mask_path (str): The path to save a pseudo mask.
+            img (np.ndarray) : A sample to create a pseudo mask.
+            pseudo_mask_path (Path): The path to save a pseudo mask.
             mode (str): The mode to create a pseudo mask. Defaults to "FH".
 
         Returns:
@@ -261,7 +236,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         else:
             raise ValueError((f'{mode} is not supported to create pseudo masks for DetCon. Choose one of ["FH"].'))
 
-        os.makedirs(os.path.dirname(pseudo_mask_path), exist_ok=True)
         cv2.imwrite(pseudo_mask_path, pseudo_mask.astype(np.uint8))
 
         return pseudo_mask

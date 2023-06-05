@@ -91,7 +91,7 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
                 dataset_builder=mmdet_build_dataset,
             ),
             config,
-            subset="train",
+            subset="val",
             dataloader_builder=mmdet_build_dataloader,
             distributed=distributed,
         )
@@ -136,6 +136,13 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
     for pipeline in config.data.test.pipeline:
         if not pipeline.type.startswith("LoadImage"):
             test_pipeline.append(pipeline)
+        if pipeline.get("transforms", None):
+            transforms = pipeline.transforms
+            for transform in transforms:
+                if transform.type == "Collect":
+                    for collect_key in transform["keys"]:
+                        if collect_key != "img":
+                            transform["keys"].remove(collect_key)
 
     test_pipeline = Compose(test_pipeline)
     get_fake_input_fn = partial(

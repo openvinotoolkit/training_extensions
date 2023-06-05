@@ -6,11 +6,30 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
+- Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
+
 ### Enhancements
+
+- Introduce channel_last parameter to improve the performance (<https://github.com/openvinotoolkit/training_extensions/pull/2205>)
 
 ### Bug fixes
 
 - Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+
+## \[v1.3.1\]
+
+### Enhancements
+
+- n/a
+
+### Bug fixes
+
+- Fix a bug that auto adapt batch size doesn't work with cls incr case (<https://github.com/openvinotoolkit/training_extensions/pull/2199>)
+- Fix a bug that persistent worker is True even if num_workers is zero (<https://github.com/openvinotoolkit/training_extensions/pull/2208>)
 
 ### Known issues
 
@@ -27,6 +46,7 @@ All notable changes to this project will be documented in this file.
 - Add a simplified greedy labels postprocessing for hierarchical classification (<https://github.com/openvinotoolkit/training_extensions/pull/2064>).
 - Support auto adapting batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2119>)
 - Support auto adapting num_workers (<https://github.com/openvinotoolkit/training_extensions/pull/2165>)
+- Support noisy label detection for detection tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2109>, <https://github.com/openvinotoolkit/training_extensions/pull/2115>, <https://github.com/openvinotoolkit/training_extensions/pull/2123>, <https://github.com/openvinotoolkit/training_extensions/pull/2183>)
 
 ### Enhancements
 
@@ -35,10 +55,30 @@ All notable changes to this project will be documented in this file.
 - Enhance exportable code file structure, video inference and default value for demo (<https://github.com/openvinotoolkit/training_extensions/pull/2051>).
 - Speedup OpenVINO inference in image classificaiton, semantic segmentation, object detection and instance segmentation tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2105>).
 - Refactoring of ONNX export functionality (<https://github.com/openvinotoolkit/training_extensions/pull/2155>).
+- SSD detector Optimization(<https://github.com/openvinotoolkit/training_extensions/pull/2197>)
 
 ### Bug fixes
 
 - Fix async mode inference for demo in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2154>)
+- Fix a bug that auto adapt batch size doesn't work with cls incr case (<https://github.com/openvinotoolkit/training_extensions/pull/2199>)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
+## \[v1.2.3\]
+
+### Bug fixes
+
+- Return raw anomaly map instead of colormap as metadata to prevent applying colormap conversion twice (<https://github.com/openvinotoolkit/training_extensions/pull/2217>)
+- Hotfix: use 0 confidence threshold when computing best threshold based on F1
+
+## \[v1.2.2\]
+
+### Enhancements
+
+- Improve warning message for tiling configurable parameter
 
 ### Known issues
 
@@ -53,12 +93,14 @@ All notable changes to this project will be documented in this file.
 - Integrate new ignored loss in semantic segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2065>, <https://github.com/openvinotoolkit/training_extensions/pull/2111>)
 - Optimize YOLOX data pipeline (<https://github.com/openvinotoolkit/training_extensions/pull/2075>)
 - Tiling Spatial Concatenation for OpenVINO IR (<https://github.com/openvinotoolkit/training_extensions/pull/2052>)
+- Optimize counting train & inference speed and memory consumption (<https://github.com/openvinotoolkit/training_extensions/pull/2172>)
 
 ### Bug fixes
 
 - Bug fix: value of validation variable is changed after auto decrease batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2053>)
 - Fix tiling 0 stride issue in parameter adapter (<https://github.com/openvinotoolkit/training_extensions/pull/2078>)
 - Fix Tiling NNCF (<https://github.com/openvinotoolkit/training_extensions/pull/2081>)
+- Do not skip full img tile classifier + Fix Sequencial Export Issue (<https://github.com/openvinotoolkit/training_extensions/pull/2174>)
 
 ## \[v1.2.0\]
 
