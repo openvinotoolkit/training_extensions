@@ -141,23 +141,23 @@ class PytorchLightningVisualPromptingTask(OTXVisualPromptingTask):
         ir_options=None,
     ):
         """Patch configs for OTX visual prompting settings."""
-        raise NotImplementedError()
 
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
-        # recipe_cfg = deepcopy(self._recipe_cfg)
-        # data_cfg = deepcopy(self._data_cfg)
-        # assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
+        recipe_cfg = deepcopy(self._recipe_cfg)
+        data_cfg = deepcopy(self._data_cfg)
+        assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
-        # if self._data_cfg is not None:
-        #     data_classes = [label.name for label in self._labels]
-        # else:
-        #     data_classes = None
-        # model_classes = [label.name for label in self._model_label_schema]
+        if self._data_cfg is not None:
+            data_classes = [label.name for label in self._labels]
+        else:
+            data_classes = None
+        model_classes = [label.name for label in self._model_label_schema]
 
-        # recipe_cfg.work_dir = self._output_path
-        # recipe_cfg.resume = self._resume
+        recipe_cfg.work_dir = self._output_path
+        recipe_cfg.resume = self._resume
 
+        # TODO (sungchul): enable this part after implementing configurer if needed.
         # if self._train_type == TrainType.Incremental:
         #     configurer = IncrSegmentationConfigurer()
         # elif self._train_type == TrainType.Semisupervised:
@@ -174,8 +174,9 @@ class PytorchLightningVisualPromptingTask(OTXVisualPromptingTask):
         #     data_classes,
         #     model_classes,
         # )
-        # self._config = cfg
-        # return cfg
+        cfg = recipe_cfg
+        self._config = cfg
+        return cfg
 
     def build_model(
         self,
@@ -323,7 +324,7 @@ class PytorchLightningVisualPromptingTask(OTXVisualPromptingTask):
 
         self._init_task()
 
-        # cfg = self.configure(True, "train", None)
+        cfg = self.configure(True, "train", None)
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
