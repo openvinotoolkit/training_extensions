@@ -6,7 +6,7 @@ img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375],
 
 img_scale = (1024, 1024)
 
-angle_version = "le135"
+angle_version = "le90"
 
 train_pipeline = [
     dict(type="LoadImageFromFile"),

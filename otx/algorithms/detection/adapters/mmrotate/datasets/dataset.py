@@ -66,17 +66,17 @@ def get_annotation_mmrotate_format(
         ]
 
         polygon = ShapeFactory.shape_as_polygon(annotation.shape)
-        polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
-        polygon[::2] = np.clip(polygon[::2], 0, width)
-        polygon[1::2] = np.clip(polygon[1::2], 0, height)
-        rbox = poly2obb_np(polygon, angle_version)
-        if rbox is None:
-            continue
-        x, y, w, h, a = rbox
-        gt_bboxes.append([x, y, w, h, a])
-        gt_labels.extend(class_indices)
-        item_id = getattr(dataset_item, "id_", None)
-        gt_ann_ids.append((item_id, annotation.id_))
+        points = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
+        points[::2] = np.clip(points[::2], 0, width)
+        points[1::2] = np.clip(points[1::2], 0, height)
+        points = points.astype(np.uint64)
+        obb = poly2obb_np(points, angle_version)
+        if obb is not None:
+            x, y, w, h, a = obb
+            gt_bboxes.append([x, y, w, h, a])
+            gt_labels.extend(class_indices)
+            item_id = getattr(dataset_item, "id_", None)
+            gt_ann_ids.append((item_id, annotation.id_))
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
@@ -95,8 +95,7 @@ def get_annotation_mmrotate_format(
 
 @DATASETS.register_module()
 class OTXRotatedDataset(OTXDetDataset):
-
-    def __init__(self, angle_version: str = 'oc', **kwargs):
+    def __init__(self, angle_version: str = "oc", **kwargs):
         """Initialize OTXDataset.
 
         :param min_size: Minimum size of the bounding box
@@ -156,12 +155,13 @@ class OTXRotatedDataset(OTXDetDataset):
                 for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
                     print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
                     mean_ap, _ = eval_rbbox_map(
-                            results,
-                            annotations,
-                            scale_ranges=scale_ranges,
-                            iou_thr=iou_thr,
-                            dataset=self.CLASSES,
-                            logger=logger)
+                        results,
+                        annotations,
+                        scale_ranges=scale_ranges,
+                        iou_thr=iou_thr,
+                        dataset=self.CLASSES,
+                        logger=logger,
+                    )
                     mean_aps.append(mean_ap)
                     eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
                 eval_results["mAP"] = sum(mean_aps) / len(mean_aps)

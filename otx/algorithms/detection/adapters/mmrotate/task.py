@@ -23,7 +23,6 @@ from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 
 
 class MMRotateTask(MMDetectionTask):
-
     def record_info_to_checkpoint_meta(self, cfg: Config, classes: List[str]) -> Dict[str, Any]:
         """Record info to checkpoint meta.
 

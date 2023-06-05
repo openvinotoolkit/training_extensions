@@ -1,6 +1,6 @@
 _base_ = [
     "../../../../../recipes/stages/detection/incremental.py",
-    "../../../../common/adapters/mmcv/configs/backbones/resnet50.yaml",
+    "../../../../common/adapters/mmcv/configs/backbones/mobilenet_v2_w1.yaml",
     "../../base/models/detector.py",
 ]
 
@@ -9,20 +9,22 @@ angle_version = "le135"
 
 model = dict(
     type="CustomRotatedRetinaNet",
+    backbone=dict(out_indices=[2, 3, 4, 5]),
     neck=dict(
         type="FPN",
-        in_channels=[256, 512, 1024, 2048],
-        out_channels=256,
+        in_channels=[24, 32, 96, 320],
+        out_channels=64,
         start_level=1,
         add_extra_convs="on_input",
         num_outs=5,
+        relu_before_extra_convs=True,
     ),
     bbox_head=dict(
         type="RotatedATSSHead",
         num_classes=15,
-        in_channels=256,
+        in_channels=64,
         stacked_convs=4,
-        feat_channels=256,
+        feat_channels=64,
         assign_by_circumhbbox=None,
         anchor_generator=dict(
             type="RotatedAnchorGenerator",
@@ -54,5 +56,7 @@ model = dict(
     test_cfg=dict(nms_pre=2000, min_bbox_size=0, score_thr=0.05, nms=dict(iou_thr=0.1), max_per_img=2000),
 )
 
-load_from = "https://download.openmmlab.com/mmrotate/v0.1.0/rotated_atss/rotated_atss_obb_r50_fpn_1x_dota_le135/rotated_atss_obb_r50_fpn_1x_dota_le135-eab7bc12.pth"
-optimizer = dict(type="SGD", lr=0.0025, momentum=0.9, weight_decay=0.0001)
+load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
+/models/object_detection/v2/mobilenet_v2-atss.pth"
+
+fp16 = dict(loss_scale=512.0)
