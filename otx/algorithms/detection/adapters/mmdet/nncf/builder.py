@@ -91,7 +91,7 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
                 dataset_builder=mmdet_build_dataset,
             ),
             config,
-            subset="train",
+            subset="val",
             dataloader_builder=mmdet_build_dataloader,
             distributed=distributed,
         )

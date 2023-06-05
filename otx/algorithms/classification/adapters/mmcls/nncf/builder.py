@@ -80,7 +80,7 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statement
                 dataset_builder=mmcls_build_dataset,
             ),
             config,
-            subset="train",
+            subset="val",
             dataloader_builder=mmcls_build_dataloader,
             distributed=distributed,
         )

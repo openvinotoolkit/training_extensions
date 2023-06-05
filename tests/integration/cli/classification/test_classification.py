@@ -34,9 +34,9 @@ from tests.test_suite.run_test_command import (
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "tests/assets/classification_dataset",
-    "--val-data-roots": "tests/assets/classification_dataset",
-    "--test-data-roots": "tests/assets/classification_dataset",
+    "--train-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--val-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--test-data-roots": "tests/assets/classification_dataset_class_incremental",
     "--input": "tests/assets/classification_dataset/0",
     "train_params": [
         "params",
