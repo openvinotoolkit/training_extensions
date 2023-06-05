@@ -26,7 +26,11 @@ ADAPTERS = {
         "Incremental": {
             "module_name": "classification_dataset_adapter",
             "class": "ClassificationDatasetAdapter",
-        }
+        },
+        "Selfsupervised": {
+            "module_name": "classification_dataset_adapter",
+            "class": "SelfSLClassificationDatasetAdapter",
+        },
     },
     TaskType.DETECTION: {
         "Incremental": {
@@ -125,13 +129,9 @@ def get_dataset_adapter(
         kwargs: optional kwargs
     """
 
-    train_type_to_be_called = TrainType.Incremental.value
-    # FIXME : Hardcoded solution for self-sl for seg
-    if task_type == TaskType.SEGMENTATION and train_type == TrainType.Selfsupervised.value:
-        train_type_to_be_called = TrainType.Selfsupervised.value
+    train_type_to_be_called = train_type if train_type == TrainType.Selfsupervised.value else TrainType.Incremental.value
     module_root = "otx.core.data.adapter."
     module = importlib.import_module(module_root + ADAPTERS[task_type][train_type_to_be_called]["module_name"])
-
     return getattr(module, ADAPTERS[task_type][train_type_to_be_called]["class"])(
         task_type=task_type,
         train_data_roots=train_data_roots,

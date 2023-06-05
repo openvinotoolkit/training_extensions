@@ -205,7 +205,6 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     )
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
-
     # Get classes for Task, ConfigurableParameters and Dataset.
     template = config_manager.template
     task_class = get_impl_class(template.entrypoints.base)

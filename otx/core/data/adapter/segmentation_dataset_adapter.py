@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
+import tqdm
 
 import cv2
 import numpy as np
@@ -172,7 +173,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         logger = get_logger()
         logger.warning(f"Please check if {train_data_roots} is data roots only for images, not annotations.")
-
         dataset = {}
         dataset[Subset.TRAINING] = DatumDataset.import_from(train_data_roots, format="image_dir")
         self.is_train_phase = True
@@ -180,7 +180,8 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         # Load pseudo masks
         total_labels = []
         os.makedirs(pseudo_mask_dir, exist_ok=True)
-        for item in dataset[Subset.TRAINING]:
+        print("[*] Generating pseudo masks for DetCon algorithm. It can take some time...")
+        for item in tqdm.tqdm(dataset[Subset.TRAINING]):
             img_path = item.media.path
             pseudo_mask_path = pseudo_mask_dir / os.path.basename(img_path)
             if pseudo_mask_path.suffix == ".jpg":
