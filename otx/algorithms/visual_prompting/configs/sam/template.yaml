@@ -12,7 +12,7 @@ framework: OTXVisualPrompting v0.1.0 # TODO: update after the name has been chan
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.visual_prompting.adapter.pytorch_lightning.task.PytorchLightningVisualPromptingTask
+  base: otx.algorithms.visual_prompting.adapters.pytorch_lightning.task.PytorchLightningVisualPromptingTask
 
 # Hyper Parameters
 hyper_parameters:
