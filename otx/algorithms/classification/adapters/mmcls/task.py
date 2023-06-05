@@ -378,7 +378,7 @@ class MMClassificationTask(OTXClassificationTask):
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.train()
-
+        
         if cfg.distributed:
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
             if cfg.dist_params.get("linear_scale_lr", False):

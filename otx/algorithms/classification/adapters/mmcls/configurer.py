@@ -75,7 +75,7 @@ class ClassificationConfigurer:
         self.configure_task(cfg, training)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg, subset)
-        self.configure_fp16_optimizer(cfg)
+        # self.configure_fp16_optimizer(cfg)
         self.configure_compat_cfg(cfg)
         return cfg
 

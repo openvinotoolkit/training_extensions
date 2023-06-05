@@ -7,14 +7,14 @@ _base_:
 runner:
   max_epochs: 20
 
-optimizer_config:
-  type: SAMOptimizerHook
+# optimizer_config:
+#   type: SAMOptimizerHook
 
 optimizer:
   type: SGD
   lr: 0.01
   momentum: 0.9
-  weight_decay: 0.0005
+  weight_decay: 0.0001
 
 evaluation:
   metric: ["accuracy", "class_accuracy"]
