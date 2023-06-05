@@ -91,48 +91,47 @@ class PytorchLightningVisualPromptingTask(OTXVisualPromptingTask):
     def _init_task(self, export: bool = False):  # noqa
         """Initialize task."""
         self._recipe_cfg = OmegaConf.load(os.path.join(self._model_dir, "model.py"))
-        # self._recipe_cfg.domain = self._task_type.domain
-        # self._config = self._recipe_cfg
+        self._recipe_cfg.domain = self._task_type.domain
+        self._config = self._recipe_cfg
 
-        # self.set_seed()
+        self.set_seed()
 
-        # # Belows may go to the configure function
-        # patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        # Belows may go to the configure function
+        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
 
-        # if not export:
-        #     patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
+        if not export:
+            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
 
-        # if "custom_hooks" in self.override_configs:
-        #     override_custom_hooks = self.override_configs.pop("custom_hooks")
-        #     for override_custom_hook in override_custom_hooks:
-        #         update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
-        # if len(self.override_configs) > 0:
-        #     logger.info(f"before override configs merging = {self._recipe_cfg}")
-        #     self._recipe_cfg.merge_from_dict(self.override_configs)
-        #     logger.info(f"after override configs merging = {self._recipe_cfg}")
+        if "custom_hooks" in self.override_configs:
+            override_custom_hooks = self.override_configs.pop("custom_hooks")
+            for override_custom_hook in override_custom_hooks:
+                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
+        if len(self.override_configs) > 0:
+            logger.info(f"before override configs merging = {self._recipe_cfg}")
+            self._recipe_cfg.merge_from_dict(self.override_configs)
+            logger.info(f"after override configs merging = {self._recipe_cfg}")
 
-        # # add Cancel training hook
-        # update_or_add_custom_hook(
-        #     self._recipe_cfg,
-        #     ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
-        # )
-        # if self._time_monitor is not None:
-        #     update_or_add_custom_hook(
-        #         self._recipe_cfg,
-        #         ConfigDict(
-        #             type="OTXProgressHook",
-        #             time_monitor=self._time_monitor,
-        #             verbose=True,
-        #             priority=71,
-        #         ),
-        #     )
-        # self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
+        # add Cancel training hook
+        update_or_add_custom_hook(
+            self._recipe_cfg,
+            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
+        )
+        if self._time_monitor is not None:
+            update_or_add_custom_hook(
+                self._recipe_cfg,
+                ConfigDict(
+                    type="OTXProgressHook",
+                    time_monitor=self._time_monitor,
+                    verbose=True,
+                    priority=71,
+                ),
+            )
+        self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
-        # # Update recipe with caching modules
-        # self._update_caching_modules(self._recipe_cfg.data)
+        # Update recipe with caching modules
+        self._update_caching_modules(self._recipe_cfg.data)
 
-        # logger.info("initialized.")
-        raise NotImplementedError()
+        logger.info("initialized.")
 
     # pylint: disable=too-many-arguments
     def configure(
@@ -305,118 +304,117 @@ class PytorchLightningVisualPromptingTask(OTXVisualPromptingTask):
         self,
         dataset: DatasetEntity,
     ):
-        """Train function."""
-        raise NotImplementedError()
-        # logger.info("init data cfg.")
-        # self._data_cfg = ConfigDict(data=ConfigDict())
+        """Train function in PytorchLightningTask."""
+        logger.info("init data cfg.")
+        self._data_cfg = ConfigDict(data=ConfigDict())
 
-        # for cfg_key, subset in zip(
-        #     ["train", "val", "unlabeled"],
-        #     [Subset.TRAINING, Subset.VALIDATION, Subset.UNLABELED],
-        # ):
-        #     subset = get_dataset(dataset, subset)
-        #     if subset and self._data_cfg is not None:
-        #         self._data_cfg.data[cfg_key] = ConfigDict(
-        #             otx_dataset=subset,
-        #             labels=self._labels,
-        #         )
+        for cfg_key, subset in zip(
+            ["train", "val"],
+            [Subset.TRAINING, Subset.VALIDATION],
+        ):
+            subset = get_dataset(dataset, subset)
+            if subset and self._data_cfg is not None:
+                self._data_cfg.data[cfg_key] = ConfigDict(
+                    otx_dataset=subset,
+                    labels=self._labels,
+                )
 
-        # self._is_training = True
+        self._is_training = True
 
-        # self._init_task()
+        self._init_task()
 
         # cfg = self.configure(True, "train", None)
-        # logger.info("train!")
+        logger.info("train!")
 
-        # timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+        timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
-        # # Environment
-        # logger.info(f"cfg.gpu_ids = {cfg.gpu_ids}, distributed = {cfg.distributed}")
-        # env_info_dict = collect_env()
-        # env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
-        # dash_line = "-" * 60 + "\n"
-        # logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
+        # Environment
+        logger.info(f"cfg.gpu_ids = {cfg.gpu_ids}, distributed = {cfg.distributed}")
+        env_info_dict = collect_env()
+        env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
+        dash_line = "-" * 60 + "\n"
+        logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
 
-        # # Data
-        # datasets = [build_dataset(cfg.data.train)]
+        # Data
+        datasets = [build_dataset(cfg.data.train)]
 
-        # if self._train_type == TrainType.Semisupervised:
-        #     # forward the knowledge of num iters per epoch to model for filter loss
-        #     bs_per_gpu = cfg.data.train_dataloader["samples_per_gpu"]
-        #     actual_bs = bs_per_gpu * torch.distributed.get_world_size() if cfg.distributed else bs_per_gpu
-        #     cfg.model.num_iters_per_epoch = math.ceil(len(datasets[0]) / actual_bs)
+        if self._train_type == TrainType.Semisupervised:
+            # forward the knowledge of num iters per epoch to model for filter loss
+            bs_per_gpu = cfg.data.train_dataloader["samples_per_gpu"]
+            actual_bs = bs_per_gpu * torch.distributed.get_world_size() if cfg.distributed else bs_per_gpu
+            cfg.model.num_iters_per_epoch = math.ceil(len(datasets[0]) / actual_bs)
 
-        # # FIXME: Currently segmentor does not support multi batch evaluation.
-        # # For the Self-SL case, there is no val data. So, need to check the
+        # FIXME: Currently segmentor does not support multi batch evaluation.
+        # For the Self-SL case, there is no val data. So, need to check the
 
-        # if "val" in cfg.data and "val_dataloader" in cfg.data:
-        #     cfg.data.val_dataloader["samples_per_gpu"] = 1
+        if "val" in cfg.data and "val_dataloader" in cfg.data:
+            cfg.data.val_dataloader["samples_per_gpu"] = 1
 
-        # # Target classes
-        # if "task_adapt" in cfg:
-        #     target_classes = cfg.task_adapt.final
-        # else:
-        #     target_classes = datasets[0].CLASSES
+        # Target classes
+        if "task_adapt" in cfg:
+            target_classes = cfg.task_adapt.final
+        else:
+            target_classes = datasets[0].CLASSES
 
-        # # Metadata
-        # meta = dict()
-        # meta["env_info"] = env_info
-        # meta["seed"] = cfg.seed
-        # meta["exp_name"] = cfg.work_dir
-        # if cfg.checkpoint_config is not None:
-        #     cfg.checkpoint_config.meta = dict(
-        #         mmseg_version=__version__ + get_git_hash()[:7],
-        #         CLASSES=target_classes,
-        #     )
+        # Metadata
+        meta = dict()
+        meta["env_info"] = env_info
+        meta["seed"] = cfg.seed
+        meta["exp_name"] = cfg.work_dir
+        if cfg.checkpoint_config is not None:
+            cfg.checkpoint_config.meta = dict(
+                mmseg_version=__version__ + get_git_hash()[:7],
+                CLASSES=target_classes,
+            )
 
-        # # Model
-        # model = self.build_model(cfg, fp16=cfg.get("fp16", False), is_training=self._is_training)
-        # model.train()
-        # model.CLASSES = target_classes
+        # Model
+        model = self.build_model(cfg, fp16=cfg.get("fp16", False), is_training=self._is_training)
+        model.train()
+        model.CLASSES = target_classes
 
-        # if cfg.distributed:
-        #     torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-        #     if cfg.dist_params.get("linear_scale_lr", False):
-        #         new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
-        #         logger.info(
-        #             f"enabled linear scaling rule to the learning rate. \
-        #             changed LR from {cfg.optimizer.lr} to {new_lr}"
-        #         )
-        #         cfg.optimizer.lr = new_lr
+        if cfg.distributed:
+            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            if cfg.dist_params.get("linear_scale_lr", False):
+                new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+                logger.info(
+                    f"enabled linear scaling rule to the learning rate. \
+                    changed LR from {cfg.optimizer.lr} to {new_lr}"
+                )
+                cfg.optimizer.lr = new_lr
 
-        # validate = bool(cfg.data.get("val", None))
+        validate = bool(cfg.data.get("val", None))
 
-        # if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
-        #     train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
-        #     adapt_batch_size(
-        #         train_func,
-        #         cfg,
-        #         datasets,
-        #         isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
-        #         not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
-        #     )
+        if self._hyperparams.learning_parameters.auto_adapt_batch_size != BatchSizeAdaptType.NONE:
+            train_func = partial(train_segmentor, meta=deepcopy(meta), model=deepcopy(model), distributed=False)
+            adapt_batch_size(
+                train_func,
+                cfg,
+                datasets,
+                isinstance(self, NNCFBaseTask),  # nncf needs eval hooks
+                not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
+            )
 
-        # train_segmentor(
-        #     model,
-        #     datasets,
-        #     cfg,
-        #     distributed=cfg.distributed,
-        #     validate=validate,
-        #     timestamp=timestamp,
-        #     meta=meta,
-        # )
+        train_segmentor(
+            model,
+            datasets,
+            cfg,
+            distributed=cfg.distributed,
+            validate=validate,
+            timestamp=timestamp,
+            meta=meta,
+        )
 
-        # # Save outputs
-        # output_ckpt_path = os.path.join(cfg.work_dir, "latest.pth")
-        # best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mDice_*.pth"))
-        # if len(best_ckpt_path) > 0:
-        #     output_ckpt_path = best_ckpt_path[0]
-        # best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mIoU_*.pth"))
-        # if len(best_ckpt_path) > 0:
-        #     output_ckpt_path = best_ckpt_path[0]
-        # return dict(
-        #     final_ckpt=output_ckpt_path,
-        # )
+        # Save outputs
+        output_ckpt_path = os.path.join(cfg.work_dir, "latest.pth")
+        best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mDice_*.pth"))
+        if len(best_ckpt_path) > 0:
+            output_ckpt_path = best_ckpt_path[0]
+        best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mIoU_*.pth"))
+        if len(best_ckpt_path) > 0:
+            output_ckpt_path = best_ckpt_path[0]
+        return dict(
+            final_ckpt=output_ckpt_path,
+        )
 
     def _explain_model(self):
         """Explain function of OTX VIsual Prompting Task."""
