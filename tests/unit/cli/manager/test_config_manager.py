@@ -458,24 +458,27 @@ class TestConfigManager:
         mock_update_data_config.assert_called_once_with(data_yaml)
 
     @e2e_pytest_unit
-    def test__get_train_type(self, mocker):
+    def test__get_train_type_incremental(self, mocker):
         """General usage"""
         mock_args = mocker.MagicMock()
         config_manager = ConfigManager(args=mock_args)
         config_manager.mode = "build"
         config_manager.args.train_type = "Incremental"
         assert config_manager._get_train_type() == "Incremental"
-        config_manager.args.train_type = "Selfsupervised"
-        assert config_manager._get_train_type() == "Selfsupervised"
-        config_manager.args.train_type = "Selfsupervised"
-        assert config_manager._get_train_type() == "Selfsupervised"
+        # test train_type unlabeled root is None
+        # train data root ordinary dataset folder
+        config_manager.args.train_type = None
+        config_manager.args.unlabeled_data_roots = None
+        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        config_manager.args.val_data_roots = "tests/assets/classification_dataset"
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
 
         mock_template = mocker.MagicMock()
         mock_template.hyper_parameters.parameter_overrides = {
-            "algo_backend": {"train_type": {"default_value": "Selfsupervised"}}
+            "algo_backend": {"train_type": {"default_value": "Incremental"}}
         }
         config_manager.template = mock_template
-        assert config_manager._get_train_type(ignore_args=True) == "Selfsupervised"
+        assert config_manager._get_train_type(ignore_args=True) == "Incremental"
 
         config_manager.template.hyper_parameters.parameter_overrides = {}
         assert config_manager._get_train_type(ignore_args=True) == "Incremental"
@@ -485,19 +488,22 @@ class TestConfigManager:
         with pytest.raises(ValueError):
             config_manager._get_train_type(ignore_args=False)
 
+        # test val_data_roots is None, train-data-roots contains full dataset format
+        config_manager.args.val_data_roots = None
+        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        # auto-split
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
+
     @e2e_pytest_unit
-    def test_auto_semisl_detection(self, mocker):
+    def test__get_train_type_semisuprvised(self, mocker):
         """Auto train type detection"""
         mock_args = mocker.MagicMock()
         config_manager = ConfigManager(args=mock_args)
-        # test train_type unlabeled root is None
-        # train data root ordinary dataset folder
-        config_manager.args.train_type = None
-        config_manager.args.unlabeled_data_roots = None
         config_manager.args.train_data_roots = "tests/assets/classification_dataset"
-        config_manager.args.val_data_roots = "tests/assets/classification_dataset"
-        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
+        config_manager.args.train_type = "Semisupervised"
+        assert config_manager._get_train_type() == "Semisupervised"
         # test train_type unlabeled root is not None
+        config_manager.args.train_type = None
         config_manager.args.unlabeled_data_roots = "tests/assets/unlabeled_dataset/a"
         assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
         # test train_type unlabeled root is not exist
@@ -517,10 +523,12 @@ class TestConfigManager:
         assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
 
     @e2e_pytest_unit
-    def test_auto_selfsl_detection(self, mocker):
+    def test__get_train_type_selfsupervised(self, mocker):
         """Auto train type detection"""
         mock_args = mocker.MagicMock()
         config_manager = ConfigManager(args=mock_args)
+        config_manager.args.train_type = "Selfsupervised"
+        assert config_manager._get_train_type() == "Selfsupervised"
         config_manager.args.train_type = None
         config_manager.args.unlabeled_data_roots = None
         # test folder with only images
@@ -530,11 +538,6 @@ class TestConfigManager:
         # test val_data_roots is not None
         config_manager.args.val_data_roots = "tests/assets/unlabeled_dataset"
         assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
-        # test val_data_roots is None, train-data-roots contains full dataset format
-        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
-        config_manager.args.val_data_roots = None
-        # auto-split
-        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
 
     @e2e_pytest_unit
     def test_auto_task_detection(self, mocker):
