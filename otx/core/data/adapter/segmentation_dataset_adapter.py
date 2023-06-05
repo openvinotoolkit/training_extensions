@@ -8,10 +8,10 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
-import tqdm
 
 import cv2
 import numpy as np
+import tqdm
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import Mask
 from datumaro.components.dataset import Dataset as DatumDataset

@@ -129,7 +129,9 @@ def get_dataset_adapter(
         kwargs: optional kwargs
     """
 
-    train_type_to_be_called = train_type if train_type == TrainType.Selfsupervised.value else TrainType.Incremental.value
+    train_type_to_be_called = str(
+        train_type if train_type == TrainType.Selfsupervised.value else TrainType.Incremental.value
+    )
     module_root = "otx.core.data.adapter."
     module = importlib.import_module(module_root + ADAPTERS[task_type][train_type_to_be_called]["module_name"])
     return getattr(module, ADAPTERS[task_type][train_type_to_be_called]["class"])(

@@ -13,12 +13,12 @@ from datumaro.components.annotation import LabelCategories as DatumLabelCategori
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.id import ID
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
@@ -29,6 +29,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
     It converts DatumaroDataset -> DatasetEntity
     for multi-class, multi-label, and hierarchical-label classification tasks
     """
+
     def _get_dataset_items(self, fake_ann=False):
         # Set the DatasetItemEntityWithID
         dataset_items: List[DatasetItemEntityWithID] = []
@@ -43,7 +44,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                             if ann.type == DatumAnnotationType.label:
                                 datumaro_labels.append(ann.label)
                     else:
-                        datumaro_labels = [0] # fake label
+                        datumaro_labels = [0]  # fake label
 
                     shapes = self._get_cls_shapes(datumaro_labels)
                     dataset_item = DatasetItemEntityWithID(
@@ -134,6 +135,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
     It creates fake annotations to work with DatumaroDataset w/o labels
     and converts it to DatasetEntity for Self-SL classification pretraining
     """
+
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Self-SL Classification."""
         # Prepare label information
