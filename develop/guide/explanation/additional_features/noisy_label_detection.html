@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Noisy Label Detection &#8212; OpenVINO™ Training Extensions 1.3.0 documentation</title>
+    <title>Noisy Label Detection &#8212; OpenVINO™ Training Extensions 1.4.0 documentation</title>
   
   
   
@@ -471,13 +471,17 @@ by adding the argument <code class="docutils literal notranslate"><span class="p
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently, it only supports multi-class classification task and single GPU training.</p>
+<p>Currently, it supports both multi-class classification task and detection task with single GPU training.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Important!</strong>
 The post-processing step to analyze the training loss dynamics requires <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>.
-Please see <a class="reference external" href="https://github.com/openvinotoolkit/datumaro/blob/develop/notebooks/10_noisy_label_detection.ipynb">this end-to-end Jupyter notebook example</a>.</p>
+Please see the following Jupyter notebook examples:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://github.com/openvinotoolkit/datumaro/blob/develop/notebooks/10_noisy_label_detection_cls.ipynb">Multi-class classification task</a>.</p></li>
+<li><p><a class="reference external" href="https://github.com/openvinotoolkit/datumaro/blob/develop/notebooks/13_noisy_label_detection_det.ipynb">Detection task</a>.</p></li>
+</ol>
 </div>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id3" role="note">
