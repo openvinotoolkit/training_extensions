@@ -29,7 +29,7 @@ class TestOperationRegistry:
         registry.register()(DummyV1)
         assert getattr(DummyV1, OperationRegistry.REGISTERED_NAME_ATTR) == "DummyV1"
 
-        #with pytest.raises(KeyError):
+        # with pytest.raises(KeyError):
         #    registry.register("another_dummy")(DummyV1)
 
         @dataclass
@@ -41,14 +41,14 @@ class TestOperationRegistry:
             VERSION = 2
             ATTRIBUTE_FACTORY = DummyAttributeV2
 
-        #registry.register()(DummyV2)
-        #assert getattr(DummyV2, OperationRegistry.REGISTERED_NAME_ATTR) == "DummyV2"
+        # registry.register()(DummyV2)
+        # assert getattr(DummyV2, OperationRegistry.REGISTERED_NAME_ATTR) == "DummyV2"
 
         assert DummyV1 == registry.get_by_name("DummyV1")
         assert DummyV1 == registry.get_by_type_version("dummy")
-        #assert DummyV2 == registry.get_by_type_version("dummy")
+        # assert DummyV2 == registry.get_by_type_version("dummy")
 
-        #with pytest.raises(KeyError):
+        # with pytest.raises(KeyError):
         #    registry.get_by_type_version("dummy", 3)
-        #with pytest.raises(KeyError):
+        # with pytest.raises(KeyError):
         #    registry.get_by_type_version("invalid", 1)

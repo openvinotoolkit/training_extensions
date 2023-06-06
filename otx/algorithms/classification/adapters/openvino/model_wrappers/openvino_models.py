@@ -19,7 +19,6 @@
 from typing import Any, Dict
 
 import numpy as np
-
 from openvino.model_api.models import ClassificationModel
 from openvino.model_api.models.types import BooleanValue, DictValue
 

@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 
-from .utils import check_nncf_is_enabled, get_nncf_version, is_nncf_enabled
+from .utils import check_nncf_is_enabled, get_nncf_version
 
 
 @dataclass

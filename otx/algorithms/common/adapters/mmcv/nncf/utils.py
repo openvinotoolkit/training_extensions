@@ -1,9 +1,7 @@
 """NNCF utils."""
-import copy
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
 import inspect
 import os
 from copy import deepcopy
@@ -278,15 +276,15 @@ def wrap_nncf_model(  # noqa: C901
     )
 
     if uncompressed_model_accuracy is not None:
-        try:     # TODO: temporary try-except for NNCF 2.4 backward compatability
-            model.nncf._uncompressed_model_accuracy = uncompressed_model_accuracy
-        except:
-            pass
+        model.nncf._uncompressed_model_accuracy = uncompressed_model_accuracy
 
     # Hiding signature of the forward method is required for model export to work
-    model.__class__.forward.__signature__ = inspect.Signature([
-        inspect.Parameter('args', inspect.Parameter.VAR_POSITIONAL),
-        inspect.Parameter('kwargs', inspect.Parameter.VAR_KEYWORD)])
+    model.__class__.forward.__signature__ = inspect.Signature(
+        [
+            inspect.Parameter("args", inspect.Parameter.VAR_POSITIONAL),
+            inspect.Parameter("kwargs", inspect.Parameter.VAR_KEYWORD),
+        ]
+    )
 
     if resuming_state_dict:
         load_state(model, resuming_state_dict, is_resume=True)
