@@ -129,7 +129,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         """Fetches the results of async inference."""
         try:
             id, preprocessing_meta, result_handler = callback_args
-            prediction = self.model.inference_adapter.copy_raw_result(request)# request#res_copy_func(request)
+            prediction = self.model.inference_adapter.copy_raw_result(request)
             processed_prediciton = self.post_process(prediction, preprocessing_meta)
             aux_data = self.model.postprocess_aux_outputs(prediction, preprocessing_meta)
             result_handler(id, processed_prediciton, aux_data)
