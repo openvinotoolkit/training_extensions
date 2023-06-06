@@ -9,8 +9,9 @@ from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import numpy as np
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
+from otx.algorithms.classification.adapters.openvino.model_wrappers.openvino_models import OTXClassification
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
@@ -53,8 +54,8 @@ class ModelContainer:
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
-            self.parameters["type_of_model"],
             model_adapter,
+            self.parameters["type_of_model"],
             self.model_parameters,
             preload=True,
         )
@@ -116,7 +117,8 @@ class ModelContainer:
             frame_meta (Dict): dict with original shape
         """
         # getting result include preprocessing, infer, postprocessing for sync infer
-        predictions, frame_meta = self.core_model(frame)
+        predictions = self.core_model(frame)
+        frame_meta = {"original_shape": frame.shape[1::-1]}
 
         # MaskRCNN returns tuple so no need to process
         if self._task_type == TaskType.DETECTION:
