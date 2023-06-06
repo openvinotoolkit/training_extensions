@@ -19,7 +19,7 @@ from tests.unit.algorithms.classification.test_helper import (
 
 class MockClassification(OTXClassification, Classification):
     def __init__(self):
-        self.out_layer_name = "logits"
+        self.out_layer_names = ["logits"]
         hierarchical_dataset = generate_cls_dataset(hierarchical=True)
         label_schema = generate_label_schema(hierarchical_dataset.get_labels(), multilabel=False, hierarchical=True)
         self.multihead_class_info = get_multihead_class_info(label_schema)

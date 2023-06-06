@@ -6,7 +6,7 @@ import copy
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.models import Model
 
 import otx.algorithms.classification.adapters.openvino.task
 from otx.algorithms.classification.adapters.openvino.task import (
