@@ -119,10 +119,6 @@ In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%
 Semi-supervised Learning
 ************************
 
-************************
-Semi-supervised Learning
-************************
-
 We employ the `Mean Teacher framework <https://arxiv.org/abs/1703.01780>`_ to tackle the problem of :ref:`Semi-supervised learning <semi_sl_explanation>` in semantic segmentation.
 This framework leverages two models during training: a "student" model, which serves as the primary model being trained, and a "teacher" model, which acts as a guiding reference for the student model.
 
@@ -167,7 +163,7 @@ Other classes for these datasets are marked as background labels.
 | Lite-HRNet-18-mod2-SSL|  48.65     | 46.24      | 81.52 | 65.64  |  65.25   | 68.11  |  62.57     |
 +-----------------------+------------+------------+-------+--------+----------+--------+------------+
 | Lite-HRNet-x-mod3-SSL |  50.00     | 46.10      | 82.00 | 66.10  |  66.50   | 68.41  |  63.19     |
-+-----------------------+------------+------------+-------+--------+----------+--------+------------+
++=======================+============+============+=======+========+==========+========+============+
 | SegNext-t             |  55.93     | 73.82      | 86.87 | 68.00  |  62.35   | 68.30  |  69.21     |
 +-----------------------+------------+------------+-------+--------+----------+--------+------------+
 | SegNext-s             |  63.75     | 77.24      | 87.88 | 76.30  |  66.45   | 69.34  |  73.49     |
@@ -191,6 +187,7 @@ General self-supervised Learning in academia is commonly used to obtain well-pre
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.
 
 For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+OpenVINO™ Training Extensions allows to perform a pre-training phase on any images to further use obtained weights on the target dataset.
 We adapted `DetCon <https://arxiv.org/abs/2103.10957>`_ as our self-supervised method.
 It takes some time to use these self-supervised learning recipes, but you can expect improved performance, especially in small-data regimes.
 
@@ -225,18 +222,16 @@ To enable self-supervised training, the command below can be executed:
 
 .. code-block::
 
-  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train/images \
-              params \
-              --algo_backend.train_type=Selfsupervised
+  $ otx train Lite-HRNet-18-mod2 \
+              --train-data-roots path/to/images \
 
 After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:
 
 .. code-block::
 
-  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
-              --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+  $ otx train Lite-HRNet-18-mod2 \
+              --train-data-roots path/to/train/subset \
+              --val-data-roots path/to/validation/subset \
               --load-weights={PATH/PRETRAINED/WEIGHTS}
 
 .. note::
@@ -270,9 +265,9 @@ It can be launched only with supervised (incremental) training type.
 
 .. code-block::
 
-  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
-              --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+  $ otx train Lite-HRNet-18-mod2 \
+              --train-data-roots path/to/train/subset \
+              --val-data-roots path/to/validation/subset \
               params \
               --learning_parameters.enable_supcon=True
 
