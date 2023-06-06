@@ -7,7 +7,7 @@ import os
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.models import Model
 
 import otx.algorithms.segmentation.adapters.openvino
 
@@ -52,7 +52,7 @@ class TestOpenVINOSegmentationInferencer:
         mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.seg_ov_inferencer = OpenVINOSegmentationInferencer(seg_params, label_schema, "")
-        self.seg_ov_inferencer.model = mocker.patch("openvino.model_zoo.model_api.models.Model", autospec=True)
+        self.seg_ov_inferencer.model = mocker.patch("openvino.model_api.models.Model", autospec=True)
 
         self.fake_input = np.full((5, 1), 0.1)
 
