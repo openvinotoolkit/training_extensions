@@ -71,13 +71,8 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 
-try:
-    from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-    from openvino.model_zoo.model_api.models import Model
-except ImportError:
-    import warnings
-
-    warnings.warn("ModelAPI was not found.")
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +110,7 @@ class ActionOpenVINOInferencer(BaseInferencer):
             create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
         )
         self.configuration: Dict[Any, Any] = {}
-        self.model = Model.create_model(self.task_type, model_adapter, self.configuration, preload=True)
+        self.model = Model.create_model(model_adapter, self.task_type, self.configuration, preload=True)
         self.converter: IPredictionToAnnotationConverter
         if self.task_type == "ACTION_CLASSIFICATION":
             self.converter = ClassificationToAnnotationConverter(self.label_schema)
