@@ -18,8 +18,7 @@ from typing import Dict
 
 import cv2
 import numpy as np
-
-from openvino.model_api.models.instance_segmentation import MaskRCNNModel
+from openvino.model_api.models.instance_segmentation import MaskRCNNModel, _segm_postprocess
 from openvino.model_api.models.ssd import SSD, find_layer_by_name
 from openvino.model_api.models.utils import Detection
 
@@ -97,7 +96,7 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         for box, cls, raw_mask in zip(boxes, classes, masks):
             raw_cls_mask = raw_mask[cls, ...] if self.is_segmentoly else raw_mask
             if self.resize_mask:
-                resized_masks.append(self._segm_postprocess(box, raw_cls_mask, *meta["original_shape"][:-1]))
+                resized_masks.append(_segm_postprocess(box, raw_cls_mask, *meta["original_shape"][:-1]))
             else:
                 resized_masks.append(raw_cls_mask)
 
@@ -184,7 +183,7 @@ class OTXMaskRCNNModel(MaskRCNNModel):
 
     def segm_postprocess(self, *args, **kwargs):
         """Post-process for segmentation masks."""
-        return self._segm_postprocess(*args, **kwargs)
+        return _segm_postprocess(*args, **kwargs)
 
     def disable_mask_resizing(self):
         """Disable mask resizing.

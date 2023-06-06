@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Any, Dict, Tuple
 from pathlib import Path
+from typing import Any, Dict, Tuple
 
 from openvino.runtime import Core, serialize
 
