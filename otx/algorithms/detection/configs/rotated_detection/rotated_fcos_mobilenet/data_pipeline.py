@@ -4,7 +4,7 @@ data_root = "dota-coco/"
 
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 
-img_scale = (1024, 1024)
+img_scale = (992, 736)
 
 angle_version = "le90"
 

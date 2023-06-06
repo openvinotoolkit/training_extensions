@@ -35,6 +35,8 @@ hyper_parameters:
         default_value: 100
       num_iters:
         default_value: 100
+      early_stop_patience:
+        default_value: 3
     pot_parameters:
       stat_requests_number:
         default_value: 1
