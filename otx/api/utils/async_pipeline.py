@@ -16,7 +16,7 @@
 import copy
 from time import perf_counter
 
-from openvino.model_zoo.model_api.pipelines import AsyncPipeline
+from openvino.model_api.pipelines import AsyncPipeline
 
 
 class OTXDetectionAsyncPipeline(AsyncPipeline):

@@ -9,7 +9,7 @@ from itertools import product
 from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.utils.async_pipeline import OTXDetectionAsyncPipeline
