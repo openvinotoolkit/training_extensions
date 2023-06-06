@@ -33,8 +33,8 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
@@ -152,9 +152,8 @@ class BaseInferencerWithConverter(BaseInferencer):
     def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
-            res_copy_func, args = callback_args
-            id, preprocessing_meta, result_handler = args
-            prediction = res_copy_func(request)
+            id, preprocessing_meta, result_handler = callback_args
+            prediction = self.model.inference_adapter.copy_raw_result(request)
             processed_prediciton = self.post_process(prediction, preprocessing_meta)
 
             if "feature_vector" not in prediction or "saliency_map" not in prediction:
@@ -177,14 +176,14 @@ class BaseInferencerWithConverter(BaseInferencer):
     def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
         if not self.is_callback_set:
-            self.model.model_adapter.set_callback(self._async_callback)
+            self.model.inference_adapter.set_callback(self._async_callback)
             self.is_callback_set = True
 
         if not self.model.is_ready():
             self.model.await_any()
         image, metadata = self.pre_process(image)
         callback_data = id, metadata, result_handler
-        self.model.infer_async(image, callback_data)
+        self.model.inference_adapter.infer_async(image, callback_data)
 
     def await_all(self) -> None:
         """Await all running infer requests if any."""
@@ -227,7 +226,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
-        model = Model.create_model("OTX_SSD", model_adapter, configuration, preload=True)
+        model = Model.create_model(model_adapter, "OTX_SSD", configuration, preload=True)
         converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
@@ -268,7 +267,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             "resize_type": "fit_to_window",  # Resize(keep_ratio=True)
         }
 
-        model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
+        model = Model.create_model(model_adapter, "OTX_MaskRCNN", configuration, preload=True)
         converter = MaskToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
@@ -302,7 +301,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             )
         }
 
-        model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
+        model = Model.create_model(model_adapter, "OTX_MaskRCNN", configuration, preload=True)
 
         converter = RotatedRectToAnnotationConverter(label_schema, configuration)
 

@@ -19,14 +19,9 @@ from typing import Dict
 import cv2
 import numpy as np
 
-try:
-    from openvino.model_zoo.model_api.models.instance_segmentation import MaskRCNNModel
-    from openvino.model_zoo.model_api.models.ssd import SSD, find_layer_by_name
-    from openvino.model_zoo.model_api.models.utils import Detection
-except ImportError as e:
-    import warnings
-
-    warnings.warn(f"{e}: ModelAPI was not found.")
+from openvino.model_api.models.instance_segmentation import MaskRCNNModel
+from openvino.model_api.models.ssd import SSD, find_layer_by_name
+from openvino.model_api.models.utils import Detection
 
 
 class OTXMaskRCNNModel(MaskRCNNModel):
