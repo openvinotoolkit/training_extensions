@@ -140,6 +140,8 @@ def otx_train_testing(template, root, otx_dir, args, deterministic=True):
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
             command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
+    if "--train-type" in args:
+        command_line.extend(["--train-type", args["--train-type"]])
     if deterministic:
         command_line.extend(["--deterministic"])
     if "train_params" in args:

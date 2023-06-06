@@ -44,15 +44,7 @@ args_semisl = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--unlabeled-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "1",
-        "--learning_parameters.batch_size",
-        "4",
-        "--algo_backend.train_type",
-        "Semisupervised",
-    ],
+    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
 # Training params for resume, num_iters*2
@@ -206,6 +198,8 @@ class TestDetectionCLI:
     def test_otx_train_semisl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_semisl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/semisl")
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
@@ -215,6 +209,8 @@ class TestDetectionCLI:
         args_semisl_multigpu = copy.deepcopy(args_semisl)
         args_semisl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/semisl")
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

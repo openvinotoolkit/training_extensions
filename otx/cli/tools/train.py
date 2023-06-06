@@ -66,9 +66,10 @@ def get_args():
     )
     parser.add_argument(
         "--train-type",
-        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}.",
+        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}. "
+        "Will be difined automatically if no value passed.",
         type=str,
-        default="Incremental",
+        default=None,
     )
     parser.add_argument(
         "--load-weights",
