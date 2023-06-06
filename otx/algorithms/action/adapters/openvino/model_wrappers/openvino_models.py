@@ -19,9 +19,6 @@
 from typing import Any, Dict, List
 
 import numpy as np
-
-from otx.api.entities.datasets import DatasetItemEntity
-
 from openvino.model_api.adapters import OpenvinoAdapter
 from openvino.model_api.models.model import Model
 from openvino.model_api.models.utils import (
@@ -29,6 +26,8 @@ from openvino.model_api.models.utils import (
     Detection,
     InputTransform,
 )
+
+from otx.api.entities.datasets import DatasetItemEntity
 
 
 def softmax_numpy(x: np.ndarray):

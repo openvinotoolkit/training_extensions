@@ -30,6 +30,8 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 from mmcv.utils import ProgressBar
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
 
 from otx.algorithms.action.adapters.openvino import (
     ActionOVClsDataLoader,
@@ -70,9 +72,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-
-from openvino.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_api.models import Model
 
 logger = logging.getLogger(__name__)
 
