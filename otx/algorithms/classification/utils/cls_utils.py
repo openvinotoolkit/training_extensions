@@ -100,6 +100,7 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     mapi_config[("model_info", "confidence_threshold")] = str(inference_config["confidence_threshold"])
     mapi_config[("model_info", "multilabel")] = str(inference_config["multilabel"])
     mapi_config[("model_info", "hierarchical")] = str(inference_config["hierarchical"])
+    mapi_config[("model_info", "output_raw_scores")] = str(True)
 
     all_labels = ""
     for lbl in label_schema.get_labels(include_empty=False):
