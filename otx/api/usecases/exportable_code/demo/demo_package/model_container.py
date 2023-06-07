@@ -118,7 +118,7 @@ class ModelContainer:
         """
         # getting result include preprocessing, infer, postprocessing for sync infer
         predictions = self.core_model(frame)
-        frame_meta = {"original_shape": frame.shape[1::-1]}
+        frame_meta = {"original_shape": frame.shape}
 
         # MaskRCNN returns tuple so no need to process
         if self._task_type == TaskType.DETECTION:
