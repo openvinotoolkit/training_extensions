@@ -54,8 +54,8 @@ class ModelContainer:
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
-            model_adapter,
             self.parameters["type_of_model"],
+            model_adapter,
             self.model_parameters,
             preload=True,
         )
