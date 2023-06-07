@@ -165,7 +165,10 @@ class MPAConfig(Config):
 
     @property
     def pretty_text(self):
-        """Make python file human-readable."""
+        """Make python file human-readable.
+
+        It's almost same as mmcv.Config's code but code to reformat using yapf is removed to reduce time.
+        """
 
         indent = 4
 
