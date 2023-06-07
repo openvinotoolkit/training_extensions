@@ -54,8 +54,8 @@ class ModelContainer:
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
-            self.parameters["type_of_model"],
             model_adapter,
+            self.parameters["type_of_model"],
             self.model_parameters,
             preload=True,
         )
@@ -81,7 +81,7 @@ class ModelContainer:
         classifier = {}
         if self.parameters["tiling_parameters"].get("enable_tile_classifier", False):
             adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "tile_classifier.xml"), device=device)
-            classifier = Model(model_adapter=adapter, preload=True)
+            classifier = Model(inference_adapter=adapter, configuration={}, preload=True)
 
         if self.parameters["tiling_parameters"].get("tile_ir_scale_factor", False):
             tile_size = int(tile_size * self.parameters["tiling_parameters"]["tile_ir_scale_factor"])
