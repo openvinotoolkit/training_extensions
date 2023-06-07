@@ -277,9 +277,7 @@ args_semisl = {
         "--learning_parameters.num_iters",
         "2",
         "--learning_parameters.batch_size",
-        "4",
-        "--algo_backend.train_type",
-        "Semisupervised",
+        "4"
     ],
 }
 
@@ -310,16 +308,14 @@ class TestToolsMPASemiSLSegmentation:
 
 
 args_selfsl = {
-    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "--input": "tests/assets/segmentation/custom/images/training",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
         "5",
         "--learning_parameters.batch_size",
-        "4",
-        "--algo_backend.train_type",
-        "Selfsupervised",
+        "4"
     ],
 }
 
@@ -331,6 +327,7 @@ class TestToolsMPASelfSLSegmentation:
         tmp_dir_path_1 = tmp_dir_path / "segmentation/test_selfsl"
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
+        assert os.path.exists(f"{template_work_dir}/selfsl")
         args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         tmp_dir_path_2 = tmp_dir_path / "segmentation/test_selfsl_sl"
@@ -352,3 +349,5 @@ class TestToolsMPASelfSLSegmentation:
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_work_dir}/selfsl")
