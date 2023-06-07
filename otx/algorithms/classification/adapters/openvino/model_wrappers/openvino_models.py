@@ -97,7 +97,7 @@ class OTXClassification(ClassificationModel):
         elif self.hierarchical:
             probs = activate_multihead_output(logits, self.multihead_class_info)
         else:
-            probs = softmax_numpy(logits)
+            probs = logits
         act_score = float(np.max(probs) - np.min(probs))
 
         if "saliency_map" in outputs:
