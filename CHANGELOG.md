@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Enhancements
 
 - Introduce channel_last parameter to improve the performance (<https://github.com/openvinotoolkit/training_extensions/pull/2205>)
+- Decrease a time for making a workspace (<https://github.com/openvinotoolkit/training_extensions/pull/2223>)
 
 ### Bug fixes
 
