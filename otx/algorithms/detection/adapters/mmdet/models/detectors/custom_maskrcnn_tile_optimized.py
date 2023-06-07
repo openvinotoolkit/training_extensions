@@ -209,7 +209,6 @@ if is_mmdeploy_enabled():
 
     # pylint: disable=ungrouped-imports
     from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
-        ActivationMapHook,
         FeatureVectorHook,
     )
 
@@ -327,7 +326,7 @@ if is_mmdeploy_enabled():
         assert self.with_bbox, "Bbox head must be implemented."
         tile_prob = self.tile_classifier.simple_test(img)
 
-        x = backbone_out = self.backbone(img)
+        x = self.backbone(img)
         if self.with_neck:
             x = self.neck(x)
         if proposals is None:
@@ -336,7 +335,8 @@ if is_mmdeploy_enabled():
 
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(x)
-            saliency_map = ActivationMapHook.func(backbone_out)
+            # Saliency map will be generated from predictions. Generate dummy saliency_map.
+            saliency_map = torch.empty(1, dtype=torch.uint8)
             return (*out, tile_prob, feature_vector, saliency_map)
 
         return (*out, tile_prob)

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -195,28 +195,29 @@ def contains_anomalous_images(dataset: DatasetEntity) -> bool:
 # pylint: disable-msg=too-many-locals
 def add_saliency_maps_to_dataset_item(
     dataset_item: DatasetItemEntity,
-    saliency_map: np.ndarray,
+    saliency_map: Union[List[Optional[np.ndarray]], np.ndarray],
     model: Optional[ModelEntity],
     labels: List[LabelEntity],
     predicted_scored_labels: Optional[List[ScoredLabel]] = None,
     explain_predicted_classes: bool = True,
     process_saliency_maps: bool = False,
 ):
-    """Add saliency maps(2d for class-ignore saliency map, 3d for class-wise saliency maps) to a single dataset item."""
-    if saliency_map.ndim == 2:
-        # Single saliency map per image, support e.g. EigenCAM use case
-        if process_saliency_maps:
-            saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-        saliency_media = ResultMediaEntity(
-            name="Saliency Map",
-            type="saliency_map",
-            annotation_scene=dataset_item.annotation_scene,
-            numpy=saliency_map,
-            roi=dataset_item.roi,
-        )
-        dataset_item.append_metadata_item(saliency_media, model=model)
-    elif saliency_map.ndim == 3:
-        # Multiple saliency maps per image (class-wise saliency map)
+    """Add saliency maps (2D array for class-agnostic saliency map,
+    3D array or list or 2D arrays for class-wise saliency maps) to a single dataset item."""
+    if isinstance(saliency_map, list):
+        class_wise_saliency_map = True
+    elif isinstance(saliency_map, np.ndarray):
+        if saliency_map.ndim == 2:
+            class_wise_saliency_map = False
+        elif saliency_map.ndim == 3:
+            class_wise_saliency_map = True
+        else:
+            raise ValueError(f"Saliency map has to be 2 or 3-dimensional array, " f"but got {saliency_map.ndim} dims.")
+    else:
+        raise TypeError("Check saliency_map, it has to be list or np.ndarray.")
+
+    if class_wise_saliency_map:
+        # Multiple saliency maps per image (class-wise saliency map), support e.g. ReciproCAM
         if explain_predicted_classes:
             # Explain only predicted classes
             if predicted_scored_labels is None:
@@ -232,7 +233,7 @@ def add_saliency_maps_to_dataset_item(
 
         for class_id, class_wise_saliency_map in enumerate(saliency_map):
             label = labels[class_id]
-            if label in explain_targets:
+            if class_wise_saliency_map is not None and label in explain_targets:
                 if process_saliency_maps:
                     class_wise_saliency_map = get_actmap(
                         class_wise_saliency_map, (dataset_item.width, dataset_item.height)
@@ -247,4 +248,14 @@ def add_saliency_maps_to_dataset_item(
                 )
                 dataset_item.append_metadata_item(saliency_media, model=model)
     else:
-        raise RuntimeError(f"Single saliency map has to be 2 or 3-dimensional, but got {saliency_map.ndim} dims")
+        # Single saliency map per image, support e.g. ActivationMap
+        if process_saliency_maps:
+            saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+        saliency_media = ResultMediaEntity(
+            name="Saliency Map",
+            type="saliency_map",
+            annotation_scene=dataset_item.annotation_scene,
+            numpy=saliency_map,
+            roi=dataset_item.roi,
+        )
+        dataset_item.append_metadata_item(saliency_media, model=model)

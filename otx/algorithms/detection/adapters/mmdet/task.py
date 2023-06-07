@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import functools
 import glob
 import io
 import os
@@ -61,7 +62,9 @@ from otx.algorithms.detection.adapters.mmdet.configurer import (
 from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
+    MaskRCNNHook,
 )
+from otx.algorithms.detection.adapters.mmdet.models.detectors import CustomMaskRCNN
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_input_preprocessing,
     patch_input_shape,
@@ -397,7 +400,13 @@ class MMDetectionTask(OTXDetectionTask):
             if raw_model.__class__.__name__ == "NNCFNetwork":
                 raw_model = raw_model.get_nncf_wrapped_model()
             if isinstance(raw_model, TwoStageDetector):
-                saliency_hook = ActivationMapHook(feature_model)
+                test_pipeline = cfg.data.test.pipeline
+                width, height = None, None
+                for pipeline in test_pipeline:
+                    width, height = pipeline.get("img_scale", (None, None))
+                if height is None:
+                    raise ValueError("img_scale has to be defined in the test pipeline.")
+                saliency_hook = MaskRCNNHook(feature_model, input_img_shape=(height, width))
             else:
                 saliency_hook = DetClassProbabilityMapHook(feature_model)
 
@@ -515,15 +524,9 @@ class MMDetectionTask(OTXDetectionTask):
         explain_parameters: Optional[ExplainParameters] = None,
     ) -> Dict[str, Any]:
         """Main explain function of MMDetectionTask."""
-
         for item in dataset:
             item.subset = Subset.TESTING
 
-        explainer_hook_selector = {
-            "classwisesaliencymap": DetClassProbabilityMapHook,
-            "eigencam": EigenCamHook,
-            "activationmap": ActivationMapHook,
-        }
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -593,6 +596,23 @@ class MMDetectionTask(OTXDetectionTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
+        if isinstance(feature_model, CustomMaskRCNN):
+            test_pipeline = cfg.data.test.pipeline
+            width, height = None, None
+            for pipeline in test_pipeline:
+                width, height = pipeline.get("img_scale", (None, None))
+            if height is None:
+                raise ValueError("img_scale has to be defined in the test pipeline.")
+            per_class_xai_algorithm = functools.partial(MaskRCNNHook, input_img_shape=(height, width))
+        else:
+            per_class_xai_algorithm = DetClassProbabilityMapHook  # type: ignore
+
+        explainer_hook_selector = {
+            "classwisesaliencymap": per_class_xai_algorithm,
+            "eigencam": EigenCamHook,
+            "activationmap": ActivationMapHook,
+        }
+
         explainer = explain_parameters.explainer if explain_parameters else None
         if explainer is not None:
             explainer_hook = explainer_hook_selector.get(explainer.lower(), None)
@@ -604,7 +624,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         eval_predictions = []
-        with explainer_hook(feature_model) as saliency_hook:
+        with explainer_hook(feature_model) as saliency_hook:  # type: ignore
             for data in dataloader:
                 with torch.no_grad():
                     result = model(return_loss=False, rescale=True, **data)

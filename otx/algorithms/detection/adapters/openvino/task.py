@@ -38,6 +38,7 @@ from openvino.model_zoo.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.openvino import model_wrappers
+from otx.algorithms.detection.adapters.openvino.model_wrappers import OTXMaskRCNNModel
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import (
     config_to_bytes,
@@ -115,6 +116,16 @@ class BaseInferencerWithConverter(BaseInferencer):
 
         return self.converter.convert_to_annotation(detections, metadata)
 
+    def post_process_saliency_map(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+        """Saliency map post-process function of OpenVINO Detection Inferencer."""
+        if isinstance(self.model, OTXMaskRCNNModel):
+            # MaskRCNN IR model does not include saliency map postprocessing -> it is done externally.
+            num_classes = len(self.converter.labels)  # type: ignore
+            return self.model.postprocess_saliency_map(prediction, metadata, num_classes)
+        else:
+            # All other IR models include saliency map postprocessing.
+            return prediction["saliency_map"][0]
+
     def predict(self, image: np.ndarray):
         """Predict function of OpenVINO Detection Inferencer."""
         image, metadata = self.pre_process(image)
@@ -129,7 +140,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         else:
             features = (
                 raw_predictions["feature_vector"].reshape(-1),
-                raw_predictions["saliency_map"][0],
+                self.post_process_saliency_map(raw_predictions, metadata),
             )
         return predictions, features
 
@@ -473,7 +484,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
             if add_saliency_map and saliency_map is not None:
                 labels = self.task_environment.get_labels().copy()
-                if saliency_map.shape[0] == len(labels) + 1:
+                if len(saliency_map) == len(labels) + 1:
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
 
@@ -528,7 +539,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 )
 
             labels = self.task_environment.get_labels().copy()
-            if saliency_map.shape[0] == len(labels) + 1:
+            if len(saliency_map) == len(labels) + 1:
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
