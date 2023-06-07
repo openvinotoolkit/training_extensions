@@ -34,7 +34,7 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_api.models import Model, ImageModel
+from openvino.model_api.models import ImageModel, Model
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
