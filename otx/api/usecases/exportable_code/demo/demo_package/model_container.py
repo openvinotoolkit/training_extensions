@@ -11,7 +11,6 @@ from typing import Any, Optional, Tuple
 import numpy as np
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
-from otx.algorithms.classification.adapters.openvino.model_wrappers.openvino_models import OTXClassification
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
