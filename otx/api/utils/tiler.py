@@ -6,10 +6,10 @@
 
 import copy
 from itertools import product
-from typing import Any, Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from openvino.model_api.models import Model
+from openvino.model_api.models import Model, ImageModel
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.utils.async_pipeline import OTXDetectionAsyncPipeline
@@ -37,8 +37,8 @@ class Tiler:
         tile_size: int,
         overlap: float,
         max_number: int,
-        detector: Any,
-        classifier: Model,
+        detector: Model,
+        classifier: Optional[ImageModel] = None,
         segm: bool = False,
         mode: str = "async",
     ):  # pylint: disable=too-many-arguments
@@ -108,7 +108,7 @@ class Tiler:
             features: saliency map and feature vector
         """
         tile_coords = self.tile(image)
-        if isinstance(self.classifier, Model):
+        if self.classifier is not None:
             tile_coords = self.filter_tiles_by_objectness(image, tile_coords)
 
         if mode == "sync":
