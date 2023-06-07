@@ -720,7 +720,7 @@ args_selfsl = {
         "--learning_parameters.batch_size",
         "4",
         "--learning_parameters.learning_rate",
-        "1e-07"
+        "1e-07",
     ],
 }
 

@@ -272,13 +272,7 @@ args_semisl = {
     "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--unlabeled-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "2",
-        "--learning_parameters.batch_size",
-        "4"
-    ],
+    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
 
@@ -310,13 +304,7 @@ class TestToolsMPASemiSLSegmentation:
 args_selfsl = {
     "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "--input": "tests/assets/segmentation/custom/images/training",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "5",
-        "--learning_parameters.batch_size",
-        "4"
-    ],
+    "train_params": ["params", "--learning_parameters.num_iters", "5", "--learning_parameters.batch_size", "4"],
 }
 
 
