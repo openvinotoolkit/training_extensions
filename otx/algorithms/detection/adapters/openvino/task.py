@@ -347,7 +347,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
                 device=device,
                 max_num_requests=num_requests,
             )
-            classifier = Model(inference_adapter=adapter, preload=True)
+            classifier = Model(inference_adapter=adapter, configuration={}, preload=True)
 
         self.tiler = Tiler(
             tile_size=int(tile_size * tile_ir_scale_factor),
