@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.models.utils import Detection
+from openvino.model_api.models.utils import Detection
 
 from otx.api.entities.annotation import (
     Annotation,

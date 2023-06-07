@@ -4,7 +4,6 @@
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.models.classification import Classification
 
 from otx.algorithms.classification.adapters.openvino.model_wrappers import (
     OTXClassification,
@@ -17,7 +16,7 @@ from tests.unit.algorithms.classification.test_helper import (
 )
 
 
-class MockClassification(OTXClassification, Classification):
+class MockClassification(OTXClassification):
     def __init__(self):
         self.out_layer_names = ["logits"]
         hierarchical_dataset = generate_cls_dataset(hierarchical=True)

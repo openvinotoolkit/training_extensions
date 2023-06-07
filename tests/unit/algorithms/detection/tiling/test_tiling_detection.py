@@ -11,7 +11,7 @@ import torch
 from mmcv import Config, ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import DETECTORS
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
