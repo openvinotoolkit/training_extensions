@@ -55,3 +55,42 @@ Move to this folder and simply run without any options to start training:
 .. code-block::
 
     $ otx train
+
+
+Auto-adapt batch size
+---------------------
+
+This documentation explains the feature of automatically adapting the batch size during training. There are two methods available for adapting the batch size.
+
+1. Checking GPU Compatibility
+
+The first method checks if the current batch size is compatible with the available GPU devices.
+Larger batch sizes consume more GPU memory for training. Therefore, the system verifies if training is possible with the current batch size.
+If it's not feasible, the batch size is decreased to reduce GPU memory usage.
+However, setting the batch size too low can slow down training.
+To address this, a maximum batch size that is still practical is provided.
+The learning rate is also adjusted based on the updated batch size.
+
+To enable this feature, add the following command:
+
+.. code-block::
+
+    $ otx train params --learning_parameters.auto_adapt_batch_size Safe
+
+2. Finding a possible large Batch Size
+
+The second method aims to find a possible large batch size that reduces the overall training time.
+Increasing the batch size reduces the number of iterations required for validation, thus speeding up training.
+However, it does not search for the maximum batch size as it is not efficient and may require significantly more time without providing substantial acceleration compared to a large batch size.
+Similar to the previous method, the learning rate is adjusted according to the updated batch size.
+
+To use this feature, include the following command:
+
+.. code-block::
+
+    $ otx train params --learning_parameters.auto_adapt_batch_size Full
+
+
+.. Warning::
+    When using a fixed epoch, training with larger batch sizes is generally faster than with smaller batch sizes.
+    However, if early stop is enabled, training with a lower batch size can finish early.
