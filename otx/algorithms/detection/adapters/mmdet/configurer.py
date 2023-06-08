@@ -99,6 +99,7 @@ class DetectionConfigurer:
         patch_fp16(cfg)
         patch_adaptive_interval_training(cfg)
         patch_early_stopping(cfg)
+        patch_persistent_workers(cfg)
 
         if data_cfg is not None:
             align_data_config_with_recipe(data_cfg, cfg)
@@ -217,17 +218,6 @@ class DetectionConfigurer:
         if super_type:
             cfg.data.train.org_type = cfg.data.train.type
             cfg.data.train.type = super_type
-
-        for subset in ["train", "val", "test", "unlabeled"]:
-            if subset not in cfg.data:
-                continue
-            dataloader_cfg = cfg.data.get(f"{subset}_dataloader", {})
-            for key in ["persistent_workers", "pin_memory"]:
-                if key not in dataloader_cfg:
-                    dataloader_cfg[key] = True
-            cfg.data[f"{subset}_dataloader"] = dataloader_cfg
-
-        patch_persistent_workers(cfg)
 
     def configure_regularization(self, cfg, training):  # noqa: C901
         """Patch regularization parameters."""
