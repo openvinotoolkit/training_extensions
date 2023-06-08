@@ -53,6 +53,7 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 multi_class_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, "multi_class")
 multi_class_data_args = multi_class_regression_config["data_path"]
 multi_class_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
+multi_class_data_args["--gpus"] = "0,1"
 
 
 class TestRegressionMultiClassClassification:

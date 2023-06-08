@@ -51,6 +51,7 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 action_cls_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, LABEL_TYPE)
 action_cls_data_args = action_cls_regression_config["data_path"]
 action_cls_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
+action_cls_data_args["--gpus"] = "0,1"
 
 
 class TestRegressionActionClassification:

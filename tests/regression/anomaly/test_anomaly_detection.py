@@ -51,6 +51,7 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 
 anomaly_detection_regression_config = load_regression_configuration(otx_dir, TASK_TYPE)
 anomaly_detection_data_args = anomaly_detection_regression_config["data_path"]
+anomaly_detection_data_args["--gpus"] = "0,1"
 
 
 class TestRegressionAnomalyDetection:

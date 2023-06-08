@@ -53,6 +53,7 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 inst_seg_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, LABEL_TYPE)
 inst_seg_data_args = inst_seg_regression_config["data_path"]
 inst_seg_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
+inst_seg_data_args["--gpus"] = "0,1"
 
 
 class TestRegressionInstanceSegmentation:
