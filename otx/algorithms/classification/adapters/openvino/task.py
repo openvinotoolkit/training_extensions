@@ -173,7 +173,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 class OTXOpenVinoDataLoader:
     """DataLoader implementation for ClassificationOpenVINOTask."""
 
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
+    def __init__(self, dataset: DatasetEntity, inferencer: Any):
         super().__init__()
         self.dataset = dataset
         self.inferencer = inferencer

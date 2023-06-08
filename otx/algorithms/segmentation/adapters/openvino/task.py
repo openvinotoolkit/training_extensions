@@ -175,22 +175,28 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
 
 
 class OTXOpenVinoDataLoader:
-    """Data loader for OTXDetection using OpenVINO backend."""
+    """DataLoader implementation for ClassificationOpenVINOTask."""
 
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
+    def __init__(self, dataset: DatasetEntity, inferencer: Any):
+        super().__init__()
         self.dataset = dataset
         self.inferencer = inferencer
 
     def __getitem__(self, index: int):
-        """Return dataset item from index."""
+        """Get item from dataset."""
+
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(image)
 
-        return (index, annotation), inputs, metadata
+        resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
+        resized_image = self.inferencer.model.input_transform(resized_image)
+        resized_image = self.inferencer.model._change_layout(resized_image)
+
+        return resized_image, annotation
 
     def __len__(self):
-        """Length of OTXOpenVinoDataLoader."""
+        """Get length of dataset."""
+
         return len(self.dataset)
 
 
