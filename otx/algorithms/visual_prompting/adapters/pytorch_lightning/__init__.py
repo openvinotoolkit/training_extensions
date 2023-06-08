@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .models import SAM
+from .models import SegmentAnything
 from .config import get_visual_promtping_config, update_anomalib_config
 
-__all__ = ["SAM", "get_visual_promtping_config", "update_anomalib_config"]
+__all__ = ["SegmentAnything", "get_visual_promtping_config", "update_anomalib_config"]
