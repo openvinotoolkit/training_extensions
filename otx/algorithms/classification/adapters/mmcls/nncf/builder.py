@@ -83,6 +83,7 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statement
             subset="val",
             dataloader_builder=mmcls_build_dataloader,
             distributed=distributed,
+            persistent_workers=False,
         )
 
         # This data and state dict will be used to build NNCF graph later
@@ -110,6 +111,7 @@ def build_nncf_classifier(  # pylint: disable=too-many-locals,too-many-statement
                 subset="val",
                 dataloader_builder=mmcls_build_dataloader,
                 distributed=distributed,
+                persistent_workers=False,
             )
 
         model_eval_fn = partial(
