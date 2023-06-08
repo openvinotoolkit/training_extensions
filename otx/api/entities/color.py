@@ -142,11 +142,11 @@ class Color(ColorEntity):
         Returns:
             Color instance with random color
         """
-        # This random is not used for security/cryptographic purposes, so we can ignore this possible security risk
         red, green, blue = (
-            random.randint(0, 255),  # nosec
-            random.randint(0, 255),  # nosec
-            random.randint(0, 255),  # nosec
+            # disable B311 random - used for the random sampling not for security/crypto
+            random.randint(0, 255),  # nosec B311
+            random.randint(0, 255),  # nosec B311
+            random.randint(0, 255),  # nosec B311
         )
         return cls(red=red, green=green, blue=blue, alpha=255)
 

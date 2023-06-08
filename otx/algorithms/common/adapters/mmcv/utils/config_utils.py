@@ -173,13 +173,12 @@ def copy_config(cfg):
     """
     if not isinstance(cfg, Config):
         raise ValueError(f"cannot copy this instance {type(cfg)}")
-    # new_cfg = copy.deepcopy(cfg)
-    # new_cfg._cfg_dict = copy.deepcopy(cfg._cfg_dict)
-    # new_cfg.filename = cfg.filename
-    import pickle
+
+    # disable [B301, B403] pickle, import-pickle - the library used for converting cfg object
+    import pickle  # nosec B403
 
     data = pickle.dumps(cfg)
-    return pickle.loads(data)
+    return pickle.loads(data)  # nosec B301
 
 
 def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict):
