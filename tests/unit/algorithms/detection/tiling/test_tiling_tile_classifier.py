@@ -9,7 +9,7 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from openvino.model_api.models import Model
+from openvino.model_api.models import ImageModel, Model
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
@@ -73,6 +73,7 @@ class TestTilingTileClassifier:
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
         adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
+        mocker.patch.object(ImageModel, "__init__", return_value=None)
         mocker.patch.object(Model, "__init__", return_value=None)
         mocked_model.return_value = mocker.MagicMock(spec=OTXMaskRCNNModel, model_adapter=adapter_mock)
         params = DetectionConfig(header=self.hyper_parameters.header)
