@@ -22,7 +22,7 @@ import subprocess  # nosec
 import tempfile
 from glob import glob
 from typing import Dict, List, Optional, Union
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.sam import sam_model_registry
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import sam_model_registry
 from torch import optim, nn, utils, Tensor
 import segmentation_models_pytorch as smp
 
@@ -47,6 +47,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import ge
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.algorithms.visual_prompting.configs.base.configuration import VisualPromptingConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
@@ -146,7 +147,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Anomaly Task."""
 
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None) -> None:
-        """Train, Infer, Export, Optimize and Deploy an Anomaly Classification Task.
+        """Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
 
         Args:
             task_environment (TaskEnvironment): OTX Task environment.
@@ -165,7 +166,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         # Hyperparameters.
         self._work_dir_is_temp = False
         if output_path is None:
-            output_path = tempfile.mkdtemp(prefix="otx-anomalib")
+            output_path = tempfile.mkdtemp(prefix="otx-visual_prompting")
             self._work_dir_is_temp = True
         self.project_path: str = output_path
         self.config = self.get_config()
@@ -175,131 +176,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.precision = [ModelPrecision.FP32]
         self.optimization_type = ModelOptimizationType.MO
 
-        # self.model = self.load_model(otx_model=task_environment.model)
-
-        import pytorch_lightning as pl
-        # define the LightningModule
-        class SegmentAnything(pl.LightningModule):
-            ckpt_paths = {
-                "vit_b": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
-                "vit_l": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth",
-                "vit_h": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth"
-            }
-            def __init__(self, model_type: str = "vit_b"):
-                super().__init__()
-                self.model_type = model_type
-                self.model = sam_model_registry[model_type](checkpoint=self.ckpt_paths[model_type])
-                self.model.train()
-                # if self.cfg.model.freeze.image_encoder:
-                if False:
-                    for param in self.model.image_encoder.parameters():
-                        param.requires_grad = False
-                # if self.cfg.model.freeze.prompt_encoder:
-                if False:
-                    for param in self.model.prompt_encoder.parameters():
-                        param.requires_grad = False
-                # if self.cfg.model.freeze.mask_decoder:
-                if True:
-                    for param in self.model.mask_decoder.parameters():
-                        param.requires_grad = False
-
-            def forward(self, images, bboxes):
-                _, _, H, W = images.shape
-                image_embeddings = self.model.image_encoder(images)
-                pred_masks = []
-                ious = []
-                for embedding, bbox in zip(image_embeddings, bboxes):
-                    sparse_embeddings, dense_embeddings = self.model.prompt_encoder(
-                        points=None,
-                        boxes=bbox,
-                        masks=None,
-                    )
-
-                    low_res_masks, iou_predictions = self.model.mask_decoder(
-                        image_embeddings=embedding.unsqueeze(0),
-                        image_pe=self.model.prompt_encoder.get_dense_pe(),
-                        sparse_prompt_embeddings=sparse_embeddings,
-                        dense_prompt_embeddings=dense_embeddings,
-                        multimask_output=False,
-                    )
-
-                    masks = F.interpolate(
-                        low_res_masks,
-                        (H, W),
-                        mode="bilinear",
-                        align_corners=False,
-                    )
-                    pred_masks.append(masks.squeeze(1))
-                    ious.append(iou_predictions)
-                return pred_masks, ious
-                    
-            def training_step(self, batch, batch_idx):
-                # training_step defines the train loop.
-                # it is independent of forward
-
-                images = batch['image']
-                bboxes = batch['bbox']
-
-                pred_masks, ious = self.forward(images, bboxes)
-                    
-                num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-                loss_focal = torch.tensor(0., device=self.model.device)
-                loss_dice = torch.tensor(0., device=self.model.device)
-                loss_iou = torch.tensor(0., device=self.model.device)
-
-                focal_loss = FocalLoss()
-                dice_loss = DiceLoss()
-                gt_masks = batch['mask']
-                for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, ious):
-                    gt_mask = gt_mask.float()
-                    batch_iou = calc_iou(pred_mask, gt_mask)
-                    loss_focal += focal_loss(pred_mask, gt_mask, num_masks)
-                    loss_dice += dice_loss(pred_mask, gt_mask, num_masks)
-                    loss_iou += F.mse_loss(iou_prediction, batch_iou, reduction='sum') / num_masks
-                loss_total = 20. * loss_focal + loss_dice + loss_iou
-                return loss_total
-
-            def validation_step(self, batch, batch_idx):
-                ious = AverageMeter()
-                f1_scores = AverageMeter()
-
-                images = batch['image']
-                bboxes = batch['bbox']
-                gt_masks = batch['mask']
-                num_images = len(images)
-
-                if images != []:
-                    pred_masks, _ = self.forward(images, bboxes)
-
-                    from torchvision.utils import draw_segmentation_masks, save_image
-                    from torchvision.transforms.functional import convert_image_dtype
-                    img = convert_image_dtype(images[0], torch.uint8)
-                    seg_img = draw_segmentation_masks(img.cpu(), (pred_masks[0] > 0.5).int().argmax(0).bool().cpu(), alpha=0.6, colors="blue")
-                    gt_img = draw_segmentation_masks(img.cpu(), gt_masks[0].argmax(0).bool().cpu(), alpha=0.6, colors="blue")
-                    
-                    # save_image((seg_img / 255).float(), f"plot/origin_seg_img_{batch_idx}.jpg")
-                    # save_image((seg_img / 255).float(), f"plot/1epoch_seg_img_{batch_idx}.jpg")
-                    # save_image((gt_img / 255).float(), f"plot/gt_img_{batch_idx}.jpg")
-                    for pred_mask, gt_mask in zip(pred_masks, gt_masks):
-                        batch_stats = smp.metrics.get_stats(
-                            pred_mask,
-                            gt_mask.int(),
-                            mode='binary',
-                            threshold=0.5,
-                        )
-                        batch_iou = smp.metrics.iou_score(*batch_stats, reduction="micro-imagewise")
-                        batch_f1 = smp.metrics.f1_score(*batch_stats, reduction="micro-imagewise")
-                        ious.update(batch_iou, num_images)
-                        f1_scores.update(batch_f1, num_images)
-                    result = dict(iou=ious.avg, f1_score=f1_scores.avg)
-                    self.log_dict(result, batch_size=2, on_epoch=True, prog_bar=True)
-                    return result
-
-            def configure_optimizers(self):
-                optimizer = optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-4)
-                return optimizer
-
-        self.model = SegmentAnything()
+        self.model = self.load_model(otx_model='vit_b')
         self.trainer: Trainer
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
@@ -308,7 +185,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             Union[DictConfig, ListConfig]: Anomalib config.
         """
-        self.hyper_parameters: BaseAnomalyConfig = self.task_environment.get_hyper_parameters()
+        self.hyper_parameters: VisualPromptingConfig = self.task_environment.get_hyper_parameters()
         config = get_visual_promtping_config(task_name=self.model_name, otx_config=self.hyper_parameters)
         config.project.path = self.project_path
 
@@ -331,29 +208,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
         """
-        if otx_model is None:
-            model = get_model(config=self.config)
-            logger.info(
-                "No trained model in project yet. Created new model with '%s'",
-                self.model_name,
-            )
-        else:
-            buffer = io.BytesIO(otx_model.get_data("weights.pth"))
-            model_data = torch.load(buffer, map_location=torch.device("cpu"))
-
-            if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
-                logger.warning(
-                    "Backbone of the model in the Task Environment is different from the one in the template. "
-                    f"creating model with backbone={model_data['config']['model']['backbone']}"
-                )
-                self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
-            try:
-                model = get_model(config=self.config)
-                model.load_state_dict(model_data["model"])
-                logger.info("Loaded model weights from Task Environment")
-            except BaseException as exception:
-                raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
-
+        model = sam_model_registry[otx_model](checkpoint="pretrained")
         return model
 
     def cancel_training(self) -> None:

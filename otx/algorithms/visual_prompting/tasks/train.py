@@ -1,6 +1,6 @@
-"""Anomaly Classification Task."""
+"""Visual Prompting Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,12 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import (
-    OTXPytorchLightningDataModule,
+    OTXVisualPromptingDataModule,
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
@@ -53,7 +54,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         seed: Optional[int] = None,
         deterministic: bool = False,
     ) -> None:
-        """Train the anomaly classification model.
+        """Train the visual prompting model.
 
         Args:
             dataset (DatasetEntity): Input dataset.
@@ -72,10 +73,8 @@ class TrainingTask(InferenceTask, ITrainingTask):
         config.trainer.deterministic = deterministic
 
         logger.info("Training Configs '%s'", config)
-        # from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
-        from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
         
-        datamodule = OTXPytorchLightningDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTXVisualPromptingDataModule(config=config, dataset=dataset, task_type=self.task_type)
         callbacks = [
             # LearningRateMonitor(logging_interval='step'),
             ModelCheckpoint(monitor="iou", mode="max"),
@@ -102,42 +101,3 @@ class TrainingTask(InferenceTask, ITrainingTask):
         self.save_model(output_model)
 
         logger.info("Training completed.")
-
-    def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
-        """Create and Load Anomalib Module from OTX Model.
-
-        This method checks if the task environment has a saved OTX Model,
-        and creates one. If the OTX model already exists, it returns the
-        the model with the saved weights.
-
-        Args:
-            otx_model (Optional[ModelEntity]): OTX Model from the
-                task environment.
-
-        Returns:
-            AnomalyModule: Anomalib
-                classification or segmentation model with/without weights.
-        """
-        model = get_model(config=self.config)
-        if otx_model is None:
-            logger.info(
-                "No trained model in project yet. Created new model with '%s'",
-                self.model_name,
-            )
-        else:
-            buffer = io.BytesIO(otx_model.get_data("weights.pth"))
-            model_data = torch.load(buffer, map_location=torch.device("cpu"))
-
-            try:
-                if model_data["config"]["model"]["backbone"] == self.config["model"]["backbone"]:
-                    model.load_state_dict(model_data["model"])
-                    logger.info("Loaded model weights from Task Environment")
-                else:
-                    logger.info(
-                        "Model backbone does not match. Created new model with '%s'",
-                        self.model_name,
-                    )
-            except BaseException as exception:
-                raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
-
-        return model
