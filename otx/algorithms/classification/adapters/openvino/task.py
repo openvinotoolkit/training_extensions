@@ -24,13 +24,10 @@ import warnings
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
+import nncf
 import numpy as np
-from addict import Dict as ADDict
-from compression.api import DataLoader
-from compression.engines.ie_engine import IEEngine
-from compression.graph import load_model, save_model
-from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
-from compression.pipeline.initializer import create_pipeline
+import openvino.runtime as ov
+from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
@@ -172,22 +169,19 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         return self.model.infer_sync(image)
 
 
-class OTXOpenVinoDataLoader(DataLoader):
+class OTXOpenVinoDataLoader:
     """DataLoader implementation for ClassificationOpenVINOTask."""
 
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
-        super().__init__(config=None)
+    def __init__(self, dataset: DatasetEntity):
+        super().__init__()
         self.dataset = dataset
-        self.inferencer = inferencer
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
 
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(image)
-
-        return (index, annotation), inputs, metadata
+        return image, annotation
 
     def __len__(self):
         """Get length of dataset."""
@@ -386,7 +380,18 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
         dataset = dataset.get_subset(Subset.TRAINING)
-        data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
+        data_loader = OTXOpenVinoDataLoader(dataset)
+
+        def transform_fn(data_item):
+            image, _ = data_item
+
+            resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
+            resized_image = self.inferencer.model.input_transform(resized_image)
+            resized_image = self.inferencer.model._change_layout(resized_image)
+
+            return resized_image
+
+        quantization_dataset = nncf.Dataset(data_loader, transform_fn)
 
         if self.model is None:
             raise RuntimeError("optimize failed, model is None")
@@ -399,47 +404,30 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             with open(bin_path, "wb") as f:
                 f.write(self.model.get_data("openvino.bin"))
 
-            model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
+            ov_model = ov.Core().read_model(xml_path)
 
-            model = load_model(model_config)
-
-            if get_nodes_by_type(model, ["FakeQuantize"]):
-                raise RuntimeError("Model is already optimized by POT")
+            nodes = ov_model.get_ops()
+            for op in nodes:
+                if "FakeQuantize" == op.get_type_name():
+                    raise RuntimeError("Model is already optimized by PQT")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
 
-        engine_config = ADDict({"device": "CPU"})
-
         stat_subset_size = self.hparams.pot_parameters.stat_subset_size
-        preset = self.hparams.pot_parameters.preset.name.lower()
+        preset = QuantizationPreset(self.hparams.pot_parameters.preset.name.lower())
 
-        algorithms = [
-            {
-                "name": "DefaultQuantization",
-                "params": {
-                    "target_device": "ANY",
-                    "preset": preset,
-                    "stat_subset_size": min(stat_subset_size, len(data_loader)),
-                    "shuffle_data": True,
-                },
-            }
-        ]
-
-        engine = IEEngine(config=engine_config, data_loader=data_loader, metric=None)
-
-        pipeline = create_pipeline(algorithms, engine)
-
-        compressed_model = pipeline.run(model)
-
-        compress_model_weights(compressed_model)
+        compressed_model = nncf.quantize(
+            ov_model, quantization_dataset, subset_size=min(stat_subset_size, len(data_loader)), preset=preset
+        )
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
-            save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as f:
+            xml_path = os.path.join(tempdir, "model.xml")
+            ov.serialize(compressed_model, xml_path)
+            with open(xml_path, "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
@@ -457,4 +445,4 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
-        logger.info("POT optimization completed")
+        logger.info("PQT optimization completed")
