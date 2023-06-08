@@ -51,6 +51,7 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 
 anomaly_classification_regression_config = load_regression_configuration(otx_dir, TASK_TYPE)
 anomaly_classification_data_args = anomaly_classification_regression_config["data_path"]
+anomaly_classification_data_args["--gpus"] = "0,1"
 
 
 class TestRegressionAnomalyClassification:

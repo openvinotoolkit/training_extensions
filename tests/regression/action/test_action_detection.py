@@ -49,6 +49,7 @@ Path(result_dir).mkdir(parents=True, exist_ok=True)
 action_det_regression_config = load_regression_configuration(otx_dir, TASK_TYPE, TRAIN_TYPE, LABEL_TYPE)
 action_det_data_args = action_det_regression_config["data_path"]
 action_det_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
+action_det_data_args["--gpus"] = "0,1"
 
 
 class TestRegressionActionDetection:

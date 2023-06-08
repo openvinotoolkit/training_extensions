@@ -60,6 +60,7 @@ tiling_detection_data_args["train_params"] = [
     "--tiling_parameters.enable_adaptive_params",
     "1",
 ]
+tiling_detection_data_args["--gpus"] = "0,1"
 
 
 class TestRegressionTilingDetection:
