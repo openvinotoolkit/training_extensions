@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 - Introduce channel_last parameter to improve the performance (<https://github.com/openvinotoolkit/training_extensions/pull/2205>)
 - Decrease a time for making a workspace (<https://github.com/openvinotoolkit/training_extensions/pull/2223>)
+- Set persistent_workers and pin_memory as True in detection task (<https://github.com/openvinotoolkit/training_extensions/pull/2224>)
 
 ### Bug fixes
 
