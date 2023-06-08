@@ -75,7 +75,7 @@ model = dict(
     train_cfg=dict(
         rpn=dict(
             assigner=dict(
-                type="MaxIoUAssigner",
+                type="CustomMaxIoUAssigner",
                 pos_iou_thr=0.7,
                 neg_iou_thr=0.3,
                 min_pos_iou=0.3,
@@ -97,7 +97,7 @@ model = dict(
         ),
         rcnn=dict(
             assigner=dict(
-                type="MaxIoUAssigner",
+                type="CustomMaxIoUAssigner",
                 pos_iou_thr=0.5,
                 neg_iou_thr=0.5,
                 min_pos_iou=0.5,
