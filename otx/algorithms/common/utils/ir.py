@@ -10,6 +10,15 @@ from typing import Any, Dict, Tuple
 from openvino.runtime import Core, serialize
 
 
+def check_if_quantized(model: Any) -> bool:
+    """Checks if OpenVINO model is already quantized."""
+    nodes = model.get_ops()
+    for op in nodes:
+        if "FakeQuantize" == op.get_type_name():
+            return True
+    return False
+
+
 def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str], Any]) -> None:
     """Embeds serialized data to IR xml file.
 

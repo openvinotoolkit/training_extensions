@@ -37,6 +37,7 @@ from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
 )
+from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -405,11 +406,8 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                 f.write(self.model.get_data("openvino.bin"))
 
             ov_model = ov.Core().read_model(xml_path)
-
-            nodes = ov_model.get_ops()
-            for op in nodes:
-                if "FakeQuantize" == op.get_type_name():
-                    raise RuntimeError("Model is already optimized by PQT")
+            if check_if_quantized(ov_model):
+                raise RuntimeError("Model is already optimized by PQT")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
