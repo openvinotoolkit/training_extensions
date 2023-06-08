@@ -173,16 +173,22 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
 class OTXOpenVinoDataLoader:
     """DataLoader implementation for ClassificationOpenVINOTask."""
 
-    def __init__(self, dataset: DatasetEntity):
+    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         super().__init__()
         self.dataset = dataset
+        self.inferencer = inferencer
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
 
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
-        return image, annotation
+
+        resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
+        resized_image = self.inferencer.model.input_transform(resized_image)
+        resized_image = self.inferencer.model._change_layout(resized_image)
+
+        return resized_image, annotation
 
     def __len__(self):
         """Get length of dataset."""
@@ -381,18 +387,9 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
         dataset = dataset.get_subset(Subset.TRAINING)
-        data_loader = OTXOpenVinoDataLoader(dataset)
+        data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
-        def transform_fn(data_item):
-            image, _ = data_item
-
-            resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
-            resized_image = self.inferencer.model.input_transform(resized_image)
-            resized_image = self.inferencer.model._change_layout(resized_image)
-
-            return resized_image
-
-        quantization_dataset = nncf.Dataset(data_loader, transform_fn)
+        quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])
 
         if self.model is None:
             raise RuntimeError("optimize failed, model is None")
