@@ -42,26 +42,8 @@ from .pipelines import ResizeAndPad, collate_fn
 logger = get_logger(__name__)
 
 
-class OTXPytorchLightningDataset(Dataset):
-    """Anomaly Dataset Adaptor.
-
-    This class converts OTX Dataset into Anomalib dataset that
-    is a sub-class of Vision Dataset.
-
-    Args:
-        config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (DatasetEntity): [description]: OTX SDK Dataset
-
-    Example:
-        >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
-        >>> from otx.utils.data import AnomalyDataset
-
-        >>> dataset_generator = OTXAnomalyDatasetGenerator()
-        >>> dataset = dataset_generator.generate()
-        >>> anomaly_dataset = AnomalyDataset(config=config, dataset=dataset)
-        >>> anomaly_dataset[0]["image"].shape
-        torch.Size([3, 256, 256])
-    """
+class OTXVIsualPromptingDataset(Dataset):
+    """Visual Prompting Dataset Adaptor."""
 
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType):
         self.config = config
@@ -114,8 +96,6 @@ class OTXPytorchLightningDataset(Dataset):
         Returns:
             Dict[str, Union[int, Tensor]]: Dataset item.
         """
-        import torch
-        from torchvision.utils import save_image
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
@@ -142,20 +122,10 @@ class OTXPytorchLightningDataset(Dataset):
             polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
             polygons.extend([[polygon] for _ in range(n)])
             labels.extend(class_indices)
-            # temp_masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
-            # save_image(torch.from_numpy(temp_masks).argmax(0).float(), "what.jpg")
 
         masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
         bboxes = np.array(bboxes)
         image, masks, bboxes = self.transform(dataset_item.numpy, masks, bboxes)
-        # from torchvision.utils import draw_segmentation_masks
-        # from torchvision.utils import draw_bounding_boxes
-        # from torchvision.transforms.functional import convert_image_dtype
-        # img = convert_image_dtype(image, torch.uint8)
-
-        # seg_img = draw_segmentation_masks(img, torch.stack(masks).argmax(0).bool(), alpha=0.8, colors="blue")
-        # det_img = draw_bounding_boxes(seg_img, torch.tensor(bboxes), colors="red")
-        # save_image((det_img / 255).float(), "vis_img.jpg")
 
         item["image"] = image
         item["mask"] = masks
@@ -164,27 +134,8 @@ class OTXPytorchLightningDataset(Dataset):
         return item
 
 
-class OTXPytorchLightningDataModule(LightningDataModule):
-    """Anomaly DataModule.
-
-    This class converts OTX Dataset into Anomalib dataset and stores
-    train/val/test dataloaders.
-
-    Args:
-        config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (DatasetEntity): OTX SDK Dataset
-
-    Example:
-        >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
-        >>> from otx.utils.data import AnomalyDataModule
-
-        >>> dataset_generator = OTXAnomalyDatasetGenerator()
-        >>> dataset = dataset_generator.generate()
-        >>> data_module = OTXAnomalyDataModule(config=config, dataset=dataset)
-        >>> i, data = next(enumerate(data_module.train_dataloader()))
-        >>> data["image"].shape
-        torch.Size([32, 3, 256, 256])
-    """
+class OTXVisualPromptingDataModule(LightningDataModule):
+    """Visual Prompting DataModule."""
 
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType) -> None:
         super().__init__()
@@ -239,7 +190,7 @@ class OTXPytorchLightningDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
         """
-        dataset = OTXPytorchLightningDataset(self.config, self.train_otx_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, self.train_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -258,7 +209,7 @@ class OTXPytorchLightningDataModule(LightningDataModule):
         logger.info(f"Global annotations: {len(global_dataset)}")
         logger.info(f"Local annotations: {len(local_dataset)}")
         logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
-        dataset = OTXPytorchLightningDataset(self.config, local_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, local_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -273,7 +224,7 @@ class OTXPytorchLightningDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Test Dataloader.
         """
-        dataset = OTXPytorchLightningDataset(self.config, self.test_otx_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, self.test_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -288,7 +239,7 @@ class OTXPytorchLightningDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Predict Dataloader.
         """
-        dataset = OTXPytorchLightningDataset(self.config, self.predict_otx_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, self.predict_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
