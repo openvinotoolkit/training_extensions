@@ -73,14 +73,11 @@ class CustomMaxIoUAssigner(MaxIoUAssigner):
 
         if assign_on_cpu and gt_bboxes.shape[0] > self.cpu_assign_thr:
             split_length = gt_bboxes.shape[0] // self.cpu_assign_thr + 1
-            overlaps = None
+            overlaps = []
             for i in range(split_length):
                 gt_bboxes_split = gt_bboxes[i * self.cpu_assign_thr : (i + 1) * self.cpu_assign_thr]
-                if overlaps is None:
-                    overlaps = self.iou_calculator(gt_bboxes_split, bboxes)
-                else:
-                    overlaps = torch.concat((overlaps, self.iou_calculator(gt_bboxes_split, bboxes)), dim=0)
-
+                overlaps.append(self.iou_calculator(gt_bboxes_split, bboxes))
+            overlaps = torch.concat(overlaps, dim=0)
         else:
             overlaps = self.iou_calculator(gt_bboxes, bboxes)
 
