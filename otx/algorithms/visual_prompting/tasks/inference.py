@@ -77,70 +77,6 @@ GAMMA = 2
 
 logger = get_logger(__name__)
 
-def calc_iou(pred_mask: torch.Tensor, gt_mask: torch.Tensor):
-    pred_mask = (pred_mask >= 0.5).float()
-    intersection = torch.sum(torch.mul(pred_mask, gt_mask), dim=(1, 2))
-    union = torch.sum(pred_mask, dim=(1, 2)) + torch.sum(gt_mask, dim=(1, 2)) - intersection
-    epsilon = 1e-7
-    batch_iou = intersection / (union + epsilon)
-
-    batch_iou = batch_iou.unsqueeze(1)
-    return batch_iou
-
-class AverageMeter:
-    """Computes and stores the average and current value."""
-
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-class FocalLoss(nn.Module):
-
-    def __init__(self, weight=None, size_average=True):
-        super().__init__()
-
-    def forward(self, inputs, targets, alpha=ALPHA, gamma=GAMMA, smooth=1):
-        inputs = F.sigmoid(inputs)
-        inputs = torch.clamp(inputs, min=0, max=1)
-        #flatten label and prediction tensors
-        inputs = inputs.view(-1)
-        targets = targets.view(-1)
-
-        BCE = F.binary_cross_entropy(inputs, targets, reduction='mean')
-        BCE_EXP = torch.exp(-BCE)
-        focal_loss = alpha * (1 - BCE_EXP)**gamma * BCE
-
-        return focal_loss
-
-
-class DiceLoss(nn.Module):
-
-    def __init__(self, weight=None, size_average=True):
-        super().__init__()
-
-    def forward(self, inputs, targets, smooth=1):
-        inputs = F.sigmoid(inputs)
-        inputs = torch.clamp(inputs, min=0, max=1)
-        #flatten label and prediction tensors
-        inputs = inputs.view(-1)
-        targets = targets.view(-1)
-
-        intersection = (inputs * targets).sum()
-        dice = (2. * intersection + smooth) / (inputs.sum() + targets.sum() + smooth)
-
-        return 1 - dice
-
 
 # pylint: disable=too-many-instance-attributes
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
@@ -180,10 +116,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.trainer: Trainer
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
-        """Get Anomalib Config from task environment.
+        """Get Visual Prompting Config from task environment.
 
         Returns:
-            Union[DictConfig, ListConfig]: Anomalib config.
+            Union[DictConfig, ListConfig]: Visual Prompting config.
         """
         self.hyper_parameters: VisualPromptingConfig = self.task_environment.get_hyper_parameters()
         config = get_visual_promtping_config(task_name=self.model_name, otx_config=self.hyper_parameters)

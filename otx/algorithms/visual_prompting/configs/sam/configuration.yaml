@@ -25,8 +25,8 @@ dataset:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
-description: Configuration for Padim
-header: Configuration for Padim
+description: Configuration for SAM
+header: Configuration for SAM
 id: ""
 learning_parameters:
   backbone:

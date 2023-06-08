@@ -4,7 +4,7 @@ name: SAM
 task_type: VISUAL_PROMPTING
 task_family: VISION
 instantiation: "CLASS"
-summary: This model is faster and in many cases more accurate, but it requires a fixed position of the objects within the image.
+summary: TODO
 application: ~
 
 # Algo backend.
@@ -12,7 +12,7 @@ framework: OTXVisualPrompting v0.1.0 # TODO: update after the name has been chan
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.visual_prompting.adapters.pytorch_lightning.task.PytorchLightningVisualPromptingTask
+  base: otx.algorithms.visual_prompting.tasks.TrainingTask
 
 # Hyper Parameters
 hyper_parameters:
