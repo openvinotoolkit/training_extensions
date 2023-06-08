@@ -33,21 +33,20 @@ learning_parameters:
     affects_outcome_of: NONE
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: resnet18
+    default_value: vit_b
     description: Pre-trained backbone used for feature extraction
     editable: false
     enum_name: ModelBackbone
     header: Model Backbone
     options:
-      RESNET18: resnet18
-      WIDE_RESNET_50: wide_resnet50_2
+      ViT_B: vit_b
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: resnet18
+    value: vit_b
     visible_in_ui: false
     warning: null
   description: Learning Parameters

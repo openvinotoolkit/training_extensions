@@ -44,24 +44,22 @@ class SegmentAnything(pl.LightningModule):
         image_encoder: nn.Module,
         prompt_encoder: nn.Module,
         mask_decoder: nn.Module,
-        pixel_mean: List[float] = [123.675, 116.28, 103.53],
-        pixel_std: List[float] = [58.395, 57.12, 57.375],
         freeze_image_encoder: bool = True,
         freeze_prompt_encoder: bool = True,
-        freeze_mask_encoder: bool = False,
+        freeze_mask_decoder: bool = False,
         checkpoint: str = None
     ) -> None:
         """
         SAM predicts object masks from an image and input prompts.
 
         Arguments:
-          image_encoder (nn.Module): The backbone used to encode the
-            image into image embeddings that allow for efficient mask prediction.
-          prompt_encoder (nn.Module): Encodes various types of input prompts.
-          mask_decoder (nn.Module): Predicts masks from the image embeddings
-            and encoded prompts.
-          pixel_mean (list(float)): Mean values for normalizing pixels in the input image.
-          pixel_std (list(float)): Std values for normalizing pixels in the input image.
+            image_encoder (nn.Module): The backbone used to encode the image into image embeddings that allow for efficient mask prediction.
+            prompt_encoder (nn.Module): Encodes various types of input prompts.
+            mask_decoder (nn.Module): Predicts masks from the image embeddings and encoded prompts.
+            freeze_image_encoder (bool): Whether freezing image encoder, default is True.
+            freeze_prompt_encoder (bool): Whether freezing prompt encoder, default is True.
+            freeze_mask_decoder (bool): Whether freezing mask decoder, default is False.
+            checkpoint (optional, str): Checkpoint path to be loaded, default is None.
         """
         super().__init__()
         self.image_encoder = image_encoder
@@ -76,7 +74,7 @@ class SegmentAnything(pl.LightningModule):
             for param in self.prompt_encoder.parameters():
                 param.requires_grad = False
 
-        if freeze_mask_encoder:
+        if freeze_mask_decoder:
             for param in self.mask_decoder.parameters():
                 param.requires_grad = False
 
@@ -202,18 +200,6 @@ class SegmentAnything(pl.LightningModule):
         masks = masks[..., : input_size[0], : input_size[1]]
         masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
         return masks
-
-    def preprocess(self, x: torch.Tensor) -> torch.Tensor:
-        """Normalize pixel values and pad to a square input."""
-        # Normalize colors
-        x = (x - self.pixel_mean) / self.pixel_std
-
-        # Pad
-        h, w = x.shape[-2:]
-        padh = self.image_encoder.img_size - h
-        padw = self.image_encoder.img_size - w
-        x = F.pad(x, (0, padw, 0, padh))
-        return x
     
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-4)
@@ -298,7 +284,7 @@ def build_sam_vit_h(checkpoint=None):
         encoder_depth=32,
         encoder_num_heads=16,
         encoder_global_attn_indexes=[7, 15, 23, 31],
-        checkpoint=CKPT_PATHS["vit_h"] if checkpoint == "pretrained" else checkpoint,
+        checkpoint=checkpoint,
     )
 
 
@@ -308,7 +294,7 @@ def build_sam_vit_l(checkpoint=None):
         encoder_depth=24,
         encoder_num_heads=16,
         encoder_global_attn_indexes=[5, 11, 17, 23],
-        checkpoint=CKPT_PATHS["vit_l"] if checkpoint == "pretrained" else checkpoint,
+        checkpoint=checkpoint,
     )
 
 
@@ -318,7 +304,7 @@ def build_sam_vit_b(checkpoint=None):
         encoder_depth=12,
         encoder_num_heads=12,
         encoder_global_attn_indexes=[2, 5, 8, 11],
-        checkpoint=CKPT_PATHS["vit_b"] if checkpoint == "pretrained" else checkpoint,
+        checkpoint=checkpoint,
     )
 
 
@@ -366,8 +352,6 @@ def _build_sam(
             iou_head_depth=3,
             iou_head_hidden_dim=256,
         ),
-        pixel_mean=[123.675, 116.28, 103.53],
-        pixel_std=[58.395, 57.12, 57.375],
         checkpoint=checkpoint
     )
 

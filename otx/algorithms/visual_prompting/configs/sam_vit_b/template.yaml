@@ -1,6 +1,6 @@
 # Description.
-model_template_id: otx_visual_prompting_SAM
-name: SAM
+model_template_id: Visual_Prompting_SAM_ViT_B
+name: SAM_ViT_B
 task_type: VISUAL_PROMPTING
 task_family: VISION
 instantiation: "CLASS"
@@ -8,7 +8,7 @@ summary: TODO
 application: ~
 
 # Algo backend.
-framework: OTXVisualPrompting v0.1.0 # TODO: update after the name has been changed on the platform side
+framework: OTXVisualPrompting v0.1.0
 
 # Task implementations.
 entrypoints:

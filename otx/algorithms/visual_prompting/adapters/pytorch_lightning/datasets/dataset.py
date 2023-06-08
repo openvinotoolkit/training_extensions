@@ -1,6 +1,6 @@
-"""Anomaly Dataset Utils."""
+"""Visual Prompting Dataset & DataModule."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.shapes.polygon import Polygon
@@ -40,7 +40,7 @@ from otx.api.utils.shape_factory import ShapeFactory
 from .pipelines import ResizeLongestSide, collate_fn, MultipleInputsCompose, Pad
 import torchvision.transforms as transforms
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class OTXVIsualPromptingDataset(Dataset):
@@ -53,8 +53,12 @@ class OTXVIsualPromptingDataset(Dataset):
         self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
 
         # TODO (sungchul): distinguish between train and val config here
+        image_size = config.dataset.image_size
+        if isinstance(image_size, int):
+            image_size = [image_size]
+
         self.transform = MultipleInputsCompose([
-            ResizeLongestSide(max(config.dataset.image_size)),
+            ResizeLongestSide(target_length=max(image_size)),
             Pad(),
             transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
         ])
@@ -157,7 +161,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         self.predict_otx_dataset: DatasetEntity
 
     def setup(self, stage: Optional[str] = None) -> None:
-        """Setup Anomaly Data Module.
+        """Setup Visual Prompting Data Module.
 
         Args:
             stage (Optional[str], optional): train/val/test stages.
@@ -180,7 +184,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             self.predict_otx_dataset = self.dataset
 
     def summary(self):
-        """Print size of the dataset, number of anomalous images and number of normal images."""
+        """Print size of the dataset, number of images."""
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
             dataset = self.dataset.get_subset(subset)
             num_items = len(dataset)
@@ -216,7 +220,6 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         global_dataset, local_dataset = split_local_global_dataset(self.val_otx_dataset)
         logger.info(f"Global annotations: {len(global_dataset)}")
         logger.info(f"Local annotations: {len(local_dataset)}")
-        logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
         dataset = OTXVIsualPromptingDataset(self.config, local_dataset)
         return DataLoader(
             dataset,

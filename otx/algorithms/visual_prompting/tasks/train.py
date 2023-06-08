@@ -29,7 +29,7 @@ from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import (
     OTXVisualPromptingDataModule,
 )
@@ -40,7 +40,7 @@ from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 
 from .inference import InferenceTask
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class TrainingTask(InferenceTask, ITrainingTask):
@@ -65,16 +65,14 @@ class TrainingTask(InferenceTask, ITrainingTask):
         """
         logger.info("Training the model.")
 
-        config = self.get_config()
-
         if seed:
             logger.info(f"Setting seed to {seed}")
             seed_everything(seed, workers=True)
-        config.trainer.deterministic = deterministic
+        self.config.trainer.deterministic = deterministic
 
-        logger.info("Training Configs '%s'", config)
+        logger.info("Training Configs '%s'", self.config)
         
-        datamodule = OTXVisualPromptingDataModule(config=config, dataset=dataset)
+        datamodule = OTXVisualPromptingDataModule(config=self.config, dataset=dataset)
         callbacks = [
             # LearningRateMonitor(logging_interval='step'),
             ProgressCallback(parameters=train_parameters),
@@ -93,7 +91,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
             # ),
         ]
 
-        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
+        self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
         logger.info("Evaluation with best checkpoint.")
         self.trainer.validate(model=self.model, datamodule=datamodule)

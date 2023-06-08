@@ -1,6 +1,6 @@
-"""Anomaly Classification Task."""
+"""Visual Prompting Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
 # from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import get_visual_promtping_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.visual_prompting.configs.base.configuration import VisualPromptingConfig
 from otx.api.entities.datasets import DatasetEntity
@@ -70,17 +70,14 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-torch.set_float32_matmul_precision('high')
+import pytorch_lightning as pl
 
-ALPHA = 0.8
-GAMMA = 2
-
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
-    """Base Anomaly Task."""
+    """Base Visual Prompting Task."""
 
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None) -> None:
         """Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
@@ -112,7 +109,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.precision = [ModelPrecision.FP32]
         self.optimization_type = ModelOptimizationType.MO
 
-        self.model = self.load_model(otx_model='vit_b')
+        self.model = self.load_model(otx_model=task_environment.model)
+
         self.trainer: Trainer
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
@@ -125,26 +123,32 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         config = get_visual_promtping_config(task_name=self.model_name, otx_config=self.hyper_parameters)
         config.project.path = self.project_path
 
-        config.dataset.task = "classification"
+        config.dataset.task = "visual_prompting"
 
         return config
 
-    def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
-        """Create and Load Anomalib Module from OTX Model.
+    def load_model(self, otx_model: Optional[ModelEntity]) -> pl.LightningModule:
+        """Create and Load Visual Prompting Module.
 
-        This method checks if the task environment has a saved OTX Model,
-        and creates one. If the OTX model already exists, it returns the
-        the model with the saved weights.
+        Currently, load model through `sam_model_registry` because there is only SAM.
+        If other visual prompting model is added, loading model process must be changed.
 
         Args:
-            otx_model (Optional[ModelEntity]): OTX Model from the
-                task environment.
+            otx_model (Optional[ModelEntity]): OTX Model from the task environment.
 
         Returns:
-            AnomalyModule: Anomalib
-                classification or segmentation model with/without weights.
+            pl.LightningModule: Visual prompting model with/without weights.
         """
-        model = sam_model_registry[otx_model](checkpoint="pretrained")
+        if otx_model is None:
+            backbone = self.config.model.backbone
+        else:
+            backbone = otx_model
+
+        # TODO (sungchul): where can load_from be applied?
+        checkpoint = self.config.model.checkpoint
+        
+        # TODO (sungchul): load model in different ways
+        model = sam_model_registry[backbone](checkpoint=checkpoint)
         return model
 
     def cancel_training(self) -> None:

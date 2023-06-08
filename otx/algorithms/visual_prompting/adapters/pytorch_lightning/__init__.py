@@ -15,6 +15,6 @@
 # and limitations under the License.
 
 from .models import SegmentAnything
-from .config import get_visual_promtping_config, update_anomalib_config
+from .config import get_visual_promtping_config, update_visual_prompting_config
 
-__all__ = ["SegmentAnything", "get_visual_promtping_config", "update_anomalib_config"]
+__all__ = ["SegmentAnything", "get_visual_promtping_config", "update_visual_prompting_config"]
