@@ -37,7 +37,8 @@ from otx.api.utils.dataset_utils import (
 from otx.api.utils.segmentation_utils import mask_from_dataset_item
 from otx.api.utils.shape_factory import ShapeFactory
 
-from .pipelines import ResizeAndPad, collate_fn
+from .pipelines import ResizeLongestSide, collate_fn, MultipleInputsCompose, Pad
+import torchvision.transforms as transforms
 
 logger = get_logger(__name__)
 
@@ -45,15 +46,18 @@ logger = get_logger(__name__)
 class OTXVIsualPromptingDataset(Dataset):
     """Visual Prompting Dataset Adaptor."""
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType):
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity):
         self.config = config
         self.dataset = dataset
         self.labels = dataset.get_labels()
         self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
-        self.task_type = task_type
 
-        # TODO: distinguish between train and val config here
-        self.transform = ResizeAndPad(max(config.dataset.image_size))
+        # TODO (sungchul): distinguish between train and val config here
+        self.transform = MultipleInputsCompose([
+            ResizeLongestSide(max(config.dataset.image_size)),
+            Pad(),
+            transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
+        ])
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -107,6 +111,7 @@ class OTXVIsualPromptingDataset(Dataset):
         polygons = []
 
         width, height = dataset_item.width, dataset_item.height
+        # From otx/algorithms/detection/adapters/mmdet/datasets/dataset.py
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
             box = ShapeFactory.shape_as_rectangle(annotation.shape)
             if min(box.width * width, box.height * height) < -1:
@@ -125,23 +130,26 @@ class OTXVIsualPromptingDataset(Dataset):
 
         masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
         bboxes = np.array(bboxes)
-        image, masks, bboxes = self.transform(dataset_item.numpy, masks, bboxes)
 
-        item["image"] = image
-        item["mask"] = masks
-        item["bbox"] = bboxes
-        item["label"] = labels
+        item.update(dict(
+            original_size=(height, width),
+            image=dataset_item.numpy,
+            mask=masks,
+            bbox=bboxes,
+            label=labels,
+            point=None, # TODO (sungchul): update point information
+        ))
+        item = self.transform(item)
         return item
 
 
 class OTXVisualPromptingDataModule(LightningDataModule):
     """Visual Prompting DataModule."""
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType) -> None:
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity) -> None:
         super().__init__()
         self.config = config
         self.dataset = dataset
-        self.task_type = task_type
 
         self.train_otx_dataset: DatasetEntity
         self.val_otx_dataset: DatasetEntity
@@ -190,7 +198,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
         """
-        dataset = OTXVIsualPromptingDataset(self.config, self.train_otx_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, self.train_otx_dataset)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -209,7 +217,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         logger.info(f"Global annotations: {len(global_dataset)}")
         logger.info(f"Local annotations: {len(local_dataset)}")
         logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
-        dataset = OTXVIsualPromptingDataset(self.config, local_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, local_dataset)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -224,7 +232,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Test Dataloader.
         """
-        dataset = OTXVIsualPromptingDataset(self.config, self.test_otx_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, self.test_otx_dataset)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -239,7 +247,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Predict Dataloader.
         """
-        dataset = OTXVIsualPromptingDataset(self.config, self.predict_otx_dataset, self.task_type)
+        dataset = OTXVIsualPromptingDataset(self.config, self.predict_otx_dataset)
         return DataLoader(
             dataset,
             shuffle=False,

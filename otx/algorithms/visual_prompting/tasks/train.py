@@ -44,7 +44,7 @@ logger = get_logger(__name__)
 
 
 class TrainingTask(InferenceTask, ITrainingTask):
-    """Base Anomaly Task."""
+    """Training Task for Visual Prompting."""
 
     def train(
         self,
@@ -74,11 +74,11 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         logger.info("Training Configs '%s'", config)
         
-        datamodule = OTXVisualPromptingDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTXVisualPromptingDataModule(config=config, dataset=dataset)
         callbacks = [
             # LearningRateMonitor(logging_interval='step'),
-            ModelCheckpoint(monitor="iou", mode="max"),
             ProgressCallback(parameters=train_parameters),
+            ModelCheckpoint(monitor="iou", mode="max"),
             # MinMaxNormalizationCallback(),
             # MetricsConfigurationCallback(
             #     task=config.dataset.task,

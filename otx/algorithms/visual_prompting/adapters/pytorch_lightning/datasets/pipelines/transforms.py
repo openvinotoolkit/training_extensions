@@ -8,13 +8,15 @@
 #
 
 from copy import deepcopy
-from typing import Tuple
+from typing import Tuple, Union, Dict
 
 import numpy as np
 import torch
 import torchvision.transforms as transforms
+from torch import Tensor
 from torch.nn import functional as F
 from torchvision.transforms.functional import resize, to_pil_image  # type: ignore
+from torchvision.transforms import Compose
 
 
 def collate_fn(batch):
@@ -33,22 +35,33 @@ class ResizeLongestSide:
     Resizes images to the longest side 'target_length', as well as provides
     methods for resizing coordinates and boxes. Provides methods for
     transforming both numpy array and batched torch tensors.
+
+    Args:
+        target_length (int): ...
     """
 
     def __init__(self, target_length: int) -> None:
         self.target_length = target_length
 
+    def __call__(self, item: Dict[str, Union[int, Tensor]]):
+        item["image"] = torch.as_tensor(
+            self.apply_image(item["image"]).transpose((2, 0, 1)),
+            dtype=torch.get_default_dtype())
+        item["mask"] = [torch.as_tensor(self.apply_image(mask)) for mask in item["mask"]]
+        item["bbox"] = self.apply_boxes(item["bbox"], item["original_size"])
+        if item["point"]:
+            item["point"] = self.apply_coords(item["point"], item["original_size"])
+
+        return item
+
     def apply_image(self, image: np.ndarray) -> np.ndarray:
-        """
-        Expects a numpy array with shape HxWxC in uint8 format.
-        """
+        """Expects a numpy array with shape HxWxC in uint8 format."""
         target_size = self.get_preprocess_shape(image.shape[0], image.shape[1], self.target_length)
         return np.array(resize(to_pil_image(image), target_size))
 
     def apply_coords(self, coords: np.ndarray, original_size: Tuple[int, ...]) -> np.ndarray:
-        """
-        Expects a numpy array of length 2 in the final dimension. Requires the
-        original image size in (H, W) format.
+        """Expects a numpy array of length 2 in the final dimension.
+        Requires the original image size in (H, W) format.
         """
         old_h, old_w = original_size
         new_h, new_w = self.get_preprocess_shape(
@@ -60,10 +73,7 @@ class ResizeLongestSide:
         return coords
 
     def apply_boxes(self, boxes: np.ndarray, original_size: Tuple[int, ...]) -> np.ndarray:
-        """
-        Expects a numpy array shape Bx4. Requires the original image size
-        in (H, W) format.
-        """
+        """Expects a numpy array shape Bx4. Requires the original image size in (H, W) format."""
         boxes = self.apply_coords(boxes.reshape(-1, 2, 2), original_size)
         return boxes.reshape(-1, 4)
 
@@ -115,32 +125,29 @@ class ResizeLongestSide:
         neww = int(neww + 0.5)
         newh = int(newh + 0.5)
         return (newh, neww)
-    
 
-class ResizeAndPad:
-    def __init__(self, target_size):
-        self.target_size = target_size
-        self.transform = ResizeLongestSide(target_size)
-        self.to_tensor = transforms.ToTensor()
 
-    def __call__(self, image, masks, bboxes):
-        # Resize image and masks
-        og_h, og_w, _ = image.shape
-        image = self.transform.apply_image(image)
-        masks = [torch.tensor(self.transform.apply_image(mask)) for mask in masks]
-        image = self.to_tensor(image)
-
-        # Pad image and masks to form a square
-        _, h, w = image.shape
+class Pad:
+    """"""
+    def __call__(self, item: Dict[str, Union[int, Tensor]]):
+        _, h, w = item["image"].shape
         max_dim = max(w, h)
         pad_w = (max_dim - w) // 2
         pad_h = (max_dim - h) // 2
-
         padding = (pad_w, pad_h, max_dim - w - pad_w, max_dim - h - pad_h)
-        image = transforms.Pad(padding)(image)
-        masks = [transforms.Pad(padding)(mask) for mask in masks]
 
-        # Adjust bounding boxes
-        bboxes = self.transform.apply_boxes(bboxes, (og_h, og_w))
-        bboxes = [[bbox[0] + pad_w, bbox[1] + pad_h, bbox[2] + pad_w, bbox[3] + pad_h] for bbox in bboxes]
-        return image, masks, bboxes
+        item["image"] = transforms.functional.pad(item["image"], padding, fill=0, padding_mode="constant")
+        item["mask"] = [transforms.functional.pad(mask, padding, fill=0, padding_mode="constant") for mask in item["mask"]]
+        item["bbox"] = [[bbox[0] + pad_w, bbox[1] + pad_h, bbox[2] + pad_w, bbox[3] + pad_h] for bbox in item["bbox"]]
+        return item
+
+
+class MultipleInputsCompose(Compose):
+    """Composes several transforms have multiple inputs together."""
+    def __call__(self, item: Dict[str, Union[int, Tensor]]):
+        for t in self.transforms:
+            if isinstance(t, transforms.Normalize):
+                item["image"] = t(item["image"])
+            else:
+                item = t(item)
+        return item
