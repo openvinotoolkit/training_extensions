@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### New features
 
 - Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
-- Add custom max iou assigner (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
+- Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
 
 ### Enhancements
 
