@@ -564,7 +564,13 @@ def patch_persistent_workers(config: Config):
         )
         if workers_per_gpu == 0:
             dataloader_cfg["persistent_workers"] = False
-            data_cfg[f"{subset}_dataloader"] = dataloader_cfg
+        elif "persistent_workers" not in dataloader_cfg:
+            dataloader_cfg["persistent_workers"] = True
+
+        if "pin_memory" not in dataloader_cfg:
+            dataloader_cfg["pin_memory"] = True
+
+        data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
 
 def get_adaptive_num_workers():

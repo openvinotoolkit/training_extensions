@@ -94,6 +94,7 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
             subset="val",
             dataloader_builder=mmdet_build_dataloader,
             distributed=distributed,
+            persistent_workers=False,
         )
 
         # This data and state dict will be used to build NNCF graph later
@@ -121,6 +122,7 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
                 subset="val",
                 dataloader_builder=mmdet_build_dataloader,
                 distributed=distributed,
+                persistent_workers=False,
             )
 
         model_eval_fn = partial(
