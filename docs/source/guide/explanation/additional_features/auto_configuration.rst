@@ -94,3 +94,19 @@ To use this feature, include the following command:
 .. Warning::
     When using a fixed epoch, training with larger batch sizes is generally faster than with smaller batch sizes.
     However, if early stop is enabled, training with a lower batch size can finish early.
+
+
+Auto-adapt num_workers
+----------------------
+
+This documentation explains the feature of automatically adapting the num_workers parameter based on the current hardware environment.
+The num_workers parameter controls the number of subprocesses used for data loading during training.
+While increasing num_workers can reduce data loading time, setting it too high can consume a significant amount of CPU memory.
+
+To simplify the process of setting num_workers manually, this feature automatically determines the optimal value based on the current hardware status.
+
+To enable this feature, use the following command:
+
+.. code-block::
+
+    $ otx train params --learning_parameters.auto_num_workers True
