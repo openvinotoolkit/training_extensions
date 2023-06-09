@@ -154,7 +154,6 @@ class MMActionTask(OTXActionTask):
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
         recipe_cfg.work_dir = self._output_path
@@ -163,8 +162,8 @@ class MMActionTask(OTXActionTask):
 
         self._configure_device(recipe_cfg, training)
 
-        if data_cfg is not None:
-            recipe_cfg.merge_from_dict(data_cfg)
+        if self._data_cfg is not None:
+            recipe_cfg.merge_from_dict(self._data_cfg)
 
         if self._task_type == TaskType.ACTION_CLASSIFICATION:
             _dataset_type = "OTXActionClsDataset"
