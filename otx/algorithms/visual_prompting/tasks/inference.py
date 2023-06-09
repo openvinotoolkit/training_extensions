@@ -15,12 +15,14 @@
 # and limitations under the License.
 
 import ctypes
+from copy import deepcopy
 import io
 import time
 import os
 import shutil
 import subprocess  # nosec
 import tempfile
+from collections import OrderedDict
 from glob import glob
 from typing import Dict, List, Optional, Union
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import sam_model_registry
@@ -126,16 +128,43 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             LightningModule: Visual prompting model with/without weights.
         """
-        if otx_model is None:
-            backbone = self.config.model.backbone
-        else:
-            backbone = otx_model
+        def get_model(
+            config: DictConfig,
+            checkpoint: Optional[str] = None,
+            state_dict: Optional[OrderedDict] = None
+        ):
+            backbone = config.model.backbone
+            if checkpoint is None:
+                checkpoint = config.model.checkpoint
 
-        # TODO (sungchul): where can load_from be applied?
-        checkpoint = self.config.model.checkpoint
-        
-        # TODO (sungchul): load model in different ways
-        model = sam_model_registry[backbone](checkpoint=checkpoint)
+            model = sam_model_registry[backbone](checkpoint=checkpoint)
+            if state_dict:
+                model.load_state_dict(state_dict)
+
+            return model
+            
+        if otx_model is None:
+            model = get_model(config=self.config)
+            logger.info(
+                "No trained model in project yet. Created new model with '%s'",
+                self.model_name,
+            )
+        else:
+            buffer = io.BytesIO(otx_model.get_data("weights.pth"))
+            model_data = torch.load(buffer, map_location=torch.device("cpu"))
+
+            if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
+                logger.warning(
+                    "Backbone of the model in the Task Environment is different from the one in the template. "
+                    f"creating model with backbone={model_data['config']['model']['backbone']}"
+                )
+                self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
+            try:
+                model = get_model(config=self.config, state_dict=model_data["model"])
+                logger.info("Loaded model weights from Task Environment")
+            except BaseException as exception:
+                raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+
         return model
 
     def cancel_training(self) -> None:
@@ -171,6 +200,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
+
         return dataset
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
@@ -181,20 +211,17 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 metric is chosen depending on the task type.
         """
-        metric: IPerformanceProvider
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            metric = MetricsHelper.compute_f_measure(output_resultset)
-        elif self.task_type == TaskType.ANOMALY_DETECTION:
-            metric = MetricsHelper.compute_anomaly_detection_scores(output_resultset)
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            metric = MetricsHelper.compute_anomaly_segmentation_scores(output_resultset)
-        else:
-            raise ValueError(f"Unknown task type: {self.task_type}")
-        output_resultset.performance = metric.get_performance()
+        # metric = MetricsHelper.compute_f_measure(output_resultset)
+        # output_resultset.performance = metric.get_performance()
 
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
-            output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
+        # if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+        #     accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
+        #     output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
+
+        metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset)
+        logger.info(f"mDice after evaluation: {metric.overall_dice.value}")
+        output_resultset.performance = metric.get_performance()
+        logger.info("Evaluation completed")
 
     def _export_to_onnx(self, onnx_path: str):
         """Export model to ONNX.

@@ -47,7 +47,9 @@ class SegmentAnything(LightningModule):
         freeze_image_encoder: bool = True,
         freeze_prompt_encoder: bool = True,
         freeze_mask_decoder: bool = False,
-        checkpoint: str = None
+        checkpoint: str = None,
+        mask_threshold: float = 0.,
+        return_logits: bool = False
     ) -> None:
         """
         SAM predicts object masks from an image and input prompts.
@@ -60,6 +62,7 @@ class SegmentAnything(LightningModule):
             freeze_prompt_encoder (bool): Whether freezing prompt encoder, default is True.
             freeze_mask_decoder (bool): Whether freezing mask decoder, default is False.
             checkpoint (optional, str): Checkpoint path to be loaded, default is None.
+            mask_threshold (float): 
         """
         super().__init__()
         # self.save_hyperparameters()
@@ -67,6 +70,8 @@ class SegmentAnything(LightningModule):
         self.image_encoder = image_encoder
         self.prompt_encoder = prompt_encoder
         self.mask_decoder = mask_decoder
+        self.mask_threshold = mask_threshold
+        self.return_logits = return_logits
 
         if freeze_image_encoder:
             for param in self.image_encoder.parameters():
@@ -95,14 +100,14 @@ class SegmentAnything(LightningModule):
                         state_dict = torch.load(f)
                 self.load_state_dict(state_dict)
 
-    def forward(self, images, bboxes):
+    def forward(self, images, bboxes, points=None):
         _, _, height, width = images.shape
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
         for embedding, bbox in zip(image_embeddings, bboxes):
             sparse_embeddings, dense_embeddings = self.prompt_encoder(
-                points=None,
+                points=points,
                 boxes=bbox,
                 masks=None,
             )
@@ -128,11 +133,12 @@ class SegmentAnything(LightningModule):
 
     def training_step(self, batch, batch_idx):
         """Training step of SAM."""
-        images = batch["image"]
-        bboxes = batch["bbox"]
-        gt_masks = batch["mask"]
+        images = batch["images"]
+        bboxes = batch["bboxes"]
+        points = batch["points"]
+        gt_masks = batch["masks"]
 
-        pred_masks, ious = self(images, bboxes)
+        pred_masks, ious = self(images, bboxes, points)
 
         loss_focal = 0.
         loss_dice = 0.
@@ -164,11 +170,12 @@ class SegmentAnything(LightningModule):
 
     def validation_step(self, batch, batch_idx):
         """Validation step of SAM."""
-        images = batch["image"]
-        bboxes = batch["bbox"]
-        gt_masks = batch["mask"]
+        images = batch["images"]
+        bboxes = batch["bboxes"]
+        points = batch["points"]
+        gt_masks = batch["masks"]
 
-        pred_masks, _ = self(images, bboxes)
+        pred_masks, _ = self(images, bboxes, points)
         for pred_mask, gt_mask in zip(pred_masks, gt_masks):
             self.val_iou(pred_mask, gt_mask)
             self.val_f1(pred_mask, gt_mask)
@@ -177,6 +184,20 @@ class SegmentAnything(LightningModule):
         self.log_dict(results, on_epoch=True, prog_bar=True)
 
         return results
+
+    def predict_step(self, batch, batch_idx):
+        """Predict step of SAM."""
+        images = batch["images"]
+        bboxes = batch["bboxes"]
+        points = batch["points"]
+
+        pred_masks, _ = self(images, bboxes, points)
+
+        masks = self.postprocess_masks(pred_masks, self.input_size, self.original_size)
+        if not self.return_logits:
+            masks = masks > self.mask_threshold
+
+        return masks
 
     def postprocess_masks(
         self,

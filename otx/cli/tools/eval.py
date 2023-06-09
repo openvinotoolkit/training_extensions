@@ -21,6 +21,7 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.model_template import TaskType
 from otx.cli.manager import ConfigManager
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model
@@ -133,7 +134,8 @@ def main():
 
     validation_dataset = dataset.get_subset(Subset.TESTING)
     predicted_validation_dataset = task.infer(
-        validation_dataset.with_empty_annotations(),
+        # temp (sungchul): remain annotation for visual prompting
+        validation_dataset if task.task_type == TaskType.VISUAL_PROMPTING else validation_dataset.with_empty_annotations(),
         InferenceParameters(is_evaluation=False),
     )
 

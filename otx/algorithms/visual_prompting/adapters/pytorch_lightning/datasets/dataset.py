@@ -44,18 +44,26 @@ logger = get_logger()
 
 
 class OTXVIsualPromptingDataset(Dataset):
-    """Visual Prompting Dataset Adaptor."""
+    """Visual Prompting Dataset Adaptor.
+    
+    Args:
+        config
+        dataset
+        transform
+        stage
+    """
 
     def __init__(
         self,
         config: Union[DictConfig, ListConfig],
         dataset: DatasetEntity,
-        transform: MultipleInputsCompose
+        transform: MultipleInputsCompose,
     ) -> None:
 
         self.config = config
         self.dataset = dataset
         self.transform = transform
+
         self.labels = dataset.get_labels()
         self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
 
@@ -133,11 +141,11 @@ class OTXVIsualPromptingDataset(Dataset):
 
         item.update(dict(
             original_size=(height, width),
-            image=dataset_item.numpy,
-            mask=masks,
-            bbox=bboxes,
-            label=labels,
-            point=None, # TODO (sungchul): update point information
+            images=dataset_item.numpy,
+            masks=masks,
+            bboxes=bboxes,
+            labels=labels,
+            points=None, # TODO (sungchul): update point information
         ))
         item = self.transform(item)
         return item
@@ -171,31 +179,36 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             image_size = [image_size]
 
         if stage == "fit" or stage is None:
-            self.train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
-            self.val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
+            train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
+            val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
 
             # TODO (sungchul): distinguish between train and val config here
-            self.train_transform = self.val_transform = MultipleInputsCompose([
+            train_transform = val_transform = MultipleInputsCompose([
                 ResizeLongestSide(target_length=max(image_size)),
                 Pad(),
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
+
+            self.train_dataset = OTXVIsualPromptingDataset(self.config, train_otx_dataset, train_transform)
+            self.val_dataset = OTXVIsualPromptingDataset(self.config, val_otx_dataset, val_transform)
 
         if stage == "test":
-            self.test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
-            self.test_transform = MultipleInputsCompose([
+            test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
+            test_transform = MultipleInputsCompose([
                 ResizeLongestSide(target_length=max(image_size)),
                 Pad(),
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
+            self.test_dataset = OTXVIsualPromptingDataset(self.config, test_otx_dataset, test_transform)
 
         if stage == "predict":
-            self.predict_otx_dataset = self.dataset
-            self.predict_transform = MultipleInputsCompose([
+            predict_otx_dataset = self.dataset
+            predict_transform = MultipleInputsCompose([
                 ResizeLongestSide(target_length=max(image_size)),
                 Pad(),
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
+            self.predict_dataset = OTXVIsualPromptingDataset(self.config, predict_otx_dataset, predict_transform)
 
     def summary(self):
         """Print size of the dataset, number of images."""
@@ -216,9 +229,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
         """
-        dataset = OTXVIsualPromptingDataset(self.config, self.train_otx_dataset, self.train_transform)
         return DataLoader(
-            dataset,
+            self.train_dataset,
             shuffle=False,
             batch_size=self.config.dataset.train_batch_size,
             num_workers=self.config.dataset.num_workers,
@@ -231,9 +243,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Validation Dataloader.
         """
-        dataset = OTXVIsualPromptingDataset(self.config, self.val_otx_dataset, self.val_transform)
         return DataLoader(
-            dataset,
+            self.val_dataset,
             shuffle=False,
             batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,
@@ -246,9 +257,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Test Dataloader.
         """
-        dataset = OTXVIsualPromptingDataset(self.config, self.test_otx_dataset, self.test_transform)
         return DataLoader(
-            dataset,
+            self.test_dataset,
             shuffle=False,
             batch_size=self.config.dataset.test_batch_size,
             num_workers=self.config.dataset.num_workers,
@@ -261,9 +271,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Predict Dataloader.
         """
-        dataset = OTXVIsualPromptingDataset(self.config, self.predict_otx_dataset, self.predict_transform)
         return DataLoader(
-            dataset,
+            self.predict_dataset,
             shuffle=False,
             batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,

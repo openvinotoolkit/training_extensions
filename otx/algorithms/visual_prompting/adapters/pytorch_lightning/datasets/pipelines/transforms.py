@@ -20,14 +20,20 @@ from torchvision.transforms import Compose
 
 
 def collate_fn(batch):
-    index = [item['index'] for item in batch]
-    image = torch.stack([item['image'] for item in batch])
-    bbox = [torch.tensor(item['bbox']) for item in batch]
-    mask = [torch.stack(item['mask']) for item in batch if item['mask'] != []]
-    label = [item['label'] for item in batch] if batch else []
-    if mask:
-        return {'index': index, 'image': image, 'bbox': bbox, 'mask': mask, 'label': label}
-    return {'index': -1, 'image': [], 'bbox': [], 'mask': [], 'label': []}
+    def _convert_empty_to_none(x):
+        func = torch.stack if x == "masks" else torch.tensor
+        items = [func(item[x]) for item in batch if item[x]]
+        return None if len(items) == 0 else items
+
+    index = [item["index"] for item in batch]
+    images = torch.stack([item["images"] for item in batch])
+    bboxes = _convert_empty_to_none("bboxes")
+    points = _convert_empty_to_none("points")
+    masks = _convert_empty_to_none("masks")
+    labels = [item["labels"] for item in batch]
+    if masks:
+        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "masks": masks, "label": labels}
+    return {"index": -1, "images": [], "bboxes": [], "points": [], "masks": [], "labels": []}
 
 
 class ResizeLongestSide:
@@ -44,14 +50,13 @@ class ResizeLongestSide:
         self.target_length = target_length
 
     def __call__(self, item: Dict[str, Union[int, Tensor]]):
-        item["image"] = torch.as_tensor(
-            self.apply_image(item["image"]).transpose((2, 0, 1)),
+        item["images"] = torch.as_tensor(
+            self.apply_image(item["images"]).transpose((2, 0, 1)),
             dtype=torch.get_default_dtype())
-        item["mask"] = [torch.as_tensor(self.apply_image(mask)) for mask in item["mask"]]
-        item["bbox"] = self.apply_boxes(item["bbox"], item["original_size"])
-        if item["point"]:
-            item["point"] = self.apply_coords(item["point"], item["original_size"])
-
+        item["masks"] = [torch.as_tensor(self.apply_image(mask)) for mask in item["masks"]]
+        item["bboxes"] = self.apply_boxes(item["bboxes"], item["original_size"])
+        if item["points"]:
+            item["points"] = self.apply_coords(item["points"], item["original_size"])
         return item
 
     def apply_image(self, image: np.ndarray) -> np.ndarray:
@@ -130,15 +135,17 @@ class ResizeLongestSide:
 class Pad:
     """"""
     def __call__(self, item: Dict[str, Union[int, Tensor]]):
-        _, h, w = item["image"].shape
+        _, h, w = item["images"].shape
         max_dim = max(w, h)
         pad_w = (max_dim - w) // 2
         pad_h = (max_dim - h) // 2
         padding = (pad_w, pad_h, max_dim - w - pad_w, max_dim - h - pad_h)
 
-        item["image"] = transforms.functional.pad(item["image"], padding, fill=0, padding_mode="constant")
-        item["mask"] = [transforms.functional.pad(mask, padding, fill=0, padding_mode="constant") for mask in item["mask"]]
-        item["bbox"] = [[bbox[0] + pad_w, bbox[1] + pad_h, bbox[2] + pad_w, bbox[3] + pad_h] for bbox in item["bbox"]]
+        item["images"] = transforms.functional.pad(item["images"], padding, fill=0, padding_mode="constant")
+        item["masks"] = [transforms.functional.pad(mask, padding, fill=0, padding_mode="constant") for mask in item["masks"]]
+        item["bboxes"] = [[bbox[0] + pad_w, bbox[1] + pad_h, bbox[2] + pad_w, bbox[3] + pad_h] for bbox in item["bboxes"]]
+        if item["points"]:
+            item["points"] = [[point[0] + pad_w, point[1] + pad_h, point[2] + pad_w, point[3] + pad_h] for point in item["points"]]
         return item
 
 
@@ -147,7 +154,7 @@ class MultipleInputsCompose(Compose):
     def __call__(self, item: Dict[str, Union[int, Tensor]]):
         for t in self.transforms:
             if isinstance(t, transforms.Normalize):
-                item["image"] = t(item["image"])
+                item["images"] = t(item["images"])
             else:
                 item = t(item)
         return item
