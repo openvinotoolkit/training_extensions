@@ -499,6 +499,51 @@ It will recognize the task by analyzing the dataset and if there is no splits fo
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train
 </pre></div>
 </div>
+<section id="auto-adapt-batch-size">
+<h2>Auto-adapt batch size<a class="headerlink" href="#auto-adapt-batch-size" title="Permalink to this heading">#</a></h2>
+<p>This feature adapts a batch size based on the current hardware environment.
+There are two methods available for adapting the batch size.</p>
+<ol class="arabic simple">
+<li><p>Prevent GPU Out of Memory (<cite>Safe</cite> mode)</p></li>
+</ol>
+<p>The first method checks if the current batch size is compatible with the available GPU devices.
+Larger batch sizes consume more GPU memory for training. Therefore, the system verifies if training is possible with the current batch size.
+If it’s not feasible, the batch size is decreased to reduce GPU memory usage.
+However, setting the batch size too low can slow down training.
+To address this, the batch size is reduced to the maximum amount that could be run safely on the current GPU resource.
+The learning rate is also adjusted based on the updated batch size accordingly.</p>
+<p>To use this feature, add the following parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train params --learning_parameters.auto_adapt_batch_size Safe
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Find the maximum executable batch size (<cite>Full</cite> mode)</p></li>
+</ol>
+<p>The second method aims to find a possible large batch size that reduces the overall training time.
+Increasing the batch size reduces the effective number of iterations required to sweep the whole dataset, thus speeds up the end-to-end training.
+However, it does not search for the maximum batch size as it is not efficient and may require significantly more time without providing substantial acceleration compared to a large batch size.
+Similar to the previous method, the learning rate is adjusted according to the updated batch size accordingly.</p>
+<p>To use this feature, add the following parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train params --learning_parameters.auto_adapt_batch_size Full
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When using a fixed epoch, training with larger batch sizes is generally faster than with smaller batch sizes.
+However, if early stop is enabled, training with a lower batch size can finish early.</p>
+</div>
+</section>
+<section id="auto-adapt-num-workers">
+<h2>Auto-adapt num_workers<a class="headerlink" href="#auto-adapt-num-workers" title="Permalink to this heading">#</a></h2>
+<p>This feature adapts the <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> parameter based on the current hardware environment.
+The <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> parameter controls the number of subprocesses used for data loading during training.
+While increasing <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> can reduce data loading time, setting it too high can consume a significant amount of CPU memory.</p>
+<p>To simplify the process of setting <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> manually, this feature automatically determines the optimal value based on the current hardware status.</p>
+<p>To use this feature, add the following parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train params --learning_parameters.auto_num_workers True
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -532,6 +577,28 @@ It will recognize the task by analyzing the dataset and if there is no splits fo
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#auto-adapt-batch-size">
+   Auto-adapt batch size
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#auto-adapt-num-workers">
+   Auto-adapt num_workers
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
