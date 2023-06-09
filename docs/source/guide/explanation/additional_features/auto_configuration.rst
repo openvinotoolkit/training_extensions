@@ -63,29 +63,29 @@ Auto-adapt batch size
 This feature adapts a batch size based on the current hardware environment.
 There are two methods available for adapting the batch size.
 
-1. Checking GPU Compatibility
+1. Prevent GPU Out of Memory (`Safe` mode)
 
 The first method checks if the current batch size is compatible with the available GPU devices.
 Larger batch sizes consume more GPU memory for training. Therefore, the system verifies if training is possible with the current batch size.
 If it's not feasible, the batch size is decreased to reduce GPU memory usage.
 However, setting the batch size too low can slow down training.
-To address this, a maximum batch size that is still practical is provided.
-The learning rate is also adjusted based on the updated batch size.
+To address this, the batch size is reduced to the maximum amount that could be run safely on the current GPU resource.
+The learning rate is also adjusted based on the updated batch size accordingly.
 
-To enable this feature, add the following command:
+To use this feature, add the following parameter:
 
 .. code-block::
 
     $ otx train params --learning_parameters.auto_adapt_batch_size Safe
 
-2. Finding a possible large Batch Size
+2. Find the maximum executable batch size (`Full` mode)
 
 The second method aims to find a possible large batch size that reduces the overall training time.
-Increasing the batch size reduces the number of iterations required for validation, thus speeding up training.
+Increasing the batch size reduces the effective number of iterations required to sweep the whole dataset, thus speeds up the end-to-end training.
 However, it does not search for the maximum batch size as it is not efficient and may require significantly more time without providing substantial acceleration compared to a large batch size.
-Similar to the previous method, the learning rate is adjusted according to the updated batch size.
+Similar to the previous method, the learning rate is adjusted according to the updated batch size accordingly.
 
-To use this feature, include the following command:
+To use this feature, add the following parameter:
 
 .. code-block::
 
@@ -106,7 +106,7 @@ While increasing ``num_workers`` can reduce data loading time, setting it too hi
 
 To simplify the process of setting ``num_workers`` manually, this feature automatically determines the optimal value based on the current hardware status.
 
-To enable this feature, use the following command:
+To use this feature, add the following parameter:
 
 .. code-block::
 
