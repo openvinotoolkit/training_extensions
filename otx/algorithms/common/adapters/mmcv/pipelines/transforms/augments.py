@@ -26,7 +26,8 @@ class Augments:  # pylint: disable=unused-argument
         def _interpolation(kwargs):
             interpolation = kwargs.pop("resample", Resampling.BILINEAR)
             if isinstance(interpolation, (list, tuple)):
-                return random.choice(interpolation)
+                # disable B311 random - used for the random sampling not for security/crypto
+                return random.choice(interpolation)  # nosec B311
             return interpolation
 
         new_kwargs = {**kwargs, "resample": _interpolation(kwargs)}

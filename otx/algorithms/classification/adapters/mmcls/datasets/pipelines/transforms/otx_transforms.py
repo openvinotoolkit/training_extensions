@@ -58,14 +58,17 @@ class RandomRotate:
 
     def __call__(self, results, *args, **kwargs):
         """Call function of RandomRotate class."""
-        if random.uniform(0, 1) > self.p:
+        # disable B311 random - used for the random sampling not for security/crypto
+        if random.uniform(0, 1) > self.p:  # nosec B311
             return results
         for key in results.get("img_fields", ["img"]):
             img = results[key]
             if self.discrete:
-                rnd_angle = float(self.values[random.randint(0, len(self.values) - 1)])
+                # disable B311 random - used for the random sampling not for security/crypto
+                rnd_angle = float(self.values[random.randint(0, len(self.values) - 1)])  # nosec B311
             else:
-                rnd_angle = random.randint(self.angle[0], self.angle[1])
+                # disable B311 random - used for the random sampling not for security/crypto
+                rnd_angle = random.randint(self.angle[0], self.angle[1])  # nosec B311
             if not Image.isImageType(img):
                 img = Image.fromarray(img)
 

@@ -19,7 +19,7 @@ import io
 import json
 import os
 import shutil
-import subprocess  # nosec
+import subprocess  # nosec B404
 import tempfile
 from glob import glob
 from typing import Dict, List, Optional, Union

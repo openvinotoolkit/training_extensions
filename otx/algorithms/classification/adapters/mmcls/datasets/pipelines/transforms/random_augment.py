@@ -86,7 +86,8 @@ def posterize(img, value, max_value, bias=0):
 def rotate(img, value, max_value, bias=0):
     """Applies rotation to an image."""
     value = _int_parameter(value, max_value) + bias
-    if random.random() < 0.5:
+    # disable B311 random - used for the random sampling not for security/crypto
+    if random.random() < 0.5:  # nosec B311
         value = -value
     return img.rotate(value), value
 
@@ -100,7 +101,8 @@ def sharpness(img, value, max_value, bias=0):
 def shear_x(img, value, max_value, bias=0):
     """Applies ShearX to an image."""
     value = _float_parameter(value, max_value) + bias
-    if random.random() < 0.5:
+    # disable B311 random - used for the random sampling not for security/crypto
+    if random.random() < 0.5:  # nosec B311
         value = -value
     return img.transform(img.size, PIL.Image.AFFINE, (1, value, 0, 0, 1, 0)), value
 
@@ -108,7 +110,8 @@ def shear_x(img, value, max_value, bias=0):
 def shear_y(img, value, max_value, bias=0):
     """Applies ShearY to an image."""
     value = _float_parameter(value, max_value) + bias
-    if random.random() < 0.5:
+    # disable B311 random - used for the random sampling not for security/crypto
+    if random.random() < 0.5:  # nosec B311
         value = -value
     return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, value, 1, 0)), value
 
@@ -122,7 +125,8 @@ def solarize(img, value, max_value, bias=0):
 def translate_x(img, value, max_value, bias=0):
     """Applies TranslateX to an image."""
     value = _float_parameter(value, max_value) + bias
-    if random.random() < 0.5:
+    # disable B311 random - used for the random sampling not for security/crypto
+    if random.random() < 0.5:  # nosec B311
         value = -value
     value = int(value * img.size[0])
     return img.transform(img.size, PIL.Image.AFFINE, (1, 0, value, 0, 1, 0)), value
@@ -131,7 +135,8 @@ def translate_x(img, value, max_value, bias=0):
 def translate_y(img, value, max_value, bias=0):
     """Applies TranslateX to an image."""
     value = _float_parameter(value, max_value) + bias
-    if random.random() < 0.5:
+    # disable B311 random - used for the random sampling not for security/crypto
+    if random.random() < 0.5:  # nosec B311
         value = -value
     value = int(value * img.size[1])
     return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, 0, 1, value)), value
@@ -182,10 +187,12 @@ class OTXRandAugment:
             img = results[key]
             if not PIL.Image.isImageType(img):
                 img = PIL.Image.fromarray(results[key])
-            augs = random.choices(self.augment_pool, k=self.num_aug)
+            # disable B311 random - used for the random sampling not for security/crypto
+            augs = random.choices(self.augment_pool, k=self.num_aug)  # nosec B311
             for aug, max_value, bias in augs:
                 value = np.random.randint(1, self.magnitude)
-                if random.random() < 0.5:
+                # disable B311 random - used for the random sampling not for security/crypto
+                if random.random() < 0.5:  # nosec B311
                     img, value = aug(img, value=value, max_value=max_value, bias=bias)
                     results[f"rand_mc_{aug.__name__}"] = value
             img, xy, rec_color = cutout_abs(img, self.cutout_value)

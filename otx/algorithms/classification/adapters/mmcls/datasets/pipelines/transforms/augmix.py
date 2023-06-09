@@ -89,7 +89,8 @@ class OpsFabric:
     @staticmethod
     def randomly_negate(value):
         """With 50% prob, negate the value."""
-        return -value if random.random() > 0.5 else value
+        # disable B311 random - used for the random sampling not for security/crypto
+        return -value if random.random() > 0.5 else value  # nosec B311
 
     def _rotate_level_to_arg(self, level, _hparams):
         # range [-30, 30]
@@ -138,14 +139,16 @@ class OpsFabric:
 
     def __call__(self, img):
         """Call method of OpsFabric class."""
-        if self.prob < 1.0 and random.random() > self.prob:
+        # disable B311 random - used for the random sampling not for security/crypto
+        if self.prob < 1.0 and random.random() > self.prob:  # nosec B311
             return img
         magnitude = self.aug_factory.magnitude
         magnitude_std = self.aug_factory.magnitude_std
         level_fn = self.aug_factory.level_fn
         if magnitude_std:
             if magnitude_std == float("inf"):
-                magnitude = random.uniform(0, magnitude)
+                # disable B311 random - used for the random sampling not for security/crypto
+                magnitude = random.uniform(0, magnitude)  # nosec B311
             elif magnitude_std > 0:
                 magnitude = random.gauss(magnitude, magnitude_std)
         magnitude = min(self.max_level, max(0, magnitude))  # clip to valid range
