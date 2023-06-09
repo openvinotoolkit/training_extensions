@@ -178,7 +178,6 @@ class MMDetectionTask(OTXDetectionTask):
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
         if self._data_cfg is not None:
@@ -200,7 +199,7 @@ class MMDetectionTask(OTXDetectionTask):
             recipe_cfg,
             train_dataset,
             self._model_ckpt,
-            data_cfg,
+            self._data_cfg,
             training,
             subset,
             ir_options,
