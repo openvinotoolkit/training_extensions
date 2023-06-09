@@ -16,6 +16,7 @@
 
 import ctypes
 import io
+import time
 import os
 import shutil
 import subprocess  # nosec
@@ -23,30 +24,14 @@ import tempfile
 from glob import glob
 from typing import Dict, List, Optional, Union
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import sam_model_registry
-from torch import optim, nn, utils, Tensor
-import segmentation_models_pytorch as smp
 
-import torch.nn.functional as F
 import torch
-from anomalib.models import AnomalyModule, get_model
-from anomalib.post_processing import NormalizationMethod, ThresholdMethod
-from anomalib.utils.callbacks import (
-    MetricsConfigurationCallback,
-    MinMaxNormalizationCallback,
-    PostProcessingConfigurationCallback,
-)
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import Trainer
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
-    AnomalyInferenceCallback,
-    ProgressCallback,
-)
-# from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import get_visual_promtping_config
-from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.visual_prompting.configs.base.configuration import VisualPromptingConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -70,7 +55,8 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-import pytorch_lightning as pl
+from pytorch_lightning import LightningModule
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import OTXVisualPromptingDataModule
 
 logger = get_logger()
 
@@ -98,10 +84,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         # Hyperparameters.
         self._work_dir_is_temp = False
-        if output_path is None:
-            output_path = tempfile.mkdtemp(prefix="otx-visual_prompting")
+        self.output_path = output_path
+        if self.output_path is None:
+            self.output_path = tempfile.mkdtemp(prefix="otx-visual_prompting")
             self._work_dir_is_temp = True
-        self.project_path: str = output_path
         self.config = self.get_config()
 
         # Set default model attributes.
@@ -112,6 +98,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.model = self.load_model(otx_model=task_environment.model)
 
         self.trainer: Trainer
+        
+        self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """Get Visual Prompting Config from task environment.
@@ -121,13 +109,12 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         self.hyper_parameters: VisualPromptingConfig = self.task_environment.get_hyper_parameters()
         config = get_visual_promtping_config(task_name=self.model_name, otx_config=self.hyper_parameters)
-        config.project.path = self.project_path
 
         config.dataset.task = "visual_prompting"
 
         return config
 
-    def load_model(self, otx_model: Optional[ModelEntity]) -> pl.LightningModule:
+    def load_model(self, otx_model: Optional[ModelEntity]) -> LightningModule:
         """Create and Load Visual Prompting Module.
 
         Currently, load model through `sam_model_registry` because there is only SAM.
@@ -137,7 +124,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             otx_model (Optional[ModelEntity]): OTX Model from the task environment.
 
         Returns:
-            pl.LightningModule: Visual prompting model with/without weights.
+            LightningModule: Visual prompting model with/without weights.
         """
         if otx_model is None:
             backbone = self.config.model.backbone
@@ -175,29 +162,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             DatasetEntity: Output dataset with predictions.
         """
         logger.info("Performing inference on the validation set using the base torch model.")
-        config = self.get_config()
-        datamodule = OTXAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTXVisualPromptingDataModule(config=self.config, dataset=dataset)
 
-        logger.info("Inference Configs '%s'", config)
+        logger.info("Inference Configs '%s'", self.config)
 
         # Callbacks.
-        progress = ProgressCallback(parameters=inference_parameters)
-        inference = AnomalyInferenceCallback(dataset, self.labels, self.task_type)
-        normalize = MinMaxNormalizationCallback()
-        metrics_configuration = MetricsConfigurationCallback(
-            task=config.dataset.task,
-            image_metrics=config.metrics.image,
-            pixel_metrics=config.metrics.get("pixel"),
-        )
-        post_processing_configuration = PostProcessingConfigurationCallback(
-            normalization_method=NormalizationMethod.MIN_MAX,
-            threshold_method=ThresholdMethod.ADAPTIVE,
-            manual_image_threshold=config.metrics.threshold.manual_image,
-            manual_pixel_threshold=config.metrics.threshold.manual_pixel,
-        )
-        callbacks = [progress, normalize, inference, metrics_configuration, post_processing_configuration]
+        callbacks = [ProgressCallback(parameters=inference_parameters)]
 
-        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
+        self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
         return dataset
 
@@ -311,7 +283,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         return {
             "model": self.model.state_dict(),
             "config": self.get_config(),
-            "VERSION": 1,
+            "version": self.trainer.logger.version,
         }
 
     def save_model(self, output_model: ModelEntity) -> None:

@@ -23,28 +23,13 @@ model:
   backbone: vit_b
   checkpoint: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
 
-metrics:
-  image:
-    - F1Score
-    - AUROC
-  pixel:
-    - IoU
-    - AUROC
-  threshold:
-    method: adaptive #options: [adaptive, manual]
-    manual_image: null
-    manual_pixel: null
-
-visualization:
-  show_images: False # show images on the screen
-  save_images: True # save images to the file system
-  log_images: True # log images to the available loggers (if any)
-  image_save_path: null # path to which images will be saved
-  mode: full # options: ["full", "simple"]
-
-project:
-  seed: 42
-  path: ./results
+callback:
+  checkpoint:
+    # arguments for ModelCheckpoint
+    monitor: val_IoU
+    mode: max
+    save_last: true
+    verbose: true
 
 logging:
   logger: [csv] # options: [comet, tensorboard, wandb, csv] or combinations.

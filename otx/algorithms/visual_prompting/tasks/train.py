@@ -18,15 +18,9 @@ import io
 from typing import Optional
 
 import torch
-from anomalib.models import AnomalyModule, get_model
-from anomalib.post_processing import NormalizationMethod, ThresholdMethod
-from anomalib.utils.callbacks import (
-    MetricsConfigurationCallback,
-    MinMaxNormalizationCallback,
-    PostProcessingConfigurationCallback,
-)
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.loggers import CSVLogger
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.common.utils.logger import get_logger
@@ -73,28 +67,14 @@ class TrainingTask(InferenceTask, ITrainingTask):
         logger.info("Training Configs '%s'", self.config)
         
         datamodule = OTXVisualPromptingDataModule(config=self.config, dataset=dataset)
+        loggers = CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp)
         callbacks = [
-            # LearningRateMonitor(logging_interval='step'),
             ProgressCallback(parameters=train_parameters),
-            ModelCheckpoint(monitor="iou", mode="max"),
-            # MinMaxNormalizationCallback(),
-            # MetricsConfigurationCallback(
-            #     task=config.dataset.task,
-            #     image_metrics=config.metrics.image,
-            #     pixel_metrics=config.metrics.get("pixel"),
-            # ),
-            # PostProcessingConfigurationCallback(
-            #     normalization_method=NormalizationMethod.MIN_MAX,
-            #     threshold_method=ThresholdMethod.ADAPTIVE,
-            #     manual_image_threshold=config.metrics.threshold.manual_image,
-            #     manual_pixel_threshold=config.metrics.threshold.manual_pixel,
-            # ),
+            ModelCheckpoint(dirpath=loggers.log_dir, **self.config.callback.checkpoint),
         ]
 
-        self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
+        self.trainer = Trainer(**self.config.trainer, logger=loggers, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
-        logger.info("Evaluation with best checkpoint.")
-        self.trainer.validate(model=self.model, datamodule=datamodule)
 
         self.save_model(output_model)
 

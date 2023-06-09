@@ -28,7 +28,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders 
     SAMPromptEncoder,
 )
 
-import pytorch_lightning as pl
+from pytorch_lightning import LightningModule
 
 
 CKPT_PATHS = {
@@ -38,7 +38,7 @@ CKPT_PATHS = {
 }
 
 
-class SegmentAnything(pl.LightningModule):
+class SegmentAnything(LightningModule):
     def __init__(
         self,
         image_encoder: nn.Module,
@@ -62,6 +62,8 @@ class SegmentAnything(pl.LightningModule):
             checkpoint (optional, str): Checkpoint path to be loaded, default is None.
         """
         super().__init__()
+        # self.save_hyperparameters()
+
         self.image_encoder = image_encoder
         self.prompt_encoder = prompt_encoder
         self.mask_decoder = mask_decoder
@@ -149,7 +151,13 @@ class SegmentAnything(pl.LightningModule):
             loss_iou += F.mse_loss(iou_prediction, batch_iou.unsqueeze(1), reduction='sum') / num_masks
 
         loss = 20. * loss_focal + loss_dice + loss_iou
-        results = dict(iou=self.train_iou, f1=self.train_f1, loss=loss, loss_focal=loss_focal, loss_dice=loss_dice, loss_iou=loss_iou)
+        results = dict(
+            train_IoU=self.train_iou,
+            train_F1=self.train_f1,
+            train_loss=loss,
+            train_loss_focal=loss_focal,
+            train_loss_dice=loss_dice,
+            train_loss_iou=loss_iou)
         self.log_dict(results, prog_bar=True)
 
         return loss
@@ -165,7 +173,7 @@ class SegmentAnything(pl.LightningModule):
             self.val_iou(pred_mask, gt_mask)
             self.val_f1(pred_mask, gt_mask)
 
-        results = dict(iou=self.val_iou, f1=self.val_f1)
+        results = dict(val_IoU=self.val_iou, val_F1=self.val_f1)
         self.log_dict(results, on_epoch=True, prog_bar=True)
 
         return results
