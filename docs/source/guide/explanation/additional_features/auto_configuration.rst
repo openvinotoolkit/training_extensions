@@ -60,7 +60,8 @@ Move to this folder and simply run without any options to start training:
 Auto-adapt batch size
 ---------------------
 
-This documentation explains the feature of automatically adapting the batch size during training. There are two methods available for adapting the batch size.
+This feature adapts a batch size based on the current hardware environment.
+There are two methods available for adapting the batch size.
 
 1. Checking GPU Compatibility
 
@@ -99,11 +100,11 @@ To use this feature, include the following command:
 Auto-adapt num_workers
 ----------------------
 
-This documentation explains the feature of automatically adapting the num_workers parameter based on the current hardware environment.
-The num_workers parameter controls the number of subprocesses used for data loading during training.
-While increasing num_workers can reduce data loading time, setting it too high can consume a significant amount of CPU memory.
+This feature adapts the ``num_workers`` parameter based on the current hardware environment.
+The ``num_workers`` parameter controls the number of subprocesses used for data loading during training.
+While increasing ``num_workers`` can reduce data loading time, setting it too high can consume a significant amount of CPU memory.
 
-To simplify the process of setting num_workers manually, this feature automatically determines the optimal value based on the current hardware status.
+To simplify the process of setting ``num_workers`` manually, this feature automatically determines the optimal value based on the current hardware status.
 
 To enable this feature, use the following command:
 
