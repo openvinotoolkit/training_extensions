@@ -111,7 +111,6 @@ class OTXVIsualPromptingDataset(Dataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        # height, width = self.config.dataset.image_size
 
         # load annotations for item
         bboxes = []
@@ -246,7 +245,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         return DataLoader(
             self.val_dataset,
             shuffle=False,
-            batch_size=self.config.dataset.eval_batch_size,
+            batch_size=self.config.dataset.val_batch_size,
             num_workers=self.config.dataset.num_workers,
             collate_fn=collate_fn,
         )
@@ -274,7 +273,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         return DataLoader(
             self.predict_dataset,
             shuffle=False,
-            batch_size=self.config.dataset.eval_batch_size,
+            batch_size=1,
             num_workers=self.config.dataset.num_workers,
             collate_fn=collate_fn,
         )
