@@ -21,7 +21,7 @@ from torchvision.transforms import Compose
 
 def collate_fn(batch):
     def _convert_empty_to_none(x):
-        func = torch.stack if x == "masks" else torch.tensor
+        func = torch.stack if x == "gt_masks" else torch.tensor
         items = [func(item[x]) for item in batch if item[x]]
         return None if len(items) == 0 else items
 
@@ -29,11 +29,11 @@ def collate_fn(batch):
     images = torch.stack([item["images"] for item in batch])
     bboxes = _convert_empty_to_none("bboxes")
     points = _convert_empty_to_none("points")
-    masks = _convert_empty_to_none("masks")
+    gt_masks = _convert_empty_to_none("gt_masks")
     labels = [item["labels"] for item in batch]
-    if masks:
-        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "masks": masks, "label": labels}
-    return {"index": -1, "images": [], "bboxes": [], "points": [], "masks": [], "labels": []}
+    if gt_masks:
+        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "gt_masks": gt_masks, "label": labels}
+    return {"index": -1, "images": [], "bboxes": [], "points": [], "gt_masks": [], "labels": []}
 
 
 class ResizeLongestSide:
@@ -53,7 +53,7 @@ class ResizeLongestSide:
         item["images"] = torch.as_tensor(
             self.apply_image(item["images"]).transpose((2, 0, 1)),
             dtype=torch.get_default_dtype())
-        item["masks"] = [torch.as_tensor(self.apply_image(mask)) for mask in item["masks"]]
+        item["gt_masks"] = [torch.as_tensor(self.apply_image(gt_mask)) for gt_mask in item["gt_masks"]]
         item["bboxes"] = self.apply_boxes(item["bboxes"], item["original_size"])
         if item["points"]:
             item["points"] = self.apply_coords(item["points"], item["original_size"])
@@ -142,7 +142,7 @@ class Pad:
         padding = (pad_w, pad_h, max_dim - w - pad_w, max_dim - h - pad_h)
 
         item["images"] = transforms.functional.pad(item["images"], padding, fill=0, padding_mode="constant")
-        item["masks"] = [transforms.functional.pad(mask, padding, fill=0, padding_mode="constant") for mask in item["masks"]]
+        item["gt_masks"] = [transforms.functional.pad(gt_mask, padding, fill=0, padding_mode="constant") for gt_mask in item["gt_masks"]]
         item["bboxes"] = [[bbox[0] + pad_w, bbox[1] + pad_h, bbox[2] + pad_w, bbox[3] + pad_h] for bbox in item["bboxes"]]
         if item["points"]:
             item["points"] = [[point[0] + pad_w, point[1] + pad_h, point[2] + pad_w, point[3] + pad_h] for point in item["points"]]

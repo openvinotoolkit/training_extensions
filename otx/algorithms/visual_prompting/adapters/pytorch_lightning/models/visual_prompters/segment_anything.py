@@ -12,12 +12,12 @@ reference: https://github.com/facebookresearch/segment-anything
 #
 
 from functools import partial
-from typing import Any, Dict, List, Tuple
-from torch import optim
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 import torchmetrics
-from torch import nn
+from pytorch_lightning import LightningModule
+from torch import nn, optim
 from torch.nn import functional as F
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.decoders import (
@@ -27,9 +27,6 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders 
     SAMImageEncoderViT,
     SAMPromptEncoder,
 )
-
-from pytorch_lightning import LightningModule
-
 
 CKPT_PATHS = {
     "vit_b": "https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth",
@@ -101,7 +98,6 @@ class SegmentAnything(LightningModule):
                 self.load_state_dict(state_dict)
 
     def forward(self, images, bboxes, points=None):
-        _, _, height, width = images.shape
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
@@ -120,13 +116,7 @@ class SegmentAnything(LightningModule):
                 multimask_output=False,
             )
 
-            masks = F.interpolate(
-                low_res_masks,
-                (height, width),
-                mode="bilinear",
-                align_corners=False,
-            )
-            pred_masks.append(masks.squeeze(1))
+            pred_masks.append(low_res_masks)
             ious.append(iou_predictions)
 
         return pred_masks, ious
@@ -136,7 +126,7 @@ class SegmentAnything(LightningModule):
         images = batch["images"]
         bboxes = batch["bboxes"]
         points = batch["points"]
-        gt_masks = batch["masks"]
+        gt_masks = batch["gt_masks"]
 
         pred_masks, ious = self(images, bboxes, points)
 
@@ -144,8 +134,8 @@ class SegmentAnything(LightningModule):
         loss_dice = 0.
         loss_iou = 0.
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-
         for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, ious):
+            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
             self.train_iou(pred_mask, gt_mask)
             self.train_f1(pred_mask, gt_mask)
             pred_mask = pred_mask.flatten(1)
@@ -173,16 +163,16 @@ class SegmentAnything(LightningModule):
         images = batch["images"]
         bboxes = batch["bboxes"]
         points = batch["points"]
-        gt_masks = batch["masks"]
+        gt_masks = batch["gt_masks"]
 
         pred_masks, _ = self(images, bboxes, points)
         for pred_mask, gt_mask in zip(pred_masks, gt_masks):
+            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
             self.val_iou(pred_mask, gt_mask)
             self.val_f1(pred_mask, gt_mask)
 
         results = dict(val_IoU=self.val_iou, val_F1=self.val_f1)
         self.log_dict(results, on_epoch=True, prog_bar=True)
-
         return results
 
     def predict_step(self, batch, batch_idx):
@@ -193,7 +183,9 @@ class SegmentAnything(LightningModule):
 
         pred_masks, _ = self(images, bboxes, points)
 
-        masks = self.postprocess_masks(pred_masks, self.input_size, self.original_size)
+        masks = [
+            self.postprocess_masks(pred_mask, images[i].shape[2:], batch["original_size"][i], is_predict=True) for i, pred_mask in enumerate(pred_masks)
+        ]
         if not self.return_logits:
             masks = masks > self.mask_threshold
 
@@ -203,32 +195,27 @@ class SegmentAnything(LightningModule):
         self,
         masks: torch.Tensor,
         input_size: Tuple[int, ...],
-        original_size: Tuple[int, ...],
+        original_size: Optional[Tuple[int, ...]] = None,
+        is_predict: bool = False
     ) -> torch.Tensor:
         """
         Remove padding and upscale masks to the original image size.
 
-        Arguments:
-          masks (torch.Tensor): Batched masks from the mask_decoder,
-            in BxCxHxW format.
-          input_size (tuple(int, int)): The size of the image input to the
-            model, in (H, W) format. Used to remove padding.
-          original_size (tuple(int, int)): The original size of the image
-            before resizing for input to the model, in (H, W) format.
+        Args:
+            masks (torch.Tensor): Batched masks from the mask_decoder, in BxCxHxW format.
+            input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format. Used to remove padding.
+            original_size (tuple(int, int)): The original size of the image before resizing for input to the model, in (H, W) format.
+            is_predict (bool, optional): ...
 
         Returns:
           (torch.Tensor): Batched masks in BxCxHxW format, where (H, W)
             is given by original_size.
         """
-        masks = F.interpolate(
-            masks,
-            (self.image_encoder.img_size, self.image_encoder.img_size),
-            mode="bilinear",
-            align_corners=False,
-        )
-        masks = masks[..., : input_size[0], : input_size[1]]
-        masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
-        return masks
+        masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
+        if is_predict:
+            masks = masks[..., : input_size[0], : input_size[1]]
+            masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
+        return masks.squeeze(1)
     
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-4)
