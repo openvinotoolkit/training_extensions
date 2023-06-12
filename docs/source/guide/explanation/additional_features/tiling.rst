@@ -89,7 +89,7 @@ Tiling Sampling Strategy
 ------------------------
 To accelerate the training process, the OpenVINO Training Extensions introduces a tile sampling strategy. This strategy involves randomly sampling a percentage of tile images from the dataset to be used for training. 
 
-Since tiling train and validation on all tiles from a large image can take a significant amount of time, sampling the tile dataset can save training and validation time. 
+Since training and validation on all tiles from a high-resolution image dataset can be time-consuming, sampling the tile dataset can significantly reduce the training and validation time.
 
 It's important to note that sampling is applied to the training and validation datasets, not the test dataset.
 
