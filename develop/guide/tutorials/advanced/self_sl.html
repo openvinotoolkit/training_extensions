@@ -484,8 +484,8 @@ environment:</p>
 </section>
 <section id="pre-training">
 <h2>Pre-training<a class="headerlink" href="#pre-training" title="Permalink to this heading">#</a></h2>
-<p>1. Prepare dataset and model. To prepare dataset and decide model, refer to <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a>.
-In this self-supervised learning tutorial, <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a> and <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html#classification-models"><span class="std std-ref">MobileNet-V3-large-1x</span></a> model used in <a class="reference internal" href="../base/how_to_train/classification.html"><span class="doc">classification tutorial</span></a> is used as it is.</p>
+<p>1. In this self-supervised learning tutorial, images from <a class="reference external" href="https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset">flowers dataset</a>
+and <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html#classification-models"><span class="std std-ref">MobileNet-V3-large-1x</span></a> model is utilized.</p>
 <p>2. Prepare OpenVINO™ Training Extensions workspace for <strong>supervised learning</strong> by running
 the following command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x
@@ -505,7 +505,7 @@ the following command:</p>
 </div>
 <p>3. Prepare an OpenVINO™ Training Extensions workspace
 for <strong>self-supervised learning</strong> by running the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type SELFSUPERVISED --workspace otx-workspace-CLASSIFICATION-Selfsupervised
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type Selfsupervised --workspace otx-workspace-CLASSIFICATION-Selfsupervised
 
 [*] Workspace Path: otx-workspace-CLASSIFICATION-Selfsupervised
 [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
@@ -520,12 +520,9 @@ for <strong>self-supervised learning</strong> by running the following command:<
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Three things must be considered to set the workspace for self-supervised learning:</p>
-<ol class="arabic simple">
-<li><p>add <code class="docutils literal notranslate"><span class="pre">--train-type</span> <span class="pre">Selfsupervised</span></code> in the command to get the training components for self-supervised learning,</p></li>
-<li><p>update the path set as <code class="docutils literal notranslate"><span class="pre">train-data-roots</span></code>,</p></li>
-<li><p>and add <code class="docutils literal notranslate"><span class="pre">--workspace</span></code> to distinguish self-supervised learning workspace from supervised learning workspace.</p></li>
-</ol>
+<p>One important thing must be considered to set the workspace for self-supervised learning:</p>
+<p>1. It is also possible to pass just a directory with any images to <code class="docutils literal notranslate"><span class="pre">--train-data-roots</span></code> then <code class="docutils literal notranslate"><span class="pre">--train-type</span> <span class="pre">Selfsupervised</span></code> is not needed. OpenVINO™ Training Extensions will recognize this training type automatically.
+However, if you passed a full imagenet data format (with different sub-folders inside), this option is mandatory since it is hard to distinguish between supervised training.</p>
 </div>
 <p>After the workspace creation, the workspace structure is as follows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>otx-workspace-CLASSIFICATION
@@ -557,13 +554,11 @@ otx-workspace-CLASSIFICATION-Selfsupervised
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html#selfsl-semantic-segmentation"><span class="std std-ref">semantic segmentation</span></a>, <code class="docutils literal notranslate"><span class="pre">--train-data-root</span></code> must be set to a directory including only images, not masks, like below.</p>
+<p>For <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html#selfsl-semantic-segmentation"><span class="std std-ref">semantic segmentation</span></a>, <code class="docutils literal notranslate"><span class="pre">--train-data-root</span></code> must be set to a directory including <strong>only images</strong>, like below.</p>
 <p>For <a class="reference external" href="http://host.robots.ox.ac.uk/pascal/VOC/voc2012">VOC2012 dataset</a> used in <a class="reference internal" href="../base/how_to_train/semantic_segmentation.html"><span class="doc">semantic segmentation tutorial</span></a>, for example, the path <code class="docutils literal notranslate"><span class="pre">data/VOCdevkit/VOC2012/JPEGImages</span></code> must be set instead of <code class="docutils literal notranslate"><span class="pre">data/VOCdevkit/VOC2012</span></code>.</p>
-<p>Please refer to <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html#selfsl-semantic-segmentation"><span class="std std-ref">Explanation of Self-Supervised Learning for Semantic Segmentation</span></a>.
-And don’t forget to add <code class="docutils literal notranslate"><span class="pre">--train-type</span> <span class="pre">Selfsupervised</span></code>.</p>
+<p>Please refer to <a class="reference internal" href="../../explanation/algorithms/segmentation/semantic_segmentation.html#selfsl-semantic-segmentation"><span class="std std-ref">Explanation of Self-Supervised Learning for Semantic Segmentation</span></a>. Option <code class="docutils literal notranslate"><span class="pre">--train-type</span></code> is not needed.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012/JPEGImages \
-                    --model Lite-HRNet-18-mod2 \
-                    --train-type Selfsupervised
+                    --model Lite-HRNet-18-mod2
 </pre></div>
 </div>
 </div>
@@ -598,7 +593,7 @@ Let’s see how to fine-tune the model using pre-trained weights below.</p>
 </section>
 <section id="fine-tuning">
 <h2>Fine-tuning<a class="headerlink" href="#fine-tuning" title="Permalink to this heading">#</a></h2>
-<p>After pre-training progress, start fine-tuning by calling the below command with adding <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> argument in supervised learning workspace.</p>
+<p>After pre-training progress, start fine-tuning by calling the below command with adding <code class="docutils literal notranslate"><span class="pre">--load-weights</span></code> argument in <strong>supervised learning workspace</strong>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ cd ../otx-workspace-CLASSIFICATION
 (otx) ...$ otx train --load-weights ../otx-workspace-CLASSIFICATION-Selfsupervised/models/weights.pth
 
@@ -625,7 +620,7 @@ Performance(score: 0.9550408719346049, dashboard: (3 metric groups))
 </div>
 <p>With self-supervised learning, we can obtain well-adaptive weights and train the model more accurately.
 This example showed a little improvement (0.955 → 0.960), but if we use only a few samples that are <em>too difficult to train a model on</em>, then
-self-supervised learning can be the solution to improve the model.
+self-supervised learning can be the solution to improve the model perfomance more significantly.
 You can check performance improvement examples in <a class="reference internal" href="../../explanation/algorithms/classification/multi_class_classification.html#selfsl-multi-class-classification"><span class="std std-ref">self-supervised learning for classification</span></a> documentation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

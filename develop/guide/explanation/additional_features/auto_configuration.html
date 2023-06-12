@@ -544,6 +544,15 @@ While increasing <code class="docutils literal notranslate"><span class="pre">nu
 </pre></div>
 </div>
 </section>
+<section id="auto-detect-training-type">
+<h2>Auto-detect training type<a class="headerlink" href="#auto-detect-training-type" title="Permalink to this heading">#</a></h2>
+<p>OpenVINO™ Training Extensions also support automatic detection of training types such as Semi-SL, Self-SL and Incremental. For Semi-SL usage only is a path to unlabeled data via <cite>–unlabeled-data-roots</cite> option needed for the command line. To use Self-SL learning just a folder with images in the <cite>–train-data-roots</cite> option without validation data is required to automatically start Self-SL pretraining.
+OpenVINO™ Training Extensions will automatically recognize these types of tasks and if the task supports this training type the training will be started.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To use auto template configuration with Self-SL training type <cite>–task</cite> option is required since it is impossible to recognize task type by folder with only images.</p>
+</div>
+</section>
 </section>
 
 
@@ -592,6 +601,11 @@ While increasing <code class="docutils literal notranslate"><span class="pre">nu
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#auto-adapt-num-workers">
    Auto-adapt num_workers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#auto-detect-training-type">
+   Auto-detect training type
   </a>
  </li>
 </ul>

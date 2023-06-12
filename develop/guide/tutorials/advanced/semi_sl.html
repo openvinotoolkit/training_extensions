@@ -475,10 +475,10 @@
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Currently, models trained by semi-supervised learning cannot be optimized with OpenVINO™ NNCF.</p>
-<p>However, we will support this functionality in the near future.</p>
 <p>To learn how to export the trained model, refer to <a class="reference external" href="../base/how_to_train/classification.html#export">classification export</a>.</p>
 <p>To learn how to optimize the trained model (.xml) with OpenVINO™ POT, refer to <a class="reference external" href="../base/how_to_train/classification.html#optimization">classification optimization</a>.</p>
+<p>Currently, OpenVINO™ NNCF optimization doesn’t support a full Semi-SL training algorithm. The accuracy-aware optimization will be executed on labeled data only.
+So, the performance drop may be more noticeable than after ordinary supervised training.</p>
 <p>To learn how to deploy the trained model, refer to <a class="reference internal" href="../base/deploy.html"><span class="doc">deploy</span></a>.</p>
 <p>To learn how to run the demo and visualize results, refer to <a class="reference internal" href="../base/demo.html"><span class="doc">demo</span></a>.</p>
 </div>
@@ -503,16 +503,17 @@ we make a use of <code class="docutils literal notranslate"><span class="pre">te
 </section>
 <section id="enable-via-otx-build">
 <h2>Enable via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code><a class="headerlink" href="#enable-via-otx-build" title="Permalink to this heading">#</a></h2>
-<p>1. To enable semi-supervsied learning via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>, we need to add arguments <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code> and <code class="docutils literal notranslate"><span class="pre">--train-type</span></code>.
+<p>1. To enable semi-supervsied learning via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">build</span></code>, we need to add arguments <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code>.
 OpenVINO™ Training Extensions receives the root path where unlabeled images are by <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code>.</p>
-<p>We should put the path where unlabeled data are contained. It also provides us <code class="docutils literal notranslate"><span class="pre">--train-type</span></code> to select the type of training scheme. All we have to do for that is specifying it as <strong>Semisupervised</strong>.</p>
+<p>We should put the path where unlabeled data are contained. It is all we need to change to run semisupervised training. OpenVINO™ Training Extensions will recognize this training type automatically.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>OpenVINO™ Training Extensions automatically searches for all image files with JPG, JPEG, and PNG formats in the root path specified using the <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code> option, even if there are other file formats present. The image files which are located in sub-folders will be also collected for building unlabeled dataset.</p>
+<p>OpenVINO™ Training Extensions automatically searches for all image files with JPG, JPEG, and PNG formats in the root path specified using the <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code> option, even if there are other file formats present.
+The image files which are located in sub-folders (if threy presented) will be also collected for building unlabeled dataset.</p>
 <p>In this tutorial, we make use of auto-split functionality for the multi-class classification, which makes train/validation splits for the given dataset.</p>
 <p>For the details about auto-split, please refer to <a class="reference internal" href="../../explanation/additional_features/auto_configuration.html"><span class="doc">auto-configuration</span></a>.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/flower_photos --unlabeled-data-roots tests/assets/imagenet_dataset --model MobileNet-V3-large-1x --train-type Semisupervised
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots data/flower_photos --unlabeled-data-roots tests/assets/imagenet_dataset --model MobileNet-V3-large-1x
 
 
 [*] Workspace Path: otx-workspace-CLASSIFICATION
@@ -546,12 +547,11 @@ command in our workspace:</p>
 </section>
 <section id="enable-via-otx-train">
 <h2>Enable via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code><a class="headerlink" href="#enable-via-otx-train" title="Permalink to this heading">#</a></h2>
-<p>1. To enable semi-supervised learning directly via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>, we need to add arguments <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code> and <code class="docutils literal notranslate"><span class="pre">--algo_backend.train_type</span></code>
-which is one of template-specific parameters (details are provided in <a class="reference external" href="../../get_started/cli_commands.html#training">quick start guide</a>).</p>
+<p>1. To enable semi-supervised learning directly via <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code>, we also need to add the argument <code class="docutils literal notranslate"><span class="pre">--unlabeled-data-roots</span></code>
+specifying a path to unlabeled images.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                     --train-data-roots data/flower_photos \
-                    --unlabeled-data-roots tests/assets/imagenet_dataset \
-                    params --algo_backend.train_type Semisupervised
+                    --unlabeled-data-roots tests/assets/imagenet_dataset
 </pre></div>
 </div>
 <p>In the train log, you can check that the train type is set to <strong>Semisupervised</strong> and related configurations are properly loaded as following:</p>

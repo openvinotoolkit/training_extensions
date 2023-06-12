@@ -709,7 +709,8 @@ General self-supervised Learning in academia is commonly used to obtain well-pre
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.</p>
 <p>For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted <a class="reference external" href="https://arxiv.org/abs/2006.07733">BYOL</a> as our self-supervised method.
-This algorithm will require some additional training time, meanwhile, improved performance is expected, especially in low-data regimes.</p>
+This algorithm will require some additional training time, meanwhile, improved performance is expected, especially in low-data regimes.
+OpenVINO™ Training Extensions allows to perform a pre-training phase on any images to further use obtained weights on the target dataset.</p>
 <p>Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
 The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
 We created subset datasets by sampling images to check performance from small to large datasets.
@@ -724,18 +725,21 @@ Each subset dataset has 500, 1000, 5000, 10000, and the whole images, respective
 <a class="reference internal image-reference" href="../../../../_images/multi_cls_selfsl_performance_CIFAR10.png"><img alt="../../../../_images/multi_cls_selfsl_performance_CIFAR10.png" src="../../../../_images/multi_cls_selfsl_performance_CIFAR10.png" style="width: 600px;" /></a>
 <a class="reference internal image-reference" href="../../../../_images/multi_cls_selfsl_performance_CIFAR100.png"><img alt="../../../../_images/multi_cls_selfsl_performance_CIFAR100.png" src="../../../../_images/multi_cls_selfsl_performance_CIFAR100.png" style="width: 600px;" /></a>
 <a class="reference internal image-reference" href="../../../../_images/multi_cls_selfsl_performance_Food-101.png"><img alt="../../../../_images/multi_cls_selfsl_performance_Food-101.png" src="../../../../_images/multi_cls_selfsl_performance_Food-101.png" style="width: 600px;" /></a>
-<p>To enable self-supervised training, the command below can be executed.
+<p>To enable self-supervised training, the command below can be executed. The folder with images for pre-training is needed to be passed in <code class="docutils literal notranslate"><span class="pre">--train-data-root</span></code> folder.
 Unlike other tasks, <code class="docutils literal notranslate"><span class="pre">--val-data-root</span></code> is not needed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-            --train-data-root=tests/assets/imagenet_dataset_class_incremental \
-            params \
-            --algo_backend.train_type=Selfsupervised
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train EfficientNet-V2-S \
+            --train-data-root path/to/folder/with/images
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is also possible to pass a full imagenet dataset format to <code class="docutils literal notranslate"><span class="pre">--train-data-root</span></code> instead of just a folder with images.
+However, it will be required to add <code class="docutils literal notranslate"><span class="pre">--train-type</span> <span class="pre">Selfsupervised</span></code> option into the command line. Otherwise, ordinary supervised training will be started with auto-split functionality.</p>
+</div>
 <p>After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-            --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
-            --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train EfficientNet-V2-S \
+            --train-data-roots path/to/train/subset \
+            --val-data-roots path/to/val/subset \
             --load-weights={PATH/PRETRAINED/WEIGHTS}
 </pre></div>
 </div>

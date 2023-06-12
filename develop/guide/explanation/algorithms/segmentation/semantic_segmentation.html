@@ -624,9 +624,6 @@ Whereas the <code class="docutils literal notranslate"><span class="pre">Lite-HR
 </section>
 <section id="semi-supervised-learning">
 <h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this heading">#</a></h2>
-</section>
-<section id="id2">
-<h2>Semi-supervised Learning<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
 <p>We employ the <a class="reference external" href="https://arxiv.org/abs/1703.01780">Mean Teacher framework</a> to tackle the problem of <a class="reference internal" href="../index.html#semi-sl-explanation"><span class="std std-ref">Semi-supervised learning</span></a> in semantic segmentation.
 This framework leverages two models during training: a “student” model, which serves as the primary model being trained, and a “teacher” model, which acts as a guiding reference for the student model.</p>
 <p>During training, the student model is updated using both ground truth annotations (for labeled data) and pseudo-labels (for unlabeled data).
@@ -782,6 +779,7 @@ For other datasets, we prepared different numbers of classes and used the random
 General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.</p>
 <p>For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+OpenVINO™ Training Extensions allows to perform a pre-training phase on any images to further use obtained weights on the target dataset.
 We adapted <a class="reference external" href="https://arxiv.org/abs/2103.10957">DetCon</a> as our self-supervised method.
 It takes some time to use these self-supervised learning recipes, but you can expect improved performance, especially in small-data regimes.</p>
 <p>The below table shows how much performance (mDice) self-supervised methods improved compared with baseline performance on the subsets of Pascal VOC 2012 with three classes (person, car, bicycle).
@@ -845,16 +843,14 @@ DetCon uses pseudo masks created in <code class="docutils literal notranslate"><
 <li><p><code class="docutils literal notranslate"><span class="pre">--val-data-roots</span></code> is not needed.</p></li>
 </ul>
 <p>To enable self-supervised training, the command below can be executed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-            --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train/images \
-            params \
-            --algo_backend.train_type=Selfsupervised
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train Lite-HRNet-18-mod2 \
+            --train-data-roots path/to/images \
 </pre></div>
 </div>
 <p>After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-            --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
-            --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train Lite-HRNet-18-mod2 \
+            --train-data-roots path/to/train/subset \
+            --val-data-roots path/to/validation/subset \
             --load-weights={PATH/PRETRAINED/WEIGHTS}
 </pre></div>
 </div>
@@ -931,9 +927,9 @@ Each subset dataset has 8, 16, and 24 images, respectively.</p>
 </table>
 <p>The SupCon training can be launched by adding additional option to template parameters like the below.
 It can be launched only with supervised (incremental) training type.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-            --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
-            --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train Lite-HRNet-18-mod2 \
+            --train-data-roots path/to/train/subset \
+            --val-data-roots path/to/validation/subset \
             params \
             --learning_parameters.enable_supcon=True
 </pre></div>
@@ -995,11 +991,6 @@ It can be launched only with supervised (incremental) training type.</p>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#semi-supervised-learning">
-   Semi-supervised Learning
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#id2">
    Semi-supervised Learning
   </a>
  </li>
