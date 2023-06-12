@@ -8,12 +8,15 @@ All notable changes to this project will be documented in this file.
 
 - Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
 - Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
+- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (https://github.com/openvinotoolkit/training_extensions/pull/2195)
 
 ### Enhancements
 
 - Introduce channel_last parameter to improve the performance (<https://github.com/openvinotoolkit/training_extensions/pull/2205>)
 - Decrease a time for making a workspace (<https://github.com/openvinotoolkit/training_extensions/pull/2223>)
 - Set persistent_workers and pin_memory as True in detection task (<https://github.com/openvinotoolkit/training_extensions/pull/2224>)
+- New algorithm for Semi-SL semantic segmentation based on metric lerning via class prototypes (https://github.com/openvinotoolkit/training_extensions/pull/2156)
+- Self-SL for classification now can recieve just folder with any images to start contrastive pretraining (https://github.com/openvinotoolkit/training_extensions/pull/2219)
 
 ### Bug fixes
 

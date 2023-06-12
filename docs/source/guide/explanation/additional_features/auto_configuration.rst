@@ -45,7 +45,7 @@ If we have a dataset format occluded with other tasks, for example ``COCO`` form
 
 .. code-block::
 
-    $ otx build --train-data-roots <path_to_data_root> 
+    $ otx build --train-data-roots <path_to_data_root>
                 --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
 
 It will create a task-specific workspace folder with configured template and auto dataset split if supported.
@@ -111,3 +111,12 @@ To use this feature, add the following parameter:
 .. code-block::
 
     $ otx train params --learning_parameters.auto_num_workers True
+
+Auto-detect training type
+-------------------------
+
+OpenVINO™ Training Extensions also support automatic detection of training types such as Semi-SL, Self-SL and Incremental. For Semi-SL usage only is a path to unlabeled data via `--unlabeled-data-roots` option needed for the command line. To use Self-SL learning just a folder with images in the `--train-data-roots` option without validation data is required to automatically start Self-SL pretraining.
+OpenVINO™ Training Extensions will automatically recognize these types of tasks and if the task supports this training type the training will be started.
+
+.. note::
+    To use auto template configuration with Self-SL training type `--task` option is required since it is impossible to recognize task type by folder with only images.

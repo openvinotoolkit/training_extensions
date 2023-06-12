@@ -26,13 +26,12 @@ The process has been tested on the following configuration:
 
 .. note::
 
-  Currently, models trained by semi-supervised learning cannot be optimized with OpenVINO™ NNCF.
-
-  However, we will support this functionality in the near future.
-
   To learn how to export the trained model, refer to `classification export <../base/how_to_train/classification.html#export>`__.
 
   To learn how to optimize the trained model (.xml) with OpenVINO™ POT, refer to `classification optimization <../base/how_to_train/classification.html#optimization>`__.
+
+  Currently, OpenVINO™ NNCF optimization doesn't support a full Semi-SL training algorithm. The accuracy-aware optimization will be executed on labeled data only.
+  So, the performance drop may be more noticeable than after ordinary supervised training.
 
   To learn how to deploy the trained model, refer to :doc:`deploy <../base/deploy>`.
 
@@ -70,14 +69,15 @@ we make a use of ``tests/assets/imagenet_dataset`` for this purpose as an exampl
 Enable via ``otx build``
 ***************************
 
-1. To enable semi-supervsied learning via ``otx build``, we need to add arguments ``--unlabeled-data-roots`` and ``--train-type``.
+1. To enable semi-supervsied learning via ``otx build``, we need to add arguments ``--unlabeled-data-roots``.
 OpenVINO™ Training Extensions receives the root path where unlabeled images are by ``--unlabeled-data-roots``.
 
-We should put the path where unlabeled data are contained. It also provides us ``--train-type`` to select the type of training scheme. All we have to do for that is specifying it as **Semisupervised**.
+We should put the path where unlabeled data are contained. It is all we need to change to run semisupervised training. OpenVINO™ Training Extensions will recognize this training type automatically.
 
 .. note::
 
-  OpenVINO™ Training Extensions automatically searches for all image files with JPG, JPEG, and PNG formats in the root path specified using the ``--unlabeled-data-roots`` option, even if there are other file formats present. The image files which are located in sub-folders will be also collected for building unlabeled dataset.
+  OpenVINO™ Training Extensions automatically searches for all image files with JPG, JPEG, and PNG formats in the root path specified using the ``--unlabeled-data-roots`` option, even if there are other file formats present.
+  The image files which are located in sub-folders (if threy presented) will be also collected for building unlabeled dataset.
 
   In this tutorial, we make use of auto-split functionality for the multi-class classification, which makes train/validation splits for the given dataset.
 
@@ -85,7 +85,7 @@ We should put the path where unlabeled data are contained. It also provides us `
 
 .. code-block::
 
-  (otx) ...$ otx build --train-data-roots data/flower_photos --unlabeled-data-roots tests/assets/imagenet_dataset --model MobileNet-V3-large-1x --train-type Semisupervised
+  (otx) ...$ otx build --train-data-roots data/flower_photos --unlabeled-data-roots tests/assets/imagenet_dataset --model MobileNet-V3-large-1x
 
 
   [*] Workspace Path: otx-workspace-CLASSIFICATION
@@ -127,15 +127,14 @@ After training ends, a trained model is saved in the ``models`` sub-directory in
 Enable via ``otx train``
 ***************************
 
-1. To enable semi-supervised learning directly via ``otx train``, we need to add arguments ``--unlabeled-data-roots`` and ``--algo_backend.train_type``
-which is one of template-specific parameters (details are provided in `quick start guide <../../get_started/cli_commands.html#training>`__).
+1. To enable semi-supervised learning directly via ``otx train``, we also need to add the argument ``--unlabeled-data-roots``
+specifying a path to unlabeled images.
 
 .. code-block::
 
   (otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                       --train-data-roots data/flower_photos \
-                      --unlabeled-data-roots tests/assets/imagenet_dataset \
-                      params --algo_backend.train_type Semisupervised
+                      --unlabeled-data-roots tests/assets/imagenet_dataset
 
 In the train log, you can check that the train type is set to **Semisupervised** and related configurations are properly loaded as following:
 
