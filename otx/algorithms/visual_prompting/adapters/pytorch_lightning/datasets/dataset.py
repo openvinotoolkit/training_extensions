@@ -135,13 +135,13 @@ class OTXVIsualPromptingDataset(Dataset):
             polygons.extend([[polygon] for _ in range(n)])
             labels.extend(class_indices)
 
-        masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
+        gt_masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
         bboxes = np.array(bboxes)
 
         item.update(dict(
             original_size=(height, width),
             images=dataset_item.numpy,
-            masks=masks,
+            gt_masks=gt_masks,
             bboxes=bboxes,
             labels=labels,
             points=None, # TODO (sungchul): update point information
