@@ -34,9 +34,9 @@ from tests.test_suite.run_test_command import (
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "tests/assets/classification_dataset",
-    "--val-data-roots": "tests/assets/classification_dataset",
-    "--test-data-roots": "tests/assets/classification_dataset",
+    "--train-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--val-data-roots": "tests/assets/classification_dataset_class_incremental",
+    "--test-data-roots": "tests/assets/classification_dataset_class_incremental",
     "--input": "tests/assets/classification_dataset/0",
     "train_params": [
         "params",
@@ -50,15 +50,8 @@ args = {
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
     "--train-data-roots": "tests/assets/classification_dataset",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "1",
-        "--learning_parameters.batch_size",
-        "4",
-        "--algo_backend.train_type",
-        "Selfsupervised",
-    ],
+    "--train-type": "Selfsupervised",
+    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
 # Training params for resume, num_iters*2
@@ -241,8 +234,9 @@ class TestMultiClassClassificationCLI:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/semisl")
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
@@ -251,15 +245,18 @@ class TestMultiClassClassificationCLI:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args)
         args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         args_semisl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/semisl")
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/selfsl")
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
@@ -269,6 +266,8 @@ class TestMultiClassClassificationCLI:
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/selfsl")
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -426,8 +425,9 @@ class TestMultilabelClassificationCLI:
         tmp_dir_path = tmp_dir_path / "multi_label_cls" / "test_semisl"
         args_semisl = copy.deepcopy(args_m)
         args_semisl["--unlabeled-data-roots"] = args_m["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/semisl")
 
 
 args_h = {

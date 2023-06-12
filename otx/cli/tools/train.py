@@ -66,9 +66,10 @@ def get_args():
     )
     parser.add_argument(
         "--train-type",
-        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}.",
+        help=f"The currently supported options: {TASK_TYPE_TO_SUB_DIR_NAME.keys()}. "
+        "Will be difined automatically if no value passed.",
         type=str,
-        default="Incremental",
+        default=None,
     )
     parser.add_argument(
         "--load-weights",
@@ -149,6 +150,12 @@ def get_args():
         default=None,
         help="The data.yaml path want to use in train task.",
     )
+    parser.add_argument(
+        "--encryption-key",
+        type=str,
+        default=None,
+        help="Encryption key required to train the encrypted dataset. It is not required the non-encrypted dataset",
+    )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
@@ -198,7 +205,6 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     )
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
-
     # Get classes for Task, ConfigurableParameters and Dataset.
     template = config_manager.template
     task_class = get_impl_class(template.entrypoints.base)

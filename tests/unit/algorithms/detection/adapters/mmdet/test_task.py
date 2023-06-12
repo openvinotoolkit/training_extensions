@@ -75,12 +75,12 @@ class MockDataset(DatasetEntity):
     """Mock class for mm_dataset."""
 
     def __init__(self, dataset: DatasetEntity, task_type: str):
-        self.dataset = dataset
+        self.otx_dataset = dataset
         self.task_type = task_type
         self.CLASSES = ["1", "2", "3"]
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.otx_dataset)
 
     def evaluate(self, prediction, *args, **kwargs):
         if self.task_type == "det":
@@ -93,11 +93,11 @@ class MockDataLoader:
     """Mock class for data loader."""
 
     def __init__(self, dataset: DatasetEntity):
-        self.dataset = dataset
-        self.iter = iter(self.dataset)
+        self.otx_dataset = dataset
+        self.iter = iter(self.otx_dataset)
 
     def __len__(self) -> int:
-        return len(self.dataset)
+        return len(self.otx_dataset)
 
     def __next__(self) -> Dict[str, DatasetItemEntity]:
         return {"imgs": next(self.iter)}
@@ -377,3 +377,54 @@ class TestMMDetectionTask:
             explain_predicted_classes=True,
         )
         outputs = self.det_task.explain(self.det_dataset, explain_parameters)
+
+    @e2e_pytest_unit
+    def test_anchor_clustering(self, mocker):
+
+        ssd_dir = os.path.join("otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
+        ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
+        model_template = parse_model_template(os.path.join(ssd_dir, "template.yaml"))
+        hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.learning_parameters.auto_num_workers = True
+        task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.DETECTION)
+
+        det_task = MMDetectionTask(task_env)
+
+        def _mock_train_detector_det(*args, **kwargs):
+            with open(os.path.join(self.det_task._output_path, "latest.pth"), "wb") as f:
+                torch.save({"dummy": torch.randn(1, 3, 3, 3)}, f)
+
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.build_dataset",
+            return_value=MockDataset(self.det_dataset, "det"),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.build_dataloader",
+            return_value=MockDataLoader(self.det_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
+            return_value=True,
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.train_detector",
+            side_effect=_mock_train_detector_det,
+        )
+
+        det_task._train_model(self.det_dataset)
+        assert ssd_cfg.model.bbox_head.anchor_generator != det_task.config.model.bbox_head.anchor_generator
+
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
+            return_value=[
+                np.array([np.array([[0, 0, 1, 1, 0.1]]), np.array([[0, 0, 1, 1, 0.2]]), np.array([[0, 0, 1, 1, 0.7]])])
+            ]
+            * 100,
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+        inference_parameters = InferenceParameters(is_evaluation=True)
+        det_task._infer_model(self.det_dataset, inference_parameters)
+        assert ssd_cfg.model.bbox_head.anchor_generator != det_task.config.model.bbox_head.anchor_generator

@@ -40,6 +40,7 @@ from otx.algorithms.detection.utils.data import (
 )
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.subset import Subset
 
 try:
     from sklearn.cluster import KMeans
@@ -334,17 +335,18 @@ def patch_tiling(config, hparams, dataset=None):
         logger.info("Tiling enabled")
 
         if dataset and dataset.purpose != DatasetPurpose.INFERENCE and hparams.tiling_parameters.enable_adaptive_params:
-            adaptive_tile_params(hparams.tiling_parameters, dataset)
-
-        if dataset and dataset.purpose == DatasetPurpose.INFERENCE:
-            config.get("data", ConfigDict()).get("val_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
-            config.get("data", ConfigDict()).get("test_dataloader", ConfigDict()).update(ConfigDict(samples_per_gpu=1))
-            config.get("data", ConfigDict(samples_per_gpu=1))
+            adaptive_tile_params(hparams.tiling_parameters, dataset.get_subset(Subset.TRAINING))
 
         if hparams.tiling_parameters.enable_tile_classifier:
             logger.info("Tile classifier enabled")
             logger.info(f"Patch model from: {config.model.type} to CustomMaskRCNNTileOptimized")
             config.model.type = "CustomMaskRCNNTileOptimized"
+
+            for subset in ("val", "test"):
+                if "transforms" in config.data[subset].pipeline[0]:
+                    transforms = config.data[subset].pipeline[0]["transforms"]
+                    if transforms[-1]["type"] == "Collect":
+                        transforms[-1]["keys"].append("full_res_image")
 
             if config.model.backbone.type == "efficientnet_b2b":
                 learning_rate = 0.002
@@ -355,6 +357,11 @@ def patch_tiling(config, hparams, dataset=None):
                 hparams.learning_parameters.learning_rate = learning_rate
 
             config.data.train.filter_empty_gt = False
+
+        config.data.train.sampling_ratio = hparams.tiling_parameters.tile_sampling_ratio
+        config.data.val.sampling_ratio = hparams.tiling_parameters.tile_sampling_ratio
+        if hparams.tiling_parameters.tile_sampling_ratio < 1.0:
+            config.custom_hooks.append(ConfigDict({"type": "TileSamplingHook"}))
 
         tiling_params = ConfigDict(
             tile_size=int(hparams.tiling_parameters.tile_size),
@@ -438,17 +445,20 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     """
     resize_cfgs = get_configs_by_pairs(
         cfg.data.test.pipeline,
-        dict(type="Resize"),
+        dict(type="MultiScaleFlipAug"),
     )
     assert len(resize_cfgs) == 1
     resize_cfg: ConfigDict = resize_cfgs[0]
-    size = resize_cfg.size
+    size = resize_cfg.img_scale
     if isinstance(size, int):
         size = (size, size)
     assert all(isinstance(i, int) and i > 0 for i in size)
     # default is static shape to prevent an unexpected error
     # when converting to OpenVINO IR
-    deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
+    w, h = size
+    logger.info(f"Patching OpenVINO IR input shape: {size}")
+    deploy_cfg.ir_config.input_shape = (w, h)
+    deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[-1, 3, h, w]))]
 
 
 def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionConfig):
@@ -468,3 +478,7 @@ def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionCon
             ir_input_shape[2] = int(ir_input_shape[2] * tile_ir_scale_factor)  # height
             ir_input_shape[3] = int(ir_input_shape[3] * tile_ir_scale_factor)  # width
             deploy_cfg.ir_config.input_shape = (ir_input_shape[3], ir_input_shape[2])  # width, height
+            deploy_cfg.backend_config.model_inputs = [
+                ConfigDict(opt_shapes=ConfigDict(input=[1, 3, ir_input_shape[2], ir_input_shape[3]]))
+            ]
+            print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")

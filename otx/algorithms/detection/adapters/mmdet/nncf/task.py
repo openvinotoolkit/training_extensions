@@ -113,6 +113,6 @@ class DetectionNNCFTask(NNCFBaseTask, MMDetectionTask):
     def _save_model_post_hook(self, modelinfo):
         if self._recipe_cfg is not None and should_cluster_anchors(self._recipe_cfg):
             modelinfo["anchors"] = {}
-            self._update_anchors(modelinfo["anchors"], self._recipe_cfg.model.bbox_head.anchor_generator)
+            self._update_anchors(modelinfo["anchors"], self.config.model.bbox_head.anchor_generator)
 
         modelinfo["confidence_threshold"] = self.confidence_threshold

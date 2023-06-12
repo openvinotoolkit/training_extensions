@@ -80,8 +80,9 @@ def load_test_dataset():
 
     def get_image(subset, label_id):
         def get_randcoord():
-            x1 = randint(0, 9)
-            y1 = randint(0, 9)
+            # disable B311 random - used for the random sampling not for security/crypto
+            x1 = randint(0, 9)  # nosec B311
+            y1 = randint(0, 9)  # nosec B311
             x2 = min(x1 + 2, 10)
             y2 = min(y1 + 2, 10)
             coord = (x1 / 10, y1 / 10, x2 / 10, y2 / 10)

@@ -8,7 +8,7 @@ This function can be used to convert a OTX configuration object to a dictionary 
 
 
 from enum import Enum
-from typing import Any, Type, TypeVar
+from typing import Type, TypeVar, Dict, Any
 
 import yaml
 from omegaconf import DictConfig, OmegaConf
@@ -98,7 +98,7 @@ def convert(
     enum_to_str: bool = False,
     id_to_str: bool = False,
     values_only: bool = False,
-) -> ConvertTypeVar:
+) -> Any:
     """Convert a configuration object to either a yaml string, a dictionary or an OmegaConf DictConfig object.
 
     Args:
@@ -130,11 +130,10 @@ def convert(
 
     result: Any = None
     if target == str:
-        result = yaml.dump(config_dict)
+        return yaml.dump(config_dict)
     elif target == dict:
-        result = config_dict  # type: ignore
+        return config_dict
     elif target == DictConfig:
-        result = OmegaConf.create(config_dict)
+        return OmegaConf.create(config_dict)
     else:
         raise ValueError("Unsupported conversion target! Supported target types are [str, dict, DictConfig]")
-    return result  # type: ignore

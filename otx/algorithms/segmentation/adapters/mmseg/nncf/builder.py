@@ -92,9 +92,10 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
                 dataset_builder=mmseg_build_dataset,
             ),
             config,
-            subset="train",
+            subset="val",
             dataloader_builder=mmseg_build_dataloader,
             distributed=distributed,
+            persistent_workers=False,
         )
 
         # This data and state dict will be used to build NNCF graph later
@@ -124,6 +125,7 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
                 distributed=distributed,
                 # segmentor does not support various sized batch images
                 samples_per_gpu=1,
+                persistent_workers=False,
             )
 
         model_eval_fn = partial(

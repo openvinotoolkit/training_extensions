@@ -315,7 +315,6 @@ class TestToolsMultiClassSemiSLClassification:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args0)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
@@ -333,7 +332,6 @@ class TestToolsMultiClassSemiSLClassification:
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args0)
         args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
-        args_semisl_multigpu["train_params"].extend(["--algo_backend.train_type", "Semisupervised"])
         args_semisl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
 
@@ -431,22 +429,6 @@ class TestToolsMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        pytest.skip("Demo for multi-label classification is not supported now.")
-        otx_demo_testing(template, tmp_dir_path, otx_dir, args_m)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_openvino(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        pytest.skip("Demo for multi-label classification is not supported now.")
-        otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
@@ -457,14 +439,6 @@ class TestToolsMultilabelClassification:
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_deployment(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "multi_label_cls"
-        pytest.xfail("Demo for multi-label classification is not supported now.")
-        otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -633,22 +607,6 @@ class TestToolsHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        pytest.skip("Demo for hierarchical classification is not supported now.")
-        otx_demo_testing(template, tmp_dir_path, otx_dir, args_h)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_openvino(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        pytest.skip("Demo for hierarchical classification is not supported now.")
-        otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
@@ -659,14 +617,6 @@ class TestToolsHierarchicalClassification:
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.0)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_demo_deployment(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "h_label_cls"
-        pytest.skip("Demo for hierarchical classification is not supported now.")
-        otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -762,6 +712,7 @@ class TestToolsHierarchicalClassification:
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
     "--train-data-roots": "tests/assets/classification_dataset",
+    "--train-type": "Selfsupervised",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -770,8 +721,6 @@ args_selfsl = {
         "4",
         "--learning_parameters.learning_rate",
         "1e-07",
-        "--algo_backend.train_type",
-        "Selfsupervised",
     ],
 }
 
@@ -785,6 +734,7 @@ class TestToolsSelfSLClassification:
         tmp_dir_path_1 = tmp_dir_path / "multi_class_cls/test_selfsl"
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
+        assert os.path.exists(f"{template_work_dir}/selfsl")
         args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         tmp_dir_path_2 = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
@@ -810,3 +760,5 @@ class TestToolsSelfSLClassification:
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/selfsl")
