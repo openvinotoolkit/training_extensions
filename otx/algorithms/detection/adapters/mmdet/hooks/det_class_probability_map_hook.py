@@ -126,13 +126,15 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         return cls_scores
 
 
-class MaskRCNNHook(BaseRecordingForwardHook):
+class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
     """Saliency map hook for Mask R-CNN model. Only for torch model, does not support OV IR model.
 
     Args:
         module (torch.nn.Module): Mask R-CNN model.
         input_img_shape (Tuple[int]): Resolution of the model input image.
         saliency_map_shape (Tuple[int]): Resolution of the output saliency map.
+        max_detections_per_img (int): Upper limit of the number of detections
+            from which soft mask predictions are getting aggregated.
         normalize (bool): Flag that defines if the output saliency map will be normalized.
             Although, partial normalization is anyway done by segmentation mask head.
     """
@@ -142,12 +144,14 @@ class MaskRCNNHook(BaseRecordingForwardHook):
         module: torch.nn.Module,
         input_img_shape: Tuple[int, int],
         saliency_map_shape: Tuple[int, int] = (224, 224),
+        max_detections_per_img: int = 300,
         normalize: bool = True,
     ) -> None:
         super().__init__(module)
         self._neck = module.neck if module.with_neck else None
         self._input_img_shape = input_img_shape
         self._saliency_map_shape = saliency_map_shape
+        self._max_detections_per_img = max_detections_per_img
         self._norm_saliency_maps = normalize
 
     def func(
@@ -181,9 +185,9 @@ class MaskRCNNHook(BaseRecordingForwardHook):
         img_metas *= batch_size
         proposals = self._module.rpn_head.simple_test_rpn(x, img_metas)
         test_cfg = copy.deepcopy(self._module.roi_head.test_cfg)
-        test_cfg["max_per_img"] = 300
+        test_cfg["max_per_img"] = self._max_detections_per_img
         test_cfg["nms"]["iou_threshold"] = 1
-        test_cfg["nms"]["max_num"] = 300
+        test_cfg["nms"]["max_num"] = self._max_detections_per_img
         det_bboxes, det_labels = self._module.roi_head.simple_test_bboxes(
             x, img_metas, proposals, test_cfg, rescale=False
         )

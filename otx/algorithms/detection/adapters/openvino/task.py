@@ -119,14 +119,12 @@ class BaseInferencerWithConverter(BaseInferencer):
 
         return self.converter.convert_to_annotation(detections, metadata)
 
-    def post_process_saliency_map(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]):
-        """Saliency map post-process function of OpenVINO Detection Inferencer."""
+    def get_saliency_map(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+        """Saliency map function of OpenVINO Detection Inferencer."""
         if isinstance(self.model, OTXMaskRCNNModel):
-            # MaskRCNN IR model does not include saliency map postprocessing -> it is done externally.
             num_classes = len(self.converter.labels)  # type: ignore
-            return self.model.postprocess_saliency_map(prediction, metadata, num_classes)
+            return self.model.get_saliency_map_from_prediction(prediction, metadata, num_classes)
         else:
-            # All other IR models include saliency map postprocessing.
             return prediction["saliency_map"][0]
 
     def predict(self, image: np.ndarray):
@@ -143,7 +141,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         else:
             features = (
                 raw_predictions["feature_vector"].reshape(-1),
-                self.post_process_saliency_map(raw_predictions, metadata),
+                self.get_saliency_map(raw_predictions, metadata),
             )
         return predictions, features
 
@@ -375,9 +373,16 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
 
         Returns:
             detections: AnnotationSceneEntity
-            features: list including saliency map and feature vector
+            features: list including feature vector and saliency map
         """
         detections, features = self.tiler.predict(image, mode)
+
+        _, saliency_map = features
+        if saliency_map is not None and isinstance(self.model, OTXMaskRCNNModel):
+            num_classes = len(self.converter.labels)  # type: ignore
+            saliency_map = self.model.get_tiling_saliency_map_from_prediction(detections, num_classes)
+            features = features[0], saliency_map
+
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
 
