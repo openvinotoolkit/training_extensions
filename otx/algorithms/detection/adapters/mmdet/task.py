@@ -62,7 +62,7 @@ from otx.algorithms.detection.adapters.mmdet.configurer import (
 from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
-    MaskRCNNHook,
+    MaskRCNNRecordingForwardHook,
 )
 from otx.algorithms.detection.adapters.mmdet.models.detectors import CustomMaskRCNN
 from otx.algorithms.detection.adapters.mmdet.utils import (
@@ -406,7 +406,7 @@ class MMDetectionTask(OTXDetectionTask):
                     width, height = pipeline.get("img_scale", (None, None))
                 if height is None:
                     raise ValueError("img_scale has to be defined in the test pipeline.")
-                saliency_hook = MaskRCNNHook(feature_model, input_img_shape=(height, width))
+                saliency_hook = MaskRCNNRecordingForwardHook(feature_model, input_img_shape=(height, width))
             else:
                 saliency_hook = DetClassProbabilityMapHook(feature_model)
 
@@ -603,7 +603,7 @@ class MMDetectionTask(OTXDetectionTask):
                 width, height = pipeline.get("img_scale", (None, None))
             if height is None:
                 raise ValueError("img_scale has to be defined in the test pipeline.")
-            per_class_xai_algorithm = functools.partial(MaskRCNNHook, input_img_shape=(height, width))
+            per_class_xai_algorithm = functools.partial(MaskRCNNRecordingForwardHook, input_img_shape=(height, width))
         else:
             per_class_xai_algorithm = DetClassProbabilityMapHook  # type: ignore
 
