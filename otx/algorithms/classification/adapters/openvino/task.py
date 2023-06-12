@@ -384,7 +384,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         """Optimize function of ClassificationOpenVINOTask."""
 
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("PQT is the only supported optimization type for OpenVino models")
+            raise ValueError("PTQ is the only supported optimization type for OpenVino models")
 
         dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
@@ -404,7 +404,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
             ov_model = ov.Core().read_model(xml_path)
             if check_if_quantized(ov_model):
-                raise RuntimeError("Model is already optimized by PQT")
+                raise RuntimeError("Model is already optimized by PTQ")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
