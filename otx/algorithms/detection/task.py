@@ -577,7 +577,9 @@ class OTXDetectionTask(OTXTask, ABC):
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
-            shapes = self._get_shapes(detection, dataset_item.width, dataset_item.height, 0.4, use_ellipse_shapes)
+            shapes = self._get_shapes(
+                detection, dataset_item.width, dataset_item.height, self.confidence_threshold, use_ellipse_shapes
+            )
             predicted_scored_labels = []
             for shape in shapes:
                 predicted_scored_labels += shape.get_labels()
