@@ -360,12 +360,12 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         """Optimize function of OpenVINOSegmentationTask."""
-        logger.info("Start PQT optimization")
+        logger.info("Start PTQ optimization")
         if self.model is None:
-            raise RuntimeError("POT optimize failed, model is None")
+            raise RuntimeError("PTQ optimize failed, model is None")
 
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("PQT is the only supported optimization type for OpenVino models")
+            raise ValueError("PTQ is the only supported optimization type for OpenVino models")
 
         dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
@@ -382,7 +382,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
             ov_model = ov.Core().read_model(xml_path)
             if check_if_quantized(ov_model):
-                raise RuntimeError("Model is already optimized by PQT")
+                raise RuntimeError("Model is already optimized by PTQ")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
