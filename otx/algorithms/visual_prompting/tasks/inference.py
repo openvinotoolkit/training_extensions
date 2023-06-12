@@ -130,21 +130,23 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         def get_model(
             config: DictConfig,
-            checkpoint: Optional[str] = None,
             state_dict: Optional[OrderedDict] = None
         ):
-            backbone = config.model.backbone
-            if checkpoint is None:
-                checkpoint = config.model.checkpoint
-
-            model = sam_model_registry[backbone](checkpoint=checkpoint)
-            if state_dict:
-                model.load_state_dict(state_dict)
+            if config.name == "SAM":
+                from otx.algorithms.visual_prompting.adapters.pytorch_lightning import SegmentAnything
+                model = SegmentAnything(config)
+                if state_dict:
+                    model.load_state_dict(state_dict)
+            else:
+                raise NotImplementedError((
+                    f"Current selected model {config.name} is not implemented. "
+                    f"Use SAM instead."
+                ))
 
             return model
             
         if otx_model is None:
-            model = get_model(config=self.config)
+            model = get_model(config=self.config.model)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
@@ -160,7 +162,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 )
                 self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
             try:
-                model = get_model(config=self.config, state_dict=model_data["model"])
+                model = get_model(config=self.config.model, state_dict=model_data["model"])
                 logger.info("Loaded model weights from Task Environment")
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception

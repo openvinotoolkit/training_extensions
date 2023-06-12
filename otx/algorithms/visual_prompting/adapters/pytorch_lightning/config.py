@@ -94,7 +94,7 @@ def _visual_prompting_config_mapper(
         elif name == "max_epochs":
             visual_prompting_config.trainer["max_epochs"] = getattr(otx_config, "max_epochs")
         else:
-            assert name in visual_prompting_config.model.keys(), f"Parameter {name} not present in visual prompting config."
+            assert name in visual_prompting_config.model.image_encoder.keys(), f"Parameter {name} not present in visual prompting config."
             sc_value = getattr(otx_config, name)
             sc_value = sc_value.value if hasattr(sc_value, "value") else sc_value
             visual_prompting_config.model[name] = sc_value

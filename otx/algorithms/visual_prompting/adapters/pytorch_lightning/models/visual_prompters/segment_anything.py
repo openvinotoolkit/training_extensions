@@ -15,7 +15,10 @@ from functools import partial
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
+import re
+from collections import OrderedDict
 import torchmetrics
+from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
 from torch import nn, optim
 from torch.nn import functional as F
@@ -24,7 +27,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.decoders 
     SAMMaskDecoder,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.encoders import (
-    SAMImageEncoderViT,
+    SAMImageEncoder,
     SAMPromptEncoder,
 )
 
@@ -36,49 +39,49 @@ CKPT_PATHS = {
 
 
 class SegmentAnything(LightningModule):
-    def __init__(
-        self,
-        image_encoder: nn.Module,
-        prompt_encoder: nn.Module,
-        mask_decoder: nn.Module,
-        freeze_image_encoder: bool = True,
-        freeze_prompt_encoder: bool = True,
-        freeze_mask_decoder: bool = False,
-        checkpoint: str = None,
-        mask_threshold: float = 0.,
-        return_logits: bool = False
-    ) -> None:
-        """
-        SAM predicts object masks from an image and input prompts.
-
-        Arguments:
-            image_encoder (nn.Module): The backbone used to encode the image into image embeddings that allow for efficient mask prediction.
-            prompt_encoder (nn.Module): Encodes various types of input prompts.
-            mask_decoder (nn.Module): Predicts masks from the image embeddings and encoded prompts.
-            freeze_image_encoder (bool): Whether freezing image encoder, default is True.
-            freeze_prompt_encoder (bool): Whether freezing prompt encoder, default is True.
-            freeze_mask_decoder (bool): Whether freezing mask decoder, default is False.
-            checkpoint (optional, str): Checkpoint path to be loaded, default is None.
-            mask_threshold (float): 
-        """
+    def __init__(self, config: DictConfig) -> None:
+        """SAM predicts object masks from an image and input prompts."""
         super().__init__()
         # self.save_hyperparameters()
 
-        self.image_encoder = image_encoder
-        self.prompt_encoder = prompt_encoder
-        self.mask_decoder = mask_decoder
-        self.mask_threshold = mask_threshold
-        self.return_logits = return_logits
+        # TODO (sungchul): Currently, backbone is assumed as vit. Depending on backbone, image_embedding_size can be changed.
+        if "vit" in config.image_encoder.backbone.name:
+            self.image_embedding_size = config.image_size // config.image_encoder.backbone.patch_size
+        else:
+            raise NotImplementedError((
+                f"{config.image_encoder.backbone.name} for image encoder of SAM is not implemented yet. "
+                f"Use ViT-B, L, or H."
+            ))
 
-        if freeze_image_encoder:
+        self.image_encoder = SAMImageEncoder(config)
+        self.prompt_encoder = SAMPromptEncoder(
+            image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
+            input_image_size=(config.image_size, config.image_size),
+            embed_dim=config.prompt_encoder.prompt_embed_dim,
+            mask_in_chans=config.prompt_encoder.mask_in_chans,
+        )
+        self.mask_decoder = SAMMaskDecoder(
+            num_multimask_outputs=config.mask_decoder.num_multimask_outputs,
+            transformer_cfg=dict(
+                embedding_dim=config.prompt_encoder.prompt_embed_dim,
+                **config.mask_decoder.transformer_cfg,
+            ),
+            transformer_dim=config.prompt_encoder.prompt_embed_dim,
+            iou_head_depth=config.mask_decoder.iou_head_depth,
+            iou_head_hidden_dim=config.mask_decoder.iou_head_hidden_dim,
+        )
+        self.mask_threshold = config.mask_threshold
+        self.return_logits = config.return_logits
+
+        if config.image_encoder.freeze:
             for param in self.image_encoder.parameters():
                 param.requires_grad = False
 
-        if freeze_prompt_encoder:
+        if config.prompt_encoder.freeze:
             for param in self.prompt_encoder.parameters():
                 param.requires_grad = False
 
-        if freeze_mask_decoder:
+        if config.mask_decoder.freeze:
             for param in self.mask_decoder.parameters():
                 param.requires_grad = False
 
@@ -86,14 +89,17 @@ class SegmentAnything(LightningModule):
         self.train_f1 = torchmetrics.classification.BinaryF1Score()
         self.val_iou = torchmetrics.classification.BinaryJaccardIndex()
         self.val_f1 = torchmetrics.classification.BinaryF1Score()
-        if checkpoint:
+        if config.checkpoint:
             try:
-                self.load_from_checkpoint(checkpoint)
+                self.load_from_checkpoint(config.checkpoint)
             except:
-                if str(checkpoint).startswith("http"):
-                    state_dict = torch.hub.load_state_dict_from_url(str(checkpoint))
+                if str(config.checkpoint).startswith("http"):
+                    state_dict = torch.hub.load_state_dict_from_url(str(config.checkpoint))
+                    for p, r in [(r'^image_encoder\.', r'image_encoder.backbone.')]:
+                        state_dict = OrderedDict({
+                            re.sub(p, r, k): v for k, v in state_dict.items()})
                 else:
-                    with open(checkpoint, "rb") as f:
+                    with open(config.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
                 self.load_state_dict(state_dict)
 
@@ -292,91 +298,3 @@ class SegmentAnything(LightningModule):
         union = torch.sum(pred_mask, dim=1) + torch.sum(targets, dim=1) - intersection
         iou = intersection / (union + epsilon)
         return iou
-
-
-def build_sam_vit_h(checkpoint=None):
-    return _build_sam(
-        encoder_embed_dim=1280,
-        encoder_depth=32,
-        encoder_num_heads=16,
-        encoder_global_attn_indexes=[7, 15, 23, 31],
-        checkpoint=checkpoint,
-    )
-
-
-def build_sam_vit_l(checkpoint=None):
-    return _build_sam(
-        encoder_embed_dim=1024,
-        encoder_depth=24,
-        encoder_num_heads=16,
-        encoder_global_attn_indexes=[5, 11, 17, 23],
-        checkpoint=checkpoint,
-    )
-
-
-def build_sam_vit_b(checkpoint=None):
-    return _build_sam(
-        encoder_embed_dim=768,
-        encoder_depth=12,
-        encoder_num_heads=12,
-        encoder_global_attn_indexes=[2, 5, 8, 11],
-        checkpoint=checkpoint,
-    )
-
-
-def _build_sam(
-    encoder_embed_dim,
-    encoder_depth,
-    encoder_num_heads,
-    encoder_global_attn_indexes,
-    checkpoint=None,
-):
-    prompt_embed_dim = 256
-    image_size = 1024
-    vit_patch_size = 16
-    image_embedding_size = image_size // vit_patch_size
-    sam = SegmentAnything(
-        image_encoder=SAMImageEncoderViT(
-            depth=encoder_depth,
-            embed_dim=encoder_embed_dim,
-            img_size=image_size,
-            mlp_ratio=4,
-            norm_layer=partial(torch.nn.LayerNorm, eps=1e-6),
-            num_heads=encoder_num_heads,
-            patch_size=vit_patch_size,
-            qkv_bias=True,
-            use_rel_pos=True,
-            global_attn_indexes=encoder_global_attn_indexes,
-            window_size=14,
-            out_chans=prompt_embed_dim,
-        ),
-        prompt_encoder=SAMPromptEncoder(
-            embed_dim=prompt_embed_dim,
-            image_embedding_size=(image_embedding_size, image_embedding_size),
-            input_image_size=(image_size, image_size),
-            mask_in_chans=16,
-        ),
-        mask_decoder=SAMMaskDecoder(
-            num_multimask_outputs=3,
-            transformer_cfg=dict(
-                depth=2,
-                embedding_dim=prompt_embed_dim,
-                mlp_dim=2048,
-                num_heads=8,
-            ),
-            transformer_dim=prompt_embed_dim,
-            iou_head_depth=3,
-            iou_head_hidden_dim=256,
-        ),
-        checkpoint=checkpoint
-    )
-
-    return sam
-
-
-sam_model_registry = {
-    "default": build_sam_vit_h,
-    "vit_h": build_sam_vit_h,
-    "vit_l": build_sam_vit_l,
-    "vit_b": build_sam_vit_b,
-}
