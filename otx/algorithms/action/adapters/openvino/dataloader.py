@@ -18,13 +18,12 @@ from copy import deepcopy
 from typing import Dict, List
 
 import numpy as np
-from compression.api import DataLoader
 
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 
 
-def get_ovdataloader(dataset: DatasetEntity, task_type: str, clip_len: int, width: int, height: int) -> DataLoader:
+def get_ovdataloader(dataset: DatasetEntity, task_type: str, clip_len: int, width: int, height: int):
     """Find proper dataloader for dataset and task type.
 
     If dataset has only a single video, this returns DataLoader for online demo
@@ -49,7 +48,7 @@ def _is_multi_video(dataset: DatasetEntity) -> bool:
     return False
 
 
-class ActionOVDemoDataLoader(DataLoader):
+class ActionOVDemoDataLoader:
     """DataLoader for online demo purpose.
 
     Since it is for online demo purpose it selects background frames from neighbor of key frame
@@ -91,7 +90,7 @@ class ActionOVDemoDataLoader(DataLoader):
             dataset_item.append_annotations(prediction.annotations)
 
 
-class ActionOVClsDataLoader(DataLoader):
+class ActionOVClsDataLoader:
     """DataLoader for evaluation of action classification models.
 
     It iterates through clustered video, and it samples frames from given video
@@ -151,7 +150,7 @@ class ActionOVClsDataLoader(DataLoader):
                 dataset_item.append_labels(prediction.annotations[0].get_labels())
 
 
-class ActionOVDetDataLoader(DataLoader):
+class ActionOVDetDataLoader:
     """DataLoader for evaluation of spatio-temporal action detection models.
 
     It iterates through DatasetEntity, which only contains non-empty frame(frame with actor annotation)
