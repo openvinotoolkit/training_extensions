@@ -5,6 +5,7 @@
 #
 
 import os
+import pathlib
 from typing import Any, Dict
 
 import numpy as np
@@ -24,6 +25,7 @@ from otx.api.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model import (
@@ -337,12 +339,17 @@ class TestActionOVTask:
             def run(self, model):
                 return model
 
-        def mock_save_model(model, tempdir, model_name):
+        def mock_save_model(model, output_xml):
             """Mock function for save_model function."""
-            with open(os.path.join(tempdir, "model.xml"), "wb") as f:
+            with open(output_xml, "wb") as f:
                 f.write(np.ndarray(1).tobytes())
-            with open(os.path.join(tempdir, "model.bin"), "wb") as f:
+            bin_path = pathlib.Path(output_xml).parent / pathlib.Path(str(pathlib.Path(output_xml).stem) + ".bin")
+            with open(bin_path, "wb") as f:
                 f.write(np.ndarray(1).tobytes())
+
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.ov.Core.read_model", autospec=True)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.ov.serialize", new=mock_save_model)
+        fake_quantize = mocker.patch("otx.algorithms.action.adapters.openvino.task.nncf.quantize", autospec=True)
 
         mocker.patch(
             "otx.algorithms.action.adapters.openvino.task.get_ovdataloader", return_value=MockDataloader(self.dataset)
@@ -350,18 +357,13 @@ class TestActionOVTask:
         mocker.patch(
             "otx.algorithms.action.adapters.openvino.task.DataLoaderWrapper", return_value=MockDataloader(self.dataset)
         )
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.load_model", return_value=self.model)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.get_nodes_by_type", return_value=False)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.IEEngine", return_value=True)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.create_pipeline", return_value=MockPipeline())
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.compress_model_weights", return_value=True)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.save_model", side_effect=mock_save_model)
         mocker.patch(
             "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOTask.load_inferencer",
             return_value=MockOVInferencer(),
         )
         task = ActionOpenVINOTask(self.task_environment)
         task.optimize(OptimizationType.POT, self.dataset, self.model, OptimizationParameters())
+        fake_quantize.assert_called_once()
         assert self.model.get_data("openvino.xml") is not None
         assert self.model.get_data("openvino.bin") is not None
         assert self.model.model_format == ModelFormat.OPENVINO
@@ -390,7 +392,5 @@ class TestDataLoaderWrapper:
         """Test __getitem__ function."""
 
         out = self.dataloader[0]
-        assert out[0][0] == 0
-        assert isinstance(out[0][1], AnnotationSceneEntity)
-        assert len(out[1]) == 10
-        assert isinstance(out[2], dict)
+        assert isinstance(out[1], AnnotationSceneEntity)
+        assert len(out[0]) == 10
