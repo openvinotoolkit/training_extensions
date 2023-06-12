@@ -47,7 +47,7 @@ Enable Tiling via OTX Training CLI
 
 Currently, tiling is supported for both detection and instance segmentation models. Please refer to :doc:`../algorithms/object_detection/object_detection` and :doc:`../algorithms/segmentation/instance_segmentation` for more details.
 
-To enable tiling in OTX training, set `tiling_parameters.enable_tiling` parameter to 1. Here's an example of enabling tiling for the SSD model template:
+To enable tiling in OTX training, set ``tiling_parameters.enable_tiling`` parameter to 1. Here's an example of enabling tiling for the SSD model template:
 
 .. code-block::
 
@@ -68,9 +68,9 @@ To strike a balance between patch size and computational efficiency, the OpenVIN
 
 Adaptive tiling parameter optimization works by finding the average object size in the training dataset and using that to determine the tile size. Currently, the average object size to tile size ratio is set to 3%. For example, if the average object size is 100x100 pixels, the tile size will be around 577x577 pixels. 
 
-This computation is performed by dividing the average object size by the desired object size ratio (default: 3%) and then taking the square root. This ensures that the objects are large enough to be detected by the model.
+This computation is performed by dividing the average object size by the desired object size ratio (default: 3%) and then taking the square root. This ensures that the objects are large enough to be detected by the model. The object size to tile size ratio can also be configured with ``tiling_parameters.object_tile_ratio parameter``. 
 
-The object size to tile size ratio can also be configured with `tiling_parameters.object_tile_ratio parameter`. Here's an example of setting the object size ratio to 5%:
+Here's an example of setting the object size ratio to 5%:
 
 .. code-block:: 
     
@@ -87,7 +87,7 @@ Since tiling train and validation on all tiles from a large image can take a sig
 
 It's important to note that sampling is applied to the training and validation datasets, not the test dataset.
 
-This can be configured with `tiling_parameters.tile_sampling_ratio` parameter. Here's an example of setting the tile sampling ratio to 50%:
+This can be configured with ``tiling_parameters.tile_sampling_ratio`` parameter. Here's an example of setting the tile sampling ratio to 50%:
 
 .. code-block:: 
     
@@ -114,12 +114,12 @@ By specifying these parameters, automatic tiling parameter optimization is disab
 
 The following parameters can be configured to customize the tiling process:
 
-- `tiling_parameters.enable_tiling`: Enable or disable tiling (0 or 1)
-- `tiling_parameters.enable_adaptive_params`: Enable or disable adaptive tiling parameter optimization (0 or 1)
-- `tiling_parameters.object_tile_ratio`: Ratio of average object size to tile size (float between 0.0 and 1.0)
-- `tiling_parameters.tile_size`: Tile edge length in pixels (integer between 100 and 4096)
-- `tiling_parameters.tile_overlap`: The overlap between adjacent tiles as a percentage (float between 0.0 and 1.0)
-- `tiling_parameters.tile_sampling_ratio`: The percentage of tiles to sample from the dataset (float between 0.0 and 1.0)
+- ``tiling_parameters.enable_tiling``: Enable or disable tiling (0 or 1)
+- ``tiling_parameters.enable_adaptive_params``: Enable or disable adaptive tiling parameter optimization (0 or 1)
+- ``tiling_parameters.object_tile_ratio``: Ratio of average object size to tile size (float between 0.0 and 1.0)
+- ``tiling_parameters.tile_size``: Tile edge length in pixels (integer between 100 and 4096)
+- ``tiling_parameters.tile_overlap``: The overlap between adjacent tiles as a percentage (float between 0.0 and 1.0)
+- ``tiling_parameters.tile_sampling_ratio``: The percentage of tiles to sample from the dataset (float between 0.0 and 1.0)
 
 
 Run Tiling on OpenVINO Exported Model
