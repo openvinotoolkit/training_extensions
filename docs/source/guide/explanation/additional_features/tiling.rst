@@ -60,15 +60,15 @@ To enable tiling in OTX training, set ``tiling_parameters.enable_tiling`` parame
     To learn how to run the demo in CLI and visualize results, refer to :doc:`../../tutorials/base/demo`.
 
 
-Tiling Parameters
-------------------
-By default, the OpenVINO Training Extensions automatically optimizes the tiling parameters to ensure efficient execution without compromising accuracy.
+Tile Size and Tile Overlap Optimization
+-----------------------------------------
+By default, the OpenVINO Training Extensions automatically optimize tile size and tile overlap to ensure efficient execution without compromising accuracy.
 
-To strike a balance between patch size and computational efficiency, the OpenVINO Training Extensions incorporates tile dataset sampling and adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.
+To strike a balance between patch size and computational efficiency, the OpenVINO Training Extensions incorporate adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.
 
-Adaptive tiling parameter optimization works by finding the average object size in the training dataset and using that to determine the tile size. Currently, the average object size to tile size ratio is set to 3%. For example, if the average object size is 100x100 pixels, the tile size will be around 577x577 pixels. 
+Adaptive tiling parameter optimization works by finding the average object size in the training dataset and using that to determine the tile size. Currently, the average object size to tile size ratio is set to 3%. For example, if the average object size is 100x100 pixels, the tile size will be around 577x577 pixels.
 
-This computation is performed by dividing the average object size by the desired object size ratio (default: 3%) and then taking the square root. This ensures that the objects are large enough to be detected by the model. The object size to tile size ratio can also be configured with ``tiling_parameters.object_tile_ratio parameter``. 
+This computation is performed by dividing the average object size by the desired object size ratio (default: 3%) and then taking the square root. This ensures that the objects are large enough to be detected by the model. The object size to tile size ratio can also be configured with ``tiling_parameters.object_tile_ratio`` parameter. 
 
 Here's an example of setting the object size ratio to 5%:
 
@@ -78,6 +78,12 @@ Here's an example of setting the object size ratio to 5%:
     params --tiling_parameters.enable_tiling 1          \  # enable tiling
            --tiling_parameters.enable_adaptive_params 1 \  # enable automatic tiling parameter optimization
            --tiling_parameters.object_tile_ratio 0.05   \  # set the object size ratio to 5%
+
+After determining the tile size, the tile overlap is computed by dividing the largest object size in the training dataset by the adaptive tile size. 
+This calculation ensures that the largest object on the border of a tile is not split into two tiles and is covered by adjacent tiles.
+
+You can also manually configure the tile overlap using ``tiling_parameters.tile_overlap parameter`` parameter. For more details, please refer to the section on `Manual Tiling Parameter Configuration`_ .
+
 
 Tiling Sampling Strategy
 ------------------------
