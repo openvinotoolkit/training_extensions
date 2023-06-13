@@ -17,24 +17,24 @@
 import io
 import json
 import os
+import random
 import tempfile
 from typing import Any, Dict, List, Optional
 from zipfile import ZipFile
 
+import nncf
 import numpy as np
+import openvino.runtime as ov
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
-from compression.api import DataLoader
-from compression.engines.ie_engine import IEEngine
-from compression.graph import load_model, save_model
-from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
-from compression.pipeline.initializer import create_pipeline
+from nncf.common.quantization.structs import QuantizationPreset
 from omegaconf import OmegaConf
 
 import otx.algorithms.anomaly.adapters.anomalib.exportable_code
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -73,7 +73,7 @@ from otx.api.utils.segmentation_utils import create_annotation_from_segmentation
 logger = get_logger(__name__)
 
 
-class OTXOpenVINOAnomalyDataloader(DataLoader):
+class OTXOpenVINOAnomalyDataloader:
     """Dataloader for loading OTX dataset into OTX OpenVINO Inferencer.
 
     Args:
@@ -83,13 +83,16 @@ class OTXOpenVINOAnomalyDataloader(DataLoader):
 
     def __init__(
         self,
-        config: ADDict,
         dataset: DatasetEntity,
         inferencer: OpenVINOInferencer,
+        shuffle: bool = True,
     ):
-        super().__init__(config=config)
         self.dataset = dataset
         self.inferencer = inferencer
+        self.shuffler = None
+        if shuffle:
+            self.shuffler = list(range(len(dataset)))
+            random.shuffle(self.shuffler)
 
     def __getitem__(self, index: int):
         """Get dataset item.
@@ -100,6 +103,9 @@ class OTXOpenVINOAnomalyDataloader(DataLoader):
         Returns:
             Dataset item.
         """
+        if self.shuffler is not None:
+            index = self.shuffler[index]
+
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
         inputs = self.inferencer.pre_process(image)
@@ -245,17 +251,25 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if os.path.exists(optimization_config_path):
             with open(optimization_config_path, encoding="UTF-8") as f_src:
                 algorithms = ADDict(json.load(f_src))["algorithms"]
+            ignored_ops = nncf.IgnoredScope(names=algorithms[0].params.ignored.scope)
         else:
             algorithms = [
                 ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY", "shuffle_data": True}})
             ]
+            ignored_ops = nncf.IgnoredScope()
         for algo in algorithms:
             algo.params.stat_subset_size = hparams.pot_parameters.stat_subset_size
             algo.params.shuffle_data = True
             if "Quantization" in algo["name"]:
                 algo.params.preset = hparams.pot_parameters.preset.name.lower()
 
-        return algorithms
+        return [
+            ADDict(
+                preset=QuantizationPreset(algorithms[0].params.preset.lower()),
+                ignored_scope=ignored_ops,
+                subset_size=algorithms[0].params.stat_subset_size,
+            )
+        ]
 
     def optimize(
         self,
@@ -276,7 +290,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             ValueError: When the optimization type is not POT, which is the only support type at the moment.
         """
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("POT is the only supported optimization type for OpenVINO models")
+            raise ValueError("PTQ is the only supported optimization type for OpenVINO models")
 
         # Training subset does not contain example of anomalous images.
         # Anomalous examples from all dataset used to get statistics for quantization.
@@ -284,8 +298,9 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             items=[item for item in dataset if item.get_shapes_labels()[0].is_anomalous], purpose=dataset.purpose
         )
 
-        logger.info("Starting POT optimization.")
-        data_loader = OTXOpenVINOAnomalyDataloader(config=self.config, dataset=dataset, inferencer=self.inferencer)
+        logger.info("Starting PTQ optimization.")
+        data_loader = OTXOpenVINOAnomalyDataloader(dataset=dataset, inferencer=self.inferencer)
+        quantization_dataset = nncf.Dataset(data_loader, lambda data: data[1])
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
@@ -297,30 +312,25 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             else:
                 raise ValueError("Cannot save the weights. self.task_environment.model is None.")
 
-            model_config = {
-                "model_name": "openvino_model",
-                "model": xml_path,
-                "weights": bin_path,
-            }
-            model = load_model(model_config)
-
-            if get_nodes_by_type(model, ["FakeQuantize"]):
-                raise RuntimeError("Model is already optimized by POT")
+            ov_model = ov.Core().read_model(xml_path)
+            if check_if_quantized(ov_model):
+                raise RuntimeError("Model is already optimized by PTQ")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
 
-        engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
-        pipeline = create_pipeline(algo_config=self._get_optimization_algorithms_configs(), engine=engine)
-        compressed_model = pipeline.run(model)
-        compress_model_weights(compressed_model)
+        quantization_configs = self._get_optimization_algorithms_configs()
+        quantization_configs[0].subset_size = min(quantization_configs[0].subset_size, len(data_loader))
+
+        compressed_model = nncf.quantize(ov_model, quantization_dataset, **quantization_configs[0])
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
-            save_model(compressed_model, tempdir, model_name="model")
-            self.__load_weights(path=os.path.join(tempdir, "model.xml"), output_model=output_model, key="openvino.xml")
+            xml_path = os.path.join(tempdir, "model.xml")
+            ov.serialize(compressed_model, xml_path)
+            self.__load_weights(path=xml_path, output_model=output_model, key="openvino.xml")
             self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
