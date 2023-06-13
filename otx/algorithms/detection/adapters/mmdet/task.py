@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import functools
 import glob
 import io
 import os
@@ -64,7 +63,6 @@ from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hoo
     DetClassProbabilityMapHook,
     MaskRCNNRecordingForwardHook,
 )
-from otx.algorithms.detection.adapters.mmdet.models.detectors import CustomMaskRCNN
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_input_preprocessing,
     patch_input_shape,
@@ -596,14 +594,14 @@ class MMDetectionTask(OTXDetectionTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
-        if isinstance(feature_model, CustomMaskRCNN):
+        if isinstance(feature_model, TwoStageDetector):
             test_pipeline = cfg.data.test.pipeline
             width, height = None, None
             for pipeline in test_pipeline:
                 width, height = pipeline.get("img_scale", (None, None))
             if height is None:
                 raise ValueError("img_scale has to be defined in the test pipeline.")
-            per_class_xai_algorithm = functools.partial(MaskRCNNRecordingForwardHook, input_img_shape=(height, width))
+            per_class_xai_algorithm = partial(MaskRCNNRecordingForwardHook, input_img_shape=(height, width))
         else:
             per_class_xai_algorithm = DetClassProbabilityMapHook  # type: ignore
 
@@ -622,7 +620,6 @@ class MMDetectionTask(OTXDetectionTask):
             raise NotImplementedError(f"Explainer algorithm {explainer} not supported!")
         logger.info(f"Explainer algorithm: {explainer}")
 
-        # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         eval_predictions = []
         with explainer_hook(feature_model) as saliency_hook:  # type: ignore
             for data in dataloader:
