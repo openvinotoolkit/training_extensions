@@ -5,6 +5,7 @@
 #
 
 import copy
+import cv2
 from itertools import product
 from typing import Any, Dict, List, Tuple, Union
 
@@ -108,9 +109,9 @@ class Tiler:
         if isinstance(self.classifier, Model):
             tile_coords = self.filter_tiles_by_objectness(image, tile_coords)
 
-        if mode == "sync":
-            return self.predict_sync(image, tile_coords)
-        return self.predict_async(image, tile_coords)
+        # if mode == "sync":
+        return self.predict_sync(image, tile_coords)
+        # return self.predict_async(image, tile_coords)
 
     def predict_sync(self, image: np.ndarray, tile_coords: List[List[int]]):
         """Predict by cropping full image to tiles synchronously.
@@ -123,26 +124,31 @@ class Tiler:
             detection: prediction results
             features: saliency map and feature vector
         """
-        features = (None, None)
+        # features = (None, None)
+        features = []
         tile_results = []
 
-        for i, coord in enumerate(tile_coords):
+        for coord in tile_coords:
             tile_img = self.crop_tile(image, coord)
             tile_dict, tile_meta = self.model.preprocess(tile_img)
             raw_predictions = self.model.infer_sync(tile_dict)
             predictions = self.model.postprocess(raw_predictions, tile_meta)
             tile_result = self.postprocess_tile(predictions, *coord[:2])
             # cache full image feature vector and saliency map at 0 index
-            if i == 0 and ("feature_vector" in raw_predictions or "saliency_map" in raw_predictions):
-                features = (
-                    copy.deepcopy(raw_predictions["feature_vector"].reshape(-1)),
-                    copy.deepcopy(raw_predictions["saliency_map"][0]),
-                )
+            if "feature_vector" in raw_predictions or "saliency_map" in raw_predictions:
+                tile_meta.update({"coord": coord})
+                features.append((
+                    (
+                        copy.deepcopy(raw_predictions["feature_vector"].reshape(-1)),
+                        copy.deepcopy(raw_predictions["saliency_map"][0])),
+                    tile_meta,
+                ))
 
             tile_results.append(tile_result)
 
         results = self.merge_results(tile_results, image.shape)
-        return results, features
+        merged_tile_features = self.merge_features(features)
+        return results, merged_tile_features
 
     def predict_async(self, image: np.ndarray, tile_coords: List[List[int]]):
         """Predict by cropping full image to tiles asynchronously.
@@ -159,13 +165,15 @@ class Tiler:
 
         processed_tiles = 0
         tile_results = []
-        features = (None, None)
+        # features = (None, None)
+        features = []
         for i, coord in enumerate(tile_coords):
             pred = self.async_pipeline.get_result(processed_tiles)
             while pred:
                 tile_prediction, meta, feats = pred
-                if meta["tile_i"] == 0:
-                    features = feats
+                # if meta["tile_i"] == 0:
+                #     features = feats
+                features.append((feats, meta))
                 tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
                 tile_results.append(tile_result)
                 processed_tiles += 1
@@ -175,12 +183,13 @@ class Tiler:
         self.async_pipeline.await_all()
         for j in range(processed_tiles, num_tiles):
             tile_prediction, meta, feats = self.async_pipeline.get_result(j)
-            if meta["tile_i"] == 0:
-                features = feats
+            # if meta["tile_i"] == 0:
+            #     features = feats
+            features.append((feats, meta))
             tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
             tile_results.append(tile_result)
         assert j == num_tiles - 1, "Number of tiles processed does not match number of tiles"
-        return self.merge_results(tile_results, image.shape), features
+        return self.merge_results(tile_results, image.shape), self.merge_features(features)
 
     def postprocess_tile(self, predictions: Union[List, Tuple], offset_x: int, offset_y: int) -> Dict[str, List]:
         """Postprocess single tile prediction.
@@ -266,6 +275,54 @@ class Tiler:
                 self.resize_masks(masks, detections, shape)
                 detections = *Tiler.detection2tuple(detections), masks
         return detections
+
+    def merge_features(self, features):
+        if len(features)==0:
+            return (None, None)
+        image_vector = self.merge_vectors(features)
+        image_saliency_map = self.merge_maps(features)
+        return image_vector, image_saliency_map
+
+    def merge_vectors(self, features):
+        vectors = [vector for (vector, _), _ in features]
+        return np.average(vectors)
+    
+    def merge_maps(self, features):
+        (_, image_saliency_map), image_meta = features[0]
+        dtype = image_saliency_map[0][0].dtype
+        feat_classes, feat_h, feat_w = image_saliency_map.shape
+        ratio =  np.array([feat_h, feat_w]) / self.tile_size
+        image_h, image_w, _ = image_meta['original_shape']
+        merged_maps_size = feat_classes, int(image_h * ratio[0]), int(image_w * ratio[1])
+        
+        merged_map = np.zeros(merged_maps_size, dtype=dtype)
+
+        image_saliency_map = np.array([cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_saliency_map])
+
+        for (_, saliency_map), meta in features[1:]:
+            x_1, y_1, x_2, y_2 = (meta['coord'] * np.repeat(ratio, 2)).astype(np.uint8)
+            c = saliency_map.shape[0]
+            w, h = x_2 - x_1, y_2 - y_1
+
+            for ci in range(c):
+                for hi in range(h):
+                    for wi in range(w):
+                        map_pixel = saliency_map[ci, hi, wi]
+                        if merged_map[ci, y_1+hi, x_1+wi] != 0:
+                            merged_map[ci, y_1+hi, x_1+wi] = 0.5 * (map_pixel + merged_map[ci, y_1+hi, x_1+wi])
+                        else:
+                            merged_map[ci, y_1+hi, x_1+wi] = map_pixel
+            
+        merged_map += (0.5 * image_saliency_map).astype(dtype)
+        min_soft_score = np.min(merged_map, axis=(1,2)).reshape(-1,1,1)
+        # make merged_map distribution positive to perform non-linear normalization y=x**1.5
+        merged_map = (merged_map - min_soft_score)**1.5
+        max_soft_score = np.max(merged_map, axis=(1,2)).reshape(-1,1,1)
+        merged_map = 255.0 / (max_soft_score + 1e-12) * merged_map
+        merged_map = np.uint8(np.floor(merged_map))
+
+        return merged_map
+
 
     def resize_masks(self, masks: List, dets: np.ndarray, shape: List[int]):
         """Resize Masks.

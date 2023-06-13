@@ -396,7 +396,8 @@ class ImageTilingDataset(OTXDetDataset):
         Returns:
             dict: Annotation information of a tile.
         """
-        return self.tile_dataset.get_ann_info(idx)
+        self.merged_results["results"] = self.tile_dataset.merge(results)
+        return self.dataset.evaluate(self.merged_results["results"], **kwargs)
 
     def merge(self, results) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
         """Merge tile-level results to image-level results.
@@ -408,3 +409,32 @@ class ImageTilingDataset(OTXDetDataset):
             merged_results (list[list | tuple]): Merged results of the dataset.
         """
         return self.tile_dataset.merge(results)
+
+    def merge_vectors(self, feature_vectors) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
+        """Merge tile-level results to image-level results.
+
+        Args:
+            results: tile-level results.
+
+        Returns:
+            merged_results (list[list | tuple]): Merged results of the dataset.
+        """
+        
+        return self.tile_dataset.merge_vectors(feature_vectors)
+
+    def merge_maps(self, saliency_maps) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
+        """Merge tile-level results to image-level results.
+
+        Args:
+            results: tile-level results.
+
+        Returns:
+            merged_results (list[list | tuple]): Merged results of the dataset.
+        """
+        
+        return self.tile_dataset.merge_maps(saliency_maps)
+
+    def __del__(self):
+        """Delete the temporary directory when the object is deleted."""
+        if getattr(self, "tmp_dir", False):
+            self.tmp_dir.cleanup()

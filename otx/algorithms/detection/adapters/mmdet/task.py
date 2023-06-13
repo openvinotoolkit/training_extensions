@@ -390,6 +390,10 @@ class MMDetectionTask(OTXDetectionTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
+        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
+        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
+            mm_dataset = mm_dataset.dataset
+
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         if not dump_saliency_map:
             saliency_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
@@ -400,7 +404,9 @@ class MMDetectionTask(OTXDetectionTask):
             if isinstance(raw_model, TwoStageDetector):
                 saliency_hook = ActivationMapHook(feature_model)
             else:
-                saliency_hook = DetClassProbabilityMapHook(feature_model)
+                saliency_hook = DetClassProbabilityMapHook(feature_model, 
+                                                           use_cls_softmax = not isinstance(mm_dataset, ImageTilingDataset), 
+                                                           normalize = not isinstance(mm_dataset, ImageTilingDataset))
 
         if not dump_features:
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
@@ -424,14 +430,11 @@ class MMDetectionTask(OTXDetectionTask):
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
             cfg.evaluation.pop(key, None)
 
-        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
-        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
-            mm_dataset = mm_dataset.dataset
-
         if isinstance(mm_dataset, ImageTilingDataset):
-            feature_vectors = [feature_vectors[i] for i in range(mm_dataset.num_samples)]
-            saliency_maps = [saliency_maps[i] for i in range(mm_dataset.num_samples)]
             eval_predictions = mm_dataset.merge(eval_predictions)
+            # average tile feature vertors for each image 
+            feature_vectors = mm_dataset.merge_vectors(feature_vectors)
+            saliency_maps = mm_dataset.merge_maps(saliency_maps)
 
         metric = None
         if inference_parameters and inference_parameters.is_evaluation:
@@ -439,7 +442,7 @@ class MMDetectionTask(OTXDetectionTask):
                 metric = mm_dataset.dataset.evaluate(eval_predictions, **cfg.evaluation)
             else:
                 metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
-            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
+            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]      
 
         assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), (
             "Number of elements should be the same, however, number of outputs are "
@@ -499,6 +502,11 @@ class MMDetectionTask(OTXDetectionTask):
             if export_options["deploy_cfg"]["codebase_config"]["task"] != "Segmentation":
                 if "saliency_map" not in output_names:
                     output_names.append("saliency_map")
+            # disable softmax and normalization to merge saliency map for tiles and postprocess them altogether
+            tiling_detection = True if 'tile_cfg' in cfg else False
+            export_options["deploy_cfg"]["softmax_saliency_maps"] = not tiling_detection
+            export_options["deploy_cfg"]["normalize_saliency_maps"] = not tiling_detection
+
         export_options["model_builder"] = getattr(self, "model_builder", build_detector)
 
         if self._precision[0] == ModelPrecision.FP16:
@@ -607,22 +615,30 @@ class MMDetectionTask(OTXDetectionTask):
             raise NotImplementedError(f"Explainer algorithm {explainer} not supported!")
         logger.info(f"Explainer algorithm: {explainer}")
 
+        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
+        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
+            mm_dataset = mm_dataset.dataset
+    
+        if explainer.lower() == "classwisesaliencymap":
+            saliency_hook = DetClassProbabilityMapHook(feature_model, 
+                                                       use_cls_softmax = not isinstance(mm_dataset, ImageTilingDataset),
+                                                       normalize = not isinstance(mm_dataset, ImageTilingDataset))
+        else:
+            saliency_hook = explainer_hook(feature_model)
+
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         eval_predictions = []
-        with explainer_hook(feature_model) as saliency_hook:
+        with saliency_hook:
             for data in dataloader:
                 with torch.no_grad():
                     result = model(return_loss=False, rescale=True, **data)
                 eval_predictions.extend(result)
             saliency_maps = saliency_hook.records
 
-        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
-        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
-            mm_dataset = mm_dataset.dataset
 
         # In the tiling case, select the first images which is map of the entire image
         if isinstance(mm_dataset, ImageTilingDataset):
-            saliency_maps = [saliency_maps[i] for i in range(mm_dataset.num_samples)]
+            saliency_maps = mm_dataset.merge_maps(saliency_maps)
 
         outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
         return outputs

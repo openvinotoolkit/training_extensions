@@ -41,11 +41,13 @@ class BaseRecordingForwardHook(ABC):
                                   Defaults to 0 which uses the largest feature map from FPN.
     """
 
-    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1) -> None:
+    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, use_cls_softmax = False, normalize = True) -> None:
         self._module = module
         self._handle = None
         self._records: List[torch.Tensor] = []
         self._fpn_idx = fpn_idx
+        self.normalize = normalize
+        self.use_cls_softmax = use_cls_softmax
 
     @property
     def records(self):
@@ -82,12 +84,17 @@ class BaseRecordingForwardHook(ABC):
         """Exit."""
         self._handle.remove()
 
+    def normalize_map(self, saliency_maps):
+        max_values, _ = torch.max(saliency_maps, -1)
+        min_values, _ = torch.min(saliency_maps, -1)
+        saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
+        return saliency_maps.to(torch.uint8)
+
 
 class EigenCamHook(BaseRecordingForwardHook):
     """EigenCamHook."""
 
-    @staticmethod
-    def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map."""
         if isinstance(feature_map, (list, tuple)):
             feature_map = feature_map[fpn_idx]
@@ -97,20 +104,19 @@ class EigenCamHook(BaseRecordingForwardHook):
         reshaped_fmap = x.reshape((batch_size, channel, h * w)).transpose(1, 2)
         reshaped_fmap = reshaped_fmap - reshaped_fmap.mean(1)[:, None, :]
         _, _, vh = torch.linalg.svd(reshaped_fmap, full_matrices=True)  # pylint: disable=invalid-name
-        saliency_map = (reshaped_fmap @ vh[:, 0][:, :, None]).squeeze(-1)
-        max_values, _ = torch.max(saliency_map, -1)
-        min_values, _ = torch.min(saliency_map, -1)
-        saliency_map = 255 * (saliency_map - min_values[:, None]) / ((max_values - min_values + 1e-12)[:, None])
+
+        if self.normalize:
+            saliency_map = (reshaped_fmap @ vh[:, 0][:, :, None]).squeeze(-1)
+            saliency_maps = self.normalize_map(saliency_maps)
+
         saliency_map = saliency_map.reshape((batch_size, h, w))
-        saliency_map = saliency_map.to(torch.uint8)
         return saliency_map
 
 
 class ActivationMapHook(BaseRecordingForwardHook):
     """ActivationMapHook."""
 
-    @staticmethod
-    def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
         if isinstance(feature_map, (list, tuple)):
             assert fpn_idx < len(
@@ -120,12 +126,12 @@ class ActivationMapHook(BaseRecordingForwardHook):
 
         batch_size, _, h, w = feature_map.size()
         activation_map = torch.mean(feature_map, dim=1)
-        activation_map = activation_map.reshape((batch_size, h * w))
-        max_values, _ = torch.max(activation_map, -1)
-        min_values, _ = torch.min(activation_map, -1)
-        activation_map = 255 * (activation_map - min_values[:, None]) / (max_values - min_values + 1e-12)[:, None]
-        activation_map = activation_map.reshape((batch_size, h, w))
-        activation_map = activation_map.to(torch.uint8)
+        
+        if self.normalize:
+            activation_map = activation_map.reshape((batch_size, h * w))
+            activation_map = self.normalize_map(activation_map)
+
+        activation_map = activation_map.reshape((batch_size, h, w))        
         return activation_map
 
 
@@ -178,12 +184,11 @@ class ReciproCAMHook(BaseRecordingForwardHook):
             mosaic_prediction = self._predict_from_feature_map(mosaic_feature_map)
             saliency_maps[f] = mosaic_prediction.transpose(0, 1).reshape((self._num_classes, h, w))
 
-        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
-        max_values, _ = torch.max(saliency_maps, -1)
-        min_values, _ = torch.min(saliency_maps, -1)
-        saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
-        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
-        saliency_maps = saliency_maps.to(torch.uint8)
+        if self.normalize:
+            saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
+            saliency_maps = self.normalize_map(saliency_maps)
+
+        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))        
         return saliency_maps
 
     def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:

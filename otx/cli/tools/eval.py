@@ -17,6 +17,9 @@
 import json
 from pathlib import Path
 
+import os
+os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
+
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
