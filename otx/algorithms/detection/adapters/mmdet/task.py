@@ -621,14 +621,14 @@ class MMDetectionTask(OTXDetectionTask):
         while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
             mm_dataset = mm_dataset.dataset
 
-        if explainer.lower() == "classwisesaliencymap":
+        if explainer.lower() == "eigencam" or explainer.lower() == "activationmap":
+            saliency_hook = explainer_hook(feature_model)
+        else:
             saliency_hook = DetClassProbabilityMapHook(
                 feature_model,
                 use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
                 normalize=not isinstance(mm_dataset, ImageTilingDataset),
             )
-        else:
-            saliency_hook = explainer_hook(feature_model)
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         eval_predictions = []
@@ -639,7 +639,7 @@ class MMDetectionTask(OTXDetectionTask):
                 eval_predictions.extend(result)
             saliency_maps = saliency_hook.records
 
-        # In the tiling case, select the first images which is map of the entire image
+        # In the tiling case, merge saliency map from each tile into united map for image
         if isinstance(mm_dataset, ImageTilingDataset):
             saliency_maps = mm_dataset.merge_maps(saliency_maps)
 

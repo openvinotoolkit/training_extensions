@@ -396,8 +396,7 @@ class ImageTilingDataset(OTXDetDataset):
         Returns:
             dict: Annotation information of a tile.
         """
-        self.merged_results["results"] = self.tile_dataset.merge(results)
-        return self.dataset.evaluate(self.merged_results["results"], **kwargs)
+        return self.tile_dataset.get_ann_info(idx)
 
     def merge(self, results) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
         """Merge tile-level results to image-level results.
@@ -410,26 +409,26 @@ class ImageTilingDataset(OTXDetDataset):
         """
         return self.tile_dataset.merge(results)
 
-    def merge_vectors(self, feature_vectors) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
-        """Merge tile-level results to image-level results.
+    def merge_vectors(self, feature_vectors) -> List[np.ndarray]:
+        """Merge tile-level feature vectors to image-level feature-vector.
 
         Args:
-            results: tile-level results.
+            feature_vectors: tile-level feature vectors.
 
         Returns:
-            merged_results (list[list | tuple]): Merged results of the dataset.
+            merged_vectors (list[np.ndarray]): Merged vector for each image.
         """
 
         return self.tile_dataset.merge_vectors(feature_vectors)
 
-    def merge_maps(self, saliency_maps) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
-        """Merge tile-level results to image-level results.
+    def merge_maps(self, saliency_maps) -> List[np.ndarray]:
+        """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            results: tile-level results.
+            saliency_maps: tile-level saliencymaps.
 
         Returns:
-            merged_results (list[list | tuple]): Merged results of the dataset.
+            merged_maps (list[np.ndarray]): Merged saliency map for each image.
         """
 
         return self.tile_dataset.merge_maps(saliency_maps)

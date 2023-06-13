@@ -100,8 +100,8 @@ if is_mmdeploy_enabled():
             feature_vector = FeatureVectorHook.func(feat)
             cls_scores = outs[0]
             postprocess_kwargs = {
-                "use_cls_softmax": ctx.cfg["softmax_saliency_maps"],
                 "normalize": ctx.cfg["normalize_saliency_maps"],
+                "use_cls_softmax": ctx.cfg["softmax_saliency_maps"],
             }
             saliency_map = DetClassProbabilityMapHook(self, **postprocess_kwargs).func(
                 feature_map=cls_scores, cls_scores_provided=True

@@ -39,15 +39,15 @@ class BaseRecordingForwardHook(ABC):
         module (torch.nn.Module): The PyTorch module to be registered in forward pass
         fpn_idx (int, optional): The layer index to be processed if the model is a FPN.
                                   Defaults to 0 which uses the largest feature map from FPN.
+        normalize (bool, optional): Whenever to normalize the resulting saliency maps.
     """
 
-    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, use_cls_softmax=False, normalize=True) -> None:
+    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, normalize=True) -> None:
         self._module = module
         self._handle = None
         self._records: List[torch.Tensor] = []
         self._fpn_idx = fpn_idx
         self.normalize = normalize
-        self.use_cls_softmax = use_cls_softmax
 
     @property
     def records(self):
@@ -85,6 +85,7 @@ class BaseRecordingForwardHook(ABC):
         self._handle.remove()
 
     def normalize_map(self, saliency_maps):
+        """Normalize saliency maps."""
         max_values, _ = torch.max(saliency_maps, -1)
         min_values, _ = torch.min(saliency_maps, -1)
         saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
@@ -107,7 +108,7 @@ class EigenCamHook(BaseRecordingForwardHook):
 
         if self.normalize:
             saliency_map = (reshaped_fmap @ vh[:, 0][:, :, None]).squeeze(-1)
-            self.normalize_map(saliency_maps)
+            self.normalize_map(saliency_map)
 
         saliency_map = saliency_map.reshape((batch_size, h, w))
         return saliency_map

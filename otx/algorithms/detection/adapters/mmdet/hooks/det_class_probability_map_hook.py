@@ -30,8 +30,8 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
-    def __init__(self, module: torch.nn.Module, use_cls_softmax=True, normalize=True) -> None:
-        super().__init__(module)
+    def __init__(self, module: torch.nn.Module, normalize=True, use_cls_softmax=True) -> None:
+        super().__init__(module, normalize)
         self._neck = module.neck if module.with_neck else None
         self._bbox_head = module.bbox_head
         self._num_cls_out_channels = module.bbox_head.cls_out_channels  # SSD-like heads also have background class
@@ -40,7 +40,6 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         else:
             self._num_anchors = [1] * 10
         self.use_cls_softmax = use_cls_softmax
-        self.normalize = normalize
 
     def func(
         self,
@@ -59,8 +58,8 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         else:
             cls_scores = self._get_cls_scores_from_feature_map(feature_map)
 
-        # Do not use softmax for tiles in Tiling Detection, because it tile doesn't contain objects, it would highlight one of the
-        # classes map as a background class
+        # Do not use softmax for tiles in Tiling Detection, because it tile doesn't contain objects,
+        # it would highlight one of the classes map as a background class
         if self.use_cls_softmax:
             cls_scores = [torch.softmax(t, dim=1) for t in cls_scores]
 
