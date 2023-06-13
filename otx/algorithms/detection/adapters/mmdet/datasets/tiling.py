@@ -4,7 +4,6 @@
 #
 
 import copy
-import cv2
 import uuid
 from itertools import product
 from multiprocessing import Pool
@@ -12,6 +11,7 @@ from random import sample
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
+import cv2
 import numpy as np
 import pycocotools.mask as mask_util
 from mmcv.ops import nms
@@ -503,7 +503,7 @@ class Tile:
         if "gt_labels" in self.tiles[idx]:
             ann["labels"] = self.tiles[idx]["gt_labels"]
         return ann
-    
+
     def merge_vectors(self, feature_vectors) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
         """Merge tile-level results to image-level results.
 
@@ -536,19 +536,21 @@ class Tile:
         image_saliency_maps = []
         feat_classes, feat_h, feat_w = saliency_maps[0].shape
 
-        for image_sal_map, orig_image in zip(saliency_maps[:self.num_images], self.cached_results):
+        for image_sal_map, orig_image in zip(saliency_maps[: self.num_images], self.cached_results):
             img_idx = orig_image["index"]
             ratios[img_idx] = np.array([feat_h, feat_w]) / self.tile_size
             image_size = np.array([orig_image["height"], orig_image["width"]])
-            
+
             merged_maps_size = np.concatenate(([feat_classes], image_size * ratios[img_idx]))
             merged_maps_size = merged_maps_size.astype(np.uint8)
             merged_maps.append(np.zeros(merged_maps_size, dtype=dtype))
-            
-            image_saliency_map = np.array([cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_sal_map])
+
+            image_saliency_map = np.array(
+                [cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_sal_map]
+            )
             image_saliency_maps.append(image_saliency_map)
 
-        for map, tile in zip(saliency_maps[self.num_images:], self.tiles[self.num_images:]):
+        for map, tile in zip(saliency_maps[self.num_images :], self.tiles[self.num_images :]):
             img_idx = tile["dataset_idx"]
             x_1, y_1, x_2, y_2 = (tile["tile_box"] * np.repeat(ratios[img_idx], 2)).astype(np.uint8)
             c = map.shape[0]
@@ -558,21 +560,22 @@ class Tile:
                 for hi in range(h):
                     for wi in range(w):
                         map_pixel = map[ci, hi, wi]
-                        if merged_maps[img_idx][ci, y_1+hi, x_1+wi] != 0:
-                            merged_maps[img_idx][ci, y_1+hi, x_1+wi] = 0.5 * (map_pixel + merged_maps[img_idx][ci, y_1+hi, x_1+wi])
+                        if merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] != 0:
+                            merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = 0.5 * (
+                                map_pixel + merged_maps[img_idx][ci, y_1 + hi, x_1 + wi]
+                            )
                         else:
-                            merged_maps[img_idx][ci, y_1+hi, x_1+wi] = map_pixel
+                            merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = map_pixel
 
-        
         norm_maps = []
         for merged_map, image_sal_map in zip(merged_maps, image_saliency_maps):
             merged_map += (0.5 * image_sal_map).astype(dtype)
 
-            min_soft_score = np.min(merged_map, axis=(1,2)).reshape(-1,1,1)
+            min_soft_score = np.min(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
             # make merged_map distribution positive to perform non-linear normalization y=x**1.5
-            merged_map = (merged_map - min_soft_score)**1.5
+            merged_map = (merged_map - min_soft_score) ** 1.5
 
-            max_soft_score = np.max(merged_map, axis=(1,2)).reshape(-1,1,1)
+            max_soft_score = np.max(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
             merged_map = 255.0 / (max_soft_score + 1e-12) * merged_map
 
             norm_maps.append(np.uint8(np.floor(merged_map)))

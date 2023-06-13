@@ -108,7 +108,10 @@ if is_mmdeploy_enabled():
 
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(x)
-            postprocess_kwargs = {"use_cls_softmax": ctx.cfg["softmax_saliency_maps"], "normalize": ctx.cfg["normalize_saliency_maps"]}
+            postprocess_kwargs = {
+                "use_cls_softmax": ctx.cfg["softmax_saliency_maps"],
+                "normalize": ctx.cfg["normalize_saliency_maps"],
+            }
             saliency_map = ActivationMapHook(self, **postprocess_kwargs).func(backbone_out)
             return (*out, feature_vector, saliency_map)
 

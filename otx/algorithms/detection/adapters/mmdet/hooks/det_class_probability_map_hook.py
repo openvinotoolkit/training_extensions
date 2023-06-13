@@ -4,9 +4,9 @@
 #
 from typing import List, Tuple, Union
 
+import numpy as np
 import torch
 import torch.nn.functional as F
-import numpy as np
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     BaseRecordingForwardHook,
@@ -30,7 +30,7 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
-    def __init__(self, module: torch.nn.Module, use_cls_softmax = True, normalize = True) -> None:
+    def __init__(self, module: torch.nn.Module, use_cls_softmax=True, normalize=True) -> None:
         super().__init__(module)
         self._neck = module.neck if module.with_neck else None
         self._bbox_head = module.bbox_head
@@ -80,7 +80,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                     F.interpolate(cls_scores_anchorless_per_level, (height, width), mode="bilinear")
                 )
             saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
-        
+
         if self.normalize:
             saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, -1))
             saliency_maps = self.normalize_map(saliency_maps)

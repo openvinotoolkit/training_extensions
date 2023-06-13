@@ -134,15 +134,18 @@ class Tiler:
             raw_predictions = self.model.infer_sync(tile_dict)
             predictions = self.model.postprocess(raw_predictions, tile_meta)
             tile_result = self.postprocess_tile(predictions, *coord[:2])
-            # cache full image feature vector and saliency map at 0 index
+            # cache each tile feature vector and saliency map
             if "feature_vector" in raw_predictions or "saliency_map" in raw_predictions:
                 tile_meta.update({"coord": coord})
-                features.append((
+                features.append(
                     (
-                        copy.deepcopy(raw_predictions["feature_vector"].reshape(-1)),
-                        copy.deepcopy(raw_predictions["saliency_map"][0])),
-                    tile_meta,
-                ))
+                        (
+                            copy.deepcopy(raw_predictions["feature_vector"].reshape(-1)),
+                            copy.deepcopy(raw_predictions["saliency_map"][0]),
+                        ),
+                        tile_meta,
+                    )
+                )
 
             tile_results.append(tile_result)
 
@@ -277,7 +280,7 @@ class Tiler:
         return detections
 
     def merge_features(self, features):
-        if len(features)==0:
+        if len(features) == 0:
             return (None, None)
         image_vector = self.merge_vectors(features)
         image_saliency_map = self.merge_maps(features)
@@ -286,21 +289,23 @@ class Tiler:
     def merge_vectors(self, features):
         vectors = [vector for (vector, _), _ in features]
         return np.average(vectors)
-    
+
     def merge_maps(self, features):
         (_, image_saliency_map), image_meta = features[0]
         dtype = image_saliency_map[0][0].dtype
         feat_classes, feat_h, feat_w = image_saliency_map.shape
-        ratio =  np.array([feat_h, feat_w]) / self.tile_size
-        image_h, image_w, _ = image_meta['original_shape']
+        ratio = np.array([feat_h, feat_w]) / self.tile_size
+        image_h, image_w, _ = image_meta["original_shape"]
         merged_maps_size = feat_classes, int(image_h * ratio[0]), int(image_w * ratio[1])
-        
+
         merged_map = np.zeros(merged_maps_size, dtype=dtype)
 
-        image_saliency_map = np.array([cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_saliency_map])
+        image_saliency_map = np.array(
+            [cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_saliency_map]
+        )
 
         for (_, saliency_map), meta in features[1:]:
-            x_1, y_1, x_2, y_2 = (meta['coord'] * np.repeat(ratio, 2)).astype(np.uint8)
+            x_1, y_1, x_2, y_2 = (meta["coord"] * np.repeat(ratio, 2)).astype(np.uint8)
             c = saliency_map.shape[0]
             w, h = x_2 - x_1, y_2 - y_1
 
@@ -308,21 +313,20 @@ class Tiler:
                 for hi in range(h):
                     for wi in range(w):
                         map_pixel = saliency_map[ci, hi, wi]
-                        if merged_map[ci, y_1+hi, x_1+wi] != 0:
-                            merged_map[ci, y_1+hi, x_1+wi] = 0.5 * (map_pixel + merged_map[ci, y_1+hi, x_1+wi])
+                        if merged_map[ci, y_1 + hi, x_1 + wi] != 0:
+                            merged_map[ci, y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_map[ci, y_1 + hi, x_1 + wi])
                         else:
-                            merged_map[ci, y_1+hi, x_1+wi] = map_pixel
-            
+                            merged_map[ci, y_1 + hi, x_1 + wi] = map_pixel
+
         merged_map += (0.5 * image_saliency_map).astype(dtype)
-        min_soft_score = np.min(merged_map, axis=(1,2)).reshape(-1,1,1)
+        min_soft_score = np.min(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
         # make merged_map distribution positive to perform non-linear normalization y=x**1.5
-        merged_map = (merged_map - min_soft_score)**1.5
-        max_soft_score = np.max(merged_map, axis=(1,2)).reshape(-1,1,1)
+        merged_map = (merged_map - min_soft_score) ** 1.5
+        max_soft_score = np.max(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
         merged_map = 255.0 / (max_soft_score + 1e-12) * merged_map
         merged_map = np.uint8(np.floor(merged_map))
 
         return merged_map
-
 
     def resize_masks(self, masks: List, dets: np.ndarray, shape: List[int]):
         """Resize Masks.

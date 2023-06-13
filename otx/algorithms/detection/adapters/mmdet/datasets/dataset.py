@@ -419,7 +419,7 @@ class ImageTilingDataset(OTXDetDataset):
         Returns:
             merged_results (list[list | tuple]): Merged results of the dataset.
         """
-        
+
         return self.tile_dataset.merge_vectors(feature_vectors)
 
     def merge_maps(self, saliency_maps) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
@@ -431,7 +431,7 @@ class ImageTilingDataset(OTXDetDataset):
         Returns:
             merged_results (list[list | tuple]): Merged results of the dataset.
         """
-        
+
         return self.tile_dataset.merge_maps(saliency_maps)
 
     def __del__(self):

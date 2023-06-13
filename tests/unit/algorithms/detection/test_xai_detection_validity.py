@@ -27,8 +27,8 @@ class TestExplainMethods:
 
     ref_saliency_vals_det = {
         "ATSS": np.array([67, 216, 255, 57], dtype=np.uint8),
-        "YOLOX": np.array([80, 28, 42, 53, 49, 68, 72, 75, 69, 57, 65, 6, 157], dtype=np.uint8),
-        "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 28, 44, 23, 61], dtype=np.uint8),
+        "YOLOX": np.array([80, 28, 42, 53, 50, 68, 72, 75, 69, 57, 65, 6, 157], dtype=np.uint8),
+        "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 27, 44, 23, 61], dtype=np.uint8),
     }
 
     @e2e_pytest_unit

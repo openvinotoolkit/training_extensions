@@ -41,7 +41,7 @@ class BaseRecordingForwardHook(ABC):
                                   Defaults to 0 which uses the largest feature map from FPN.
     """
 
-    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, use_cls_softmax = False, normalize = True) -> None:
+    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, use_cls_softmax=False, normalize=True) -> None:
         self._module = module
         self._handle = None
         self._records: List[torch.Tensor] = []
@@ -107,7 +107,7 @@ class EigenCamHook(BaseRecordingForwardHook):
 
         if self.normalize:
             saliency_map = (reshaped_fmap @ vh[:, 0][:, :, None]).squeeze(-1)
-            saliency_maps = self.normalize_map(saliency_maps)
+            self.normalize_map(saliency_maps)
 
         saliency_map = saliency_map.reshape((batch_size, h, w))
         return saliency_map
@@ -126,12 +126,12 @@ class ActivationMapHook(BaseRecordingForwardHook):
 
         batch_size, _, h, w = feature_map.size()
         activation_map = torch.mean(feature_map, dim=1)
-        
+
         if self.normalize:
             activation_map = activation_map.reshape((batch_size, h * w))
             activation_map = self.normalize_map(activation_map)
 
-        activation_map = activation_map.reshape((batch_size, h, w))        
+        activation_map = activation_map.reshape((batch_size, h, w))
         return activation_map
 
 
@@ -188,7 +188,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
             saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
             saliency_maps = self.normalize_map(saliency_maps)
 
-        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))        
+        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
         return saliency_maps
 
     def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:

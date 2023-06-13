@@ -404,9 +404,11 @@ class MMDetectionTask(OTXDetectionTask):
             if isinstance(raw_model, TwoStageDetector):
                 saliency_hook = ActivationMapHook(feature_model)
             else:
-                saliency_hook = DetClassProbabilityMapHook(feature_model, 
-                                                           use_cls_softmax = not isinstance(mm_dataset, ImageTilingDataset), 
-                                                           normalize = not isinstance(mm_dataset, ImageTilingDataset))
+                saliency_hook = DetClassProbabilityMapHook(
+                    feature_model,
+                    use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
+                    normalize=not isinstance(mm_dataset, ImageTilingDataset),
+                )
 
         if not dump_features:
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
@@ -432,7 +434,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         if isinstance(mm_dataset, ImageTilingDataset):
             eval_predictions = mm_dataset.merge(eval_predictions)
-            # average tile feature vertors for each image 
+            # average tile feature vertors for each image
             feature_vectors = mm_dataset.merge_vectors(feature_vectors)
             saliency_maps = mm_dataset.merge_maps(saliency_maps)
 
@@ -442,7 +444,7 @@ class MMDetectionTask(OTXDetectionTask):
                 metric = mm_dataset.dataset.evaluate(eval_predictions, **cfg.evaluation)
             else:
                 metric = mm_dataset.evaluate(eval_predictions, **cfg.evaluation)
-            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]      
+            metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
 
         assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), (
             "Number of elements should be the same, however, number of outputs are "
@@ -503,7 +505,7 @@ class MMDetectionTask(OTXDetectionTask):
                 if "saliency_map" not in output_names:
                     output_names.append("saliency_map")
             # disable softmax and normalization to merge saliency map for tiles and postprocess them altogether
-            tiling_detection = True if 'tile_cfg' in cfg else False
+            tiling_detection = True if "tile_cfg" in cfg else False
             export_options["deploy_cfg"]["softmax_saliency_maps"] = not tiling_detection
             export_options["deploy_cfg"]["normalize_saliency_maps"] = not tiling_detection
 
@@ -618,11 +620,13 @@ class MMDetectionTask(OTXDetectionTask):
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
         while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
             mm_dataset = mm_dataset.dataset
-    
+
         if explainer.lower() == "classwisesaliencymap":
-            saliency_hook = DetClassProbabilityMapHook(feature_model, 
-                                                       use_cls_softmax = not isinstance(mm_dataset, ImageTilingDataset),
-                                                       normalize = not isinstance(mm_dataset, ImageTilingDataset))
+            saliency_hook = DetClassProbabilityMapHook(
+                feature_model,
+                use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
+                normalize=not isinstance(mm_dataset, ImageTilingDataset),
+            )
         else:
             saliency_hook = explainer_hook(feature_model)
 
@@ -634,7 +638,6 @@ class MMDetectionTask(OTXDetectionTask):
                     result = model(return_loss=False, rescale=True, **data)
                 eval_predictions.extend(result)
             saliency_maps = saliency_hook.records
-
 
         # In the tiling case, select the first images which is map of the entire image
         if isinstance(mm_dataset, ImageTilingDataset):
