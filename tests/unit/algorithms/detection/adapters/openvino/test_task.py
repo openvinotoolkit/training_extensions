@@ -4,6 +4,7 @@
 
 import copy
 import os
+import pathlib
 
 import numpy as np
 import pytest
@@ -233,22 +234,22 @@ class TestOpenVINODetectionTask:
     def test_optimize(self, mocker, otx_model):
         """Test optimize method in OpenVINODetectionTask."""
 
-        def patch_save_model(model, dir_path, model_name):
-            with open(f"{dir_path}/{model_name}.xml", "wb") as f:
+        def patch_save_model(model, output_xml):
+            with open(output_xml, "wb") as f:
                 f.write(b"foo")
-            with open(f"{dir_path}/{model_name}.bin", "wb") as f:
+            bin_path = pathlib.Path(output_xml).parent / pathlib.Path(str(pathlib.Path(output_xml).stem) + ".bin")
+            with open(bin_path, "wb") as f:
                 f.write(b"bar")
 
         dataset, _ = generate_det_dataset(task_type=TaskType.DETECTION)
         output_model = copy.deepcopy(otx_model)
         self.ov_task.model.set_data("openvino.bin", b"foo")
         self.ov_task.model.set_data("openvino.xml", b"bar")
-        mocker.patch("otx.algorithms.detection.adapters.openvino.task.load_model", autospec=True)
-        mocker.patch("otx.algorithms.detection.adapters.openvino.task.create_pipeline", autospec=True)
-        mocker.patch("otx.algorithms.detection.adapters.openvino.task.save_model", new=patch_save_model)
-        spy_compress = mocker.spy(otx.algorithms.detection.adapters.openvino.task, "compress_model_weights")
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.ov.Core.read_model", autospec=True)
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.ov.serialize", new=patch_save_model)
+        fake_quantize = mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.nncf.quantize", autospec=True)
         self.ov_task.optimize(OptimizationType.POT, dataset=dataset, output_model=output_model)
 
-        spy_compress.assert_called_once()
+        fake_quantize.assert_called_once()
         assert self.ov_task.model.get_data("openvino.bin")
         assert self.ov_task.model.get_data("openvino.xml")
