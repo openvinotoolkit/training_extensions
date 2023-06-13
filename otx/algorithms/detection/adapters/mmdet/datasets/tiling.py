@@ -505,13 +505,13 @@ class Tile:
         return ann
 
     def merge_vectors(self, feature_vectors) -> List[np.ndarray]:
-        """Merge tile-level feature vectors to image-level feature-vector.
+        """Merge tile-level feature vectors to image-level feature vector.
 
         Args:
             feature_vectors: tile-level feature vectors.
 
         Returns:
-            merged_vectors (list[np.ndarray]): Merged vector for each image.
+            merged_vectors (list[np.ndarray]): Merged vectors for each image.
         """
 
         # tiles vectors + full image vector
@@ -524,10 +524,10 @@ class Tile:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            saliency_maps: tile-level saliencymaps.
+            saliency_maps: tile-level saliency maps.
 
         Returns:
-            merged_maps (list[np.ndarray]): Merged saliency map for each image.
+            merged_maps (list[np.ndarray]): Merged saliency maps for each image.
         """
 
         merged_maps = []
@@ -539,12 +539,15 @@ class Tile:
         for image_sal_map, orig_image in zip(saliency_maps[: self.num_images], self.cached_results):
             img_idx = orig_image["index"]
             ratios[img_idx] = np.array([feat_h, feat_w]) / self.tile_size
-            image_size = np.array([orig_image["height"], orig_image["width"]])
+            image_h, image_w = orig_image["height"], orig_image["width"]
 
-            merged_maps_size = np.concatenate(([feat_classes], image_size * ratios[img_idx]))
-            merged_maps_size = merged_maps_size.astype(np.uint8)
+            merged_maps_size = np.array(
+                (feat_classes, image_h * ratios[img_idx][0], image_w * ratios[img_idx][1]),
+                dtype=np.uint8,
+            )
             merged_maps.append(np.zeros(merged_maps_size, dtype=dtype))
 
+            # resize the feature map for whole image to add it to merged saliency maps
             image_saliency_map = np.array(
                 [cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_sal_map]
             )
@@ -556,6 +559,7 @@ class Tile:
             c = map.shape[0]
             w, h = x_2 - x_1, y_2 - y_1
 
+            # on tile overlap add 0.5 value of each tile
             for ci in range(c):
                 for hi in range(h):
                     for wi in range(w):
@@ -579,5 +583,4 @@ class Tile:
             merged_map = 255.0 / (max_soft_score + 1e-12) * merged_map
 
             norm_maps.append(np.uint8(np.floor(merged_map)))
-
         return norm_maps

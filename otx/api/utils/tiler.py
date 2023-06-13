@@ -124,7 +124,6 @@ class Tiler:
             detection: prediction results
             features: saliency map and feature vector
         """
-        # features = (None, None)
         features = []
         tile_results = []
 
@@ -168,14 +167,11 @@ class Tiler:
 
         processed_tiles = 0
         tile_results = []
-        # features = (None, None)
         features = []
         for i, coord in enumerate(tile_coords):
             pred = self.async_pipeline.get_result(processed_tiles)
             while pred:
                 tile_prediction, meta, feats = pred
-                # if meta["tile_i"] == 0:
-                #     features = feats
                 features.append((feats, meta))
                 tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
                 tile_results.append(tile_result)
@@ -186,8 +182,6 @@ class Tiler:
         self.async_pipeline.await_all()
         for j in range(processed_tiles, num_tiles):
             tile_prediction, meta, feats = self.async_pipeline.get_result(j)
-            # if meta["tile_i"] == 0:
-            #     features = feats
             features.append((feats, meta))
             tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
             tile_results.append(tile_result)
@@ -279,27 +273,57 @@ class Tiler:
                 detections = *Tiler.detection2tuple(detections), masks
         return detections
 
-    def merge_features(self, features):
+    def merge_features(self, features: List) -> Union[Tuple[None, None], List[np.ndarray]]:
+        """Merge tile-level feature vectors to image-level features.
+
+        Args:
+            features: tile-level features.
+
+        Returns:
+            merged_features (list[np.ndarray]): Merged features for entire image.
+        """
         if len(features) == 0:
             return (None, None)
         image_vector = self.merge_vectors(features)
         image_saliency_map = self.merge_maps(features)
         return image_vector, image_saliency_map
 
-    def merge_vectors(self, features):
-        vectors = [vector for (vector, _), _ in features]
-        return np.average(vectors)
+    def merge_vectors(self, features: List) -> np.ndarray:
+        """Merge tile-level feature vectors to image-level feature vector.
 
-    def merge_maps(self, features):
+        Args:
+            features: tile-level features.
+
+        Returns:
+            merged_vectors (np.ndarray): Merged vectors for entire image.
+        """
+
+        vectors = [vector for (vector, _), _ in features]
+        return np.average(vectors, axis=0)
+
+    def merge_maps(self, features: List) -> np.ndarray:
+        """Merge tile-level saliency maps to image-level saliency map.
+
+        Args:
+            features: tile-level features.
+
+        Returns:
+            merged_maps (np.ndarray): Merged saliency maps for entire image.
+        """
+
         (_, image_saliency_map), image_meta = features[0]
         dtype = image_saliency_map[0][0].dtype
         feat_classes, feat_h, feat_w = image_saliency_map.shape
         ratio = np.array([feat_h, feat_w]) / self.tile_size
         image_h, image_w, _ = image_meta["original_shape"]
-        merged_maps_size = feat_classes, int(image_h * ratio[0]), int(image_w * ratio[1])
 
+        merged_maps_size = np.array(
+            (feat_classes, image_h * ratio[0], image_w * ratio[1]),
+            dtype=np.uint8,
+        )
         merged_map = np.zeros(merged_maps_size, dtype=dtype)
 
+        # resize the feature map for whole image to add it to merged saliency maps
         image_saliency_map = np.array(
             [cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_saliency_map]
         )
