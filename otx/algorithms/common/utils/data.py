@@ -19,6 +19,7 @@
 import glob
 import logging
 import os
+import random
 from typing import Any, Dict, Optional, Union
 
 import cv2
@@ -197,3 +198,35 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
         save_image_to_cache(img, filename)
 
     return img
+
+
+class OTXOpenVinoDataLoader:
+    """DataLoader implementation for ClassificationOpenVINOTask."""
+
+    def __init__(self, dataset: DatasetEntity, inferencer: Any, shuffle: bool = True):
+        super().__init__()
+        self.dataset = dataset
+        self.inferencer = inferencer
+        self.shuffler = None
+        if shuffle:
+            self.shuffler = list(range(len(dataset)))
+            random.shuffle(self.shuffler)
+
+    def __getitem__(self, index: int):
+        """Get item from dataset."""
+        if self.shuffler is not None:
+            index = self.shuffler[index]
+
+        image = self.dataset[index].numpy
+        annotation = self.dataset[index].annotation_scene
+
+        resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
+        resized_image = self.inferencer.model.input_transform(resized_image)
+        resized_image = self.inferencer.model._change_layout(resized_image)
+
+        return resized_image, annotation
+
+    def __len__(self):
+        """Get length of dataset."""
+
+        return len(self.dataset)

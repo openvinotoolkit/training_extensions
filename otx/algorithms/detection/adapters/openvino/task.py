@@ -28,12 +28,13 @@ import attr
 import nncf
 import numpy as np
 import openvino.runtime as ov
-from nncf.common.quantization.structs import QuantizationPreset
 from addict import Dict as ADDict
+from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import ImageModel, Model
-from otx.algorithms.common.utils.ir import check_if_quantized
 
+from otx.algorithms.common.utils import OTXOpenVinoDataLoader
+from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
@@ -382,32 +383,6 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
 
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
-
-
-class OTXOpenVinoDataLoader:
-    """DataLoader implementation for ClassificationOpenVINOTask."""
-
-    def __init__(self, dataset: DatasetEntity, inferencer: Any):
-        super().__init__()
-        self.dataset = dataset
-        self.inferencer = inferencer
-
-    def __getitem__(self, index: int):
-        """Get item from dataset."""
-
-        image = self.dataset[index].numpy
-        annotation = self.dataset[index].annotation_scene
-
-        resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
-        resized_image = self.inferencer.model.input_transform(resized_image)
-        resized_image = self.inferencer.model._change_layout(resized_image)
-
-        return resized_image, annotation
-
-    def __len__(self):
-        """Get length of dataset."""
-
-        return len(self.dataset)
 
 
 class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):

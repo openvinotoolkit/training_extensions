@@ -37,6 +37,7 @@ from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
 )
+from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.api.entities.annotation import AnnotationSceneEntity
@@ -168,32 +169,6 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         """Forward function of OpenVINO Classification Inferencer."""
 
         return self.model.infer_sync(image)
-
-
-class OTXOpenVinoDataLoader:
-    """DataLoader implementation for ClassificationOpenVINOTask."""
-
-    def __init__(self, dataset: DatasetEntity, inferencer: Any):
-        super().__init__()
-        self.dataset = dataset
-        self.inferencer = inferencer
-
-    def __getitem__(self, index: int):
-        """Get item from dataset."""
-
-        image = self.dataset[index].numpy
-        annotation = self.dataset[index].annotation_scene
-
-        resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
-        resized_image = self.inferencer.model.input_transform(resized_image)
-        resized_image = self.inferencer.model._change_layout(resized_image)
-
-        return resized_image, annotation
-
-    def __len__(self):
-        """Get length of dataset."""
-
-        return len(self.dataset)
 
 
 class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IExplainTask, IOptimizationTask):

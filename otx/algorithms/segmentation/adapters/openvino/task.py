@@ -31,6 +31,7 @@ from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
+from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
@@ -172,34 +173,6 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
 
         except Exception as e:
             self.callback_exceptions.append(e)
-
-
-class OTXOpenVinoDataLoader:
-    """DataLoader implementation for ClassificationOpenVINOTask."""
-
-    def __init__(self, dataset: DatasetEntity, inferencer: Any, shuffle: bool = True):
-        super().__init__()
-        self.dataset = dataset
-        self.inferencer = inferencer
-        if shuffle:
-            pass
-
-    def __getitem__(self, index: int):
-        """Get item from dataset."""
-
-        image = self.dataset[index].numpy
-        annotation = self.dataset[index].annotation_scene
-
-        resized_image = self.inferencer.model.resize(image, (self.inferencer.model.w, self.inferencer.model.h))
-        resized_image = self.inferencer.model.input_transform(resized_image)
-        resized_image = self.inferencer.model._change_layout(resized_image)
-
-        return resized_image, annotation
-
-    def __len__(self):
-        """Get length of dataset."""
-
-        return len(self.dataset)
 
 
 class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
