@@ -109,9 +109,9 @@ class Tiler:
         if isinstance(self.classifier, Model):
             tile_coords = self.filter_tiles_by_objectness(image, tile_coords)
 
-        # if mode == "sync":
-        return self.predict_sync(image, tile_coords)
-        # return self.predict_async(image, tile_coords)
+        if mode == "sync":
+            return self.predict_sync(image, tile_coords)
+        return self.predict_async(image, tile_coords)
 
     def predict_sync(self, image: np.ndarray, tile_coords: List[List[int]]):
         """Predict by cropping full image to tiles synchronously.
