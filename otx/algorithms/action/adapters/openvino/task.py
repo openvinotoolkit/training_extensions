@@ -18,6 +18,7 @@ import io
 import json
 import logging
 import os
+import random
 import tempfile
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -143,12 +144,19 @@ class ActionOpenVINOInferencer(BaseInferencer):
 class DataLoaderWrapper:
     """DataLoader implementation for ActionOpenVINOTask."""
 
-    def __init__(self, dataloader: Any, inferencer: BaseInferencer):
+    def __init__(self, dataloader: Any, inferencer: BaseInferencer, shuffle: bool = True):
         self.dataloader = dataloader
         self.inferencer = inferencer
+        self.shuffler = None
+        if shuffle:
+            self.shuffler = list(range(len(dataloader)))
+            random.shuffle(self.shuffler)
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
+        if self.shuffler is not None:
+            index = self.shuffler[index]
+
         item = self.dataloader[index]
         annotation = item[len(item) // 2].annotation_scene
         inputs, _ = self.inferencer.pre_process(item)
