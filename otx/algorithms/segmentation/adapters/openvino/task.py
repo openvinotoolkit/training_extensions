@@ -177,10 +177,12 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
 class OTXOpenVinoDataLoader:
     """DataLoader implementation for ClassificationOpenVINOTask."""
 
-    def __init__(self, dataset: DatasetEntity, inferencer: Any):
+    def __init__(self, dataset: DatasetEntity, inferencer: Any, shuffle: bool = True):
         super().__init__()
         self.dataset = dataset
         self.inferencer = inferencer
+        if shuffle:
+            pass
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
@@ -391,21 +393,22 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if os.path.exists(optimization_config_path):
             with open(optimization_config_path, encoding="UTF-8") as f_src:
                 algorithms = ADDict(json.load(f_src))["algorithms"]
+            ignored_ops = nncf.IgnoredScope(names=algorithms[0].params.ignored.scope)
         else:
             algorithms = [ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY"}})]
+            ignored_ops = nncf.IgnoredScope()
         for algo in algorithms:
             algo.params.stat_subset_size = self.hparams.pot_parameters.stat_subset_size
             algo.params.shuffle_data = True
             if "Quantization" in algo["name"]:
                 algo.params.preset = self.hparams.pot_parameters.preset.name.lower()
 
-        preset = QuantizationPreset(algorithms[0].params.preset.lower())
-
         compressed_model = nncf.quantize(
             ov_model,
             quantization_dataset,
             subset_size=min(algorithms[0].params.stat_subset_size, len(data_loader)),
-            preset=preset,
+            preset=QuantizationPreset(algorithms[0].params.preset.lower()),
+            ignored_scope=ignored_ops,
         )
 
         if optimization_parameters is not None:
