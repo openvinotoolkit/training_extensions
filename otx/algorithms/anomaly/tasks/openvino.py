@@ -196,7 +196,6 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
                 type="anomaly_map",
-                label=label,
                 annotation_scene=dataset_item.annotation_scene,
                 numpy=anomaly_map,
             )
