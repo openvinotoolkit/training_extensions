@@ -102,8 +102,8 @@ if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
         {
             TaskType.VISUAL_PROMPTING: {
                 "Incremental": {
-                    "module_name": "detection_dataset_adapter",
-                    "class": "DetectionDatasetAdapter",
+                    "module_name": "visual_prompting_dataset_adapter",
+                    "class": "VisualPromptingDatasetAdapter",
                 }
             },
         }
