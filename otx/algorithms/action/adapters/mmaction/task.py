@@ -193,6 +193,8 @@ class MMActionTask(OTXActionTask):
 
         if self._model_ckpt is not None:
             recipe_cfg.load_from = self._model_ckpt
+            if self._resume:  # after updating to mmaction 1.x, need to be removed
+                recipe_cfg.resume_from = self._model_ckpt
 
         self._config = recipe_cfg
         return recipe_cfg
