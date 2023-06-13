@@ -80,7 +80,6 @@ class AnomalyInferenceCallback(Callback):
                 ResultMediaEntity(
                     name="Anomaly Map",
                     type="anomaly_map",
-                    label=dataset_item.annotation_scene.get_labels()[0],
                     annotation_scene=dataset_item.annotation_scene,
                     numpy=(anomaly_map * 255).cpu().numpy().astype(np.uint8),
                 )
