@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 from openvino.model_api.models import Model
 
-import otx.algorithms.detection.adapters.openvino.task
 from otx.algorithms.detection.adapters.openvino.task import (
     OpenVINODetectionInferencer,
     OpenVINODetectionTask,
