@@ -178,7 +178,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         batch_size = x[0].shape[0]
         img_metas = [
             {
-                "scale_factor": [1, 1, 1, 1],
+                "scale_factor": [1, 1, 1, 1],  # dummy scale_factor, not used
                 "img_shape": self._input_img_shape,
             }
         ]
