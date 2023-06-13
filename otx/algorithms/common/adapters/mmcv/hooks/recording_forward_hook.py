@@ -88,7 +88,12 @@ class BaseRecordingForwardHook(ABC):
         """Normalize saliency maps."""
         max_values, _ = torch.max(saliency_maps, -1)
         min_values, _ = torch.min(saliency_maps, -1)
-        saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
+        if len(saliency_maps.shape) == 2:
+            saliency_maps = 255 * (saliency_maps - min_values[:, None]) / (max_values - min_values + 1e-12)[:, None]
+        else:
+            saliency_maps = (
+                255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
+            )
         return saliency_maps.to(torch.uint8)
 
 
