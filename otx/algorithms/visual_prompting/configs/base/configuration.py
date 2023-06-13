@@ -17,15 +17,11 @@
 
 from attr import attrs
 
-from otx.algorithms.common.configs import BaseConfig, LearningRateSchedule
+from otx.algorithms.common.configs import BaseConfig
 from otx.api.configuration.elements import (
     add_parameter_group,
-    boolean_attribute,
-    configurable_integer,
-    selectable,
     string_attribute,
 )
-from otx.api.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs

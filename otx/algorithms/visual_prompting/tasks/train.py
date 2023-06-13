@@ -14,10 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import io
-from typing import Optional
+from typing import List, Optional
 
-import torch
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
@@ -28,6 +26,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import 
     OTXVisualPromptingDataModule,
 )
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.metrics import Performance, ScoreMetric
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
@@ -71,11 +70,28 @@ class TrainingTask(InferenceTask, ITrainingTask):
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             ModelCheckpoint(dirpath=loggers.log_dir, **self.config.callback.checkpoint),
+            LearningRateMonitor()
         ]
 
         self.trainer = Trainer(**self.config.trainer, logger=loggers, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
+        model_ckpt = self.trainer.checkpoint_callback.best_model_path
+        best_score = self.trainer.checkpoint_callback.best_model_score
+        if model_ckpt is None:
+            logger.error("cannot find final checkpoint from the results.")
+            # output_model.model_status = ModelStatus.FAILED
+            return
+
+        # update checkpoint to the newly trained model
+        self._model_ckpt = model_ckpt
+        performance = Performance(
+            score=ScoreMetric(value=best_score, name=self.trainer.checkpoint_callback.monitor)
+        )
+
+        logger.info(f"Final model performance: {str(performance)}")
+        # save resulting model
         self.save_model(output_model)
+        output_model.performance = performance
 
         logger.info("Training completed.")
