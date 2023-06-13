@@ -25,7 +25,6 @@ import tempfile
 from collections import OrderedDict
 from glob import glob
 from typing import Dict, List, Optional, Union
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import sam_model_registry
 
 import torch
 from omegaconf import DictConfig, ListConfig
