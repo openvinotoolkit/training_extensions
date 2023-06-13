@@ -17,7 +17,11 @@
 from typing import List, Optional
 
 from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.callbacks import (
+    EarlyStopping,
+    LearningRateMonitor,
+    ModelCheckpoint,
+)
 from pytorch_lightning.loggers import CSVLogger
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
@@ -70,7 +74,8 @@ class TrainingTask(InferenceTask, ITrainingTask):
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             ModelCheckpoint(dirpath=loggers.log_dir, **self.config.callback.checkpoint),
-            LearningRateMonitor()
+            LearningRateMonitor(),
+            EarlyStopping(**self.config.callback.early_stopping)
         ]
 
         self.trainer = Trainer(**self.config.trainer, logger=loggers, callbacks=callbacks)
