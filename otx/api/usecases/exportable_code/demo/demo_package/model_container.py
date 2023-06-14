@@ -77,7 +77,7 @@ class ModelContainer:
         tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]
         max_number = self.parameters["tiling_parameters"]["tile_max_number"]
 
-        classifier = {}
+        classifier = None
         if self.parameters["tiling_parameters"].get("enable_tile_classifier", False):
             adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "tile_classifier.xml"), device=device)
             classifier = ImageModel(inference_adapter=adapter, configuration={}, preload=True)
