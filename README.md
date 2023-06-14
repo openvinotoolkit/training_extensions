@@ -76,7 +76,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 ### Installation
 
-Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html) for installing it using Python venv (virtual environment).
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html).
 
 Note: Python 3.8 and 3.9 were tested, along with Ubuntu 18.04 and 20.04.
 
