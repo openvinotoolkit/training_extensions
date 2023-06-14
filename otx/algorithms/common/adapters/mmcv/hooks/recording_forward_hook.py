@@ -82,12 +82,11 @@ class BaseRecordingForwardHook(ABC):
             self._records.append(tensor)
 
     def _torch_to_numpy_from_list(self, tensor_list: List[Optional[torch.Tensor]]):
-        if isinstance(tensor_list[0], list):
-            self._torch_to_numpy_from_list(tensor_list[0])
-        else:
-            for i in range(len(tensor_list)):
-                if isinstance(tensor_list[i], torch.Tensor):
-                    tensor_list[i] = tensor_list[i].detach().cpu().numpy()
+        for i in range(len(tensor_list)):
+            if isinstance(tensor_list[i], list):
+                self._torch_to_numpy_from_list(tensor_list[i])
+            elif isinstance(tensor_list[i], torch.Tensor):
+                tensor_list[i] = tensor_list[i].detach().cpu().numpy()
 
     def __enter__(self) -> BaseRecordingForwardHook:
         """Enter."""
