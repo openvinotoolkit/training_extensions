@@ -37,7 +37,7 @@ class Matrix_Decomposition_2D_Base(nn.Module):
             Defaults: True.
     """
 
-    def __init__(self, MD_S=1, MD_R=64, train_steps=6, eval_steps=7, inv_t=100, rand_init=True):
+    def __init__(self, MD_S=1, MD_R=64, num_channels=256, train_steps=6, eval_steps=7, inv_t=100):
         super().__init__()
 
         self.S = MD_S
@@ -48,7 +48,8 @@ class Matrix_Decomposition_2D_Base(nn.Module):
 
         self.inv_t = inv_t
 
-        self.rand_init = rand_init
+        bases = self._build_bases(1, self.S, num_channels // self.S, self.R)
+        self.register_buffer("bases", bases)
 
     def _build_bases(self, B, S, D, R, device=None):
         raise NotImplementedError
@@ -81,16 +82,7 @@ class Matrix_Decomposition_2D_Base(nn.Module):
         D = C // self.S
         N = H * W
         x = x.view(B * self.S, D, N)
-        if not self.rand_init and not hasattr(self, "bases"):
-            bases = self._build_bases(1, self.S, D, self.R, device=x.device)
-            self.register_buffer("bases", bases)
-
-        # (S, D, R) -> (B * S, D, R)
-        if self.rand_init:
-            bases = self._build_bases(B, self.S, D, self.R, device=x.device)
-        else:
-            bases = self.bases.repeat(B, 1, 1)
-
+        bases = self.bases.repeat(B, 1, 1)
         bases, coef = self.local_inference(x, bases)
 
         # (B * S, N, R)
