@@ -199,9 +199,7 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
 
                 # Infer OV IR model
                 load_weights_ov = osp.join(temp_dir, "openvino.xml")
-                task_env.model = read_model(
-                    task_env.get_model_configuration(), load_weights_ov, None
-                )
+                task_env.model = read_model(task_env.get_model_configuration(), load_weights_ov, None)
                 task = OpenVINODetectionTask(task_environment=task_env)
                 _, dataset = self.init_environment(hyper_parameters, model_template, 10)
                 predicted_dataset_ov = task.infer(dataset.with_empty_annotations(), inference_parameters)
@@ -280,9 +278,7 @@ class TestOVISegmXAIAPI:
 
             # Infer OV IR model
             load_weights_ov = osp.join(temp_dir, "openvino.xml")
-            task_env.model = read_model(
-                task_env.get_model_configuration(), load_weights_ov, None
-            )
+            task_env.model = read_model(task_env.get_model_configuration(), load_weights_ov, None)
             task = OpenVINODetectionTask(task_environment=task_env)
             predicted_dataset_ov = task.infer(val_dataset_copy.with_empty_annotations(), inference_parameters)
 
