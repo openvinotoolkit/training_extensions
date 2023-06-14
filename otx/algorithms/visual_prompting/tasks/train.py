@@ -69,7 +69,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         logger.info("Training Configs '%s'", self.config)
         
-        datamodule = OTXVisualPromptingDataModule(config=self.config, dataset=dataset)
+        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
         loggers = CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp)
         callbacks = [
             ProgressCallback(parameters=train_parameters),

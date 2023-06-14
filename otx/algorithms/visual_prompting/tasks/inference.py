@@ -192,7 +192,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             DatasetEntity: Output dataset with predictions.
         """
         logger.info("Performing inference on the validation set using the base torch model.")
-        datamodule = OTXVisualPromptingDataModule(config=self.config, dataset=dataset)
+        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
 
         logger.info("Inference Configs '%s'", self.config)
 
