@@ -15,7 +15,6 @@ from mmdet.core.evaluation.mean_ap import average_precision
 from mmdet.core.mask.structures import PolygonMasks
 from terminaltables import AsciiTable
 
-MASK_CANVAS_WIDTH, MASK_CANVAS_HEIGHT = 512, 512
 
 def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
     mean_ap, results, dataset=None, scale_ranges=None, logger=None
@@ -178,8 +177,7 @@ def get_cls_results(det_results, annotations, class_id):
     for ann in annotations:
         gt_inds = ann["labels"] == class_id
         if isinstance(ann["masks"], PolygonMasks):
-            masks = ann["masks"].resize((MASK_CANVAS_HEIGHT, MASK_CANVAS_WIDTH))
-            masks = masks.to_ndarray()[gt_inds]
+            masks = ann["masks"].to_ndarray()[gt_inds]
             encoded_masks = [
                 mask_util.encode(np.array(m[:, :, np.newaxis], order="F", dtype="uint8"))[0] for m in masks
             ]
