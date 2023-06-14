@@ -126,7 +126,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
 
 
 class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
-    """Saliency map hook for Mask R-CNN model. Only for torch model, does not support OV IR model.
+    """Saliency map hook for Mask R-CNN model. Only for torch model, does not support OpenVINO IR model.
 
     Args:
         module (torch.nn.Module): Mask R-CNN model.
