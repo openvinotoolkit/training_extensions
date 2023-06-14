@@ -530,6 +530,24 @@ OpenVINO™ Training Extensions command line functionality.</p>
 </div>
 <p>Then you may change code, and all fixes will be directly applied to the editable package.</p>
 </section>
+<section id="install-openvino-training-extensions-by-using-docker">
+<h2>Install OpenVINO™ Training Extensions by using Docker<a class="headerlink" href="#install-openvino-training-extensions-by-using-docker" title="Permalink to this heading">#</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ docker build \
+    -t trainer \ # image tag, required
+    --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
+    --build-arg PYTHON_VER=3.9 \ # default Python version, optional
+    --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
+    . # training_extensions/
+$ docker run \
+    -it \ # enter interactive terminal
+    --rm \ # remove container after use
+    -v &quot;$(pwd)/shared:/mnt/shared:rw&quot; \ # shared volume to host machine
+    --shm-size=4g \ # increase mounted shared memory
+    trainer
+trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
+</pre></div>
+</div>
+</section>
 <section id="run-unit-tests">
 <h2>Run unit tests<a class="headerlink" href="#run-unit-tests" title="Permalink to this heading">#</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="n">tests</span><span class="o">/</span><span class="n">unit</span>
@@ -607,6 +625,11 @@ please use pip with proxy call as demonstrated by command below:</p>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#install-openvino-training-extensions-for-developers">
    Install OpenVINO™ Training Extensions for developers
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#install-openvino-training-extensions-by-using-docker">
+   Install OpenVINO™ Training Extensions by using Docker
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
