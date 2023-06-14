@@ -88,6 +88,26 @@ Install ``tox`` and create a development environment:
 
 Then you may change code, and all fixes will be directly applied to the editable package.
 
+****************************************************
+Install OpenVINO™ Training Extensions by using Docker
+****************************************************
+
+.. code-block::
+
+    $ docker build \
+        -t trainer \ # image tag, required
+        --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
+        --build-arg PYTHON_VER=3.9 \ # default Python version, optional
+        --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
+        . # training_extensions/
+    $ docker run \
+        -it \ # enter interactive terminal
+        --rm \ # remove container after use
+        -v "$(pwd)/shared:/mnt/shared:rw" \ # shared volume to host machine
+        --shm-size=4g \ # increase mounted shared memory
+        trainer
+    trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
+
 **************
 Run unit tests
 **************
