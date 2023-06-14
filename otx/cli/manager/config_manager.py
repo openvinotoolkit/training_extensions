@@ -500,7 +500,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if str(self.task_type).upper() == "VISUAL_PROMPTING":
                 dataset = getattr(hyper_parameters, "dataset", None)
                 dataset_config["use_mask"] = getattr(dataset, "use_mask", False)
-                dataset_config["use_prompt"] = getattr(dataset, "use_prompt", True)
 
         if str(self.task_type).upper() == "SEGMENTATION" and str(self.train_type).upper() == "SELFSUPERVISED":
             # FIXME: manually set a path to save pseudo masks in workspace

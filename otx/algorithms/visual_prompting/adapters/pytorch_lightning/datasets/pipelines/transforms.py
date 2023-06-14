@@ -30,10 +30,10 @@ def collate_fn(batch):
     bboxes = _convert_empty_to_none("bboxes")
     points = _convert_empty_to_none("points")
     gt_masks = _convert_empty_to_none("gt_masks")
-    labels = [item["labels"] for item in batch]
+    # labels = [item["labels"] for item in batch]
     if gt_masks:
-        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "gt_masks": gt_masks, "label": labels}
-    return {"index": -1, "images": [], "bboxes": [], "points": [], "gt_masks": [], "labels": []}
+        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "gt_masks": gt_masks}
+    return {"index": -1, "images": [], "bboxes": [], "points": [], "gt_masks": []}
 
 
 class ResizeLongestSide:

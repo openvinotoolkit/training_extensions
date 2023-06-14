@@ -22,10 +22,9 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
     It converts DatumaroDataset --> DatasetEntity for visual prompting tasks.
     To handle masks, this adapter is inherited from SegmentationDatasetAdapter.
     """
-    def __init__(self, use_mask: bool = False, use_prompt: bool = True, *args, **kwargs):
+    def __init__(self, use_mask: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.use_mask = use_mask
-        self.use_prompt = use_prompt
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
@@ -69,11 +68,11 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                                         used_labels.append(d_polygon.label)
 
                         # FIXME (sungchul): save prompts as annotation -> input
-                        if self.use_prompt and ann.type == DatumAnnotationType.bbox:
+                        if ann.type == DatumAnnotationType.bbox:
                             if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 
-                        if self.use_prompt and ann.type == DatumAnnotationType.points:
+                        if ann.type == DatumAnnotationType.points:
                             raise NotImplementedError("Getting points is not yet implemented.")
 
                         if ann.label not in used_labels and ann.type != DatumAnnotationType.mask:

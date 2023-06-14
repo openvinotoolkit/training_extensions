@@ -27,7 +27,7 @@ from torch.utils.data import DataLoader, Dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
-from otx.api.entities.shapes.polygon import Polygon
+from otx.api.entities.shapes.polygon import Polygon, Point
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.dataset_utils import (
@@ -75,27 +75,6 @@ class OTXVIsualPromptingDataset(Dataset):
         """
         return len(self.dataset)
 
-    @staticmethod
-    def polygons_to_mask(polygons: List[List[np.ndarray]], height: int, width: int) -> np.ndarray:
-        # Initialize the mask as an array of zeros
-        mask = np.zeros((len(polygons), height, width), dtype=np.uint8)
-
-        # Loop over the polygons
-        for i, polygon in enumerate(polygons):
-            # Create an empty mask for this polygon
-            poly_mask = np.zeros((height, width), dtype=np.uint8)
-            
-            # Convert the polygon to a numpy array and reshape to ROWSx1x2
-            poly_array = np.array(polygon).reshape((-1, 1, 2)).astype(int)
-            
-            # Draw the polygon onto the mask
-            cv2.fillPoly(poly_mask, [poly_array], 1)
-            
-            # Add the mask for this polygon to the overall mask
-            mask[i] = poly_mask
-
-        return mask
-
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
         """Get dataset item.
 
@@ -112,39 +91,77 @@ class OTXVIsualPromptingDataset(Dataset):
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
 
-        # load annotations for item
-        bboxes = []
-        labels = []
-        polygons = []
-
         width, height = dataset_item.width, dataset_item.height
-        # From otx/algorithms/detection/adapters/mmdet/datasets/dataset.py
+        bboxes: List[List[int]] = []
+        points: List = []
+        gt_masks: List[np.ndarray] = []
+        # TODO (sungchul): load mask from dataset
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
-            box = ShapeFactory.shape_as_rectangle(annotation.shape)
-            if min(box.width * width, box.height * height) < -1:
-                continue
+            if isinstance(annotation.shape, Polygon) and not self.config.use_mask:
+                # convert polygon to mask
+                polygon = ShapeFactory.shape_as_polygon(annotation.shape)
+                contour = np.asarray([[int(point.x * width), int(point.y * height)] for point in polygon.points])
+                gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
+                gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
+                gt_masks.append(gt_mask)
 
-            class_indices = [
-                self.label_idx[label.id] for label in annotation.get_labels(include_empty=False)
-            ]
+                # 
+                y_indices, x_indices = np.where(gt_mask == 1)
+                x_min, x_max = np.min(x_indices), np.max(x_indices)
+                y_min, y_max = np.min(y_indices), np.max(y_indices)
 
-            n = len(class_indices)
-            bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
-            polygon = ShapeFactory.shape_as_polygon(annotation.shape)
-            polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
-            polygons.extend([[polygon] for _ in range(n)])
-            labels.extend(class_indices)
+                # add perturbation to bounding box coordinates
+                x_min = max(0, x_min - np.random.randint(0, 20))
+                x_max = min(width, x_max + np.random.randint(0, 20))
+                y_min = max(0, y_min - np.random.randint(0, 20))
+                y_max = min(height, y_max + np.random.randint(0, 20))
+                bboxes.append([x_min, y_min, x_max, y_max])
 
-        gt_masks = self.polygons_to_mask(polygons, dataset_item.height, dataset_item.width)
+            if self.config.use_mask:
+                # if using masks from dataset, we can use bboxes from dataset, too
+                if isinstance(annotation.shape, Rectangle):
+                    # use bbox from dataset
+                    bbox = ShapeFactory.shape_as_rectangle(annotation.shape)
+                    if min(bbox.width * width, bbox.height * height) < -1:
+                        continue
+
+                    # inject randomness
+                    bbox = [
+                        max(0, int(bbox.x1 * width) - np.random.randint(0, 20)),
+                        max(0, int(bbox.y1 * height) - np.random.randint(0, 20)),
+                        min(width, int(bbox.x2 * width) + np.random.randint(0, 20)),
+                        min(height, int(bbox.y2 * height)+ np.random.randint(0, 20))
+                    ]
+                    bboxes.append(bbox)
+
+                if isinstance(annotation.shape, Point):
+                    logger.warn("Using points is not implemented yet.")
+
+        if len(bboxes) == 0:
+            # there is no bbox from dataset -> generate bboxes based on gt_masks
+            for gt_mask in gt_masks:
+                y_indices, x_indices = np.where(gt_mask == 1)
+                x_min, x_max = np.min(x_indices), np.max(x_indices)
+                y_min, y_max = np.min(y_indices), np.max(y_indices)
+
+                # add perturbation to bounding box coordinates
+                x_min = max(0, x_min - np.random.randint(0, 20))
+                x_max = min(width, x_max + np.random.randint(0, 20))
+                y_min = max(0, y_min - np.random.randint(0, 20))
+                y_max = min(height, y_max + np.random.randint(0, 20))
+                bboxes.append([x_min, y_min, x_max, y_max])
+
+                # TODO (sungchul): generate random points from gt_mask
+
+        gt_masks = np.stack(gt_masks, axis=0)
         bboxes = np.array(bboxes)
-
         item.update(dict(
             original_size=(height, width),
             images=dataset_item.numpy,
+            path=dataset_item.media.path,
             gt_masks=gt_masks,
             bboxes=bboxes,
-            labels=labels,
-            points=None, # TODO (sungchul): update point information
+            points=points, # TODO (sungchul): update point information
         ))
         item = self.transform(item)
         return item
@@ -173,7 +190,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         if not stage == "predict":
             self.summary()
 
-        image_size = self.config.dataset.image_size
+        image_size = self.config.image_size
         if isinstance(image_size, int):
             image_size = [image_size]
 
@@ -231,8 +248,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         return DataLoader(
             self.train_dataset,
             shuffle=False,
-            batch_size=self.config.dataset.train_batch_size,
-            num_workers=self.config.dataset.num_workers,
+            batch_size=self.config.train_batch_size,
+            num_workers=self.config.num_workers,
             collate_fn=collate_fn,
         )
 
@@ -245,8 +262,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         return DataLoader(
             self.val_dataset,
             shuffle=False,
-            batch_size=self.config.dataset.val_batch_size,
-            num_workers=self.config.dataset.num_workers,
+            batch_size=self.config.val_batch_size,
+            num_workers=self.config.num_workers,
             collate_fn=collate_fn,
         )
 
@@ -259,8 +276,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         return DataLoader(
             self.test_dataset,
             shuffle=False,
-            batch_size=self.config.dataset.test_batch_size,
-            num_workers=self.config.dataset.num_workers,
+            batch_size=self.config.test_batch_size,
+            num_workers=self.config.num_workers,
             collate_fn=collate_fn,
         )
 
@@ -274,6 +291,6 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             self.predict_dataset,
             shuffle=False,
             batch_size=1,
-            num_workers=self.config.dataset.num_workers,
+            num_workers=self.config.num_workers,
             collate_fn=collate_fn,
         )
