@@ -19,6 +19,8 @@ from tests.test_suite.run_test_command import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    otx_resume_testing,
+    get_template_dir,
 )
 
 # Finetuning arguments
@@ -29,6 +31,15 @@ args = {
     "--test-data-roots": "tests/assets/cvat_dataset/action_detection/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
+
+# Training params for resume, num_iters*2
+resume_params = [
+    "params",
+    "--learning_parameters.num_iters",
+    "4",
+    "--learning_parameters.batch_size",
+    "4",
+]
 
 otx_dir = os.getcwd()
 
@@ -51,6 +62,20 @@ class TestToolsOTXActionDetection:
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "action_det/test_resume"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args)
+        args1["train_params"] = resume_params
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
