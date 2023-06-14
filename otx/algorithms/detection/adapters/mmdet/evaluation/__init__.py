@@ -4,7 +4,9 @@
 #
 
 from .mean_ap_seg import eval_segm
+from .evaluator import Evaluator
 
 __all__ = [
     "eval_segm",
+    "Evaluator"
 ]

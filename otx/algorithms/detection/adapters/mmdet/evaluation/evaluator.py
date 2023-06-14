@@ -1,169 +1,171 @@
+from typing import List, Dict
 from multiprocessing import Pool
 import numpy as np
-from scipy.interpolate import RegularGridInterpolator
 import pycocotools.mask as mask_util
 from mmdet.core.evaluation.mean_ap import average_precision
 from otx.api.entities.label import Domain
-from mmdet.core import eval_map
+from mmdet.core import eval_map, BitmapMasks
+from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
+from .mean_ap_seg import print_map_summary
 
-from .mean_ap_seg import print_map_summary, tpfpmiou_func
+
+def display_bitmask(bitmask):
+    import matplotlib.pyplot as plt
+    plt.imshow(bitmask.astype(np.uint8))
+    plt.show()
 
 
-def _do_paste_mask_cpu(masks, boxes, img_h, img_w, skip_empty=True):
-    """Paste instance masks according to boxes.
+def mask_iou(det, gt_masks):
+    # convert 28x28 predict mask to PolygonMask -> translate
+    det_bboxes, det_masks = det
+    gt_bboxes = gt_masks.get_bboxes()
+    ious = bbox_overlaps(det_bboxes, gt_bboxes, mode="iou")
+    if not ious.any():
+        return ious
+    for coord in np.argwhere(ious > 0):
+        m, n = coord
+        det_bbox, det_mask = det_bboxes[m].astype(np.int), det_masks[m]
+        gt_bbox, gt_mask = gt_bboxes[n].astype(np.int), gt_masks[n]
+        # crop det_mask and gt_mask to the same size
+        min_x1 = min(det_bbox[0], gt_bbox[0])
+        min_y1 = min(det_bbox[1], gt_bbox[1])
+        max_x2 = max(det_bbox[2], gt_bbox[2])
+        max_y2 = max(det_bbox[3], gt_bbox[3])
+        det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
+        det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
+        det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
+        gt_mask = gt_mask.crop(gt_bbox)
+        gt_mask = gt_mask.to_bitmap()
+        gt_mask = gt_mask.expand(max_y2 - min_y1, max_x2 - min_x1, gt_bbox[1] - min_y1, gt_bbox[0] - min_x1)
+        # compute iou between det_mask and gt_mask
+        det_mask = det_mask.to_ndarray()
+        gt_mask = gt_mask.to_ndarray()
+        assert det_mask.shape == gt_mask.shape, f"det_mask.shape={det_mask.shape} != gt_mask.shape={gt_mask.shape}"
+        ious[m, n] = np.sum(det_mask & gt_mask) / np.sum(det_mask | gt_mask)
+    return ious
 
-    This implementation is modified from
-    https://github.com/facebookresearch/detectron2/
+
+def tpfpmiou_func(  # pylint: disable=too-many-locals
+    det: List[Dict],
+    gt_masks: List[Dict],
+    cls_scores,
+    iou_thr=0.5
+):
+    """Calculate Mean Intersection and Union (mIoU) and AP across predicted masks and GT masks.
 
     Args:
-        masks (ndarray): N, 1, H, W
-        boxes (ndarray): N, 4
-        img_h (int): Height of the image to be pasted.
-        img_w (int): Width of the image to be pasted.
-        skip_empty (bool): Only paste masks within the region that
-            tightly bound all boxes, and returns the results this region only.
-            An important optimization for CPU.
+        det_masks: Detected masks of this image, with list size (m)
+        gt_masks: GT masks of this image, with list size (n).
+        cls_scores: (n, 1)
+        iou_thr (float): IoU threshold to be considered as matched.
+            Default: 0.5.
 
     Returns:
-        tuple: (ndarray, tuple). The first item is mask ndarray, the second one
-            is the slice object.
-        If skip_empty == False, the whole image will be pasted. It will
-            return a mask of shape (N, img_h, img_w) and an empty tuple.
-        If skip_empty == True, only area around the mask will be pasted.
-            A mask of shape (N, h', w') and its start and end coordinates
-            in the original image will be returned.
+        tuple[np.ndarray, np.ndarray, float]:
+            <tp, fp> with elements of 0 and 1, the shape of each array is (m).
+            <gt_covered_iou>: the average IoU between predicted mask and GT mask
     """
-    # On GPU, paste all masks together (up to chunk size)
-    # by using the entire image to sample the masks
-    # Compared to pasting them one by one,
-    # this has more operations but is faster on COCO-scale dataset.
-    if skip_empty:
-        x0_int, y0_int = np.clip(
-            np.floor(np.min(boxes, axis=0)[:2]) - 1,
-            0, None).astype(np.int32)
-        x1_int = np.clip(
-            np.ceil(np.max(boxes[:, 2])) + 1, None, img_w).astype(np.int32)
-        y1_int = np.clip(
-            np.ceil(np.max(boxes[:, 3])) + 1, None, img_h).astype(np.int32)
-    else:
-        x0_int, y0_int = 0, 0
-        x1_int, y1_int = img_w, img_h
-    x0, y0, x1, y1 = np.split(boxes, 4, 1)  # each is Nx1
+    det_bboxes, det_masks = det
+    num_dets = len(det_bboxes)  # M
+    num_gts = len(gt_masks)    # N
 
-    N = masks.shape[0]
+    tp = np.zeros(num_dets, dtype=np.float32)  # pylint: disable=invalid-name
+    fp = np.zeros(num_dets, dtype=np.float32)  # pylint: disable=invalid-name
+    gt_covered_iou = np.zeros(num_gts, dtype=np.float32)
 
-    img_y = np.arange(y0_int, y1_int).astype(np.float32) + 0.5
-    img_x = np.arange(x0_int, x1_int).astype(np.float32) + 0.5
-    img_y = (img_y - y0) / (y1 - y0) * 2 - 1
-    img_x = (img_x - x0) / (x1 - x0) * 2 - 1
-    # img_x, img_y have shapes (N, w), (N, h)
+    if len(gt_masks) == 0:
+        fp[...] = 1
+        return tp, fp, 0.0
+    if num_dets == 0:
+        return tp, fp, 0.0
 
-    if np.isinf(img_x).any():
-        inds = np.where(np.isinf(img_x))
-        img_x[inds] = 0
-    if np.isinf(img_y).any():
-        inds = np.where(np.isinf(img_y))
-        img_y[inds] = 0
+    ious = mask_iou(det, gt_masks)  # (M, N)
 
-    gx = np.expand_dims(img_x, axis=1).repeat(img_y.size, axis=1)
-    gy = np.expand_dims(img_y, axis=2).repeat(img_x.size, axis=2)
-    grid = np.stack([gx, gy], axis=3)
+    assert ious.shape[0] == num_dets, f"{ious.shape[0]} != {num_dets}"
+    assert ious.shape[1] == num_gts, f"{ious.shape[1]} != {num_gts}"
 
-    img_masks = RegularGridInterpolator(grid, masks.astype(np.float32), bounds_error=False, fill_value=None)
+    # for each det, the max iou with all gts
+    ious_max = ious.max(axis=1)
+    # for each det, which gt overlaps most with it
+    ious_argmax = ious.argmax(axis=1)
+    # sort all dets in descending order by scores
+    sort_inds = np.argsort(-cls_scores)
 
-    if skip_empty:
-        return img_masks[:, 0], (slice(y0_int, y1_int), slice(x0_int, x1_int))
-    else:
-        return img_masks[:, 0], ()
+    gt_covered = np.zeros(num_gts, dtype=bool)
+    # if no area range is specified, gt_area_ignore is all False
+    for i in sort_inds:
+        if ious_max[i] >= iou_thr:
+            matched_gt = ious_argmax[i]
+            if not gt_covered[matched_gt]:
+                gt_covered[matched_gt] = True
+                gt_covered_iou[matched_gt] = ious_max[i]
+                tp[i] = 1
+            else:
+                fp[i] = 1
+            # otherwise ignore this detected bbox, tp = 0, fp = 0
+        else:
+            fp[i] = 1
+    return tp, fp, np.mean(gt_covered_iou)
 
 
 class Evaluator:
-    def __init__(self, annotation, domain, img_metas, classes, mask_canvas=(800, 800), nproc=4):
+    def __init__(self, annotation, domain, classes, nproc=4):
         self.domain = domain
-        self.img_metas = img_metas
         self.classes = classes
         self.num_classes = len(classes)
-        self.mask_canvas = mask_canvas
         if domain != Domain.DETECTION:
-            self.annotation = self.init_gt_instnace_masks(annotation)
+            self.annotation = self.get_gt_instance_masks(annotation)
         else:
             self.annotation = annotation
         self.nproc = nproc
 
-    def init_gt_instnace_masks(self, annotation):
+    def get_gt_instance_masks(self, annotation):
+        """Crop mask from original image and saved them as PolygonMask"""
         num_images = len(annotation)
         cls_anno_list = [[] for _ in range(self.num_classes)]
-        canvas_h, canvas_w = self.mask_canvas
         for idx in range(num_images):
             masks = annotation[idx]["masks"]
-            masks = masks.resize((canvas_h, canvas_w)).to_ndarray()
-
             for class_id in range(self.num_classes):
                 gt_inds = annotation[idx]["labels"] == class_id
-                encoded_masks = []
+                polygon_masks = []
                 if gt_inds.any():
-                    class_masks = masks[gt_inds]
-                    encoded_masks = [
-                        mask_util.encode(
-                            np.array(m[:, :, np.newaxis], order="F", dtype="uint8")
-                        )[0] for m in class_masks
-                    ]
-                cls_anno_list[class_id].append(encoded_masks)
+                    polygon_masks = masks[gt_inds]
+                cls_anno_list[class_id].append(polygon_masks)
         return cls_anno_list
 
-    def evaluate(self, results, logger, iou_thr, scale_ranges):
-        if self.domain == Domain.DETECTION:
-            return eval_map(
-                    results,
-                    self.annotations,
-                    scale_ranges=scale_ranges,
-                    iou_thr=iou_thr,
-                    dataset=self.classes,
-                    logger=logger)
-        return self.evaluate_mask(results, logger, iou_thr)
+    def get_mask_det_results(self, det_results, class_id):
+        """ Get mask detection results for each class
 
-    def get_mask_det_results(self, det_results, class_id, img_metas):
-        canvas_h, canvas_w = self.mask_canvas
+        Args:
+            det_results (list(list)): the outer list corresponds to images, and the inner list corresponds to classes
+            class_id (_type_): _description_
+            img_metas (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         cls_scores = [img_res[0][class_id][..., -1] for img_res in det_results]
         cls_dets = []
         for i, det in enumerate(det_results):
-            det_masks = det[1][class_id]
             det_bboxes = det[0][class_id][:, :4]
-
+            det_masks = det[1][class_id]
             if len(det_masks) == 0:
-                det_masks = np.zeros((0, canvas_h, canvas_w), dtype=np.uint8)
+                cls_dets.append([[] for _ in range(2)])
             else:
-                img_h, img_w = img_metas[i]['ori_shape'][:2]
-                new_w_scale, new_h_scale = canvas_w/img_w, canvas_h/img_h
-                scale_factor = np.tile([new_w_scale, new_h_scale], 2)
                 det_masks = mask_util.decode(det_masks)
                 det_masks = det_masks.transpose(2, 0, 1)
-                det_masks = det_masks[:, np.newaxis]
-                det_bboxes = det_bboxes * scale_factor
-                det_masks, _ = _do_paste_mask_cpu(
-                    det_masks,
-                    det_bboxes,
-                    canvas_h,
-                    canvas_w,
-                    skip_empty=False
-                )
-                det_masks = det_masks.numpy()
-            det_masks = [
-                mask_util.encode(np.array(m[:, :, np.newaxis], order="F", dtype="uint8"))[0] for m in det_masks
-            ]
-            cls_dets.append(det_masks)
+                det_masks = BitmapMasks(det_masks, *det_masks.shape[1:])
+                cls_dets.append([det_bboxes, det_masks])
         return cls_dets, cls_scores
 
     def evaluate_mask(self, results, logger, iou_thr):
-        assert len(results) == len(self.annotation[0])
-
+        assert len(results) == len(self.annotation[0]), "number of images should be equal!"
         num_imgs = len(results)
-
         pool = Pool(self.nproc)  # pylint: disable=consider-using-with
         eval_results = []
         for class_id in range(self.num_classes):
             # get gt and det bboxes of this class
-            cls_dets, cls_scores = self.get_mask_det_results(results, class_id, self.img_metas)
+            cls_dets, cls_scores = self.get_mask_det_results(results, class_id)
             cls_gts = self.annotation[class_id]
 
             # compute tp and fp for each image with multiple processes
@@ -212,3 +214,14 @@ class Evaluator:
         print_map_summary(mean_ap, eval_results, self.classes, None, logger=logger)
 
         return metrics['mAP'], eval_results
+
+    def evaluate(self, results, logger, iou_thr, scale_ranges):
+        if self.domain == Domain.DETECTION:
+            return eval_map(
+                    results,
+                    self.annotation,
+                    scale_ranges=scale_ranges,
+                    iou_thr=iou_thr,
+                    dataset=self.classes,
+                    logger=logger)
+        return self.evaluate_mask(results, logger, iou_thr)

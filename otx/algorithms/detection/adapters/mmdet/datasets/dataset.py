@@ -190,15 +190,8 @@ class OTXDetDataset(CustomDataset):
             self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
 
         self.pipeline = Compose(pipeline)
-        self.annotation = [self.get_ann_info(i) for i in range(len(self))]
-        # get img_metas
-        img_metas = []
-        for i in range(len(self)):
-            img_meta = self[i]['img_metas']
-            if isinstance(img_meta, list):
-                img_meta = self[i]['img_metas'][0]
-            img_metas.append(img_meta.data)
-        self.evaluator = Evaluator(self.annotation, self.domain, img_metas, self.CLASSES)
+        annotation = [self.get_ann_info(i) for i in range(len(self))]
+        self.evaluator = Evaluator(annotation, self.domain, self.CLASSES)
 
     def _set_group_flag(self):
         """Set flag for grouping images.
@@ -280,7 +273,6 @@ class OTXDetDataset(CustomDataset):
         eval_results = OrderedDict()
         if metric not in allowed_metrics:
             raise KeyError(f"metric {metric} is not supported")
-        assert len(self.annotation) == len(results), "annotation length does not match prediction results"
         iou_thrs = [iou_thr] if isinstance(iou_thr, float) else iou_thr
         assert isinstance(iou_thrs, list)
         mean_aps = []
