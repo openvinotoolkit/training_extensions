@@ -1,8 +1,9 @@
 dataset:
   name: wgisd
-  format: wgisd
   path: dataset/det_data/data/wgisd_coco
   task: visual prompting
+  use_mask: false # if using mask as-is (true) or converting it to polygon (false)
+  use_prompt: true # if using prompt in dataset (true) or generating random one (false)
   train_batch_size: 2
   val_batch_size: 1
   test_batch_size: 1

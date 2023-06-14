@@ -25,6 +25,24 @@ dataset:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
+  use_mask:
+    header: Flag about using mask as label
+    affects_outcome_of: NONE
+    default_value: false
+    description:
+      If using mask as-is (true) or converting it to polygon (false)
+    editable: true
+    value: false
+    type: BOOLEAN
+  use_prompt:
+    header: Flag about using prompt in dataset
+    affects_outcome_of: NONE
+    default_value: true
+    description:
+      If using prompt in dataset (true) or generating random one (false).
+    editable: true
+    value: true
+    type: BOOLEAN
 description: Configuration for SAM
 header: Configuration for SAM
 id: ""

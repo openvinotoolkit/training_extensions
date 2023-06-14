@@ -5,31 +5,37 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
-from typing import List
+from typing import List, Dict
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.plugins.transforms import MasksToPolygons
 
-from otx.api.entities.dataset_item import DatasetItemEntityWithID
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
-from otx.api.entities.model_template import TaskType
-from otx.api.entities.subset import Subset
-from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.adapter.segmentation_dataset_adapter import SegmentationDatasetAdapter
 
 
-class VisualPromptingDatasetAdapter(BaseDatasetAdapter):
-    """Visual prompting adapter inherited from BaseDatasetAdapter.
+class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
+    """Visual prompting adapter inherited from SegmentationDatasetAdapter.
 
-    It converts DatumaroDataset --> DatasetEntity for visual prompting tasks
+    It converts DatumaroDataset --> DatasetEntity for visual prompting tasks.
+    To handle masks, this adapter is inherited from SegmentationDatasetAdapter.
     """
+    def __init__(self, use_mask: bool = False, use_prompt: bool = True, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.use_mask = use_mask
+        self.use_prompt = use_prompt
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
         # Prepare label information
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
-        dataset_items: List[DatasetItemEntityWithID] = []
+
+        dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
+        self.updated_label_id: Dict[int, int] = {}
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
@@ -37,29 +43,44 @@ class VisualPromptingDatasetAdapter(BaseDatasetAdapter):
                     assert isinstance(image, Image)
                     shapes = []
                     for ann in datumaro_item.annotations:
-                        if (
-                            self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION, TaskType.VISUAL_PROMPTING)
-                            and ann.type == DatumAnnotationType.polygon
-                        ):
+                        if ann.type == DatumAnnotationType.polygon:
+                            # save polygons as-is, they will be converted to masks.
                             if self._is_normal_polygon(ann):
                                 shapes.append(self._get_polygon_entity(ann, image.width, image.height))
-                        if self.task_type is TaskType.DETECTION and ann.type == DatumAnnotationType.bbox:
+
+                        if ann.type == DatumAnnotationType.mask:
+                            if self.use_mask:
+                                # to forward mask path to dataset
+                                # TODO (sungchul): ann._image.func.__self__._class_mask._path
+                                raise NotImplementedError("Using mask as-is is not yet implemented.")
+
+                            else:
+                                # convert masks to polygons, they will be converted to masks again
+                                datumaro_polygons = MasksToPolygons.convert_mask(ann)
+                                for d_polygon in datumaro_polygons:
+                                    new_label = self.updated_label_id.get(d_polygon.label, None)
+                                    if new_label is not None:
+                                        d_polygon.label = new_label
+                                    else:
+                                        continue
+
+                                    shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
+                                    if d_polygon.label not in used_labels:
+                                        used_labels.append(d_polygon.label)
+
+                        # FIXME (sungchul): save prompts as annotation -> input
+                        if self.use_prompt and ann.type == DatumAnnotationType.bbox:
                             if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
                                 shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 
-                        if ann.label not in used_labels:
+                        if self.use_prompt and ann.type == DatumAnnotationType.points:
+                            raise NotImplementedError("Getting points is not yet implemented.")
+
+                        if ann.label not in used_labels and ann.type != DatumAnnotationType.mask:
                             used_labels.append(ann.label)
 
-                    if (
-                        len(shapes) > 0
-                        or (subset != Subset.TRAINING and len(datumaro_item.annotations) == 0)
-                    ):
-                        dataset_item = DatasetItemEntityWithID(
-                            image,
-                            self._get_ann_scene_entity(shapes),
-                            subset=subset,
-                            id_=datumaro_item.id,
-                        )
+                    if len(shapes) > 0:
+                        dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                         dataset_items.append(dataset_item)
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)
