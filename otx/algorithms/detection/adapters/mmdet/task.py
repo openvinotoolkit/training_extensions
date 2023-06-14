@@ -400,12 +400,7 @@ class MMDetectionTask(OTXDetectionTask):
             if raw_model.__class__.__name__ == "NNCFNetwork":
                 raw_model = raw_model.get_nncf_wrapped_model()
             if isinstance(raw_model, TwoStageDetector):
-                test_pipeline = cfg.data.test.pipeline
-                width, height = None, None
-                for pipeline in test_pipeline:
-                    width, height = pipeline.get("img_scale", (None, None))
-                if height is None:
-                    raise ValueError("img_scale has to be defined in the test pipeline.")
+                height, width, _ = mm_dataset[0]['img_metas'][0].data['img_shape']
                 saliency_hook = MaskRCNNRecordingForwardHook(feature_model, input_img_shape=(height, width))
             else:
                 saliency_hook = DetClassProbabilityMapHook(feature_model)
@@ -601,13 +596,8 @@ class MMDetectionTask(OTXDetectionTask):
             model.register_forward_hook(hook)
 
         if isinstance(feature_model, TwoStageDetector):
-            test_pipeline = cfg.data.test.pipeline
-            width, height = None, None
-            for pipeline in test_pipeline:
-                width, height = pipeline.get("img_scale", (None, None))
-            if height is None:
-                raise ValueError("img_scale has to be defined in the test pipeline.")
-            per_class_xai_algorithm = partial(MaskRCNNRecordingForwardHook, input_img_shape=(height, width))
+            height, width, _ = mm_dataset[0]['img_metas'][0].data['img_shape']
+            per_class_xai_algorithm = partial(MaskRCNNRecordingForwardHook, input_img_shape=(width, height))
         else:
             per_class_xai_algorithm = DetClassProbabilityMapHook  # type: ignore
 
