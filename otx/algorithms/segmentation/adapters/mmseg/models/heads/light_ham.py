@@ -37,7 +37,7 @@ class Matrix_Decomposition_2D_Base(nn.Module):
             Defaults: True.
     """
 
-    def __init__(self, MD_S=1, MD_R=64, num_channels=256, train_steps=6, eval_steps=7, inv_t=100):
+    def __init__(self, MD_S=1, MD_R=64, in_channels=256, train_steps=6, eval_steps=7, inv_t=100):
         super().__init__()
 
         self.S = MD_S
@@ -48,7 +48,7 @@ class Matrix_Decomposition_2D_Base(nn.Module):
 
         self.inv_t = inv_t
 
-        bases = self._build_bases(1, self.S, num_channels // self.S, self.R)
+        bases = self._build_bases(1, self.S, in_channels // self.S, self.R)
         self.register_buffer("bases", bases)
 
     def _build_bases(self, B, S, D, R, device=None):

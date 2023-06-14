@@ -49,7 +49,7 @@ model = dict(
         norm_cfg=ham_norm_cfg,
         align_corners=False,
         loss_decode=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0),
-        ham_kwargs=dict(MD_S=1, MD_R=16, train_steps=6, eval_steps=7, inv_t=100),
+        ham_kwargs=dict(MD_S=1, MD_R=16, train_steps=6, in_channels=512, eval_steps=7, inv_t=100),
     ),
     proto_head=dict(
         in_channels=512,
