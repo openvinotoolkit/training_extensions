@@ -13,11 +13,11 @@ import pytest
 import torch
 from mmaction.models.backbones.x3d import X3D
 from mmaction.models.recognizers.recognizer3d import Recognizer3D
-from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config
 from torch import nn
 
 from otx.algorithms.action.configs.base.configuration import ActionConfig
+from otx.algorithms.action.adapters.mmaction import task as target_file
 from otx.algorithms.action.adapters.mmaction.task import MMActionTask
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
@@ -182,17 +182,13 @@ class TestMMActionTask:
     @e2e_pytest_unit
     def test_build_model(self, mocker) -> None:
         """Test build_model function."""
-        _weight = torch.randn([24, 3, 1, 3, 3])
-        mocker.patch.object(
-            CheckpointLoader,
-            "load_checkpoint",
-            return_value={"model": {"state_dict": {"backbone.conv1_s.conv.weight": _weight}}},
-        )
         _mock_recipe_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ACTION_CLS_DIR, "model.py"))
+        mock_load_checkpoint = mocker.patch.object(target_file, "load_checkpoint")
         model = self.cls_task.build_model(_mock_recipe_cfg, True)
         assert isinstance(model, Recognizer3D)
         assert isinstance(model.backbone, X3D)
-        assert torch.all(model.state_dict()["backbone.conv1_s.conv.weight"] == _weight)
+        mock_load_checkpoint.assert_called_once()
+        assert mock_load_checkpoint.call_args.args[1] == _mock_recipe_cfg.load_from
 
     @e2e_pytest_unit
     def test_train(self, mocker) -> None:
@@ -206,6 +202,7 @@ class TestMMActionTask:
             return_value=MockDataLoader(self.cls_dataset),
         )
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("cls"))
+        mocker.patch.object(MMActionTask, "get_model_ckpt", return_value="fake_weight")
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
             side_effect=mock_data_pipeline,
