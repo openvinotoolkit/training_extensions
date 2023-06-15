@@ -23,4 +23,3 @@ advanced_parameters = AdvancedQuantizationParameters(
 preset = QuantizationPreset.MIXED
 
 ignored_scope = IgnoredScope(names=["/anomaly_map_generator/Mul", "/anomaly_map_generator/Sqrt"])
-

@@ -19,7 +19,7 @@ import json
 import os
 import random
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from zipfile import ZipFile
 
 import nncf

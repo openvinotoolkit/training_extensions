@@ -19,7 +19,7 @@
 from typing import Any, Dict
 
 import numpy as np
-from openvino.model_api.models import ClassificationModel
+from openvino.model_api.models import ClassificationModel, classification
 from openvino.model_api.models.types import BooleanValue, DictValue
 
 
@@ -29,11 +29,15 @@ class OTXClassification(ClassificationModel):
     __model__ = "otx_classification"
 
     def __init__(self, model_adapter, configuration=None, preload=False):
+        backup_fn = classification.addOrFindSoftmaxAndTopkOutputs
+        classification.addOrFindSoftmaxAndTopkOutputs = lambda a, b, c: None
         super().__init__(model_adapter, configuration, preload)
+        classification.addOrFindSoftmaxAndTopkOutputs = backup_fn
         if self.hierarchical:
             logits_range_dict = self.multihead_class_info.get("head_idx_to_logits_range", False)
             if logits_range_dict:
                 self.multihead_class_info["head_idx_to_logits_range"] = dict(logits_range_dict.items())
+        self.out_layer_names = [self._get_output()]
 
     @classmethod
     def parameters(cls):
@@ -53,7 +57,7 @@ class OTXClassification(ClassificationModel):
     def _check_io_number(self, number_of_inputs, number_of_outputs):
         pass
 
-    def _get_outputs(self):
+    def _get_output(self):
         layer_name = "logits"
         for name, meta in self.outputs.items():
             if "logits" in meta.names:
@@ -86,7 +90,7 @@ class OTXClassification(ClassificationModel):
         if self.hierarchical:
             return get_hierarchical_predictions(logits, self.multihead_class_info)
 
-        return get_multiclass_predictions(logits, activate=False)
+        return get_multiclass_predictions(logits, activate=True)
 
     # pylint: disable=unused-argument
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
