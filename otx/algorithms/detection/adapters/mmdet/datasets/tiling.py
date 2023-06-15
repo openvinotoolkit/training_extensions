@@ -18,6 +18,8 @@ from mmcv.ops import nms
 from mmdet.core import BitmapMasks, bbox2result
 from tqdm import tqdm
 
+from otx.api.utils.dataset_utils import non_linear_normalization
+
 
 def timeit(func) -> Callable:
     """Decorator to measure time of function execution.
@@ -504,7 +506,7 @@ class Tile:
             ann["labels"] = self.tiles[idx]["gt_labels"]
         return ann
 
-    def merge_vectors(self, feature_vectors) -> List[np.ndarray]:
+    def merge_vectors(self, feature_vectors: List[np.ndarray]) -> List[np.ndarray]:
         """Merge tile-level feature vectors to image-level feature vector.
 
         Args:
@@ -520,7 +522,7 @@ class Tile:
 
         return np.average(image_vectors, axis=1)
 
-    def merge_maps(self, saliency_maps) -> List[np.ndarray]:
+    def merge_maps(self, saliency_maps: List[np.ndarray]) -> List[np.ndarray]:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
@@ -534,53 +536,45 @@ class Tile:
         ratios = {}
         dtype = saliency_maps[0][0][0].dtype
         image_saliency_maps = []
-        feat_classes, feat_h, feat_w = saliency_maps[0].shape
+        num_classes, feat_h, feat_w = saliency_maps[0].shape
 
         for image_sal_map, orig_image in zip(saliency_maps[: self.num_images], self.cached_results):
             img_idx = orig_image["index"]
             ratios[img_idx] = np.array([feat_h, feat_w]) / self.tile_size
             image_h, image_w = orig_image["height"], orig_image["width"]
 
-            merged_maps_size = np.array(
-                (feat_classes, image_h * ratios[img_idx][0], image_w * ratios[img_idx][1]),
-                dtype=np.uint8,
-            )
-            merged_maps.append(np.zeros(merged_maps_size, dtype=dtype))
+            image_map_h = int(image_h * ratios[img_idx][0])
+            image_map_w = int(image_w * ratios[img_idx][1])
+            merged_maps.append(np.zeros((num_classes, image_map_h, image_map_w), dtype=dtype))
 
             # resize the feature map for whole image to add it to merged saliency maps
             image_saliency_map = np.array(
-                [cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_sal_map]
+                [cv2.resize(class_sal_map, (image_map_w, image_map_h)) for class_sal_map in image_sal_map]
             )
             image_saliency_maps.append(image_saliency_map)
 
         for map, tile in zip(saliency_maps[self.num_images :], self.tiles[self.num_images :]):
             img_idx = tile["dataset_idx"]
-            x_1, y_1, x_2, y_2 = (tile["tile_box"] * np.repeat(ratios[img_idx], 2)).astype(np.uint8)
-            c = map.shape[0]
-            w, h = x_2 - x_1, y_2 - y_1
+            x_1, y_1, x_2, y_2 = tile["tile_box"]
+            y_1, x_1 = ((y_1, x_1) * ratios[img_idx]).astype(np.uint8)
+            y_2, x_2 = ((y_2, x_2) * ratios[img_idx]).astype(np.uint8)
+            c, h, w = map.shape
+            # if tile size is smaller near the image borders
+            h, w = min(h, y_2 - y_1), min(w, x_2 - x_1)
 
-            # on tile overlap add 0.5 value of each tile
-            for ci in range(c):
-                for hi in range(h):
-                    for wi in range(w):
-                        map_pixel = map[ci, hi, wi]
-                        if merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] != 0:
-                            merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = 0.5 * (
-                                map_pixel + merged_maps[img_idx][ci, y_1 + hi, x_1 + wi]
-                            )
-                        else:
-                            merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = map_pixel
+            for ci, hi, wi in [(c_, h_, w_) for c_ in range(c) for h_ in range(h) for w_ in range(w)]:
+                map_pixel = map[ci, hi, wi]
+                # on tile overlap add 0.5 value of each tile
+                if merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] != 0:
+                    merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = 0.5 * (
+                        map_pixel + merged_maps[img_idx][ci, y_1 + hi, x_1 + wi]
+                    )
+                else:
+                    merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = map_pixel
 
         norm_maps = []
         for merged_map, image_sal_map in zip(merged_maps, image_saliency_maps):
             merged_map += (0.5 * image_sal_map).astype(dtype)
+            norm_maps.append(non_linear_normalization(merged_map))
 
-            min_soft_score = np.min(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
-            # make merged_map distribution positive to perform non-linear normalization y=x**1.5
-            merged_map = (merged_map - min_soft_score) ** 1.5
-
-            max_soft_score = np.max(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
-            merged_map = 255.0 / (max_soft_score + 1e-12) * merged_map
-
-            norm_maps.append(np.uint8(np.floor(merged_map)))
         return norm_maps

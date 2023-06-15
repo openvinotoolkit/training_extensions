@@ -30,7 +30,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
     def __init__(self, module: torch.nn.Module, normalize=True, use_cls_softmax=True) -> None:
-        super().__init__(module, normalize)
+        super().__init__(module, normalize=normalize)
         self._neck = module.neck if module.with_neck else None
         self._bbox_head = module.bbox_head
         self._num_cls_out_channels = module.bbox_head.cls_out_channels  # SSD-like heads also have background class
@@ -79,9 +79,9 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                 )
             saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
 
-        if self.normalize:
+        if self._norm_saliency_maps:
             saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, -1))
-            saliency_maps = self.normalize_map(saliency_maps)
+            saliency_maps = self._normalize_map(saliency_maps)
 
         saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, height, width))
 

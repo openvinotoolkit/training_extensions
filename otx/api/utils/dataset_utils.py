@@ -248,3 +248,16 @@ def add_saliency_maps_to_dataset_item(
                 dataset_item.append_metadata_item(saliency_media, model=model)
     else:
         raise RuntimeError(f"Single saliency map has to be 2 or 3-dimensional, but got {saliency_map.ndim} dims")
+
+
+def non_linear_normalization(saliency_map: np.ndarray) -> np.ndarray:
+    """Use non-linear normalization y=x**1.5 for saliency maps."""
+
+    min_soft_score = np.min(saliency_map, axis=(1, 2)).reshape(-1, 1, 1)
+    # make merged_map distribution positive to perform non-linear normalization y=x**1.5
+    saliency_map = (saliency_map - min_soft_score) ** 1.5
+
+    max_soft_score = np.max(saliency_map, axis=(1, 2)).reshape(-1, 1, 1)
+    saliency_map = 255.0 / (max_soft_score + 1e-12) * saliency_map
+
+    return np.uint8(np.floor(saliency_map))

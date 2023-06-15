@@ -435,8 +435,8 @@ class MMDetectionTask(OTXDetectionTask):
         if isinstance(mm_dataset, ImageTilingDataset):
             eval_predictions = mm_dataset.merge(eval_predictions)
             # average tile feature vertors for each image
-            feature_vectors = mm_dataset.merge_vectors(feature_vectors)
-            saliency_maps = mm_dataset.merge_maps(saliency_maps)
+            feature_vectors = mm_dataset.merge_vectors(feature_vectors, dump_features)
+            saliency_maps = mm_dataset.merge_maps(saliency_maps, dump_saliency_map)
 
         metric = None
         if inference_parameters and inference_parameters.is_evaluation:
@@ -641,7 +641,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         # In the tiling case, merge saliency map from each tile into united map for image
         if isinstance(mm_dataset, ImageTilingDataset):
-            saliency_maps = mm_dataset.merge_maps(saliency_maps)
+            saliency_maps = mm_dataset.merge_maps(saliency_maps, dump_maps=True)
 
         outputs = dict(detections=eval_predictions, saliency_maps=saliency_maps)
         return outputs

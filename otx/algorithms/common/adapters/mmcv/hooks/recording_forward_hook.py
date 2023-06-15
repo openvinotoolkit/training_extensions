@@ -18,6 +18,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import List, Sequence, Union
 
+import numpy as np
 import torch
 
 from otx.algorithms.classification import MMCLS_AVAILABLE
@@ -47,7 +48,7 @@ class BaseRecordingForwardHook(ABC):
         self._handle = None
         self._records: List[torch.Tensor] = []
         self._fpn_idx = fpn_idx
-        self.normalize = normalize
+        self._norm_saliency_maps = normalize
 
     @property
     def records(self):
@@ -84,7 +85,7 @@ class BaseRecordingForwardHook(ABC):
         """Exit."""
         self._handle.remove()
 
-    def normalize_map(self, saliency_maps):
+    def _normalize_map(self, saliency_maps: np.ndarray) -> np.ndarray:
         """Normalize saliency maps."""
         max_values, _ = torch.max(saliency_maps, -1)
         min_values, _ = torch.min(saliency_maps, -1)
@@ -111,9 +112,9 @@ class EigenCamHook(BaseRecordingForwardHook):
         reshaped_fmap = reshaped_fmap - reshaped_fmap.mean(1)[:, None, :]
         _, _, vh = torch.linalg.svd(reshaped_fmap, full_matrices=True)  # pylint: disable=invalid-name
 
-        if self.normalize:
+        if self._norm_saliency_maps:
             saliency_map = (reshaped_fmap @ vh[:, 0][:, :, None]).squeeze(-1)
-            self.normalize_map(saliency_map)
+            self._normalize_map(saliency_map)
 
         saliency_map = saliency_map.reshape((batch_size, h, w))
         return saliency_map
@@ -133,9 +134,9 @@ class ActivationMapHook(BaseRecordingForwardHook):
         batch_size, _, h, w = feature_map.size()
         activation_map = torch.mean(feature_map, dim=1)
 
-        if self.normalize:
+        if self._norm_saliency_maps:
             activation_map = activation_map.reshape((batch_size, h * w))
-            activation_map = self.normalize_map(activation_map)
+            activation_map = self._normalize_map(activation_map)
 
         activation_map = activation_map.reshape((batch_size, h, w))
         return activation_map
@@ -190,9 +191,9 @@ class ReciproCAMHook(BaseRecordingForwardHook):
             mosaic_prediction = self._predict_from_feature_map(mosaic_feature_map)
             saliency_maps[f] = mosaic_prediction.transpose(0, 1).reshape((self._num_classes, h, w))
 
-        if self.normalize:
+        if self._norm_saliency_maps:
             saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
-            saliency_maps = self.normalize_map(saliency_maps)
+            saliency_maps = self._normalize_map(saliency_maps)
 
         saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
         return saliency_maps

@@ -15,6 +15,7 @@ from openvino.model_zoo.model_api.models import Model
 from otx.api.utils.async_pipeline import OTXDetectionAsyncPipeline
 from otx.api.utils.detection_utils import detection2array
 from otx.api.utils.nms import multiclass_nms
+from otx.api.utils.dataset_utils import non_linear_normalization
 
 
 class Tiler:
@@ -313,43 +314,36 @@ class Tiler:
 
         (_, image_saliency_map), image_meta = features[0]
         dtype = image_saliency_map[0][0].dtype
-        feat_classes, feat_h, feat_w = image_saliency_map.shape
+        num_classes, feat_h, feat_w = image_saliency_map.shape
         ratio = np.array([feat_h, feat_w]) / self.tile_size
         image_h, image_w, _ = image_meta["original_shape"]
 
-        merged_maps_size = np.array(
-            (feat_classes, image_h * ratio[0], image_w * ratio[1]),
-            dtype=np.uint8,
-        )
-        merged_map = np.zeros(merged_maps_size, dtype=dtype)
+        image_map_h = int(image_h * ratio[0])
+        image_map_w = int(image_w * ratio[1])
+        merged_map = np.zeros((num_classes, image_map_h, image_map_w), dtype=dtype)
 
         # resize the feature map for whole image to add it to merged saliency maps
         image_saliency_map = np.array(
-            [cv2.resize(class_sal_map, merged_maps_size[1:]) for class_sal_map in image_saliency_map]
+            [cv2.resize(class_sal_map, (image_map_w, image_map_h)) for class_sal_map in image_saliency_map]
         )
 
         for (_, saliency_map), meta in features[1:]:
-            x_1, y_1, x_2, y_2 = (meta["coord"] * np.repeat(ratio, 2)).astype(np.uint8)
-            c = saliency_map.shape[0]
-            w, h = x_2 - x_1, y_2 - y_1
+            x_1, y_1, x_2, y_2 = meta["coord"]
+            y_1, x_1, y_2, x_2 = ((y_1, x_1, y_2, x_2) * np.tile(ratio, 2)).astype(np.uint8)
+            c, h, w = saliency_map.shape
+            # if tile size is smaller near the image borders
+            h, w = min(h, y_2 - y_1), min(w, x_2 - x_1)
 
-            for ci in range(c):
-                for hi in range(h):
-                    for wi in range(w):
-                        map_pixel = saliency_map[ci, hi, wi]
-                        if merged_map[ci, y_1 + hi, x_1 + wi] != 0:
-                            merged_map[ci, y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_map[ci, y_1 + hi, x_1 + wi])
-                        else:
-                            merged_map[ci, y_1 + hi, x_1 + wi] = map_pixel
+            for ci, hi, wi in [(c_, h_, w_) for c_ in range(c) for h_ in range(h) for w_ in range(w)]:
+                map_pixel = saliency_map[ci, hi, wi]
+                # on tile overlap add 0.5 value of each tile
+                if merged_map[ci, y_1 + hi, x_1 + wi] != 0:
+                    merged_map[ci, y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_map[ci, y_1 + hi, x_1 + wi])
+                else:
+                    merged_map[ci, y_1 + hi, x_1 + wi] = map_pixel
 
         merged_map += (0.5 * image_saliency_map).astype(dtype)
-        min_soft_score = np.min(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
-        # make merged_map distribution positive to perform non-linear normalization y=x**1.5
-        merged_map = (merged_map - min_soft_score) ** 1.5
-        max_soft_score = np.max(merged_map, axis=(1, 2)).reshape(-1, 1, 1)
-        merged_map = 255.0 / (max_soft_score + 1e-12) * merged_map
-        merged_map = np.uint8(np.floor(merged_map))
-
+        merged_map = non_linear_normalization(merged_map)
         return merged_map
 
     def resize_masks(self, masks: List, dets: np.ndarray, shape: List[int]):
