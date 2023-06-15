@@ -106,7 +106,7 @@ class OTXVIsualPromptingDataset(Dataset):
 
             if self.config.use_mask:
                 # TODO (sungchul): load mask from dataset
-                logger.warn("Loading masks from dataset is not yet implemented.")
+                logger.warning("Loading masks from dataset is not yet implemented.")
 
                 # if using masks from dataset, we can use bboxes from dataset, too
                 if isinstance(annotation.shape, Rectangle):
@@ -119,7 +119,7 @@ class OTXVIsualPromptingDataset(Dataset):
                     bboxes.append(bbox)
 
                 if isinstance(annotation.shape, Point):
-                    logger.warn("Using points is not implemented yet.")
+                    logger.warning("Using points is not implemented yet.")
 
         if len(bboxes) == 0:
             # there is no bbox from dataset -> generate bboxes based on gt_masks
