@@ -449,8 +449,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
         _hparams.postprocessing.use_ellipse_shapes = self.config.postprocessing.use_ellipse_shapes
         async_requests_num = get_default_async_reqs_num()
-        if self.config.tiling_parameters.enable_tiling:
-            async_requests_num = 1  # tiling has it's own async configuration
         args = [
             _hparams,
             self.task_environment.label_schema,
