@@ -1,5 +1,6 @@
 """PTQ config file."""
 from nncf import IgnoredScope
+from nncf.common.quantization.structs import QuantizationPreset
 from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 from nncf.quantization.range_estimator import (
     AggregatorType,
@@ -18,6 +19,8 @@ advanced_parameters = AdvancedQuantizationParameters(
         ),
     )
 )
+
+preset = QuantizationPreset.PERFORMANCE
 
 ignored_scope = IgnoredScope(
     names=[
