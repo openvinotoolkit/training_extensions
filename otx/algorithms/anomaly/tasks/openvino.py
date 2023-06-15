@@ -35,6 +35,7 @@ from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.common.utils.ir import check_if_quantized
+from otx.algorithms.common.utils.utils import read_py_config
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -243,33 +244,20 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
 
-    def _get_optimization_algorithms_configs(self) -> List[ADDict]:
+    def _get_optimization_algorithms_config(self) -> ADDict:
         """Returns list of optimization algorithms configurations."""
         hparams: BaseAnomalyConfig = self.task_environment.get_hyper_parameters()
 
-        optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
+        optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
+        ptq_config = ADDict()
         if os.path.exists(optimization_config_path):
-            with open(optimization_config_path, encoding="UTF-8") as f_src:
-                algorithms = ADDict(json.load(f_src))["algorithms"]
-            ignored_ops = nncf.IgnoredScope(names=algorithms[0].params.ignored.scope)
-        else:
-            algorithms = [
-                ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY", "shuffle_data": True}})
-            ]
-            ignored_ops = nncf.IgnoredScope()
-        for algo in algorithms:
-            algo.params.stat_subset_size = hparams.pot_parameters.stat_subset_size
-            algo.params.shuffle_data = True
-            if "Quantization" in algo["name"]:
-                algo.params.preset = hparams.pot_parameters.preset.name.lower()
+            ptq_config = read_py_config(optimization_config_path)
+        ptq_config.update(
+            subset_size=hparams.pot_parameters.stat_subset_size,
+            preset=QuantizationPreset(hparams.pot_parameters.preset.name.lower()),
+        )
 
-        return [
-            ADDict(
-                preset=QuantizationPreset(algorithms[0].params.preset.lower()),
-                ignored_scope=ignored_ops,
-                subset_size=algorithms[0].params.stat_subset_size,
-            )
-        ]
+        return ptq_config
 
     def optimize(
         self,
@@ -319,10 +307,10 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
 
-        quantization_configs = self._get_optimization_algorithms_configs()
-        quantization_configs[0].subset_size = min(quantization_configs[0].subset_size, len(data_loader))
+        quantization_config = self._get_optimization_algorithms_config()
+        quantization_config.subset_size = min(quantization_config.subset_size, len(data_loader))
 
-        compressed_model = nncf.quantize(ov_model, quantization_dataset, **quantization_configs[0])
+        compressed_model = nncf.quantize(ov_model, quantization_dataset, **quantization_config)
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(90, None)
