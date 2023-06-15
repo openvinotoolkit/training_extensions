@@ -18,27 +18,24 @@ from typing import Dict, List, Optional, Union
 
 import cv2
 import numpy as np
+import torchvision.transforms as transforms
 from omegaconf import DictConfig, ListConfig
-from PIL import Image, ImageDraw
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
+    MultipleInputsCompose,
+    Pad,
+    ResizeLongestSide,
+    collate_fn,
+)
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.model_template import TaskType
-from otx.api.entities.shapes.polygon import Polygon, Point
+from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
-from otx.api.utils.dataset_utils import (
-    contains_anomalous_images,
-    split_local_global_dataset,
-)
-from otx.api.utils.segmentation_utils import mask_from_dataset_item
 from otx.api.utils.shape_factory import ShapeFactory
-
-from .pipelines import ResizeLongestSide, collate_fn, MultipleInputsCompose, Pad
-import torchvision.transforms as transforms
 
 logger = get_logger()
 
@@ -58,14 +55,15 @@ class OTXVIsualPromptingDataset(Dataset):
         config: Union[DictConfig, ListConfig],
         dataset: DatasetEntity,
         transform: MultipleInputsCompose,
+        offset_bbox: int = 0
     ) -> None:
 
         self.config = config
         self.dataset = dataset
         self.transform = transform
+        self.offset_bbox = offset_bbox
 
         self.labels = dataset.get_labels()
-        self.label_idx = {label.id: i for i, label in enumerate(self.labels)}
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -95,43 +93,29 @@ class OTXVIsualPromptingDataset(Dataset):
         bboxes: List[List[int]] = []
         points: List = []
         gt_masks: List[np.ndarray] = []
-        # TODO (sungchul): load mask from dataset
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
             if isinstance(annotation.shape, Polygon) and not self.config.use_mask:
                 # convert polygon to mask
-                polygon = ShapeFactory.shape_as_polygon(annotation.shape)
-                contour = np.asarray([[int(point.x * width), int(point.y * height)] for point in polygon.points])
-                gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
-                gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
+                gt_mask = self.convert_polygon_to_mask(annotation.shape, width, height)
                 gt_masks.append(gt_mask)
 
-                # 
-                y_indices, x_indices = np.where(gt_mask == 1)
-                x_min, x_max = np.min(x_indices), np.max(x_indices)
-                y_min, y_max = np.min(y_indices), np.max(y_indices)
+                bbox = self.generate_bbox_from_mask(gt_mask, width, height)
+                bboxes.append(bbox)
 
-                # add perturbation to bounding box coordinates
-                x_min = max(0, x_min - np.random.randint(0, 20))
-                x_max = min(width, x_max + np.random.randint(0, 20))
-                y_min = max(0, y_min - np.random.randint(0, 20))
-                y_max = min(height, y_max + np.random.randint(0, 20))
-                bboxes.append([x_min, y_min, x_max, y_max])
+                # TODO (sungchul): generate random points from gt_mask
 
             if self.config.use_mask:
+                # TODO (sungchul): load mask from dataset
+                logger.warn("Loading masks from dataset is not yet implemented.")
+
                 # if using masks from dataset, we can use bboxes from dataset, too
                 if isinstance(annotation.shape, Rectangle):
-                    # use bbox from dataset
+                    # load bbox from dataset
                     bbox = ShapeFactory.shape_as_rectangle(annotation.shape)
                     if min(bbox.width * width, bbox.height * height) < -1:
                         continue
 
-                    # inject randomness
-                    bbox = [
-                        max(0, int(bbox.x1 * width) - np.random.randint(0, 20)),
-                        max(0, int(bbox.y1 * height) - np.random.randint(0, 20)),
-                        min(width, int(bbox.x2 * width) + np.random.randint(0, 20)),
-                        min(height, int(bbox.y2 * height)+ np.random.randint(0, 20))
-                    ]
+                    bbox = self.generate_bbox(int(bbox.x1 * width), int(bbox.y1 * height), int(bbox.x2 * width), int(bbox.y2 * height), width, height)
                     bboxes.append(bbox)
 
                 if isinstance(annotation.shape, Point):
@@ -139,17 +123,10 @@ class OTXVIsualPromptingDataset(Dataset):
 
         if len(bboxes) == 0:
             # there is no bbox from dataset -> generate bboxes based on gt_masks
+            # ex) self.config.use_mask = True, but there is no bbox in dataset
             for gt_mask in gt_masks:
-                y_indices, x_indices = np.where(gt_mask == 1)
-                x_min, x_max = np.min(x_indices), np.max(x_indices)
-                y_min, y_max = np.min(y_indices), np.max(y_indices)
-
-                # add perturbation to bounding box coordinates
-                x_min = max(0, x_min - np.random.randint(0, 20))
-                x_max = min(width, x_max + np.random.randint(0, 20))
-                y_min = max(0, y_min - np.random.randint(0, 20))
-                y_max = min(height, y_max + np.random.randint(0, 20))
-                bboxes.append([x_min, y_min, x_max, y_max])
+                bbox = self.generate_bbox_from_mask(gt_mask, width, height)
+                bboxes.append(bbox)
 
                 # TODO (sungchul): generate random points from gt_mask
 
@@ -165,6 +142,55 @@ class OTXVIsualPromptingDataset(Dataset):
         ))
         item = self.transform(item)
         return item
+
+    def convert_polygon_to_mask(self, shape: Polygon, width: int, height: int) -> np.ndarray:
+        """Convert polygon to mask.
+        
+        Args:
+            shape (Polygon): 
+            width (int): 
+            height (int): 
+
+        Returns:
+            np.ndarray: Generated mask from given polygon.
+        """
+        polygon = ShapeFactory.shape_as_polygon(shape)
+        contour = [[int(point.x * width), int(point.y * height)] for point in polygon.points]
+        gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
+        gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
+        return gt_mask
+
+    def generate_bbox(self, x1: int, y1: int, x2: int, y2: int, width: int, height: int) -> List[int]:
+        """"""
+        def get_randomness(length: int) -> int:
+            if self.offset_bbox == 0:
+                return 0
+            return np.random.normal(0, min(length * 0.1, self.offset_bbox))
+
+        bbox = [
+            max(0, x1 + get_randomness(width)),
+            max(0, y1 + get_randomness(height)),
+            min(width, x2 + get_randomness(width)),
+            min(height, y2 + get_randomness(height))
+        ]
+        return bbox
+
+    def generate_bbox_from_mask(self, gt_mask: np.ndarray, width: int, height: int) -> List[int]:
+        """Generate bounding box from given mask.
+
+        Args:
+            gt_mask (np.ndarry): 
+            width (int):
+            height (int):
+
+        Returns:
+            List[int]: Generated bounding box from given mask.
+        """
+        y_indices, x_indices = np.where(gt_mask == 1)
+        x_min, x_max = np.min(x_indices), np.max(x_indices)
+        y_min, y_max = np.min(y_indices), np.max(y_indices)
+
+        return self.generate_bbox(x_min, y_min, x_max, y_max, width, height)
 
 
 class OTXVisualPromptingDataModule(LightningDataModule):
@@ -205,7 +231,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
 
-            self.train_dataset = OTXVIsualPromptingDataset(self.config, train_otx_dataset, train_transform)
+            self.train_dataset = OTXVIsualPromptingDataset(self.config, train_otx_dataset, train_transform, offset_bbox=self.config.offset_bbox)
             self.val_dataset = OTXVIsualPromptingDataset(self.config, val_otx_dataset, val_transform)
 
         if stage == "test":

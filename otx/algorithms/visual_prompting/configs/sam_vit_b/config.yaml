@@ -9,6 +9,7 @@ dataset:
   test_batch_size: 1
   num_workers: 4
   image_size: 1024 # dimensions to which images are resized (mandatory)
+  offset_bbox: 20 # randomness for generating bounding box, pixel
   transforms:
     train: null
     val: null
