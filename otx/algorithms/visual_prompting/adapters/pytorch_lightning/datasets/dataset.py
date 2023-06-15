@@ -97,6 +97,9 @@ class OTXVIsualPromptingDataset(Dataset):
             if isinstance(annotation.shape, Polygon) and not self.config.use_mask:
                 # convert polygon to mask
                 gt_mask = self.convert_polygon_to_mask(annotation.shape, width, height)
+                if gt_mask.sum() == 0:
+                    # pass conversion error
+                    continue
                 gt_masks.append(gt_mask)
 
                 bbox = self.generate_bbox_from_mask(gt_mask, width, height)
