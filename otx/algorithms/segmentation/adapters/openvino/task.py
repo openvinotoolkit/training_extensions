@@ -31,10 +31,9 @@ from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
-from otx.algorithms.common.utils import OTXOpenVinoDataLoader
+from otx.algorithms.common.utils import OTXOpenVinoDataLoader, get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.segmentation.adapters.openvino import model_wrappers
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
@@ -362,26 +361,19 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
 
-        optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
+        optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
+        ptq_config = ADDict()
         if os.path.exists(optimization_config_path):
-            with open(optimization_config_path, encoding="UTF-8") as f_src:
-                algorithms = ADDict(json.load(f_src))["algorithms"]
-            ignored_ops = nncf.IgnoredScope(names=algorithms[0].params.ignored.scope)
-        else:
-            algorithms = [ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY"}})]
-            ignored_ops = nncf.IgnoredScope()
-        for algo in algorithms:
-            algo.params.stat_subset_size = self.hparams.pot_parameters.stat_subset_size
-            algo.params.shuffle_data = True
-            if "Quantization" in algo["name"]:
-                algo.params.preset = self.hparams.pot_parameters.preset.name.lower()
+            ptq_config = read_py_config(optimization_config_path)
+        ptq_config.update(
+            subset_size=min(self.hparams.pot_parameters.stat_subset_size, len(data_loader)),
+            preset=QuantizationPreset(self.hparams.pot_parameters.preset.name.lower()),
+        )
 
         compressed_model = nncf.quantize(
             ov_model,
             quantization_dataset,
-            subset_size=min(algorithms[0].params.stat_subset_size, len(data_loader)),
-            preset=QuantizationPreset(algorithms[0].params.preset.lower()),
-            ignored_scope=ignored_ops,
+            **ptq_config,
         )
 
         if optimization_parameters is not None:
