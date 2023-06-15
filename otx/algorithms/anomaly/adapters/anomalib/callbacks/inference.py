@@ -82,7 +82,7 @@ class AnomalyInferenceCallback(Callback):
                     type="anomaly_map",
                     label=dataset_item.annotation_scene.get_labels()[0],
                     annotation_scene=dataset_item.annotation_scene,
-                    numpy=(anomaly_map * 255).cpu().numpy().astype(np.uint8),
+                    numpy=(anomaly_map * 255).squeeze().cpu().numpy().astype(np.uint8),
                 )
             )
 
