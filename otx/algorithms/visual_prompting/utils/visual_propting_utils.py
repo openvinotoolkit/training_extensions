@@ -1,6 +1,6 @@
-"""Configurable parameters for Padim anomaly Segmentation task."""
+"""Collection of utils about labels in Visual Prompting Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from attr import attrs
-
-from otx.algorithms.anomaly.configs.base import PadimAnomalyBaseConfig
+from otx.api.entities.label_schema import LabelSchemaEntity
 
 
-@attrs
-class PadimAnomalySegmentationConfig(PadimAnomalyBaseConfig):
-    """Configurable parameters for PADIM anomaly Segmentation task."""
+def get_visual_prompting_inferencer_configuration(label_schema: LabelSchemaEntity):
+    """Get visual prompting inferencer config by label schema."""
+    return {}

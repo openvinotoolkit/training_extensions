@@ -38,7 +38,7 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     shapes = []
                     for ann in datumaro_item.annotations:
                         if (
-                            self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION, TaskType.VISUAL_PROMPTING)
+                            self.task_type in (TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION)
                             and ann.type == DatumAnnotationType.polygon
                         ):
                             if self._is_normal_polygon(ann):

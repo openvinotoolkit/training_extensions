@@ -33,7 +33,7 @@ from pytorch_lightning import Trainer
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import get_visual_promtping_config
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.visual_prompting.configs.base.configuration import VisualPromptingConfig
+from otx.algorithms.visual_prompting.configs.base.configuration import VisualPromptingBaseConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
@@ -108,7 +108,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             Union[DictConfig, ListConfig]: Visual Prompting config.
         """
-        self.hyper_parameters: VisualPromptingConfig = self.task_environment.get_hyper_parameters()
+        self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
         config = get_visual_promtping_config(task_name=self.model_name, otx_config=self.hyper_parameters)
 
         config.dataset.task = "visual_prompting"

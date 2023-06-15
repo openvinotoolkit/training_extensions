@@ -38,7 +38,7 @@ DEFAULT_MODEL_TEMPLATE_ID = {
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
     "ACTION_CLASSIFICATION": "Custom_Action_Classification_X3D",
     "ACTION_DETECTION": "Custom_Action_Detection_X3D_FAST_RCNN",
-    "VISUAL_PROMPTING": "otx_visual_prompting_medsam",
+    "VISUAL_PROMPTING": "Visual_Prompting_SAM_ViT_B",
     "ANOMALY_CLASSIFICATION": "ote_anomaly_classification_padim",
     "ANOMALY_DETECTION": "ote_anomaly_detection_padim",
     "ANOMALY_SEGMENTATION": "ote_anomaly_segmentation_padim",

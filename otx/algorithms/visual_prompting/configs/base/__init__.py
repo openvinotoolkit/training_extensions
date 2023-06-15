@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import VisualPromptingConfig
+from .configuration import VisualPromptingBaseConfig
 
-__all__ = ["VisualPromptingConfig"]
+__all__ = ["VisualPromptingBaseConfig"]

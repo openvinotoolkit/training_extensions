@@ -25,8 +25,8 @@ from otx.api.configuration.elements import (
 
 
 @attrs
-class VisualPromptingConfig(BaseConfig):
-    """Configurations of OTX Visual Prompting."""
+class VisualPromptingBaseConfig(BaseConfig):
+    """Base OTX configurable parameters for visual prompting task."""
 
     header = string_attribute("Configuration for a visual prompting task of OTX")
     description = header
