@@ -21,13 +21,13 @@ from typing import Any, Dict, List, Sequence, Tuple, Union
 import numpy as np
 from mmcv import Config
 from mmcv.utils import print_log
-from mmdet.core import PolygonMasks, eval_map
+from mmdet.core import PolygonMasks
 from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
-from otx.algorithms.detection.adapters.mmdet.evaluation import eval_segm
+from otx.algorithms.detection.adapters.mmdet.evaluation import Evaluator
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
@@ -190,6 +190,8 @@ class OTXDetDataset(CustomDataset):
             self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
 
         self.pipeline = Compose(pipeline)
+        annotation = [self.get_ann_info(i) for i in range(len(self))]
+        self.evaluator = Evaluator(annotation, self.domain, self.CLASSES)
 
     def _set_group_flag(self):
         """Set flag for grouping images.
@@ -267,41 +269,19 @@ class OTXDetDataset(CustomDataset):
             scale_ranges (list[tuple] | None): Scale ranges for evaluating mAP.
                 Default: None.
         """
-        metrics = metric if isinstance(metric, list) else [metric]
         allowed_metrics = ["mAP"]
         eval_results = OrderedDict()
-        for metric in metrics:  # pylint: disable=redefined-argument-from-local
-            if metric not in allowed_metrics:
-                raise KeyError(f"metric {metric} is not supported")
-            annotations = [self.get_ann_info(i) for i in range(len(self))]
-            assert len(annotations) == len(results), "annotation length does not match prediction results"
-            iou_thrs = [iou_thr] if isinstance(iou_thr, float) else iou_thr
-            if metric == "mAP":
-                assert isinstance(iou_thrs, list)
-                mean_aps = []
-                for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
-                    print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
-                    if isinstance(results[0], tuple):
-                        mean_ap, _ = eval_segm(
-                            results,
-                            annotations,
-                            iou_thr=iou_thr,
-                            dataset=self.CLASSES,
-                            logger=logger,
-                            metric=metric,
-                        )
-                    else:
-                        mean_ap, _ = eval_map(
-                            results,
-                            annotations,
-                            scale_ranges=scale_ranges,
-                            iou_thr=iou_thr,
-                            dataset=self.CLASSES,
-                            logger=logger,
-                        )
-                    mean_aps.append(mean_ap)
-                    eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
-                eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
+        if metric not in allowed_metrics:
+            raise KeyError(f"metric {metric} is not supported")
+        iou_thrs = [iou_thr] if isinstance(iou_thr, float) else iou_thr
+        assert isinstance(iou_thrs, list)
+        mean_aps = []
+        for iou_thr in iou_thrs:  # pylint: disable=redefined-argument-from-local
+            print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
+            mean_ap, _ = self.evaluator.evaluate(results, logger, iou_thr, scale_ranges)
+            mean_aps.append(mean_ap)
+            eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
+        eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
         return eval_results
 
 
