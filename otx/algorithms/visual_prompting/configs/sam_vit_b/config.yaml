@@ -1,66 +1,35 @@
 dataset:
-  name: wgisd
-  path: dataset/det_data/data/wgisd_coco
-  task: visual prompting
+  task: visual_prompting
   use_mask: false # if using mask as-is (true) or converting it to polygon (false)
-  use_prompt: true # if using prompt in dataset (true) or generating random one (false)
   train_batch_size: 2
   val_batch_size: 1
   test_batch_size: 1
   num_workers: 4
   image_size: 1024 # dimensions to which images are resized (mandatory)
   offset_bbox: 20 # randomness for generating bounding box, pixel
-  transforms:
-    train: null
-    val: null
-    test: null
   
 model:
   name: SAM
   image_size: 1024
   mask_threshold: 0.
   return_logits: false
-  image_encoder:
-    backbone:
-      name: vit_b
-      patch_size: 16
-      depth: 12
-      embed_dim: 768
-      mlp_ratio: 4
-      num_heads: 12
-      qkv_bias: true
-      use_rel_pos: true
-      global_attn_indexes:
-      - 2
-      - 5
-      - 8
-      - 11
-      window_size: 14
-    freeze: true
-  prompt_encoder:
-    prompt_embed_dim: 256
-    mask_in_chans: 16
-    freeze: true
-  mask_decoder:
-    num_multimask_outputs: 3
-    transformer_cfg:
-      depth: 2
-      mlp_dim: 2048
-      num_heads: 8
-    iou_head_depth: 3
-    iou_head_hidden_dim: 256
-    freeze: false
+  backbone: vit_b
+  freeze_image_encoder: true
+  freeze_prompt_encoder: true
+  freeze_mask_decoder: false
   checkpoint: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
 
+optimizer:
+  name: Adam
+  lr: 0.0001
+
 callback:
-  checkpoint:
-    # arguments for ModelCheckpoint
+  checkpoint: # arguments for ModelCheckpoint
     monitor: val_IoU
     mode: max
     save_last: true
     verbose: true
-  early_stopping:
-    # arguments for EarlyStopping
+  early_stopping: # arguments for EarlyStopping
     monitor: val_IoU
     mode: max
     verbose: true

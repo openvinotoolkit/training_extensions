@@ -16,12 +16,12 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbone 
 class SAMImageEncoder(nn.Module):
     def __init__(self, config: DictConfig):
         super().__init__()
-        if "vit" in config.image_encoder.backbone.name:
-            self.backbone = build_vit(config)
+        if "vit" in config.backbone:
+            self.backbone = build_vit(config.backbone, config.image_size)
         else:
             raise NotImplementedError((
-                f"{config.image_encoder.backbone.name} for image encoder of SAM is not implemented yet. "
-                f"Use ViT-B, L, or H."
+                f"{config.backbone} for image encoder of SAM is not implemented yet. "
+                f"Use vit_b, l, or h."
             ))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

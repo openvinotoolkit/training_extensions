@@ -129,11 +129,12 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         def get_model(
             config: DictConfig,
+            config_optimizer: DictConfig,
             state_dict: Optional[OrderedDict] = None
         ):
             if config.name == "SAM":
                 from otx.algorithms.visual_prompting.adapters.pytorch_lightning import SegmentAnything
-                model = SegmentAnything(config)
+                model = SegmentAnything(config=config, config_optimizer=config_optimizer)
                 if state_dict:
                     model.load_state_dict(state_dict)
             else:
@@ -145,7 +146,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             return model
             
         if otx_model is None:
-            model = get_model(config=self.config.model)
+            model = get_model(config=self.config.model, config_optimizer=self.config.optimizer)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,

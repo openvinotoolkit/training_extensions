@@ -20,6 +20,9 @@ from typing import Union, Optional
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.algorithms.common.utils.logger import get_logger
+
+logger = get_logger()
 
 
 def get_visual_promtping_config(task_name: str, otx_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
@@ -72,34 +75,7 @@ def get_configurable_parameters(
         config_path = Path(f"otx/algorithms/visual_prompting/configs/{model_name}/{config_filename}.{config_file_extension}")
 
     config = OmegaConf.load(config_path)
-
     return config
-
-
-def _visual_prompting_config_mapper(
-    visual_prompting_config: Union[DictConfig, ListConfig],
-    otx_config: ConfigurableParameters
-) -> None:
-    """Return mapping from learning parameters to visual prompting parameters.
-
-    Args:
-        visual_prompting_config: DictConfig: Visual prompting config object
-        otx_config: ConfigurableParameters: OTX config object parsed from configuration.yaml file
-    """
-    parameters = otx_config.parameters
-    groups = otx_config.groups
-    for name in parameters:
-        if name == "train_batch_size":
-            visual_prompting_config.dataset["train_batch_size"] = getattr(otx_config, "train_batch_size")
-        elif name == "max_epochs":
-            visual_prompting_config.trainer["max_epochs"] = getattr(otx_config, "max_epochs")
-        else:
-            assert name in visual_prompting_config.model.image_encoder.keys(), f"Parameter {name} not present in visual prompting config."
-            sc_value = getattr(otx_config, name)
-            sc_value = sc_value.value if hasattr(sc_value, "value") else sc_value
-            visual_prompting_config.model[name] = sc_value
-    for group in groups:
-        update_visual_prompting_config(visual_prompting_config.model[group], getattr(otx_config, group))
 
 
 def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters):
@@ -114,14 +90,21 @@ def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, Li
         otx_config: ConfigurableParameters: OTX config object parsed from
             configuration.yaml file
     """
-    for param in otx_config.parameters:
+    groups = getattr(otx_config, "groups", None)
+    if groups:
+        for group in groups:
+            if group in ["learning_parameters", "nncf_optimization", "pot_parameters"]:
+                if group in ["nncf_optimization", "pot_parameters"]:
+                    # TODO (sungchul): Consider pot_parameters and nncf_optimization
+                    logger.warning("pot_parameters and nncf_optimization will be implemented.")
+                    continue
+                update_visual_prompting_config(visual_prompting_config, getattr(otx_config, group))
+            else:
+                update_visual_prompting_config(visual_prompting_config[group], getattr(otx_config, group))
+
+    parameters = getattr(otx_config, "parameters")
+    for param in parameters:
         assert param in visual_prompting_config.keys(), f"Parameter {param} not present in visual prompting config."
         sc_value = getattr(otx_config, param)
         sc_value = sc_value.value if hasattr(sc_value, "value") else sc_value
         visual_prompting_config[param] = sc_value
-    for group in otx_config.groups:
-        # Since pot_parameters and nncf_optimization are specific to OTX
-        if group == "learning_parameters":
-            _visual_prompting_config_mapper(visual_prompting_config, getattr(otx_config, "learning_parameters"))
-        elif group not in ["pot_parameters", "nncf_optimization"]:
-            update_visual_prompting_config(visual_prompting_config[group], getattr(otx_config, group))

@@ -8,7 +8,7 @@
 #
 
 from functools import partial
-from typing import Optional, Tuple, Type
+from typing import List, Optional, Tuple, Type, Union
 
 import torch
 import torch.nn as nn
@@ -403,18 +403,36 @@ class PatchEmbed(nn.Module):
         return x
 
 
-def build_vit(config: DictConfig):
+def build_vit(backbone: str, image_size: int):
+    model_params = dict(
+        vit_h=dict(
+            embed_dim=1280,
+            depth=32,
+            num_heads=16,
+            global_attn_indexes=[7, 15, 23, 31],
+        ),
+        vit_l=dict(
+            embed_dim=1024,
+            depth=24,
+            num_heads=16,
+            global_attn_indexes=[5, 11, 17, 23],
+        ),
+        vit_b=dict(
+            embed_dim=768,
+            depth=12,
+            num_heads=12,
+            global_attn_indexes=[2, 5, 8, 11],
+        )
+    )
+
     return ViT(
-        img_size=config.image_size,
+        img_size=image_size,
         norm_layer=partial(nn.LayerNorm, eps=1e-6),
-        out_chans=config.prompt_encoder.prompt_embed_dim,
-        patch_size=config.image_encoder.backbone.patch_size,
-        mlp_ratio=config.image_encoder.backbone.mlp_ratio,
-        qkv_bias=config.image_encoder.backbone.qkv_bias,
-        use_rel_pos=config.image_encoder.backbone.use_rel_pos,
-        window_size=config.image_encoder.backbone.window_size,
-        embed_dim=config.image_encoder.backbone.embed_dim,
-        depth=config.image_encoder.backbone.depth,
-        num_heads=config.image_encoder.backbone.num_heads,
-        global_attn_indexes=config.image_encoder.backbone.global_attn_indexes,
+        out_chans=256,
+        patch_size=16,
+        mlp_ratio=4,
+        qkv_bias=True,
+        use_rel_pos=True,
+        window_size=14,
+        **model_params[backbone]
     )

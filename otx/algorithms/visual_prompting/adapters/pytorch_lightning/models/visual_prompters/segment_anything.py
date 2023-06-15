@@ -39,49 +39,53 @@ CKPT_PATHS = {
 
 
 class SegmentAnything(LightningModule):
-    def __init__(self, config: DictConfig) -> None:
+    def __init__(self, config: DictConfig, config_optimizer: DictConfig) -> None:
         """SAM predicts object masks from an image and input prompts."""
         super().__init__()
+        self.config_optimizer = config_optimizer
         # self.save_hyperparameters()
 
         # TODO (sungchul): Currently, backbone is assumed as vit. Depending on backbone, image_embedding_size can be changed.
-        if "vit" in config.image_encoder.backbone.name:
-            self.image_embedding_size = config.image_size // config.image_encoder.backbone.patch_size
+        if "vit" in config.backbone:
+            patch_size = 16
+            self.image_embedding_size = config.image_size // patch_size
         else:
             raise NotImplementedError((
-                f"{config.image_encoder.backbone.name} for image encoder of SAM is not implemented yet. "
-                f"Use ViT-B, L, or H."
+                f"{config.backbone} for image encoder of SAM is not implemented yet. "
+                f"Use vit_b, l, or h."
             ))
 
         self.image_encoder = SAMImageEncoder(config)
         self.prompt_encoder = SAMPromptEncoder(
+            embed_dim=256,
             image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
             input_image_size=(config.image_size, config.image_size),
-            embed_dim=config.prompt_encoder.prompt_embed_dim,
-            mask_in_chans=config.prompt_encoder.mask_in_chans,
+            mask_in_chans=16,
         )
         self.mask_decoder = SAMMaskDecoder(
-            num_multimask_outputs=config.mask_decoder.num_multimask_outputs,
+            num_multimask_outputs=3,
             transformer_cfg=dict(
-                embedding_dim=config.prompt_encoder.prompt_embed_dim,
-                **config.mask_decoder.transformer_cfg,
+                depth=2,
+                embedding_dim=256,
+                mlp_dim=2048,
+                num_heads=8
             ),
-            transformer_dim=config.prompt_encoder.prompt_embed_dim,
-            iou_head_depth=config.mask_decoder.iou_head_depth,
-            iou_head_hidden_dim=config.mask_decoder.iou_head_hidden_dim,
+            transformer_dim=256,
+            iou_head_depth=3,
+            iou_head_hidden_dim=256,
         )
         self.mask_threshold = config.mask_threshold
         self.return_logits = config.return_logits
 
-        if config.image_encoder.freeze:
+        if config.freeze_image_encoder:
             for param in self.image_encoder.parameters():
                 param.requires_grad = False
 
-        if config.prompt_encoder.freeze:
+        if config.freeze_prompt_encoder:
             for param in self.prompt_encoder.parameters():
                 param.requires_grad = False
 
-        if config.mask_decoder.freeze:
+        if config.freeze_mask_decoder:
             for param in self.mask_decoder.parameters():
                 param.requires_grad = False
 
@@ -224,7 +228,8 @@ class SegmentAnything(LightningModule):
         return masks.squeeze(1)
     
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters(), lr=1e-4, weight_decay=1e-4)
+        name = self.config_optimizer.pop("name")
+        optimizer = getattr(optim, name)(self.parameters(), **self.config_optimizer)
         return optimizer
     
     def calculate_dice_loss(self, inputs: torch.Tensor, targets: torch.Tensor, num_masks: torch.Tensor):
