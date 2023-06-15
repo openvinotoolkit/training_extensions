@@ -11,17 +11,19 @@ reference: https://github.com/facebookresearch/segment-anything
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import re
+from collections import OrderedDict
 from functools import partial
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
-import re
-from collections import OrderedDict
 import torchmetrics
 from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
 from torch import nn, optim
 from torch.nn import functional as F
+from torchmetrics import MeanMetric, MetricCollection
+from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.decoders import (
     SAMMaskDecoder,
@@ -89,10 +91,18 @@ class SegmentAnything(LightningModule):
             for param in self.mask_decoder.parameters():
                 param.requires_grad = False
 
-        self.train_iou = torchmetrics.classification.BinaryJaccardIndex()
-        self.train_f1 = torchmetrics.classification.BinaryF1Score()
-        self.val_iou = torchmetrics.classification.BinaryJaccardIndex()
-        self.val_f1 = torchmetrics.classification.BinaryF1Score()
+        self.train_metrics = MetricCollection(dict(
+            train_IoU=BinaryJaccardIndex(),
+            train_F1=BinaryF1Score(),
+            train_loss=MeanMetric(),
+            train_loss_focal=MeanMetric(),
+            train_loss_dice=MeanMetric(),
+            train_loss_iou=MeanMetric(),
+        ))
+        self.val_metrics = MetricCollection(dict(
+            val_IoU=BinaryJaccardIndex(),
+            val_F1=BinaryF1Score(),
+        ))
         if config.checkpoint:
             try:
                 self.load_from_checkpoint(config.checkpoint)
@@ -123,7 +133,7 @@ class SegmentAnything(LightningModule):
                 image_pe=self.prompt_encoder.get_dense_pe(),
                 sparse_prompt_embeddings=sparse_embeddings,
                 dense_prompt_embeddings=dense_embeddings,
-                multimask_output=False,
+                multimask_output=False, # when given multiple prompts. if there is single prompt True would be better.
             )
 
             pred_masks.append(low_res_masks)
@@ -146,8 +156,8 @@ class SegmentAnything(LightningModule):
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
         for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, ious):
             pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
-            self.train_iou(pred_mask, gt_mask)
-            self.train_f1(pred_mask, gt_mask)
+            self.train_metrics["train_IoU"].update(pred_mask, gt_mask)
+            self.train_metrics["train_F1"].update(pred_mask, gt_mask)
             pred_mask = pred_mask.flatten(1)
             gt_mask = gt_mask.flatten(1).float()
 
@@ -157,16 +167,18 @@ class SegmentAnything(LightningModule):
             loss_iou += F.mse_loss(iou_prediction, batch_iou.unsqueeze(1), reduction='sum') / num_masks
 
         loss = 20. * loss_focal + loss_dice + loss_iou
-        results = dict(
-            train_IoU=self.train_iou,
-            train_F1=self.train_f1,
-            train_loss=loss,
-            train_loss_focal=loss_focal,
-            train_loss_dice=loss_dice,
-            train_loss_iou=loss_iou)
-        self.log_dict(results, prog_bar=True)
+
+        self.train_metrics["train_loss"].update(loss)
+        self.train_metrics["train_loss_focal"].update(loss_focal)
+        self.train_metrics["train_loss_dice"].update(loss_dice)
+        self.train_metrics["train_loss_iou"].update(loss_iou)
+        self.log_dict(self.train_metrics.compute(), prog_bar=True)
 
         return loss
+
+    def training_epoch_end(self, outputs):
+        for v in self.train_metrics.values():
+            v.reset()
 
     def validation_step(self, batch, batch_idx):
         """Validation step of SAM."""
@@ -178,12 +190,15 @@ class SegmentAnything(LightningModule):
         pred_masks, _ = self(images, bboxes, points)
         for pred_mask, gt_mask in zip(pred_masks, gt_masks):
             pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
-            self.val_iou(pred_mask, gt_mask)
-            self.val_f1(pred_mask, gt_mask)
+            for k, v in self.val_metrics.items():
+                v.update(pred_mask, gt_mask)
 
-        results = dict(val_IoU=self.val_iou, val_F1=self.val_f1)
-        self.log_dict(results, on_epoch=True, prog_bar=True)
-        return results
+        return self.val_metrics
+
+    def validation_epoch_end(self, outputs):
+        self.log_dict(self.val_metrics.compute(), on_epoch=True, prog_bar=True)
+        for v in self.val_metrics.values():
+            v.reset()
 
     def predict_step(self, batch, batch_idx):
         """Predict step of SAM."""
