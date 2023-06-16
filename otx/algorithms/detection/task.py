@@ -34,7 +34,7 @@ from otx.algorithms.common.utils.callback import (
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils import get_det_model_api_configuration
+from otx.algorithms.detection.utils import get_det_model_api_configuration, create_detection_shapes, create_mask_shapes
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
 from otx.api.entities.annotation import Annotation
@@ -482,83 +482,24 @@ class OTXDetectionTask(OTXTask, ABC):
 
     def _get_shapes(self, all_results, width, height, confidence_threshold, use_ellipse_shapes):
         if self._task_type == TaskType.DETECTION:
-            shapes = self._det_add_predictions_to_dataset(
-                all_results, width, height, confidence_threshold, use_ellipse_shapes
+            shapes = create_detection_shapes(
+                all_results, width, height, confidence_threshold, use_ellipse_shapes, self._labels
             )
         elif self._task_type in {
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ROTATED_DETECTION,
         }:
-            shapes = self._ins_seg_add_predictions_to_dataset(
-                all_results, width, height, confidence_threshold, use_ellipse_shapes
+            shapes = create_mask_shapes(
+                all_results,
+                width,
+                height,
+                confidence_threshold,
+                use_ellipse_shapes,
+                self._labels,
+                self._task_type is TaskType.ROTATED_DETECTION,
             )
         else:
             raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
-        return shapes
-
-    def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold, use_ellipse_shapes):
-        shapes = []
-        for label_idx, detections in enumerate(all_results):
-            for i in range(detections.shape[0]):
-                probability = float(detections[i, 4])
-                coords = detections[i, :4].astype(float).copy()
-                coords /= np.array([width, height, width, height], dtype=float)
-                coords = np.clip(coords, 0, 1)
-
-                if (probability < confidence_threshold) or (coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0):
-                    continue
-
-                assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                if not use_ellipse_shapes:
-                    shapes.append(
-                        Annotation(
-                            Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
-                            labels=assigned_label,
-                        )
-                    )
-                else:
-                    shapes.append(
-                        Annotation(
-                            Ellipse(coords[0], coords[1], coords[2], coords[3]),
-                            labels=assigned_label,
-                        )
-                    )
-        return shapes
-
-    def _ins_seg_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold, use_ellipse_shapes):
-        shapes = []
-        for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
-            for mask, box in zip(masks, boxes):
-                probability = float(box[4])
-
-                if probability < confidence_threshold:
-                    continue
-
-                labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                if not use_ellipse_shapes:
-                    if isinstance(mask, dict):
-                        mask = mask_util.decode(mask)
-                    mask = mask.astype(np.uint8)
-
-                    contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-                    if hierarchies is None:
-                        continue
-                    for contour, hierarchy in zip(contours, hierarchies[0]):
-                        if hierarchy[3] != -1:
-                            continue
-                        if len(contour) <= 2:
-                            continue
-                        if self._task_type == TaskType.INSTANCE_SEGMENTATION:
-                            points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
-                        else:
-                            box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                            points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
-                        polygon = Polygon(points=points)
-                        if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
-                            shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
-                else:
-                    ellipse = Ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
-                    shapes.append(Annotation(ellipse, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
     def _add_explanations_to_dataset(

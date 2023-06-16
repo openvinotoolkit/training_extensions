@@ -28,6 +28,7 @@ from .utils import (
     load_template,
     set_random_seed,
 )
+from .box_utils import sanitize_coordinates
 
 __all__ = [
     "embed_ir_model_data",
@@ -42,4 +43,5 @@ __all__ = [
     "get_arg_spec",
     "get_image",
     "set_random_seed",
+    "sanitize_coordinates",
 ]
