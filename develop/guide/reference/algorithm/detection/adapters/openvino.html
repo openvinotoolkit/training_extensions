@@ -471,6 +471,18 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.get_saliency_map_from_prediction">
+<span class="sig-name descname"><span class="pre">get_saliency_map_from_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.get_saliency_map_from_prediction" title="Permalink to this definition">#</a></dt>
+<dd><p>Post process function for saliency map of OTX MaskRCNN model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.get_tiling_saliency_map_from_prediction">
+<span class="sig-name descname"><span class="pre">get_tiling_saliency_map_from_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detections</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.get_tiling_saliency_map_from_prediction" title="Permalink to this definition">#</a></dt>
+<dd><p>Post process function for saliency map of OTX MaskRCNN model for tiling.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.postprocess">
 <span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.postprocess" title="Permalink to this definition">#</a></dt>
 <dd><p>Post process function for OTX MaskRCNN model.</p>
@@ -544,6 +556,24 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        OTXMaskRCNNModel.disable_mask_resizing()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.get_saliency_map_from_prediction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXMaskRCNNModel.get_saliency_map_from_prediction()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.detection.adapters.openvino.model_wrappers.OTXMaskRCNNModel.get_tiling_saliency_map_from_prediction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OTXMaskRCNNModel.get_tiling_saliency_map_from_prediction()
       </span>
      </code>
     </a>
