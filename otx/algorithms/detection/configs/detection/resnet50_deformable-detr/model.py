@@ -22,7 +22,7 @@ model = dict(
         num_outs=4,
     ),
     bbox_head=dict(
-        type="CustomDeformableDETRHead",
+        type="DeformableDETRHead",
         num_query=300,
         num_classes=80,
         in_channels=2048,

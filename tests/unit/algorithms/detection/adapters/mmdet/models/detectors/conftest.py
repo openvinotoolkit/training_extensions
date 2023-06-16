@@ -339,7 +339,7 @@ def fxt_cfg_custom_deformable_detr(num_classes: int = 3):
             num_outs=4,
         ),
         bbox_head=dict(
-            type="CustomDeformableDETRHead",
+            type="DeformableDETRHead",
             num_query=300,
             num_classes=80,
             in_channels=2048,
