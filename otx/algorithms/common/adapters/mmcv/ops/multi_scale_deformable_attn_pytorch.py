@@ -37,7 +37,7 @@ def multi_scale_deformable_attn_pytorch(
         # bs*num_heads, num_queries, num_points, 2
         sampling_grid_l_ = sampling_grids[:, :, :, level].transpose(1, 2).flatten(0, 1)
         # bs*num_heads, embed_dims, num_queries, num_points
-        sampling_value_l_ = custom_grid_sample(
+        sampling_value_l_ = _custom_grid_sample(
             value_l_,
             sampling_grid_l_,
             # mode='bilinear',
@@ -59,7 +59,7 @@ def multi_scale_deformable_attn_pytorch(
     return output.transpose(1, 2).contiguous()
 
 
-def custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: bool = False) -> torch.Tensor:
+def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: bool = False) -> torch.Tensor:
     """Custom patch for mmcv.ops.point_sample.bilinear_grid_sample.
 
     This function is almost same with mmcv.ops.point_sample.bilinear_grid_sample.
