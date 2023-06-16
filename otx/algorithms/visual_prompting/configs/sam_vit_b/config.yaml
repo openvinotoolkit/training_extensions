@@ -14,6 +14,7 @@ model:
   mask_threshold: 0.
   return_logits: false
   backbone: vit_b
+  loss_type: sam # <"sam", "medsam">
   freeze_image_encoder: true
   freeze_prompt_encoder: true
   freeze_mask_decoder: false

@@ -13,14 +13,13 @@ reference: https://github.com/facebookresearch/segment-anything
 
 import re
 from collections import OrderedDict
-from functools import partial
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 import torch
-import torchmetrics
+from torch import Tensor
 from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
-from torch import nn, optim
+from torch import optim
 from torch.nn import functional as F
 from torchmetrics import MeanMetric, MetricCollection
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex
@@ -44,24 +43,32 @@ class SegmentAnything(LightningModule):
     def __init__(self, config: DictConfig, config_optimizer: DictConfig) -> None:
         """SAM predicts object masks from an image and input prompts."""
         super().__init__()
-        self.config_optimizer = config_optimizer
         # self.save_hyperparameters()
+        self.config = config
+        self.config_optimizer = config_optimizer
 
+        self.set_models()
+        self.freeze_networks()
+        self.set_metrics()
+        self.load_checkpoint()
+
+    def set_models(self) -> None:
+        """"""
         # TODO (sungchul): Currently, backbone is assumed as vit. Depending on backbone, image_embedding_size can be changed.
-        if "vit" in config.backbone:
+        if "vit" in self.config.backbone:
             patch_size = 16
-            self.image_embedding_size = config.image_size // patch_size
+            self.image_embedding_size = self.config.image_size // patch_size
         else:
             raise NotImplementedError((
-                f"{config.backbone} for image encoder of SAM is not implemented yet. "
+                f"{self.config.backbone} for image encoder of SAM is not implemented yet. "
                 f"Use vit_b, l, or h."
             ))
 
-        self.image_encoder = SAMImageEncoder(config)
+        self.image_encoder = SAMImageEncoder(self.config)
         self.prompt_encoder = SAMPromptEncoder(
             embed_dim=256,
             image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
-            input_image_size=(config.image_size, config.image_size),
+            input_image_size=(self.config.image_size, self.config.image_size),
             mask_in_chans=16,
         )
         self.mask_decoder = SAMMaskDecoder(
@@ -76,44 +83,60 @@ class SegmentAnything(LightningModule):
             iou_head_depth=3,
             iou_head_hidden_dim=256,
         )
-        self.mask_threshold = config.mask_threshold
-        self.return_logits = config.return_logits
 
-        if config.freeze_image_encoder:
+    def freeze_networks(self) -> None:
+        """"""
+        if self.config.freeze_image_encoder:
             for param in self.image_encoder.parameters():
                 param.requires_grad = False
 
-        if config.freeze_prompt_encoder:
+        if self.config.freeze_prompt_encoder:
             for param in self.prompt_encoder.parameters():
                 param.requires_grad = False
 
-        if config.freeze_mask_decoder:
+        if self.config.freeze_mask_decoder:
             for param in self.mask_decoder.parameters():
                 param.requires_grad = False
 
+    def set_metrics(self) -> None:
+        """"""
+        assert self.config.loss_type.lower() in ["sam", "medsam"], \
+            ValueError(f"{self.config.loss_type} is not supported. Please use 'sam' or 'medsam'.")
+
+        # set train metrics
         self.train_metrics = MetricCollection(dict(
             train_IoU=BinaryJaccardIndex(),
             train_F1=BinaryF1Score(),
             train_loss=MeanMetric(),
-            train_loss_focal=MeanMetric(),
             train_loss_dice=MeanMetric(),
-            train_loss_iou=MeanMetric(),
         ))
+        if self.config.loss_type.lower() == "sam":
+            self.train_metrics.add_metrics(dict(
+                train_loss_focal=MeanMetric(),
+                train_loss_iou=MeanMetric(),
+            ))
+        elif self.config.loss_type.lower() == "medsam":
+            self.train_metrics.add_metrics(dict(train_loss_ce=MeanMetric()))
+
+        # set val metrics
         self.val_metrics = MetricCollection(dict(
             val_IoU=BinaryJaccardIndex(),
             val_F1=BinaryF1Score(),
         ))
-        if config.checkpoint:
+
+    def load_checkpoint(self) -> None:
+        """"""
+        if self.config.checkpoint:
             try:
-                self.load_from_checkpoint(config.checkpoint)
+                self.load_from_checkpoint(self.config.checkpoint)
             except:
-                if str(config.checkpoint).startswith("http"):
-                    state_dict = torch.hub.load_state_dict_from_url(str(config.checkpoint))
+                if str(self.config.checkpoint).startswith("http"):
+                    state_dict = torch.hub.load_state_dict_from_url(str(self.config.checkpoint))
                     for p, r in [(r'^image_encoder\.', r'image_encoder.backbone.')]:
                         state_dict = OrderedDict({
                             re.sub(p, r, k): v for k, v in state_dict.items()})
                 else:
-                    with open(config.checkpoint, "rb") as f:
+                    with open(self.config.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
                 self.load_state_dict(state_dict)
 
@@ -141,7 +164,7 @@ class SegmentAnything(LightningModule):
 
         return pred_masks, ious
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx) -> Tensor:
         """Training step of SAM."""
         images = batch["images"]
         bboxes = batch["bboxes"]
@@ -150,9 +173,13 @@ class SegmentAnything(LightningModule):
 
         pred_masks, ious = self(images, bboxes, points)
 
-        loss_focal = 0.
         loss_dice = 0.
-        loss_iou = 0.
+        if self.config.loss_type.lower() == "sam":
+            loss_focal = 0.
+            loss_iou = 0.
+        elif self.config.loss_type.lower() == "medsam":
+            loss_ce = 0.
+
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
         for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, ious):
             pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
@@ -161,26 +188,35 @@ class SegmentAnything(LightningModule):
             pred_mask = pred_mask.flatten(1)
             gt_mask = gt_mask.flatten(1).float()
 
-            loss_focal += self.calculate_sigmoid_focal_loss(pred_mask, gt_mask, num_masks)
             loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_masks)
-            batch_iou = self.calculate_iou(pred_mask, gt_mask)
-            loss_iou += F.mse_loss(iou_prediction, batch_iou.unsqueeze(1), reduction='sum') / num_masks
+            if self.config.loss_type.lower() == "sam":
+                loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
+                batch_iou = self.calculate_iou(pred_mask, gt_mask)
+                loss_iou += F.mse_loss(iou_prediction, batch_iou.unsqueeze(1), reduction='sum') / num_masks
+            elif self.config.loss_type.lower() == "medsam":
+                loss_ce += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
 
-        loss = 20. * loss_focal + loss_dice + loss_iou
+        if self.config.loss_type.lower() == "sam":
+            loss = 20. * loss_focal + loss_dice + loss_iou
+            self.train_metrics["train_loss_focal"].update(loss_focal)
+            self.train_metrics["train_loss_iou"].update(loss_iou)
+
+        elif self.config.loss_type.lower() == "medsam":
+            loss = loss_dice + loss_ce
+            self.train_metrics["train_loss_ce"].update(loss_ce)
 
         self.train_metrics["train_loss"].update(loss)
-        self.train_metrics["train_loss_focal"].update(loss_focal)
         self.train_metrics["train_loss_dice"].update(loss_dice)
-        self.train_metrics["train_loss_iou"].update(loss_iou)
+
         self.log_dict(self.train_metrics.compute(), prog_bar=True)
 
         return loss
 
-    def training_epoch_end(self, outputs):
+    def training_epoch_end(self, outputs) -> None:
         for v in self.train_metrics.values():
             v.reset()
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx) -> MetricCollection:
         """Validation step of SAM."""
         images = batch["images"]
         bboxes = batch["bboxes"]
@@ -195,12 +231,12 @@ class SegmentAnything(LightningModule):
 
         return self.val_metrics
 
-    def validation_epoch_end(self, outputs):
+    def validation_epoch_end(self, outputs) -> None:
         self.log_dict(self.val_metrics.compute(), on_epoch=True, prog_bar=True)
         for v in self.val_metrics.values():
             v.reset()
 
-    def predict_step(self, batch, batch_idx):
+    def predict_step(self, batch, batch_idx) -> Tensor:
         """Predict step of SAM."""
         images = batch["images"]
         bboxes = batch["bboxes"]
@@ -211,29 +247,29 @@ class SegmentAnything(LightningModule):
         masks = [
             self.postprocess_masks(pred_mask, images[i].shape[2:], batch["original_size"][i], is_predict=True) for i, pred_mask in enumerate(pred_masks)
         ]
-        if not self.return_logits:
-            masks = masks > self.mask_threshold
+        if not self.config.return_logits:
+            masks = masks > self.config.mask_threshold
 
         return masks
 
     def postprocess_masks(
         self,
-        masks: torch.Tensor,
+        masks: Tensor,
         input_size: Tuple[int, ...],
         original_size: Optional[Tuple[int, ...]] = None,
         is_predict: bool = False
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """
         Remove padding and upscale masks to the original image size.
 
         Args:
-            masks (torch.Tensor): Batched masks from the mask_decoder, in BxCxHxW format.
+            masks (Tensor): Batched masks from the mask_decoder, in BxCxHxW format.
             input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format. Used to remove padding.
             original_size (tuple(int, int)): The original size of the image before resizing for input to the model, in (H, W) format.
             is_predict (bool, optional): ...
 
         Returns:
-          (torch.Tensor): Batched masks in BxCxHxW format, where (H, W)
+          (Tensor): Batched masks in BxCxHxW format, where (H, W)
             is given by original_size.
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
@@ -242,24 +278,24 @@ class SegmentAnything(LightningModule):
             masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
         return masks.squeeze(1)
     
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> optim:
         name = self.config_optimizer.pop("name")
         optimizer = getattr(optim, name)(self.parameters(), **self.config_optimizer)
         return optimizer
     
-    def calculate_dice_loss(self, inputs: torch.Tensor, targets: torch.Tensor, num_masks: torch.Tensor):
+    def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """
         Compute the DICE loss, similar to generalized IOU for masks
         
         Reference: https://github.com/huggingface/transformers/blob/main/src/transformers/models/maskformer/modeling_maskformer.py#L269
 
         Args:
-            inputs (`torch.Tensor`):
+            inputs (Tensor):
                 A tensor representing a mask.
-            targets (`torch.Tensor`):
+            targets (Tensor):
                 A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
                 (0 for the negative class and 1 for the positive class).
-            num_masks (`int`):
+            num_masks (int):
                 The number of masks present in the current batch, used for normalization.
 
         Returns:
@@ -271,47 +307,42 @@ class SegmentAnything(LightningModule):
         loss = 1 - (numerator + 1) / (denominator + 1)
         return loss.sum() / num_masks
     
-    def calculate_sigmoid_focal_loss(
+    def calculate_sigmoid_ce_focal_loss(
         self,
-        inputs: torch.Tensor,
-        targets: torch.Tensor,
-        num_masks: torch.Tensor,
+        inputs: Tensor,
+        targets: Tensor,
+        num_masks: int,
         alpha: float = 0.25,
         gamma: float = 2
-    ):
+    ) -> Tensor:
         """
         Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
 
         Referece: https://github.com/huggingface/transformers/blob/main/src/transformers/models/maskformer/modeling_maskformer.py#L300
 
         Args:
-            inputs (`torch.Tensor`):
-                A float tensor of arbitrary shape.
-            targets (`torch.Tensor`):
-                A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
+            inputs (Tensor): A float tensor of arbitrary shape.
+            targets (Tensor): A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
                 (0 for the negative class and 1 for the positive class).
-            num_masks (`int`):
-                The number of masks present in the current batch, used for normalization.
-            alpha (float, *optional*, defaults to 0.25):
-                Weighting factor in range (0,1) to balance positive vs negative examples.
-            gamma (float, *optional*, defaults to 2.0):
-                Exponent of the modulating factor \\(1 - p_t\\) to balance easy vs hard examples.
+            num_masks (int): The number of masks present in the current batch, used for normalization.
+            alpha (float, *optional*, defaults to 0.25): Weighting factor in range (0,1) to balance positive vs negative examples.
+            gamma (float, *optional*, defaults to 2.0): Exponent of the modulating factor \\(1 - p_t\\) to balance easy vs hard examples.
 
         Returns:
             Loss tensor
         """
         prob = inputs.sigmoid()
-        ce_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
-        p_t = prob * targets + (1 - prob) * (1 - targets)
-        loss = ce_loss * ((1 - p_t) ** gamma)
-
-        if alpha >= 0:
-            alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
-            loss = alpha_t * loss
-
+        loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
+        if self.config.loss_type.lower() == "sam":
+            # focal loss for SAM loss
+            p_t = prob * targets + (1 - prob) * (1 - targets)
+            loss = loss * ((1 - p_t) ** gamma)
+            if alpha >= 0:
+                alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
+                loss = alpha_t * loss
         return loss.mean(1).sum() / num_masks
     
-    def calculate_iou(self, inputs: torch.Tensor, targets: torch.Tensor, epsilon: float = 1e-7):
+    def calculate_iou(self, inputs: Tensor, targets: Tensor, epsilon: float = 1e-7) -> Tensor:
         """"""
         pred_mask = (inputs >= 0.5).float()
         intersection = torch.sum(torch.mul(pred_mask, targets), dim=1)
