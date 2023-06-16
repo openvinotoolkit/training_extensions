@@ -32,7 +32,6 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.algorithms.common.utils import sanitize_coordinates
 
 
 # pylint: disable=invalid-name
@@ -142,7 +141,7 @@ def create_detection_shapes(all_results, width, height, confidence_threshold, us
             if (probability < confidence_threshold) or (coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0):
                 continue
 
-            assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
+            assigned_label = [ScoredLabel(labels[label_idx], probability=probability)]
             if not use_ellipse_shapes:
                 shapes.append(
                     Annotation(
@@ -160,6 +159,31 @@ def create_detection_shapes(all_results, width, height, confidence_threshold, us
     return shapes
 
 
+def expand_box(box, scale):
+    w_half = (box[2] - box[0]) * .5
+    h_half = (box[3] - box[1]) * .5
+    x_c = (box[2] + box[0]) * .5
+    y_c = (box[3] + box[1]) * .5
+    w_half *= scale
+    h_half *= scale
+    box_exp = np.zeros(box.shape)
+    box_exp[0] = x_c - w_half
+    box_exp[2] = x_c + w_half
+    box_exp[1] = y_c - h_half
+    box_exp[3] = y_c + h_half
+    return box_exp
+
+
+def segm_postprocess(box, raw_cls_mask):
+    # Add zero border to prevent upsampling artifacts on segment borders.
+    raw_cls_mask = np.pad(raw_cls_mask, ((1, 1), (1, 1)), 'constant', constant_values=0)
+    extended_box = expand_box(box, raw_cls_mask.shape[0] / (raw_cls_mask.shape[0] - 2.0)).astype(int)
+    w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
+    raw_cls_mask = cv2.resize(raw_cls_mask.astype(np.float32), (w, h)) > 0.5
+    mask = raw_cls_mask.astype(np.uint8)
+    return mask
+
+
 def create_mask_shapes(
         all_results,
         width,
@@ -173,20 +197,16 @@ def create_mask_shapes(
     for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
         for mask, box in zip(masks, boxes):
             probability = float(box[4])
-
             if probability < confidence_threshold:
                 continue
 
-            label_list = [ScoredLabel(labels[label_idx], probability=probability)]
+            assigned_label = [ScoredLabel(labels[label_idx], probability=probability)]
             if not use_ellipse_shapes:
                 if isinstance(mask, dict):
                     mask = mask_util.decode(mask)
-                box = sanitize_coordinates(box[:4], height, width)
-                left_shift = box[0]
-                top_shift = box[1]
-                box_h, box_w = box[3] - box[1], box[2] - box[0]
-                mask = mask.astype(np.uint8)
-                mask = cv2.resize(mask, (box_w, box_h))
+                coords = box[:4].astype(float).copy()
+                left, top = coords[:2]
+                mask = segm_postprocess(coords, mask)
 
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 if hierarchies is None:
@@ -200,14 +220,14 @@ def create_mask_shapes(
 
                     if rotated_polygon:
                         box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                        points = [Point(x=(point[0] + left_shift) / width, y=(point[1] + top_shift) / height) for point in box_points]
+                        points = [Point(x=(point[0] + left) / width, y=(point[1] + top) / height) for point in box_points]
                     else:
-                        points = [Point(x=(point[0][0] + left_shift) / width, y=(point[0][1] + top_shift) / height) for point in contour]
+                        points = [Point(x=(point[0][0] + left) / width, y=(point[0][1] + top) / height) for point in contour]
 
                     polygon = Polygon(points=points)
                     if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
-                        shapes.append(Annotation(polygon, labels=label_list, id=ID(f"{label_idx:08}")))
+                        shapes.append(Annotation(polygon, labels=assigned_label, id=ID(f"{label_idx:08}")))
             else:
-                ellipse = Ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
-                shapes.append(Annotation(ellipse, labels=label_list, id=ID(f"{label_idx:08}")))
+                ellipse = Ellipse((box[0] + left) / width, (box[1] + top) / height, (box[2] + left) / width, (box[3] + top) / height)
+                shapes.append(Annotation(ellipse, labels=assigned_label, id=ID(f"{label_idx:08}")))
     return shapes
