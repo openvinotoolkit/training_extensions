@@ -21,10 +21,10 @@ from pytorch_lightning.callbacks import (
     EarlyStopping,
     LearningRateMonitor,
     ModelCheckpoint,
+    TQDMProgressBar,
 )
 from pytorch_lightning.loggers import CSVLogger
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import (
     OTXVisualPromptingDataModule,
@@ -72,7 +72,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
         loggers = CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp)
         callbacks = [
-            ProgressCallback(parameters=train_parameters),
+            TQDMProgressBar(),
             ModelCheckpoint(dirpath=loggers.log_dir, **self.config.callback.checkpoint),
             LearningRateMonitor(),
             EarlyStopping(**self.config.callback.early_stopping)

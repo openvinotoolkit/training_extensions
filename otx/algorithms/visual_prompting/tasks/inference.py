@@ -15,25 +15,31 @@
 # and limitations under the License.
 
 import ctypes
-from copy import deepcopy
 import io
-import time
 import os
 import shutil
 import subprocess  # nosec
 import tempfile
+import time
 from collections import OrderedDict
 from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning import Trainer
+from pytorch_lightning import LightningModule, Trainer
+from pytorch_lightning.callbacks import TQDMProgressBar
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import get_visual_promtping_config
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.visual_prompting.configs.base.configuration import VisualPromptingBaseConfig
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import (
+    get_visual_promtping_config,
+)
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import (
+    OTXVisualPromptingDataModule,
+)
+from otx.algorithms.visual_prompting.configs.base.configuration import (
+    VisualPromptingBaseConfig,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
@@ -44,20 +50,15 @@ from otx.api.entities.model import (
     ModelPrecision,
     OptimizationMethod,
 )
-from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-from otx.api.usecases.evaluation.performance_provider_interface import (
-    IPerformanceProvider,
-)
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from pytorch_lightning import LightningModule
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import OTXVisualPromptingDataModule
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import InferenceCallback
 
 logger = get_logger()
 
@@ -133,16 +134,15 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             state_dict: Optional[OrderedDict] = None
         ):
             if config.name == "SAM":
-                from otx.algorithms.visual_prompting.adapters.pytorch_lightning import SegmentAnything
-                model = SegmentAnything(config=config, config_optimizer=config_optimizer)
-                if state_dict:
-                    model.load_state_dict(state_dict)
+                from otx.algorithms.visual_prompting.adapters.pytorch_lightning import (
+                    SegmentAnything,
+                )
+                model = SegmentAnything(config=config, config_optimizer=config_optimizer, state_dict=state_dict)
             else:
                 raise NotImplementedError((
                     f"Current selected model {config.name} is not implemented. "
                     f"Use SAM instead."
                 ))
-
             return model
             
         if otx_model is None:
@@ -154,16 +154,25 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         else:
             buffer = io.BytesIO(otx_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
+            from_lightning = False
+            if model_data.get("config", None):
+                from_lightning = True
+                logger.info("Load pytorch lightning checkpoint.")
+                if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
+                    logger.warning(
+                        "Backbone of the model in the Task Environment is different from the one in the template. "
+                        f"creating model with backbone={model_data['config']['model']['backbone']}"
+                    )
+                    self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
+            else:
+                logger.info("Load pytorch checkpoint.")
 
-            if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
-                logger.warning(
-                    "Backbone of the model in the Task Environment is different from the one in the template. "
-                    f"creating model with backbone={model_data['config']['model']['backbone']}"
-                )
-                self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
             try:
-                model = get_model(config=self.config.model, state_dict=model_data["model"])
-                logger.info("Loaded model weights from Task Environment")
+                model = get_model(
+                    config=self.config.model,
+                    config_optimizer=self.config.optimizer,
+                    state_dict=model_data["model"] if from_lightning else model_data)
+                logger.info("Complete to load model weights.")
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
@@ -197,13 +206,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         logger.info("Inference Configs '%s'", self.config)
 
-        # Callbacks.
-        callbacks = [ProgressCallback(parameters=inference_parameters)]
+        # Callbacks
+        inference_callback = InferenceCallback(otx_dataset=dataset)
+        callbacks = [TQDMProgressBar(), inference_callback]
 
         self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
 
-        return dataset
+        return inference_callback.otx_dataset
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
         """Evaluate the performance on a result set.

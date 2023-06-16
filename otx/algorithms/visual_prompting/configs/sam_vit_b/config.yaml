@@ -12,7 +12,7 @@ model:
   name: SAM
   image_size: 1024
   mask_threshold: 0.
-  return_logits: false
+  return_logits: true
   backbone: vit_b
   loss_type: sam # <"sam", "medsam">
   freeze_image_encoder: true

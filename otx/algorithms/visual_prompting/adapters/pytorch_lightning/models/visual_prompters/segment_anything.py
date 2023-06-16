@@ -13,13 +13,12 @@ reference: https://github.com/facebookresearch/segment-anything
 
 import re
 from collections import OrderedDict
-from typing import Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import torch
-from torch import Tensor
 from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
-from torch import optim
+from torch import Tensor, optim
 from torch.nn import functional as F
 from torchmetrics import MeanMetric, MetricCollection
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex
@@ -40,7 +39,7 @@ CKPT_PATHS = {
 
 
 class SegmentAnything(LightningModule):
-    def __init__(self, config: DictConfig, config_optimizer: DictConfig) -> None:
+    def __init__(self, config: DictConfig, config_optimizer: DictConfig, state_dict: Optional[OrderedDict] = None) -> None:
         """SAM predicts object masks from an image and input prompts."""
         super().__init__()
         # self.save_hyperparameters()
@@ -50,7 +49,7 @@ class SegmentAnything(LightningModule):
         self.set_models()
         self.freeze_networks()
         self.set_metrics()
-        self.load_checkpoint()
+        self.load_checkpoint(state_dict=state_dict)
 
     def set_models(self) -> None:
         """"""
@@ -124,20 +123,29 @@ class SegmentAnything(LightningModule):
             val_F1=BinaryF1Score(),
         ))
 
-    def load_checkpoint(self) -> None:
+    def load_checkpoint(self, state_dict: Optional[OrderedDict] = None, revise_keys: List = [(r'^image_encoder.', r'image_encoder.backbone.')]) -> None:
         """"""
-        if self.config.checkpoint:
+        def replace_state_dict_keys(state_dict, revise_keys):
+            for p, r in revise_keys:
+                state_dict = OrderedDict(
+                    {re.sub(p, r, k) if re.search(p, k) and not re.search(r, k) else k: v for k, v in state_dict.items()}
+                )
+            return state_dict
+
+        if state_dict:
+            # state_dict from args.load_from
+            state_dict = replace_state_dict_keys(state_dict, revise_keys)
+            self.load_state_dict(state_dict)
+        else:
             try:
                 self.load_from_checkpoint(self.config.checkpoint)
             except:
                 if str(self.config.checkpoint).startswith("http"):
                     state_dict = torch.hub.load_state_dict_from_url(str(self.config.checkpoint))
-                    for p, r in [(r'^image_encoder\.', r'image_encoder.backbone.')]:
-                        state_dict = OrderedDict({
-                            re.sub(p, r, k): v for k, v in state_dict.items()})
                 else:
                     with open(self.config.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
+                state_dict = replace_state_dict_keys(state_dict, revise_keys)
                 self.load_state_dict(state_dict)
 
     def forward(self, images, bboxes, points=None):
@@ -171,7 +179,7 @@ class SegmentAnything(LightningModule):
         points = batch["points"]
         gt_masks = batch["gt_masks"]
 
-        pred_masks, ious = self(images, bboxes, points)
+        pred_masks, iou_predictions = self(images, bboxes, points)
 
         loss_dice = 0.
         if self.config.loss_type.lower() == "sam":
@@ -181,8 +189,9 @@ class SegmentAnything(LightningModule):
             loss_ce = 0.
 
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-        for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, ious):
+        for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, iou_predictions):
             pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
+            pred_mask = pred_mask.sigmoid()
             self.train_metrics["train_IoU"].update(pred_mask, gt_mask)
             self.train_metrics["train_F1"].update(pred_mask, gt_mask)
             pred_mask = pred_mask.flatten(1)
@@ -193,6 +202,7 @@ class SegmentAnything(LightningModule):
                 loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
                 batch_iou = self.calculate_iou(pred_mask, gt_mask)
                 loss_iou += F.mse_loss(iou_prediction, batch_iou.unsqueeze(1), reduction='sum') / num_masks
+
             elif self.config.loss_type.lower() == "medsam":
                 loss_ce += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
 
@@ -226,6 +236,7 @@ class SegmentAnything(LightningModule):
         pred_masks, _ = self(images, bboxes, points)
         for pred_mask, gt_mask in zip(pred_masks, gt_masks):
             pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
+            pred_mask = pred_mask.sigmoid()
             for k, v in self.val_metrics.items():
                 v.update(pred_mask, gt_mask)
 
@@ -236,21 +247,24 @@ class SegmentAnything(LightningModule):
         for v in self.val_metrics.values():
             v.reset()
 
-    def predict_step(self, batch, batch_idx) -> Tensor:
+    def predict_step(self, batch, batch_idx) -> Dict[str, Tensor]:
         """Predict step of SAM."""
         images = batch["images"]
         bboxes = batch["bboxes"]
         points = batch["points"]
 
-        pred_masks, _ = self(images, bboxes, points)
+        pred_masks, iou_predictions = self(images, bboxes, points)
 
-        masks = [
-            self.postprocess_masks(pred_mask, images[i].shape[2:], batch["original_size"][i], is_predict=True) for i, pred_mask in enumerate(pred_masks)
-        ]
-        if not self.config.return_logits:
-            masks = masks > self.config.mask_threshold
+        masks: List[Tensor] = []
+        for i, pred_mask in enumerate(pred_masks):
+            mask = self.postprocess_masks(pred_mask, images[i].shape[1:], batch["original_size"][i], is_predict=True)
+            if not self.config.return_logits:
+                mask = mask > self.config.mask_threshold
+            else:
+                mask = mask.sigmoid()
+            masks.append(mask)
 
-        return masks
+        return dict(masks=masks, iou_predictions=iou_predictions, path=batch["path"])
 
     def postprocess_masks(
         self,
@@ -301,7 +315,6 @@ class SegmentAnything(LightningModule):
         Returns:
             Loss tensor
         """
-        inputs = inputs.sigmoid()
         numerator = 2 * (inputs * targets).sum(-1)
         denominator = inputs.sum(-1) + targets.sum(-1)
         loss = 1 - (numerator + 1) / (denominator + 1)
@@ -331,11 +344,10 @@ class SegmentAnything(LightningModule):
         Returns:
             Loss tensor
         """
-        prob = inputs.sigmoid()
         loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
         if self.config.loss_type.lower() == "sam":
             # focal loss for SAM loss
-            p_t = prob * targets + (1 - prob) * (1 - targets)
+            p_t = inputs * targets + (1 - inputs) * (1 - targets)
             loss = loss * ((1 - p_t) ** gamma)
             if alpha >= 0:
                 alpha_t = alpha * targets + (1 - alpha) * (1 - targets)
