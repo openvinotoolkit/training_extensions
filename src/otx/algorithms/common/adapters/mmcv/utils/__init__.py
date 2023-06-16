@@ -30,6 +30,7 @@ from .config_utils import (
     remove_from_config,
     remove_from_configs_by_type,
     update_config,
+    set_input_size,
 )
 
 __all__ = [
@@ -60,4 +61,5 @@ __all__ = [
     "get_data_cfg",
     "MPAConfig",
     "adapt_batch_size",
+    "set_input_size",
 ]

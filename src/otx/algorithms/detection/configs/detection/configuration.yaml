@@ -221,6 +221,23 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
+  input_size:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description: null
+    editable: true
+    header: Resize input image to the value
+    max_value: 1000000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: false
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:

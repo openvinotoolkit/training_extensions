@@ -198,6 +198,15 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        input_size = configurable_integer(
+            default_value=0,
+            min_value=0,
+            max_value=1000000,
+            header="Resize input image to the value",
+            description="",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""

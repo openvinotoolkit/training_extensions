@@ -636,8 +636,82 @@ def patch_from_hyperparams(config: Config, hyperparams):
         )
         config.update(unlabeled_config)
 
+    if hyperparams.learning_parameters.input_size != 0:
+        for data_type in ["train", "val", "test"]:
+            if data_type in config.data:
+                if 'dataset' in config.data[data_type]:
+                    pipeline = config.data[data_type]['dataset']['pipeline']
+                else:
+                    pipeline = config.data[data_type]['pipeline']
+
+                set_input_size(pipeline, hyperparams.learning_parameters.input_size)
+
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
+
+
+def set_input_size(pipelines: List[Dict], input_size: int):
+    """Modify data pipelines to provide dataset with configured input size."""
+
+    def change_input_size(pipeline, size):
+        """Set input size."""
+        if "size" in pipeline:
+            if isinstance(pipeline["size"], int):
+                pipeline["size"] = size
+            else:
+                pipeline["size"] = (size, size)
+        elif "img_scale" in pipeline:
+            if isinstance(pipeline["img_scale"], list):
+                pipeline["img_scale"] = [(size, size)]
+            else:
+                pipeline["img_scale"] = (size, size)
+
+    # get crop_size and resize info if RandomCrop exists in pipelines
+    crop_size = None
+    origin_resize = None
+    for pipeline in pipelines:
+        pipeline_type = pipeline["type"].lower()
+        if pipeline_type == "resize":
+            if "size" in pipeline:
+                origin_resize = pipeline["size"]
+            elif "img_scale" in pipeline:
+                if isinstance(pipeline["img_scale"], list):
+                    origin_resize = pipeline["img_scale"][0]
+                else:
+                    origin_resize = pipeline["img_scale"]
+            if isinstance(origin_resize, int):
+                origin_resize = (origin_resize, origin_resize)
+        if pipeline_type == "randomcrop" and "crop_size" in pipeline:
+            crop_size  = pipeline["crop_size"]
+            if isinstance(crop_size, int):
+                crop_size = (crop_size, crop_size)
+
+    # decide which value to set to data pipeline
+    if crop_size is not None and origin_resize is not None:
+        for i in range(2):
+            resize_to_crop_ratio = origin_resize[i] / crop_size[i]
+            while round(input_size * resize_to_crop_ratio) - input_size <= 1:
+                resize_to_crop_ratio += 0.1
+            size = round(input_size * resize_to_crop_ratio)
+    else:
+        size = input_size
+    crop_size = input_size
+
+    # set value to pipeline
+    for pipeline in pipelines:
+        pipeline_type = pipeline["type"].lower()
+        if pipeline_type == "resize":
+            change_input_size(pipeline, size)
+        elif pipeline_type == "multiscaleflipaug":
+            change_input_size(pipeline, size)
+            if "transforms" in pipeline:
+                set_input_size(pipeline["transforms"], input_size)
+        elif pipeline_type == "pad":
+            change_input_size(pipeline, crop_size)
+            if "size_divisor" in pipeline:
+                pipeline["size_divisor"] = 1
+        elif pipeline_type == "randomcrop":
+            pipeline["crop_size"] = (crop_size, crop_size)
 
 
 def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
