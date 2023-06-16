@@ -29,7 +29,7 @@ from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmdet import __version__
 from mmdet.apis import single_gpu_test, train_detector
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
-from mmdet.models.detectors import TwoStageDetector
+from mmdet.models.detectors import DETR, TwoStageDetector
 from mmdet.utils import collect_env
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
@@ -401,6 +401,8 @@ class MMDetectionTask(OTXDetectionTask):
             if isinstance(raw_model, TwoStageDetector):
                 height, width, _ = mm_dataset[0]["img_metas"][0].data["img_shape"]
                 saliency_hook = MaskRCNNRecordingForwardHook(feature_model, input_img_shape=(height, width))
+            elif isinstance(raw_model, DETR):
+                saliency_hook = ActivationMapHook(feature_model)
             else:
                 saliency_hook = DetClassProbabilityMapHook(feature_model)
 
