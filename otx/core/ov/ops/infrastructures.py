@@ -63,7 +63,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
     """ParameterV0 class."""
 
     TYPE = "Parameter"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ParameterV0Attribute
 
     def forward(self, inputs):
@@ -89,8 +89,10 @@ class ParameterV0(Operation[ParameterV0Attribute]):
         """ParameterV0's from_ov function."""
         op_type = ov_op.get_type_name()
         op_name = get_op_name(ov_op)
-        assert cls.TYPE and cls.VERSION >= 0
+        op_version = ov_op.get_type_info().version_id
+        assert cls.TYPE and cls.VERSION
         assert op_type == cls.TYPE
+        assert op_version == cls.VERSION
 
         attrs = ov_op.get_attributes()
         if "shape" not in attrs:
@@ -157,7 +159,7 @@ class ResultV0(Operation[ResultV0Attribute]):
     """ResultV0 class."""
 
     TYPE = "Result"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ResultV0Attribute
 
     def forward(self, inputs):
@@ -193,7 +195,7 @@ class ConstantV0(Operation[ConstantV0Attribute]):
     """ConstantV0 class."""
 
     TYPE = "Constant"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConstantV0Attribute
 
     def __init__(self, *args, **kwargs):
@@ -217,8 +219,10 @@ class ConstantV0(Operation[ConstantV0Attribute]):
         """ConstantV0's from_ov function."""
         op_type = ov_op.get_type_name()
         op_name = get_op_name(ov_op)
-        assert cls.TYPE and cls.VERSION >= 0
+        op_version = ov_op.get_type_info().version_id
+        assert cls.TYPE and cls.VERSION
         assert op_type == cls.TYPE
+        assert op_version == cls.VERSION
 
         attrs = ov_op.get_attributes()
         attrs["shape"] = tuple(attrs["shape"])

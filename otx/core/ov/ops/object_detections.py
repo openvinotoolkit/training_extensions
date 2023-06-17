@@ -44,7 +44,7 @@ class ProposalV4(Operation[ProposalV4Attribute]):
     """ProposalV4 class."""
 
     TYPE = "Proposal"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ProposalV4Attribute
 
     def forward(self, class_probs, bbox_deltas, image_shape):
@@ -75,7 +75,7 @@ class ROIPoolingV0(Operation[ROIPoolingV0Attribute]):
     """ROIPoolingV0 class."""
 
     TYPE = "ROIPooling"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ROIPoolingV0Attribute
 
     def forward(self, inputs, boxes):
@@ -119,7 +119,7 @@ class DetectionOutputV0(Operation[DetectionOutputV0Attribute]):
     """DetectionOutputV0 class."""
 
     TYPE = "DetectionOutput"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = DetectionOutputV0Attribute
 
     def forward(self, loc_data, conf_data, prior_data, arm_conf_data=None, arm_loc_data=None):
@@ -146,7 +146,7 @@ class RegionYoloV0(Operation[RegionYoloV0Attribute]):
     """RegionYoloV0 class."""
 
     TYPE = "RegionYolo"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = RegionYoloV0Attribute
 
     def forward(self, inputs):
@@ -177,7 +177,7 @@ class PriorBoxV0(Operation[PriorBoxV0Attribute]):
     """PriorBoxV0 class."""
 
     TYPE = "PriorBox"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = PriorBoxV0Attribute
 
     def forward(self, output_size, image_size):
@@ -204,7 +204,7 @@ class PriorBoxClusteredV0(Operation[PriorBoxClusteredV0Attribute]):
     """PriorBoxClusteredV0 class."""
 
     TYPE = "PriorBoxClustered"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = PriorBoxClusteredV0Attribute
 
     def forward(self, output_size, image_size):

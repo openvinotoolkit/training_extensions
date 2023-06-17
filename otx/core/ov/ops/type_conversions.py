@@ -50,7 +50,7 @@ class ConvertV0(Operation[ConvertV0Attribute]):
     """ConvertV0 class."""
 
     TYPE = "Convert"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConvertV0Attribute
 
     @staticmethod
