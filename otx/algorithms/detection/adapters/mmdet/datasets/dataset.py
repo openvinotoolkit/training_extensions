@@ -332,7 +332,7 @@ class ImageTilingDataset(OTXDetDataset):
     ):
         self.dataset = build_dataset(dataset)
         self.CLASSES = self.dataset.CLASSES
-
+        data_subset = self.dataset.otx_dataset[0].subset
         self.tile_dataset = Tile(
             self.dataset,
             pipeline,
@@ -342,14 +342,17 @@ class ImageTilingDataset(OTXDetDataset):
             iou_threshold=iou_threshold,
             max_per_img=max_per_img,
             max_annotation=max_annotation,
-            filter_empty_gt=filter_empty_gt if self.dataset.otx_dataset[0].subset != Subset.TESTING else False,
-            sampling_ratio=sampling_ratio if self.dataset.otx_dataset[0].subset != Subset.TESTING else 1.0,
-            include_full_img=include_full_img if self.dataset.otx_dataset[0].subset != Subset.TESTING else True,
+            filter_empty_gt=filter_empty_gt if data_subset != Subset.TESTING else False,
+            sampling_ratio=sampling_ratio if data_subset != Subset.TESTING else 1.0,
+            include_full_img=include_full_img if data_subset != Subset.TESTING else True,
         )
         self.flag = np.zeros(len(self), dtype=np.uint8)
         self.pipeline = Compose(pipeline)
         self.test_mode = test_mode
         self.num_samples = len(self.dataset)  # number of original samples
+        annotation = [self.get_ann_info(i) for i in range(len(self))]
+        if data_subset == Subset.VALIDATION:
+            self.evaluator = Evaluator(annotation, self.dataset.domain, self.CLASSES)
 
     def __len__(self) -> int:
         """Get the length of the dataset."""

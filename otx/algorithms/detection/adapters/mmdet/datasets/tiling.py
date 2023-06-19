@@ -354,9 +354,8 @@ class Tile:
             bbox_results[i] = bbox2result(np.concatenate([bboxes, scores[:, None]], -1), labels, self.num_classes)
 
             if not detection:
-                masks = [masks[keep_idx] for keep_idx in keep_indices]
-                masks = self.process_masks(masks)
-                mask_results[i] = [list(np.asarray(masks)[labels == i]) for i in range(self.num_classes)]
+                masks = np.array([masks[keep_idx] for keep_idx in keep_indices])
+                mask_results[i] = [list(masks[labels == i]) for i in range(self.num_classes)]
 
     def __len__(self):
         """Total number of tiles."""
@@ -396,21 +395,6 @@ class Tile:
         tile_mask = mask_util.decode(tile_rle)
         tile_mask = np.pad(tile_mask, ((y1, height - y2), (x1, width - x2)))
         return mask_util.encode(tile_mask)
-
-    def process_masks(self, tile_masks: List) -> List[np.ndarray]:
-        """Decode Mask Result to Numpy mask, add paddings then encode masks again.
-
-        Args:
-            tile_masks (List): list of tile-level mask results.
-
-        Returns:
-            List[np.ndarray]: list of image-level mask results.
-        """
-        results = []
-        if tile_masks:
-            with Pool(self.nproc) as pool:
-                results = pool.map(Tile.readjust_tile_mask, tile_masks)
-        return results
 
     # pylint: disable=too-many-locals
     @timeit
