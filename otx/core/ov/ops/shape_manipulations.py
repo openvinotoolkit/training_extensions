@@ -153,7 +153,7 @@ class ShapeOfV3(Operation[ShapeOfV3Attribute]):
     """ShapeOfV3 class."""
 
     TYPE = "ShapeOf"
-    VERSION = "opset1"
+    VERSION = "opset3"
     ATTRIBUTE_FACTORY = ShapeOfV3Attribute
 
     def forward(self, inputs):

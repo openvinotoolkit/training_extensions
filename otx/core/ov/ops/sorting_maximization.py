@@ -64,7 +64,7 @@ class NonMaxSuppressionV5(Operation[NonMaxSuppressionV5Attribute]):
     """NonMaxSuppressionV5 class."""
 
     TYPE = "NonMaxSuppression"
-    VERSION = "opset1"
+    VERSION = "opset5"
     ATTRIBUTE_FACTORY = NonMaxSuppressionV5Attribute
 
     def forward(

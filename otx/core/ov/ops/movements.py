@@ -178,7 +178,7 @@ class GatherV1(Operation[GatherV1Attribute]):
     """GatherV1 class."""
 
     TYPE = "Gather"
-    VERSION = "opset1"
+    VERSION = "opset2"
     ATTRIBUTE_FACTORY = GatherV1Attribute
 
     def forward(self, inputs, indices, axis):

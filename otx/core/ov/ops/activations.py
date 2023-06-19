@@ -45,7 +45,7 @@ class SoftMaxV1(Operation[SoftMaxV1Attribute]):
     """SoftMaxV1 class."""
 
     TYPE = "Softmax"
-    VERSION = "opset1"
+    VERSION = "opset2"
     ATTRIBUTE_FACTORY = SoftMaxV1Attribute
 
     def forward(self, inputs):
