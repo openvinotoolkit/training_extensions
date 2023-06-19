@@ -21,7 +21,7 @@ from pytorch_lightning import LightningModule
 from torch import Tensor, optim
 from torch.nn import functional as F
 from torchmetrics import MeanMetric, MetricCollection
-from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex
+from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.decoders import (
     SAMMaskDecoder,
@@ -42,7 +42,7 @@ class SegmentAnything(LightningModule):
     def __init__(self, config: DictConfig, config_optimizer: DictConfig, state_dict: Optional[OrderedDict] = None) -> None:
         """SAM predicts object masks from an image and input prompts."""
         super().__init__()
-        # self.save_hyperparameters()
+        self.save_hyperparameters()
         self.config = config
         self.config_optimizer = config_optimizer
 
@@ -106,6 +106,7 @@ class SegmentAnything(LightningModule):
         self.train_metrics = MetricCollection(dict(
             train_IoU=BinaryJaccardIndex(),
             train_F1=BinaryF1Score(),
+            train_Dice=Dice(),
             train_loss=MeanMetric(),
             train_loss_dice=MeanMetric(),
         ))
@@ -121,6 +122,7 @@ class SegmentAnything(LightningModule):
         self.val_metrics = MetricCollection(dict(
             val_IoU=BinaryJaccardIndex(),
             val_F1=BinaryF1Score(),
+            val_Dice=Dice(),
         ))
 
     def load_checkpoint(self, state_dict: Optional[OrderedDict] = None, revise_keys: List = [(r'^image_encoder.', r'image_encoder.backbone.')]) -> None:
@@ -194,9 +196,11 @@ class SegmentAnything(LightningModule):
             pred_mask = pred_mask.sigmoid()
             self.train_metrics["train_IoU"].update(pred_mask, gt_mask)
             self.train_metrics["train_F1"].update(pred_mask, gt_mask)
+            self.train_metrics["train_Dice"].update(pred_mask, gt_mask)
             pred_mask = pred_mask.flatten(1)
             gt_mask = gt_mask.flatten(1).float()
 
+            # calculate losses
             loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_masks)
             if self.config.loss_type.lower() == "sam":
                 loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)

@@ -26,12 +26,12 @@ optimizer:
 
 callback:
   checkpoint: # arguments for ModelCheckpoint
-    monitor: val_IoU
+    monitor: val_Dice
     mode: max
     save_last: true
     verbose: true
   early_stopping: # arguments for EarlyStopping
-    monitor: val_IoU
+    monitor: val_Dice
     mode: max
     verbose: true
 

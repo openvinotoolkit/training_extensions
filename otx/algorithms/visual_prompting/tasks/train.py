@@ -73,25 +73,33 @@ class TrainingTask(InferenceTask, ITrainingTask):
         loggers = CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp)
         callbacks = [
             TQDMProgressBar(),
-            ModelCheckpoint(dirpath=loggers.log_dir, **self.config.callback.checkpoint),
+            ModelCheckpoint(dirpath=loggers.log_dir, filename="epoch_{epoch:02d}", **self.config.callback.checkpoint),
             LearningRateMonitor(),
             EarlyStopping(**self.config.callback.early_stopping)
         ]
 
         self.trainer = Trainer(**self.config.trainer, logger=loggers, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
+        self.trainer.validate(model=self.model, datamodule=datamodule)
 
-        model_ckpt = self.trainer.checkpoint_callback.best_model_path
-        best_score = self.trainer.checkpoint_callback.best_model_score
-        if model_ckpt is None:
-            logger.error("cannot find final checkpoint from the results.")
-            # output_model.model_status = ModelStatus.FAILED
-            return
+        if self.trainer.max_epochs > 0:
+            model_ckpt = self.trainer.checkpoint_callback.best_model_path
+            best_score = self.trainer.checkpoint_callback.best_model_score
+            if model_ckpt is None:
+                logger.error("cannot find final checkpoint from the results.")
+                # output_model.model_status = ModelStatus.FAILED
+                return
 
-        # update checkpoint to the newly trained model
-        self._model_ckpt = model_ckpt
+            # update checkpoint to the newly trained model
+            self._model_ckpt = model_ckpt
+
+        else:
+            # for only validation phase
+            best_score = self.trainer.callback_metrics.get(self.trainer.checkpoint_callback.monitor)
+
         performance = Performance(
             score=ScoreMetric(value=best_score, name=self.trainer.checkpoint_callback.monitor)
+            # TODO (sungchul): dashboard?
         )
 
         logger.info(f"Final model performance: {str(performance)}")
