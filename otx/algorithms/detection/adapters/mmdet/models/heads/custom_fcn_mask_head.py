@@ -2,12 +2,7 @@ import torch
 
 from mmdet.models.builder import HEADS
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
-
-
-BYTES_PER_FLOAT = 4
-# TODO: This memory limit may be too much or too little. It would be better to
-# determine it based on available resources.
-GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 
 
 @HEADS.register_module()
@@ -70,3 +65,33 @@ class CustomFCNMaskHead(FCNMaskHead):
             mask = mask.detach().cpu().numpy()
             cls_segms[labels[i]].append(mask[0])
         return cls_segms
+
+
+if is_mmdeploy_enabled():
+    from mmdeploy.core import FUNCTION_REWRITER
+
+    @FUNCTION_REWRITER.register_rewriter(
+        'otx.algorithms.detection.adapters.mmdet.models.'
+        'heads.custom_fcn_mask_head.CustomFCNMaskHead.get_seg_masks')
+    def custom_fcn_mask_head__get_seg_masks(ctx, self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg, ori_shape, **kwargs):
+        """Rewrite `get_seg_masks` of `FCNMaskHead` for default backend.
+
+        Rewrite the get_seg_masks for only fcn_mask_head inference.
+
+        Args:
+            mask_pred (Tensor): shape (n, #class, h, w).
+            det_bboxes (Tensor): shape (n, 4/5)
+            det_labels (Tensor): shape (n, )
+            rcnn_test_cfg (dict): rcnn testing config
+            ori_shape (Tuple): original image height and width, shape (2,)
+
+        Returns:
+            Tensor: a mask of shape (N, img_h, img_w).
+        """
+        mask_pred = mask_pred.sigmoid()
+        bboxes = det_bboxes[:, :4]
+        labels = det_labels
+        if not self.class_agnostic:
+            box_inds = torch.arange(mask_pred.shape[0], device=bboxes.device)
+            mask_pred = mask_pred[box_inds, labels][:, None]
+        return mask_pred
