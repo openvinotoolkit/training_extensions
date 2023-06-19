@@ -399,12 +399,8 @@ class TestConfigManager:
         assert config_manager.model == "template_name"
         assert config_manager.train_type == "Incremental"
 
-        mocker.patch(
-            "otx.cli.manager.config_manager.ConfigManager.check_workspace", return_value=False
-        )
-        mocker.patch(
-            "otx.cli.manager.config_manager.hasattr", return_value=False
-        )
+        mocker.patch("otx.cli.manager.config_manager.ConfigManager.check_workspace", return_value=False)
+        mocker.patch("otx.cli.manager.config_manager.hasattr", return_value=False)
         empty_args = mocker.MagicMock()
         empty_args.template = None
         config_manager = ConfigManager(args=empty_args, mode="train")
