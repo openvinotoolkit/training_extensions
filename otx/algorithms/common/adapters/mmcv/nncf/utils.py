@@ -118,7 +118,7 @@ def model_eval(
 
 
 def nncf_state_dict_pre_hook(state_dict, prefix, *args, **kwargs):
-    """NNCF-specific state dict pre-hook"""
+    """NNCF-specific state dict pre-hook."""
     for key in list(state_dict.keys()):
         val = state_dict.pop(key)
         if "_nncf" in key:
@@ -130,7 +130,7 @@ def nncf_state_dict_pre_hook(state_dict, prefix, *args, **kwargs):
 
 
 def nncf_state_dict_hook(module, state_dict, prefix, *args, **kwargs):
-    """NNCF-specific state dict post-hook"""
+    """NNCF-specific state dict post-hook."""
     for key in list(state_dict.keys()):
         val = state_dict.pop(key)
         if "_level_high" in key or "_level_low" in key:

@@ -18,7 +18,7 @@ from typing import Dict
 
 import cv2
 import numpy as np
-from openvino.model_api.models.instance_segmentation import MaskRCNNModel, _segm_postprocess
+from openvino.model_api.models.instance_segmentation import MaskRCNNModel, _expand_box, _segm_postprocess
 from openvino.model_api.models.ssd import SSD, find_layer_by_name
 from openvino.model_api.models.utils import Detection
 
@@ -135,7 +135,7 @@ class OTXMaskRCNNModel(MaskRCNNModel):
     def _resize_mask(self, box, raw_cls_mask, im_h, im_w):
         # Add zero border to prevent upsampling artifacts on segment borders.
         raw_cls_mask = np.pad(raw_cls_mask, ((1, 1), (1, 1)), "constant", constant_values=0)
-        extended_box = self._expand_box(box, raw_cls_mask.shape[0] / (raw_cls_mask.shape[0] - 2.0)).astype(int)
+        extended_box = _expand_box(box, raw_cls_mask.shape[0] / (raw_cls_mask.shape[0] - 2.0)).astype(int)
         w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
         x0, y0 = np.clip(extended_box[:2], a_min=0, a_max=[im_w, im_h])
         x1, y1 = np.clip(extended_box[2:] + 1, a_min=0, a_max=[im_w, im_h])
