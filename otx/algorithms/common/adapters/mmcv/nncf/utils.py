@@ -117,6 +117,30 @@ def model_eval(
         return eval_res[metric_name]
 
 
+def nncf_state_dict_pre_hook(state_dict, prefix, *args, **kwargs):
+    """NNCF-specific state dict pre-hook"""
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        if "_nncf" in key:
+            if key.startswith("backbone"):
+                key = key.replace("backbone.", "", 1)
+        state_dict[key] = val
+
+    return state_dict
+
+
+def nncf_state_dict_hook(module, state_dict, prefix, *args, **kwargs):
+    """NNCF-specific state dict post-hook"""
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        if "_level_high" in key or "_level_low" in key:
+            continue
+
+        state_dict[key] = val
+
+    return state_dict
+
+
 # pylint: disable-next=too-many-branches,too-many-statements,too-many-locals
 def wrap_nncf_model(  # noqa: C901
     config: Config,
@@ -266,6 +290,9 @@ def wrap_nncf_model(  # noqa: C901
     if is_accuracy_aware_training(nncf_config) and model_eval_fn is not None:
         # Evaluate model before compressing
         uncompressed_model_accuracy = model_eval_fn(model)
+
+    model._register_state_dict_hook(nncf_state_dict_hook)
+    model._register_load_state_dict_pre_hook(nncf_state_dict_pre_hook)
 
     compression_ctrl, model = create_compressed_model(
         model,
