@@ -399,6 +399,24 @@ class TestConfigManager:
         assert config_manager.model == "template_name"
         assert config_manager.train_type == "Incremental"
 
+        mocker.patch(
+            "otx.cli.manager.config_manager.ConfigManager.check_workspace", return_value=False
+        )
+        mocker.patch(
+            "otx.cli.manager.config_manager.hasattr", return_value=False
+        )
+        empty_args = mocker.MagicMock()
+        empty_args.template = None
+        config_manager = ConfigManager(args=empty_args, mode="train")
+        config_manager.template = None
+        config_manager.task_type = None
+        with pytest.raises(ConfigValueError, match="Can't find the argument 'train_data_roots'"):
+            config_manager.configure_template()
+
+        config_manager = ConfigManager(args=empty_args, mode="eval")
+        with pytest.raises(ConfigValueError, match="No appropriate template or task-type was found."):
+            config_manager.configure_template()
+
     @e2e_pytest_unit
     def test__check_rebuild(self, mocker):
         mock_template = mocker.MagicMock()
