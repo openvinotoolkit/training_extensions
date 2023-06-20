@@ -1,17 +1,23 @@
-import torch
+"""CustomFCNMaskHead for OTX template."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
+import torch
 from mmdet.models.builder import HEADS
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
+
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 
 
 @HEADS.register_module()
 class CustomFCNMaskHead(FCNMaskHead):
+    """Custom FCN Mask Head for fast mask evaluation."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_seg_masks(self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg,
-                      ori_shape, scale_factor, rescale):
+    def get_seg_masks(self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg, ori_shape, scale_factor, rescale):
         """Get segmentation masks from mask_pred and bboxes.
 
         Args:
@@ -42,8 +48,7 @@ class CustomFCNMaskHead(FCNMaskHead):
             # In AugTest, has been activated before
             mask_pred = det_bboxes.new_tensor(mask_pred)
 
-        cls_segms = [[] for _ in range(self.num_classes)
-                     ]  # BG is not included in num_classes
+        cls_segms = [[] for _ in range(self.num_classes)]  # BG is not included in num_classes
         labels = det_labels
 
         N = len(mask_pred)
@@ -71,19 +76,24 @@ if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
 
     @FUNCTION_REWRITER.register_rewriter(
-        'otx.algorithms.detection.adapters.mmdet.models.'
-        'heads.custom_fcn_mask_head.CustomFCNMaskHead.get_seg_masks')
-    def custom_fcn_mask_head__get_seg_masks(ctx, self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg, ori_shape, **kwargs):
+        "otx.algorithms.detection.adapters.mmdet.models." "heads.custom_fcn_mask_head.CustomFCNMaskHead.get_seg_masks"
+    )
+    def custom_fcn_mask_head__get_seg_masks(
+        ctx, self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg, ori_shape, **kwargs
+    ):
         """Rewrite `get_seg_masks` of `FCNMaskHead` for default backend.
 
         Rewrite the get_seg_masks for only fcn_mask_head inference.
 
         Args:
+            ctx (dict): context dict
+            self (CustomFCNMaskHead): CustomFCNMaskHead instance
             mask_pred (Tensor): shape (n, #class, h, w).
             det_bboxes (Tensor): shape (n, 4/5)
             det_labels (Tensor): shape (n, )
             rcnn_test_cfg (dict): rcnn testing config
             ori_shape (Tuple): original image height and width, shape (2,)
+            kwargs (dict): other arguments
 
         Returns:
             Tensor: a mask of shape (N, img_h, img_w).

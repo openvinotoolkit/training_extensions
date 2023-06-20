@@ -19,10 +19,8 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, List, Optional
 
-import cv2
 import numpy as np
 import psutil
-import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import ConfigDict
 
@@ -34,13 +32,11 @@ from otx.algorithms.common.utils.callback import (
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils import get_det_model_api_configuration, create_detection_shapes, create_mask_shapes
+from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
-from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.explain_parameters import ExplainParameters
-from otx.api.entities.id import ID
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.metrics import (
@@ -59,10 +55,6 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.ellipse import Ellipse
-from otx.api.entities.shapes.polygon import Point, Polygon
-from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity

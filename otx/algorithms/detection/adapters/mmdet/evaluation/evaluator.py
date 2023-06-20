@@ -1,15 +1,17 @@
-from typing import List, Dict, Tuple
 from multiprocessing import Pool
+from typing import Dict, List, Tuple
+
+import mmcv
 import numpy as np
 import pycocotools.mask as mask_util
-from mmdet.core.evaluation.mean_ap import average_precision
-from otx.api.entities.label import Domain
-from mmdet.core import eval_map, BitmapMasks, PolygonMasks
+from mmcv.utils import print_log
+from mmdet.core import BitmapMasks, PolygonMasks, eval_map
 from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
 from mmdet.core.evaluation.class_names import get_classes
-import mmcv
-from mmcv.utils import print_log
+from mmdet.core.evaluation.mean_ap import average_precision
 from terminaltables import AsciiTable
+
+from otx.api.entities.label import Domain
 
 
 def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
@@ -84,12 +86,6 @@ def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
         print_log("\n" + table.table, logger=logger)
 
 
-def display_bitmask(bitmask):
-    import matplotlib.pyplot as plt
-    plt.imshow(bitmask.astype(np.uint8))
-    plt.show()
-
-
 def sanitize_coordinates(bbox: np.ndarray, height: int, width: int, padding=1) -> np.ndarray:
     x1, y1, x2, y2 = bbox.astype(np.int)
     x1 = max(0, x1 - padding)
@@ -119,7 +115,7 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
         det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
         det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
         gt_mask = gt_mask.crop(gt_bbox)
-        gt_mask: BitmapMasks = gt_mask.to_bitmap()
+        gt_mask = gt_mask.to_bitmap()
         gt_mask = gt_mask.expand(max_y2 - min_y1, max_x2 - min_x1, gt_bbox[1] - min_y1, gt_bbox[0] - min_x1)
         # compute iou between det_mask and gt_mask
         det_mask = det_mask.to_ndarray()
@@ -130,13 +126,10 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
 
 
 def tpfpmiou_func(  # pylint: disable=too-many-locals
-    det: Tuple[np.ndarray, BitmapMasks],
-    gt_masks: List[Dict],
-    cls_scores,
-    iou_thr=0.5
+    det: Tuple[np.ndarray, BitmapMasks], gt_masks: List[Dict], cls_scores, iou_thr=0.5
 ):
     num_dets = len(det[0])  # M
-    num_gts = len(gt_masks)    # N
+    num_gts = len(gt_masks)  # N
 
     tp = np.zeros(num_dets, dtype=np.float32)  # pylint: disable=invalid-name
     fp = np.zeros(num_dets, dtype=np.float32)  # pylint: disable=invalid-name
@@ -189,7 +182,7 @@ class Evaluator:
         self.nproc = nproc
 
     def get_gt_instance_masks(self, annotation):
-        """Crop mask from original image and saved them as PolygonMask"""
+        """Crop mask from original image and saved them as PolygonMask."""
         num_images = len(annotation)
         cls_anno_list = [[] for _ in range(self.num_classes)]
         for idx in range(num_images):
@@ -205,12 +198,12 @@ class Evaluator:
 
     def get_mask_det_results(self, det_results, class_id) -> Tuple[List, List]:
         cls_scores = [img_res[0][class_id][..., -1] for img_res in det_results]
-        cls_dets = []
+        cls_dets: List[Tuple] = []
         for i, det in enumerate(det_results):
             det_bboxes = det[0][class_id][:, :4]
             det_masks = det[1][class_id]
             if len(det_masks) == 0:
-                cls_dets.append([[] for _ in range(2)])
+                cls_dets.append(([], []))
             else:
                 det_masks = mask_util.decode(det_masks)
                 det_masks = det_masks.transpose(2, 0, 1)
@@ -229,16 +222,18 @@ class Evaluator:
             cls_gts = self.annotation[class_id]
 
             # compute tp and fp for each image with multiple processes
-            tpfpmiou = pool.starmap(tpfpmiou_func, zip(cls_dets, cls_gts, cls_scores, [iou_thr for _ in range(num_imgs)]))
-            tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
+            # tpfpmiou = pool.starmap(
+            # tpfpmiou_func, zip(cls_dets, cls_gts, cls_scores, [iou_thr for _ in range(num_imgs)])
+            # )
+            # tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
 
             # for loop version
-            # tp, fp, miou = [], [], []
-            # for i in range(num_imgs):
-            #     tpfpmiou = tpfpmiou_func(cls_dets[i], cls_gts[i], cls_scores[i], iou_thr)
-            #     tp.append(tpfpmiou[0])
-            #     fp.append(tpfpmiou[1])
-            #     miou.append(tpfpmiou[2])
+            tp, fp, miou = [], [], []
+            for i in range(num_imgs):
+                tpfpmiou = tpfpmiou_func(cls_dets[i], cls_gts[i], cls_scores[i], iou_thr)
+                tp.append(tpfpmiou[0])
+                fp.append(tpfpmiou[1])
+                miou.append(tpfpmiou[2])
 
             # sort all det bboxes by score, also sort tp and fp
             cls_scores = np.hstack(cls_scores)
@@ -281,15 +276,16 @@ class Evaluator:
 
         print_map_summary(mean_ap, eval_results, self.classes, None, logger=logger)
 
-        return metrics['mAP'], eval_results
+        return metrics["mAP"], eval_results
 
     def evaluate(self, results, logger, iou_thr, scale_ranges):
         if self.domain == Domain.DETECTION:
             return eval_map(
-                    results,
-                    self.annotation,
-                    scale_ranges=scale_ranges,
-                    iou_thr=iou_thr,
-                    dataset=self.classes,
-                    logger=logger)
+                results,
+                self.annotation,
+                scale_ranges=scale_ranges,
+                iou_thr=iou_thr,
+                dataset=self.classes,
+                logger=logger,
+            )
         return self.evaluate_mask(results, logger, iou_thr)

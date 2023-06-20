@@ -6,7 +6,6 @@
 import copy
 import uuid
 from itertools import product
-from multiprocessing import Pool
 from random import sample
 from time import time
 from typing import Callable, Dict, List, Tuple, Union

@@ -15,24 +15,22 @@
 
 import colorsys
 import random
-from typing import Optional, Sequence
+from typing import List, Optional, Sequence, Tuple
 
+import cv2
 import numpy as np
+import pycocotools.mask as mask_util
 
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
-
-import cv2
-import pycocotools.mask as mask_util
-from otx.api.entities.annotation import Annotation
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-
 
 # pylint: disable=invalid-name
 
@@ -129,9 +127,68 @@ def get_det_model_api_configuration(label_schema: LabelSchemaEntity, task_type: 
     return omz_config
 
 
-def create_detection_shapes(all_results, width, height, confidence_threshold, use_ellipse_shapes, labels):
+def expand_box(box: np.ndarray, scale_h: float, scale_w: float):
+    """Expand the box.
+
+    Args:
+        box (np.ndarray): bounding box
+        scale_h (float): scaling factor for height
+        scale_w (float): scaling factor for width
+
+    Returns:
+        expanded box (np.ndarray): x1, y1, x2, y2 coordinates of the expanded box
+    """
+    w_half = (box[2] - box[0]) * 0.5
+    h_half = (box[3] - box[1]) * 0.5
+    x_c = (box[2] + box[0]) * 0.5
+    y_c = (box[3] + box[1]) * 0.5
+    w_half *= scale_w
+    h_half *= scale_h
+    expanded_box = np.zeros(box.shape)
+    expanded_box[0] = x_c - w_half
+    expanded_box[2] = x_c + w_half
+    expanded_box[1] = y_c - h_half
+    expanded_box[3] = y_c + h_half
+    return expanded_box
+
+
+def mask_resize(box: np.ndarray, mask: np.ndarray):
+    """Resize mask to the size of the bounding box.
+
+    Args:
+        box (np.ndarray): bounding box which enclosing the mask
+        mask (np.ndarray): mask to be resize
+
+    Returns:
+        mask (np.ndarray): resized mask
+    """
+    mask = np.pad(mask, ((1, 1), (1, 1)), "constant", constant_values=0)
+    scale_h = mask.shape[0] / (mask.shape[0] - 2.0)
+    scale_w = mask.shape[1] / (mask.shape[1] - 2.0)
+    extended_box = expand_box(box, scale_h=scale_h, scale_w=scale_w).astype(int)
+    w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
+    mask = cv2.resize(mask.astype(np.float32), (w, h))
+    mask = mask.astype(np.uint8)
+    return mask
+
+
+def create_detection_shapes(pred_results, width, height, confidence_threshold, use_ellipse_shapes, labels):
+    """Create prediction detection shapes.
+
+    Args:
+        pred_results (tuple): tuple of predicted boxes for each dataset item
+        width (int): image width
+        height (int): image height
+        confidence_threshold (float): confidence threshold for filtering predictions
+        use_ellipse_shapes (bool): if True, use ellipse shapes
+        labels (list): dataset labels
+
+    Returns:
+        shapes: list of prediction shapes (Annotation)
+    """
+
     shapes = []
-    for label_idx, detections in enumerate(all_results):
+    for label_idx, detections in enumerate(pred_results):
         for i in range(detections.shape[0]):
             probability = float(detections[i, 4])
             coords = detections[i, :4].astype(float).copy()
@@ -159,42 +216,31 @@ def create_detection_shapes(all_results, width, height, confidence_threshold, us
     return shapes
 
 
-def expand_box(box, scale):
-    w_half = (box[2] - box[0]) * .5
-    h_half = (box[3] - box[1]) * .5
-    x_c = (box[2] + box[0]) * .5
-    y_c = (box[3] + box[1]) * .5
-    w_half *= scale
-    h_half *= scale
-    box_exp = np.zeros(box.shape)
-    box_exp[0] = x_c - w_half
-    box_exp[2] = x_c + w_half
-    box_exp[1] = y_c - h_half
-    box_exp[3] = y_c + h_half
-    return box_exp
-
-
-def segm_postprocess(box, mask):
-    # Add zero border to prevent upsampling artifacts on segment borders.
-    mask = np.pad(mask, ((1, 1), (1, 1)), 'constant', constant_values=0)
-    extended_box = expand_box(box, mask.shape[0] / (mask.shape[0] - 2.0)).astype(int)
-    w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
-    mask = cv2.resize(mask.astype(np.float32), (w, h))
-    mask = mask.astype(np.uint8)
-    return mask
-
-
 def create_mask_shapes(
-        all_results,
-        width,
-        height,
-        confidence_threshold,
-        use_ellipse_shapes,
-        labels,
-        rotated_polygon=False
-        ):
+    pred_results: Tuple,
+    width: int,
+    height: int,
+    confidence_threshold: float,
+    use_ellipse_shapes: bool,
+    labels: List,
+    rotated_polygon: bool = False,
+):
+    """Create prediction mask shapes.
+
+    Args:
+        pred_results (tuple): tuple of predicted boxes and masks for each dataset item
+        width (int): image width
+        height (int): image height
+        confidence_threshold (float): confidence threshold for filtering predictions
+        use_ellipse_shapes (bool): if True, use ellipse shapes
+        labels (list): dataset labels
+        rotated_polygon (bool, optional): if True, use rotated polygons for mask shapes
+
+    Returns:
+        shapes: list of prediction shapes (Annotation)
+    """
     shapes = []
-    for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
+    for label_idx, (boxes, masks) in enumerate(zip(*pred_results)):
         for mask, box in zip(masks, boxes):
             probability = float(box[4])
             if probability < confidence_threshold:
@@ -206,7 +252,7 @@ def create_mask_shapes(
                     mask = mask_util.decode(mask)
                 coords = box[:4].astype(float).copy()
                 left, top = coords[:2]
-                mask = segm_postprocess(coords, mask)
+                mask = mask_resize(coords, mask)
 
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 if hierarchies is None:
@@ -220,14 +266,20 @@ def create_mask_shapes(
 
                     if rotated_polygon:
                         box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                        points = [Point(x=(point[0] + left) / width, y=(point[1] + top) / height) for point in box_points]
+                        points = [
+                            Point(x=(point[0] + left) / width, y=(point[1] + top) / height) for point in box_points
+                        ]
                     else:
-                        points = [Point(x=(point[0][0] + left) / width, y=(point[0][1] + top) / height) for point in contour]
+                        points = [
+                            Point(x=(point[0][0] + left) / width, y=(point[0][1] + top) / height) for point in contour
+                        ]
 
                     polygon = Polygon(points=points)
                     if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                         shapes.append(Annotation(polygon, labels=assigned_label, id=ID(f"{label_idx:08}")))
             else:
-                ellipse = Ellipse((box[0] + left) / width, (box[1] + top) / height, (box[2] + left) / width, (box[3] + top) / height)
+                ellipse = Ellipse(
+                    (box[0] + left) / width, (box[1] + top) / height, (box[2] + left) / width, (box[3] + top) / height
+                )
                 shapes.append(Annotation(ellipse, labels=assigned_label, id=ID(f"{label_idx:08}")))
     return shapes
