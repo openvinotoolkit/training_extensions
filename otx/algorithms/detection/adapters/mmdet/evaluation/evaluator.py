@@ -1,3 +1,19 @@
+"""Evaluator of OTX Detection."""
+
+# Copyright (C) 2023 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 from multiprocessing import Pool
 from typing import Dict, List, Tuple
 
@@ -87,6 +103,17 @@ def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
 
 
 def sanitize_coordinates(bbox: np.ndarray, height: int, width: int, padding=1) -> np.ndarray:
+    """Sanitize coordinates of bounding boxes so that they fit within the image.
+
+    Args:
+        bbox (np.ndarray): bounding boxes with shape (4, )
+        height (int): image height
+        width (int): image width
+        padding (int, optional): padding added to each side of the bounding box. Defaults to 1.
+
+    Returns:
+        np.ndarray: sanitized bounding boxes with shape (4, )
+    """
     x1, y1, x2, y2 = bbox.astype(np.int)
     x1 = max(0, x1 - padding)
     y1 = max(0, y1 - padding)
@@ -96,6 +123,22 @@ def sanitize_coordinates(bbox: np.ndarray, height: int, width: int, padding=1) -
 
 
 def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.ndarray:
+    """Compute the intersection over union between the detected masks and ground truth masks.
+
+    Args:
+        det (Tuple[np.ndarray, BitmapMasks]): detected bboxes and masks
+        gt_masks (PolygonMasks): ground truth masks
+
+    Note:
+        It first compute IoU between bounding boxes, then compute IoU between masks
+        if IoU between bounding boxes is greater than 0.
+        Detection mask is resized to detected bounding box size and
+        padded to the same size as ground truth mask in order to compute IoU.
+
+    Returns:
+        np.ndarray: iou between detected masks and ground truth masks
+
+    """
     det_bboxes, det_masks = det
     gt_bboxes = gt_masks.get_bboxes()
     img_h, img_w = gt_masks.height, gt_masks.width
@@ -106,7 +149,7 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
         m, n = coord
         det_bbox, det_mask = sanitize_coordinates(det_bboxes[m], img_h, img_w), det_masks[m]
         gt_bbox, gt_mask = sanitize_coordinates(gt_bboxes[n], img_h, img_w), gt_masks[n]
-        # expand det_mask and gt_mask to the same size
+        # add padding to det_mask and gt_mask so that they have the same size
         min_x1 = min(det_bbox[0], gt_bbox[0])
         min_y1 = min(det_bbox[1], gt_bbox[1])
         max_x2 = max(det_bbox[2], gt_bbox[2])
@@ -126,8 +169,19 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
 
 
 def tpfpmiou_func(  # pylint: disable=too-many-locals
-    det: Tuple[np.ndarray, BitmapMasks], gt_masks: List[Dict], cls_scores, iou_thr=0.5
+    det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, cls_scores, iou_thr=0.5
 ):
+    """Compute tp, fp, miou for each image.
+
+    Args:
+        det (Tuple[np.ndarray, BitmapMasks]): detected bboxes and masks
+        gt_masks (PolygonMasks): ground truth polygons
+        cls_scores (np.ndarray): class scores
+        iou_thr (float, optional): IoU threshold. Defaults to 0.5.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray, float]: tp, fp, miou for each image
+    """
     num_dets = len(det[0])  # M
     num_gts = len(gt_masks)  # N
 
@@ -171,7 +225,16 @@ def tpfpmiou_func(  # pylint: disable=too-many-locals
 
 
 class Evaluator:
-    def __init__(self, annotation, domain, classes, nproc=4):
+    """OTX Evaluator for mAP and mIoU.
+
+    Args:
+            annotation (list(dict)): ground truth annotation
+            domain (Domain): OTX algorithm domain
+            classes (list): list of classes
+            nproc (int, optional): number of processes. Defaults to 4.
+    """
+
+    def __init__(self, annotation: List[Dict], domain: Domain, classes: List[str], nproc=4):
         self.domain = domain
         self.classes = classes
         self.num_classes = len(classes)
@@ -181,10 +244,17 @@ class Evaluator:
             self.annotation = annotation
         self.nproc = nproc
 
-    def get_gt_instance_masks(self, annotation):
-        """Crop mask from original image and saved them as PolygonMask."""
+    def get_gt_instance_masks(self, annotation: List[Dict]):
+        """Format ground truth instance mask annotation.
+
+        Args:
+            annotation (List[Dict]): per-image ground truth annotation
+
+        Returns:
+            cls_anno_list: per-class ground truth instance mask list
+        """
         num_images = len(annotation)
-        cls_anno_list = [[] for _ in range(self.num_classes)]
+        cls_anno_list: List[List] = [[] for _ in range(self.num_classes)]
         for idx in range(num_images):
             masks = annotation[idx]["masks"]
             for class_id in range(self.num_classes):
@@ -196,7 +266,17 @@ class Evaluator:
                 cls_anno_list[class_id].append(polygon_masks)
         return cls_anno_list
 
-    def get_mask_det_results(self, det_results, class_id) -> Tuple[List, List]:
+    def get_mask_det_results(self, det_results: List[Tuple], class_id: int) -> Tuple[List, List]:
+        """Get mask detection results for a specific class.
+
+        Args:
+            det_results (list(tuple)): detection results including bboxes and masks
+            class_id (int): class index
+
+        Returns:
+            cls_dets: per-class detection results including bboxes and decoded masks
+            cls_scores: class scores
+        """
         cls_scores = [img_res[0][class_id][..., -1] for img_res in det_results]
         cls_dets: List[Tuple] = []
         for i, det in enumerate(det_results):
@@ -205,6 +285,7 @@ class Evaluator:
             if len(det_masks) == 0:
                 cls_dets.append(([], []))
             else:
+                # Convert 28x28 encoded RLE mask detection to 28x28 BitmapMasks.
                 det_masks = mask_util.decode(det_masks)
                 det_masks = det_masks.transpose(2, 0, 1)
                 det_masks = BitmapMasks(det_masks, *det_masks.shape[1:])
@@ -212,6 +293,16 @@ class Evaluator:
         return cls_dets, cls_scores
 
     def evaluate_mask(self, results, logger, iou_thr):
+        """Evaluate mask results.
+
+        Args:
+            results (list): list of prediction
+            logger (Logger): OTX logger
+            iou_thr (float): IoU threshold
+
+        Returns:
+            metric: mAP and mIoU metric
+        """
         assert len(results) == len(self.annotation[0]), "number of images should be equal!"
         num_imgs = len(results)
         pool = Pool(self.nproc)  # pylint: disable=consider-using-with
@@ -271,6 +362,17 @@ class Evaluator:
         return metrics["mAP"], eval_results
 
     def evaluate(self, results, logger, iou_thr, scale_ranges):
+        """Evaluate detection results.
+
+        Args:
+            results (list): list of prediction
+            logger (Logger): OTX logger
+            iou_thr (float): IoU threshold
+            scale_ranges (list): scale range for object detection evaluation
+
+        Returns:
+            metric: mAP and mIoU metric
+        """
         if self.domain == Domain.DETECTION:
             return eval_map(
                 results,
