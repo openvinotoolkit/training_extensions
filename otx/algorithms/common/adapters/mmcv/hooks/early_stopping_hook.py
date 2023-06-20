@@ -249,7 +249,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         interval: int,
         metric: str = "bbox_mAP",
         rule: Optional[str] = None,
-        factor: float = 0.1,
+        factor: float = 0.5,
         patience: int = 3,
         iteration_patience: int = 300,
         **kwargs,
@@ -267,6 +267,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.base_lr: List[float] = []
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
+        self.num_decays = 0
+        self.max_num_decays = 4
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
@@ -342,7 +344,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             logger=runner.logger,
         )
 
-        if self.bad_count >= self.patience:
+        if self.bad_count >= self.patience and self.num_decays < self.max_num_decays:
             if runner.iter - self.last_iter < self.iteration_patience:
                 print_log(
                     f"\nSkip LR dropping. Accumulated iteration "
@@ -359,6 +361,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
                 logger=runner.logger,
             )
             self.current_lr = max(self.current_lr * self.factor, self.min_lr)
+            self.num_decays += 1
         return self.current_lr
 
     def before_run(self, runner: BaseRunner):

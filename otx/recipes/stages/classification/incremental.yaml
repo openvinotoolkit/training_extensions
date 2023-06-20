@@ -19,6 +19,29 @@ optimizer:
 evaluation:
   metric: ["accuracy", "class_accuracy"]
 
+lr_config:
+  policy: ReduceLROnPlateau
+  metric: accuracy
+  patience: 1
+  iteration_patience: 0
+  interval: 1
+  min_lr: 0.000001
+  warmup: linear
+  warmup_iters: 10
+  warmup_ratio: 0.333
+
 task_adapt:
   type: "mpa"
   op: "REPLACE"
+
+custom_hooks: [
+  {
+    type: LazyEarlyStoppingHook,
+    start: 3,
+    patience: 5,
+    iteration_patience: 0,
+    metric: accuracy,
+    interval: 1,
+    priority: 75,
+  }
+]
