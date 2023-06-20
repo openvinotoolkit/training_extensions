@@ -128,25 +128,21 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             LightningModule: Visual prompting model with/without weights.
         """
-        def get_model(
-            config: DictConfig,
-            config_optimizer: DictConfig,
-            state_dict: Optional[OrderedDict] = None
-        ):
-            if config.name == "SAM":
+        def get_model(config: DictConfig, state_dict: Optional[OrderedDict] = None):
+            if config.model.name == "SAM":
                 from otx.algorithms.visual_prompting.adapters.pytorch_lightning import (
                     SegmentAnything,
                 )
-                model = SegmentAnything(config=config, config_optimizer=config_optimizer, state_dict=state_dict)
+                model = SegmentAnything(config=config, state_dict=state_dict)
             else:
                 raise NotImplementedError((
-                    f"Current selected model {config.name} is not implemented. "
+                    f"Current selected model {config.model.name} is not implemented. "
                     f"Use SAM instead."
                 ))
             return model
             
         if otx_model is None:
-            model = get_model(config=self.config.model, config_optimizer=self.config.optimizer)
+            model = get_model(config=self.config)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
@@ -168,10 +164,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 logger.info("Load pytorch checkpoint.")
 
             try:
-                model = get_model(
-                    config=self.config.model,
-                    config_optimizer=self.config.optimizer,
-                    state_dict=model_data["model"] if from_lightning else model_data)
+                model = get_model(config=self.config, state_dict=model_data["model"] if from_lightning else model_data)
                 logger.info("Complete to load model weights.")
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception

@@ -39,12 +39,11 @@ CKPT_PATHS = {
 
 
 class SegmentAnything(LightningModule):
-    def __init__(self, config: DictConfig, config_optimizer: DictConfig, state_dict: Optional[OrderedDict] = None) -> None:
+    def __init__(self, config: DictConfig, state_dict: Optional[OrderedDict] = None) -> None:
         """SAM predicts object masks from an image and input prompts."""
         super().__init__()
         self.save_hyperparameters()
         self.config = config
-        self.config_optimizer = config_optimizer
 
         self.set_models()
         self.freeze_networks()
@@ -54,20 +53,20 @@ class SegmentAnything(LightningModule):
     def set_models(self) -> None:
         """"""
         # TODO (sungchul): Currently, backbone is assumed as vit. Depending on backbone, image_embedding_size can be changed.
-        if "vit" in self.config.backbone:
+        if "vit" in self.config.model.backbone:
             patch_size = 16
-            self.image_embedding_size = self.config.image_size // patch_size
+            self.image_embedding_size = self.config.model.image_size // patch_size
         else:
             raise NotImplementedError((
-                f"{self.config.backbone} for image encoder of SAM is not implemented yet. "
+                f"{self.config.model.backbone} for image encoder of SAM is not implemented yet. "
                 f"Use vit_b, l, or h."
             ))
 
-        self.image_encoder = SAMImageEncoder(self.config)
+        self.image_encoder = SAMImageEncoder(self.config.model)
         self.prompt_encoder = SAMPromptEncoder(
             embed_dim=256,
             image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
-            input_image_size=(self.config.image_size, self.config.image_size),
+            input_image_size=(self.config.model.image_size, self.config.model.image_size),
             mask_in_chans=16,
         )
         self.mask_decoder = SAMMaskDecoder(
@@ -85,22 +84,22 @@ class SegmentAnything(LightningModule):
 
     def freeze_networks(self) -> None:
         """"""
-        if self.config.freeze_image_encoder:
+        if self.config.model.freeze_image_encoder:
             for param in self.image_encoder.parameters():
                 param.requires_grad = False
 
-        if self.config.freeze_prompt_encoder:
+        if self.config.model.freeze_prompt_encoder:
             for param in self.prompt_encoder.parameters():
                 param.requires_grad = False
 
-        if self.config.freeze_mask_decoder:
+        if self.config.model.freeze_mask_decoder:
             for param in self.mask_decoder.parameters():
                 param.requires_grad = False
 
     def set_metrics(self) -> None:
         """"""
-        assert self.config.loss_type.lower() in ["sam", "medsam"], \
-            ValueError(f"{self.config.loss_type} is not supported. Please use 'sam' or 'medsam'.")
+        assert self.config.model.loss_type.lower() in ["sam", "medsam"], \
+            ValueError(f"{self.config.model.loss_type} is not supported. Please use 'sam' or 'medsam'.")
 
         # set train metrics
         self.train_metrics = MetricCollection(dict(
@@ -110,12 +109,12 @@ class SegmentAnything(LightningModule):
             train_loss=MeanMetric(),
             train_loss_dice=MeanMetric(),
         ))
-        if self.config.loss_type.lower() == "sam":
+        if self.config.model.loss_type.lower() == "sam":
             self.train_metrics.add_metrics(dict(
                 train_loss_focal=MeanMetric(),
                 train_loss_iou=MeanMetric(),
             ))
-        elif self.config.loss_type.lower() == "medsam":
+        elif self.config.model.loss_type.lower() == "medsam":
             self.train_metrics.add_metrics(dict(train_loss_ce=MeanMetric()))
 
         # set val metrics
@@ -140,12 +139,12 @@ class SegmentAnything(LightningModule):
             self.load_state_dict(state_dict)
         else:
             try:
-                self.load_from_checkpoint(self.config.checkpoint)
+                self.load_from_checkpoint(self.config.model.checkpoint)
             except:
-                if str(self.config.checkpoint).startswith("http"):
-                    state_dict = torch.hub.load_state_dict_from_url(str(self.config.checkpoint))
+                if str(self.config.model.checkpoint).startswith("http"):
+                    state_dict = torch.hub.load_state_dict_from_url(str(self.config.model.checkpoint))
                 else:
-                    with open(self.config.checkpoint, "rb") as f:
+                    with open(self.config.model.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
                 state_dict = replace_state_dict_keys(state_dict, revise_keys)
                 self.load_state_dict(state_dict)
@@ -184,10 +183,10 @@ class SegmentAnything(LightningModule):
         pred_masks, iou_predictions = self(images, bboxes, points)
 
         loss_dice = 0.
-        if self.config.loss_type.lower() == "sam":
+        if self.config.model.loss_type.lower() == "sam":
             loss_focal = 0.
             loss_iou = 0.
-        elif self.config.loss_type.lower() == "medsam":
+        elif self.config.model.loss_type.lower() == "medsam":
             loss_ce = 0.
 
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
@@ -202,20 +201,20 @@ class SegmentAnything(LightningModule):
 
             # calculate losses
             loss_dice += self.calculate_dice_loss(pred_mask, gt_mask, num_masks)
-            if self.config.loss_type.lower() == "sam":
+            if self.config.model.loss_type.lower() == "sam":
                 loss_focal += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
                 batch_iou = self.calculate_iou(pred_mask, gt_mask)
                 loss_iou += F.mse_loss(iou_prediction, batch_iou.unsqueeze(1), reduction='sum') / num_masks
 
-            elif self.config.loss_type.lower() == "medsam":
+            elif self.config.model.loss_type.lower() == "medsam":
                 loss_ce += self.calculate_sigmoid_ce_focal_loss(pred_mask, gt_mask, num_masks)
 
-        if self.config.loss_type.lower() == "sam":
+        if self.config.model.loss_type.lower() == "sam":
             loss = 20. * loss_focal + loss_dice + loss_iou
             self.train_metrics["train_loss_focal"].update(loss_focal)
             self.train_metrics["train_loss_iou"].update(loss_iou)
 
-        elif self.config.loss_type.lower() == "medsam":
+        elif self.config.model.loss_type.lower() == "medsam":
             loss = loss_dice + loss_ce
             self.train_metrics["train_loss_ce"].update(loss_ce)
 
@@ -262,13 +261,13 @@ class SegmentAnything(LightningModule):
         masks: List[Tensor] = []
         for i, pred_mask in enumerate(pred_masks):
             mask = self.postprocess_masks(pred_mask, images[i].shape[1:], batch["original_size"][i], is_predict=True)
-            if not self.config.return_logits:
-                mask = mask > self.config.mask_threshold
+            if not self.config.model.return_logits:
+                mask = mask > self.config.model.mask_threshold
             else:
                 mask = mask.sigmoid()
             masks.append(mask)
 
-        return dict(masks=masks, iou_predictions=iou_predictions, path=batch["path"])
+        return dict(masks=masks, iou_predictions=iou_predictions, path=batch["path"], labels=batch["labels"])
 
     def postprocess_masks(
         self,
@@ -297,8 +296,8 @@ class SegmentAnything(LightningModule):
         return masks.squeeze(1)
     
     def configure_optimizers(self) -> optim:
-        name = self.config_optimizer.pop("name")
-        optimizer = getattr(optim, name)(self.parameters(), **self.config_optimizer)
+        name = self.config.optimizer.pop("name")
+        optimizer = getattr(optim, name)(self.parameters(), **self.config.optimizer)
         return optimizer
     
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
@@ -349,7 +348,7 @@ class SegmentAnything(LightningModule):
             Loss tensor
         """
         loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
-        if self.config.loss_type.lower() == "sam":
+        if self.config.model.loss_type.lower() == "sam":
             # focal loss for SAM loss
             p_t = inputs * targets + (1 - inputs) * (1 - targets)
             loss = loss * ((1 - p_t) ** gamma)
