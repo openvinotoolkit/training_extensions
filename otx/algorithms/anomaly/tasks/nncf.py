@@ -141,7 +141,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
                     new_key = key.replace("model.", "")
                     res = re.search(r"(\w+)_feature_extractor\.(.*)", new_key)
                     if res:
-                        new_key = f"nncf_module.{res.group(1)}_model.feature_extractor.{res.group(2)}"
+                        new_key = f"{res.group(1)}_model.feature_extractor.{res.group(2)}"
                     nncf_modules[new_key] = model_data["model"][key]
                 else:
                     pl_modules[key] = model_data["model"][key]
