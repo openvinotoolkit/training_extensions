@@ -8,8 +8,6 @@ from otx.algorithms.segmentation.adapters.mmseg.utils.config_utils import (
     patch_datasets,
     patch_evaluation,
 )
-from otx.algorithms.segmentation.configs.base import SegmentationConfig
-from otx.api.entities.label import Domain, LabelEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
