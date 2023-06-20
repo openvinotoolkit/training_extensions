@@ -22,6 +22,7 @@ import torchvision.transforms as transforms
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
+from otx.api.entities.image import Image
 from torch.utils.data import DataLoader, Dataset
 
 from otx.algorithms.common.utils.logger import get_logger
@@ -93,45 +94,46 @@ class OTXVIsualPromptingDataset(Dataset):
         bboxes: List[List[int]] = []
         points: List = []
         gt_masks: List[np.ndarray] = []
+        labels: List = []
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
-            if isinstance(annotation.shape, Polygon) and not self.config.use_mask:
+            if isinstance(annotation.shape, Polygon):
+                assert not self.config.use_mask
                 # convert polygon to mask
                 gt_mask = self.convert_polygon_to_mask(annotation.shape, width, height)
-                if gt_mask.sum() == 0:
-                    # pass conversion error
-                    continue
-                gt_masks.append(gt_mask)
 
-                bbox = self.generate_bbox_from_mask(gt_mask, width, height)
-                bboxes.append(bbox)
+            elif isinstance(annotation.shape, Image):
+                assert self.config.use_mask
+                # use mask as-is
+                gt_mask = annotation.shape.numpy
 
-                # TODO (sungchul): generate random points from gt_mask
+            if gt_mask.sum() == 0:
+                # pass no gt
+                continue
+            gt_masks.append(gt_mask)
 
-            if self.config.use_mask:
-                # TODO (sungchul): load mask from dataset
-                logger.warning("Loading masks from dataset is not yet implemented.")
+            # generate bbox based on gt_mask
+            bbox = self.generate_bbox_from_mask(gt_mask, width, height)
+            bboxes.append(bbox)
 
-                # if using masks from dataset, we can use bboxes from dataset, too
-                if isinstance(annotation.shape, Rectangle):
-                    # load bbox from dataset
-                    bbox = ShapeFactory.shape_as_rectangle(annotation.shape)
-                    if min(bbox.width * width, bbox.height * height) < -1:
-                        continue
+            # TODO (sungchul): generate random points from gt_mask
+            labels.extend(annotation.get_labels(include_empty=False))
 
-                    bbox = self.generate_bbox(int(bbox.x1 * width), int(bbox.y1 * height), int(bbox.x2 * width), int(bbox.y2 * height), width, height)
-                    bboxes.append(bbox)
+            # TODO (sungchul): set mask and prompts as pair input and process them simultaneously
+            # # if using masks from dataset, we can use bboxes from dataset, too
+            # if isinstance(annotation.shape, Rectangle):
+            #     # load bbox from dataset
+            #     bbox = ShapeFactory.shape_as_rectangle(annotation.shape)
+            #     if min(bbox.width * width, bbox.height * height) < -1:
+            #         continue
 
-                if isinstance(annotation.shape, Point):
-                    logger.warning("Using points is not implemented yet.")
+            #     bbox = self.generate_bbox(int(bbox.x1 * width), int(bbox.y1 * height), int(bbox.x2 * width), int(bbox.y2 * height), width, height)
+            #     bboxes.append(bbox)
 
-        if len(bboxes) == 0:
-            # there is no bbox from dataset -> generate bboxes based on gt_masks
-            # ex) self.config.use_mask = True, but there is no bbox in dataset
-            for gt_mask in gt_masks:
-                bbox = self.generate_bbox_from_mask(gt_mask, width, height)
-                bboxes.append(bbox)
+            # if isinstance(annotation.shape, Point):
+            #     logger.warning("Using points is not implemented yet.")
 
-                # TODO (sungchul): generate random points from gt_mask
+        if len(gt_masks) == 0:
+            return {"images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": [], "labels": []}
 
         gt_masks = np.stack(gt_masks, axis=0)
         bboxes = np.array(bboxes)
@@ -142,6 +144,7 @@ class OTXVIsualPromptingDataset(Dataset):
             gt_masks=gt_masks,
             bboxes=bboxes,
             points=points, # TODO (sungchul): update point information
+            labels=labels,
         ))
         item = self.transform(item)
         return item
@@ -192,7 +195,6 @@ class OTXVIsualPromptingDataset(Dataset):
         y_indices, x_indices = np.where(gt_mask == 1)
         x_min, x_max = np.min(x_indices), np.max(x_indices)
         y_min, y_max = np.min(y_indices), np.max(y_indices)
-
         return self.generate_bbox(x_min, y_min, x_max, y_max, width, height)
 
 

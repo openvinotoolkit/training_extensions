@@ -32,11 +32,10 @@ def collate_fn(batch):
     gt_masks = _convert_empty_to_none("gt_masks")
     original_size = [item["original_size"] for item in batch]
     path = [item["path"] for item in batch]
-    # labels = [item["labels"] for item in batch]
+    labels = [item["labels"] for item in batch]
     if gt_masks:
-        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "gt_masks": gt_masks, "original_size": original_size, "path": path}
-    # skip vlid
-    return {"index": -1, "images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": []}
+        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "gt_masks": gt_masks, "original_size": original_size, "path": path, "labels": labels}
+    return {"index": -1, "images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": [], "labels": []}
 
 
 class ResizeLongestSide:

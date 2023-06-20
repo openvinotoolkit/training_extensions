@@ -22,9 +22,9 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
     It converts DatumaroDataset --> DatasetEntity for visual prompting tasks.
     To handle masks, this adapter is inherited from SegmentationDatasetAdapter.
     """
-    def __init__(self, use_mask: bool = False, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, use_mask: bool = True, *args, **kwargs):
         self.use_mask = use_mask
+        super().__init__(*args, **kwargs)
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
@@ -49,9 +49,8 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
 
                         if ann.type == DatumAnnotationType.mask:
                             if self.use_mask:
-                                # to forward mask path to dataset
-                                # TODO (sungchul): ann._image.func.__self__._class_mask._path
-                                raise NotImplementedError("Using mask as-is is not yet implemented.")
+                                # use masks loaded in datumaro as-is
+                                shapes.append(self._get_mask_entity(ann))
 
                             else:
                                 # convert masks to polygons, they will be converted to masks again
@@ -68,12 +67,13 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                                         used_labels.append(d_polygon.label)
 
                         # FIXME (sungchul): save prompts as annotation -> input
-                        if ann.type == DatumAnnotationType.bbox:
-                            if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
-                                shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
+                        # -> In cli, don't use prompts as inputs
+                        # if ann.type == DatumAnnotationType.bbox:
+                        #     if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
+                        #         shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
 
-                        if ann.type == DatumAnnotationType.points:
-                            raise NotImplementedError("Getting points is not yet implemented.")
+                        # if ann.type == DatumAnnotationType.points:
+                        #     raise NotImplementedError("Getting points is not yet implemented.")
 
                         if ann.label not in used_labels and ann.type != DatumAnnotationType.mask:
                             used_labels.append(ann.label)

@@ -17,22 +17,28 @@
 from typing import Any, List
 
 import pytorch_lightning as pl
+import numpy as np
 from anomalib.models import AnomalyModule
 from pytorch_lightning.callbacks import Callback
 
 from otx.api.entities.annotation import Annotation
+from otx.api.entities.image import Image
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.id import ID
-from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
+from otx.api.entities.id import ID
+from bson import ObjectId
 
 
 class InferenceCallback(Callback):
-    """Callback that updates the OTX dataset during inference."""
+    """Callback that updates the OTX dataset during inference.
+    
+    Args:
+        otx_dataset (DatasetEntity): 
+    """
 
     def __init__(self, otx_dataset: DatasetEntity):
         self.otx_dataset = otx_dataset.with_empty_annotations()
@@ -42,31 +48,43 @@ class InferenceCallback(Callback):
         outputs = outputs[0]
 
         # collect generic predictions
-        pred_masks = [output['masks'][0] for output in outputs]
-        iou_predictions = [output['iou_predictions'][0] for output in outputs]
-        label_map = LabelEntity(
-            name="foreground",
-            domain=Domain.VISUAL_PROMPTING,
-            is_empty=False, id=ID(1)
-        )
-        for dataset_item, pred_mask, iou_prediction in zip(self.otx_dataset, pred_masks, iou_predictions):
+        pred_masks = [output["masks"][0] for output in outputs]
+        iou_predictions = [output["iou_predictions"][0] for output in outputs]
+        gt_labels = [output["labels"][0] for output in outputs]
+        for dataset_item, pred_mask, iou_prediction, labels in zip(self.otx_dataset, pred_masks, iou_predictions, gt_labels):
             annotations: List[Annotation] = []
-            for soft_prediction in pred_mask:
+            labels_for_annotations: List[ScoredLabel] = []
+            for soft_prediction, iou, label in zip(pred_mask, iou_prediction, labels):
+                probability = max(min(float(iou), 1.), 0.)
+                label.probability = probability
                 soft_prediction = soft_prediction.numpy()
                 hard_prediction = create_hard_prediction_from_soft_prediction(
                     soft_prediction=soft_prediction,
                     soft_threshold=0.5
                 )
 
-                # generate polygon annotations
-                annotation = create_annotation_from_segmentation_map(
-                    hard_prediction=hard_prediction,
-                    soft_prediction=soft_prediction,
-                    label_map={1: label_map},
-                )
-                annotations.extend(annotation)
+                if _pl_module.config.dataset.use_mask:
+                    # set mask as annotation
+                    annotation = [Annotation(
+                        shape=Image(data=hard_prediction.astype(np.uint8), size=hard_prediction.shape),
+                        labels=[ScoredLabel(label=label.label, probability=probability)],
+                        id=ID(ObjectId()),
+                    )]
+                else:
+                    # generate polygon annotations
+                    annotation = create_annotation_from_segmentation_map(
+                        hard_prediction=hard_prediction,
+                        soft_prediction=soft_prediction,
+                        label_map={1: label.label},
+                    )
 
-            dataset_item.append_annotations(annotations)
-            dataset_item.append_labels([
-                ScoredLabel(label=label_map, probability=max(min(float(iou), 1.), 0.)) for iou in iou_prediction]
-            )
+                annotations.extend(annotation)
+                labels_for_annotations.extend([
+                    ScoredLabel(label=label.label, probability=probability) for _ in range(len(annotation))
+                ])
+
+            if _pl_module.config.dataset.use_mask:
+                dataset_item.annotation_scene.append_annotations(annotations)
+            else:
+                dataset_item.append_annotations(annotations)
+            dataset_item.append_labels(labels_for_annotations)

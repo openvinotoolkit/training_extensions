@@ -498,8 +498,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 dataset_config["cache_config"]["num_workers"] = num_workers
 
             if str(self.task_type).upper() == "VISUAL_PROMPTING":
-                dataset = getattr(hyper_parameters, "dataset", None)
-                dataset_config["use_mask"] = getattr(dataset, "use_mask", False)
+                dataset = getattr(hyper_parameters.learning_parameters, "dataset", None)
+                dataset_config["use_mask"] = getattr(dataset, "use_mask", True)
 
         if str(self.task_type).upper() == "SEGMENTATION" and str(self.train_type).upper() == "SELFSUPERVISED":
             # FIXME: manually set a path to save pseudo masks in workspace
