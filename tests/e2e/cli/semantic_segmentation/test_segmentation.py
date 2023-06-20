@@ -168,8 +168,6 @@ class TestToolsMPASegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
-        if template.name == "SegNext-s":
-            pytest.skip(reason="Issue#2237 Exported segnext_s model shows different accuracy per execution")
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 

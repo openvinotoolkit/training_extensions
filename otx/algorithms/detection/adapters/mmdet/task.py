@@ -61,6 +61,7 @@ from otx.algorithms.detection.adapters.mmdet.configurer import (
 from otx.algorithms.detection.adapters.mmdet.datasets import ImageTilingDataset
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
     DetClassProbabilityMapHook,
+    MaskRCNNRecordingForwardHook,
 )
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_input_preprocessing,
@@ -402,7 +403,8 @@ class MMDetectionTask(OTXDetectionTask):
             if raw_model.__class__.__name__ == "NNCFNetwork":
                 raw_model = raw_model.get_nncf_wrapped_model()
             if isinstance(raw_model, TwoStageDetector):
-                saliency_hook = ActivationMapHook(feature_model)
+                height, width, _ = mm_dataset[0]["img_metas"][0].data["img_shape"]
+                saliency_hook = MaskRCNNRecordingForwardHook(feature_model, input_img_shape=(height, width))
             else:
                 saliency_hook = DetClassProbabilityMapHook(
                     feature_model,
@@ -531,15 +533,9 @@ class MMDetectionTask(OTXDetectionTask):
         explain_parameters: Optional[ExplainParameters] = None,
     ) -> Dict[str, Any]:
         """Main explain function of MMDetectionTask."""
-
         for item in dataset:
             item.subset = Subset.TESTING
 
-        explainer_hook_selector = {
-            "classwisesaliencymap": DetClassProbabilityMapHook,
-            "eigencam": EigenCamHook,
-            "activationmap": ActivationMapHook,
-        }
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -607,6 +603,18 @@ class MMDetectionTask(OTXDetectionTask):
 
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
+
+        if isinstance(feature_model, TwoStageDetector):
+            height, width, _ = mm_dataset[0]["img_metas"][0].data["img_shape"]
+            per_class_xai_algorithm = partial(MaskRCNNRecordingForwardHook, input_img_shape=(width, height))
+        else:
+            per_class_xai_algorithm = DetClassProbabilityMapHook  # type: ignore
+
+        explainer_hook_selector = {
+            "classwisesaliencymap": per_class_xai_algorithm,
+            "eigencam": EigenCamHook,
+            "activationmap": ActivationMapHook,
+        }
 
         explainer = explain_parameters.explainer if explain_parameters else None
         if explainer is not None:
