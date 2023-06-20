@@ -174,13 +174,13 @@ def expand_box(box, scale):
     return box_exp
 
 
-def segm_postprocess(box, raw_cls_mask):
+def segm_postprocess(box, mask):
     # Add zero border to prevent upsampling artifacts on segment borders.
-    raw_cls_mask = np.pad(raw_cls_mask, ((1, 1), (1, 1)), 'constant', constant_values=0)
-    extended_box = expand_box(box, raw_cls_mask.shape[0] / (raw_cls_mask.shape[0] - 2.0)).astype(int)
+    mask = np.pad(mask, ((1, 1), (1, 1)), 'constant', constant_values=0)
+    extended_box = expand_box(box, mask.shape[0] / (mask.shape[0] - 2.0)).astype(int)
     w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
-    raw_cls_mask = cv2.resize(raw_cls_mask.astype(np.float32), (w, h)) > 0.5
-    mask = raw_cls_mask.astype(np.uint8)
+    mask = cv2.resize(mask.astype(np.float32), (w, h))
+    mask = mask.astype(np.uint8)
     return mask
 
 
