@@ -171,9 +171,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         else:
             task_type = self.task_type
             if not task_type and not model:
-                if not hasattr(self.args, "train_data_roots"):
-                    raise ConfigValueError("Can't find the argument 'train_data_roots'")
-                task_type = self.auto_task_detection(self.args.train_data_roots)
+                if self.mode in ["train", "build"]:
+                    if not hasattr(self.args, "train_data_roots"):
+                        raise ConfigValueError("Can't find the argument 'train_data_roots'")
+                    task_type = self.auto_task_detection(self.args.train_data_roots)
+                else:
+                    raise ConfigValueError("No appropriate template or task-type was found.")
             self.template = self._get_template(task_type, model=model)
             self.train_type = self._get_train_type()
         self.task_type = self.template.task_type
