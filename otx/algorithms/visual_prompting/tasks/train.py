@@ -73,7 +73,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         loggers = CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp)
         callbacks = [
             TQDMProgressBar(),
-            ModelCheckpoint(dirpath=loggers.log_dir, filename="epoch_{epoch:02d}", **self.config.callback.checkpoint),
+            ModelCheckpoint(dirpath=loggers.log_dir, filename="{epoch:02d}", **self.config.callback.checkpoint),
             LearningRateMonitor(),
             EarlyStopping(**self.config.callback.early_stopping)
         ]
@@ -99,7 +99,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         performance = Performance(
             score=ScoreMetric(value=best_score, name=self.trainer.checkpoint_callback.monitor)
-            # TODO (sungchul): dashboard?
+            # TODO (sungchul): dashboard? -> only for Geti
         )
 
         logger.info(f"Final model performance: {str(performance)}")
