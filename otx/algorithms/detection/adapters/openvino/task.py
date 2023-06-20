@@ -728,10 +728,15 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
-            output_model.set_data(
-                "confidence_threshold",
-                np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
-            )
+        output_model.set_data(
+            "confidence_threshold",
+            np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
+        )
+
+        # tile classifier is bypassed PTQ for now
+        if self.config.tiling_parameters.enable_tiling:
+            output_model.set_data("tile_classifier.xml", self.model.get_data("tile_classifier.xml"))
+            output_model.set_data("tile_classifier.bin", self.model.get_data("tile_classifier.bin"))
 
         output_model.set_data(
             "label_schema.json",
@@ -747,7 +752,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         self.model = output_model
         self.inferencer = self.load_inferencer()
-        logger.info("POT optimization completed")
+        logger.info("PTQ optimization completed")
 
         if optimization_parameters:
             optimization_parameters.update_progress(100, None)
