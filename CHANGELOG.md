@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 ### Bug fixes
 
 - Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
+- Fix the bug that learning rate ins't scaled when multi-GPU trianing (<https://github.com/openvinotoolkit/training_extensions/pull/2254>)
 
 ### Known issues
 
