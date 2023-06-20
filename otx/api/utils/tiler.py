@@ -139,10 +139,7 @@ class Tiler:
                 tile_meta.update({"coord": coord})
                 features.append(
                     (
-                        (
-                            copy.deepcopy(raw_predictions["feature_vector"].reshape(-1)),
-                            copy.deepcopy(raw_predictions["saliency_map"][0]),
-                        ),
+                        (raw_predictions["feature_vector"].reshape(-1), raw_predictions["saliency_map"][0]),
                         tile_meta,
                     )
                 )
@@ -173,7 +170,8 @@ class Tiler:
             pred = self.async_pipeline.get_result(processed_tiles)
             while pred:
                 tile_prediction, meta, feats = pred
-                features.append((feats, meta))
+                if feats != (None, None):
+                    features.append((feats, meta))
                 tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
                 tile_results.append(tile_result)
                 processed_tiles += 1
@@ -183,7 +181,8 @@ class Tiler:
         self.async_pipeline.await_all()
         for j in range(processed_tiles, num_tiles):
             tile_prediction, meta, feats = self.async_pipeline.get_result(j)
-            features.append((feats, meta))
+            if feats != (None, None):
+                features.append((feats, meta))
             tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
             tile_results.append(tile_result)
         assert j == num_tiles - 1, "Number of tiles processed does not match number of tiles"

@@ -40,10 +40,10 @@ class BaseRecordingForwardHook(ABC):
         module (torch.nn.Module): The PyTorch module to be registered in forward pass
         fpn_idx (int, optional): The layer index to be processed if the model is a FPN.
                                   Defaults to 0 which uses the largest feature map from FPN.
-        normalize (bool, optional): Whether to normalize the resulting saliency maps.
+        normalize (bool): Whether to normalize the resulting saliency maps.
     """
 
-    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, normalize=True) -> None:
+    def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, normalize: bool = True) -> None:
         self._module = module
         self._handle = None
         self._records: List[torch.Tensor] = []

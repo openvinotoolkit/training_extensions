@@ -505,7 +505,7 @@ class MMDetectionTask(OTXDetectionTask):
                 if "saliency_map" not in output_names:
                     output_names.append("saliency_map")
             # disable softmax and normalization to merge saliency map for tiles and postprocess them altogether
-            tiling_detection = True if "tile_cfg" in cfg else False
+            tiling_detection = "tile_cfg" in cfg
             export_options["deploy_cfg"]["softmax_saliency_maps"] = not tiling_detection
             export_options["deploy_cfg"]["normalize_saliency_maps"] = not tiling_detection
 

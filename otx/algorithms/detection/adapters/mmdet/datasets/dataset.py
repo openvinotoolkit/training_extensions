@@ -419,7 +419,7 @@ class ImageTilingDataset(OTXDetDataset):
             dump_vectors (bool): whether to dump vectors.
 
         Returns:
-            merged_vectors (list[np.ndarray]): Merged vector for each image.
+            merged_vectors (np.ndarray): Merged vector for each image.
         """
 
         if dump_vectors:

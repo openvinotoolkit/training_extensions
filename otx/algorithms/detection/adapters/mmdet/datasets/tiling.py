@@ -506,7 +506,7 @@ class Tile:
             ann["labels"] = self.tiles[idx]["gt_labels"]
         return ann
 
-    def merge_vectors(self, feature_vectors: List[np.ndarray]) -> List[np.ndarray]:
+    def merge_vectors(self, feature_vectors: List[np.ndarray]) -> np.ndarray:
         """Merge tile-level feature vectors to image-level feature vector.
 
         Args:
@@ -516,10 +516,11 @@ class Tile:
             merged_vectors (list[np.ndarray]): Merged vectors for each image.
         """
 
-        # tiles vectors + full image vector
-        vect_per_image = len(feature_vectors) // self.num_images + 1
-        image_vectors = feature_vectors[::vect_per_image]
-
+        vect_per_image = len(feature_vectors) // self.num_images
+        # split vectors on chunks of vectors related to the same image
+        image_vectors = [
+            feature_vectors[x : x + vect_per_image] for x in range(0, len(feature_vectors), vect_per_image)
+        ]
         return np.average(image_vectors, axis=1)
 
     def merge_maps(self, saliency_maps: List[np.ndarray]) -> List[np.ndarray]:

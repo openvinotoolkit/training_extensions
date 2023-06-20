@@ -29,7 +29,7 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
-    def __init__(self, module: torch.nn.Module, normalize=True, use_cls_softmax=True) -> None:
+    def __init__(self, module: torch.nn.Module, normalize: bool = True, use_cls_softmax: bool = True) -> None:
         super().__init__(module, normalize=normalize)
         self._neck = module.neck if module.with_neck else None
         self._bbox_head = module.bbox_head
