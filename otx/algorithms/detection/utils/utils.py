@@ -162,6 +162,7 @@ def mask_resize(box: np.ndarray, mask: np.ndarray):
     Returns:
         mask (np.ndarray): resized mask
     """
+    # scaling bbox to prevent up-sampling artifacts on segment borders.
     mask = np.pad(mask, ((1, 1), (1, 1)), "constant", constant_values=0)
     scale_h = mask.shape[0] / (mask.shape[0] - 2.0)
     scale_w = mask.shape[1] / (mask.shape[1] - 2.0)
@@ -259,9 +260,7 @@ def create_mask_shapes(
                     continue
                 for contour, hierarchy in zip(contours, hierarchies[0]):
                     # skip inner contours
-                    if hierarchy[3] != -1:
-                        continue
-                    if len(contour) <= 2:
+                    if hierarchy[3] != -1 or len(contour) <= 2:
                         continue
 
                     if rotated_polygon:
