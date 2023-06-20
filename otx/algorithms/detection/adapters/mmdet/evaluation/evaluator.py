@@ -222,18 +222,10 @@ class Evaluator:
             cls_gts = self.annotation[class_id]
 
             # compute tp and fp for each image with multiple processes
-            # tpfpmiou = pool.starmap(
-            # tpfpmiou_func, zip(cls_dets, cls_gts, cls_scores, [iou_thr for _ in range(num_imgs)])
-            # )
-            # tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
-
-            # for loop version
-            tp, fp, miou = [], [], []
-            for i in range(num_imgs):
-                tpfpmiou = tpfpmiou_func(cls_dets[i], cls_gts[i], cls_scores[i], iou_thr)
-                tp.append(tpfpmiou[0])
-                fp.append(tpfpmiou[1])
-                miou.append(tpfpmiou[2])
+            tpfpmiou = pool.starmap(
+                tpfpmiou_func, zip(cls_dets, cls_gts, cls_scores, [iou_thr for _ in range(num_imgs)])
+            )
+            tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
 
             # sort all det bboxes by score, also sort tp and fp
             cls_scores = np.hstack(cls_scores)
