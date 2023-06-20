@@ -22,6 +22,7 @@ from functools import partial
 from typing import Dict, Optional, Union
 
 import torch
+from torch import distributed as dist
 from mmaction import __version__
 from mmaction.apis import train_model
 from mmaction.datasets import build_dataloader, build_dataset
@@ -234,7 +235,7 @@ class MMActionTask(OTXActionTask):
     def configure_distributed(cfg: Config):
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
-            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            new_lr = dist.get_world_size() * cfg.optimizer.lr
             logger.info(
                 f"enabled linear scaling rule to the learning rate. \
                 changed LR from {cfg.optimizer.lr} to {new_lr}"
