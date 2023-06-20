@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
+from openvino.runtime import Node
 
 from .builder import OPS
 
