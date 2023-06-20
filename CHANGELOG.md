@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Set persistent_workers and pin_memory as True in detection task (<https://github.com/openvinotoolkit/training_extensions/pull/2224>)
 - New algorithm for Semi-SL semantic segmentation based on metric lerning via class prototypes (https://github.com/openvinotoolkit/training_extensions/pull/2156)
 - Self-SL for classification now can recieve just folder with any images to start contrastive pretraining (https://github.com/openvinotoolkit/training_extensions/pull/2219)
+- Update OpenVINO version to 2023.0, and NNCF verion to 2.5.
 
 ### Bug fixes
 
