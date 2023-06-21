@@ -53,7 +53,6 @@ class InferenceCallback(Callback):
         gt_labels = [output["labels"][0] for output in outputs]
         for dataset_item, pred_mask, iou_prediction, labels in zip(self.otx_dataset, pred_masks, iou_predictions, gt_labels):
             annotations: List[Annotation] = []
-            labels_for_annotations: List[ScoredLabel] = []
             for soft_prediction, iou, label in zip(pred_mask, iou_prediction, labels):
                 probability = max(min(float(iou), 1.), 0.)
                 label.probability = probability
@@ -79,12 +78,7 @@ class InferenceCallback(Callback):
                     )
 
                 annotations.extend(annotation)
-                labels_for_annotations.extend([
-                    ScoredLabel(label=label.label, probability=probability) for _ in range(len(annotation))
-                ])
-
             if _pl_module.config.dataset.use_mask:
                 dataset_item.annotation_scene.append_annotations(annotations)
             else:
                 dataset_item.append_annotations(annotations)
-            dataset_item.append_labels(labels_for_annotations)
