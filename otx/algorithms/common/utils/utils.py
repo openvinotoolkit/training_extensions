@@ -132,7 +132,7 @@ def get_default_async_reqs_num() -> int:
 
 
 def read_py_config(filename: str) -> adict:
-    """Reads py condig to a dict."""
+    """Reads py config to a dict."""
     filename = str(Path(filename).resolve())
     if not Path(filename).is_file:
         raise RuntimeError("config not found")
