@@ -26,7 +26,7 @@ from typing import Any, Dict, Iterable, List, Optional
 import torch
 from torch import distributed as dist
 
-from otx.algorithms.common.utils import save_file_considering_dist_train
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.configs.training_base import TrainType
@@ -169,10 +169,10 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         model = self._task_environment.model
         state_dict = self._load_model_ckpt(model)
         if state_dict:
-            self._model_ckpt = os.path.join(self._output_path, "env_model_ckpt.pth")
+            self._model_ckpt = append_dist_rank_suffix(os.path.join(self._output_path, "env_model_ckpt.pth"))
             if os.path.exists(self._model_ckpt):
                 os.remove(self._model_ckpt)
-            save_file_considering_dist_train(state_dict, self._model_ckpt)
+            torch.save(state_dict, self._model_ckpt)
             self._model_label_schema = _load_model_label_schema(model)
             if model is not None:
                 self._resume = model.model_adapters.get("resume", False)
