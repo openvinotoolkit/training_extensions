@@ -248,6 +248,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
+        model_configuration: Dict[str, Any] = {},
     ):
         model_adapter = OpenvinoAdapter(
             create_core(),
@@ -263,8 +264,8 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
                 hparams.postprocessing,
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
             ),
-            "resize_type": "fit_to_window",  # Resize(keep_ratio=True)
         }
+        configuration.update(model_configuration)
 
         model = Model.create_model(model_adapter, "OTX_MaskRCNN", configuration, preload=True)
         converter = MaskToAnnotationConverter(label_schema, configuration)
@@ -454,6 +455,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.task_type == TaskType.DETECTION:
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
+            if self.config.tiling_parameters.enable_tiling:
+                args.append({"resize_type": "fit_to_window_letterbox"})
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
