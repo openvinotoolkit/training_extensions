@@ -80,31 +80,23 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         self.trainer = Trainer(**self.config.trainer, logger=loggers, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
-        self.trainer.validate(model=self.model, datamodule=datamodule)
 
-        if self.trainer.max_epochs > 0:
-            model_ckpt = self.trainer.checkpoint_callback.best_model_path
-            best_score = self.trainer.checkpoint_callback.best_model_score
-            if model_ckpt is None:
-                logger.error("cannot find final checkpoint from the results.")
-                # output_model.model_status = ModelStatus.FAILED
-                return
+        model_ckpt = self.trainer.checkpoint_callback.best_model_path
+        if model_ckpt is None:
+            logger.error("cannot find final checkpoint from the results.")
+            return
+        # update checkpoint to the newly trained model
+        self._model_ckpt = model_ckpt
 
-            # update checkpoint to the newly trained model
-            self._model_ckpt = model_ckpt
-
-        else:
-            # for only validation phase
-            best_score = self.trainer.callback_metrics.get(self.trainer.checkpoint_callback.monitor)
-
+        # compose performance statistics
+        best_score = self.trainer.checkpoint_callback.best_model_score
+        # save resulting model
+        self.save_model(output_model)
         performance = Performance(
             score=ScoreMetric(value=best_score, name=self.trainer.checkpoint_callback.monitor)
             # TODO (sungchul): dashboard? -> only for Geti
         )
-
         logger.info(f"Final model performance: {str(performance)}")
-        # save resulting model
-        self.save_model(output_model)
         output_model.performance = performance
 
-        logger.info("Training completed.")
+        logger.info("train done.")

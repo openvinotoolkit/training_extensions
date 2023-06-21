@@ -275,11 +275,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
-        if hasattr(self.model, "image_metrics"):
-            f1_score = self.model.image_metrics.F1Score.compute().item()
-            output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
-        else:
-            output_model.performance = NullPerformance()
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
 
@@ -324,7 +319,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def cleanup(self) -> None:
         """Clean up work directory."""
-        if self._work_dir_is_temp and os.path.exists(self.config.project.path):
+        if self._work_dir_is_temp:
             self._delete_scratch_space()
 
     def _delete_scratch_space(self) -> None:
