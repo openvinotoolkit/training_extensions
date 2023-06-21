@@ -27,8 +27,6 @@ log_config = dict(
     ],
 )
 
-dist_params = dict(backend="nccl", linear_scale_lr=False)
-
 runner = dict(type="EpochBasedRunner", max_epochs=10)
 
 checkpoint_config = dict(by_epoch=True, interval=1)

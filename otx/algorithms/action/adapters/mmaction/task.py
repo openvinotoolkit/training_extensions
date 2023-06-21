@@ -29,6 +29,7 @@ from mmaction.models import build_model as build_videomodel
 from mmaction.utils import collect_env
 from mmcv.runner import CheckpointLoader, load_checkpoint, wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, ProgressBar, get_git_hash
+from torch import distributed as dist
 
 from otx.algorithms.action.adapters.mmaction import (
     Exporter,
@@ -236,7 +237,7 @@ class MMActionTask(OTXActionTask):
     def configure_distributed(cfg: Config):
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
-            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            new_lr = dist.get_world_size() * cfg.optimizer.lr
             logger.info(
                 f"enabled linear scaling rule to the learning rate. \
                 changed LR from {cfg.optimizer.lr} to {new_lr}"
