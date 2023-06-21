@@ -14,6 +14,7 @@ from tests.unit.algorithms.detection.test_helpers import (
     MockPipeline,
     generate_det_dataset,
 )
+import pycocotools.mask as mask_util
 
 
 class TestOTXDetDataset:
@@ -113,8 +114,8 @@ class TestOTXDetDataset:
         elif task_type == TaskType.INSTANCE_SEGMENTATION:
             results = [
                 (
-                    [np.random.rand(1, 5)],
-                    [[{"size": [sample["width"], sample["height"]], "counts": "some counts"}]],
+                    [np.random.rand(1, 5)] * len(otx_dataset.get_labels()),
+                    [[{"size": [sample["width"], sample["height"]], "counts": b'1'}]] * len(otx_dataset.get_labels()),
                 )
             ]
         eval_results = dataset.evaluate(results, metric, logger)

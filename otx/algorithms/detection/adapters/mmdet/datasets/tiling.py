@@ -379,22 +379,6 @@ class Tile:
         result["img"] = cropped_tile
         return result
 
-    @staticmethod
-    def readjust_tile_mask(tile_rle: Dict):
-        """Shift tile-level mask to image-level mask.
-
-        Args:
-            tile_rle (Dict): tile-level mask result.
-
-        Returns:
-            np.ndarray: image-level mask result.
-        """
-        x1, y1, x2, y2 = tile_rle.pop("tile_box")
-        height, width = tile_rle.pop("img_size")
-        tile_mask = mask_util.decode(tile_rle)
-        tile_mask = np.pad(tile_mask, ((y1, height - y2), (x1, width - x2)))
-        return mask_util.encode(tile_mask)
-
     # pylint: disable=too-many-locals
     @timeit
     def merge(self, results: List[List]) -> Union[List[Tuple[np.ndarray, list]], List[np.ndarray]]:
