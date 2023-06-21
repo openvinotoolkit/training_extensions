@@ -15,7 +15,7 @@ from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 from torch import distributed as dist
 
-from otx.algorithms.common.utils import save_file_considering_dist_train
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     build_dataloader,
@@ -305,7 +305,8 @@ class SegmentationConfigurer:
             if modified:
                 if not new_path:
                     new_path = os.path.join(local_torch_hub_folder, "converted.pth")
-                save_file_considering_dist_train(new_ckpt, new_path)
+                new_path = append_dist_rank_suffix(new_path)
+                torch.save(new_ckpt, new_path)
                 return new_path
         return ckpt_path
 
@@ -317,7 +318,8 @@ class SegmentationConfigurer:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
-            save_file_considering_dist_train(ckpt, new_path)
+            new_path = append_dist_rank_suffix(new_path)
+            torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
 

@@ -15,7 +15,7 @@ from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 from torch import distributed as dist
 
-from otx.algorithms.common.utils import save_file_considering_dist_train
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils import (
     patch_datasets,
@@ -279,7 +279,8 @@ class ClassificationConfigurer:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
-            save_file_considering_dist_train(ckpt, new_path)
+            new_path = append_dist_rank_suffix(new_path)
+            torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
 
