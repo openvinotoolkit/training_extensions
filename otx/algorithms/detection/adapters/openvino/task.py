@@ -734,7 +734,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         )
 
         # tile classifier is bypassed PTQ for now
-        if self.config.tiling_parameters.enable_tiling:
+        if self.config.tiling_parameters.enable_tile_classifier:
             output_model.set_data("tile_classifier.xml", self.model.get_data("tile_classifier.xml"))
             output_model.set_data("tile_classifier.bin", self.model.get_data("tile_classifier.bin"))
 
