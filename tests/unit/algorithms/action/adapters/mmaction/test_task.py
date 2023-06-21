@@ -382,3 +382,22 @@ class TestMMActionTask:
             3. Check output model attributes
         """
         self.test_export(mocker, ModelPrecision.FP32, ExportType.ONNX)
+
+    @e2e_pytest_unit
+    def test_configure_distributed(self, mocker) -> None:
+        """Test configure_distributed function.
+
+        <Steps>
+            1. Create config for test
+            2. Run MMActionTask.configure_distributed
+            3. Check updated learning rate
+        """
+        mock_dist = mocker.patch.object(target_file, "dist")
+        world_size = 2
+        mock_dist.get_world_size.return_value = world_size
+        origin_lr = 0.01
+        config = Config({"optimizer": {"lr": origin_lr}, "dist_params": {"linear_scale_lr": True}})
+
+        MMActionTask.configure_distributed(config)
+
+        assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
