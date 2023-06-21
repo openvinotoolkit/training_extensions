@@ -216,13 +216,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 metric is chosen depending on the task type.
         """
-        # metric = MetricsHelper.compute_f_measure(output_resultset)
-        # output_resultset.performance = metric.get_performance()
-
-        # if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-        #     accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
-        #     output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
-
         metric = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset)
         logger.info(f"mDice after evaluation: {metric.overall_dice.value}")
         output_resultset.performance = metric.get_performance()
@@ -234,13 +227,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Args:
              onnx_path (str): path to save ONNX file
         """
-        height, width = self.config.model.input_size
-        torch.onnx.export(
-            model=self.model.model,
-            args=torch.zeros((1, 3, height, width)).to(self.model.device),
-            f=onnx_path,
-            opset_version=11,
-        )
+        raise NotImplementedError
 
     def export(
         self,
@@ -260,51 +247,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Raises:
             Exception: If export_type is not ExportType.OPENVINO
         """
-        if dump_features:
-            logger.warning(
-                "Feature dumping is not implemented for the anomaly task."
-                "The saliency maps and representation vector outputs will not be dumped in the exported model."
-            )
-
-        if export_type == ExportType.ONNX:
-            output_model.model_format = ModelFormat.ONNX
-            output_model.optimization_type = ModelOptimizationType.ONNX
-            if precision == ModelPrecision.FP16:
-                raise RuntimeError("Export to FP16 ONNX is not supported")
-        elif export_type == ExportType.OPENVINO:
-            output_model.model_format = ModelFormat.OPENVINO
-            output_model.optimization_type = ModelOptimizationType.MO
-        else:
-            raise RuntimeError(f"not supported export type {export_type}")
-
-        self.precision[0] = precision
-        output_model.has_xai = dump_features
-
-        # pylint: disable=no-member; need to refactor this
-        logger.info("Exporting the OpenVINO model.")
-        onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
-        self._export_to_onnx(onnx_path)
-
-        if export_type == ExportType.ONNX:
-            with open(onnx_path, "rb") as file:
-                output_model.set_data("model.onnx", file.read())
-        else:
-            optimize_command = ["mo", "--input_model", onnx_path, "--output_dir", self.config.project.path]
-            if precision == ModelPrecision.FP16:
-                optimize_command.append("--compress_to_fp16")
-            subprocess.run(optimize_command, check=True)
-            bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
-            xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
-            with open(bin_file, "rb") as file:
-                output_model.set_data("openvino.bin", file.read())
-            with open(xml_file, "rb") as file:
-                output_model.set_data("openvino.xml", file.read())
-
-        output_model.precision = self.precision
-        output_model.optimization_methods = self.optimization_methods
-
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        self._set_metadata(output_model)
+        raise NotImplementedError
 
     def model_info(self) -> Dict:
         """Return model info to save the model weights.
@@ -341,6 +284,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
+        """"""
         if hasattr(self.model, "image_threshold"):
             output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
         if hasattr(self.model, "pixel_threshold"):
@@ -360,13 +304,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             bool: True if task runs in docker, False otherwise.
         """
-        path = "/proc/self/cgroup"
-        is_in_docker = False
-        if os.path.isfile(path):
-            with open(path, encoding="utf-8") as file:
-                is_in_docker = is_in_docker or any("docker" in line for line in file)
-        is_in_docker = is_in_docker or os.path.exists("/.dockerenv")
-        return is_in_docker
+        raise NotImplementedError
 
     def unload(self) -> None:
         """Unload the task."""
@@ -387,4 +325,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     def cleanup(self) -> None:
         """Clean up work directory."""
         if self._work_dir_is_temp and os.path.exists(self.config.project.path):
-            shutil.rmtree(self.config.project.path, ignore_errors=False)
+            self._delete_scratch_space()
+
+    def _delete_scratch_space(self) -> None:
+        """Remove model checkpoints and otx logs."""
+        if os.path.exists(self.output_path):
+            shutil.rmtree(self.output_path, ignore_errors=False)
