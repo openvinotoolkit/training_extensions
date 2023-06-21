@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
-import torch.distributed as dist
 from pathlib import Path
 from typing import Union
+
+import torch.distributed as dist
 
 
 def get_dist_info():  # pylint: disable=inconsistent-return-statements

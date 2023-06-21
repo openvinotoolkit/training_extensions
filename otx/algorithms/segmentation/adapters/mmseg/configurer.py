@@ -15,7 +15,6 @@ from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 from torch import distributed as dist
 
-from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     build_dataloader,
@@ -32,6 +31,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     remove_custom_hook,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 from otx.algorithms.segmentation.adapters.mmseg.utils import (

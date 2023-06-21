@@ -26,11 +26,10 @@ from typing import Any, Dict, Iterable, List, Optional
 import torch
 from torch import distributed as dist
 
-from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.configs.training_base import TrainType
-from otx.algorithms.common.utils import UncopiableDefaultDict, set_random_seed
+from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix, set_random_seed
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
