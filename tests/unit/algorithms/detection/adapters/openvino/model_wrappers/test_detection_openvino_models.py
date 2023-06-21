@@ -74,7 +74,7 @@ class MockOTXSSDModel(OTXSSDModel):
         self.confidence_threshold = 0.375
         self.resize_type = "standard"
         self.output_parser = MockBatchBoxesLabelsParser()
-        self.labels = ["a"]
+        self.labels = []
         super().__init__(MockOpenvinoAdapter)
 
 

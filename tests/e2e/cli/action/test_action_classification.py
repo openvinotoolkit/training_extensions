@@ -97,7 +97,7 @@ class TestToolsOTXActionClassification:
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_cls"
         if template.model_template_id == "Custom_Action_Classification_MoViNet":
-            pytest.xfail("CVS-112824: MoViNet inference fails in OV 2023.0")
+            pytest.xfail("Issue#2058: MoViNet inference fails in OV 2023.0")
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
 
     @e2e_pytest_component
