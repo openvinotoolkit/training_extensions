@@ -260,7 +260,7 @@ class SegmentAnything(LightningModule):
 
         masks: List[Tensor] = []
         for i, pred_mask in enumerate(pred_masks):
-            mask = self.postprocess_masks(pred_mask, images[i].shape[1:], batch["original_size"][i], is_predict=True)
+            mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i], is_predict=True)
             if not self.config.model.return_logits:
                 mask = mask > self.config.model.mask_threshold
             else:
@@ -273,6 +273,7 @@ class SegmentAnything(LightningModule):
         self,
         masks: Tensor,
         input_size: Tuple[int, ...],
+        padding: Optional[Tuple[int, ...]] = None,
         original_size: Optional[Tuple[int, ...]] = None,
         is_predict: bool = False
     ) -> Tensor:
@@ -291,7 +292,7 @@ class SegmentAnything(LightningModule):
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
         if is_predict:
-            masks = masks[..., : input_size[0], : input_size[1]]
+            masks = masks[...,padding[1]:input_size[0]-padding[3],padding[0]:input_size[1]-padding[2]]
             masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
         return masks.squeeze(1)
     

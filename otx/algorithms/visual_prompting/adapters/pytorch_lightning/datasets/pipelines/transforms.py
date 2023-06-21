@@ -15,7 +15,7 @@ import torch
 import torchvision.transforms as transforms
 from torch import Tensor
 from torch.nn import functional as F
-from torchvision.transforms.functional import resize, to_pil_image  # type: ignore
+from torchvision.transforms.functional import resize, to_pil_image, pad  # type: ignore
 from torchvision.transforms import Compose
 
 
@@ -31,11 +31,12 @@ def collate_fn(batch):
     points = _convert_empty_to_none("points")
     gt_masks = _convert_empty_to_none("gt_masks")
     original_size = [item["original_size"] for item in batch]
+    padding = [item["padding"] for item in batch]
     path = [item["path"] for item in batch]
     labels = [item["labels"] for item in batch]
     if gt_masks:
-        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "gt_masks": gt_masks, "original_size": original_size, "path": path, "labels": labels}
-    return {"index": -1, "images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": [], "labels": []}
+        return {"index": index, "images": images, "bboxes": bboxes, "points": points, "gt_masks": gt_masks, "original_size": original_size, "path": path, "labels": labels, "padding": padding}
+    return {"index": -1, "images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": [], "labels": [], "padding": []}
 
 
 class ResizeLongestSide:
@@ -143,8 +144,9 @@ class Pad:
         pad_h = (max_dim - h) // 2
         padding = (pad_w, pad_h, max_dim - w - pad_w, max_dim - h - pad_h)
 
-        item["images"] = transforms.functional.pad(item["images"], padding, fill=0, padding_mode="constant")
-        item["gt_masks"] = [transforms.functional.pad(gt_mask, padding, fill=0, padding_mode="constant") for gt_mask in item["gt_masks"]]
+        item["padding"] = padding
+        item["images"] = pad(item["images"], padding, fill=0, padding_mode="constant")
+        item["gt_masks"] = [pad(gt_mask, padding, fill=0, padding_mode="constant") for gt_mask in item["gt_masks"]]
         item["bboxes"] = [[bbox[0] + pad_w, bbox[1] + pad_h, bbox[2] + pad_w, bbox[3] + pad_h] for bbox in item["bboxes"]]
         if item["points"]:
             item["points"] = [[point[0] + pad_w, point[1] + pad_h, point[2] + pad_w, point[3] + pad_h] for point in item["points"]]
