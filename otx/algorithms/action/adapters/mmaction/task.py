@@ -49,6 +49,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -208,6 +209,7 @@ class MMActionTask(OTXActionTask):
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
+            new_path = append_dist_rank_suffix(new_path)
             torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
