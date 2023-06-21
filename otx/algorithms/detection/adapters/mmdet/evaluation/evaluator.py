@@ -318,6 +318,14 @@ class Evaluator:
             )
             tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
 
+            # NOTE: Use the following instead as Coverage could not pick up thread pool func.
+            # tp, fp, miou = [], [], []
+            # for i in range(num_imgs):
+            #     _tp, _fp, _miou = tpfpmiou_func(cls_dets[i], cls_gts[i], cls_scores[i], iou_thr)
+            #     tp.append(_tp)
+            #     fp.append(_fp)
+            #     miou.append(_miou)
+
             # sort all det bboxes by score, also sort tp and fp
             cls_scores = np.hstack(cls_scores)
             num_dets = cls_scores.shape[0]

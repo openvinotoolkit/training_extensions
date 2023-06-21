@@ -6,7 +6,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.detection.adapters.mmdet.datasets.dataset import OTXDetDataset
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import OTXDetDataset, get_annotation_mmdet_format
 from otx.api.entities.label import Domain
 from otx.api.entities.model_template import TaskType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -14,6 +14,7 @@ from tests.unit.algorithms.detection.test_helpers import (
     MockPipeline,
     generate_det_dataset,
 )
+from mmdet.core.mask.structures import BitmapMasks
 import pycocotools.mask as mask_util
 
 
@@ -121,3 +122,27 @@ class TestOTXDetDataset:
         eval_results = dataset.evaluate(results, metric, logger)
         assert isinstance(eval_results, dict)
         assert metric in eval_results
+
+    @e2e_pytest_unit
+    def test_mask_evaluate(self) -> None:
+        """Test evaluate method for instance segmentation"""
+        otx_dataset, labels = self.dataset[TaskType.INSTANCE_SEGMENTATION]
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, Domain.INSTANCE_SEGMENTATION)
+        dataset.pipeline = MockPipeline()
+        sample = dataset[0]
+
+        num_classes = len(dataset.labels)
+        anno = get_annotation_mmdet_format(sample["dataset_item"], dataset.labels, Domain.INSTANCE_SEGMENTATION)
+        bboxes = anno["bboxes"]
+        scores = np.array(len(bboxes) * [1.0])[:, np.newaxis]
+        bboxes = np.hstack((bboxes, scores))
+        labels = anno["labels"]
+        bitmasks = BitmapMasks.random(len(bboxes), 28, 28)
+        masks = mask_util.encode(np.array(bitmasks.to_ndarray().transpose(1, 2, 0), order="F"))
+
+        bbox_results = [bboxes[labels == i, :] for i in range(num_classes)]
+        mask_results = [list(np.array(masks)[labels == i]) for i in range(num_classes)]
+        results = [(bbox_results, mask_results)]
+        eval_results = dataset.evaluate(results, "mAP", None)
+        assert isinstance(eval_results, dict)
+        assert eval_results["mAP"] >= 0.0
