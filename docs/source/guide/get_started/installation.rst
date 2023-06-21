@@ -108,13 +108,31 @@ Install OpenVINO™ Training Extensions by using Docker
         trainer
     trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
 
-**************
-Run unit tests
-**************
+*********
+Run tests
+*********
+
+To run some tests, need to have development environment on your host. The development requirements file (requirements/dev.txt)
+would be used to setup them.
 
 .. code-block::
 
-    pytest tests/unit
+    $ pip install -r requirements/dev.txt
+    $ pytest tests/
+
+Another option to run the tests is using the testing automation tool `tox <https://tox.wiki/en/latest/index.html>`_. Following commands will install
+the tool ``tox`` to your host and run all test codes inside of ``tests/`` folder.
+
+.. code-block::
+
+    $ pip install tox
+    $ tox -e tests-all-py310 -- tests/
+
+.. note::
+
+    When running the ``tox`` command above first time, it will create virtual env by installing all dependencies of this project into
+    the newly created environment for your testing before running the actual testing. So, it is expected to wait more than 10 minutes
+    before to see the actual testing results.
 
 ***************
 Troubleshooting
