@@ -3,6 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .custom_ops import grid_sampler__default, squeeze__default
+from .custom_ops import squeeze__default
 
-__all__ = ["squeeze__default", "grid_sampler__default"]
+__all__ = ["squeeze__default"]

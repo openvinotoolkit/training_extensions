@@ -33,7 +33,7 @@ if is_mmdeploy_enabled():
         "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector.CustomDeformableDETR.simple_test"
     )
     def custom_deformable_detr__simple_test(ctx, self, img, img_metas, **kwargs):
-        """Function for custom_mask_rcnn__simple_test."""
+        """Function for custom_deformable_detr__simple_test."""
         height = int(img_metas[0]["img_shape"][0])
         width = int(img_metas[0]["img_shape"][1])
         img_metas[0]["batch_input_shape"] = (height, width)

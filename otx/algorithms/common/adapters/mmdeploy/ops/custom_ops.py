@@ -6,16 +6,10 @@
 import torch
 from mmdeploy.core import SYMBOLIC_REWRITER
 from mmdeploy.utils import get_ir_config
-from torch.nn.functional import (
-    GRID_SAMPLE_INTERPOLATION_MODES,
-    GRID_SAMPLE_PADDING_MODES,
-)
 from torch.onnx import symbolic_helper
-from torch.onnx._internal import jit_utils
 
 # Remove previous registered symbolic
 SYMBOLIC_REWRITER._registry._rewrite_records["squeeze"] = list()
-SYMBOLIC_REWRITER._registry._rewrite_records["grid_sampler"] = list()
 
 
 @SYMBOLIC_REWRITER.register_symbolic("squeeze", is_pytorch=True)
@@ -43,38 +37,3 @@ def squeeze__default(ctx, g, self, dim=None):
         return g.op("Squeeze", self, axes)
 
     return g.op("Squeeze", self, axes_i=dims)
-
-
-@SYMBOLIC_REWRITER.register_symbolic("grid_sampler", is_pytorch=True)
-def grid_sampler__default(ctx, *args):
-    """Register default symbolic function for `grid_sampler`.
-
-    mmdeploy register its own ops for grid_sampler and OpenVINO doesn't support it
-    Therefore this function register original GridSampler ops in pytorch which can be used from opset16
-    """
-    return grid_sampler(*args)
-
-
-@symbolic_helper.parse_args("v", "v", "i", "i", "b")
-def grid_sampler(
-    g: jit_utils.GraphContext,
-    input,
-    grid,
-    mode_enum,
-    padding_mode_enum,
-    align_corners,
-):
-    """Grid sampler ops for onnx opset16.
-
-    This implementation is brought from torch.onnx.symbolic_opset16
-    """
-    mode_s = {v: k for k, v in GRID_SAMPLE_INTERPOLATION_MODES.items()}[mode_enum]
-    padding_mode_s = {v: k for k, v in GRID_SAMPLE_PADDING_MODES.items()}[padding_mode_enum]
-    return g.op(
-        "GridSample",
-        input,
-        grid,
-        align_corners_i=int(align_corners),
-        mode_s=mode_s,
-        padding_mode_s=padding_mode_s,
-    )

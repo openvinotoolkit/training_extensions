@@ -6,6 +6,7 @@
 
 import torch
 import torch.nn.functional as F
+from mmcv.ops import multi_scale_deform_attn
 
 
 def multi_scale_deformable_attn_pytorch(
@@ -17,8 +18,8 @@ def multi_scale_deformable_attn_pytorch(
     """Custom patch for multi_scale_deformable_attn_pytorch function.
 
     Original implementation in mmcv.ops use torch.nn.functional.grid_sample.
-    It occurs errors during inference with OpenVINO exported model.
-    Therefore this function change grid_sample function to custom mmcv_grid_sample function.
+    It raises errors during inference with OpenVINO exported model.
+    Therefore this function change grid_sample function to _custom_grid_sample function.
     """
 
     bs, _, num_heads, embed_dims = value.shape
@@ -134,3 +135,6 @@ def _custom_grid_sample(im: torch.Tensor, grid: torch.Tensor, align_corners: boo
     Id = torch.gather(im_padded, 2, x1_y1)
 
     return (Ia * wa + Ib * wb + Ic * wc + Id * wd).reshape(n, c, gh, gw)
+
+
+multi_scale_deform_attn.multi_scale_deformable_attn_pytorch = multi_scale_deformable_attn_pytorch
