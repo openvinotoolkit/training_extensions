@@ -35,6 +35,14 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
         dataset_items: List[DatasetItemEntity] = []
         used_labels: List[int] = []
         self.updated_label_id: Dict[int, int] = {}
+
+        if hasattr(self, "data_type_candidates"):
+            if self.data_type_candidates[0] == "voc":
+                self.set_voc_labels()
+
+            if self.data_type_candidates[0] == "common_semantic_segmentation":
+                self.set_common_labels()
+
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
