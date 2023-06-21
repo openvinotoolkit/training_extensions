@@ -18,11 +18,11 @@ def get_dist_info():  # pylint: disable=inconsistent-return-statements
             return 0, 1, False
 
 
-def append_dist_rank_suffix(file_name: Union[str, Path]):
+def append_dist_rank_suffix(file_name: Union[str, Path]) -> str:
     """Append distributed training rank suffix to the file name."""
     if "LOCAL_RANK" in os.environ:
         file_name = Path(file_name)
         dist_suffix = f"_proc{os.environ['LOCAL_RANK']}"
         file_name = file_name.parent / f"{file_name.stem}{dist_suffix}{file_name.suffix}"
 
-    return file_name
+    return str(file_name)
