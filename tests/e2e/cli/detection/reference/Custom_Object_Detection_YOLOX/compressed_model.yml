@@ -7,4 +7,4 @@ TestToolsTilingDetection:
   nncf:
     number_of_fakequantizers: 84
   pot:
-    number_of_fakequantizers: 85
+    number_of_fakequantizers: 84
