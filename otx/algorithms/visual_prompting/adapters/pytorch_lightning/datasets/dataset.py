@@ -22,7 +22,6 @@ import torchvision.transforms as transforms
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
-from otx.api.entities.image import Image
 from torch.utils.data import DataLoader, Dataset
 
 from otx.algorithms.common.utils.logger import get_logger
@@ -33,6 +32,8 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelin
     collate_fn,
 )
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.image import Image
+from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
@@ -92,9 +93,9 @@ class OTXVIsualPromptingDataset(Dataset):
 
         width, height = dataset_item.width, dataset_item.height
         bboxes: List[List[int]] = []
-        points: List = []
+        points: List = [] # TBD
         gt_masks: List[np.ndarray] = []
-        labels: List = []
+        labels: List[Scoredlabel] = []
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
             if isinstance(annotation.shape, Polygon):
                 assert not self.config.use_mask
