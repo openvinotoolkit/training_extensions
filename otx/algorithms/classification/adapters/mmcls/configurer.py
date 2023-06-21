@@ -277,7 +277,10 @@ class ClassificationConfigurer:
         if "model" in ckpt:
             ckpt = ckpt["model"]
             if not new_path:
-                new_path = ckpt_path[:-3] + "converted.pth"
+                dist_suffix=""
+                if "LOCAL_RANK" in os.environ:
+                    dist_suffix = f"_proc{os.environ['LOCAL_RANK']}"
+                new_path = ckpt_path[:-3] + f"converted{dist_suffix}.pth"
             torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
