@@ -14,11 +14,11 @@ learning_parameters:
     use_mask:
       header: Flag about using mask as label
       affects_outcome_of: TRAINING
-      default_value: true
+      default_value: false
       description:
         If using mask as-is (true) or converting it to polygon (false)
       editable: true
-      value: true
+      value: false
       type: BOOLEAN
     train_batch_size:
       affects_outcome_of: TRAINING

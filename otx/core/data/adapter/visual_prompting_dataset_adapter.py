@@ -22,7 +22,7 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
     It converts DatumaroDataset --> DatasetEntity for visual prompting tasks.
     To handle masks, this adapter is inherited from SegmentationDatasetAdapter.
     """
-    def __init__(self, use_mask: bool = True, *args, **kwargs):
+    def __init__(self, use_mask: bool = False, *args, **kwargs):
         self.use_mask = use_mask
         super().__init__(*args, **kwargs)
 
