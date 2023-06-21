@@ -115,7 +115,7 @@ class TestOTXDetDataset:
             results = [
                 (
                     [np.random.rand(1, 5)] * len(otx_dataset.get_labels()),
-                    [[{"size": [sample["width"], sample["height"]], "counts": b'1'}]] * len(otx_dataset.get_labels()),
+                    [[{"size": [sample["width"], sample["height"]], "counts": b"1"}]] * len(otx_dataset.get_labels()),
                 )
             ]
         eval_results = dataset.evaluate(results, metric, logger)

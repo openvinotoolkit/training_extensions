@@ -247,7 +247,13 @@ class TestMMDetectionTask:
 
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
-            return_value=[(np.array([[[0, 0, 1, 1, 1]]]), [[mask_util.encode(np.ones((28, 28, 1), dtype=np.uint8, order='F'))[0]]])] * 100,
+            return_value=[
+                (
+                    np.array([[[0, 0, 1, 1, 1]]]),
+                    [[mask_util.encode(np.ones((28, 28, 1), dtype=np.uint8, order="F"))[0]]],
+                )
+            ]
+            * 100,
         )
         _config = ModelConfiguration(DetectionConfig(), self.iseg_label_schema)
         output_model = ModelEntity(self.iseg_dataset, _config)

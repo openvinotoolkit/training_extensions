@@ -11,7 +11,6 @@ from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
-import pycocotools.mask as mask_util
 from mmcv.ops import nms
 from mmdet.core import BitmapMasks, bbox2result
 from tqdm import tqdm
