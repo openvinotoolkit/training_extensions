@@ -110,14 +110,6 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
 
-    def _load_model_ckpt(self, model: Optional[ModelEntity]):
-        if model and "weights.pth" in model.model_adapters:
-            # If a model has been trained and saved for the task already, create empty model and load weights here
-            buffer = io.BytesIO(model.get_data("weights.pth"))
-            model_data = torch.load(buffer, map_location=torch.device("cpu"))
-            return model_data
-        return None
-
     def infer(
         self,
         dataset: DatasetEntity,

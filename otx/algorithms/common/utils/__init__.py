@@ -28,6 +28,7 @@ from .utils import (
     load_template,
     set_random_seed,
 )
+from .distance_utils import save_file_considering_dist_train
 
 __all__ = [
     "embed_ir_model_data",
@@ -42,4 +43,5 @@ __all__ = [
     "get_arg_spec",
     "get_image",
     "set_random_seed",
+    "save_file_considering_dist_train",
 ]

@@ -14,6 +14,7 @@ from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 from torch import distributed as dist
 
+from otx.algorithms.common.utils import save_file_considering_dist_train
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
     build_dataloader,
@@ -434,7 +435,7 @@ class DetectionConfigurer:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
-            torch.save(ckpt, new_path)
+            save_file_considering_dist_train(ckpt, new_path)
             return new_path
         return ckpt_path
 

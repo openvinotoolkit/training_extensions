@@ -30,6 +30,7 @@ from mmaction.utils import collect_env
 from mmcv.runner import CheckpointLoader, load_checkpoint, wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, ProgressBar, get_git_hash
 
+from otx.algorithms.common.utils import save_file_considering_dist_train
 from otx.algorithms.action.adapters.mmaction import (
     Exporter,
 )
@@ -208,7 +209,7 @@ class MMActionTask(OTXActionTask):
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
-            torch.save(ckpt, new_path)
+            save_file_considering_dist_train(ckpt, new_path)
             return new_path
         return ckpt_path
 
