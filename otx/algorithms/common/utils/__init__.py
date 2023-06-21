@@ -20,7 +20,7 @@ from .callback import (
     TrainingProgressCallback,
 )
 from .data import get_cls_img_indices, get_image, get_old_new_img_indices
-from .distance_utils import append_dist_rank_suffix
+from .dist_utils import append_dist_rank_suffix
 from .ir import embed_ir_model_data
 from .utils import (
     UncopiableDefaultDict,
