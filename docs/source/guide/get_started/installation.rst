@@ -130,7 +130,7 @@ the tool ``tox`` to your host and run all test codes inside of ``tests/`` folder
 
 .. note::
 
-    When run the ``tox`` command above first time, it will create virtual env. by installing all dependencies of this project into
+    When running the ``tox`` command above first time, it will create virtual env by installing all dependencies of this project into
     the newly created environment for your testing before running the actual testing. so, it is expected to wait more than 10 minutes
     before to see the actual testing results.
 
