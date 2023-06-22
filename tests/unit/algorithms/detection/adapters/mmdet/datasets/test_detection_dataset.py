@@ -17,6 +17,8 @@ from tests.unit.algorithms.detection.test_helpers import (
 from mmdet.core.mask.structures import BitmapMasks
 import pycocotools.mask as mask_util
 
+from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes
+
 
 class TestOTXDetDataset:
     """
@@ -134,11 +136,10 @@ class TestOTXDetDataset:
         num_classes = len(dataset.labels)
         anno = get_annotation_mmdet_format(sample["dataset_item"], dataset.labels, Domain.INSTANCE_SEGMENTATION)
         bboxes = anno["bboxes"]
-        scores = np.array(len(bboxes) * [1.0])[:, np.newaxis]
+        scores = np.random.random((len(bboxes), 1))
         bboxes = np.hstack((bboxes, scores))
         labels = anno["labels"]
-        bitmasks = BitmapMasks.random(len(bboxes), 28, 28)
-        masks = mask_util.encode(np.array(bitmasks.to_ndarray().transpose(1, 2, 0), order="F"))
+        masks = mask_util.encode(np.full((28, 28, len(bboxes)), 1, dtype=np.uint8, order="F"))
 
         bbox_results = [bboxes[labels == i, :] for i in range(num_classes)]
         mask_results = [list(np.array(masks)[labels == i]) for i in range(num_classes)]
@@ -146,3 +147,85 @@ class TestOTXDetDataset:
         eval_results = dataset.evaluate(results, "mAP", None)
         assert isinstance(eval_results, dict)
         assert eval_results["mAP"] >= 0.0
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("use_ellipse_shapes", [True, False])
+    def test_create_detection_shape(self, use_ellipse_shapes) -> None:
+        """Test create_detection_shapes method"""
+        otx_dataset, labels = self.dataset[TaskType.DETECTION]
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, Domain.DETECTION)
+        dataset.pipeline = MockPipeline()
+        sample = dataset[0]
+        h, w = sample["dataset_item"].height, sample["dataset_item"].width
+
+        num_classes = len(dataset.labels)
+        anno = get_annotation_mmdet_format(sample["dataset_item"], dataset.labels, Domain.DETECTION)
+        bboxes = anno["bboxes"]
+        scores = np.full((len(bboxes), 1), 0.5, dtype=np.float32)
+        bboxes = np.hstack((bboxes, scores))
+        labels = anno["labels"]
+        pred_results = []
+        for i in range(num_classes):
+            bboxes_i = bboxes[labels == i, :]
+            pred_results.append(bboxes_i)
+
+        shapes = create_detection_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.0,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) > 0, "Shapes should be created for confidence_threshold=1.0"
+
+        shapes = create_detection_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.6,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) == 0, "No shapes should be created for confidence_threshold=0.0"
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("use_ellipse_shapes", [True, False])
+    def test_create_mask_shape(self, use_ellipse_shapes) -> None:
+        """Test create_mask_shapes method"""
+        otx_dataset, labels = self.dataset[TaskType.INSTANCE_SEGMENTATION]
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, Domain.INSTANCE_SEGMENTATION)
+        dataset.pipeline = MockPipeline()
+        sample = dataset[0]
+        h, w = sample["dataset_item"].height, sample["dataset_item"].width
+
+        num_classes = len(dataset.labels)
+        anno = get_annotation_mmdet_format(sample["dataset_item"], dataset.labels, Domain.INSTANCE_SEGMENTATION)
+        bboxes = anno["bboxes"]
+        scores = np.full((len(bboxes), 1), 0.5, dtype=np.float32)
+        bboxes = np.hstack((bboxes, scores))
+        labels = anno["labels"]
+        masks = mask_util.encode(np.full((28, 28, len(bboxes)), 1, dtype=np.uint8, order="F"))
+
+        bbox_results = [bboxes[labels == i, :] for i in range(num_classes)]
+        mask_results = [list(np.array(masks)[labels == i]) for i in range(num_classes)]
+        pred_results = (bbox_results, mask_results)
+        shapes = create_mask_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.0,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) > 0, "Shapes should be created for confidence_threshold=1.0"
+
+        shapes = create_mask_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.6,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) == 0, "No shapes should be created for confidence_threshold=0.0"

@@ -255,11 +255,11 @@ def create_mask_shapes(
                 continue
 
             assigned_label = [ScoredLabel(labels[label_idx], probability=probability)]
+            coords = box[:4].astype(float).copy()
+            left, top = coords[:2]
             if not use_ellipse_shapes:
                 if isinstance(mask, dict):
                     mask = mask_util.decode(mask)
-                coords = box[:4].astype(float).copy()
-                left, top = coords[:2]
                 mask = mask_resize(coords, mask)
 
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
