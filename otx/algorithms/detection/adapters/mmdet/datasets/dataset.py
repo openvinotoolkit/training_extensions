@@ -351,8 +351,7 @@ class ImageTilingDataset(OTXDetDataset):
         self.test_mode = test_mode
         self.num_samples = len(self.dataset)  # number of original samples
         annotation = [self.get_ann_info(i) for i in range(len(self))]
-        if data_subset == Subset.VALIDATION:
-            self.evaluator = Evaluator(annotation, self.dataset.domain, self.CLASSES)
+        self.evaluator = Evaluator(annotation, self.dataset.domain, self.CLASSES)
 
     def __len__(self) -> int:
         """Get the length of the dataset."""

@@ -144,6 +144,9 @@ class Tile:
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
+        result["gt_bboxes"] = np.zeros((0, 4), dtype=np.float32)
+        result["gt_labels"] = np.array([], dtype=int)
+        result["gt_masks"] = []
 
         # Limit the number of ground truth by randomly select 5000 get due to RAM OOM
         if "gt_masks" in result and len(result["gt_masks"]) > self.max_annotation:
@@ -266,12 +269,10 @@ class Tile:
             tile_result.pop("mask_fields")
             tile_result.pop("seg_fields")
             tile_result.pop("img_fields")
-            tile_result["gt_bboxes"] = []
-            tile_result["gt_labels"] = []
+            tile_result["gt_bboxes"] = np.zeros((0, 4), dtype=np.float32)
+            tile_result["gt_labels"] = np.array([], dtype=int)
             tile_result["gt_masks"] = []
 
-        if gt_masks is None:
-            tile_result.pop("gt_masks")
 
     def tile_boxes_overlap(self, tile_box: np.ndarray, boxes: np.ndarray) -> np.ndarray:
         """Compute overlapping ratio over boxes.
@@ -461,10 +462,7 @@ class Tile:
             dict: Annotation info of specified index.
         """
         ann = {}
-        if "gt_bboxes" in self.tiles[idx]:
-            ann["bboxes"] = self.tiles[idx]["gt_bboxes"]
-        if "gt_masks" in self.tiles[idx]:
-            ann["masks"] = self.tiles[idx]["gt_masks"]
-        if "gt_labels" in self.tiles[idx]:
-            ann["labels"] = self.tiles[idx]["gt_labels"]
+        ann["bboxes"] = self.tiles[idx]["gt_bboxes"]
+        ann["masks"] = self.tiles[idx]["gt_masks"]
+        ann["labels"] = self.tiles[idx]["gt_labels"]
         return ann

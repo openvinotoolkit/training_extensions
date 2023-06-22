@@ -253,16 +253,14 @@ class Evaluator:
         Returns:
             cls_anno_list: per-class ground truth instance mask list
         """
-        num_images = len(annotation)
         cls_anno_list: List[List] = [[] for _ in range(self.num_classes)]
-        for idx in range(num_images):
-            masks = annotation[idx]["masks"]
-            for class_id in range(self.num_classes):
-                gt_inds = annotation[idx]["labels"] == class_id
+        for class_id in range(self.num_classes):
+            for ann in annotation:
+                gt_inds = ann["labels"] == class_id
                 polygon_masks = []
                 if gt_inds.any():
                     gt_inds = np.where(gt_inds == 1)[0]
-                    polygon_masks = masks[gt_inds]
+                    polygon_masks = ann['masks'][gt_inds]
                 cls_anno_list[class_id].append(polygon_masks)
         return cls_anno_list
 
