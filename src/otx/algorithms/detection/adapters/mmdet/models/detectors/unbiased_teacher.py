@@ -142,7 +142,6 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
         for teacher_bboxes_labels in teacher_outputs:
             pseudo_bboxes = []
             pseudo_labels = []
-            breakpoint()
             for label, teacher_bboxes in enumerate(teacher_bboxes_labels):
                 confidences = teacher_bboxes[:, -1]
                 pseudo_indices = confidences > self.pseudo_conf_thresh
