@@ -40,8 +40,8 @@ class EarlyStoppingHook(Hook):
                                continues if the number of iteration is lower than iteration_patience
                                This variable makes sure a model is trained enough for some
                                iterations after the last improvement before stopping.
-    :param min_delta: Minimal decay applied to lr. If the difference between new and old lr is
-                      smaller than eps, the update is ignored
+    :param min_delta: Minimal value to check the best score. If the difference between current and 
+                      best score is smaller than min_delta, best score will not be changed.
     """
 
     rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
@@ -54,9 +54,9 @@ class EarlyStoppingHook(Hook):
         interval: int,
         metric: str = "bbox_mAP",
         rule: Optional[str] = None,
-        patience: int = 5,
+        patience: int = 3,
         iteration_patience: int = 500,
-        min_delta: float = 0.0,
+        min_delta: float = 0.001,
     ):
         super().__init__()
         self.patience = patience
@@ -141,7 +141,7 @@ class EarlyStoppingHook(Hook):
                 )
 
             key_score = runner.log_buffer.output[self.key_indicator]
-            if self.compare_func(key_score - self.min_delta, self.best_score):
+            if self.compare_func(key_score - (key_score * self.min_delta), self.best_score):
                 self.best_score = key_score
                 self.wait_count = 0
                 self.last_iter = runner.iter
@@ -267,8 +267,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.base_lr: List[float] = []
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
-        self.num_decays = 0
-        self.max_num_decays = 4
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
@@ -344,7 +342,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             logger=runner.logger,
         )
 
-        if self.bad_count >= self.patience and self.num_decays < self.max_num_decays:
+        if self.bad_count >= self.patience:
             if runner.iter - self.last_iter < self.iteration_patience:
                 print_log(
                     f"\nSkip LR dropping. Accumulated iteration "
@@ -361,7 +359,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
                 logger=runner.logger,
             )
             self.current_lr = max(self.current_lr * self.factor, self.min_lr)
-            self.num_decays += 1
         return self.current_lr
 
     def before_run(self, runner: BaseRunner):

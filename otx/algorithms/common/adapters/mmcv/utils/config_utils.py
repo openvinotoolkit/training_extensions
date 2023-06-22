@@ -519,6 +519,17 @@ def patch_from_hyperparams(config: Config, hyperparams):
 
     if hyperparams.learning_parameters.auto_num_workers:
         hparams.data.workers_per_gpu = get_adaptive_num_workers()
+    
+    if hyperparams.algo_backend.train_type == "Semisupervised":
+        unlabeled_config = ConfigDict(
+            data=ConfigDict(
+                unlabeled_dataloader=ConfigDict(
+                    samples_per_gpu=int(params.unlabeled_batch_size),
+                    workers_per_gpu=int(params.num_workers),
+                )
+            )
+        )
+        config.update(unlabeled_config)
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)

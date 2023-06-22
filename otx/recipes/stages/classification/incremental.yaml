@@ -27,7 +27,7 @@ lr_config:
   interval: 1
   min_lr: 0.000001
   warmup: linear
-  warmup_iters: 10
+  warmup_iters: 1
   warmup_ratio: 0.333
 
 task_adapt:
@@ -38,10 +38,16 @@ custom_hooks: [
   {
     type: LazyEarlyStoppingHook,
     start: 3,
-    patience: 5,
+    patience: 3,
     iteration_patience: 0,
     metric: accuracy,
     interval: 1,
     priority: 75,
   }
 ]
+
+ignore: True
+adaptive_validation_interval:
+  max_interval: 5
+  enable_adaptive_interval_hook: True
+  enable_eval_before_run: True
