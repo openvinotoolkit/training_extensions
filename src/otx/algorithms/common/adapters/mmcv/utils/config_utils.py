@@ -639,10 +639,12 @@ def patch_from_hyperparams(config: Config, hyperparams):
     if hyperparams.learning_parameters.input_size != 0:
         for data_type in ["train", "val", "test"]:
             if data_type in config.data:
-                if 'dataset' in config.data[data_type]:
+                if "pipeline" in config.data[data_type]:
+                    pipeline = config.data[data_type]['pipeline']
+                elif "dataset" in config.data[data_type]:
                     pipeline = config.data[data_type]['dataset']['pipeline']
                 else:
-                    pipeline = config.data[data_type]['pipeline']
+                    raise RuntimeError("Can not find pipeline.")
 
                 set_input_size(pipeline, hyperparams.learning_parameters.input_size)
 
