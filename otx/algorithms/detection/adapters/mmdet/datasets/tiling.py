@@ -273,6 +273,9 @@ class Tile:
             tile_result["gt_labels"] = np.array([], dtype=int)
             tile_result["gt_masks"] = []
 
+        if gt_masks is None:
+            tile_result.pop("gt_masks")
+
     def tile_boxes_overlap(self, tile_box: np.ndarray, boxes: np.ndarray) -> np.ndarray:
         """Compute overlapping ratio over boxes.
 
@@ -461,7 +464,10 @@ class Tile:
             dict: Annotation info of specified index.
         """
         ann = {}
-        ann["bboxes"] = self.tiles[idx]["gt_bboxes"]
-        ann["masks"] = self.tiles[idx]["gt_masks"]
-        ann["labels"] = self.tiles[idx]["gt_labels"]
+        if "gt_bboxes" in self.tiles[idx]:
+            ann["bboxes"] = self.tiles[idx]["gt_bboxes"]
+        if "gt_masks" in self.tiles[idx]:
+            ann["masks"] = self.tiles[idx]["gt_masks"]
+        if "gt_labels" in self.tiles[idx]:
+            ann["labels"] = self.tiles[idx]["gt_labels"]
         return ann
