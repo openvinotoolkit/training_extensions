@@ -82,7 +82,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         self.trainer.fit(model=self.model, datamodule=datamodule)
 
         model_ckpt = self.trainer.checkpoint_callback.best_model_path
-        if model_ckpt is None:
+        if not model_ckpt:
             logger.error("cannot find final checkpoint from the results.")
             return
         # update checkpoint to the newly trained model
