@@ -173,11 +173,18 @@ def mask_resize(box: np.ndarray, mask: np.ndarray):
     return mask
 
 
-def create_detection_shapes(pred_results, width, height, confidence_threshold, use_ellipse_shapes, labels):
+def create_detection_shapes(
+    pred_results: List[np.ndarray],
+    width: int,
+    height: int,
+    confidence_threshold: float,
+    use_ellipse_shapes: bool,
+    labels: List,
+):
     """Create prediction detection shapes.
 
     Args:
-        pred_results (tuple): tuple of predicted boxes for each dataset item
+        pred_results (list(np.ndarray)): per class predicted boxes
         width (int): image width
         height (int): image height
         confidence_threshold (float): confidence threshold for filtering predictions
@@ -190,9 +197,9 @@ def create_detection_shapes(pred_results, width, height, confidence_threshold, u
 
     shapes = []
     for label_idx, detections in enumerate(pred_results):
-        for i in range(detections.shape[0]):
-            probability = float(detections[i, 4])
-            coords = detections[i, :4].astype(float).copy()
+        for det in detections:
+            probability = float(det[4])
+            coords = det[:4].astype(float).copy()
             coords /= np.array([width, height, width, height], dtype=float)
             coords = np.clip(coords, 0, 1)
 

@@ -273,7 +273,6 @@ class Tile:
             tile_result["gt_labels"] = np.array([], dtype=int)
             tile_result["gt_masks"] = []
 
-
     def tile_boxes_overlap(self, tile_box: np.ndarray, boxes: np.ndarray) -> np.ndarray:
         """Compute overlapping ratio over boxes.
 

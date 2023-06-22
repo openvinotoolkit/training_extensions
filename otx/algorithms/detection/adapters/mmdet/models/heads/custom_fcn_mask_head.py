@@ -14,11 +14,13 @@ from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 class CustomFCNMaskHead(FCNMaskHead):
     """Custom FCN Mask Head for fast mask evaluation."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def get_seg_masks(self, mask_pred, det_bboxes, det_labels, rcnn_test_cfg, ori_shape, scale_factor, rescale):
         """Get segmentation masks from mask_pred and bboxes.
+
+        The original `FCNMaskHead.get_seg_masks` grid sampled 28 x 28 masks to the original image resolution.
+        As a result, the resized masks occupy a large amount of memory and slow down the inference.
+        This method directly returns 28 x 28 masks and resize to bounding boxes size in post-processing step.
+        Doing so can save memory and speed up the inference.
 
         Args:
             mask_pred (Tensor or ndarray): shape (n, #class, h, w).

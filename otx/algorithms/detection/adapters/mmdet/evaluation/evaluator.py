@@ -197,9 +197,6 @@ def tpfpmiou_func(  # pylint: disable=too-many-locals
 
     ious = mask_iou(det, gt_masks)  # (M, N)
 
-    assert ious.shape[0] == num_dets, f"{ious.shape[0]} != {num_dets}"
-    assert ious.shape[1] == num_gts, f"{ious.shape[1]} != {num_gts}"
-
     # for each det, the max iou with all gts
     ious_max = ious.max(axis=1)
     # for each det, which gt overlaps most with it
@@ -260,7 +257,7 @@ class Evaluator:
                 polygon_masks = []
                 if gt_inds.any():
                     gt_inds = np.where(gt_inds == 1)[0]
-                    polygon_masks = ann['masks'][gt_inds]
+                    polygon_masks = ann["masks"][gt_inds]
                 cls_anno_list[class_id].append(polygon_masks)
         return cls_anno_list
 
@@ -277,7 +274,7 @@ class Evaluator:
         """
         cls_scores = [img_res[0][class_id][..., -1] for img_res in det_results]
         cls_dets: List[Tuple] = []
-        for i, det in enumerate(det_results):
+        for det in det_results:
             det_bboxes = det[0][class_id][:, :4]
             det_masks = det[1][class_id]
             if len(det_masks) == 0:
