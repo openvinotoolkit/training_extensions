@@ -45,7 +45,7 @@ If we have a dataset format occluded with other tasks, for example ``COCO`` form
 
 .. code-block::
 
-    $ otx build --train-data-roots <path_to_data_root> 
+    $ otx build --train-data-roots <path_to_data_root>
                 --task {CLASSIFICATION, DETECTION, SEGMENTATION, ACTION_CLASSIFICATION, ACTION_DETECTION, ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION, INSTANCE_SEGMENTATION}
 
 It will create a task-specific workspace folder with configured template and auto dataset split if supported.
@@ -55,3 +55,68 @@ Move to this folder and simply run without any options to start training:
 .. code-block::
 
     $ otx train
+
+
+Auto-adapt batch size
+---------------------
+
+This feature adapts a batch size based on the current hardware environment.
+There are two methods available for adapting the batch size.
+
+1. Prevent GPU Out of Memory (`Safe` mode)
+
+The first method checks if the current batch size is compatible with the available GPU devices.
+Larger batch sizes consume more GPU memory for training. Therefore, the system verifies if training is possible with the current batch size.
+If it's not feasible, the batch size is decreased to reduce GPU memory usage.
+However, setting the batch size too low can slow down training.
+To address this, the batch size is reduced to the maximum amount that could be run safely on the current GPU resource.
+The learning rate is also adjusted based on the updated batch size accordingly.
+
+To use this feature, add the following parameter:
+
+.. code-block::
+
+    $ otx train params --learning_parameters.auto_adapt_batch_size Safe
+
+2. Find the maximum executable batch size (`Full` mode)
+
+The second method aims to find a possible large batch size that reduces the overall training time.
+Increasing the batch size reduces the effective number of iterations required to sweep the whole dataset, thus speeds up the end-to-end training.
+However, it does not search for the maximum batch size as it is not efficient and may require significantly more time without providing substantial acceleration compared to a large batch size.
+Similar to the previous method, the learning rate is adjusted according to the updated batch size accordingly.
+
+To use this feature, add the following parameter:
+
+.. code-block::
+
+    $ otx train params --learning_parameters.auto_adapt_batch_size Full
+
+
+.. Warning::
+    When using a fixed epoch, training with larger batch sizes is generally faster than with smaller batch sizes.
+    However, if early stop is enabled, training with a lower batch size can finish early.
+
+
+Auto-adapt num_workers
+----------------------
+
+This feature adapts the ``num_workers`` parameter based on the current hardware environment.
+The ``num_workers`` parameter controls the number of subprocesses used for data loading during training.
+While increasing ``num_workers`` can reduce data loading time, setting it too high can consume a significant amount of CPU memory.
+
+To simplify the process of setting ``num_workers`` manually, this feature automatically determines the optimal value based on the current hardware status.
+
+To use this feature, add the following parameter:
+
+.. code-block::
+
+    $ otx train params --learning_parameters.auto_num_workers True
+
+Auto-detect training type
+-------------------------
+
+OpenVINO™ Training Extensions also support automatic detection of training types such as Semi-SL, Self-SL and Incremental. For Semi-SL usage only is a path to unlabeled data via `--unlabeled-data-roots` option needed for the command line. To use Self-SL learning just a folder with images in the `--train-data-roots` option without validation data is required to automatically start Self-SL pretraining.
+OpenVINO™ Training Extensions will automatically recognize these types of tasks and if the task supports this training type the training will be started.
+
+.. note::
+    To use auto template configuration with Self-SL training type `--task` option is required since it is impossible to recognize task type by folder with only images.

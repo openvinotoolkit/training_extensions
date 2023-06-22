@@ -176,6 +176,7 @@ However, in real-world industries, it is difficult to apply because of small dat
 For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
 We adapted `BYOL <https://arxiv.org/abs/2006.07733>`_ as our self-supervised method.
 This algorithm will require some additional training time, meanwhile, improved performance is expected, especially in low-data regimes.
+OpenVINO™ Training Extensions allows to perform a pre-training phase on any images to further use obtained weights on the target dataset.
 
 Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
 The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
@@ -198,23 +199,25 @@ Each subset dataset has 500, 1000, 5000, 10000, and the whole images, respective
 .. image:: ../../../../../utils/images/multi_cls_selfsl_performance_Food-101.png
   :width: 600
 
-To enable self-supervised training, the command below can be executed.
+To enable self-supervised training, the command below can be executed. The folder with images for pre-training is needed to be passed in ``--train-data-root`` folder.
 Unlike other tasks, ``--val-data-root`` is not needed.
 
 .. code-block::
 
-  $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-              --train-data-root=tests/assets/imagenet_dataset_class_incremental \
-              params \
-              --algo_backend.train_type=Selfsupervised
+  $ otx train EfficientNet-V2-S \
+              --train-data-root path/to/folder/with/images
+
+.. note::
+    It is also possible to pass a full imagenet dataset format to ``--train-data-root`` instead of just a folder with images.
+    However, it will be required to add ``--train-type Selfsupervised`` option into the command line. Otherwise, ordinary supervised training will be started with auto-split functionality.
 
 After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:
 
 .. code-block::
 
-  $ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-              --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
-              --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
+  $ otx train EfficientNet-V2-S \
+              --train-data-roots path/to/train/subset \
+              --val-data-roots path/to/val/subset \
               --load-weights={PATH/PRETRAINED/WEIGHTS}
 
 *******************************

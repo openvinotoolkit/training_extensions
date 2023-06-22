@@ -29,10 +29,13 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
+    cluster_anchors,
     patch_datasets,
     patch_evaluation,
+    should_cluster_anchors,
 )
 
 logger = get_logger()
@@ -53,6 +56,7 @@ class DetectionConfigurer:
     def configure(
         self,
         cfg,
+        train_dataset,
         model_ckpt,
         data_cfg,
         training=True,
@@ -70,7 +74,7 @@ class DetectionConfigurer:
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, training, data_cfg)
         self.configure_regularization(cfg, training)
-        self.configure_task(cfg, training)
+        self.configure_task(cfg, train_dataset, training)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16_optimizer(cfg)
@@ -235,7 +239,7 @@ class DetectionConfigurer:
                 if "weight_decay" in cfg.optimizer:
                     cfg.optimizer.weight_decay = 0.0
 
-    def configure_task(self, cfg, training):
+    def configure_task(self, cfg, train_dataset, training):
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
             logger.info(f"task config!!!!: training={training}")
@@ -245,9 +249,8 @@ class DetectionConfigurer:
 
             if self.data_classes != self.model_classes:
                 self.configure_task_data_pipeline(cfg)
-            # TODO[JAEGUK]: configure_anchor is not working
             if cfg["task_adapt"].get("use_mpa_anchor", False):
-                self.configure_anchor(cfg)
+                self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "mpa":
                 self.configure_bbox_head(cfg)
                 self.configure_ema(cfg)
@@ -329,12 +332,14 @@ class DetectionConfigurer:
                     pipeline_cfg.insert(i + 1, class_adapt_cfg)
                 break
 
-    def configure_anchor(self, cfg):
+    def configure_anchor(self, cfg, train_dataset):
         """Patch anchor settings for single stage detector."""
         if cfg.model.type in ["SingleStageDetector", "CustomSingleStageDetector"]:
             anchor_cfg = cfg.model.bbox_head.anchor_generator
             if anchor_cfg.type == "SSDAnchorGeneratorClustered":
                 cfg.model.bbox_head.anchor_generator.pop("input_size", None)
+        if should_cluster_anchors(cfg) and train_dataset is not None:
+            cluster_anchors(cfg, train_dataset)
 
     def configure_bbox_head(self, cfg):
         """Patch bbox head in detector for class incremental learning.
@@ -347,16 +352,7 @@ class DetectionConfigurer:
             bbox_head = cfg.model.roi_head.bbox_head
 
         alpha, gamma = 0.25, 2.0
-        if bbox_head.type in ["SSDHead", "CustomSSDHead"]:
-            gamma = 1 if cfg["task_adapt"].get("efficient_mode", False) else 2
-            bbox_head.type = "CustomSSDHead"
-            bbox_head.loss_cls = ConfigDict(
-                type="FocalLoss",
-                loss_weight=1.0,
-                gamma=gamma,
-                reduction="none",
-            )
-        elif bbox_head.type in ["ATSSHead"]:
+        if bbox_head.type in ["ATSSHead"]:
             gamma = 3 if cfg["task_adapt"].get("efficient_mode", False) else 4.5
             bbox_head.loss_cls.gamma = gamma
         elif bbox_head.type in ["VFNetHead", "CustomVFNetHead"]:
@@ -439,6 +435,7 @@ class DetectionConfigurer:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
+            new_path = append_dist_rank_suffix(new_path)
             torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
@@ -613,7 +610,7 @@ class DetectionConfigurer:
     def configure_distributed(cfg):
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
-            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            new_lr = dist.get_world_size() * cfg.optimizer.lr
             logger.info(
                 f"enabled linear scaling rule to the learning rate. \
                 changed LR from {cfg.optimizer.lr} to {new_lr}"
@@ -661,9 +658,9 @@ class DetectionConfigurer:
 class IncrDetectionConfigurer(DetectionConfigurer):
     """Patch config to support incremental learning for object detection."""
 
-    def configure_task(self, cfg, training):
+    def configure_task(self, cfg, train_dataset, training):
         """Patch config to support incremental learning."""
-        super().configure_task(cfg, training)
+        super().configure_task(cfg, train_dataset, training)
         if "task_adapt" in cfg and self.task_adapt_type == "mpa":
             self.configure_task_adapt_hook(cfg)
 
@@ -700,7 +697,7 @@ class SemiSLDetectionConfigurer(DetectionConfigurer):
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
                 self.configure_unlabeled_dataloader(cfg)
 
-    def configure_task(self, cfg, training):
+    def configure_task(self, cfg, train_dataset, training):
         """Patch config to support training algorithm."""
         logger.info(f"Semi-SL task config!!!!: training={training}")
         if "task_adapt" in cfg:
@@ -710,9 +707,8 @@ class SemiSLDetectionConfigurer(DetectionConfigurer):
 
             if self.data_classes != self.model_classes:
                 self.configure_task_data_pipeline(cfg)
-            # TODO[JAEGUK]: configure_anchor is not working
             if cfg["task_adapt"].get("use_mpa_anchor", False):
-                self.configure_anchor(cfg)
+                self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "mpa":
                 self.configure_bbox_head(cfg)
             else:

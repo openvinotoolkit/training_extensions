@@ -16,3 +16,5 @@ runner:
 
 evaluation:
   metric: ["accuracy"]
+
+channel_last: True

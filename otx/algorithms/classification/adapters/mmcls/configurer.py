@@ -35,6 +35,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
@@ -278,6 +279,7 @@ class ClassificationConfigurer:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
+            new_path = append_dist_rank_suffix(new_path)
             torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
@@ -451,7 +453,7 @@ class ClassificationConfigurer:
     def configure_distributed(cfg):
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
-            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            new_lr = dist.get_world_size() * cfg.optimizer.lr
             logger.info(
                 f"enabled linear scaling rule to the learning rate. \
                 changed LR from {cfg.optimizer.lr} to {new_lr}"

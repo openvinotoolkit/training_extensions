@@ -41,7 +41,9 @@ import shutil
 from typing import List
 
 import cv2
-from lxml import etree
+
+# disable B410 import_lxml - the library used only for the xml writing
+from lxml import etree  # nosec B410
 from tqdm import tqdm
 
 

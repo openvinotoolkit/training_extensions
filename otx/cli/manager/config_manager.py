@@ -3,6 +3,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+import logging
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -169,9 +171,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         else:
             task_type = self.task_type
             if not task_type and not model:
-                if not hasattr(self.args, "train_data_roots"):
-                    raise ConfigValueError("Can't find the argument 'train_data_roots'")
-                task_type = self.auto_task_detection(self.args.train_data_roots)
+                if self.mode in ["train", "build"]:
+                    if not hasattr(self.args, "train_data_roots"):
+                        raise ConfigValueError("Can't find the argument 'train_data_roots'")
+                    task_type = self.auto_task_detection(self.args.train_data_roots)
+                else:
+                    raise ConfigValueError("No appropriate template or task-type was found.")
             self.template = self._get_template(task_type, model=model)
             self.train_type = self._get_train_type()
         self.task_type = self.template.task_type
@@ -212,24 +217,21 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.update_data_config(data_yaml)
 
     def _get_train_type(self, ignore_args: bool = False) -> str:
-        """Check and return the train_type received as input args."""
+        """Check and return the train_type received as input args.
+
+        If value passed to args.train_type -> return this train type.
+        Configure train type if None in args.
+        If ignore_args passed -> use value in model template
+        """
+
         if not ignore_args:
-            args_hyper_parameters = gen_params_dict_from_args(self.args)
-            arg_algo_backend = args_hyper_parameters.get("algo_backend", False)
-            if arg_algo_backend:
-                train_type = arg_algo_backend.get("train_type", {"value": "Incremental"})  # type: ignore
-                return train_type.get("value", "Incremental")
-            if (
-                hasattr(self.args, "train_type")
-                and self.mode in ("build", "train", "optimize")
-                and self.args.train_type
-            ):
-                self.train_type = self.args.train_type
+            if hasattr(self.args, "train_type") and self.mode in ("build", "train", "optimize"):
+                self._configure_train_type()
                 if self.train_type not in TASK_TYPE_TO_SUB_DIR_NAME:
                     raise NotSupportedError(f"{self.train_type} is not currently supported by otx.")
-            if self.train_type in TASK_TYPE_TO_SUB_DIR_NAME:
                 return self.train_type
 
+        # if ignore_args -> use train type from template file
         algo_backend = self.template.hyper_parameters.parameter_overrides.get("algo_backend", False)
         if algo_backend:
             train_type = algo_backend.get("train_type", {"default_value": "Incremental"})
@@ -242,6 +244,88 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             raise CliException("Workspace must already exist or one of {task or model or train-data-roots} must exist.")
         self.data_format = self.dataset_manager.get_data_format(data_roots)
         return self._get_task_type_from_data_format(self.data_format)
+
+    def _configure_train_type(self):
+        """Auto train type detection.
+
+        If self.args.train_type is not None -> use args.train_type
+        If train_data_roots contains only set of images -> Self-SL
+        If unlabeled-data-roots were passed to CLI -> use Semi-SL
+        If unlabeled_images presented in dataset structure and it is sufficient to start Semi-SL -> Semi-SL
+        Overwise set Incremental training type.
+        """
+
+        def _count_imgs_in_dir(dir, recursive=False):
+            """Count number of images in directory recursively."""
+            import glob
+
+            valid_suff = ["jpg", "png", "jpeg", "gif"]
+            num_valid_imgs = 0
+            for files in glob.iglob(f"{dir}/**", recursive=recursive):
+                suff = files.split(".")[-1]
+                if suff.lower() in valid_suff:
+                    num_valid_imgs += 1
+
+            return num_valid_imgs
+
+        def _check_semisl_requirements(unlabeled_dir):
+            """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
+            if unlabeled_dir is None:
+                return False
+
+            if not os.path.isdir(unlabeled_dir) or not os.listdir(unlabeled_dir):
+                raise ValueError(
+                    "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. "
+                    "Please, check command line and directory path."
+                )
+
+            all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir, recursive=True)
+            # check if number of unlabeled images is more than relative thershold
+            if all_unlabeled_images > 1:
+                return unlabeled_dir
+
+            logging.warning(
+                "WARNING: There are none or too litle images to start Semi-SL training. "
+                "It should be more than relative threshold (at least 7% of labeled images) "
+                "Start Supervised training instead."
+            )
+
+        # if user explicitly passed train type via args
+        if self.args.train_type is not None:
+            self.train_type = self.args.train_type
+            return
+
+        if self.mode == "build" and self.args.train_data_roots is None:
+            # Case, when we want to build environment with tempate without dataset path
+            # Set train_type to Incremental by default
+            self.train_type = "Incremental"
+            return
+
+        if (
+            self.args.train_data_roots is None
+            or not os.path.isdir(self.args.train_data_roots)
+            or not os.listdir(self.args.train_data_roots)
+        ):
+            raise ValueError(
+                "train-data-roots isn't a directory, it doesn't exist or it is empty. "
+                "Please, check command line and directory path."
+            )
+
+        if _count_imgs_in_dir(self.args.train_data_roots):
+            # If train folder with images only was passed to args
+            # Then we start self-supervised training
+            print("[*] Selfsupervised training type detected")
+            self.train_type = "Selfsupervised"
+            return
+
+        # if user explicitly passed unlabeled images folder
+        valid_unlabeled_path = _check_semisl_requirements(self.args.unlabeled_data_roots)
+        if valid_unlabeled_path:
+            print(f"[*] Semisupervised training type detected with unlabeled data: {valid_unlabeled_path}")
+            self.train_type = "Semisupervised"
+            return
+
+        self.train_type = "Incremental"
 
     def _get_task_type_from_data_format(self, data_format: str) -> str:
         """Detect task type.
@@ -384,7 +468,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         """
         if str(self.train_type).upper() == "INCREMENTAL" and "unlabeled" in subsets:
             subsets.remove("unlabeled")
-        dataset_config: Dict[str, Any] = {"task_type": self.task_type, "train_type": self.train_type}
+        dataset_config: Dict[str, Any] = {
+            "task_type": self.task_type,
+            "train_type": self.train_type,
+            "encryption_key": self.encryption_key,
+        }
         for subset in subsets:
             if f"{subset}_subset" in self.data_config:
                 if self.data_config[f"{subset}_subset"]["data_roots"]:
@@ -406,6 +494,11 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if learning_parameters:
                 num_workers = getattr(learning_parameters, "num_workers", 0)
                 dataset_config["cache_config"]["num_workers"] = num_workers
+        if str(self.task_type).upper() == "SEGMENTATION" and str(self.train_type).upper() == "SELFSUPERVISED":
+            # FIXME: manually set a path to save pseudo masks in workspace
+            train_type_rel_path = TASK_TYPE_TO_SUB_DIR_NAME[self.train_type]
+            train_type_dir = self.workspace_root / train_type_rel_path
+            dataset_config["pseudo_mask_dir"] = train_type_dir / "detcon_mask"
         return dataset_config
 
     def update_data_config(self, data_yaml: dict) -> None:
@@ -579,3 +672,23 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             config.deterministic = self.args.deterministic
         if hasattr(config, "seed") and hasattr(self.args, "seed") and self.args.seed:
             config.seed = self.args.seed
+
+    @property
+    def encryption_key(self):
+        """Get encryption key from CLI argument or OS environment variables. If it is not specified, return None."""
+        key_from_args = getattr(self.args, "encryption_key", None)
+        key_from_envs = os.environ.get("ENCRYPTION_KEY", None)
+
+        if key_from_args is not None and key_from_envs is not None:
+            raise ValueError(
+                "You have to choose either one of the two, whether encryption_key is "
+                "specified as a CLI argument (--encryption-key=<key>) or specified in "
+                "an environment variable (ENCRYPTION_KEY=<key>). "
+            )
+
+        if key_from_args is not None:
+            return key_from_args
+        if key_from_envs is not None:
+            return key_from_envs
+
+        return None

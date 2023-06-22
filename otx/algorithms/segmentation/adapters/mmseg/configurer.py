@@ -31,6 +31,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     remove_custom_hook,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
@@ -304,8 +305,8 @@ class SegmentationConfigurer:
             if modified:
                 if not new_path:
                     new_path = os.path.join(local_torch_hub_folder, "converted.pth")
-                if not torch.distributed.is_initialized() or dist.get_rank() == 0:
-                    torch.save(new_ckpt, new_path)
+                new_path = append_dist_rank_suffix(new_path)
+                torch.save(new_ckpt, new_path)
                 return new_path
         return ckpt_path
 
@@ -317,8 +318,8 @@ class SegmentationConfigurer:
             ckpt = ckpt["model"]
             if not new_path:
                 new_path = ckpt_path[:-3] + "converted.pth"
-            if not torch.distributed.is_initialized() or dist.get_rank() == 0:
-                torch.save(ckpt, new_path)
+            new_path = append_dist_rank_suffix(new_path)
+            torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
 
@@ -489,7 +490,7 @@ class SegmentationConfigurer:
     def configure_distributed(cfg: Config) -> None:
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
-            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            new_lr = dist.get_world_size() * cfg.optimizer.lr
             logger.info(
                 f"enabled linear scaling rule to the learning rate. \
                 changed LR from {cfg.optimizer.lr} to {new_lr}"

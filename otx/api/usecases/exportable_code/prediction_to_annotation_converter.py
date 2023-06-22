@@ -21,11 +21,17 @@ from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
+from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 from otx.api.utils.time_utils import now
+
+
+def convert_bbox_to_ellipse(x1, y1, x2, y2) -> Ellipse:
+    """Convert bbox to ellipse."""
+    return Ellipse(x1, y1, x2, y2)
 
 
 class IPredictionToAnnotationConverter(metaclass=abc.ABCMeta):
@@ -52,9 +58,16 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         labels (List[LabelEntity]): list of labels
     """
 
-    def __init__(self, labels: Union[LabelSchemaEntity, List]):
+    def __init__(self, labels: Union[LabelSchemaEntity, List], configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False) if isinstance(labels, LabelSchemaEntity) else labels
         self.label_map = dict(enumerate(self.labels))
+        self.use_ellipse_shapes = False
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "use_ellipse_shapes" in configuration:
+                self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Optional[Dict[str, np.ndarray]] = None
@@ -122,9 +135,19 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             confidence = prediction[1]
             scored_label = ScoredLabel(self.label_map[label], confidence)
             coords = prediction[2:]
+            shape: Union[Ellipse, Rectangle]
+
+            if confidence < self.confidence_threshold:
+                continue
+
+            if self.use_ellipse_shapes:
+                shape = convert_bbox_to_ellipse(coords[0], coords[1], coords[2], coords[3])
+            else:
+                shape = Rectangle(coords[0], coords[1], coords[2], coords[3])
+
             annotations.append(
                 Annotation(
-                    Rectangle(coords[0], coords[1], coords[2], coords[3]),
+                    shape,
                     labels=[scored_label],
                 )
             )
@@ -133,8 +156,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 def create_converter(
-    converter_type: Domain,
-    labels: LabelSchemaEntity,
+    converter_type: Domain, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None
 ) -> IPredictionToAnnotationConverter:
     """Simple factory for converters based on type of tasks.
 
@@ -145,7 +167,7 @@ def create_converter(
 
     converter: IPredictionToAnnotationConverter
     if converter_type == Domain.DETECTION:
-        converter = DetectionToAnnotationConverter(labels)
+        converter = DetectionToAnnotationConverter(labels, configuration)
     elif converter_type == Domain.SEGMENTATION:
         converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
@@ -157,9 +179,9 @@ def create_converter(
     elif converter_type == Domain.ANOMALY_SEGMENTATION:
         converter = AnomalySegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.INSTANCE_SEGMENTATION:
-        converter = MaskToAnnotationConverter(labels)
+        converter = MaskToAnnotationConverter(labels, configuration)
     elif converter_type == Domain.ROTATED_DETECTION:
-        converter = RotatedRectToAnnotationConverter(labels)
+        converter = RotatedRectToAnnotationConverter(labels, configuration)
     else:
         raise ValueError(f"Unknown converter type: {converter_type}")
 
@@ -405,8 +427,15 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
     """Converts DetectionBox Predictions ModelAPI to Annotations."""
 
-    def __init__(self, labels: LabelSchemaEntity):
+    def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
+        self.use_ellipse_shapes = False
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "use_ellipse_shapes" in configuration:
+                self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
@@ -419,31 +448,44 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         annotations = []
-        for score, class_idx, _, mask in zip(*predictions):
-            mask = mask.astype(np.uint8)
-            contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-            if hierarchies is None:
+        height, width, _ = metadata["original_shape"]
+        shape: Union[Polygon, Ellipse]
+        for score, class_idx, box, mask in zip(*predictions):
+            if score < self.confidence_threshold:
                 continue
-            for contour, hierarchy in zip(contours, hierarchies[0]):
-                if hierarchy[3] != -1:
-                    continue
-                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
-                    continue
-                contour = list(contour)
-                points = [
-                    Point(
-                        x=point[0][0] / (metadata["original_shape"][1] - 1),
-                        y=point[0][1] / (metadata["original_shape"][0] - 1),
-                    )
-                    for point in contour
-                ]
-                polygon = Polygon(points=points)
+            if self.use_ellipse_shapes:
+                shape = convert_bbox_to_ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
                 annotations.append(
                     Annotation(
-                        polygon,
+                        shape,
                         labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
                     )
                 )
+            else:
+                mask = mask.astype(np.uint8)
+                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                if hierarchies is None:
+                    continue
+                for contour, hierarchy in zip(contours, hierarchies[0]):
+                    if hierarchy[3] != -1:
+                        continue
+                    if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
+                        continue
+                    contour = list(contour)
+                    points = [
+                        Point(
+                            x=point[0][0] / width,
+                            y=point[0][1] / height,
+                        )
+                        for point in contour
+                    ]
+                    shape = Polygon(points=points)
+                    annotations.append(
+                        Annotation(
+                            shape,
+                            labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
+                        )
+                    )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
@@ -458,8 +500,15 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
         labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
-    def __init__(self, labels: LabelSchemaEntity):
+    def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
         self.labels = labels.get_labels(include_empty=False)
+        self.use_ellipse_shapes = False
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "use_ellipse_shapes" in configuration:
+                self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
@@ -472,30 +521,43 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         annotations = []
-        for score, class_idx, _, mask in zip(*predictions):
-            mask = mask.astype(np.uint8)
-            contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-            if hierarchies is None:
+        height, width, _ = metadata["original_shape"]
+        shape: Union[Polygon, Ellipse]
+        for score, class_idx, box, mask in zip(*predictions):
+            if score < self.confidence_threshold:
                 continue
-            for contour, hierarchy in zip(contours, hierarchies[0]):
-                if hierarchy[3] != -1:
-                    continue
-                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
-                    continue
-                points = [
-                    Point(
-                        x=point[0] / metadata["original_shape"][1],
-                        y=point[1] / metadata["original_shape"][0],
-                    )
-                    for point in cv2.boxPoints(cv2.minAreaRect(contour))
-                ]
-                polygon = Polygon(points=points)
+            if self.use_ellipse_shapes:
+                shape = convert_bbox_to_ellipse(box[0] / width, box[1] / height, box[2] / width, box[3] / height)
                 annotations.append(
                     Annotation(
-                        polygon,
+                        shape,
                         labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
                     )
                 )
+            else:
+                mask = mask.astype(np.uint8)
+                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                if hierarchies is None:
+                    continue
+                for contour, hierarchy in zip(contours, hierarchies[0]):
+                    if hierarchy[3] != -1:
+                        continue
+                    if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
+                        continue
+                    points = [
+                        Point(
+                            x=point[0] / width,
+                            y=point[1] / height,
+                        )
+                        for point in cv2.boxPoints(cv2.minAreaRect(contour))
+                    ]
+                    shape = Polygon(points=points)
+                    annotations.append(
+                        Annotation(
+                            shape,
+                            labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
+                        )
+                    )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,

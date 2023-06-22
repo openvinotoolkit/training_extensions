@@ -149,7 +149,6 @@ class MMSegmentationTask(OTXSegmentationTask):
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
         if self._data_cfg is not None:
@@ -170,7 +169,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         cfg = configurer.configure(
             recipe_cfg,
             self._model_ckpt,
-            data_cfg,
+            self._data_cfg,
             training,
             subset,
             ir_options,
@@ -376,13 +375,6 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         if cfg.distributed:
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-            if cfg.dist_params.get("linear_scale_lr", False):
-                new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
-                logger.info(
-                    f"enabled linear scaling rule to the learning rate. \
-                    changed LR from {cfg.optimizer.lr} to {new_lr}"
-                )
-                cfg.optimizer.lr = new_lr
 
         validate = bool(cfg.data.get("val", None))
 

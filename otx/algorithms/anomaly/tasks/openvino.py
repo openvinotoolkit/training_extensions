@@ -24,7 +24,6 @@ from zipfile import ZipFile
 import numpy as np
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
-from anomalib.post_processing import anomaly_map_to_color_map
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
@@ -193,10 +192,11 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
-            anomaly_map = anomaly_map_to_color_map(image_result.anomaly_map, normalize=False)
+            anomaly_map = (image_result.anomaly_map * 255).astype(np.uint8)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
                 type="anomaly_map",
+                label=label,
                 annotation_scene=dataset_item.annotation_scene,
                 numpy=anomaly_map,
             )

@@ -39,6 +39,7 @@ from openvino.model_zoo.model_api.models import Model
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
+from otx.algorithms.detection.adapters.openvino.model_wrappers import OTXMaskRCNNModel
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import (
     config_to_bytes,
@@ -118,6 +119,14 @@ class BaseInferencerWithConverter(BaseInferencer):
 
         return self.converter.convert_to_annotation(detections, metadata)
 
+    def get_saliency_map(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+        """Saliency map function of OpenVINO Detection Inferencer."""
+        if isinstance(self.model, OTXMaskRCNNModel):
+            num_classes = len(self.converter.labels)  # type: ignore
+            return self.model.get_saliency_map_from_prediction(prediction, metadata, num_classes)
+        else:
+            return prediction["saliency_map"][0]
+
     def predict(self, image: np.ndarray):
         """Predict function of OpenVINO Detection Inferencer."""
         image, metadata = self.pre_process(image)
@@ -132,7 +141,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         else:
             features = (
                 raw_predictions["feature_vector"].reshape(-1),
-                raw_predictions["saliency_map"][0],
+                self.get_saliency_map(raw_predictions, metadata),
             )
         return predictions, features
 
@@ -219,7 +228,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             )
         }
         model = Model.create_model("OTX_SSD", model_adapter, configuration, preload=True)
-        converter = DetectionToAnnotationConverter(label_schema)
+        converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -255,12 +264,12 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             **attr.asdict(
                 hparams.postprocessing,
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
-            )
+            ),
+            "resize_type": "fit_to_window",  # Resize(keep_ratio=True)
         }
 
         model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
-
-        converter = MaskToAnnotationConverter(label_schema)
+        converter = MaskToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -295,7 +304,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
 
         model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
 
-        converter = RotatedRectToAnnotationConverter(label_schema)
+        converter = RotatedRectToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -343,7 +352,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
 
         self.tiler = Tiler(
             tile_size=int(tile_size * tile_ir_scale_factor),
-            overlap=overlap,
+            overlap=overlap / tile_ir_scale_factor,
             max_number=max_number,
             detector=inferencer.model,
             classifier=classifier,
@@ -364,9 +373,16 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
 
         Returns:
             detections: AnnotationSceneEntity
-            features: list including saliency map and feature vector
+            features: list including feature vector and saliency map
         """
         detections, features = self.tiler.predict(image, mode)
+
+        _, saliency_map = features
+        if saliency_map is not None and isinstance(self.model, OTXMaskRCNNModel):
+            num_classes = len(self.converter.labels)  # type: ignore
+            saliency_map = self.model.get_tiling_saliency_map_from_prediction(detections, num_classes)
+            features = features[0], saliency_map
+
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
 
@@ -447,9 +463,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        _hparams.postprocessing.use_ellipse_shapes = self.config.postprocessing.use_ellipse_shapes
         async_requests_num = get_default_async_reqs_num()
-        if self.config.tiling_parameters.enable_tiling:
-            async_requests_num = 1  # tiling has it's own async configuration
         args = [
             _hparams,
             self.task_environment.label_schema,
@@ -526,7 +541,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
             if add_saliency_map and saliency_map is not None:
                 labels = self.task_environment.get_labels().copy()
-                if saliency_map.shape[0] == len(labels) + 1:
+                if len(saliency_map) == len(labels) + 1:
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
 
@@ -596,7 +611,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 )
 
             labels = self.task_environment.get_labels().copy()
-            if saliency_map.shape[0] == len(labels) + 1:
+            if len(saliency_map) == len(labels) + 1:
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 

@@ -1,5 +1,9 @@
 import argparse
+import os
 import tempfile
+from pathlib import Path
+import os
+import shutil
 
 import pytest
 from omegaconf import DictConfig, OmegaConf
@@ -31,18 +35,19 @@ def test_set_workspace():
     assert set_workspace(task, name=name) == expected_path
 
 
-class TestConfigManager:
-    @pytest.fixture
-    def config_manager(self, mocker):
-        args = mocker.MagicMock()
-        args.template = "."
-        args.config_path = "path/to/config.yaml"
-        args.workspace_path = "path/to/workspace"
-        args.mode = "train"
-        args.task_type = "classification"
-        args.train_type = "incremental"
-        return ConfigManager(args)
+@pytest.fixture
+def config_manager(mocker):
+    args = mocker.MagicMock()
+    args.template = "."
+    args.config_path = "path/to/config.yaml"
+    args.workspace_path = "path/to/workspace"
+    args.mode = "train"
+    args.task_type = "classification"
+    args.train_type = "incremental"
+    return ConfigManager(args)
 
+
+class TestConfigManager:
     def get_default_template(self, otx_root, task_type):
         otx_registry = Registry(otx_root).filter(task_type=task_type)
         return otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
@@ -394,6 +399,20 @@ class TestConfigManager:
         assert config_manager.model == "template_name"
         assert config_manager.train_type == "Incremental"
 
+        mocker.patch("otx.cli.manager.config_manager.ConfigManager.check_workspace", return_value=False)
+        mocker.patch("otx.cli.manager.config_manager.hasattr", return_value=False)
+        empty_args = mocker.MagicMock()
+        empty_args.template = None
+        config_manager = ConfigManager(args=empty_args, mode="train")
+        config_manager.template = None
+        config_manager.task_type = None
+        with pytest.raises(ConfigValueError, match="Can't find the argument 'train_data_roots'"):
+            config_manager.configure_template()
+
+        config_manager = ConfigManager(args=empty_args, mode="eval")
+        with pytest.raises(ConfigValueError, match="No appropriate template or task-type was found."):
+            config_manager.configure_template()
+
     @e2e_pytest_unit
     def test__check_rebuild(self, mocker):
         mock_template = mocker.MagicMock()
@@ -453,29 +472,86 @@ class TestConfigManager:
         mock_update_data_config.assert_called_once_with(data_yaml)
 
     @e2e_pytest_unit
-    def test__get_train_type(self, mocker):
+    def test__get_train_type_incremental(self, mocker):
+        """General usage"""
         mock_args = mocker.MagicMock()
-        mock_params_dict = {"algo_backend": {"train_type": {"value": "Semisupervised"}}}
-        mock_configure_dataset = mocker.patch(
-            "otx.cli.manager.config_manager.gen_params_dict_from_args", return_value=mock_params_dict
-        )
         config_manager = ConfigManager(args=mock_args)
         config_manager.mode = "build"
-        assert config_manager._get_train_type() == "Semisupervised"
-
         config_manager.args.train_type = "Incremental"
-        mock_configure_dataset.return_value = {}
         assert config_manager._get_train_type() == "Incremental"
+        # test train_type unlabeled root is None
+        # train data root ordinary dataset folder
+        config_manager.args.train_type = None
+        config_manager.args.unlabeled_data_roots = None
+        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        config_manager.args.val_data_roots = "tests/assets/classification_dataset"
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
 
         mock_template = mocker.MagicMock()
         mock_template.hyper_parameters.parameter_overrides = {
-            "algo_backend": {"train_type": {"default_value": "Selfsupervised"}}
+            "algo_backend": {"train_type": {"default_value": "Incremental"}}
         }
         config_manager.template = mock_template
-        assert config_manager._get_train_type(ignore_args=True) == "Selfsupervised"
+        assert config_manager._get_train_type(ignore_args=True) == "Incremental"
 
         config_manager.template.hyper_parameters.parameter_overrides = {}
         assert config_manager._get_train_type(ignore_args=True) == "Incremental"
+        # train_data_roots isn't exist
+        config_manager.args.train_type = None
+        config_manager.args.train_data_roots = "non_exist_dir"
+        with pytest.raises(ValueError):
+            config_manager._get_train_type(ignore_args=False)
+
+        # test val_data_roots is None, train-data-roots contains full dataset format
+        config_manager.args.val_data_roots = None
+        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        # auto-split
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
+
+    @e2e_pytest_unit
+    def test__get_train_type_semisuprvised(self, mocker):
+        """Auto train type detection"""
+        mock_args = mocker.MagicMock()
+        config_manager = ConfigManager(args=mock_args)
+        config_manager.args.train_data_roots = "tests/assets/classification_dataset"
+        config_manager.args.train_type = "Semisupervised"
+        assert config_manager._get_train_type() == "Semisupervised"
+        # test train_type unlabeled root is not None
+        config_manager.args.train_type = None
+        config_manager.args.unlabeled_data_roots = "tests/assets/unlabeled_dataset/a"
+        assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
+        # test train_type unlabeled root is not exist
+        config_manager.args.unlabeled_data_roots = "non_exist_dir"
+        with pytest.raises(ValueError):
+            config_manager._get_train_type(ignore_args=False)
+        tempdir = tempfile.mkdtemp()
+        # unlabeled root is empty
+        config_manager.args.unlabeled_data_roots = str(tempdir)
+        with pytest.raises(ValueError):
+            config_manager._get_train_type(ignore_args=False)
+        Path(f"{tempdir}/file.jpg").touch()
+        # number of images in unlabeled root is unsufficient
+        assert config_manager._get_train_type(ignore_args=False) == "Incremental"
+        Path(f"{tempdir}/file1.jpg").touch()
+        Path(f"{tempdir}/file2.jpg").touch()
+        assert config_manager._get_train_type(ignore_args=False) == "Semisupervised"
+
+    @e2e_pytest_unit
+    def test__get_train_type_selfsupervised(self, mocker):
+        """Auto train type detection"""
+        mock_args = mocker.MagicMock()
+        config_manager = ConfigManager(args=mock_args)
+        config_manager.args.train_type = "Selfsupervised"
+        assert config_manager._get_train_type() == "Selfsupervised"
+        config_manager.args.train_type = None
+        config_manager.args.unlabeled_data_roots = None
+        # test folder with only images
+        config_manager.args.train_data_roots = "tests/assets/unlabeled_dataset/a"
+        config_manager.args.val_data_roots = None
+        assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
+        # test val_data_roots is not None
+        config_manager.args.val_data_roots = "tests/assets/unlabeled_dataset"
+        assert config_manager._get_train_type(ignore_args=False) == "Selfsupervised"
 
     @e2e_pytest_unit
     def test_auto_task_detection(self, mocker):
@@ -548,3 +624,39 @@ class TestConfigManager:
         assert "train_data_roots" in dataset_config
         assert "val_data_roots" in dataset_config
         assert "test_data_roots" in dataset_config
+
+
+class TestConfigManagerEncryptionKey:
+    encryption_key = "dummy_key"
+
+    @pytest.fixture(scope="function")
+    def fxt_with_args(self, config_manager):
+        config_manager.args.encryption_key = self.encryption_key
+        return config_manager
+
+    @pytest.fixture
+    def fxt_with_envs(self, config_manager, mocker):
+        config_manager.args.encryption_key = None
+        k = mocker.patch.dict(os.environ, {"ENCRYPTION_KEY": self.encryption_key})
+        yield config_manager
+
+    @pytest.fixture
+    def fxt_with_both(self, fxt_with_args, mocker):
+        k = mocker.patch.dict(os.environ, {"ENCRYPTION_KEY": self.encryption_key})
+        yield fxt_with_args
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "testcase, expected",
+        [("fxt_with_args", True), ("fxt_with_envs", True), ("config_manager", False)],
+    )
+    def test_encryption_key(self, testcase, expected, request):
+        config_manager = request.getfixturevalue(testcase)
+
+        actual = config_manager.encryption_key == self.encryption_key
+        assert actual == expected
+
+    @e2e_pytest_unit
+    def test_encryption_key_error_raise(self, fxt_with_both):
+        with pytest.raises(ValueError):
+            assert fxt_with_both.encryption_key == self.encryption_key

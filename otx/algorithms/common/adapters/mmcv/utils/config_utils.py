@@ -161,7 +161,96 @@ class MPAConfig(Config):
         cfg_dict, cfg_text = MPAConfig._file2dict(filename, use_predefined_variables)
         if import_custom_modules and cfg_dict.get("custom_imports", None):
             import_modules_from_strings(**cfg_dict["custom_imports"])
-        return Config(cfg_dict, cfg_text=cfg_text, filename=filename)
+        return MPAConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
+
+    @property
+    def pretty_text(self):
+        """Make python file human-readable.
+
+        It's almost same as mmcv.Config's code but code to reformat using yapf is removed to reduce time.
+        """
+
+        indent = 4
+
+        def _indent(s_, num_spaces):
+            s = s_.split("\n")
+            if len(s) == 1:
+                return s_
+            first = s.pop(0)
+            s = [(num_spaces * " ") + line for line in s]
+            s = "\n".join(s)
+            s = first + "\n" + s
+            return s
+
+        def _format_basic_types(k, v, use_mapping=False):
+            if isinstance(v, str):
+                v_str = f"'{v}'"
+            else:
+                v_str = str(v)
+
+            if use_mapping:
+                k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                attr_str = f"{k_str}: {v_str}"
+            else:
+                attr_str = f"{str(k)}={v_str}"
+            attr_str = _indent(attr_str, indent)
+
+            return attr_str
+
+        def _format_list(k, v, use_mapping=False):
+            # check if all items in the list are dict
+            if all(isinstance(_, dict) for _ in v):
+                v_str = "[\n"
+                v_str += "\n".join(f"dict({_indent(_format_dict(v_), indent)})," for v_ in v).rstrip(",")
+                if use_mapping:
+                    k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                    attr_str = f"{k_str}: {v_str}"
+                else:
+                    attr_str = f"{str(k)}={v_str}"
+                attr_str = _indent(attr_str, indent) + "]"
+            else:
+                attr_str = _format_basic_types(k, v, use_mapping)
+            return attr_str
+
+        def _contain_invalid_identifier(dict_str):
+            contain_invalid_identifier = False
+            for key_name in dict_str:
+                contain_invalid_identifier |= not str(key_name).isidentifier()
+            return contain_invalid_identifier
+
+        def _format_dict(input_dict, outest_level=False):
+            r = ""
+            s = []
+
+            use_mapping = _contain_invalid_identifier(input_dict)
+            if use_mapping:
+                r += "{"
+            for idx, (k, v) in enumerate(input_dict.items()):
+                is_last = idx >= len(input_dict) - 1
+                end = "" if outest_level or is_last else ","
+                if isinstance(v, dict):
+                    v_str = "\n" + _format_dict(v)
+                    if use_mapping:
+                        k_str = f"'{k}'" if isinstance(k, str) else str(k)
+                        attr_str = f"{k_str}: dict({v_str}"
+                    else:
+                        attr_str = f"{str(k)}=dict({v_str}"
+                    attr_str = _indent(attr_str, indent) + ")" + end
+                elif isinstance(v, list):
+                    attr_str = _format_list(k, v, use_mapping) + end
+                else:
+                    attr_str = _format_basic_types(k, v, use_mapping) + end
+
+                s.append(attr_str)
+            r += "\n".join(s)
+            if use_mapping:
+                r += "}"
+            return r
+
+        cfg_dict = self._cfg_dict.to_dict()
+        text = _format_dict(cfg_dict, outest_level=True)
+
+        return text
 
 
 def copy_config(cfg):
@@ -173,13 +262,12 @@ def copy_config(cfg):
     """
     if not isinstance(cfg, Config):
         raise ValueError(f"cannot copy this instance {type(cfg)}")
-    # new_cfg = copy.deepcopy(cfg)
-    # new_cfg._cfg_dict = copy.deepcopy(cfg._cfg_dict)
-    # new_cfg.filename = cfg.filename
-    import pickle
+
+    # disable [B301, B403] pickle, import-pickle - the library used for converting cfg object
+    import pickle  # nosec B403
 
     data = pickle.dumps(cfg)
-    return pickle.loads(data)
+    return pickle.loads(data)  # nosec B301
 
 
 def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict):
@@ -475,7 +563,13 @@ def patch_persistent_workers(config: Config):
         )
         if workers_per_gpu == 0:
             dataloader_cfg["persistent_workers"] = False
-            data_cfg[f"{subset}_dataloader"] = dataloader_cfg
+        elif "persistent_workers" not in dataloader_cfg:
+            dataloader_cfg["persistent_workers"] = True
+
+        if "pin_memory" not in dataloader_cfg:
+            dataloader_cfg["pin_memory"] = True
+
+        data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
 
 def get_adaptive_num_workers():

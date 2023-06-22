@@ -27,8 +27,9 @@ from mmaction.apis import train_model
 from mmaction.datasets import build_dataloader, build_dataset
 from mmaction.models import build_model as build_videomodel
 from mmaction.utils import collect_env
-from mmcv.runner import CheckpointLoader, load_state_dict, wrap_fp16_model
+from mmcv.runner import CheckpointLoader, load_checkpoint, wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, ProgressBar, get_git_hash
+from torch import distributed as dist
 
 from otx.algorithms.action.adapters.mmaction import (
     Exporter,
@@ -49,6 +50,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -132,14 +134,15 @@ class MMActionTask(OTXActionTask):
         """Build model from model_builder."""
         model_builder = getattr(self, "model_builder", build_videomodel)
         model = model_builder(cfg.model, **kwargs)
-        ckpt = CheckpointLoader.load_checkpoint(cfg.load_from, map_location="cpu")
-        if "model" in ckpt:
-            ckpt = ckpt["model"]
-        if "state_dict" in ckpt:
-            ckpt = ckpt["state_dict"]
-        load_state_dict(model, ckpt)
+
+        checkpoint = cfg.pop("load_from", None)
+        if checkpoint is not None:
+            load_checkpoint(model, checkpoint, map_location="cpu")
+        cfg.load_from = checkpoint
+
         if fp16:
             wrap_fp16_model(model)
+
         return model
 
     # pylint: disable=too-many-arguments
@@ -154,7 +157,6 @@ class MMActionTask(OTXActionTask):
         # deepcopy all configs to make sure
         # changes under MPA and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
-        data_cfg = deepcopy(self._data_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
         recipe_cfg.work_dir = self._output_path
@@ -163,8 +165,8 @@ class MMActionTask(OTXActionTask):
 
         self._configure_device(recipe_cfg, training)
 
-        if data_cfg is not None:
-            recipe_cfg.merge_from_dict(data_cfg)
+        if self._data_cfg is not None:
+            recipe_cfg.merge_from_dict(self._data_cfg)
 
         if self._task_type == TaskType.ACTION_CLASSIFICATION:
             _dataset_type = "OTXActionClsDataset"
@@ -193,10 +195,25 @@ class MMActionTask(OTXActionTask):
         patch_persistent_workers(recipe_cfg)
 
         if self._model_ckpt is not None:
-            recipe_cfg.load_from = self._model_ckpt
+            recipe_cfg.load_from = self.get_model_ckpt(self._model_ckpt)
+            if self._resume:  # after updating to mmaction 1.x, need to be removed
+                recipe_cfg.resume_from = recipe_cfg.load_from
 
         self._config = recipe_cfg
         return recipe_cfg
+
+    @staticmethod
+    def get_model_ckpt(ckpt_path, new_path=None):
+        """Get pytorch model weights."""
+        ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
+        if "model" in ckpt:
+            ckpt = ckpt["model"]
+            if not new_path:
+                new_path = ckpt_path[:-3] + "converted.pth"
+            new_path = append_dist_rank_suffix(new_path)
+            torch.save(ckpt, new_path)
+            return new_path
+        return ckpt_path
 
     def _configure_device(self, cfg: Config, training: bool):
         """Setting device for training and inference."""
@@ -220,7 +237,7 @@ class MMActionTask(OTXActionTask):
     def configure_distributed(cfg: Config):
         """Patching for distributed training."""
         if hasattr(cfg, "dist_params") and cfg.dist_params.get("linear_scale_lr", False):
-            new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
+            new_lr = dist.get_world_size() * cfg.optimizer.lr
             logger.info(
                 f"enabled linear scaling rule to the learning rate. \
                 changed LR from {cfg.optimizer.lr} to {new_lr}"

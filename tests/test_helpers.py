@@ -174,9 +174,10 @@ def generate_random_annotated_image(
                 shape=image1.shape,
             )
             image1[rr, cc] = (
-                random.randint(0, 200),  # nosec
-                random.randint(0, 200),  # nosec
-                random.randint(0, 200),  # nosec
+                # disable B311 random - used for the random sampling not for security/crypto
+                random.randint(0, 200),  # nosec B311
+                random.randint(0, 200),  # nosec B311
+                random.randint(0, 200),  # nosec B311
             )
         if sc_label_name == "circle":
             sc_label_name = "ellipse"

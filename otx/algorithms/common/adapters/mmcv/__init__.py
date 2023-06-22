@@ -34,6 +34,7 @@ from .hooks import (
 )
 from .nncf.hooks import CompressionHook
 from .nncf.runners import AccuracyAwareRunner
+from .ops import multi_scale_deformable_attn_pytorch
 from .runner import EpochRunnerWithCancel, IterBasedRunnerWithCancel
 
 __all__ = [
@@ -57,4 +58,5 @@ __all__ = [
     "CompressionHook",
     "AccuracyAwareRunner",
     "TwoCropTransformHook",
+    "multi_scale_deformable_attn_pytorch",
 ]

@@ -37,8 +37,8 @@ environment:
 Pre-training
 ************
 
-1. Prepare dataset and model. To prepare dataset and decide model, refer to :doc:`classification tutorial <../base/how_to_train/classification>`.
-In this self-supervised learning tutorial, `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_ and :ref:`MobileNet-V3-large-1x <classification_models>` model used in :doc:`classification tutorial <../base/how_to_train/classification>` is used as it is.
+1. In this self-supervised learning tutorial, images from `flowers dataset <https://www.tensorflow.org/hub/tutorials/image_feature_vector#the_flowers_dataset>`_
+and :ref:`MobileNet-V3-large-1x <classification_models>` model is utilized.
 
 2. Prepare OpenVINO™ Training Extensions workspace for **supervised learning** by running
 the following command:
@@ -64,7 +64,7 @@ for **self-supervised learning** by running the following command:
 
 .. code-block::
 
-    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type SELFSUPERVISED --workspace otx-workspace-CLASSIFICATION-Selfsupervised
+    (otx) ...$ otx build --train-data-roots data/flower_photos --model MobileNet-V3-large-1x --train-type Selfsupervised --workspace otx-workspace-CLASSIFICATION-Selfsupervised
 
     [*] Workspace Path: otx-workspace-CLASSIFICATION-Selfsupervised
     [*] Load Model Template ID: Custom_Image_Classification_MobileNet-V3-large-1x
@@ -78,11 +78,10 @@ for **self-supervised learning** by running the following command:
 
 .. note::
 
-    Three things must be considered to set the workspace for self-supervised learning:
+    One important thing must be considered to set the workspace for self-supervised learning:
 
-    1. add ``--train-type Selfsupervised`` in the command to get the training components for self-supervised learning,
-    2. update the path set as ``train-data-roots``,
-    3. and add ``--workspace`` to distinguish self-supervised learning workspace from supervised learning workspace.
+    1. It is also possible to pass just a directory with any images to ``--train-data-roots`` then ``--train-type Selfsupervised`` is not needed. OpenVINO™ Training Extensions will recognize this training type automatically.
+    However, if you passed a full imagenet data format (with different sub-folders inside), this option is mandatory since it is hard to distinguish between supervised training.
 
 After the workspace creation, the workspace structure is as follows:
 
@@ -116,18 +115,16 @@ After the workspace creation, the workspace structure is as follows:
 
 .. note::
 
-    For :ref:`semantic segmentation <selfsl_semantic_segmentation>`, ``--train-data-root`` must be set to a directory including only images, not masks, like below.
+    For :ref:`semantic segmentation <selfsl_semantic_segmentation>`, ``--train-data-root`` must be set to a directory including **only images**, like below.
 
     For `VOC2012 dataset <http://host.robots.ox.ac.uk/pascal/VOC/voc2012>`_ used in :doc:`semantic segmentation tutorial <../base/how_to_train/semantic_segmentation>`, for example, the path ``data/VOCdevkit/VOC2012/JPEGImages`` must be set instead of ``data/VOCdevkit/VOC2012``.
 
-    Please refer to :ref:`Explanation of Self-Supervised Learning for Semantic Segmentation <selfsl_semantic_segmentation>`.
-    And don't forget to add ``--train-type Selfsupervised``.
+    Please refer to :ref:`Explanation of Self-Supervised Learning for Semantic Segmentation <selfsl_semantic_segmentation>`. Option ``--train-type`` is not needed.
 
     .. code-block::
 
         (otx) ...$ otx build --train-data-roots data/VOCdevkit/VOC2012/JPEGImages \
-                            --model Lite-HRNet-18-mod2 \
-                            --train-type Selfsupervised
+                            --model Lite-HRNet-18-mod2
 
 4. To start training we need to call ``otx train``
 command in **self-supervised learning** workspace:
@@ -163,7 +160,7 @@ Let's see how to fine-tune the model using pre-trained weights below.
 Fine-tuning
 ***********
 
-After pre-training progress, start fine-tuning by calling the below command with adding ``--load-weights`` argument in supervised learning workspace.
+After pre-training progress, start fine-tuning by calling the below command with adding ``--load-weights`` argument in **supervised learning workspace**.
 
 .. code-block::
 
@@ -194,7 +191,7 @@ For comparison, we can also obtain the performance without pre-trained weights a
 
 With self-supervised learning, we can obtain well-adaptive weights and train the model more accurately.
 This example showed a little improvement (0.955 → 0.960), but if we use only a few samples that are *too difficult to train a model on*, then
-self-supervised learning can be the solution to improve the model.
+self-supervised learning can be the solution to improve the model perfomance more significantly.
 You can check performance improvement examples in :ref:`self-supervised learning for classification <selfsl_multi_class_classification>` documentation.
 
 .. note::
