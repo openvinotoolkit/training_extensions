@@ -37,10 +37,10 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
         self.updated_label_id: Dict[int, int] = {}
 
         if hasattr(self, "data_type_candidates"):
-            if self.data_type_candidates[0] == "voc":
+            if self.data_type == "voc":
                 self.set_voc_labels()
 
-            if self.data_type_candidates[0] == "common_semantic_segmentation":
+            if self.data_type == "common_semantic_segmentation":
                 self.set_common_labels()
 
         for subset, subset_data in self.dataset.items():
@@ -57,7 +57,10 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
 
                         if ann.type == DatumAnnotationType.mask:
                             if self.use_mask:
-                                # use masks loaded in datumaro as-is
+                                # use masks loaded in datumaro as-is                                
+                                if self.data_type == "common_semantic_segmentation" and ann.label == 0:
+                                    # if common_semantic_segmenmtation, ignore background mask
+                                    continue
                                 shapes.append(self._get_mask_entity(ann))
 
                             else:
