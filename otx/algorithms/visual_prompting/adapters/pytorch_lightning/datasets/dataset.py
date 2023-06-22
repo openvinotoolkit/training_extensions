@@ -54,15 +54,15 @@ class OTXVIsualPromptingDataset(Dataset):
 
     def __init__(
         self,
-        config: Union[DictConfig, ListConfig],
         dataset: DatasetEntity,
         transform: MultipleInputsCompose,
+        use_mask: bool = False,
         offset_bbox: int = 0
     ) -> None:
 
-        self.config = config
         self.dataset = dataset
         self.transform = transform
+        self.use_mask = use_mask
         self.offset_bbox = offset_bbox
 
         self.labels = dataset.get_labels()
@@ -95,7 +95,7 @@ class OTXVIsualPromptingDataset(Dataset):
         bboxes: List[List[int]] = []
         points: List = [] # TBD
         gt_masks: List[np.ndarray] = []
-        labels: List[Scoredlabel] = []
+        labels: List[ScoredLabel] = []
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
             if isinstance(annotation.shape, Polygon):
                 assert not self.config.use_mask
@@ -237,8 +237,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
 
-            self.train_dataset = OTXVIsualPromptingDataset(self.config, train_otx_dataset, train_transform, offset_bbox=self.config.offset_bbox)
-            self.val_dataset = OTXVIsualPromptingDataset(self.config, val_otx_dataset, val_transform)
+            self.train_dataset = OTXVIsualPromptingDataset(train_otx_dataset, train_transform, use_mask=self.config.use_mask, offset_bbox=self.config.offset_bbox)
+            self.val_dataset = OTXVIsualPromptingDataset(val_otx_dataset, val_transform, use_mask=self.config.use_mask)
 
         if stage == "test":
             test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
@@ -247,7 +247,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 Pad(),
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
-            self.test_dataset = OTXVIsualPromptingDataset(self.config, test_otx_dataset, test_transform)
+            self.test_dataset = OTXVIsualPromptingDataset(test_otx_dataset, test_transform, use_mask=self.config.use_mask)
 
         if stage == "predict":
             predict_otx_dataset = self.dataset
@@ -256,7 +256,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 Pad(),
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
-            self.predict_dataset = OTXVIsualPromptingDataset(self.config, predict_otx_dataset, predict_transform)
+            self.predict_dataset = OTXVIsualPromptingDataset(predict_otx_dataset, predict_transform, use_mask=self.config.use_mask)
 
     def summary(self):
         """Print size of the dataset, number of images."""
