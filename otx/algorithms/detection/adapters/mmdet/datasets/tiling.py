@@ -523,59 +523,69 @@ class Tile:
         ]
         return np.average(image_vectors, axis=1)
 
-    def merge_maps(self, saliency_maps: List[np.ndarray]) -> List[np.ndarray]:
+    def merge_maps(self, saliency_maps: List[List[np.ndarray]]) -> List[List[np.ndarray]]:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            saliency_maps: tile-level saliency maps.
+            saliency_maps: tile-level saliency maps. Each map is a list of maps for each detected class or None if class wasn't detected.
 
         Returns:
             merged_maps (list[np.ndarray]): Merged saliency maps for each image.
         """
-
         merged_maps = []
         ratios = {}
+        num_classes = len(saliency_maps[0])
+        feat_h, feat_w = saliency_maps[0][0].shape
         dtype = saliency_maps[0][0][0].dtype
-        image_saliency_maps = []
-        num_classes, feat_h, feat_w = saliency_maps[0].shape
 
-        for image_sal_map, orig_image in zip(saliency_maps[: self.num_images], self.cached_results):
+        for orig_image in self.cached_results:
             img_idx = orig_image["index"]
             ratios[img_idx] = np.array([feat_h, feat_w]) / self.tile_size
             image_h, image_w = orig_image["height"], orig_image["width"]
 
             image_map_h = int(image_h * ratios[img_idx][0])
             image_map_w = int(image_w * ratios[img_idx][1])
-            merged_maps.append(np.zeros((num_classes, image_map_h, image_map_w), dtype=dtype))
+            merged_maps.append([np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)])
 
-            # resize the feature map for whole image to add it to merged saliency maps
-            image_saliency_map = np.array(
-                [cv2.resize(class_sal_map, (image_map_w, image_map_h)) for class_sal_map in image_sal_map]
-            )
-            image_saliency_maps.append(image_saliency_map)
-
-        for map, tile in zip(saliency_maps[self.num_images :], self.tiles[self.num_images :]):
+        for map, tile in zip(saliency_maps[self.num_images:], self.tiles[self.num_images:]):
+            if map is None:
+                continue
             img_idx = tile["dataset_idx"]
             x_1, y_1, x_2, y_2 = tile["tile_box"]
             y_1, x_1 = ((y_1, x_1) * ratios[img_idx]).astype(np.uint8)
             y_2, x_2 = ((y_2, x_2) * ratios[img_idx]).astype(np.uint8)
-            c, h, w = map.shape
+            c = len(map)
+            h, w = map[0].shape
             # if tile size is smaller near the image borders
             h, w = min(h, y_2 - y_1), min(w, x_2 - x_1)
+            print('HERR')
+            for ci in range(c):
+                cv2.imwrite(f"/home/gzalessk/code/training_extensions/tiling-maskrcnn/tiled_saliency_maps/tiles/{x_1}{y_1}_class_{ci}.jpg", map[ci])
 
             for ci, hi, wi in [(c_, h_, w_) for c_ in range(c) for h_ in range(h) for w_ in range(w)]:
-                map_pixel = map[ci, hi, wi]
+                map_pixel = map[ci][hi, wi]
                 # on tile overlap add 0.5 value of each tile
-                if merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] != 0:
-                    merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = 0.5 * (
-                        map_pixel + merged_maps[img_idx][ci, y_1 + hi, x_1 + wi]
+                if merged_maps[img_idx][ci][y_1 + hi, x_1 + wi] != 0:
+                    merged_maps[img_idx][ci][y_1 + hi, x_1 + wi] = 0.5 * (
+                        map_pixel + merged_maps[img_idx][ci][y_1 + hi, x_1 + wi]
                     )
                 else:
-                    merged_maps[img_idx][ci, y_1 + hi, x_1 + wi] = map_pixel
+                    merged_maps[img_idx][ci][y_1 + hi, x_1 + wi] = map_pixel
 
         norm_maps = []
-        for merged_map, image_sal_map in zip(merged_maps, image_saliency_maps):
-            merged_map += (0.5 * image_sal_map).astype(dtype)
-            norm_maps.append(non_linear_normalization(merged_map))
+        for merged_map, image_sal_map in zip(merged_maps, saliency_maps[: self.num_images]):
+            for class_idx in range(num_classes):
+                # don't have detections for this class on merged map
+                if (merged_map[class_idx] == 0).all():
+                    merged_map[class_idx] =  None
+                else:
+                    map_h, map_w = merged_map[class_idx].shape
+                    # resize the feature map for whole image to add it to merged saliency maps
+                    if image_sal_map[class_idx] is not None:
+                        image_sal_map[class_idx] = cv2.resize(image_sal_map[class_idx], (map_w, map_h))
+                        # merged_map[class_idx] += (0.5 * image_sal_map[class_idx]).astype(dtype)
+                    merged_map[class_idx] = non_linear_normalization(merged_map[class_idx])
+                    # merged_map[class_idx] = merged_map[class_idx].astype(np.uint8)
+            norm_maps.append(merged_map)
 
         return norm_maps

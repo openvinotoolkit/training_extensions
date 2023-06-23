@@ -99,7 +99,7 @@ class BaseRecordingForwardHook(ABC):
         """Exit."""
         self._handle.remove()
 
-    def _normalize_map(self, saliency_maps: np.ndarray) -> np.ndarray:
+    def _normalize_map(self, saliency_maps: torch.Tensor) -> torch.Tensor:
         """Normalize saliency maps."""
         max_values, _ = torch.max(saliency_maps, -1)
         min_values, _ = torch.min(saliency_maps, -1)

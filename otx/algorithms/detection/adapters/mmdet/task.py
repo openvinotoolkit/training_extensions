@@ -404,7 +404,7 @@ class MMDetectionTask(OTXDetectionTask):
                 raw_model = raw_model.get_nncf_wrapped_model()
             if isinstance(raw_model, TwoStageDetector):
                 height, width, _ = mm_dataset[0]["img_metas"][0].data["img_shape"]
-                saliency_hook = MaskRCNNRecordingForwardHook(feature_model, input_img_shape=(height, width))
+                saliency_hook = MaskRCNNRecordingForwardHook(feature_model, input_img_shape=(height, width), normalize = not isinstance(mm_dataset, ImageTilingDataset))
             else:
                 saliency_hook = DetClassProbabilityMapHook(
                     feature_model,
@@ -604,11 +604,21 @@ class MMDetectionTask(OTXDetectionTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
+        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
+        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
+            mm_dataset = mm_dataset.dataset
+
         if isinstance(feature_model, TwoStageDetector):
             height, width, _ = mm_dataset[0]["img_metas"][0].data["img_shape"]
-            per_class_xai_algorithm = partial(MaskRCNNRecordingForwardHook, input_img_shape=(width, height))
+            per_class_xai_algorithm = partial(MaskRCNNRecordingForwardHook, 
+                                              input_img_shape=(width, height),
+                                              normalize=True)
         else:
-            per_class_xai_algorithm = DetClassProbabilityMapHook  # type: ignore
+            per_class_xai_algorithm = DetClassProbabilityMapHook(
+                feature_model,
+                use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
+                normalize=not isinstance(mm_dataset, ImageTilingDataset),
+            )
 
         explainer_hook_selector = {
             "classwisesaliencymap": per_class_xai_algorithm,
@@ -625,22 +635,19 @@ class MMDetectionTask(OTXDetectionTask):
             raise NotImplementedError(f"Explainer algorithm {explainer} not supported!")
         logger.info(f"Explainer algorithm: {explainer}")
 
-        # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
-        while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
-            mm_dataset = mm_dataset.dataset
 
-        if explainer.lower() == "eigencam" or explainer.lower() == "activationmap":
-            saliency_hook = explainer_hook(feature_model)
-        else:
-            saliency_hook = DetClassProbabilityMapHook(
-                feature_model,
-                use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
-                normalize=not isinstance(mm_dataset, ImageTilingDataset),
-            )
+        # if explainer.lower() == "eigencam" or explainer.lower() == "activationmap":
+        #     saliency_hook = explainer_hook(feature_model)  # type: ignore
+        # else:
+        #     saliency_hook = DetClassProbabilityMapHook(
+        #         feature_model,
+        #         use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
+        #         normalize=not isinstance(mm_dataset, ImageTilingDataset),
+        #     )
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         eval_predictions = []
-        with saliency_hook:
+        with explainer_hook(feature_model) as saliency_hook:
             for data in dataloader:
                 with torch.no_grad():
                     result = model(return_loss=False, rescale=True, **data)

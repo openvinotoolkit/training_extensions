@@ -107,10 +107,6 @@ if is_mmdeploy_enabled():
 
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(x)
-                # postprocess_kwargs = {
-                #     "normalize": ctx.cfg["normalize_saliency_maps"],
-                # }
-                # saliency_map = ActivationMapHook(self, **postprocess_kwargs).func(backbone_out)
             # Saliency map will be generated from predictions. Generate dummy saliency_map.
             saliency_map = torch.empty(1, dtype=torch.uint8)
             return (*out, feature_vector, saliency_map)

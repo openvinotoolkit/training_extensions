@@ -409,9 +409,7 @@ class ImageTilingDataset(OTXDetDataset):
         """
         return self.tile_dataset.merge(results)
 
-    def merge_vectors(
-        self, feature_vectors: List[np.ndarray], dump_vectors: bool
-    ) -> Union[List[np.ndarray], List[None]]:
+    def merge_vectors(self, feature_vectors: List[np.ndarray], dump_vectors: bool) -> Union[np.ndarray, List[None]]:
         """Merge tile-level feature vectors to image-level feature-vector.
 
         Args:

@@ -170,7 +170,7 @@ class Tiler:
             pred = self.async_pipeline.get_result(processed_tiles)
             while pred:
                 tile_prediction, meta, feats = pred
-                if feats != (None, None):
+                if isinstance(feats[0], np.ndarray):
                     features.append((feats, meta))
                 tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
                 tile_results.append(tile_result)
@@ -181,7 +181,7 @@ class Tiler:
         self.async_pipeline.await_all()
         for j in range(processed_tiles, num_tiles):
             tile_prediction, meta, feats = self.async_pipeline.get_result(j)
-            if feats != (None, None):
+            if isinstance(feats[0], np.ndarray):
                 features.append((feats, meta))
             tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
             tile_results.append(tile_result)
