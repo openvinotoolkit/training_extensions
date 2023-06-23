@@ -83,6 +83,10 @@ class AdaptiveTrainSchedulingHook(Hook):
                     adaptive_interval = min(adaptive_interval, limit)
                     logger.info(f"Update EvalHook interval: {hook.interval} -> {adaptive_interval}")
                     hook.interval = adaptive_interval
+                elif isinstance(hook, LrUpdaterHook):
+                    if hasattr(hook, "interval") and hasattr(hook, "patience"):
+                        hook.interval = adaptive_interval
+                        logger.info(f"Update LrUpdaterHook interval: {hook.interval} -> {adaptive_interval}")
                 elif isinstance(hook, EarlyStoppingHook):
                     logger.info(f"Update EarlyStoppingHook interval: {hook.interval} -> {adaptive_interval}")
                     hook.start = adaptive_interval
