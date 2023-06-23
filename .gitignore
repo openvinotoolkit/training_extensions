@@ -20,3 +20,10 @@ data/*
 
 *.tar.gz
 *.zip
+
+build/
+docs/
+otx/
+tests/assets/
+.tox/
+.coverage
