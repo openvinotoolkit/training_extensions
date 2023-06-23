@@ -372,6 +372,12 @@ class DetectionConfigurer:
                 alpha=alpha,
                 gamma=gamma,
             )
+        # Very naive solution for ATSS
+        if bbox_head.type == "CustomATSSHead":
+            bbox_head.loss_cls = ConfigDict(
+                type="CrossEntropyLoss",
+                use_sigmoid=True,
+            )
 
     @staticmethod
     def configure_ema(cfg):

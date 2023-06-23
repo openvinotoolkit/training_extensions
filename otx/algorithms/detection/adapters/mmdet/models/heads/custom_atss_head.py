@@ -212,6 +212,9 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             labels = (labels, quality)  # For quality focal loss arg spec
 
         # classification loss
+        cls_score = cls_score[pos_inds]
+        labels = labels[pos_inds]
+        label_weights = label_weights[pos_inds]
         loss_cls = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, num_total_samples)
 
         return loss_cls, loss_bbox, loss_centerness, centerness_targets.sum()

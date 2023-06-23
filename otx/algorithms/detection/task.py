@@ -254,6 +254,7 @@ class OTXDetectionTask(OTXTask, ABC):
             best_confidence_threshold = None
             logger.info("Adjusting the confidence threshold")
             metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
+            print(metric.f_measure_per_confidence.ys)
             if metric.best_confidence_threshold:
                 best_confidence_threshold = metric.best_confidence_threshold.value
             if best_confidence_threshold is None:
