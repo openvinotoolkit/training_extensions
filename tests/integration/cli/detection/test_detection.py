@@ -68,13 +68,16 @@ default_templates_ids = [default_template.model_template_id]
 templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
 
-experimental_template = parse_model_template(
-    "otx/algorithms/detection/configs/detection/resnet50_deformable-detr/template_experimental.yaml"
-)
-experimental_template_id = experimental_template.model_template_id
+experimental_templates = [
+    parse_model_template(
+        "otx/algorithms/detection/configs/detection/resnet50_deformable-detr/template_experimental.yaml"
+    ),
+    parse_model_template("otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
+]
+experimental_template_ids = [template.model_template_id for template in experimental_templates]
 
-templates_w_experimental = templates + [experimental_template]
-templates_ids_w_experimental = templates_ids + [experimental_template_id]
+templates_w_experimental = templates + experimental_templates
+templates_ids_w_experimental = templates_ids + experimental_template_ids
 
 
 class TestDetectionCLI:
