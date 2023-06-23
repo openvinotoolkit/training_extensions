@@ -14,7 +14,10 @@ import torch
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-from ..utils import LayerNorm2d, MLPBlock
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils import (
+    LayerNorm2d,
+    MLPBlock,
+)
 
 
 class SAMMaskDecoder(nn.Module):
