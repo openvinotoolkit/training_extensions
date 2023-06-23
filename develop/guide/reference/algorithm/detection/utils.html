@@ -460,6 +460,41 @@
 </div>
 <span class="target" id="module-otx.algorithms.detection.utils"></span><p>Collection of utils for task implementation in Detection Task.</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.detection.utils.create_detection_shapes">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.utils.</span></span><span class="sig-name descname"><span class="pre">create_detection_shapes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ellipse_shapes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.utils.create_detection_shapes" title="Permalink to this definition">#</a></dt>
+<dd><p>Create prediction detection shapes.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>pred_results (list(np.ndarray)): per class predicted boxes
+width (int): image width
+height (int): image height
+confidence_threshold (float): confidence threshold for filtering predictions
+use_ellipse_shapes (bool): if True, use ellipse shapes
+labels (list): dataset labels</p>
+</dd>
+<dt>Returns:</dt><dd><p>shapes: list of prediction shapes (Annotation)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.detection.utils.create_mask_shapes">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.utils.</span></span><span class="sig-name descname"><span class="pre">create_mask_shapes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ellipse_shapes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotated_polygon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.utils.create_mask_shapes" title="Permalink to this definition">#</a></dt>
+<dd><p>Create prediction mask shapes.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>pred_results (tuple): tuple of predicted boxes and masks for each dataset item
+width (int): image width
+height (int): image height
+confidence_threshold (float): confidence threshold for filtering predictions
+use_ellipse_shapes (bool): if True, use ellipse shapes
+labels (list): dataset labels
+rotated_polygon (bool, optional): if True, use rotated polygons for mask shapes</p>
+</dd>
+<dt>Returns:</dt><dd><p>shapes: list of prediction shapes (Annotation)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="otx.algorithms.detection.utils.format_list_to_str">
 <span class="sig-prename descclassname"><span class="pre">otx.algorithms.detection.utils.</span></span><span class="sig-name descname"><span class="pre">format_list_to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value_lists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.detection.utils.format_list_to_str" title="Permalink to this definition">#</a></dt>
 <dd><p>Decrease floating point digits in logs.</p>
@@ -546,6 +581,24 @@
 </div>
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.detection.utils.create_detection_shapes">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     create_detection_shapes()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.detection.utils.create_mask_shapes">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     create_mask_shapes()
+    </span>
+   </code>
+  </a>
+ </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#otx.algorithms.detection.utils.format_list_to_str">
    <code class="docutils literal notranslate">
