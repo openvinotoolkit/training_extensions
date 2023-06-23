@@ -1,4 +1,4 @@
-"""Model config for Deformable DETR."""
+"""Model config for DINO."""
 model = dict(
     type="CustomDINO",
     backbone=dict(

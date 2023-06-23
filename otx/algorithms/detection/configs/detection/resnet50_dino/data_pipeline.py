@@ -1,4 +1,4 @@
-"""Data pipeline for Deformable DETR."""
+"""Data pipeline for DINO."""
 # dataset settings
 dataset_type = "CocoDataset"
 data_root = "data/coco/"

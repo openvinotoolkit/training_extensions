@@ -1,4 +1,4 @@
-"""MMDeploy config of Deformable DETR model for Detection Task."""
+"""MMDeploy config of DINO model for Detection Task."""
 
 _base_ = ["../../base/deployments/base_detection_dynamic.py"]
 
