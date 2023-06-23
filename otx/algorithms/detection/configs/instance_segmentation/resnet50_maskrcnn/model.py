@@ -80,7 +80,7 @@ model = dict(
             featmap_strides=[4, 8, 16, 32],
         ),
         mask_head=dict(
-            type="FCNMaskHead",
+            type="CustomFCNMaskHead",
             num_convs=4,
             in_channels=256,
             conv_out_channels=256,

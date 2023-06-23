@@ -20,7 +20,7 @@ from .data import (
     get_sizes_from_dataset_entity,
     load_dataset_items_coco_format,
 )
-from .utils import generate_label_schema, get_det_model_api_configuration
+from .utils import create_detection_shapes, create_mask_shapes, generate_label_schema, get_det_model_api_configuration
 
 __all__ = [
     "get_det_model_api_configuration",
@@ -29,4 +29,6 @@ __all__ = [
     "get_anchor_boxes",
     "format_list_to_str",
     "generate_label_schema",
+    "create_detection_shapes",
+    "create_mask_shapes",
 ]
