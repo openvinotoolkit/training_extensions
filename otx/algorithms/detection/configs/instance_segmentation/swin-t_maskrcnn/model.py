@@ -145,7 +145,7 @@ model = dict(
         rcnn=dict(
             score_thr=0.05,
             nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=100,
+            max_per_img=500,
             mask_thr_binary=0.5)))
 
 optimizer = dict(
