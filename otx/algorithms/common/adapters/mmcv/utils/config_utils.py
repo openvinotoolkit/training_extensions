@@ -575,17 +575,22 @@ def patch_persistent_workers(config: Config):
 def get_adaptive_num_workers():
     """Measure appropriate num_workers value and return it."""
     return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)  # max available num_workers is 8
-
-
+    
+    
 def patch_from_hyperparams(config: Config, hyperparams):
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
     warmup_iters = int(params.learning_rate_warmup_iters)
-    lr_config = (
-        ConfigDict(warmup_iters=warmup_iters)
-        if warmup_iters > 0
-        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-    )
+    
+    model_label_type = config.filename.split('/')[-1]
+    if "multilabel" in model_label_type:
+        lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
+    else:
+        lr_config = (
+            ConfigDict(warmup_iters=warmup_iters)
+            if warmup_iters > 0
+            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        ) 
 
     if params.enable_early_stopping and config.get("evaluation", None):
         early_stop = ConfigDict(
@@ -614,7 +619,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
     if hyperparams.learning_parameters.auto_num_workers:
         hparams.data.workers_per_gpu = get_adaptive_num_workers()
     
-    if hyperparams.algo_backend.train_type == "Semisupervised":
+    if hyperparams.algo_backend.train_type.name == "Semisupervised":
         unlabeled_config = ConfigDict(
             data=ConfigDict(
                 unlabeled_dataloader=ConfigDict(
@@ -627,7 +632,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
-
 
 def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
     """Align data_cfg with recipe_cfg."""
