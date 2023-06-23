@@ -138,16 +138,17 @@ class SegmentAnything(LightningModule):
             state_dict = replace_state_dict_keys(state_dict, revise_keys)
             self.load_state_dict(state_dict)
         else:
-            try:
-                self.load_from_checkpoint(self.config.model.checkpoint)
-            except:
-                if str(self.config.model.checkpoint).startswith("http"):
-                    state_dict = torch.hub.load_state_dict_from_url(str(self.config.model.checkpoint))
-                else:
-                    with open(self.config.model.checkpoint, "rb") as f:
-                        state_dict = torch.load(f)
-                state_dict = replace_state_dict_keys(state_dict, revise_keys)
-                self.load_state_dict(state_dict)
+            if self.config.model.checkpoint:
+                try:
+                    self.load_from_checkpoint(self.config.model.checkpoint)
+                except:
+                    if str(self.config.model.checkpoint).startswith("http"):
+                        state_dict = torch.hub.load_state_dict_from_url(str(self.config.model.checkpoint))
+                    else:
+                        with open(self.config.model.checkpoint, "rb") as f:
+                            state_dict = torch.load(f)
+                    state_dict = replace_state_dict_keys(state_dict, revise_keys)
+                    self.load_state_dict(state_dict)
 
     def forward(self, images, bboxes, points=None):
         image_embeddings = self.image_encoder(images)
@@ -262,7 +263,7 @@ class SegmentAnything(LightningModule):
         for i, pred_mask in enumerate(pred_masks):
             mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i], is_predict=True)
             if not self.config.model.return_logits:
-                mask = mask > self.config.model.mask_threshold
+                mask = (mask > self.config.model.mask_threshold).to(mask.dtype)
             else:
                 mask = mask.sigmoid()
             masks.append(mask)
@@ -292,8 +293,11 @@ class SegmentAnything(LightningModule):
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
         if is_predict:
-            masks = masks[...,padding[1]:input_size[0]-padding[3],padding[0]:input_size[1]-padding[2]]
-            masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
+            if padding:
+                assert len(padding) == 4
+                masks = masks[...,padding[1]:input_size[0]-padding[3],padding[0]:input_size[1]-padding[2]]
+            if original_size:
+                masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
         return masks.squeeze(1)
     
     def configure_optimizers(self) -> optim:
