@@ -54,9 +54,9 @@ class EarlyStoppingHook(Hook):
         interval: int,
         metric: str = "bbox_mAP",
         rule: Optional[str] = None,
-        patience: int = 3,
+        patience: int = 5,
         iteration_patience: int = 500,
-        min_delta: float = 0.001,
+        min_delta: float = 0.0,
     ):
         super().__init__()
         self.patience = patience
@@ -249,7 +249,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         interval: int,
         metric: str = "bbox_mAP",
         rule: Optional[str] = None,
-        factor: float = 0.5,
+        factor: float = 0.1,
         patience: int = 3,
         iteration_patience: int = 300,
         **kwargs,

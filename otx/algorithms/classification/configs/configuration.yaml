@@ -156,7 +156,7 @@ learning_parameters:
     warning: null
   early_stop_start:
     affects_outcome_of: TRAINING
-    default_value: 3
+    default_value: 8
     editable: true
     header: Start epoch for early stopping
     max_value: 1000

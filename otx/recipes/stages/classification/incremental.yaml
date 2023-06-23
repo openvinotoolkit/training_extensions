@@ -7,9 +7,6 @@ _base_:
 runner:
   max_epochs: 20
 
-# optimizer_config:
-#   type: SAMOptimizerHook
-
 optimizer:
   type: SGD
   lr: 0.01
@@ -21,11 +18,12 @@ evaluation:
 
 lr_config:
   policy: ReduceLROnPlateau
+  min_lr: 0.000001
+  interval: 1
   metric: accuracy
+  factor: 0.5
   patience: 1
   iteration_patience: 0
-  interval: 1
-  min_lr: 0.000001
   warmup: linear
   warmup_iters: 1
   warmup_ratio: 0.333
@@ -37,11 +35,12 @@ task_adapt:
 custom_hooks: [
   {
     type: LazyEarlyStoppingHook,
-    start: 3,
+    interval: 1,
+    metric: accuracy,
     patience: 3,
     iteration_patience: 0,
-    metric: accuracy,
-    interval: 1,
+    min_delta: 0.001,
+    start: 3,
     priority: 75,
   }
 ]
