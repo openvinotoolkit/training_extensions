@@ -39,7 +39,11 @@ class DINOTransformerDecoder(DeformableDetrTransformerDecoder):
         reg_branches: nn.ModuleList,
         **kwargs,
     ) -> Tensor:
-        """Forward function of Transformer encoder.
+        """Forward function of Transformer decoder.
+
+        Original implementation: forward function of DinoTransformerDecoder in mmdet3.x.
+        What's change: Since implementation of base transformer layer is different between mmdet2.x and mmdet3.x,
+        input shape of layer and some input parameters of layer is modified.
 
         Args:
             query (Tensor): The input query, has shape (num_queries, bs, dim).
@@ -125,6 +129,9 @@ class CdnQueryGenerator(BaseModule):
 
     Code is modified from the `official github repo
     <https://github.com/IDEA-Research/DINO>`_.
+
+    Original implementation: mmdet.models.layers.transformer.dino_layers.CdnQueryGenerator
+    What's changed: None
 
     Args:
         num_classes (int): Number of object classes.

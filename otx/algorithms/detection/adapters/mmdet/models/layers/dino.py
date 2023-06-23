@@ -3,17 +3,28 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Dict, List, Optional, Tuple, Union
+
 import torch
 from mmdet.models.utils.builder import TRANSFORMER
 from mmdet.models.utils.transformer import DeformableDetrTransformer
+from torch import Tensor, nn
 
 
 @TRANSFORMER.register_module()
 class CustomDINOTransformer(DeformableDetrTransformer):
-    """Custom DINO transformer."""
+    """Custom DINO transformer.
+
+    Original implementation: mmdet.models.utils.transformer.DeformableDETR in mmdet2.x
+    What's changed: The forward function is modified.
+        Modified implementations are come from mmdet.models.detectors.dino.DINO in mmdet3.x
+    """
 
     def init_layers(self):
-        """Initialize layers of the DINO."""
+        """Initialize layers of the DINO.
+
+        Unlike Deformable DETR, DINO does not need pos_trans, pos_trans_norm.
+        """
         self.level_embeds = torch.nn.Parameter(torch.Tensor(self.num_feature_levels, self.embed_dims))
 
         self.enc_output = torch.nn.Linear(self.embed_dims, self.embed_dims)
@@ -21,16 +32,25 @@ class CustomDINOTransformer(DeformableDetrTransformer):
 
     def forward(
         self,
-        batch_info,
-        mlvl_feats,
-        mlvl_masks,
-        query_embed,
-        mlvl_pos_embeds,
-        reg_branches=None,
-        cls_branches=None,
+        batch_info: List[Dict[str, Union[Tuple, Tensor]]],
+        mlvl_feats: List[Tensor],
+        mlvl_masks: List[Tensor],
+        query_embed: Tensor,
+        mlvl_pos_embeds: List[Tensor],
+        reg_branches: Optional[nn.ModuleList] = None,
+        cls_branches: Optional[nn.ModuleList] = None,
         **kwargs
     ):
         """Forward function for `Transformer`.
+
+        What's changed:
+            In mmdet3.x forward of transformer is divided into
+            pre_transformer() -> forward_encoder() -> pre_decoder() -> forward_decoder().
+            In comparison, mmdet2.x forward function takes charge of all functions above.
+            The differences in Deformable DETR and DINO are occured in pre_decoder(), forward_decoder().
+            Therefore this function modified those parts. Modified implementations are come from
+            pre_decoder(), and forward_decoder() of mmdet.models.detectors.dino.DINO in mmdet3.x.
+
 
         Args:
             batch_info(list(dict(str, union(tuple, tensor)))):
@@ -65,8 +85,6 @@ class CustomDINOTransformer(DeformableDetrTransformer):
                     return_intermediate_dec is True output has shape \
                       (num_dec_layers, bs, num_query, embed_dims), else has \
                       shape (1, bs, num_query, embed_dims).
-                - init_reference_out: The initial value of reference \
-                    points, has shape (bs, num_queries, 4).
                 - inter_references_out: The internal value of reference \
                     points in decoder, has shape \
                     (num_dec_layers, bs,num_query, embed_dims)
@@ -81,11 +99,15 @@ class CustomDINOTransformer(DeformableDetrTransformer):
                     (batch, h*w, 4). Only would \
                     be returned when `as_two_stage` is True, \
                     otherwise None.
+                - dn_meta (Dict[str, int]): The dictionary saves information about
+                    group collation, including 'num_denoising_queries' and
+                    'num_denoising_groups'. It will be used for split outputs of
+                    denoising and matching parts and loss calculation.
         """
-        feat_flatten = []
-        mask_flatten = []
-        lvl_pos_embed_flatten = []
-        spatial_shapes = []
+        feat_flatten: Union[Tensor, List[Tensor]] = []
+        mask_flatten: Union[Tensor, List[Tensor]] = []
+        lvl_pos_embed_flatten: Union[Tensor, List[Tensor]] = []
+        spatial_shapes: Union[Tensor, List[Tensor]] = []
         for lvl, (feat, mask, pos_embed) in enumerate(zip(mlvl_feats, mlvl_masks, mlvl_pos_embeds)):
             bs, c, h, w = feat.shape
             spatial_shape = (h, w)

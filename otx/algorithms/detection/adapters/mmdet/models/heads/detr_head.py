@@ -7,18 +7,24 @@ from typing import Dict, List, Tuple
 
 import torch
 from mmcv.runner import BaseModule
+from mmcv.utils import Config
 from mmdet.core import bbox_cxcywh_to_xyxy, bbox_xyxy_to_cxcywh, multi_apply, reduce_mean
 from torch import Tensor
 
 
 class DETRHeadExtension(BaseModule):
-    """Head of DETR. DETR:End-to-End Object Detection with Transformers."""
+    """Head of DETR. DETR:End-to-End Object Detection with Transformers.
+
+    Origin implementation: DETRHead of detr_head.py in mmdet3.x
+    What's changed: Change data type of batch_gt_instances from InstanceList to List[Config].
+        Since InstanceList is a new data type from mmdet3.x, List[Config] will replace it.
+    """
 
     def loss_by_feat(
         self,
         all_layers_cls_scores: Tensor,
         all_layers_bbox_preds: Tensor,
-        batch_gt_instances,
+        batch_gt_instances: List[Config],
         batch_img_metas: List[dict],
         batch_gt_instances_ignore=None,
     ) -> Dict[str, Tensor]:
@@ -35,9 +41,8 @@ class DETRHeadExtension(BaseModule):
                 outputs of each decoder layers. Each is a 4D-tensor with
                 normalized coordinate format (cx, cy, w, h) and shape
                 (num_decoder_layers, bs, num_queries, 4).
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
+            batch_gt_instances (List[Config]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
             batch_gt_instances_ignore (list[:obj:`InstanceData`], optional):
@@ -75,7 +80,7 @@ class DETRHeadExtension(BaseModule):
         return loss_dict
 
     def loss_by_feat_single(
-        self, cls_scores: Tensor, bbox_preds: Tensor, batch_gt_instances, batch_img_metas: List[dict]
+        self, cls_scores: Tensor, bbox_preds: Tensor, batch_gt_instances: List[Config], batch_img_metas: List[dict]
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """Loss function for outputs from a single decoder layer of a single feature level.
 
@@ -85,9 +90,8 @@ class DETRHeadExtension(BaseModule):
             bbox_preds (Tensor): Sigmoid outputs from a single decoder layer
                 for all images, with normalized coordinate (cx, cy, w, h) and
                 shape (bs, num_queries, 4).
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
+            batch_gt_instances (List[Config]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
 
@@ -155,7 +159,7 @@ class DETRHeadExtension(BaseModule):
         self,
         cls_scores_list: List[Tensor],
         bbox_preds_list: List[Tensor],
-        batch_gt_instances,
+        batch_gt_instances: List[Config],
         batch_img_metas: List[dict],
     ) -> tuple:
         """Compute regression and classification targets for a batch image.
@@ -169,9 +173,8 @@ class DETRHeadExtension(BaseModule):
             bbox_preds_list (list[Tensor]): Sigmoid outputs from a single
                 decoder layer for each image, with normalized coordinate
                 (cx, cy, w, h) and shape [num_queries, 4].
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
+            batch_gt_instances (List[Config]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
 

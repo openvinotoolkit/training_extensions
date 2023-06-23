@@ -20,7 +20,13 @@ from otx.algorithms.detection.adapters.mmdet.models.layers import CdnQueryGenera
 
 @HEADS.register_module()
 class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
-    """Head of DINO."""
+    """Head of DINO.
+
+    Based on detr_head.py and deformable_detr.py in mmdet2.x, some functions from dino_head.py in mmdet3.x are added.
+    Forward structure:
+        - Training: self.forward_train -> self.forward_transformer -> self.forward -> self.loss
+        - Inference: self.simple_test_bboxes -> self.forward_transformer -> self.forward -> self.get_bboxes
+    """
 
     def __init__(self, *args, dn_cfg: Optional[Config] = None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,6 +50,10 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
 
     def forward_train(self, x, img_metas, gt_bboxes, gt_labels=None, gt_bboxes_ignore=None, proposal_cfg=None):
         """Forward function for training mode.
+
+        Origin impelmentation: forward_train function of detr_head.py in mmdet2.x
+        What's changed: Divided self.forward into self.forward_transformer + self.forward.
+        This kind of structure is from mmdet3.x.
 
         Args:
             x (list[Tensor]): Features from backbone.
@@ -72,7 +82,11 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         return losses
 
     def forward_transformer(self, mlvl_feats, gt_bboxes, gt_labels, img_metas):
-        """Forward function.
+        """Transformers's forward function.
+
+        Origin implementation: forward function of deformable_detr_head.py in mmdet2.x
+        What's changed: Original implementation has post-processing process after getting outputs from
+            self.transformer. However, this function directly return outputs from self.transformer
 
         Args:
             mlvl_feats (tuple[Tensor]): Features from the upstream
@@ -99,6 +113,10 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
                 encode feature map, has shape (N, h*w, 4). Only when \
                 as_two_stage is True it would be returned, otherwise \
                 `None` would be returned.
+            dn_meta (Dict[str, int]): The dictionary saves information about
+              group collation, including 'num_denoising_queries' and
+              'num_denoising_groups'. It will be used for split outputs of
+              denoising and matching parts and loss calculation.
         """
 
         batch_size = mlvl_feats[0].size(0)
@@ -140,9 +158,13 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         enc_outputs_class: Tensor,
         enc_outputs_coord: Tensor,
         dn_meta: Dict[str, int],
-        batch_data_samples,
+        batch_data_samples: List[Config],
     ) -> dict:
         """Perform forward propagation and loss calculation.
+
+        Original implementation: loss function of dino_head.py in mmdet3.x
+        What's changed: Change the name of function of loss_by_feat to loss_by_feat_two_stage since
+            there are changes in function input from parent's implementation.
 
         Args:
             hidden_states (Tensor): Hidden states output from each decoder
@@ -162,13 +184,12 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
             enc_outputs_coord (Tensor): The proposal generate from the
                 encode feature map, has shape (bs, num_feat_points, 4) with the
                 last dimension arranged as (cx, cy, w, h).
-            batch_data_samples (list[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
             dn_meta (Dict[str, int]): The dictionary saves information about
               group collation, including 'num_denoising_queries' and
               'num_denoising_groups'. It will be used for split outputs of
               denoising and matching parts and loss calculation.
+            batch_data_samples (List[Config]): This is same with batch_data_samples in mmdet3.x
+              It contains meta_info(==img_metas) and gt_instances(==(gt_bboxes, gt_labels))
 
         Returns:
             dict: A dictionary of loss components.
@@ -187,8 +208,35 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
     def forward(self, hidden_states, references):
         """Forward function.
 
-        T.B.D.
+        Original implementation: forward function of deformable_detr_head.py in mmdet3.x
+        What's changed: None
+
+        Args:
+            hidden_states (Tensor): Hidden states output from each decoder
+                layer, has shape (num_decoder_layers, bs, num_queries, dim).
+            references (list[Tensor]): List of the reference from the decoder.
+                The first reference is the `init_reference` (initial) and the
+                other num_decoder_layers(6) references are `inter_references`
+                (intermediate). The `init_reference` has shape (bs,
+                num_queries, 4) when `as_two_stage` of the detector is `True`,
+                otherwise (bs, num_queries, 2). Each `inter_reference` has
+                shape (bs, num_queries, 4) when `with_box_refine` of the
+                detector is `True`, otherwise (bs, num_queries, 2). The
+                coordinates are arranged as (cx, cy) when the last dimension is
+                2, and (cx, cy, w, h) when it is 4.
+
+        Returns:
+            tuple[Tensor]: results of head containing the following tensor.
+
+            - all_layers_outputs_classes (Tensor): Outputs from the
+              classification head, has shape (num_decoder_layers, bs,
+              num_queries, cls_out_channels).
+            - all_layers_outputs_coords (Tensor): Sigmoid outputs from the
+              regression head with normalized coordinate format (cx, cy, w,
+              h), has shape (num_decoder_layers, bs, num_queries, 4) with the
+              last dimension arranged as (cx, cy, w, h).
         """
+
         all_layers_outputs_classes = []
         all_layers_outputs_coords = []
 
@@ -224,12 +272,15 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         all_layers_bbox_preds: Tensor,
         enc_cls_scores: Tensor,
         enc_bbox_preds: Tensor,
-        batch_gt_instances,
+        batch_gt_instances: List[Config],
         batch_img_metas: List[dict],
         dn_meta: Dict[str, int],
         batch_gt_instances_ignore=None,
     ) -> Dict[str, Tensor]:
         """Loss function.
+
+        Original implementation: loss_by_feat function of dino_head.py in mmdet3.x
+        What's changed: Name of function is changed. Parent's loss_by_feat function has different inputs.
 
         Args:
             all_layers_cls_scores (Tensor): Classification scores of all
@@ -246,9 +297,8 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
             enc_bbox_preds (Tensor): The proposal generate from the encode
                 feature map, has shape (bs, num_feat_points, 4) with the last
                 dimension arranged as (cx, cy, w, h).
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
+            batch_gt_instances (List[Config]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
             dn_meta (Dict[str, int]): The dictionary saves information about
@@ -315,11 +365,14 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         self,
         all_layers_denoising_cls_scores: Tensor,
         all_layers_denoising_bbox_preds: Tensor,
-        batch_gt_instances,
+        batch_gt_instances: List[Config],
         batch_img_metas: List[dict],
         dn_meta: Dict[str, int],
     ) -> Tuple[List[Tensor], ...]:
         """Calculate denoising loss.
+
+        Original implementation: loss_dn function of dino_head.py in mmdet3.x
+        What's changed: None
 
         Args:
             all_layers_denoising_cls_scores (Tensor): Classification scores of
@@ -330,9 +383,8 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
                 decoder layers in denoising part. Each is a 4D-tensor with
                 normalized coordinate format (cx, cy, w, h) and has shape
                 (num_decoder_layers, bs, num_denoising_queries, 4).
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
+            batch_gt_instances (List[Config]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
             dn_meta (Dict[str, int]): The dictionary saves information about
@@ -357,11 +409,14 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         self,
         dn_cls_scores: Tensor,
         dn_bbox_preds: Tensor,
-        batch_gt_instances,
+        batch_gt_instances: List[Config],
         batch_img_metas: List[dict],
         dn_meta: Dict[str, int],
     ) -> Tuple[Tensor, ...]:
         """Denoising loss for outputs from a single decoder layer.
+
+        Original implementation: _loss_dn_single function of dino_head.py in mmdet3.x
+        What's changed: None
 
         Args:
             dn_cls_scores (Tensor): Classification scores of a single decoder
@@ -371,9 +426,8 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
                 layer in denoising part. Each is a 4D-tensor with normalized
                 coordinate format (cx, cy, w, h) and has shape
                 (bs, num_denoising_queries, 4).
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
+            batch_gt_instances (List[Config]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
             dn_meta (Dict[str, int]): The dictionary saves information about
@@ -439,13 +493,17 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         loss_bbox = self.loss_bbox(bbox_preds, bbox_targets, bbox_weights, avg_factor=num_total_pos)
         return loss_cls, loss_bbox, loss_iou
 
-    def get_dn_targets(self, batch_gt_instances, batch_img_metas: List[Dict], dn_meta: Dict[str, int]) -> tuple:
+    def get_dn_targets(
+        self, batch_gt_instances: List[Config], batch_img_metas: List[Dict], dn_meta: Dict[str, int]
+    ) -> tuple:
         """Get targets in denoising part for a batch of images.
 
+        Original implementation: get_dn_targets function of dino_head.py in mmdet3.x
+        What's changed: None
+
         Args:
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
-                gt_instance. It usually includes ``bboxes`` and ``labels``
-                attributes.
+            batch_gt_instances (List[Config]): Batch of gt_instance.
+                It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
             dn_meta (Dict[str, int]): The dictionary saves information about
@@ -475,13 +533,14 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         num_total_neg = sum((inds.numel() for inds in neg_inds_list))
         return (labels_list, label_weights_list, bbox_targets_list, bbox_weights_list, num_total_pos, num_total_neg)
 
-    def _get_dn_targets_single(self, gt_instances, img_meta: dict, dn_meta: Dict[str, int]) -> tuple:
+    def _get_dn_targets_single(self, gt_instances: Config, img_meta: dict, dn_meta: Dict[str, int]) -> tuple:
         """Get targets in denoising part for one image.
 
+        Original implementation: _get_dn_targets_single function of dino_head.py in mmdet3.x
+        What's changed: None
+
         Args:
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
-                annotations. It should includes ``bboxes`` and ``labels``
-                attributes.
+            gt_instances (Config): A gt_instance which usually includes ``bboxes`` and ``labels`` attributes.
             img_meta (dict): Meta information for one image.
             dn_meta (Dict[str, int]): The dictionary saves information about
               group collation, including 'num_denoising_queries' and
@@ -544,6 +603,9 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
     ) -> Tuple[Tensor, ...]:
         """Split outputs of the denoising part and the matching part.
 
+        Original implementation: split_outputs function of dino_head.py in mmdet3.x
+        What's changed: None
+
         For the total outputs of `num_queries_total` length, the former
         `num_denoising_queries` outputs are from denoising queries, and
         the rest `num_matching_queries` ones are from matching queries,
@@ -601,6 +663,10 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
 
     def simple_test_bboxes(self, feats, img_metas, rescale=False):
         """Test det bboxes without test-time augmentation.
+
+        Original implementation: simple_test_bboxes funciton of detr_head.py in mmdet2.x
+        What's changed: self.forward function is divided into self.forward_transformer and self.forward function.
+            This changes is from mmdet3.x
 
         Args:
             feats (tuple[torch.Tensor]): Multi-level features from the
