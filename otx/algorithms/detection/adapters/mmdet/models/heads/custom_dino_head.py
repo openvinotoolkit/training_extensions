@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -48,7 +48,15 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         super()._init_layers()
         self.query_embedding = torch.nn.Embedding(self.num_query, self.embed_dims)
 
-    def forward_train(self, x, img_metas, gt_bboxes, gt_labels=None, gt_bboxes_ignore=None, proposal_cfg=None):
+    def forward_train(
+        self,
+        x: Tuple[Tensor],
+        img_metas: List[Dict[str, Any]],
+        gt_bboxes: List[Tensor],
+        gt_labels: Optional[List[Tensor]] = None,
+        gt_bboxes_ignore: Optional[List[Tensor]] = None,
+        proposal_cfg: Optional[Config] = None,
+    ):
         """Forward function for training mode.
 
         Origin impelmentation: forward_train function of detr_head.py in mmdet2.x
@@ -59,11 +67,11 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
             x (list[Tensor]): Features from backbone.
             img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            gt_bboxes (Tensor): Ground truth bboxes of the image,
+            gt_bboxes (List[Tensor]): Ground truth bboxes of the image,
                 shape (num_gts, 4).
-            gt_labels (Tensor): Ground truth labels of each box,
+            gt_labels (List[Tensor]): Ground truth labels of each box,
                 shape (num_gts,).
-            gt_bboxes_ignore (Tensor): Ground truth bboxes to be
+            gt_bboxes_ignore (List[Tensor]): Ground truth bboxes to be
                 ignored, shape (num_ignored_gts, 4).
             proposal_cfg (mmcv.Config): Test / postprocessing configuration,
                 if None, test_cfg would be used.
@@ -81,7 +89,13 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         losses = self.loss(*loss_inputs)
         return losses
 
-    def forward_transformer(self, mlvl_feats, gt_bboxes, gt_labels, img_metas):
+    def forward_transformer(
+        self,
+        mlvl_feats: Tuple[Tensor],
+        gt_bboxes: Optional[List[Tensor]],
+        gt_labels: Optional[List[Tensor]],
+        img_metas: List[Dict[str, Any]],
+    ):
         """Transformers's forward function.
 
         Origin implementation: forward function of deformable_detr_head.py in mmdet2.x
@@ -205,7 +219,7 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
         losses = self.loss_by_feat_two_stage(*loss_inputs)
         return losses
 
-    def forward(self, hidden_states, references):
+    def forward(self, hidden_states: Tensor, references: List[Tensor]):
         """Forward function.
 
         Original implementation: forward function of deformable_detr_head.py in mmdet3.x
@@ -661,7 +675,7 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
             all_layers_denoising_bbox_preds,
         )
 
-    def simple_test_bboxes(self, feats, img_metas, rescale=False):
+    def simple_test_bboxes(self, feats: Tuple[Tensor], img_metas: List[Dict[str, Any]], rescale=False):
         """Test det bboxes without test-time augmentation.
 
         Original implementation: simple_test_bboxes funciton of detr_head.py in mmdet2.x
