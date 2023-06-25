@@ -98,12 +98,12 @@ class OTXVIsualPromptingDataset(Dataset):
         labels: List[ScoredLabel] = []
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
             if isinstance(annotation.shape, Polygon):
-                assert not self.config.use_mask
+                assert not self.use_mask
                 # convert polygon to mask
                 gt_mask = self.convert_polygon_to_mask(annotation.shape, width, height)
 
             elif isinstance(annotation.shape, Image):
-                assert self.config.use_mask
+                assert self.use_mask
                 # use mask as-is
                 gt_mask = annotation.shape.numpy
 
