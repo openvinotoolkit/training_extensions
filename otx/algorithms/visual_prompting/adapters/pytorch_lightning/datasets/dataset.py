@@ -136,7 +136,6 @@ class OTXVIsualPromptingDataset(Dataset):
         if len(gt_masks) == 0:
             return {"images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": [], "labels": []}
 
-        gt_masks = np.stack(gt_masks, axis=0)
         bboxes = np.array(bboxes)
         item.update(dict(
             original_size=(height, width),
