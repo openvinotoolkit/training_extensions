@@ -110,7 +110,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Union[DictConfig, ListConfig]: Visual Prompting config.
         """
         self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
-        config = get_visual_promtping_config(task_name=self.model_name, otx_config=self.hyper_parameters)
+        config = get_visual_promtping_config(self.model_name, self.hyper_parameters, self.output_path)
 
         config.dataset.task = "visual_prompting"
 
@@ -130,7 +130,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         def get_model(config: DictConfig, state_dict: Optional[OrderedDict] = None):
             if config.model.name == "SAM":
-                from otx.algorithms.visual_prompting.adapters.pytorch_lightning import (
+                from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
                     SegmentAnything,
                 )
                 model = SegmentAnything(config=config, state_dict=state_dict)

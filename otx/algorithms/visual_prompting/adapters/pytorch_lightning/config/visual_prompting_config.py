@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
 from pathlib import Path
 from typing import Union, Optional
 
@@ -25,7 +26,12 @@ from otx.algorithms.common.utils.logger import get_logger
 logger = get_logger()
 
 
-def get_visual_promtping_config(task_name: str, otx_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
+def get_visual_promtping_config(
+    task_name: str,
+    otx_config: ConfigurableParameters,
+    output_path: str
+) -> Union[DictConfig, ListConfig]:
+
     """Get visual prompting configuration.
 
     Create an visual prompting config object that matches the values specified in the
@@ -40,13 +46,19 @@ def get_visual_promtping_config(task_name: str, otx_config: ConfigurableParamete
         Visual prompting config object for the specified model type with overwritten
         default values.
     """
+    if os.path.isfile(os.path.join(output_path, "config.yaml")):
+        # If there is already a config.yaml file in the output path, load it
+        return OmegaConf.load(os.path.join(output_path, "config.yaml"))
+
+    # Load the default config.yaml file
     config_path = Path(f"otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml")
-    visual_prompting_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
+    visual_prompting_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path, output_path=Path(output_path))
     update_visual_prompting_config(visual_prompting_config, otx_config)
     return visual_prompting_config
 
 
 def get_configurable_parameters(
+    output_path: Path,
     model_name: Optional[str] = None,
     config_path: Optional[Union[Path, str]] = None,
     weight_file: Optional[str] = None,
@@ -75,6 +87,12 @@ def get_configurable_parameters(
         config_path = Path(f"otx/algorithms/visual_prompting/configs/{model_name}/{config_filename}.{config_file_extension}")
 
     config = OmegaConf.load(config_path)
+
+    if weight_file:
+        config.trainer.resume_from_checkpoint = weight_file
+    
+    (output_path / f"{config_filename}.{config_file_extension}").write_text(OmegaConf.to_yaml(config))
+
     return config
 
 
@@ -96,7 +114,7 @@ def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, Li
             if group in ["learning_parameters", "nncf_optimization", "pot_parameters"]:
                 if group in ["nncf_optimization", "pot_parameters"]:
                     # TODO (sungchul): Consider pot_parameters and nncf_optimization
-                    logger.warning("pot_parameters and nncf_optimization will be implemented.")
+                    logger.warning(f"{group} will be implemented.")
                     continue
                 update_visual_prompting_config(visual_prompting_config, getattr(otx_config, group))
             else:
