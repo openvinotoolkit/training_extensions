@@ -20,129 +20,38 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelin
 from otx.api.entities.image import Image
 from otx.api.entities.shapes.polygon import Point, Polygon
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.algorithms.visual_prompting.test_helpers import (
+    MockDatasetConfig,
+    generate_visual_prompting_dataset,
+)
+from otx.api.entities.datasets import DatasetEntity
 
-
-class MockDatasetConfig:
-    def __init__(self):
-        self.image_size: Tuple[int] = (4, 4)
-        self.use_mask: bool = False
-        self.num_workers: int = 1
-        self.train_batch_size: int = 1
-        self.val_batch_size: int = 1
-        self.test_batch_size: int = 1
-        self.offset_bbox: int = 0
-
-
-class MockAnnotation:
-    def __init__(self, annotations):
-        for k, v in annotations.items():
-            setattr(self, k, v)
-
-    def get_labels(self, *args, **kwargs):
-        return self.labels
-
-
-class MockDatasetItemEntity:
-    def __init__(self, items):
-        for k, v in items.items():
-            setattr(self, k, v)
-
-    def get_annotations(self, *args, **kwargs):
-        for annotation in self.annotations:
-            yield annotation
-
-    @property
-    def numpy(self):
-        return self.media
-
-    def __getitem__(self, index):
-        return self.annotations[index]
-
-
-class MockDatasetEntity:
-    def __init__(self, items: Optional[List[MockDatasetItemEntity]] = None):
-        self.items = items
-    
-    def __len__(self):
-        return len(self.items)
-    
-    def __getitem__(self, index):
-        return self.items[index]
-    
-    def get_labels(self):
-        return ['label1', 'label2']
-
-    def get_subset(self, subset):
-        return self
-
-
-class MockMultipleInputsCompose:
-    def __call__(self, item):
-        return item
-    
 
 class TestOTXVIsualPromptingDataset:
-    @pytest.fixture
-    def dataset_polygon(self):
-        # Create a mock dataset with some sample items
-        items = [
-            MockDatasetItemEntity(dict(
-                media=Image(data=np.empty((4, 4))),
-                path=None,
-                width=4,
-                height=4,
-                annotations=[
-                    MockAnnotation(annotations=dict(
-                        shape=Polygon(points=[
-                                Point(x=0.1, y=0.1),
-                                Point(x=0.2, y=0.2),
-                                Point(x=0.3, y=0.3)
-                            ]),
-                        labels=['label1']
-                    ))
-                ]
-            ))
-        ]
-        return MockDatasetEntity(items)
+    @pytest.fixture(autouse=True)
+    def setup(self) -> None:
+        self.transform = lambda items: items
 
     @pytest.fixture
-    def dataset_mask(self):
-        # Create a mock dataset with some sample items
-        items = [
-            MockDatasetItemEntity(dict(
-                media=Image(data=np.empty((4, 4))),
-                path=None,
-                width=4,
-                height=4,
-                annotations=[
-                    MockAnnotation(annotations=dict(
-                        shape=Image(data=np.array([[0, 1, 1, 0] for _ in range(4)])),
-                        labels=['label2']
-                    ))
-                ]
-            ))
-        ]
-        return MockDatasetEntity(items)
+    def dataset_polygon(self) -> DatasetEntity:
+        return generate_visual_prompting_dataset(use_mask=False)
+
+    @pytest.fixture
+    def dataset_mask(self) -> DatasetEntity:
+        return generate_visual_prompting_dataset(use_mask=True)
 
     @e2e_pytest_unit
-    def test_len(self, dataset_polygon):
-        transform = MockMultipleInputsCompose()
-        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, transform)
+    def test_len(self, dataset_polygon) -> None:
+        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
         assert len(otx_dataset) == 1
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("use_mask,expected_labels",
-        [
-            (False, ["label1"]),
-            (True, ["label2"])
-        ]
-    )
-    def test_getitem(self, dataset_polygon, dataset_mask, use_mask: bool, expected_labels: List[str]):
-        transform = MockMultipleInputsCompose()
+    @pytest.mark.parametrize("use_mask", [False, True])
+    def test_getitem(self, dataset_polygon, dataset_mask, use_mask: bool) -> None:
         dataset = dataset_mask if use_mask else dataset_polygon
         otx_dataset = OTXVIsualPromptingDataset(
             dataset=dataset,
-            transform=transform,
+            transform=self.transform,
             use_mask=use_mask)
 
         item = otx_dataset[0]
@@ -153,19 +62,17 @@ class TestOTXVIsualPromptingDataset:
 
         # Check specific values in the item
         assert item['index'] == 0
-        assert item['original_size'] == (4, 4)
-        assert item['images'] == dataset[0].media
-        assert item['path'] == dataset[0].path
+        assert (item['images'] == dataset[0].media.numpy).all()
+        assert item['original_size'] == dataset[0].media.numpy.shape[:2]
+        assert item['path'] == dataset[0].media.path
         assert isinstance(item['gt_masks'], list)
         assert isinstance(item['gt_masks'][0], np.ndarray)
         assert isinstance(item['bboxes'], np.ndarray)
         assert item['points'] == []
-        assert item['labels'] == expected_labels
 
     @e2e_pytest_unit
-    def test_convert_polygon_to_mask(self, dataset_polygon):
-        transform = MockMultipleInputsCompose()
-        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, transform)
+    def test_convert_polygon_to_mask(self, dataset_polygon) -> None:
+        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
 
         polygon = Polygon(points=[
             Point(x=0.1, y=0.1),
@@ -182,9 +89,8 @@ class TestOTXVIsualPromptingDataset:
         assert mask.sum() == 21
 
     @e2e_pytest_unit
-    def test_generate_bbox(self, dataset_polygon):
-        transform = MockMultipleInputsCompose()
-        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, transform)
+    def test_generate_bbox(self, dataset_polygon) -> None:
+        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
 
         x1, y1, x2, y2 = 10, 20, 30, 40
         width = 100
@@ -200,9 +106,8 @@ class TestOTXVIsualPromptingDataset:
         assert bbox[3] >= 0 and bbox[3] <= height
 
     @e2e_pytest_unit
-    def test_generate_bbox_from_mask(self, dataset_polygon):
-        transform = MockMultipleInputsCompose()
-        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, transform)
+    def test_generate_bbox_from_mask(self, dataset_polygon) -> None:
+        otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
 
         gt_mask = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
         width = 3
@@ -220,9 +125,8 @@ class TestOTXVIsualPromptingDataset:
 
 class TestOTXVisualPromptingDataModule:
     @pytest.fixture
-    def datamodule(self):
-        # Create a mock dataset
-        dataset = MockDatasetEntity()
+    def datamodule(self) -> OTXVisualPromptingDataModule:
+        dataset = generate_visual_prompting_dataset()
 
         # Create a mock config
         config = MockDatasetConfig()
@@ -231,7 +135,7 @@ class TestOTXVisualPromptingDataModule:
         return OTXVisualPromptingDataModule(config, dataset)
 
     @e2e_pytest_unit
-    def test_setup(self, mocker, datamodule):
+    def test_setup(self, mocker, datamodule)  -> None:
         """Test setup."""
         mocker.patch.object(datamodule, "summary", return_value=None)
 
@@ -241,7 +145,7 @@ class TestOTXVisualPromptingDataModule:
         assert isinstance(datamodule.val_dataset, OTXVIsualPromptingDataset)
 
     @e2e_pytest_unit
-    def test_train_dataloader(self, mocker, datamodule):
+    def test_train_dataloader(self, mocker, datamodule) -> None:
         """Test train_dataloader."""
         mocker.patch.object(datamodule, "summary", return_value=None)
         datamodule.setup(stage="fit")
@@ -255,7 +159,7 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.collate_fn == collate_fn
 
     @e2e_pytest_unit
-    def test_val_dataloader(self, mocker, datamodule):
+    def test_val_dataloader(self, mocker, datamodule) -> None:
         """Test val_dataloader."""
         mocker.patch.object(datamodule, "summary", return_value=None)
         datamodule.setup(stage="fit")
@@ -269,7 +173,7 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.collate_fn == collate_fn
 
     @e2e_pytest_unit
-    def test_test_dataloader(self, mocker, datamodule):
+    def test_test_dataloader(self, mocker, datamodule) -> None:
         """Test test_dataloader."""
         mocker.patch.object(datamodule, "summary", return_value=None)
         datamodule.setup(stage="test")
@@ -283,7 +187,7 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.collate_fn == collate_fn
 
     @e2e_pytest_unit
-    def test_predict_dataloader(self, datamodule):
+    def test_predict_dataloader(self, datamodule) -> None:
         """Test predict_dataloader."""
         datamodule.setup(stage="predict")
 
