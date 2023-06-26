@@ -100,7 +100,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         if ul_img is None:
             return losses
         with torch.no_grad():
-            teacher_outputs = self.model_t.forward_mask_soft_prediction(
+            teacher_outputs = self.model_t.forward_test(
                 [ul_img0],
                 [ul_img_metas],
                 rescale=False,  # easy augmentation
@@ -109,12 +109,12 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
         )
-        # ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
-        # losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
-        # losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
+        ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
+        losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
+        losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
-        # if not self.unlabeled_loss_enabled or self.unlabeled_loss_weight <= 0.001:  # TODO: move back
-        return losses
+        if not self.unlabeled_loss_enabled or self.unlabeled_loss_weight <= 0.001:  # TODO: move back
+            return losses
 
         # Unsupervised loss
         if self.bg_loss_weight >= 0.0:

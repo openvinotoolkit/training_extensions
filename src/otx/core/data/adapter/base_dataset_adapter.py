@@ -344,7 +344,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         )
         step = 1 if num_polygons == -1 else len(polygon.points) // num_polygons
         points = [polygon.points[i] for i in range(0, len(polygon.points), step)]
-
+        if not hasattr(annotation, "label") or annotation.label is None:
+            print("BUG, ", annotation.id)
+            annotation.label = 0
         return Annotation(
             Polygon(points),
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
@@ -368,6 +370,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             used_labels (List): list for index of used label
         """
         clean_label_entities = []
+        if None in used_labels:
+            indx = used_labels.index(None)
+            used_labels[indx] = 0
+            used_labels = list(set(used_labels))
+
         for used_label in used_labels:
             clean_label_entities.append(self.label_entities[used_label])
         self.label_entities = clean_label_entities

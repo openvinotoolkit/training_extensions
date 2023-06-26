@@ -457,7 +457,6 @@ class MMDetectionTask(OTXDetectionTask):
             "Number of elements should be the same, however, number of outputs are "
             f"{len(eval_predictions)}, {len(feature_vectors)}, and {len(saliency_maps)}"
         )
-
         results = dict(
             outputs=dict(
                 classes=target_classes,
