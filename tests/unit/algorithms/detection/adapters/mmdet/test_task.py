@@ -42,6 +42,8 @@ from tests.unit.algorithms.detection.test_helpers import (
     generate_det_dataset,
 )
 
+import pycocotools.mask as mask_util
+
 
 class MockModule(nn.Module):
     """Mock class for nn.Module."""
@@ -235,7 +237,23 @@ class TestMMDetectionTask:
         )
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
-            return_value=[(np.array([[[0, 0, 1, 1, 1]]]), np.array([[[0, 0, 1, 1, 1, 1, 1]]]))] * 100,
+            return_value=[(np.array([[[0, 0, 1, 1, 1]]]), np.ones((1, 1, 28, 28)))] * 100,
+        )
+        _config = ModelConfiguration(DetectionConfig(), self.iseg_label_schema)
+        output_model = ModelEntity(self.iseg_dataset, _config)
+        self.iseg_task.train(self.iseg_dataset, output_model)
+        output_model.performance == 1.0
+        assert self.det_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
+
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
+            return_value=[
+                (
+                    np.array([[[0, 0, 1, 1, 1]]]),
+                    [[mask_util.encode(np.ones((28, 28, 1), dtype=np.uint8, order="F"))[0]]],
+                )
+            ]
+            * 100,
         )
         _config = ModelConfiguration(DetectionConfig(), self.iseg_label_schema)
         output_model = ModelEntity(self.iseg_dataset, _config)

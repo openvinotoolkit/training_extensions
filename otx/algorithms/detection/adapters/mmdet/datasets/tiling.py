@@ -6,13 +6,11 @@
 import copy
 import uuid
 from itertools import product
-from multiprocessing import Pool
 from random import sample
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
 import numpy as np
-import pycocotools.mask as mask_util
 from mmcv.ops import nms
 from mmdet.core import BitmapMasks, bbox2result
 from tqdm import tqdm
@@ -146,6 +144,9 @@ class Tile:
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
+        result["gt_bboxes"] = np.zeros((0, 4), dtype=np.float32)
+        result["gt_labels"] = np.array([], dtype=int)
+        result["gt_masks"] = []
 
         # Limit the number of ground truth by randomly select 5000 get due to RAM OOM
         if "gt_masks" in result and len(result["gt_masks"]) > self.max_annotation:
@@ -268,8 +269,8 @@ class Tile:
             tile_result.pop("mask_fields")
             tile_result.pop("seg_fields")
             tile_result.pop("img_fields")
-            tile_result["gt_bboxes"] = []
-            tile_result["gt_labels"] = []
+            tile_result["gt_bboxes"] = np.zeros((0, 4), dtype=np.float32)
+            tile_result["gt_labels"] = np.array([], dtype=int)
             tile_result["gt_masks"] = []
 
         if gt_masks is None:
@@ -354,9 +355,8 @@ class Tile:
             bbox_results[i] = bbox2result(np.concatenate([bboxes, scores[:, None]], -1), labels, self.num_classes)
 
             if not detection:
-                masks = [masks[keep_idx] for keep_idx in keep_indices]
-                masks = self.process_masks(masks)
-                mask_results[i] = [list(np.asarray(masks)[labels == i]) for i in range(self.num_classes)]
+                masks = np.array([masks[keep_idx] for keep_idx in keep_indices])
+                mask_results[i] = [list(masks[labels == i]) for i in range(self.num_classes)]
 
     def __len__(self):
         """Total number of tiles."""
@@ -380,37 +380,6 @@ class Tile:
             cropped_tile = cropped_tile.astype(np.float32)
         result["img"] = cropped_tile
         return result
-
-    @staticmethod
-    def readjust_tile_mask(tile_rle: Dict):
-        """Shift tile-level mask to image-level mask.
-
-        Args:
-            tile_rle (Dict): tile-level mask result.
-
-        Returns:
-            np.ndarray: image-level mask result.
-        """
-        x1, y1, x2, y2 = tile_rle.pop("tile_box")
-        height, width = tile_rle.pop("img_size")
-        tile_mask = mask_util.decode(tile_rle)
-        tile_mask = np.pad(tile_mask, ((y1, height - y2), (x1, width - x2)))
-        return mask_util.encode(tile_mask)
-
-    def process_masks(self, tile_masks: List) -> List[np.ndarray]:
-        """Decode Mask Result to Numpy mask, add paddings then encode masks again.
-
-        Args:
-            tile_masks (List): list of tile-level mask results.
-
-        Returns:
-            List[np.ndarray]: list of image-level mask results.
-        """
-        results = []
-        if tile_masks:
-            with Pool(self.nproc) as pool:
-                results = pool.map(Tile.readjust_tile_mask, tile_masks)
-        return results
 
     # pylint: disable=too-many-locals
     @timeit

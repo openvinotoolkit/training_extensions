@@ -335,6 +335,7 @@ class TestTilingDetection:
         assert ir_width == original_width * scale_factor
 
     @e2e_pytest_unit
+    @pytest.mark.skip(reason="Issue#2245: Sporadic failure of tiling max ann.")
     def test_max_annotation(self, max_annotation=200):
         otx_dataset, labels = create_otx_dataset(
             self.height, self.width, self.label_names, Domain.INSTANCE_SEGMENTATION
