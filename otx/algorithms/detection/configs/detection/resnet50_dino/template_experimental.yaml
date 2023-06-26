@@ -55,8 +55,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: ???
-size: ???
+gigaflops: 235
+size: 182.0
 # # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
 # inference_targets:
 #   - CPU
