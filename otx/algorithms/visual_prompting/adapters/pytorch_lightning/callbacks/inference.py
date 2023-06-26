@@ -16,41 +16,45 @@
 
 from typing import Any, List
 
-import pytorch_lightning as pl
 import numpy as np
-from anomalib.models import AnomalyModule
+from bson import ObjectId
+from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import Callback
 
 from otx.api.entities.annotation import Annotation
-from otx.api.entities.image import Image
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
+from otx.api.entities.image import Image
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
-from otx.api.entities.id import ID
-from bson import ObjectId
 
 
 class InferenceCallback(Callback):
-    """Callback that updates the OTX dataset during inference.
+    """Callback that updates otx_dataset during inference.
     
     Args:
-        otx_dataset (DatasetEntity): 
+        otx_dataset (DatasetEntity): Dataset that predictions will be updated.
     """
 
     def __init__(self, otx_dataset: DatasetEntity):
         self.otx_dataset = otx_dataset.with_empty_annotations()
 
-    def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: List[Any]):
+    def on_predict_epoch_end(self, _trainer: Trainer, _pl_module: LightningModule, outputs: List[Any]) -> None:
         """Call when the predict epoch ends."""
         outputs = outputs[0]
 
         # collect generic predictions
-        pred_masks = [output["masks"][0] for output in outputs]
-        iou_predictions = [output["iou_predictions"][0] for output in outputs]
-        gt_labels = [output["labels"][0] for output in outputs]
+        pred_masks: List = []
+        iou_predictions: List = []
+        gt_labels: List = []
+        for output in outputs:
+            pred_masks.append(output["masks"][0])
+            iou_predictions.append(output["iou_predictions"][0])
+            gt_labels.append(output["labels"][0])
+
         for dataset_item, pred_mask, iou_prediction, labels in zip(self.otx_dataset, pred_masks, iou_predictions, gt_labels):
             annotations: List[Annotation] = []
             for soft_prediction, iou, label in zip(pred_mask, iou_prediction, labels):
