@@ -10,7 +10,7 @@ task_adapt = dict(
 
 runner = dict(max_epochs=300)
 
-optimizer_config = dict(_delete_=True)
+optimizer_config = dict(_delete_=True, grad_clip=dict(max_norm=40, norm_type=2))
 
 adaptive_validation_interval = dict(
     max_interval=12,
@@ -30,3 +30,4 @@ custom_hooks = [
 adaptive_ema = dict(epoch_momentum=0.0)
 ignore = True
 find_unused_parameters = True
+adaptive_ema = dict(epoch_momentum=0.4)
