@@ -229,6 +229,7 @@ class TestOTXVisualPromptingDataModule:
         # Create an instance of OTXVisualPromptingDataModule
         return OTXVisualPromptingDataModule(config, dataset)
 
+    @e2e_pytest_unit
     def test_setup(self, mocker, datamodule):
         """Test setup."""
         mocker.patch.object(datamodule, "summary", return_value=None)
@@ -238,6 +239,7 @@ class TestOTXVisualPromptingDataModule:
         assert isinstance(datamodule.train_dataset, OTXVIsualPromptingDataset)
         assert isinstance(datamodule.val_dataset, OTXVIsualPromptingDataset)
 
+    @e2e_pytest_unit
     def test_train_dataloader(self, mocker, datamodule):
         """Test train_dataloader."""
         mocker.patch.object(datamodule, "summary", return_value=None)
@@ -251,6 +253,7 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.num_workers == datamodule.config.num_workers
         assert dataloader.collate_fn == collate_fn
 
+    @e2e_pytest_unit
     def test_val_dataloader(self, mocker, datamodule):
         """Test val_dataloader."""
         mocker.patch.object(datamodule, "summary", return_value=None)
@@ -264,6 +267,7 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.num_workers == datamodule.config.num_workers
         assert dataloader.collate_fn == collate_fn
 
+    @e2e_pytest_unit
     def test_test_dataloader(self, mocker, datamodule):
         """Test test_dataloader."""
         mocker.patch.object(datamodule, "summary", return_value=None)
@@ -277,6 +281,7 @@ class TestOTXVisualPromptingDataModule:
         assert dataloader.num_workers == datamodule.config.num_workers
         assert dataloader.collate_fn == collate_fn
 
+    @e2e_pytest_unit
     def test_predict_dataloader(self, datamodule):
         """Test predict_dataloader."""
         datamodule.setup(stage="predict")
