@@ -575,8 +575,8 @@ def patch_persistent_workers(config: Config):
 def get_adaptive_num_workers():
     """Measure appropriate num_workers value and return it."""
     return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)  # max available num_workers is 8
-    
-    
+
+
 def patch_from_hyperparams(config: Config, hyperparams):
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
