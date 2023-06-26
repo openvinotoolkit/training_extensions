@@ -97,11 +97,16 @@ def generate_visual_prompting_dataset(number_of_images: int = 1, use_mask: bool 
 
 
 class MockDatasetConfig:
-    def __init__(self):
+    def __init__(self, use_mask: bool = False):
         self.image_size: Tuple[int] = (4, 4)
-        self.use_mask: bool = False
+        self.use_mask: bool = use_mask
         self.num_workers: int = 1
         self.train_batch_size: int = 1
         self.val_batch_size: int = 1
         self.test_batch_size: int = 1
         self.offset_bbox: int = 0
+
+
+class MockConfig:
+    def __init__(self, use_mask: bool = False):
+        self.dataset = MockDatasetConfig(use_mask=use_mask)
