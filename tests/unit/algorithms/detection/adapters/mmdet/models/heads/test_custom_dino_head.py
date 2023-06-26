@@ -85,10 +85,10 @@ class TestCustomDINOHead:
     @e2e_pytest_unit
     def test_forward_train(self):
         inputs = [
-            torch.randn([2, 256, 92, 95]),
-            torch.randn([2, 256, 46, 48]),
-            torch.randn([2, 256, 23, 24]),
-            torch.randn([2, 256, 12, 12]),
+            torch.zeros([2, 256, 92, 95]),
+            torch.zeros([2, 256, 46, 48]),
+            torch.zeros([2, 256, 23, 24]),
+            torch.zeros([2, 256, 12, 12]),
         ]
         gt_bboxes = [
             torch.Tensor(
@@ -171,10 +171,10 @@ class TestCustomDINOHead:
     @e2e_pytest_unit
     def test_simple_test_bboxes(self):
         feats = [
-            torch.randn([2, 256, 100, 134]),
-            torch.randn([2, 256, 50, 67]),
-            torch.randn([2, 256, 25, 34]),
-            torch.randn([2, 256, 13, 17]),
+            torch.zeros([2, 256, 100, 134]),
+            torch.zeros([2, 256, 50, 67]),
+            torch.zeros([2, 256, 25, 34]),
+            torch.zeros([2, 256, 13, 17]),
         ]
         img_metas = [
             {
