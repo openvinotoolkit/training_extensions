@@ -4,26 +4,31 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from copy import deepcopy
-from typing import List, Optional, Tuple
+import os
+from typing import List, Tuple
 
 import numpy as np
 
-from otx.api.entities.color import Color
-from otx.api.entities.image import Image
+from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from otx.api.entities.color import Color
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.task_environment import TaskEnvironment
 from tests.test_helpers import generate_random_annotated_image
+
+DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR = os.path.join("otx/algorithms/visual_prompting/configs", "sam_vit_b")
 
 labels_names = ("rectangle", "ellipse", "triangle")
 
@@ -94,6 +99,19 @@ def generate_visual_prompting_dataset(number_of_images: int = 1, use_mask: bool 
         items.append(DatasetItemEntity(media=image, annotation_scene=annotation))
 
     return DatasetEntity(items)
+
+
+def init_environment():
+    model_template = parse_model_template(os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR, "template.yaml"))
+    hyper_parameters = create(model_template.hyper_parameters.data)
+    labels_schema = generate_otx_label_schema()
+    environment = TaskEnvironment(
+        model=None,
+        hyper_parameters=hyper_parameters,
+        label_schema=labels_schema,
+        model_template=model_template,
+    )
+    return environment
 
 
 class MockDatasetConfig:
