@@ -22,7 +22,7 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-class MockConfig:
+class MockDatasetConfig:
     def __init__(self):
         self.image_size: Tuple[int] = (4, 4)
         self.use_mask: bool = False
@@ -156,7 +156,8 @@ class TestOTXVIsualPromptingDataset:
         assert item['original_size'] == (4, 4)
         assert item['images'] == dataset[0].media
         assert item['path'] == dataset[0].path
-        assert isinstance(item['gt_masks'], np.ndarray)
+        assert isinstance(item['gt_masks'], list)
+        assert isinstance(item['gt_masks'][0], np.ndarray)
         assert isinstance(item['bboxes'], np.ndarray)
         assert item['points'] == []
         assert item['labels'] == expected_labels
@@ -224,7 +225,7 @@ class TestOTXVisualPromptingDataModule:
         dataset = MockDatasetEntity()
 
         # Create a mock config
-        config = MockConfig()
+        config = MockDatasetConfig()
 
         # Create an instance of OTXVisualPromptingDataModule
         return OTXVisualPromptingDataModule(config, dataset)
