@@ -48,11 +48,13 @@ def get_visual_promtping_config(
     """
     if os.path.isfile(os.path.join(output_path, "config.yaml")):
         # If there is already a config.yaml file in the output path, load it
-        return OmegaConf.load(os.path.join(output_path, "config.yaml"))
-
-    # Load the default config.yaml file
-    config_path = Path(f"otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml")
-    visual_prompting_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path, output_path=Path(output_path))
+        config_path = os.path.join(output_path, "config.yaml")
+        visual_prompting_config = OmegaConf.load(config_path)
+        print(f"[*] Load configuration file at {config_path}")
+    else:
+        # Load the default config.yaml file
+        config_path = Path(f"otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml")
+        visual_prompting_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path, output_path=Path(output_path))
     update_visual_prompting_config(visual_prompting_config, otx_config)
     return visual_prompting_config
 
@@ -87,6 +89,7 @@ def get_configurable_parameters(
         config_path = Path(f"otx/algorithms/visual_prompting/configs/{model_name}/{config_filename}.{config_file_extension}")
 
     config = OmegaConf.load(config_path)
+    print(f"[*] Load configuration file at {config_path}")
 
     if weight_file:
         config.trainer.resume_from_checkpoint = weight_file
@@ -122,7 +125,11 @@ def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, Li
 
     parameters = getattr(otx_config, "parameters")
     for param in parameters:
-        assert param in visual_prompting_config.keys(), f"Parameter {param} not present in visual prompting config."
+        if param not in visual_prompting_config.keys():
+            print(f"[*] {param} is not presented in visual prompting config.")
+            print(f"    --> Available parameters are {visual_prompting_config.keys()}")
+            continue
         sc_value = getattr(otx_config, param)
         sc_value = sc_value.value if hasattr(sc_value, "value") else sc_value
+        print(f"[*] Update {param}: {visual_prompting_config[param]} -> {sc_value}")
         visual_prompting_config[param] = sc_value
