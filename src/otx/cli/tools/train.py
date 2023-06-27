@@ -20,6 +20,7 @@ import datetime
 import time
 import multiprocessing as mp
 import pynvml
+import psutil
 from multiprocessing import Process
 from contextlib import ExitStack
 from pathlib import Path
@@ -329,6 +330,7 @@ def check_resource(queue: mp.Queue):
     handle = pynvml.nvmlDeviceGetHandleByIndex(0)
     max_gpu_mem = 0
     avg_gpu_util = 0
+    max_cpu_mem = 0
     gib = 1024**3
 
     num_counts = 0
@@ -344,6 +346,11 @@ def check_resource(queue: mp.Queue):
         if max_gpu_mem < mem_used:
             max_gpu_mem = mem_used
 
+        # cpu mem
+        cpu_mem = psutil.virtual_memory()[3] / gib
+        if max_cpu_mem < cpu_mem:
+            max_cpu_mem = cpu_mem
+
         if not queue.empty():
             break
 
@@ -352,6 +359,7 @@ def check_resource(queue: mp.Queue):
 
     with open(output_path, "w") as f:
         f.write(
+            f"max_cpu_mem\t{max_cpu_mem} GiB\n"
             f"max_gpu_mem\t{max_gpu_mem} GiB\n"
             f"avg_gpu_util\t{avg_gpu_util / num_counts} %\n"
         )
