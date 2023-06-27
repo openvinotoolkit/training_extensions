@@ -267,7 +267,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.base_lr: List[float] = []
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
-        
 
     def _init_rule(self, rule, key_indicator):
         """Initialize rule, key_indicator, comparison_func, and best score.
