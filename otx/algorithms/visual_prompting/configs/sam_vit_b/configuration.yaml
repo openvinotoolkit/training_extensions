@@ -6,6 +6,23 @@ learning_parameters:
   header: Learning Parameters
   type: PARAMETER_GROUP
   visible_in_ui: true
+  trainer:
+    description: Trainer Parameters
+    header: Trainer Parameters
+    type: PARAMETER_GROUP
+    visible_in_ui: true
+    max_epochs:
+      affects_outcome_of: TRAINING
+      default_value: 100
+      description:
+        Maximum number of epochs to train for. If not specified, the training will
+        run until the early stopping criteria is met.
+      editable: true
+      header: Maximum number of epochs
+      max_value: 1000
+      min_value: 1
+      type: INTEGER
+      value: 100
   dataset:
     description: Dataset Parameters
     header: Dataset Parameters
