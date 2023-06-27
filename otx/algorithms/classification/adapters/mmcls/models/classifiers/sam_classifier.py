@@ -71,6 +71,7 @@ class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Image
             loss = self.head.forward_train(x, gt_label)
 
         losses.update(loss)
+        
         return losses
 
     @staticmethod
