@@ -1,4 +1,4 @@
-"""Initialization of SwinTransformer-MaskRCNN model for Instance-Segmentation Task."""
+"""Initialization of ConvNeXt-T-MaskRCNN model for Instance-Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
