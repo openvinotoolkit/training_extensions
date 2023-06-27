@@ -37,7 +37,7 @@ custom_hooks: [
     type: LazyEarlyStoppingHook,
     interval: 1,
     metric: accuracy,
-    patience: 2,
+    patience: 3,
     iteration_patience: 0,
     start: 3,
     min_delta_ratio: 0.01,
