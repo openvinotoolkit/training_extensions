@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import functools
-
 from mmdet.models.builder import DETECTORS
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
@@ -26,19 +24,16 @@ class CustomDINO(CustomDeformableDETR):
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, task_adapt=task_adapt, **kwargs)
         self._register_load_state_dict_pre_hook(
-            functools.partial(
-                self.load_state_dict_pre_hook,
-                self,
-            )
+            self.load_state_dict_pre_hook,
         )
 
     @staticmethod
-    def load_state_dict_pre_hook(model, ckpt_dict, *args, **kwargs):
+    def load_state_dict_pre_hook(ckpt_dict, *args, **kwargs):
         """Modify mmdet3.x version's weights before weight loading."""
 
         if list(ckpt_dict.keys())[0] == "level_embed":
             logger.info("----------------- CustomDINO.load_state_dict_pre_hook() called")
-            # This ckpt_dict is come from mmdet3.x
+            # This ckpt_dict comes from mmdet3.x
             ckpt_dict["bbox_head.transformer.level_embeds"] = ckpt_dict.pop("level_embed")
             replaced_params = {}
             for param in ckpt_dict:

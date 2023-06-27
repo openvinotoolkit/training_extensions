@@ -17,7 +17,7 @@ class CustomDINOTransformer(DeformableDetrTransformer):
 
     Original implementation: mmdet.models.utils.transformer.DeformableDETR in mmdet2.x
     What's changed: The forward function is modified.
-        Modified implementations are come from mmdet.models.detectors.dino.DINO in mmdet3.x
+        Modified implementations come from mmdet.models.detectors.dino.DINO in mmdet3.x
     """
 
     def init_layers(self):
@@ -48,13 +48,13 @@ class CustomDINOTransformer(DeformableDetrTransformer):
             pre_transformer() -> forward_encoder() -> pre_decoder() -> forward_decoder().
             In comparison, mmdet2.x forward function takes charge of all functions above.
             The differences in Deformable DETR and DINO are occured in pre_decoder(), forward_decoder().
-            Therefore this function modified those parts. Modified implementations are come from
+            Therefore this function modified those parts. Modified implementations come from
             pre_decoder(), and forward_decoder() of mmdet.models.detectors.dino.DINO in mmdet3.x.
 
 
         Args:
             batch_info(list(dict(str, union(tuple, tensor)))):
-                Information about batch such as image shaep,
+                Information about batch such as image shape,
                 gt information.
             mlvl_feats (list(Tensor)): Input queries from
                 different level. Each element has shape
