@@ -107,7 +107,7 @@ learning_parameters:
     warning: null
   enable_early_stopping:
     affects_outcome_of: TRAINING
-    default_value: true
+    default_value: false
     description: Early exit from training when validation accuracy isn't changed or decreased for several epochs.
     editable: true
     header: Enable early stopping of the training
@@ -186,9 +186,9 @@ learning_parameters:
     warning: This will automatically control the patience and interval when early stopping is enabled.
   auto_adapt_batch_size:
     affects_outcome_of: TRAINING
-    default_value: Safe
+    default_value: None
     description: Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
-    editable: true
+    editable: false
     enum_name: BatchSizeAdaptType
     header: Decrease batch size if current batch size isn't fit to CUDA memory.
     options:
@@ -201,7 +201,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: Safe
+    value: None
     visible_in_ui: true
     warning:
       Enabling this could change the actual batch size depending on the current GPU status.
@@ -533,7 +533,7 @@ tiling_parameters:
   enable_adaptive_params:
     header: Enable adaptive tiling parameters
     description: Config tile size and tile overlap adaptively based on annotated dataset statistic. Manual settings well be ignored if it's turned on. Please turn off this option in order to tune tiling parameters manually.
-    default_value: true
+    default_value: false
     editable: true
     affects_outcome_of: TRAINING
     type: BOOLEAN
