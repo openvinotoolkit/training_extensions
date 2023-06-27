@@ -1,6 +1,5 @@
 dataset:
   task: visual_prompting
-  use_mask: false # if using mask as-is (true) or converting it to polygon (false)
   train_batch_size: 2
   val_batch_size: 1
   test_batch_size: 1

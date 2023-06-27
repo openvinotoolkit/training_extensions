@@ -46,23 +46,20 @@ class OTXVIsualPromptingDataset(Dataset):
     """Visual Prompting Dataset Adaptor.
     
     Args:
-        config
-        dataset
-        transform
-        stage
+        dataset (DatasetEntity): Dataset entity.
+        transform (MultipleInputsCompose): Transformations to apply to the dataset.
+        offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
     """
 
     def __init__(
         self,
         dataset: DatasetEntity,
         transform: MultipleInputsCompose,
-        use_mask: bool = False,
         offset_bbox: int = 0
     ) -> None:
 
         self.dataset = dataset
         self.transform = transform
-        self.use_mask = use_mask
         self.offset_bbox = offset_bbox
 
         self.labels = dataset.get_labels()
@@ -75,17 +72,14 @@ class OTXVIsualPromptingDataset(Dataset):
         """
         return len(self.dataset)
 
-    def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
+    def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
         """Get dataset item.
 
         Args:
             index (int): Index of the dataset sample.
 
-        Raises:
-            ValueError: When the task type is not supported.
-
         Returns:
-            Dict[str, Union[int, Tensor]]: Dataset item.
+            Dict[str, Union[int, List, Tensor]]: Dataset item.
         """
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
@@ -97,15 +91,14 @@ class OTXVIsualPromptingDataset(Dataset):
         gt_masks: List[np.ndarray] = []
         labels: List[ScoredLabel] = []
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
-            if isinstance(annotation.shape, Polygon):
-                assert not self.use_mask
+            if isinstance(annotation.shape, Image):
+                # use mask as-is
+                gt_mask = annotation.shape.numpy.astype(np.uint8)
+            elif isinstance(annotation.shape, Polygon):
                 # convert polygon to mask
                 gt_mask = self.convert_polygon_to_mask(annotation.shape, width, height)
-
-            elif isinstance(annotation.shape, Image):
-                assert self.use_mask
-                # use mask as-is
-                gt_mask = annotation.shape.numpy
+            else:
+                continue
 
             if gt_mask.sum() == 0:
                 # pass no gt
@@ -117,21 +110,9 @@ class OTXVIsualPromptingDataset(Dataset):
             bboxes.append(bbox)
 
             # TODO (sungchul): generate random points from gt_mask
+
+            # add labels
             labels.extend(annotation.get_labels(include_empty=False))
-
-            # TODO (sungchul): set mask and prompts as pair input and process them simultaneously
-            # # if using masks from dataset, we can use bboxes from dataset, too
-            # if isinstance(annotation.shape, Rectangle):
-            #     # load bbox from dataset
-            #     bbox = ShapeFactory.shape_as_rectangle(annotation.shape)
-            #     if min(bbox.width * width, bbox.height * height) < -1:
-            #         continue
-
-            #     bbox = self.generate_bbox(int(bbox.x1 * width), int(bbox.y1 * height), int(bbox.x2 * width), int(bbox.y2 * height), width, height)
-            #     bboxes.append(bbox)
-
-            # if isinstance(annotation.shape, Point):
-            #     logger.warning("Using points is not implemented yet.")
 
         if len(gt_masks) == 0:
             return {"images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": [], "labels": []}
@@ -153,9 +134,9 @@ class OTXVIsualPromptingDataset(Dataset):
         """Convert polygon to mask.
         
         Args:
-            shape (Polygon): 
-            width (int): 
-            height (int): 
+            shape (Polygon): Polygon to convert.
+            width (int): Width of image.
+            height (int): Height of image.
 
         Returns:
             np.ndarray: Generated mask from given polygon.
@@ -167,7 +148,16 @@ class OTXVIsualPromptingDataset(Dataset):
         return gt_mask
 
     def generate_bbox(self, x1: int, y1: int, x2: int, y2: int, width: int, height: int) -> List[int]:
-        """"""
+        """Generate bounding box.
+        
+        Args:
+            x1, y1, x2, y2 (int): Bounding box coordinates.
+            width (int): Width of image.
+            height (int): Height of image.
+
+        Returns:
+            List[int]: Generated bounding box.
+        """
         def get_randomness(length: int) -> int:
             if self.offset_bbox == 0:
                 return 0
@@ -185,9 +175,9 @@ class OTXVIsualPromptingDataset(Dataset):
         """Generate bounding box from given mask.
 
         Args:
-            gt_mask (np.ndarry): 
-            width (int):
-            height (int):
+            gt_mask (np.ndarry): Mask to generate bounding box.
+            width (int): Width of image.
+            height (int): Height of image.
 
         Returns:
             List[int]: Generated bounding box from given mask.
@@ -199,7 +189,12 @@ class OTXVIsualPromptingDataset(Dataset):
 
 
 class OTXVisualPromptingDataModule(LightningDataModule):
-    """Visual Prompting DataModule."""
+    """Visual Prompting DataModule.
+    
+    Args:
+        config (Union[DictConfig, ListConfig]): Configuration.
+        dataset (DatasetEntity): Dataset entity.
+    """
 
     def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity) -> None:
         super().__init__()
@@ -215,8 +210,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         """Setup Visual Prompting Data Module.
 
         Args:
-            stage (Optional[str], optional): train/val/test stages.
-                Defaults to None.
+            stage (Optional[str], optional): train/val/test stages, defaults to None.
         """
         if not stage == "predict":
             self.summary()
@@ -236,8 +230,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
 
-            self.train_dataset = OTXVIsualPromptingDataset(train_otx_dataset, train_transform, use_mask=self.config.use_mask, offset_bbox=self.config.offset_bbox)
-            self.val_dataset = OTXVIsualPromptingDataset(val_otx_dataset, val_transform, use_mask=self.config.use_mask)
+            self.train_dataset = OTXVIsualPromptingDataset(train_otx_dataset, train_transform, offset_bbox=self.config.offset_bbox)
+            self.val_dataset = OTXVIsualPromptingDataset(val_otx_dataset, val_transform)
 
         if stage == "test":
             test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
@@ -246,7 +240,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 Pad(),
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
-            self.test_dataset = OTXVIsualPromptingDataset(test_otx_dataset, test_transform, use_mask=self.config.use_mask)
+            self.test_dataset = OTXVIsualPromptingDataset(test_otx_dataset, test_transform)
 
         if stage == "predict":
             predict_otx_dataset = self.dataset
@@ -255,7 +249,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 Pad(),
                 transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
             ])
-            self.predict_dataset = OTXVIsualPromptingDataset(predict_otx_dataset, predict_transform, use_mask=self.config.use_mask)
+            self.predict_dataset = OTXVIsualPromptingDataset(predict_otx_dataset, predict_transform)
 
     def summary(self):
         """Print size of the dataset, number of images."""
@@ -268,9 +262,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 num_items,
             )
 
-    def train_dataloader(
-        self,
-    ) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
+    def train_dataloader(self) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
         """Train Dataloader.
 
         Returns:
