@@ -34,25 +34,26 @@ class TestOTXVIsualPromptingDataset:
 
     @pytest.fixture
     def dataset_polygon(self) -> DatasetEntity:
+        """Set dataset with polygon."""
         return generate_visual_prompting_dataset(use_mask=False)
 
     @pytest.fixture
     def dataset_mask(self) -> DatasetEntity:
+        """Set dataset with mask."""
         return generate_visual_prompting_dataset(use_mask=True)
 
     @e2e_pytest_unit
     def test_len(self, dataset_polygon) -> None:
+        """Test __len__."""
         otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
         assert len(otx_dataset) == 1
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("use_mask", [False, True])
     def test_getitem(self, dataset_polygon, dataset_mask, use_mask: bool) -> None:
+        """Test __getitem__."""
         dataset = dataset_mask if use_mask else dataset_polygon
-        otx_dataset = OTXVIsualPromptingDataset(
-            dataset=dataset,
-            transform=self.transform,
-            use_mask=use_mask)
+        otx_dataset = OTXVIsualPromptingDataset(dataset=dataset, transform=self.transform)
 
         item = otx_dataset[0]
 
@@ -72,6 +73,7 @@ class TestOTXVIsualPromptingDataset:
 
     @e2e_pytest_unit
     def test_convert_polygon_to_mask(self, dataset_polygon) -> None:
+        """Test convert_polygon_to_mask."""
         otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
 
         polygon = Polygon(points=[
@@ -90,6 +92,7 @@ class TestOTXVIsualPromptingDataset:
 
     @e2e_pytest_unit
     def test_generate_bbox(self, dataset_polygon) -> None:
+        """Test generate_bbox."""
         otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
 
         x1, y1, x2, y2 = 10, 20, 30, 40
@@ -107,6 +110,7 @@ class TestOTXVIsualPromptingDataset:
 
     @e2e_pytest_unit
     def test_generate_bbox_from_mask(self, dataset_polygon) -> None:
+        """Test generate_bbox_from_mask."""
         otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
 
         gt_mask = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])

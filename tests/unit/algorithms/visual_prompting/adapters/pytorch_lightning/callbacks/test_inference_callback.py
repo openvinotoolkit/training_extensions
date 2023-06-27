@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 import torch
 from bson import ObjectId
-from pytorch_lightning import LightningModule
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
     InferenceCallback,
@@ -23,15 +22,8 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.visual_prompting.test_helpers import (
-    MockConfig,
     generate_visual_prompting_dataset,
 )
-
-
-class MockPlModule(LightningModule):
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
 
 
 class TestInferenceCallback:
@@ -50,8 +42,8 @@ class TestInferenceCallback:
             lambda *args, **kwargs: np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
         )
 
-        self.otx_dataset = generate_visual_prompting_dataset()
-        self.trainer = mocker.patch('pytorch_lightning.Trainer')
+        self.mocker_trainer = mocker.patch('pytorch_lightning.Trainer')
+        self.mocker_lightning_module = mocker.patch('pytorch_lightning.LightningModule')
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("use_mask,expected",
@@ -60,9 +52,10 @@ class TestInferenceCallback:
             (False, [Point(0.0, 0.0), Point(0.0, 0.5), Point(0.0, 1.0), Point(0.5, 1.0), Point(1.0, 1.0), Point(1.0, 0.5), Point(1.0, 0.0), Point(0.5, 0.0)])
         ]
     )
-    def test_on_predict_epoch_end_with_masks(self, use_mask: bool, expected: Any):
-        inference_callback = InferenceCallback(self.otx_dataset)
-        mock_pl_module = MockPlModule(config=MockConfig(use_mask=use_mask))
+    def test_on_predict_epoch_end(self, use_mask: bool, expected: Any):
+        """Test on_predict_epoch_end."""
+        otx_dataset = generate_visual_prompting_dataset(use_mask=use_mask)
+        inference_callback = InferenceCallback(otx_dataset)
 
         outputs = [[
             {
@@ -72,10 +65,9 @@ class TestInferenceCallback:
             }
         ]]
 
-        inference_callback.on_predict_epoch_end(self.trainer, mock_pl_module, outputs)
+        inference_callback.on_predict_epoch_end(self.mocker_trainer, self.mocker_lightning_module, outputs)
         predicted_otx_dataset = inference_callback.otx_dataset
 
-        # Assert the annotations are correctly added to the dataset
         assert len(predicted_otx_dataset) == 1
         dataset_item = predicted_otx_dataset[0]
         assert len(dataset_item.annotation_scene.annotations) == 1
