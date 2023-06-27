@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .visual_propting_utils import get_visual_prompting_inferencer_configuration
+from .visual_prompting_utils import get_visual_prompting_inferencer_configuration
 
 __all__ = ["get_visual_prompting_inferencer_configuration"]
