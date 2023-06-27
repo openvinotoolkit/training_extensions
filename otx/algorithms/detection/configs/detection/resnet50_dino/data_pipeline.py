@@ -3,6 +3,19 @@
 dataset_type = "CocoDataset"
 data_root = "data/coco/"
 img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+__img_scale = [
+    (480, 1333),
+    (512, 1333),
+    (544, 1333),
+    (576, 1333),
+    (608, 1333),
+    (640, 1333),
+    (672, 1333),
+    (704, 1333),
+    (736, 1333),
+    (768, 1333),
+    (800, 1333),
+]
 
 # train_pipeline, NOTE the img_scale and the Pad's size_divisor is different
 # from the default setting in mmdet.
@@ -16,19 +29,7 @@ train_pipeline = [
             [
                 dict(
                     type="Resize",
-                    img_scale=[
-                        (480, 1333),
-                        (512, 1333),
-                        (544, 1333),
-                        (576, 1333),
-                        (608, 1333),
-                        (640, 1333),
-                        (672, 1333),
-                        (704, 1333),
-                        (736, 1333),
-                        (768, 1333),
-                        (800, 1333),
-                    ],
+                    img_scale=__img_scale,
                     multiscale_mode="value",
                     keep_ratio=True,
                 )
@@ -45,19 +46,7 @@ train_pipeline = [
                 dict(type="RandomCrop", crop_type="absolute_range", crop_size=(384, 600), allow_negative_crop=True),
                 dict(
                     type="Resize",
-                    img_scale=[
-                        (480, 1333),
-                        (512, 1333),
-                        (544, 1333),
-                        (576, 1333),
-                        (608, 1333),
-                        (640, 1333),
-                        (672, 1333),
-                        (704, 1333),
-                        (736, 1333),
-                        (768, 1333),
-                        (800, 1333),
-                    ],
+                    img_scale=__img_scale,
                     multiscale_mode="value",
                     override=True,
                     keep_ratio=True,
