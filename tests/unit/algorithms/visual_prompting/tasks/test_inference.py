@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from collections import OrderedDict
+
 import pytest
 from omegaconf import DictConfig
 
@@ -16,7 +18,6 @@ from tests.unit.algorithms.visual_prompting.test_helpers import (
     generate_visual_prompting_dataset,
     init_environment,
 )
-from collections import OrderedDict
 
 
 class TestInferenceTask:
@@ -92,7 +93,7 @@ class TestInferenceTask:
     def test_model_info(self, mocker, monkeypatch):
         """Test model_info."""
         setattr(self.inference_task, "trainer", None)
-        mocker_trainer = mocker.patch.object(self.inference_task, "trainer")
+        mocker.patch.object(self.inference_task, "trainer")
 
         model_info = self.inference_task.model_info()
 
