@@ -273,24 +273,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        self._set_metadata(output_model)
 
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
-
-    def _set_metadata(self, output_model: ModelEntity):
-        """"""
-        if hasattr(self.model, "image_threshold"):
-            output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
-        if hasattr(self.model, "pixel_threshold"):
-            output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
-        if hasattr(self.model, "normalization_metrics"):
-            output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
-            output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
-        else:
-            logger.warning(
-                "The model was not trained before saving. This will lead to incorrect normalization of the heatmaps."
-            )
 
     @staticmethod
     def _is_docker() -> bool:
