@@ -78,15 +78,6 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                                     if d_polygon.label not in used_labels:
                                         used_labels.append(d_polygon.label)
 
-                        # FIXME (sungchul): save prompts as annotation -> input
-                        # -> In cli, don't use prompts as inputs
-                        # if ann.type == DatumAnnotationType.bbox:
-                        #     if self._is_normal_bbox(ann.points[0], ann.points[1], ann.points[2], ann.points[3]):
-                        #         shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
-
-                        # if ann.type == DatumAnnotationType.points:
-                        #     raise NotImplementedError("Getting points is not yet implemented.")
-
                         if ann.label not in used_labels and ann.type != DatumAnnotationType.mask:
                             used_labels.append(ann.label)
 
