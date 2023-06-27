@@ -8,7 +8,8 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, DefaultDict
+from collections import defaultdict
 
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import IDataset
@@ -110,7 +111,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
 
         self.dataset_manager = DatasetManager()
         self.data_format: str = ""
-        self.data_config: Dict[str, dict] = {}
+        self.data_config: DefaultDict[str, dict] = defaultdict(dict)
 
     @property
     def data_config_file_path(self) -> Path:
@@ -213,6 +214,12 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
+        if str(self.task_type).upper() == "VISUAL_PROMPTING":
+            # TODO (sungchul): find proper way to update data_yaml
+            # data_yaml is related to OmegaConf.to_yaml and it doesn't support defaultdict
+            if "options" not in data_yaml:
+                data_yaml["options"] = {}
+            data_yaml["options"]["use_mask"] = getattr(self.args, "params.learning_parameters.dataset.use_mask", False)
         if update_data_yaml:
             self._export_data_cfg(data_yaml, str(data_yaml_path))
             print(f"[*] Update data configuration file to: {str(data_yaml_path)}")
@@ -483,6 +490,8 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                     dataset_config.update({f"{subset}_ann_files": self.data_config[f"{subset}_subset"]["ann_files"]})
                 if "file_list" in self.data_config[f"{subset}_subset"]:
                     dataset_config.update({f"{subset}_file_list": self.data_config[f"{subset}_subset"]["file_list"]})
+        if "options" in self.data_config:
+            dataset_config.update(self.data_config["options"])
         if hyper_parameters is not None:
             dataset_config["cache_config"] = {}
             algo_backend = getattr(hyper_parameters, "algo_backend", None)
@@ -496,10 +505,6 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if learning_parameters:
                 num_workers = getattr(learning_parameters, "num_workers", 0)
                 dataset_config["cache_config"]["num_workers"] = num_workers
-
-            if str(self.task_type).upper() == "VISUAL_PROMPTING":
-                dataset = getattr(hyper_parameters.learning_parameters, "dataset", None)
-                dataset_config["use_mask"] = getattr(dataset, "use_mask", True)
 
         if str(self.task_type).upper() == "SEGMENTATION" and str(self.train_type).upper() == "SELFSUPERVISED":
             # FIXME: manually set a path to save pseudo masks in workspace
@@ -535,6 +540,9 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         # FIXME: Hardcoded for Self-Supervised Learning
         if self.mode in ("train", "optimize") and str(self.train_type).upper() == "SELFSUPERVISED":
             self.data_config["val_subset"] = {"data_roots": None}
+
+        if str(self.task_type).upper() == "VISUAL_PROMPTING":
+            self.data_config["options"]["use_mask"] = data_yaml["options"]["use_mask"]
 
     def _get_template(self, task_type: str, model: Optional[str] = None) -> ModelTemplate:
         """Returns the appropriate template for each situation.
