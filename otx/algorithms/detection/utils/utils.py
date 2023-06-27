@@ -126,13 +126,14 @@ def get_det_model_api_configuration(
     omz_config[("model_info", "confidence_threshold")] = str(confidence_threshold)
     omz_config[("model_info", "iou_threshold")] = str(0.5)
 
-    omz_config[("model_info", "tile_size")] = str(
-        int(tiling_parameters.tile_size * tiling_parameters.tile_ir_scale_factor)
-    )
-    omz_config[("model_info", "tiles_overlap")] = str(
-        tiling_parameters.tile_overlap / tiling_parameters.tile_ir_scale_factor
-    )
-    omz_config[("model_info", "max_pred_number")] = str(tiling_parameters.tile_max_number)
+    if tiling_parameters.enable_tiling:
+        omz_config[("model_info", "tile_size")] = str(
+            int(tiling_parameters.tile_size * tiling_parameters.tile_ir_scale_factor)
+        )
+        omz_config[("model_info", "tiles_overlap")] = str(
+            tiling_parameters.tile_overlap / tiling_parameters.tile_ir_scale_factor
+        )
+        omz_config[("model_info", "max_pred_number")] = str(tiling_parameters.tile_max_number)
 
     for lbl in label_schema.get_labels(include_empty=False):
         all_labels += lbl.name.replace(" ", "_") + " "
