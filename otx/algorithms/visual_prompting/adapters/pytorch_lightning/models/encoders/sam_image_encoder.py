@@ -5,8 +5,8 @@
 
 
 import torch
-import torch.nn as nn
 from omegaconf import DictConfig
+from torch import Tensor, nn
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones import (
     build_vit,
@@ -14,6 +14,11 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones
 
 
 class SAMImageEncoder(nn.Module):
+    """Image encoder module for SAM.
+    
+    Args:
+        config (DictConfig): Config for image encoder.
+    """
     def __init__(self, config: DictConfig):
         super().__init__()
         if "vit" in config.backbone:
@@ -24,5 +29,13 @@ class SAMImageEncoder(nn.Module):
                 f"Use vit_b, l, or h."
             ))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function of image encoder.
+        
+        Args:
+            x (Tensor): Input tensor.
+            
+        Returns:
+            Tensor: Output tensor.
+        """
         return self.backbone(x)

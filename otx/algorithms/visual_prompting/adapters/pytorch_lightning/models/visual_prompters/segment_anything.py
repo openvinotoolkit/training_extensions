@@ -39,8 +39,13 @@ CKPT_PATHS = {
 
 
 class SegmentAnything(LightningModule):
+    """SAM predicts object masks from an image and input prompts.
+    
+    Args:
+        config (DictConfig): Config for SAM.
+        state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.
+    """
     def __init__(self, config: DictConfig, state_dict: Optional[OrderedDict] = None) -> None:
-        """SAM predicts object masks from an image and input prompts."""
         super().__init__()
         self.save_hyperparameters()
         self.config = config
@@ -51,7 +56,7 @@ class SegmentAnything(LightningModule):
         self.load_checkpoint(state_dict=state_dict)
 
     def set_models(self) -> None:
-        """"""
+        """Set models for SAM."""
         # TODO (sungchul): Currently, backbone is assumed as vit. Depending on backbone, image_embedding_size can be changed.
         if "vit" in self.config.model.backbone:
             patch_size = 16
@@ -83,7 +88,7 @@ class SegmentAnything(LightningModule):
         )
 
     def freeze_networks(self) -> None:
-        """"""
+        """Freeze networks depending on config."""
         if self.config.model.freeze_image_encoder:
             for param in self.image_encoder.parameters():
                 param.requires_grad = False
@@ -97,7 +102,7 @@ class SegmentAnything(LightningModule):
                 param.requires_grad = False
 
     def set_metrics(self) -> None:
-        """"""
+        """Set metrics for SAM."""
         assert self.config.model.loss_type.lower() in ["sam", "medsam"], \
             ValueError(f"{self.config.model.loss_type} is not supported. Please use 'sam' or 'medsam'.")
 
@@ -125,7 +130,12 @@ class SegmentAnything(LightningModule):
         ))
 
     def load_checkpoint(self, state_dict: Optional[OrderedDict] = None, revise_keys: List = [(r'^image_encoder.', r'image_encoder.backbone.')]) -> None:
-        """"""
+        """Load checkpoint for SAM.
+        
+        Args:
+            state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.
+            revise_keys (List, optional): List of tuples of regex patterns to revise keys of state_dict. Defaults to [(r'^image_encoder.', r'image_encoder.backbone.')].
+        """
         def replace_state_dict_keys(state_dict, revise_keys):
             for p, r in revise_keys:
                 state_dict = OrderedDict(
@@ -150,7 +160,18 @@ class SegmentAnything(LightningModule):
                     state_dict = replace_state_dict_keys(state_dict, revise_keys)
                     self.load_state_dict(state_dict)
 
-    def forward(self, images, bboxes, points=None):
+    def forward(self, images: Tensor, bboxes: Tensor, points: Optional[Tensor] = None):
+        """Forward method for SAM.
+        
+        Args:
+            images (Tensor): Images with shape (B, C, H, W).
+            bboxes (Tensor): Bounding boxes with shape (B, 4).
+            points (Optional[Tensor], optional): Points with shape (B, 2). Defaults to None.
+            
+        Returns:
+            pred_masks (List[Tensor]): Predicted masks with shape (B, 1, H, W).
+            ious (List[Tensor]): IoU predictions with shape (B, 1).
+        """
         image_embeddings = self.image_encoder(images)
         pred_masks = []
         ious = []
@@ -175,7 +196,15 @@ class SegmentAnything(LightningModule):
         return pred_masks, ious
 
     def training_step(self, batch, batch_idx) -> Tensor:
-        """Training step of SAM."""
+        """Training step for SAM.
+        
+        Args:
+            batch (Dict): Batch data.
+            batch_idx (int): Batch index.
+            
+        Returns:
+            loss (Tensor): Loss tensor.
+        """
         images = batch["images"]
         bboxes = batch["bboxes"]
         points = batch["points"]
@@ -227,11 +256,20 @@ class SegmentAnything(LightningModule):
         return loss
 
     def training_epoch_end(self, outputs) -> None:
+        """Training epoch end for SAM."""
         for v in self.train_metrics.values():
             v.reset()
 
     def validation_step(self, batch, batch_idx) -> MetricCollection:
-        """Validation step of SAM."""
+        """Validation step of SAM.
+        
+        Args:
+            batch (Dict): Batch data.
+            batch_idx (int): Batch index.
+            
+        Returns:
+            val_metrics (MetricCollection): Validation metrics.
+        """
         images = batch["images"]
         bboxes = batch["bboxes"]
         points = batch["points"]
@@ -247,12 +285,21 @@ class SegmentAnything(LightningModule):
         return self.val_metrics
 
     def validation_epoch_end(self, outputs) -> None:
+        """Validation epoch end for SAM."""
         self.log_dict(self.val_metrics.compute(), on_epoch=True, prog_bar=True)
         for v in self.val_metrics.values():
             v.reset()
 
     def predict_step(self, batch, batch_idx) -> Dict[str, Tensor]:
-        """Predict step of SAM."""
+        """Predict step of SAM.
+        
+        Args:
+            batch (Dict): Batch data.
+            batch_idx (int): Batch index.
+            
+        Returns:
+            Dict[str, Tensor]: Predicted masks, IoU predictions, image paths, and labels.
+        """
         images = batch["images"]
         bboxes = batch["bboxes"]
         points = batch["points"]
@@ -278,18 +325,16 @@ class SegmentAnything(LightningModule):
         original_size: Optional[Tuple[int, ...]] = None,
         is_predict: bool = False
     ) -> Tensor:
-        """
-        Remove padding and upscale masks to the original image size.
+        """Remove padding and upscale masks to the original image size.
 
         Args:
             masks (Tensor): Batched masks from the mask_decoder, in BxCxHxW format.
             input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format. Used to remove padding.
             original_size (tuple(int, int)): The original size of the image before resizing for input to the model, in (H, W) format.
-            is_predict (bool, optional): ...
+            is_predict (bool, optional): Whether to upscale the masks to the original image size. Defaults to False.
 
         Returns:
-          (Tensor): Batched masks in BxCxHxW format, where (H, W)
-            is given by original_size.
+          (Tensor): Batched masks in BxCxHxW format, where (H, W) is given by original_size.
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
         if is_predict:
@@ -301,27 +346,28 @@ class SegmentAnything(LightningModule):
         return masks.squeeze(1)
     
     def configure_optimizers(self) -> optim:
+        """Configure the optimizer for SAM.
+        
+        Returns:
+            optim: Optimizer.
+        """
         name = self.config.optimizer.pop("name")
         optimizer = getattr(optim, name)(self.parameters(), **self.config.optimizer)
         return optimizer
     
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
-        """
-        Compute the DICE loss, similar to generalized IOU for masks
+        """Compute the DICE loss, similar to generalized IOU for masks
         
         Reference: https://github.com/huggingface/transformers/blob/main/src/transformers/models/maskformer/modeling_maskformer.py#L269
 
         Args:
-            inputs (Tensor):
-                A tensor representing a mask.
-            targets (Tensor):
-                A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
+            inputs (Tensor): A tensor representing a mask.
+            targets (Tensor): A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
                 (0 for the negative class and 1 for the positive class).
-            num_masks (int):
-                The number of masks present in the current batch, used for normalization.
+            num_masks (int): The number of masks present in the current batch, used for normalization.
 
         Returns:
-            Loss tensor
+            Tensor: The DICE loss.
         """
         numerator = 2 * (inputs * targets).sum(-1)
         denominator = inputs.sum(-1) + targets.sum(-1)
@@ -336,8 +382,7 @@ class SegmentAnything(LightningModule):
         alpha: float = 0.25,
         gamma: float = 2
     ) -> Tensor:
-        """
-        Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
+        """Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
 
         Referece: https://github.com/huggingface/transformers/blob/main/src/transformers/models/maskformer/modeling_maskformer.py#L300
 
@@ -350,7 +395,7 @@ class SegmentAnything(LightningModule):
             gamma (float, *optional*, defaults to 2.0): Exponent of the modulating factor \\(1 - p_t\\) to balance easy vs hard examples.
 
         Returns:
-            Loss tensor
+            Tensor: The focal loss.
         """
         loss = F.binary_cross_entropy_with_logits(inputs, targets, reduction="none")
         if self.config.model.loss_type.lower() == "sam":
@@ -363,7 +408,16 @@ class SegmentAnything(LightningModule):
         return loss.mean(1).sum() / num_masks
     
     def calculate_iou(self, inputs: Tensor, targets: Tensor, epsilon: float = 1e-7) -> Tensor:
-        """"""
+        """Calculate the intersection over union (IOU) between the predicted mask and the ground truth mask.
+        
+        Args:
+            inputs (Tensor): A tensor representing a mask.
+            targets (Tensor): A tensor with the same shape as inputs. Stores the binary classification labels for each element in inputs
+            epsilon (float, *optional*, defaults to 1e-7): A small value to prevent division by zero.
+            
+        Returns
+            Tensor: The IOU between the predicted mask and the ground truth mask.
+        """
         pred_mask = (inputs >= 0.5).float()
         intersection = torch.sum(torch.mul(pred_mask, targets), dim=1)
         union = torch.sum(pred_mask, dim=1) + torch.sum(targets, dim=1) - intersection

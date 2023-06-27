@@ -351,7 +351,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         )
 
     def _get_mask_entity(self, annotation: DatumAnnotation) -> Annotation:
-        """"""
+        """Get mask entity."""
         mask = Image(data=annotation.image, size=annotation.image.shape)
         return Annotation(
             mask,

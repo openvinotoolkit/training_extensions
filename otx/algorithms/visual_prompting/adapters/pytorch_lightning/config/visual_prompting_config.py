@@ -38,13 +38,12 @@ def get_visual_promtping_config(
     OTX config.
 
     Args:
-        task_name: Task name to load configuration from Visual Prompting
-        otx_config: ConfigurableParameters: OTX config object parsed from
-            configuration.yaml file
+        task_name (str): Task name to load configuration from Visual Prompting.
+        otx_config (ConfigurableParameters): OTX config object parsed from configuration.yaml file.
+        output_path (str): Path to save the configuration file.
 
     Returns:
-        Visual prompting config object for the specified model type with overwritten
-        default values.
+        Union[DictConfig, ListConfig]: Visual prompting config object for the specified model type with overwritten default values.
     """
     if os.path.isfile(os.path.join(output_path, "config.yaml")):
         # If there is already a config.yaml file in the output path, load it
@@ -70,11 +69,12 @@ def get_configurable_parameters(
     """Get configurable parameters.
 
     Args:
-        model_name (Optional[str]):  (Default value = None)
-        config_path (Optional[Union[Path, str]]):  (Default value = None)
-        weight_file (Optional[str]): Path to the weight file
-        config_filename (Optional[str]):  (Default value = "config")
-        config_file_extension (Optional[str]):  (Default value = "yaml")
+        output_path (Path): Path to save the configuration file.
+        model_name (Optional[str]): Name of the model to load configuration from Visual Prompting, defaults to None.
+        config_path (Optional[Union[Path, str]]): Path to the configuration file, defaults to None.
+        weight_file (Optional[str]): Path to the weight file.
+        config_filename (Optional[str]): Name of the configuration file, defaults to "config".
+        config_file_extension (Optional[str]): Extension of the configuration file, defaults to "yaml".
 
     Returns:
         Union[DictConfig, ListConfig]: Configurable parameters in DictConfig object.
@@ -99,7 +99,7 @@ def get_configurable_parameters(
     return config
 
 
-def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters):
+def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters) -> None:
     """Update visual prompting configuration.
 
     Overwrite the default parameter values in the visual prompting config with the
@@ -107,9 +107,8 @@ def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, Li
     each parameter group present in the OTX config.
 
     Args:
-        visual_prompting_config: DictConfig: Visual prompting config object
-        otx_config: ConfigurableParameters: OTX config object parsed from
-            configuration.yaml file
+        visual_prompting_config (Union[DictConfig, ListConfig]): Visual prompting config object for the specified model type with overwritten default values.
+        otx_config (ConfigurableParameters): OTX config object parsed from configuration.yaml file.
     """
     groups = getattr(otx_config, "groups", None)
     if groups:

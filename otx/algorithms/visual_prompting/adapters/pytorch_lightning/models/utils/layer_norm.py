@@ -8,7 +8,7 @@
 #
 
 import torch
-import torch.nn as nn
+from torch import Tensor, nn
 
 
 # From https://github.com/facebookresearch/detectron2/blob/main/detectron2/layers/batch_norm.py # noqa
@@ -17,6 +17,10 @@ class LayerNorm2d(nn.Module):
     """LayerNorm2d module.
     
     Reference: https://github.com/facebookresearch/segment-anything
+
+    Args:
+        num_channels (int): Number of channels.
+        eps (float): Epsilon value.
     """
     def __init__(self, num_channels: int, eps: float = 1e-6) -> None:
         super().__init__()
@@ -24,7 +28,15 @@ class LayerNorm2d(nn.Module):
         self.bias = nn.Parameter(torch.zeros(num_channels))
         self.eps = eps
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function of LayerNorm2d.
+        
+        Args:
+            x (Tensor): Input tensor.
+        
+        Returns:
+            Tensor: Output tensor.
+        """
         u = x.mean(1, keepdim=True)
         s = (x - u).pow(2).mean(1, keepdim=True)
         x = (x - u) / torch.sqrt(s + self.eps)

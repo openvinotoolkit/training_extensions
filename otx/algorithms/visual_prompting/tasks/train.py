@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import List, Optional
+from typing import Optional
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import (
@@ -41,7 +41,15 @@ logger = get_logger()
 
 
 class TrainingTask(InferenceTask, ITrainingTask):
-    """Training Task for Visual Prompting."""
+    """Training Task for Visual Prompting.
+    
+    Args:
+        dataset (DatasetEntity): Input dataset.
+        output_model (ModelEntity): Output model to save the model weights.
+        train_parameters (TrainParameters): Training parameters
+        seed (Optional[int]): Setting seed to a value other than 0
+        deterministic (bool): Setting PytorchLightning trainer's deterministic flag.
+    """
 
     def train(
         self,
@@ -51,15 +59,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         seed: Optional[int] = None,
         deterministic: bool = False,
     ) -> None:
-        """Train the visual prompting model.
 
-        Args:
-            dataset (DatasetEntity): Input dataset.
-            output_model (ModelEntity): Output model to save the model weights.
-            train_parameters (TrainParameters): Training parameters
-            seed (Optional[int]): Setting seed to a value other than 0
-            deterministic (bool): Setting PytorchLightning trainer's deterministic flag.
-        """
         logger.info("Training the model.")
 
         if seed:

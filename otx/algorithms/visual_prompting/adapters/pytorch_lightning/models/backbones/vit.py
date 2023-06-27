@@ -8,12 +8,11 @@
 #
 
 from functools import partial
-from typing import List, Optional, Tuple, Type, Union
+from typing import Optional, Tuple, Type
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from omegaconf import DictConfig
+from torch import Tensor, nn
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils import (
     LayerNorm2d,
@@ -23,6 +22,26 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils imp
 
 # This class and its supporting functions below lightly adapted from the ViTDet backbone available at: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/vit.py # noqa
 class ViT(nn.Module):
+    """Vision Transformer for visual prompting task.
+
+    Args:
+        img_size (int): Input image size.
+        patch_size (int): Patch size.
+        in_chans (int): Number of input image channels.
+        embed_dim (int): Patch embedding dimension.
+        depth (int): Depth of ViT.
+        num_heads (int): Number of attention heads in each ViT block.
+        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        out_chans (int): Number of output channels.
+        qkv_bias (bool): If True, add a learnable bias to query, key, value.
+        norm_layer (nn.Module): Normalization layer.
+        act_layer (nn.Module): Activation layer.
+        use_abs_pos (bool): If True, use absolute positional embeddings.
+        use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
+        rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
+        window_size (int): Window size for window attention blocks.
+        global_attn_indexes (list): Indexes for blocks using global attention.
+    """
     def __init__(
         self,
         img_size: int = 1024,
@@ -42,24 +61,7 @@ class ViT(nn.Module):
         window_size: int = 0,
         global_attn_indexes: Tuple[int, ...] = (),
     ) -> None:
-        """
-        Args:
-            img_size (int): Input image size.
-            patch_size (int): Patch size.
-            in_chans (int): Number of input image channels.
-            embed_dim (int): Patch embedding dimension.
-            depth (int): Depth of ViT.
-            num_heads (int): Number of attention heads in each ViT block.
-            mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
-            qkv_bias (bool): If True, add a learnable bias to query, key, value.
-            norm_layer (nn.Module): Normalization layer.
-            act_layer (nn.Module): Activation layer.
-            use_abs_pos (bool): If True, use absolute positional embeddings.
-            use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
-            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
-            window_size (int): Window size for window attention blocks.
-            global_attn_indexes (list): Indexes for blocks using global attention.
-        """
+
         super().__init__()
         self.img_size = img_size
 
@@ -111,7 +113,15 @@ class ViT(nn.Module):
             LayerNorm2d(out_chans),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function.
+        
+        Args:
+            x (Tensor): Input tensor of shape (N, C, H, W).
+            
+        Returns:
+            Tensor: Output tensor of shape (N, out_chans, H, W).
+        """
         x = self.patch_embed(x)
         if self.pos_embed is not None:
             x = x + self.pos_embed
@@ -125,8 +135,22 @@ class ViT(nn.Module):
 
 
 class Block(nn.Module):
-    """Transformer blocks with support of window attention and residual propagation blocks"""
+    """Transformer blocks with support of window attention and residual propagation blocks.
 
+    Args:
+        dim (int): Number of input channels.
+        num_heads (int): Number of attention heads in each ViT block.
+        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        qkv_bias (bool): If True, add a learnable bias to query, key, value.
+        norm_layer (nn.Module): Normalization layer.
+        act_layer (nn.Module): Activation layer.
+        use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
+        rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
+        window_size (int): Window size for window attention blocks. If it equals 0, then
+            use global attention.
+        input_size (tuple(int, int) or None): Input resolution for calculating the relative
+            positional parameter size.
+    """
     def __init__(
         self,
         dim: int,
@@ -140,21 +164,7 @@ class Block(nn.Module):
         window_size: int = 0,
         input_size: Optional[Tuple[int, int]] = None,
     ) -> None:
-        """
-        Args:
-            dim (int): Number of input channels.
-            num_heads (int): Number of attention heads in each ViT block.
-            mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
-            qkv_bias (bool): If True, add a learnable bias to query, key, value.
-            norm_layer (nn.Module): Normalization layer.
-            act_layer (nn.Module): Activation layer.
-            use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
-            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
-            window_size (int): Window size for window attention blocks. If it equals 0, then
-                use global attention.
-            input_size (tuple(int, int) or None): Input resolution for calculating the relative
-                positional parameter size.
-        """
+
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = Attention(
@@ -171,7 +181,15 @@ class Block(nn.Module):
 
         self.window_size = window_size
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function.
+        
+        Args:
+            x (Tensor): Input tensor of shape (N, H, W, C).
+            
+        Returns:
+            Tensor: Output tensor of shape (N, H, W, C).
+        """
         shortcut = x
         x = self.norm1(x)
         # Window partition
@@ -191,8 +209,17 @@ class Block(nn.Module):
 
 
 class Attention(nn.Module):
-    """Multi-head Attention block with relative position embeddings."""
-
+    """Multi-head Attention block with relative position embeddings.
+    
+    Args:
+        dim (int): Number of input channels.
+        num_heads (int): Number of attention heads.
+        qkv_bias (bool):  If True, add a learnable bias to query, key, value.
+        use_rel_pos (bool): If True, add relative positional embeddings to the attention map.
+        rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
+        input_size (tuple(int, int) or None): Input resolution for calculating the relative
+            positional parameter size.
+    """
     def __init__(
         self,
         dim: int,
@@ -202,16 +229,7 @@ class Attention(nn.Module):
         rel_pos_zero_init: bool = True,
         input_size: Optional[Tuple[int, int]] = None,
     ) -> None:
-        """
-        Args:
-            dim (int): Number of input channels.
-            num_heads (int): Number of attention heads.
-            qkv_bias (bool):  If True, add a learnable bias to query, key, value.
-            rel_pos (bool): If True, add relative positional embeddings to the attention map.
-            rel_pos_zero_init (bool): If True, zero initialize relative positional parameters.
-            input_size (tuple(int, int) or None): Input resolution for calculating the relative
-                positional parameter size.
-        """
+
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
@@ -229,7 +247,15 @@ class Attention(nn.Module):
             self.rel_pos_h = nn.Parameter(torch.zeros(2 * input_size[0] - 1, head_dim))
             self.rel_pos_w = nn.Parameter(torch.zeros(2 * input_size[1] - 1, head_dim))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward function.
+        
+        Args:
+            x (Tensor): Input tensor of shape (N, H * W, C).
+            
+        Returns:
+            Tensor: Output tensor of shape (N, H * W, C).
+        """
         B, H, W, _ = x.shape
         # qkv with shape (3, B, nHead, H * W, C)
         qkv = self.qkv(x).reshape(B, H * W, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
@@ -248,16 +274,16 @@ class Attention(nn.Module):
         return x
 
 
-def window_partition(x: torch.Tensor, window_size: int) -> Tuple[torch.Tensor, Tuple[int, int]]:
-    """
-    Partition into non-overlapping windows with padding if needed.
+def window_partition(x: Tensor, window_size: int) -> Tuple[Tensor, Tuple[int, int]]:
+    """Partition into non-overlapping windows with padding if needed.
+
     Args:
-        x (tensor): input tokens with [B, H, W, C].
-        window_size (int): window size.
+        x (Tensor): Input tokens with [B, H, W, C].
+        window_size (int): Window size.
 
     Returns:
-        windows: windows after partition with [B * num_windows, window_size, window_size, C].
-        (Hp, Wp): padded height and width before partition
+        windows (Tensor): windows after partition with [B * num_windows, window_size, window_size, C].
+        (Hp, Wp) (Tuple[int, int]): padded height and width before partition
     """
     B, H, W, C = x.shape
 
@@ -273,18 +299,18 @@ def window_partition(x: torch.Tensor, window_size: int) -> Tuple[torch.Tensor, T
 
 
 def window_unpartition(
-    windows: torch.Tensor, window_size: int, pad_hw: Tuple[int, int], hw: Tuple[int, int]
-) -> torch.Tensor:
-    """
-    Window unpartition into original sequences and removing padding.
+    windows: Tensor, window_size: int, pad_hw: Tuple[int, int], hw: Tuple[int, int]
+) -> Tensor:
+    """Window unpartition into original sequences and removing padding.
+
     Args:
-        windows (tensor): input tokens with [B * num_windows, window_size, window_size, C].
+        windows (Tensor): input tokens with [B * num_windows, window_size, window_size, C].
         window_size (int): window size.
         pad_hw (Tuple): padded height and width (Hp, Wp).
         hw (Tuple): original height and width (H, W) before padding.
 
     Returns:
-        x: unpartitioned sequences with [B, H, W, C].
+        x (Tensor): unpartitioned sequences with [B, H, W, C].
     """
     Hp, Wp = pad_hw
     H, W = hw
@@ -297,17 +323,16 @@ def window_unpartition(
     return x
 
 
-def get_rel_pos(q_size: int, k_size: int, rel_pos: torch.Tensor) -> torch.Tensor:
-    """
-    Get relative positional embeddings according to the relative positions of
-        query and key sizes.
+def get_rel_pos(q_size: int, k_size: int, rel_pos: Tensor) -> Tensor:
+    """Get relative positional embeddings according to the relative positions of query and key sizes.
+
     Args:
         q_size (int): size of query q.
         k_size (int): size of key k.
         rel_pos (Tensor): relative position embeddings (L, C).
 
     Returns:
-        Extracted positional embeddings according to relative positions.
+        Tensor: Extracted positional embeddings according to relative positions.
     """
     max_rel_dist = int(2 * max(q_size, k_size) - 1)
     # Interpolate rel pos if needed.
@@ -331,16 +356,17 @@ def get_rel_pos(q_size: int, k_size: int, rel_pos: torch.Tensor) -> torch.Tensor
 
 
 def add_decomposed_rel_pos(
-    attn: torch.Tensor,
-    q: torch.Tensor,
-    rel_pos_h: torch.Tensor,
-    rel_pos_w: torch.Tensor,
+    attn: Tensor,
+    q: Tensor,
+    rel_pos_h: Tensor,
+    rel_pos_w: Tensor,
     q_size: Tuple[int, int],
     k_size: Tuple[int, int],
-) -> torch.Tensor:
-    """
-    Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
+) -> Tensor:
+    """Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
+
     https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py   # noqa B950
+
     Args:
         attn (Tensor): attention map.
         q (Tensor): query q in the attention layer with shape (B, q_h * q_w, C).
@@ -370,10 +396,15 @@ def add_decomposed_rel_pos(
 
 
 class PatchEmbed(nn.Module):
-    """
-    Image to Patch Embedding.
-    """
+    """Image to Patch Embedding.
 
+    Args:
+        kernel_size (Tuple): kernel size of the projection layer.
+        stride (Tuple): stride of the projection layer.
+        padding (Tuple): padding size of the projection layer.
+        in_chans (int): Number of input image channels.
+        embed_dim (int): Patch embedding dimension.
+    """
     def __init__(
         self,
         kernel_size: Tuple[int, int] = (16, 16),
@@ -382,21 +413,22 @@ class PatchEmbed(nn.Module):
         in_chans: int = 3,
         embed_dim: int = 768,
     ) -> None:
-        """
-        Args:
-            kernel_size (Tuple): kernel size of the projection layer.
-            stride (Tuple): stride of the projection layer.
-            padding (Tuple): padding size of the projection layer.
-            in_chans (int): Number of input image channels.
-            embed_dim (int): Patch embedding dimension.
-        """
+
         super().__init__()
 
         self.proj = nn.Conv2d(
             in_chans, embed_dim, kernel_size=kernel_size, stride=stride, padding=padding
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward call.
+        
+        Args:
+            x (Tensor): input image tensor with shape (B, C, H, W).
+            
+        Returns:
+            Tensor: output tensor with shape (B, H', W', C').
+        """
         x = self.proj(x)
         # B C H W -> B H W C
         x = x.permute(0, 2, 3, 1)
@@ -404,6 +436,15 @@ class PatchEmbed(nn.Module):
 
 
 def build_vit(backbone: str, image_size: int):
+    """Build ViT backbone.
+    
+    Args:
+        backbone (str): backbone name.
+        image_size (int): input image size.
+        
+    Returns:
+        ViT: ViT backbone.
+    """
     model_params = dict(
         vit_h=dict(
             embed_dim=1280,

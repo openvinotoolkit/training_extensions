@@ -7,16 +7,27 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
-import torch
-from torch import nn
-
 from typing import Any, Optional, Tuple, Type
 
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils import LayerNorm2d
+import numpy as np
+import torch
+from torch import Tensor, nn
+
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.utils import (
+    LayerNorm2d,
+)
 
 
 class SAMPromptEncoder(nn.Module):
+    """Encodes prompts for input to SAM's mask decoder.
+
+    Args:
+        embed_dim (int): The prompts' embedding dimension.
+        image_embedding_size (tuple(int, int)): The spatial size of the image embedding, as (H, W).
+        input_image_size (int): The padded size of the image as input to the image encoder, as (H, W).
+        mask_in_chans (int): The number of hidden channels used for encoding input masks.
+        activation (nn.Module): The activation to use when encoding input masks.
+    """
     def __init__(
         self,
         embed_dim: int,
@@ -25,20 +36,7 @@ class SAMPromptEncoder(nn.Module):
         mask_in_chans: int,
         activation: Type[nn.Module] = nn.GELU,
     ) -> None:
-        """
-        Encodes prompts for input to SAM's mask decoder.
-
-        Arguments:
-          embed_dim (int): The prompts' embedding dimension
-          image_embedding_size (tuple(int, int)): The spatial size of the
-            image embedding, as (H, W).
-          input_image_size (int): The padded size of the image as input
-            to the image encoder, as (H, W).
-          mask_in_chans (int): The number of hidden channels used for
-            encoding input masks.
-          activation (nn.Module): The activation to use when encoding
-            input masks.
-        """
+        
         super().__init__()
         self.embed_dim = embed_dim
         self.input_image_size = input_image_size
@@ -62,24 +60,26 @@ class SAMPromptEncoder(nn.Module):
         )
         self.no_mask_embed = nn.Embedding(1, embed_dim)
 
-    def get_dense_pe(self) -> torch.Tensor:
-        """
-        Returns the positional encoding used to encode point prompts,
+    def get_dense_pe(self) -> Tensor:
+        """Returns the positional encoding used to encode point prompts,
         applied to a dense set of points the shape of the image encoding.
 
         Returns:
-          torch.Tensor: Positional encoding with shape
-            1x(embed_dim)x(embedding_h)x(embedding_w)
+          Tensor: Positional encoding with shape 1x(embed_dim)x(embedding_h)x(embedding_w).
         """
         return self.pe_layer(self.image_embedding_size).unsqueeze(0)
 
-    def _embed_points(
-        self,
-        points: torch.Tensor,
-        labels: torch.Tensor,
-        pad: bool,
-    ) -> torch.Tensor:
-        """Embeds point prompts."""
+    def _embed_points(self, points: Tensor, labels: Tensor, pad: bool) -> Tensor:
+        """Embeds point prompts.
+        
+        Args:
+            points (Tensor): The points to embed, as (N, 2).
+            labels (Tensor): The labels of the points, as (N, 1).
+            pad (bool): Whether to pad the points with a zero point.
+            
+        Returns:
+            Tensor: The embedded points, as (N, embed_dim).
+        """
         points = points + 0.5  # Shift to center of pixel
         if pad:
             padding_point = torch.zeros((points.shape[0], 1, 2), device=points.device)
@@ -93,8 +93,15 @@ class SAMPromptEncoder(nn.Module):
         point_embedding[labels == 1] += self.point_embeddings[1].weight
         return point_embedding
 
-    def _embed_boxes(self, boxes: torch.Tensor) -> torch.Tensor:
-        """Embeds box prompts."""
+    def _embed_boxes(self, boxes: Tensor) -> Tensor:
+        """Embeds box prompts.
+        
+        Args:
+            boxes (Tensor): The boxes to embed, as (N, 4).
+            
+        Returns:
+            Tensor: The embedded boxes, as (N, embed_dim).
+        """
         boxes = boxes + 0.5  # Shift to center of pixel
         coords = boxes.reshape(-1, 2, 2)
         corner_embedding = self.pe_layer.forward_with_coords(coords, self.input_image_size)
@@ -102,19 +109,33 @@ class SAMPromptEncoder(nn.Module):
         corner_embedding[:, 1, :] += self.point_embeddings[3].weight
         return corner_embedding
 
-    def _embed_masks(self, masks: torch.Tensor) -> torch.Tensor:
-        """Embeds mask inputs."""
+    def _embed_masks(self, masks: Tensor) -> Tensor:
+        """Embeds mask inputs.
+        
+        Args:
+            masks (Tensor): The masks to embed, as (N, H, W).
+            
+        Returns:
+            Tensor: The embedded masks, as (N, embed_dim).
+        """
         mask_embedding = self.mask_downscaling(masks)
         return mask_embedding
 
     def _get_batch_size(
         self,
-        points: Optional[Tuple[torch.Tensor, torch.Tensor]],
-        boxes: Optional[torch.Tensor],
-        masks: Optional[torch.Tensor],
+        points: Optional[Tuple[Tensor, Tensor]],
+        boxes: Optional[Tensor],
+        masks: Optional[Tensor],
     ) -> int:
-        """
-        Gets the batch size of the output given the batch size of the input prompts.
+        """Gets the batch size of the output given the batch size of the input prompts.
+
+        Args:
+            points (tuple(Tensor, Tensor) or none): point coordinates and labels to embed.
+            boxes (Tensor or none): boxes to embed.
+            masks (Tensor or none): masks to embed.
+
+        Returns:
+            int: The batch size of the output.
         """
         if points is not None:
             return points[0].shape[0]
@@ -126,30 +147,30 @@ class SAMPromptEncoder(nn.Module):
             return 1
 
     def _get_device(self) -> torch.device:
+        """Gets the device of the embeddings.
+        
+        Returns:
+            torch.device: The device of the embeddings.
+        """
         return self.point_embeddings[0].weight.device
 
     def forward(
         self,
-        points: Optional[Tuple[torch.Tensor, torch.Tensor]],
-        boxes: Optional[torch.Tensor],
-        masks: Optional[torch.Tensor],
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Embeds different types of prompts, returning both sparse and dense
-        embeddings.
+        points: Optional[Tuple[Tensor, Tensor]],
+        boxes: Optional[Tensor],
+        masks: Optional[Tensor],
+    ) -> Tuple[Tensor, Tensor]:
+        """Embeds different types of prompts, returning both sparse and dense embeddings.
 
-        Arguments:
-          points (tuple(torch.Tensor, torch.Tensor) or none): point coordinates
-            and labels to embed.
-          boxes (torch.Tensor or none): boxes to embed
-          masks (torch.Tensor or none): masks to embed
+        Args:
+            points (tuple(Tensor, Tensor) or none): point coordinates and labels to embed.
+            boxes (Tensor or none): boxes to embed (N, 4).
+            masks (Tensor or none): masks to embed (N, H, W).
 
         Returns:
-          torch.Tensor: sparse embeddings for the points and boxes, with shape
-            BxNx(embed_dim), where N is determined by the number of input points
-            and boxes.
-          torch.Tensor: dense embeddings for the masks, in the shape
-            Bx(embed_dim)x(embed_H)x(embed_W)
+            Tensor: sparse embeddings for the points and boxes, with shape BxNx(embed_dim),
+                where N is determined by the number of input points and boxes.
+            Tensor: dense embeddings for the masks, in the shape Bx(embed_dim)x(embed_H)x(embed_W).
         """
         bs = self._get_batch_size(points, boxes, masks)
         sparse_embeddings = torch.empty((bs, 0, self.embed_dim), device=self._get_device())
@@ -172,10 +193,12 @@ class SAMPromptEncoder(nn.Module):
 
 
 class PositionEmbeddingRandom(nn.Module):
-    """
-    Positional encoding using random spatial frequencies.
-    """
+    """Positional encoding using random spatial frequencies.
 
+    Args:
+        num_pos_feats (int): The number of positional frequencies.
+        scale (float): The scale of the positional encoding.
+    """
     def __init__(self, num_pos_feats: int = 64, scale: Optional[float] = None) -> None:
         super().__init__()
         if scale is None or scale <= 0.0:
@@ -185,8 +208,15 @@ class PositionEmbeddingRandom(nn.Module):
             scale * torch.randn((2, num_pos_feats)),
         )
 
-    def _pe_encoding(self, coords: torch.Tensor) -> torch.Tensor:
-        """Positionally encode points that are normalized to [0,1]."""
+    def _pe_encoding(self, coords: Tensor) -> Tensor:
+        """Positionally encode points that are normalized to [0,1].
+        
+        Args:
+            coords (Tensor): The coordinates to encode, as (N, 2).
+            
+        Returns:
+            Tensor: The positional encoding, as (N, num_pos_feats).
+        """
         # assuming coords are in [0, 1]^2 square and have d_1 x ... x d_n x 2 shape
         coords = 2 * coords - 1
         coords = coords @ self.positional_encoding_gaussian_matrix
@@ -194,8 +224,15 @@ class PositionEmbeddingRandom(nn.Module):
         # outputs d_1 x ... x d_n x C shape
         return torch.cat([torch.sin(coords), torch.cos(coords)], dim=-1)
 
-    def forward(self, size: Tuple[int, int]) -> torch.Tensor:
-        """Generate positional encoding for a grid of the specified size."""
+    def forward(self, size: Tuple[int, int]) -> Tensor:
+        """Generate positional encoding for a grid of the specified size.
+        
+        Args:
+            size (tuple(int, int)): The size of the grid to generate the encoding for.
+            
+        Returns:
+            Tensor: The positional encoding, as (num_pos_feats, H, W).
+        """
         h, w = size
         device: Any = self.positional_encoding_gaussian_matrix.device
         grid = torch.ones((h, w), device=device, dtype=torch.float32)
@@ -208,9 +245,17 @@ class PositionEmbeddingRandom(nn.Module):
         return pe.permute(2, 0, 1)  # C x H x W
 
     def forward_with_coords(
-        self, coords_input: torch.Tensor, image_size: Tuple[int, int]
-    ) -> torch.Tensor:
-        """Positionally encode points that are not normalized to [0,1]."""
+        self, coords_input: Tensor, image_size: Tuple[int, int]
+    ) -> Tensor:
+        """Positionally encode points that are not normalized to [0,1].
+        
+        Args:
+            coords_input (Tensor): The coordinates to encode, as (B, N, 2).
+            image_size (tuple(int, int)): The size of the image the coordinates are from.
+            
+        Returns:
+            Tensor: The positional encoding, as (B, N, num_pos_feats).
+        """
         coords = coords_input.clone()
         coords[:, :, 0] = coords[:, :, 0] / image_size[1]
         coords[:, :, 1] = coords[:, :, 1] / image_size[0]

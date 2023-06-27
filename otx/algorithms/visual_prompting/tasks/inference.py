@@ -18,7 +18,6 @@ import ctypes
 import io
 import os
 import shutil
-import subprocess  # nosec
 import tempfile
 import time
 from collections import OrderedDict
@@ -31,6 +30,9 @@ from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar
 
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
+    InferenceCallback,
+)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.config import (
     get_visual_promtping_config,
 )
@@ -42,10 +44,8 @@ from otx.algorithms.visual_prompting.configs.base.configuration import (
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
 from otx.api.entities.model import (
     ModelEntity,
-    ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
     OptimizationMethod,
@@ -58,22 +58,22 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import InferenceCallback
 
 logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
-    """Base Visual Prompting Task."""
+    """Base Visual Prompting Task.
+    
+    Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
+    
+    Args:
+        task_environment (TaskEnvironment): OTX Task environment.
+        output_path (Optional[str]): output path where task output are saved.
+    """
 
     def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None) -> None:
-        """Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
-
-        Args:
-            task_environment (TaskEnvironment): OTX Task environment.
-            output_path (Optional[str]): output path where task output are saved.
-        """
         torch.backends.cudnn.enabled = True
         logger.info("Initializing the task environment.")
         self.task_environment = task_environment
@@ -172,17 +172,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         return model
 
     def cancel_training(self) -> None:
-        """Cancel the training `after_batch_end`.
-
-        This terminates the training; however validation is still performed.
-        """
-        logger.info("Cancel training requested.")
-        self.trainer.should_stop = True
-
-        # The runner periodically checks `.stop_training` file to ensure if cancellation is requested.
-        cancel_training_file_path = os.path.join(self.config.project.path, ".stop_training")
-        with open(file=cancel_training_file_path, mode="a", encoding="utf-8"):
-            pass
+        raise NotImplementedError
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """Perform inference on a dataset.
@@ -222,11 +212,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         logger.info("Evaluation completed")
 
     def _export_to_onnx(self, onnx_path: str):
-        """Export model to ONNX.
-
-        Args:
-             onnx_path (str): path to save ONNX file
-        """
         raise NotImplementedError
 
     def export(
@@ -236,17 +221,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = False,
     ) -> None:
-        """Export model to OpenVINO IR.
-
-        Args:
-            export_type (ExportType): Export type should be ExportType.OPENVINO
-            output_model (ModelEntity): The model entity in which to write the OpenVINO IR data
-            precision (bool): Output model weights and inference precision
-            dump_features (bool): Flag to return "feature_vector" and "saliency_map".
-
-        Raises:
-            Exception: If export_type is not ExportType.OPENVINO
-        """
         raise NotImplementedError
 
     def model_info(self) -> Dict:
@@ -279,11 +253,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     @staticmethod
     def _is_docker() -> bool:
-        """Check whether the task runs in docker container.
-
-        Returns:
-            bool: True if task runs in docker, False otherwise.
-        """
         raise NotImplementedError
 
     def unload(self) -> None:

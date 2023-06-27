@@ -20,7 +20,7 @@ import cv2
 import numpy as np
 import torchvision.transforms as transforms
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning.core.datamodule import LightningDataModule
+from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 

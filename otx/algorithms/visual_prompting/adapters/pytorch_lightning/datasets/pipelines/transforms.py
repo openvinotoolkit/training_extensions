@@ -8,7 +8,7 @@
 #
 
 from copy import deepcopy
-from typing import Tuple, Union, Dict
+from typing import Tuple, Union, Dict, List, Any
 
 import numpy as np
 import torch
@@ -19,8 +19,24 @@ from torchvision.transforms.functional import resize, to_pil_image, pad  # type:
 from torchvision.transforms import Compose
 
 
-def collate_fn(batch):
-    def _convert_empty_to_none(x):
+def collate_fn(batch: List[Any]) -> Dict:
+    """Collate function for dataloader.
+
+    Args:
+        batch (List): List of batch data.
+    
+    Returns:
+        Dict: Collated batch data.
+    """
+    def _convert_empty_to_none(x: str) -> List:
+        """Convert empty list to None.
+
+        Args:
+            x (str): Key of batch data.
+            
+        Returns:
+            List: List of batch data.
+        """
         func = torch.stack if x == "gt_masks" else torch.tensor
         items = [func(item[x]) for item in batch if item[x]]
         return None if len(items) == 0 else items
@@ -46,13 +62,20 @@ class ResizeLongestSide:
     transforming both numpy array and batched torch tensors.
 
     Args:
-        target_length (int): ...
+        target_length (int): The length of the longest side of the image.
     """
 
     def __init__(self, target_length: int) -> None:
         self.target_length = target_length
 
-    def __call__(self, item: Dict[str, Union[int, Tensor]]):
+    def __call__(self, item: Dict[str, Union[int, Tensor]]) -> Dict[str, Union[int, Tensor]]:
+        """Applies the transformation to a single sample.
+        
+        Args:
+            item (Dict[str, Union[int, Tensor]]): Dictionary of batch data.
+        
+        Returns:
+            Dict[str, Union[int, Tensor]]: Dictionary of batch data."""
         item["images"] = torch.as_tensor(
             self.apply_image(item["images"]).transpose((2, 0, 1)),
             dtype=torch.get_default_dtype())
@@ -63,13 +86,28 @@ class ResizeLongestSide:
         return item
 
     def apply_image(self, image: np.ndarray) -> np.ndarray:
-        """Expects a numpy array with shape HxWxC in uint8 format."""
+        """Expects a numpy array with shape HxWxC in uint8 format.
+        
+        Args:
+            image (np.ndarray): Image array.
+            
+        Returns:
+            np.ndarray: Resized image.
+        """
         target_size = self.get_preprocess_shape(image.shape[0], image.shape[1], self.target_length)
         return np.array(resize(to_pil_image(image), target_size))
 
     def apply_coords(self, coords: np.ndarray, original_size: Tuple[int, ...]) -> np.ndarray:
         """Expects a numpy array of length 2 in the final dimension.
+        
         Requires the original image size in (H, W) format.
+
+        Args:
+            coords (np.ndarray): Coordinates array.
+            original_size (Tuple[int, ...]): Original size of image.
+
+        Returns:
+            np.ndarray: Resized coordinates.
         """
         old_h, old_w = original_size
         new_h, new_w = self.get_preprocess_shape(
@@ -81,15 +119,29 @@ class ResizeLongestSide:
         return coords
 
     def apply_boxes(self, boxes: np.ndarray, original_size: Tuple[int, ...]) -> np.ndarray:
-        """Expects a numpy array shape Bx4. Requires the original image size in (H, W) format."""
+        """Expects a numpy array shape Bx4. Requires the original image size in (H, W) format.
+        
+        Args:
+            boxes (np.ndarray): Boxes array.
+            original_size (Tuple[int, ...]): Original size of image.
+            
+        Returns:
+            np.ndarray: Resized boxes.
+        """
         boxes = self.apply_coords(boxes.reshape(-1, 2, 2), original_size)
         return boxes.reshape(-1, 4)
 
     def apply_image_torch(self, image: torch.Tensor) -> torch.Tensor:
-        """
-        Expects batched images with shape BxCxHxW and float format. This
-        transformation may not exactly match apply_image. apply_image is
-        the transformation expected by the model.
+        """Expects batched images with shape BxCxHxW and float format.
+
+        This transformation may not exactly match apply_image.
+        apply_image is the transformation expected by the model.
+
+        Args:
+            image (torch.Tensor): Image tensor.
+
+        Returns:
+            torch.Tensor: Resized image.
         """
         # Expects an image in BCHW format. May not exactly match apply_image.
         target_size = self.get_preprocess_shape(image.shape[2], image.shape[3], self.target_length)
@@ -100,9 +152,16 @@ class ResizeLongestSide:
     def apply_coords_torch(
         self, coords: torch.Tensor, original_size: Tuple[int, ...]
     ) -> torch.Tensor:
-        """
-        Expects a torch tensor with length 2 in the last dimension. Requires the
-        original image size in (H, W) format.
+        """Expects a torch tensor with length 2 in the last dimension.
+        
+        Requires the original image size in (H, W) format.
+
+        Args:
+            coords (torch.Tensor): Coordinates tensor.
+            original_size (Tuple[int, ...]): Original size of image.
+
+        Returns:
+            torch.Tensor: Resized coordinates.
         """
         old_h, old_w = original_size
         new_h, new_w = self.get_preprocess_shape(
@@ -116,17 +175,31 @@ class ResizeLongestSide:
     def apply_boxes_torch(
         self, boxes: torch.Tensor, original_size: Tuple[int, ...]
     ) -> torch.Tensor:
-        """
-        Expects a torch tensor with shape Bx4. Requires the original image
-        size in (H, W) format.
+        """Expects a torch tensor with shape Bx4.
+        
+        Requires the original image size in (H, W) format.
+
+        Args:
+            boxes (torch.Tensor): Boxes tensor.
+            original_size (Tuple[int, ...]): Original size of image.
+
+        Returns:
+            torch.Tensor: Resized boxes.
         """
         boxes = self.apply_coords_torch(boxes.reshape(-1, 2, 2), original_size)
         return boxes.reshape(-1, 4)
 
     @staticmethod
     def get_preprocess_shape(oldh: int, oldw: int, long_side_length: int) -> Tuple[int, int]:
-        """
-        Compute the output size given input size and target long side length.
+        """Compute the output size given input size and target long side length.
+
+        Args:
+            oldh (int): Original height.
+            oldw (int): Original width.
+            long_side_length (int): Target long side length.
+
+        Returns:
+            Tuple[int, int]: Output size.
         """
         scale = long_side_length * 1.0 / max(oldh, oldw)
         newh, neww = oldh * scale, oldw * scale
@@ -136,8 +209,15 @@ class ResizeLongestSide:
 
 
 class Pad:
-    """"""
-    def __call__(self, item: Dict[str, Union[int, Tensor]]):
+    """Pad images, gt_masks, bboxes, and points to the same size."""
+    def __call__(self, item: Dict[str, Union[int, Tensor]]) -> Dict[str, Union[int, Tensor]]:
+        """        
+        Args:
+            item (Dict[str, Union[int, Tensor]]): Input item.
+            
+        Returns:
+            Dict[str, Union[int, Tensor]]: Padded item.
+        """
         _, h, w = item["images"].shape
         max_dim = max(w, h)
         pad_w = (max_dim - w) // 2
@@ -155,7 +235,14 @@ class Pad:
 
 class MultipleInputsCompose(Compose):
     """Composes several transforms have multiple inputs together."""
-    def __call__(self, item: Dict[str, Union[int, Tensor]]):
+    def __call__(self, item: Dict[str, Union[int, Tensor]]) -> Dict[str, Union[int, Tensor]]:
+        """
+        Args:
+            item (Dict[str, Union[int, Tensor]]): Input item.
+            
+        Returns:
+            Dict[str, Union[int, Tensor]]: Transformed item.
+        """
         for t in self.transforms:
             if isinstance(t, transforms.Normalize):
                 item["images"] = t(item["images"])
