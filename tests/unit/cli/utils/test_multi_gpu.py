@@ -20,7 +20,7 @@ NUM_AVAILABLE_GPU = 4
 
 
 @pytest.fixture(autouse=True)
-def sfejklejlkfesjfkls(mocker):
+def mocking_torch_device_count(mocker):
     mock_torch = mocker.patch.object(multi_gpu, "torch")
     mock_torch.cuda.device_count.return_value = NUM_AVAILABLE_GPU
 
