@@ -46,11 +46,9 @@ class TestVisualPromptingDatasetAdapter:
         """Test get_otx_dataset."""
         data_root_dict: dict = TASK_NAME_TO_DATA_ROOT[self.task][data_format]
         train_data_roots: str = os.path.join(self.root_path, data_root_dict["train"])
-        val_data_roots: str = os.path.join(self.root_path, data_root_dict["val"])
-        dataset_adapter: BaseDatasetAdapter = VisualPromptingDatasetAdapter(
+        dataset_adapter: VisualPromptingDatasetAdapter = VisualPromptingDatasetAdapter(
             task_type=self.task_type,
             train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
             use_mask=use_mask,
         )
 
