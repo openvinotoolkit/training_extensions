@@ -40,7 +40,7 @@ class EarlyStoppingHook(Hook):
                                continues if the number of iteration is lower than iteration_patience
                                This variable makes sure a model is trained enough for some
                                iterations after the last improvement before stopping.
-    :param min_delta_ratio: Minimal ratio value to check the best score. If the difference between current and 
+    :param min_delta_ratio: Minimal ratio value to check the best score. If the difference between current and
                       best score is smaller than (current_score * (1-min_delta_ratio)), best score will not be changed.
     """
 
@@ -141,7 +141,7 @@ class EarlyStoppingHook(Hook):
                 )
 
             key_score = runner.log_buffer.output[self.key_indicator]
-            if self.compare_func(key_score - (key_score*self.min_delta_ratio), self.best_score):
+            if self.compare_func(key_score - (key_score * self.min_delta_ratio), self.best_score):
                 self.best_score = key_score
                 self.wait_count = 0
                 self.last_iter = runner.iter
@@ -352,7 +352,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
                     logger=runner.logger,
                 )
                 return self.current_lr
-            
+
             self.last_iter = runner.iter
             self.bad_count = 0
             print_log(
