@@ -105,7 +105,7 @@ def test_direct_annotation(task_name, train_type):
         train_ann_files="tests/assets/car_tree_bug/annotations/instances_train_5_imgs.json",
         val_data_roots=os.path.join(root_path, data_root["val"]),
     )
-    assert t_adapter.dataset[Subset.TRAINING].get_subset("train").get_annotated_items() == 5
+    assert t_adapter.dataset[Subset.TRAINING].get_subset("train_5_imgs").get_annotated_items() == 5
 
     v_adapter = get_dataset_adapter(
         task_type=task_type,
@@ -114,7 +114,7 @@ def test_direct_annotation(task_name, train_type):
         val_data_roots=os.path.join(root_path, data_root["val"]),
         val_ann_files="tests/assets/car_tree_bug/annotations/instances_val_1_imgs.json",
     )
-    assert v_adapter.dataset[Subset.VALIDATION].get_subset("val").get_annotated_items() == 1
+    assert v_adapter.dataset[Subset.VALIDATION].get_subset("val_1_imgs").get_annotated_items() == 1
 
     tv_adapter = get_dataset_adapter(
         task_type=task_type,
@@ -124,8 +124,8 @@ def test_direct_annotation(task_name, train_type):
         val_data_roots=os.path.join(root_path, data_root["val"]),
         val_ann_files="tests/assets/car_tree_bug/annotations/instances_val_1_imgs.json",
     )
-    assert tv_adapter.dataset[Subset.TRAINING].get_subset("train").get_annotated_items() == 5
-    assert tv_adapter.dataset[Subset.VALIDATION].get_subset("val").get_annotated_items() == 1
+    assert tv_adapter.dataset[Subset.TRAINING].get_subset("train_5_imgs").get_annotated_items() == 5
+    assert tv_adapter.dataset[Subset.VALIDATION].get_subset("val_1_imgs").get_annotated_items() == 1
 
 
 @e2e_pytest_unit
