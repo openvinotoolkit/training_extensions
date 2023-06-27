@@ -110,7 +110,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Union[DictConfig, ListConfig]: Visual Prompting config.
         """
         self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
-        config = get_visual_promtping_config(self.model_name, self.hyper_parameters, self.output_path)
+        config = get_visual_promtping_config(self.model_name, self.hyper_parameters, self.base_dir)
 
         config.dataset.task = "visual_prompting"
 
