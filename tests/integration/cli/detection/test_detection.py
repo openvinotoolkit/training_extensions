@@ -70,7 +70,7 @@ templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [
     parse_model_template(
-        "otx/algorithms/detection/configs/detection/resnet50_deformable-detr/template_experimental.yaml"
+        "otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml"
     ),
     parse_model_template("otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
 ]
