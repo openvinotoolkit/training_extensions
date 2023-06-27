@@ -3,4 +3,5 @@
 #
 
 import os
+
 os.environ["FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS"] = "1"

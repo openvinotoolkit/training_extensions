@@ -378,8 +378,6 @@ class SegmentAnything(LightningModule):
     def calculate_dice_loss(self, inputs: Tensor, targets: Tensor, num_masks: int) -> Tensor:
         """Compute the DICE loss, similar to generalized IOU for masks.
 
-        Reference: https://github.com/huggingface/transformers/blob/main/src/transformers/models/maskformer/modeling_maskformer.py#L269 # noqa: E501
-
         Args:
             inputs (Tensor): A tensor representing a mask.
             targets (Tensor): A tensor with the same shape as inputs. Stores the binary classification labels
@@ -397,9 +395,7 @@ class SegmentAnything(LightningModule):
     def calculate_sigmoid_ce_focal_loss(
         self, inputs: Tensor, targets: Tensor, num_masks: int, alpha: float = 0.25, gamma: float = 2
     ) -> Tensor:
-        """Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002. # noqa: D301.
-
-        Referece: https://github.com/huggingface/transformers/blob/main/src/transformers/models/maskformer/modeling_maskformer.py#L300 # noqa: E501
+        r"""Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002. # noqa: D301.
 
         Args:
             inputs (Tensor): A float tensor of arbitrary shape.

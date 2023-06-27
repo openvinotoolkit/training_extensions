@@ -24,9 +24,12 @@ args_polygon = {
     "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": [
         "params",
-        "--learning_parameters.trainer.max_epochs", "1",
-        "--learning_parameters.dataset.train_batch_size", "2",
-        "--learning_parameters.dataset.use_mask", "False",
+        "--learning_parameters.trainer.max_epochs",
+        "1",
+        "--learning_parameters.dataset.train_batch_size",
+        "2",
+        "--learning_parameters.dataset.use_mask",
+        "False",
     ],
 }
 
@@ -37,17 +40,22 @@ args_mask = {
     "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": [
         "params",
-        "--learning_parameters.trainer.max_epochs", "1",
-        "--learning_parameters.dataset.train_batch_size", "2",
-        "--learning_parameters.dataset.use_mask", "True",
+        "--learning_parameters.trainer.max_epochs",
+        "1",
+        "--learning_parameters.dataset.train_batch_size",
+        "2",
+        "--learning_parameters.dataset.use_mask",
+        "True",
     ],
 }
 
 # Training params for resume, num_iters*2
 resume_params = [
     "params",
-    "--learning_parameters.trainer.max_epochs", "2",
-    "--learning_parameters.dataset.train_batch_size", "4",
+    "--learning_parameters.trainer.max_epochs",
+    "2",
+    "--learning_parameters.dataset.train_batch_size",
+    "4",
 ]
 
 otx_dir = os.getcwd()

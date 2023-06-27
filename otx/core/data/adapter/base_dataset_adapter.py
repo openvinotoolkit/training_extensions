@@ -354,8 +354,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         """Get mask entity."""
         mask = Image(data=annotation.image, size=annotation.image.shape)
         return Annotation(
-            mask, labels=[ScoredLabel(label=self.label_entities[annotation.label])]
-        )  # type: ignore[arg-type]
+            mask, labels=[ScoredLabel(label=self.label_entities[annotation.label])]  # type: ignore[arg-type]
+        )
 
     def remove_unused_label_entities(self, used_labels: List):
         """Remove unused label from label entities.
