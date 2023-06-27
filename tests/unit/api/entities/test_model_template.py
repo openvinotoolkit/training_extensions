@@ -226,7 +226,7 @@ class TestTaskType:
         2. Check TaskType elements value attribute
         3. Check TaskType str method
         """
-        assert len(TaskType) == 15
+        assert len(TaskType) == 16
         assert TaskType.NULL.value == 1
         assert TaskType.DATASET.value == 2
         assert TaskType.CLASSIFICATION.value == 3
