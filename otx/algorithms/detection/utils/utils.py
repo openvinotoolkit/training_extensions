@@ -15,7 +15,7 @@
 
 import colorsys
 import random
-from typing import List, Optional, Sequence, Tuple
+from typing import Any, List, Optional, Sequence, Tuple
 
 import cv2
 import numpy as np
@@ -104,20 +104,36 @@ def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Dom
     return label_schema
 
 
-def get_det_model_api_configuration(label_schema: LabelSchemaEntity, task_type: TaskType, confidence_threshold: float):
+def get_det_model_api_configuration(
+    label_schema: LabelSchemaEntity, task_type: TaskType, confidence_threshold: float, tiling_parameters: Any
+):
     """Get ModelAPI config."""
     omz_config = {}
+    all_labels = ""
     if task_type == TaskType.DETECTION:
         omz_config[("model_info", "model_type")] = "ssd"
     if task_type == TaskType.INSTANCE_SEGMENTATION:
         omz_config[("model_info", "model_type")] = "MaskRCNN"
+        all_labels = "otx_empty_lbl "
+        if tiling_parameters.enable_tiling:
+            omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
     if task_type == TaskType.ROTATED_DETECTION:
         omz_config[("model_info", "model_type")] = "rotated_detection"
+        all_labels = "otx_empty_lbl "
+        if tiling_parameters.enable_tiling:
+            omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
 
     omz_config[("model_info", "confidence_threshold")] = str(confidence_threshold)
     omz_config[("model_info", "iou_threshold")] = str(0.5)
 
-    all_labels = ""
+    omz_config[("model_info", "tile_size")] = str(
+        int(tiling_parameters.tile_size * tiling_parameters.tile_ir_scale_factor)
+    )
+    omz_config[("model_info", "tiles_overlap")] = str(
+        tiling_parameters.tile_overlap / tiling_parameters.tile_ir_scale_factor
+    )
+    omz_config[("model_info", "max_pred_number")] = str(tiling_parameters.tile_max_number)
+
     for lbl in label_schema.get_labels(include_empty=False):
         all_labels += lbl.name.replace(" ", "_") + " "
     all_labels = all_labels.strip()
