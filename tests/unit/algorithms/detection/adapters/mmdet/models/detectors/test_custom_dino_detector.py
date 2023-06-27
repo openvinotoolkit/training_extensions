@@ -34,7 +34,7 @@ class TestCustomDINO:
             "memory_trans_fc": "memory_trans_fc",
             "memory_trans_norm": "memory_trans_norm",
         }
-        model.load_state_dict_pre_hook(model, ckpt_dict)
+        model.load_state_dict_pre_hook(ckpt_dict)
 
         assert ckpt_dict["bbox_head.transformer.level_embeds"] == "level_embed"
         assert ckpt_dict["bbox_head.transformer.encoder.attentions.0"] == "encoder.self_attn"
