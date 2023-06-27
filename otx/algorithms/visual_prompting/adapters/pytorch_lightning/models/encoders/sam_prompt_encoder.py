@@ -28,6 +28,7 @@ class SAMPromptEncoder(nn.Module):
         mask_in_chans (int): The number of hidden channels used for encoding input masks.
         activation (nn.Module): The activation to use when encoding input masks.
     """
+
     def __init__(
         self,
         embed_dim: int,
@@ -36,7 +37,7 @@ class SAMPromptEncoder(nn.Module):
         mask_in_chans: int,
         activation: Type[nn.Module] = nn.GELU,
     ) -> None:
-        
+
         super().__init__()
         self.embed_dim = embed_dim
         self.input_image_size = input_image_size
@@ -61,8 +62,9 @@ class SAMPromptEncoder(nn.Module):
         self.no_mask_embed = nn.Embedding(1, embed_dim)
 
     def get_dense_pe(self) -> Tensor:
-        """Returns the positional encoding used to encode point prompts,
-        applied to a dense set of points the shape of the image encoding.
+        """Returns the positional encoding.
+
+        It used to encode point prompts, applied to a dense set of points the shape of the image encoding.
 
         Returns:
           Tensor: Positional encoding with shape 1x(embed_dim)x(embedding_h)x(embedding_w).
@@ -71,12 +73,12 @@ class SAMPromptEncoder(nn.Module):
 
     def _embed_points(self, points: Tensor, labels: Tensor, pad: bool) -> Tensor:
         """Embeds point prompts.
-        
+
         Args:
             points (Tensor): The points to embed, as (N, 2).
             labels (Tensor): The labels of the points, as (N, 1).
             pad (bool): Whether to pad the points with a zero point.
-            
+
         Returns:
             Tensor: The embedded points, as (N, embed_dim).
         """
@@ -95,10 +97,10 @@ class SAMPromptEncoder(nn.Module):
 
     def _embed_boxes(self, boxes: Tensor) -> Tensor:
         """Embeds box prompts.
-        
+
         Args:
             boxes (Tensor): The boxes to embed, as (N, 4).
-            
+
         Returns:
             Tensor: The embedded boxes, as (N, embed_dim).
         """
@@ -111,10 +113,10 @@ class SAMPromptEncoder(nn.Module):
 
     def _embed_masks(self, masks: Tensor) -> Tensor:
         """Embeds mask inputs.
-        
+
         Args:
             masks (Tensor): The masks to embed, as (N, H, W).
-            
+
         Returns:
             Tensor: The embedded masks, as (N, embed_dim).
         """
@@ -148,7 +150,7 @@ class SAMPromptEncoder(nn.Module):
 
     def _get_device(self) -> torch.device:
         """Gets the device of the embeddings.
-        
+
         Returns:
             torch.device: The device of the embeddings.
         """
@@ -199,6 +201,7 @@ class PositionEmbeddingRandom(nn.Module):
         num_pos_feats (int): The number of positional frequencies.
         scale (float): The scale of the positional encoding.
     """
+
     def __init__(self, num_pos_feats: int = 64, scale: Optional[float] = None) -> None:
         super().__init__()
         if scale is None or scale <= 0.0:
@@ -210,10 +213,10 @@ class PositionEmbeddingRandom(nn.Module):
 
     def _pe_encoding(self, coords: Tensor) -> Tensor:
         """Positionally encode points that are normalized to [0,1].
-        
+
         Args:
             coords (Tensor): The coordinates to encode, as (N, 2).
-            
+
         Returns:
             Tensor: The positional encoding, as (N, num_pos_feats).
         """
@@ -226,10 +229,10 @@ class PositionEmbeddingRandom(nn.Module):
 
     def forward(self, size: Tuple[int, int]) -> Tensor:
         """Generate positional encoding for a grid of the specified size.
-        
+
         Args:
             size (tuple(int, int)): The size of the grid to generate the encoding for.
-            
+
         Returns:
             Tensor: The positional encoding, as (num_pos_feats, H, W).
         """
@@ -244,15 +247,13 @@ class PositionEmbeddingRandom(nn.Module):
         pe = self._pe_encoding(torch.stack([x_embed, y_embed], dim=-1))
         return pe.permute(2, 0, 1)  # C x H x W
 
-    def forward_with_coords(
-        self, coords_input: Tensor, image_size: Tuple[int, int]
-    ) -> Tensor:
+    def forward_with_coords(self, coords_input: Tensor, image_size: Tuple[int, int]) -> Tensor:
         """Positionally encode points that are not normalized to [0,1].
-        
+
         Args:
             coords_input (Tensor): The coordinates to encode, as (B, N, 2).
             image_size (tuple(int, int)): The size of the image the coordinates are from.
-            
+
         Returns:
             Tensor: The positional encoding, as (B, N, num_pos_feats).
         """

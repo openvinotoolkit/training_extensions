@@ -26,8 +26,8 @@ class TestSAMPromptEncoder:
             embed_dim=4,
             image_embedding_size=(self.image_embedding_size, self.image_embedding_size),
             input_image_size=self.input_image_size,
-            mask_in_chans=4
-            )
+            mask_in_chans=4,
+        )
 
     @e2e_pytest_unit
     def test_init(self):
@@ -47,11 +47,12 @@ class TestSAMPromptEncoder:
         assert results.shape == (1, self.image_embedding_size, self.image_embedding_size, self.image_embedding_size)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("points,labels,pad,expected",
+    @pytest.mark.parametrize(
+        "points,labels,pad,expected",
         [
             (torch.ones((1, 2, 2), dtype=torch.float32), torch.Tensor([[0, 1]]), True, (1, 3, 4)),
             (torch.ones((1, 2, 2), dtype=torch.float32), torch.Tensor([[0, 1]]), False, (1, 2, 4)),
-        ]
+        ],
     )
     def test_embed_points(self, points: torch.Tensor, labels: torch.Tensor, pad: bool, expected: Tuple[int]):
         """Test _embed_points."""
@@ -64,7 +65,7 @@ class TestSAMPromptEncoder:
     def test_embed_boxes(self, boxes: torch.Tensor, expected: Tuple[int]):
         """Test _embed_boxes."""
         results = self.prompt_encoder._embed_boxes(boxes)
-        
+
         assert results.shape == expected
 
     @e2e_pytest_unit
@@ -72,19 +73,26 @@ class TestSAMPromptEncoder:
     def test_embed_masks(self, mask: torch.Tensor, expected: Tuple[int]):
         """Test _embed_masks."""
         results = self.prompt_encoder._embed_masks(mask)
-        
+
         assert results.shape == expected
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("points,boxes,masks,expected",
+    @pytest.mark.parametrize(
+        "points,boxes,masks,expected",
         [
             ((torch.tensor([1]), torch.tensor([1])), None, None, 1),
             (None, torch.Tensor([[0, 0, 1, 1]]), None, 1),
             (None, None, torch.zeros((1, 2, 2)), 1),
-            (None, None, None, 1)
-        ]
+            (None, None, None, 1),
+        ],
     )
-    def test_get_batch_size(self, points: Optional[Tuple[torch.Tensor, torch.Tensor]], boxes: Optional[torch.Tensor], masks: Optional[torch.Tensor], expected: int):
+    def test_get_batch_size(
+        self,
+        points: Optional[Tuple[torch.Tensor, torch.Tensor]],
+        boxes: Optional[torch.Tensor],
+        masks: Optional[torch.Tensor],
+        expected: int,
+    ):
         """Test _get_batch_size."""
         results = self.prompt_encoder._get_batch_size(points, boxes, masks)
 
@@ -101,15 +109,27 @@ class TestSAMPromptEncoder:
         assert device == str(results).split(":")[0]
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("points,boxes,masks,expected",
+    @pytest.mark.parametrize(
+        "points,boxes,masks,expected",
         [
-            ((torch.ones((1, 2, 2), dtype=torch.float32), torch.Tensor([[0, 1]])), None, None, ((1, 3, 4), (1, 4, 4, 4))),
+            (
+                (torch.ones((1, 2, 2), dtype=torch.float32), torch.Tensor([[0, 1]])),
+                None,
+                None,
+                ((1, 3, 4), (1, 4, 4, 4)),
+            ),
             (None, torch.Tensor([[0, 0, 1, 1]]), None, ((1, 2, 4), (1, 4, 4, 4))),
             (None, None, torch.zeros((1, 4, 4)), ((1, 0, 4), (4, 1, 1))),
-            (None, None, None, ((1, 0, 4), (1, 4, 4, 4)))
-        ]
+            (None, None, None, ((1, 0, 4), (1, 4, 4, 4))),
+        ],
     )
-    def test_forward(self, points: Optional[Tuple[torch.Tensor, torch.Tensor]], boxes: Optional[torch.Tensor], masks: Optional[torch.Tensor], expected: Tuple[int]):
+    def test_forward(
+        self,
+        points: Optional[Tuple[torch.Tensor, torch.Tensor]],
+        boxes: Optional[torch.Tensor],
+        masks: Optional[torch.Tensor],
+        expected: Tuple[int],
+    ):
         """Test forward."""
         results = self.prompt_encoder.forward(points, boxes, masks)
         sparse_embeddings, dense_embeddings = results
@@ -147,7 +167,7 @@ class TestPositionEmbeddingRandom:
     def test_forward_with_coords(self):
         """Test forward_with_coords."""
         results = self.position_embedding_random.forward_with_coords(
-            coords_input=torch.ones((2, 2, 2), dtype=torch.float32),
-            image_size=(2, 2))
-        
+            coords_input=torch.ones((2, 2, 2), dtype=torch.float32), image_size=(2, 2)
+        )
+
         assert results.shape == (2, 2, 8)

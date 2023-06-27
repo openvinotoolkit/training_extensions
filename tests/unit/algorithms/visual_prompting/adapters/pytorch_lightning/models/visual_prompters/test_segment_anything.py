@@ -53,31 +53,48 @@ class MockMaskDecoder(nn.Module):
 class TestSegmentAnything:
     @pytest.fixture(autouse=True)
     def setup(self, monkeypatch) -> None:
-        monkeypatch.setattr("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMImageEncoder", MockImageEncoder)
-        monkeypatch.setattr("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMPromptEncoder", MockPromptEncoder)
-        monkeypatch.setattr("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMMaskDecoder", MockMaskDecoder)
-    
-        self.base_config = DictConfig(dict(
-            model=dict(
-                backbone="vit_b",
-                image_size=1024,
-                freeze_image_encoder=True,
-                freeze_prompt_encoder=True,
-                freeze_mask_decoder=False,
-                loss_type="sam",
-                checkpoint=None,
-                mask_threshold=0.,
-                return_logits=False,
+        monkeypatch.setattr(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMImageEncoder",
+            MockImageEncoder,
+        )
+        monkeypatch.setattr(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMPromptEncoder",
+            MockPromptEncoder,
+        )
+        monkeypatch.setattr(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SAMMaskDecoder",
+            MockMaskDecoder,
+        )
+
+        self.base_config = DictConfig(
+            dict(
+                model=dict(
+                    backbone="vit_b",
+                    image_size=1024,
+                    freeze_image_encoder=True,
+                    freeze_prompt_encoder=True,
+                    freeze_mask_decoder=False,
+                    loss_type="sam",
+                    checkpoint=None,
+                    mask_threshold=0.0,
+                    return_logits=False,
+                )
             )
-        ))
+        )
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone", ["vit_b", "resnet"])
     def test_set_models(self, mocker, backbone: str) -> None:
         """Test set_models."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks")
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics")
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
 
         config = self.base_config.copy()
         config.model.update(dict(backbone=backbone))
@@ -96,17 +113,25 @@ class TestSegmentAnything:
     @pytest.mark.parametrize("freeze_image_encoder", [True, False])
     @pytest.mark.parametrize("freeze_prompt_encoder", [True, False])
     @pytest.mark.parametrize("freeze_mask_decoder", [True, False])
-    def test_freeze_networks(self, mocker, freeze_image_encoder: bool, freeze_prompt_encoder: bool, freeze_mask_decoder: bool):
+    def test_freeze_networks(
+        self, mocker, freeze_image_encoder: bool, freeze_prompt_encoder: bool, freeze_mask_decoder: bool
+    ):
         """Test freeze_networks."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics")
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
 
         config = self.base_config.copy()
-        config.model.update(dict(
-            freeze_image_encoder=freeze_image_encoder,
-            freeze_prompt_encoder=freeze_prompt_encoder,
-            freeze_mask_decoder=freeze_mask_decoder,
-        ))
+        config.model.update(
+            dict(
+                freeze_image_encoder=freeze_image_encoder,
+                freeze_prompt_encoder=freeze_prompt_encoder,
+                freeze_mask_decoder=freeze_mask_decoder,
+            )
+        )
         sam = SegmentAnything(config)
 
         for param in sam.image_encoder.parameters():
@@ -131,9 +156,15 @@ class TestSegmentAnything:
     @pytest.mark.parametrize("loss_type", ["sam", "medsam"])
     def test_set_metrics(self, mocker, loss_type: str):
         """Test set_metrics."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_models")
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks")
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_models"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
 
         config = self.base_config.copy()
         config.model.update(dict(loss_type=loss_type))
@@ -150,30 +181,45 @@ class TestSegmentAnything:
             assert 0
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("is_backbone_arg,state_dict",
+    @pytest.mark.parametrize(
+        "is_backbone_arg,state_dict",
         [
-            (False, OrderedDict([
-                ("image_encoder.weight", Tensor([[0.]])),
-                ("image_encoder.bias", Tensor([0.])),
-                ("prompt_encoder.layer.weight", Tensor([[0.]])),
-                ("prompt_encoder.layer.bias", Tensor([0.])),
-                ("mask_decoder.layer.weight", Tensor([[0.]])),
-                ("mask_decoder.layer.bias", Tensor([0.]))
-            ])),
-            (True, OrderedDict([
-                ("image_encoder.backbone.weight", Tensor([[1.]])),
-                ("image_encoder.backbone.bias", Tensor([1.])),
-                ("prompt_encoder.layer.weight", Tensor([[1.]])),
-                ("prompt_encoder.layer.bias", Tensor([1.])),
-                ("mask_decoder.layer.weight", Tensor([[1.]])),
-                ("mask_decoder.layer.bias", Tensor([1.]))
-            ]))
-        ]
+            (
+                False,
+                OrderedDict(
+                    [
+                        ("image_encoder.weight", Tensor([[0.0]])),
+                        ("image_encoder.bias", Tensor([0.0])),
+                        ("prompt_encoder.layer.weight", Tensor([[0.0]])),
+                        ("prompt_encoder.layer.bias", Tensor([0.0])),
+                        ("mask_decoder.layer.weight", Tensor([[0.0]])),
+                        ("mask_decoder.layer.bias", Tensor([0.0])),
+                    ]
+                ),
+            ),
+            (
+                True,
+                OrderedDict(
+                    [
+                        ("image_encoder.backbone.weight", Tensor([[1.0]])),
+                        ("image_encoder.backbone.bias", Tensor([1.0])),
+                        ("prompt_encoder.layer.weight", Tensor([[1.0]])),
+                        ("prompt_encoder.layer.bias", Tensor([1.0])),
+                        ("mask_decoder.layer.weight", Tensor([[1.0]])),
+                        ("mask_decoder.layer.bias", Tensor([1.0])),
+                    ]
+                ),
+            ),
+        ],
     )
     def test_load_checkpoint_with_state_dict(self, mocker, is_backbone_arg: bool, state_dict: OrderedDict):
         """Test load_checkpoint with state_dict."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks")
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
 
         sam = SegmentAnything(self.base_config, state_dict=state_dict)
         sam_state_dict = sam.state_dict()
@@ -188,17 +234,28 @@ class TestSegmentAnything:
     @pytest.mark.parametrize("checkpoint", [None, "checkpoint", "http://checkpoint"])
     def test_load_checkpoint(self, mocker, monkeypatch, checkpoint: str):
         """Test load_checkpoint."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks")
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
         if checkpoint is not None:
             monkeypatch.setattr("torch.hub.load_state_dict_from_url", lambda *args, **kwargs: OrderedDict())
             monkeypatch.setattr("torch.load", lambda *args, **kwargs: None)
 
-            mocker_load_state_dict = mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict")
+            mocker_load_state_dict = mocker.patch(
+                "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
+            )
             if checkpoint.startswith("http"):
-                mocker_load_from_checkpoint = mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint", side_effect=ValueError())
+                mocker_load_from_checkpoint = mocker.patch(
+                    "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint",
+                    side_effect=ValueError(),
+                )
             else:
-                mocker_load_from_checkpoint = mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint")
+                mocker_load_from_checkpoint = mocker.patch(
+                    "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
+                )
 
         config = self.base_config.copy()
         config.model.update(dict(checkpoint=checkpoint))
@@ -212,13 +269,12 @@ class TestSegmentAnything:
         else:
             mocker_load_from_checkpoint.assert_called_once()
 
-
     @e2e_pytest_unit
     def test_forward(self) -> None:
         """Test forward."""
         sam = SegmentAnything(config=self.base_config)
-        images=torch.zeros((1))
-        bboxes=torch.zeros((1))
+        images = torch.zeros((1))
+        bboxes = torch.zeros((1))
 
         results = sam.forward(images=images, bboxes=bboxes, points=None)
         pred_masks, ious = results
@@ -226,19 +282,20 @@ class TestSegmentAnything:
         assert len(bboxes) == len(pred_masks) == len(ious)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("loss_type,expected",
-        [
-            ("sam", torch.tensor(2.4290099144)),
-            ("medsam", torch.tensor(0.9650863409))
-        ]
+    @pytest.mark.parametrize(
+        "loss_type,expected", [("sam", torch.tensor(2.4290099144)), ("medsam", torch.tensor(0.9650863409))]
     )
     def test_training_step(self, mocker, loss_type: str, expected: Tensor) -> None:
         """Test training_step."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.forward",
-                     return_value=([torch.Tensor([[0, 1, 1, 0] for _ in range(4)])], [torch.tensor(1.)]))
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks",
-                     return_value=torch.Tensor([[0, 1, 1, 0] for _ in range(4)]))
-        
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.forward",
+            return_value=([torch.Tensor([[0, 1, 1, 0] for _ in range(4)])], [torch.tensor(1.0)]),
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks",
+            return_value=torch.Tensor([[0, 1, 1, 0] for _ in range(4)]),
+        )
+
         config = self.base_config.copy()
         config.model.update(dict(loss_type=loss_type))
         sam = SegmentAnything(config=config)
@@ -262,8 +319,8 @@ class TestSegmentAnything:
 
         sam.training_epoch_end(None)
 
-        assert sam.train_metrics["train_Dice"].compute() == 0.
-        assert sam.train_metrics["train_F1"].compute() == 0.
+        assert sam.train_metrics["train_Dice"].compute() == 0.0
+        assert sam.train_metrics["train_F1"].compute() == 0.0
         assert sam.train_metrics["train_IoU"].compute().isnan()
         assert sam.train_metrics["train_loss"].compute().isnan()
         assert sam.train_metrics["train_loss_dice"].compute().isnan()
@@ -273,10 +330,14 @@ class TestSegmentAnything:
     @e2e_pytest_unit
     def test_validation_step(self, mocker) -> None:
         """Test validation_step."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.forward",
-                     return_value=([torch.Tensor([[0, 1, 1, 0] for _ in range(4)])], [torch.tensor(1.)]))
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks",
-                     return_value=torch.Tensor([[0, 1, 1, 0] for _ in range(4)]))
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.forward",
+            return_value=([torch.Tensor([[0, 1, 1, 0] for _ in range(4)])], [torch.tensor(1.0)]),
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks",
+            return_value=torch.Tensor([[0, 1, 1, 0] for _ in range(4)]),
+        )
         sam = SegmentAnything(config=self.base_config)
         batch = dict(
             images=torch.ones((1, 3, 4, 4)),
@@ -286,14 +347,14 @@ class TestSegmentAnything:
             path=None,
             labels=None,
             padding=[0],
-            original_size=[0]
+            original_size=[0],
         )
-        
+
         results = sam.validation_step(batch, None)
 
         assert torch.equal(results["val_Dice"].compute(), torch.tensor(0.6666666865))
-        assert torch.equal(results["val_F1"].compute(), torch.tensor(1.))
-        assert torch.equal(results["val_IoU"].compute(), torch.tensor(1.))
+        assert torch.equal(results["val_F1"].compute(), torch.tensor(1.0))
+        assert torch.equal(results["val_IoU"].compute(), torch.tensor(1.0))
 
     @e2e_pytest_unit
     def test_validation_epoch_end(self) -> None:
@@ -304,21 +365,28 @@ class TestSegmentAnything:
 
         sam.validation_epoch_end(None)
 
-        assert sam.val_metrics["val_Dice"].compute() == 0.
-        assert sam.val_metrics["val_F1"].compute() == 0.
+        assert sam.val_metrics["val_Dice"].compute() == 0.0
+        assert sam.val_metrics["val_F1"].compute() == 0.0
         assert sam.val_metrics["val_IoU"].compute().isnan()
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("return_logits,expected",
+    @pytest.mark.parametrize(
+        "return_logits,expected",
         [
             (True, torch.Tensor([[0.5 for _ in range(4)] for _ in range(4)])),
             (False, torch.Tensor([[False for _ in range(4)] for _ in range(4)])),
-        ]
+        ],
     )
     def test_predict_step(self, mocker, return_logits: bool, expected: Tensor) -> None:
         """Test predict_step."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.forward", return_value=([torch.zeros((4, 4))], [torch.tensor(1.)]))
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks", return_value=torch.zeros((4, 4)))
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.forward",
+            return_value=([torch.zeros((4, 4))], [torch.tensor(1.0)]),
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.postprocess_masks",
+            return_value=torch.zeros((4, 4)),
+        )
 
         config = self.base_config.copy()
         config.model.update(dict(return_logits=return_logits))
@@ -330,22 +398,24 @@ class TestSegmentAnything:
             path=None,
             labels=None,
             padding=[0],
-            original_size=[0]
+            original_size=[0],
         )
 
         results = sam.predict_step(batch, None)
 
         assert torch.equal(results["masks"][0], expected)
 
-
     @e2e_pytest_unit
-    @pytest.mark.parametrize("input_size,original_size,is_predict,expected",
+    @pytest.mark.parametrize(
+        "input_size,original_size,is_predict,expected",
         [
             ((6, 6), (8, 8), True, (8, 8)),
             ((6, 6), (8, 8), False, (6, 6)),
-        ]
+        ],
     )
-    def test_postprocess_masks(self, input_size: Tuple[int], original_size: Tuple[int], is_predict: bool, expected: Tuple[int]) -> None:
+    def test_postprocess_masks(
+        self, input_size: Tuple[int], original_size: Tuple[int], is_predict: bool, expected: Tuple[int]
+    ) -> None:
         """Test postprocess_masks."""
         sam = SegmentAnything(config=self.base_config)
         masks = torch.zeros((1, 1, 4, 4))
@@ -358,10 +428,10 @@ class TestSegmentAnything:
     @pytest.mark.parametrize(
         "inputs,targets,expected",
         [
-            (Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.])),
+            (Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.0])),
             (Tensor([[0, 0, 0.5, 0.5, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.25])),
             (Tensor([[0, 0, 0.3, 0.3, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.3888888359])),
-        ]
+        ],
     )
     def test_calculate_dice_loss(self, inputs: Tensor, targets: Tensor, expected: Tensor) -> None:
         """Test calculate_dice_loss."""
@@ -375,10 +445,10 @@ class TestSegmentAnything:
     @pytest.mark.parametrize(
         "inputs,targets,expected",
         [
-            (Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.])),
+            (Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.0])),
             (Tensor([[0, 0, 0.5, 0.5, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.0098766042])),
             (Tensor([[0, 0, 0.3, 0.3, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.0226361733])),
-        ]
+        ],
     )
     def test_calculate_sigmoid_ce_focal_loss(self, inputs: Tensor, targets: Tensor, expected: Tensor) -> None:
         """Test calculate_sigmoid_ce_focal_loss."""
@@ -387,15 +457,15 @@ class TestSegmentAnything:
         results = sam.calculate_sigmoid_ce_focal_loss(inputs, targets, num_masks=1)
 
         assert torch.isclose(results, expected)
-        
+
     @e2e_pytest_unit
     @pytest.mark.parametrize(
         "inputs,targets,expected",
         [
-            (Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([1.])),
-            (Tensor([[0, 0, 0.5, 0.5, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([1.])),
-            (Tensor([[0, 0, 0.3, 0.3, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.])),
-        ]
+            (Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([1.0])),
+            (Tensor([[0, 0, 0.5, 0.5, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([1.0])),
+            (Tensor([[0, 0, 0.3, 0.3, 0, 0]]), Tensor([[0, 0, 1, 1, 0, 0]]), Tensor([0.0])),
+        ],
     )
     def test_calculate_iou(self, inputs: Tensor, targets: Tensor, expected: Tensor) -> None:
         """Test calculate_iou."""

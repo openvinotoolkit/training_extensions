@@ -40,7 +40,7 @@ class TestVisualPromptingDatasetAdapter:
             ("voc", False, Polygon),
             ("common_semantic_segmentation", True, Image),
             ("common_semantic_segmentation", False, Polygon),
-        ]
+        ],
     )
     def test_get_otx_dataset(self, data_format: str, use_mask: bool, expected_shape: Union[Image, Polygon]) -> None:
         """Test get_otx_dataset."""
@@ -51,11 +51,11 @@ class TestVisualPromptingDatasetAdapter:
             task_type=self.task_type,
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
-            use_mask=use_mask
+            use_mask=use_mask,
         )
 
         results = dataset_adapter.get_otx_dataset()
-        
+
         for result in results:
             assert isinstance(result.media, Image)
             assert isinstance(result.media.numpy, np.ndarray)

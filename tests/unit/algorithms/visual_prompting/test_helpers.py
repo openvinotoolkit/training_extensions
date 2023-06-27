@@ -69,7 +69,7 @@ def generate_visual_prompting_dataset(number_of_images: int = 1, use_mask: bool 
             min_size=50,
             max_size=100,
             random_seed=None,
-            use_mask_as_annotation=use_mask
+            use_mask_as_annotation=use_mask,
         )
 
         out_shapes = []

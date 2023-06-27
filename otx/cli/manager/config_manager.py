@@ -6,10 +6,10 @@
 import logging
 import os
 import shutil
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, DefaultDict
-from collections import defaultdict
+from typing import Any, DefaultDict, Dict, List, Optional
 
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import IDataset

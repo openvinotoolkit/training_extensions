@@ -23,7 +23,6 @@ max_nodes: 1
 training_targets:
   - GPU
   - CPU
-
 # Computational Complexity
 # gigaflops: 3.9
 # size: 168.4

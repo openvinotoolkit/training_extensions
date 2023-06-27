@@ -21,7 +21,6 @@ import shutil
 import tempfile
 import time
 from collections import OrderedDict
-from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
@@ -65,9 +64,9 @@ logger = get_logger()
 # pylint: disable=too-many-instance-attributes
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Visual Prompting Task.
-    
+
     Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
-    
+
     Args:
         task_environment (TaskEnvironment): OTX Task environment.
         output_path (Optional[str]): output path where task output are saved.
@@ -100,7 +99,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.model = self.load_model(otx_model=task_environment.model)
 
         self.trainer: Trainer
-        
+
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
@@ -128,19 +127,20 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             LightningModule: Visual prompting model with/without weights.
         """
+
         def get_model(config: DictConfig, state_dict: Optional[OrderedDict] = None):
             if config.model.name == "SAM":
                 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
                     SegmentAnything,
                 )
+
                 model = SegmentAnything(config=config, state_dict=state_dict)
             else:
-                raise NotImplementedError((
-                    f"Current selected model {config.model.name} is not implemented. "
-                    f"Use SAM instead."
-                ))
+                raise NotImplementedError(
+                    (f"Current selected model {config.model.name} is not implemented. " f"Use SAM instead.")
+                )
             return model
-            
+
         if otx_model is None:
             model = get_model(config=self.config)
             logger.info(
@@ -171,7 +171,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         return model
 
-    def cancel_training(self) -> None:
+    def cancel_training(self) -> None:  # noqa: D102
         raise NotImplementedError
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
@@ -214,7 +214,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     def _export_to_onnx(self, onnx_path: str):
         raise NotImplementedError
 
-    def export(
+    def export(  # noqa: D102
         self,
         export_type: ExportType,
         output_model: ModelEntity,

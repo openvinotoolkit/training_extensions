@@ -229,8 +229,8 @@ def generate_random_annotated_image(
                 y_min, y_max = int(y_min * image_height), int(y_max * image_height)
                 x_min, x_max = int(x_min * image_width), int(x_max * image_width)
 
-                coords_object = np.where(image1[y_min:y_max,x_min:x_max] < 255)
-                mask[y_min:y_max,x_min:x_max][coords_object] = 1
+                coords_object = np.where(image1[y_min:y_max, x_min:x_max] < 255)
+                mask[y_min:y_max, x_min:x_max][coords_object] = 1
                 mask = mask.sum(axis=-1)
                 mask[mask > 0] = 1
                 mask_annotation = Annotation(

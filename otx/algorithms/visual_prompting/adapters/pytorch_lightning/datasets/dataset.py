@@ -18,11 +18,10 @@ from typing import Dict, List, Optional, Union
 
 import cv2
 import numpy as np
-import torchvision.transforms as transforms
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
+from torchvision import transforms
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
@@ -34,29 +33,24 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelin
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
-from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
+from pytorch_lightning import LightningDataModule
 
 logger = get_logger()
 
 
 class OTXVIsualPromptingDataset(Dataset):
     """Visual Prompting Dataset Adaptor.
-    
+
     Args:
         dataset (DatasetEntity): Dataset entity.
         transform (MultipleInputsCompose): Transformations to apply to the dataset.
         offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
     """
 
-    def __init__(
-        self,
-        dataset: DatasetEntity,
-        transform: MultipleInputsCompose,
-        offset_bbox: int = 0
-    ) -> None:
+    def __init__(self, dataset: DatasetEntity, transform: MultipleInputsCompose, offset_bbox: int = 0) -> None:
 
         self.dataset = dataset
         self.transform = transform
@@ -87,7 +81,7 @@ class OTXVIsualPromptingDataset(Dataset):
 
         width, height = dataset_item.width, dataset_item.height
         bboxes: List[List[int]] = []
-        points: List = [] # TBD
+        points: List = []  # TBD
         gt_masks: List[np.ndarray] = []
         labels: List[ScoredLabel] = []
         for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
@@ -115,24 +109,34 @@ class OTXVIsualPromptingDataset(Dataset):
             labels.extend(annotation.get_labels(include_empty=False))
 
         if len(gt_masks) == 0:
-            return {"images": [], "bboxes": [], "points": [], "gt_masks": [], "original_size": [], "path": [], "labels": []}
+            return {
+                "images": [],
+                "bboxes": [],
+                "points": [],
+                "gt_masks": [],
+                "original_size": [],
+                "path": [],
+                "labels": [],
+            }
 
         bboxes = np.array(bboxes)
-        item.update(dict(
-            original_size=(height, width),
-            images=dataset_item.numpy,
-            path=dataset_item.media.path,
-            gt_masks=gt_masks,
-            bboxes=bboxes,
-            points=points, # TODO (sungchul): update point information
-            labels=labels,
-        ))
+        item.update(
+            dict(
+                original_size=(height, width),
+                images=dataset_item.numpy,
+                path=dataset_item.media.path,
+                gt_masks=gt_masks,
+                bboxes=bboxes,
+                points=points,  # TODO (sungchul): update point information
+                labels=labels,
+            )
+        )
         item = self.transform(item)
         return item
 
     def convert_polygon_to_mask(self, shape: Polygon, width: int, height: int) -> np.ndarray:
         """Convert polygon to mask.
-        
+
         Args:
             shape (Polygon): Polygon to convert.
             width (int): Width of image.
@@ -147,17 +151,18 @@ class OTXVIsualPromptingDataset(Dataset):
         gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
         return gt_mask
 
-    def generate_bbox(self, x1: int, y1: int, x2: int, y2: int, width: int, height: int) -> List[int]:
+    def generate_bbox(self, x1: int, y1: int, x2: int, y2: int, width: int, height: int) -> List[int]:  # noqa: D417
         """Generate bounding box.
-        
+
         Args:
-            x1, y1, x2, y2 (int): Bounding box coordinates.
+            x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
             width (int): Width of image.
             height (int): Height of image.
 
         Returns:
             List[int]: Generated bounding box.
         """
+
         def get_randomness(length: int) -> int:
             if self.offset_bbox == 0:
                 return 0
@@ -167,7 +172,7 @@ class OTXVIsualPromptingDataset(Dataset):
             max(0, x1 + get_randomness(width)),
             max(0, y1 + get_randomness(height)),
             min(width, x2 + get_randomness(width)),
-            min(height, y2 + get_randomness(height))
+            min(height, y2 + get_randomness(height)),
         ]
         return bbox
 
@@ -190,7 +195,7 @@ class OTXVIsualPromptingDataset(Dataset):
 
 class OTXVisualPromptingDataModule(LightningDataModule):
     """Visual Prompting DataModule.
-    
+
     Args:
         config (Union[DictConfig, ListConfig]): Configuration.
         dataset (DatasetEntity): Dataset entity.
@@ -224,31 +229,39 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
 
             # TODO (sungchul): distinguish between train and val config here
-            train_transform = val_transform = MultipleInputsCompose([
-                ResizeLongestSide(target_length=max(image_size)),
-                Pad(),
-                transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
-            ])
+            train_transform = val_transform = MultipleInputsCompose(
+                [
+                    ResizeLongestSide(target_length=max(image_size)),
+                    Pad(),
+                    transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
+                ]
+            )
 
-            self.train_dataset = OTXVIsualPromptingDataset(train_otx_dataset, train_transform, offset_bbox=self.config.offset_bbox)
+            self.train_dataset = OTXVIsualPromptingDataset(
+                train_otx_dataset, train_transform, offset_bbox=self.config.offset_bbox
+            )
             self.val_dataset = OTXVIsualPromptingDataset(val_otx_dataset, val_transform)
 
         if stage == "test":
             test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
-            test_transform = MultipleInputsCompose([
-                ResizeLongestSide(target_length=max(image_size)),
-                Pad(),
-                transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
-            ])
+            test_transform = MultipleInputsCompose(
+                [
+                    ResizeLongestSide(target_length=max(image_size)),
+                    Pad(),
+                    transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
+                ]
+            )
             self.test_dataset = OTXVIsualPromptingDataset(test_otx_dataset, test_transform)
 
         if stage == "predict":
             predict_otx_dataset = self.dataset
-            predict_transform = MultipleInputsCompose([
-                ResizeLongestSide(target_length=max(image_size)),
-                Pad(),
-                transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375])
-            ])
+            predict_transform = MultipleInputsCompose(
+                [
+                    ResizeLongestSide(target_length=max(image_size)),
+                    Pad(),
+                    transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
+                ]
+            )
             self.predict_dataset = OTXVIsualPromptingDataset(predict_otx_dataset, predict_transform)
 
     def summary(self):

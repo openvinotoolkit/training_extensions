@@ -29,10 +29,7 @@ class TestSAMImageEncoder:
             return_value=MockBackbone(),
         )
 
-        self.base_config = DictConfig(dict(
-            backbone="vit_b",
-            image_size=1024
-        ))
+        self.base_config = DictConfig(dict(backbone="vit_b", image_size=1024))
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("backbone", ["vit_b", "resnet"])
@@ -57,6 +54,6 @@ class TestSAMImageEncoder:
 
         sam_image_encoder = SAMImageEncoder(self.base_config)
         mocker_forward = mocker.patch.object(sam_image_encoder.backbone, "forward")
-        sam_image_encoder.forward(torch.Tensor([1.]))
+        sam_image_encoder.forward(torch.Tensor([1.0]))
 
         mocker_forward.assert_called_once()

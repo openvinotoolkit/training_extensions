@@ -36,7 +36,9 @@ class TestInferenceTask:
     @e2e_pytest_unit
     def test_load_model_without_otx_model(self, mocker):
         """Test load_model without otx_model."""
-        mocker_segment_anything = mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.SegmentAnything")
+        mocker_segment_anything = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.SegmentAnything"
+        )
         otx_model = None
 
         self.inference_task.load_model(otx_model)
@@ -46,13 +48,15 @@ class TestInferenceTask:
     @e2e_pytest_unit
     def test_load_model_with_otx_model(self, mocker):
         """Test load_model with otx_model."""
-        mocker_segment_anything = mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.SegmentAnything")
+        mocker_segment_anything = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.SegmentAnything"
+        )
         mocker_otx_model = mocker.patch("otx.api.entities.model.ModelEntity")
         mocker_io_bytes_io = mocker.patch("io.BytesIO")
         mocker_torch_load = mocker.patch(
             "torch.load",
-            return_value=dict(config=dict(model=dict(backbone=self.inference_task.config.model.backbone)),
-                              model={}))
+            return_value=dict(config=dict(model=dict(backbone=self.inference_task.config.model.backbone)), model={}),
+        )
 
         self.inference_task.load_model(mocker_otx_model)
 
@@ -69,7 +73,7 @@ class TestInferenceTask:
         model = ModelEntity(dataset, self.task_environment.get_model_configuration())
 
         self.inference_task.infer(dataset, model)
-        
+
         mocker_trainer.assert_called_once()
 
     @e2e_pytest_unit

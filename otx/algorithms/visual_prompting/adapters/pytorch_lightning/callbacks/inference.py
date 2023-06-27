@@ -18,8 +18,6 @@ from typing import Any, List
 
 import numpy as np
 from bson import ObjectId
-from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.callbacks import Callback
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
@@ -30,11 +28,13 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
+from pytorch_lightning import LightningModule, Trainer
+from pytorch_lightning.callbacks import Callback
 
 
 class InferenceCallback(Callback):
     """Callback that updates otx_dataset during inference.
-    
+
     Args:
         otx_dataset (DatasetEntity): Dataset that predictions will be updated.
     """
@@ -60,24 +60,29 @@ class InferenceCallback(Callback):
             iou_predictions.append(output["iou_predictions"][0])
             gt_labels.append(output["labels"][0])
 
-        for dataset_item, pred_mask, iou_prediction, labels in zip(self.otx_dataset, pred_masks, iou_predictions, gt_labels):
+        for dataset_item, pred_mask, iou_prediction, labels in zip(
+            self.otx_dataset, pred_masks, iou_predictions, gt_labels
+        ):
             annotations: List[Annotation] = []
             for soft_prediction, iou, label in zip(pred_mask, iou_prediction, labels):
-                probability = max(min(float(iou), 1.), 0.)
+                probability = max(min(float(iou), 1.0), 0.0)
                 label.probability = probability
                 soft_prediction = soft_prediction.numpy()
                 hard_prediction = create_hard_prediction_from_soft_prediction(
-                    soft_prediction=soft_prediction,
-                    soft_threshold=0.5
+                    soft_prediction=soft_prediction, soft_threshold=0.5
                 )
 
                 if self.use_mask:
                     # set mask as annotation
-                    annotation = [Annotation(
-                        shape=Image(data=hard_prediction.astype(np.uint8), size=hard_prediction.shape),
-                        labels=[ScoredLabel(label=label.label, probability=probability)],
-                        id=ID(ObjectId()),
-                    )]
+                    annotation = [
+                        Annotation(
+                            shape=Image(
+                                data=hard_prediction.astype(np.uint8), size=hard_prediction.shape
+                            ),  # type: ignore[arg-type]
+                            labels=[ScoredLabel(label=label.label, probability=probability)],
+                            id=ID(ObjectId()),
+                        )
+                    ]
                 else:
                     # generate polygon annotations
                     annotation = create_annotation_from_segmentation_map(

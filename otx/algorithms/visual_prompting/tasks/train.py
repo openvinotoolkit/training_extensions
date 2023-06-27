@@ -42,7 +42,7 @@ logger = get_logger()
 
 class TrainingTask(InferenceTask, ITrainingTask):
     """Training Task for Visual Prompting.
-    
+
     Args:
         dataset (DatasetEntity): Input dataset.
         output_model (ModelEntity): Output model to save the model weights.
@@ -51,7 +51,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         deterministic (bool): Setting PytorchLightning trainer's deterministic flag.
     """
 
-    def train(
+    def train(  # noqa: D102
         self,
         dataset: DatasetEntity,
         output_model: ModelEntity,
@@ -68,14 +68,14 @@ class TrainingTask(InferenceTask, ITrainingTask):
         self.config.trainer.deterministic = deterministic
 
         logger.info("Training Configs '%s'", self.config)
-        
+
         datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
         loggers = CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp)
         callbacks = [
             TQDMProgressBar(),
             ModelCheckpoint(dirpath=loggers.log_dir, filename="{epoch:02d}", **self.config.callback.checkpoint),
             LearningRateMonitor(),
-            EarlyStopping(**self.config.callback.early_stopping)
+            EarlyStopping(**self.config.callback.early_stopping),
         ]
 
         self.trainer = Trainer(**self.config.trainer, logger=loggers, callbacks=callbacks)

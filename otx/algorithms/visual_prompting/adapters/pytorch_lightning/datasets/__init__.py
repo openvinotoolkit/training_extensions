@@ -4,6 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .dataset import OTXVisualPromptingDataModule
-from .pipelines import ResizeLongestSide, MultipleInputsCompose, Pad
+from .pipelines import MultipleInputsCompose, Pad, ResizeLongestSide
 
 __all__ = ["OTXVisualPromptingDataModule", "ResizeLongestSide", "MultipleInputsCompose", "Pad"]

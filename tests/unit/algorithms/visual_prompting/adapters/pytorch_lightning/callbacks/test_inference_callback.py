@@ -30,40 +30,57 @@ class TestInferenceCallback:
     @pytest.fixture(autouse=True)
     def setup(self, mocker, monkeypatch):
         monkeypatch.setattr(
-            'otx.api.utils.segmentation_utils.create_annotation_from_segmentation_map',
+            "otx.api.utils.segmentation_utils.create_annotation_from_segmentation_map",
             lambda *args, **kwargs: Annotation(
                 shape=Image(data=np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]]), size=(3, 3)),
                 labels=[ScoredLabel(label=LabelEntity("foreground", domain=Domain.VISUAL_PROMPTING), probability=0.9)],
                 id=ID(ObjectId()),
-            )
+            ),
         )
         monkeypatch.setattr(
-            'otx.api.utils.segmentation_utils.create_hard_prediction_from_soft_prediction',
-            lambda *args, **kwargs: np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
+            "otx.api.utils.segmentation_utils.create_hard_prediction_from_soft_prediction",
+            lambda *args, **kwargs: np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]]),
         )
 
-        self.mocker_trainer = mocker.patch('pytorch_lightning.Trainer')
-        self.mocker_lightning_module = mocker.patch('pytorch_lightning.LightningModule')
+        self.mocker_trainer = mocker.patch("pytorch_lightning.Trainer")
+        self.mocker_lightning_module = mocker.patch("pytorch_lightning.LightningModule")
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("use_mask,expected",
+    @pytest.mark.parametrize(
+        "use_mask,expected",
         [
             (True, np.ones((3, 3), dtype=np.uint8)),
-            (False, [Point(0.0, 0.0), Point(0.0, 0.5), Point(0.0, 1.0), Point(0.5, 1.0), Point(1.0, 1.0), Point(1.0, 0.5), Point(1.0, 0.0), Point(0.5, 0.0)])
-        ]
+            (
+                False,
+                [
+                    Point(0.0, 0.0),
+                    Point(0.0, 0.5),
+                    Point(0.0, 1.0),
+                    Point(0.5, 1.0),
+                    Point(1.0, 1.0),
+                    Point(1.0, 0.5),
+                    Point(1.0, 0.0),
+                    Point(0.5, 0.0),
+                ],
+            ),
+        ],
     )
     def test_on_predict_epoch_end(self, use_mask: bool, expected: Any):
         """Test on_predict_epoch_end."""
         otx_dataset = generate_visual_prompting_dataset(use_mask=use_mask)
         inference_callback = InferenceCallback(otx_dataset)
 
-        outputs = [[
-            {
-                'masks': [torch.Tensor([[[0, 1, 0], [1, 1, 1], [0, 1, 0]]])],
-                'iou_predictions': [torch.Tensor([0.9, 0.8, 0.7])],
-                'labels': [[ScoredLabel(label=LabelEntity("foreground", domain=Domain.VISUAL_PROMPTING), probability=0.0)],]
-            }
-        ]]
+        outputs = [
+            [
+                {
+                    "masks": [torch.Tensor([[[0, 1, 0], [1, 1, 1], [0, 1, 0]]])],
+                    "iou_predictions": [torch.Tensor([0.9, 0.8, 0.7])],
+                    "labels": [
+                        [ScoredLabel(label=LabelEntity("foreground", domain=Domain.VISUAL_PROMPTING), probability=0.0)],
+                    ],
+                }
+            ]
+        ]
 
         inference_callback.on_predict_epoch_end(self.mocker_trainer, self.mocker_lightning_module, outputs)
         predicted_otx_dataset = inference_callback.otx_dataset

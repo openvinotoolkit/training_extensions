@@ -59,10 +59,7 @@ def test_get_configurable_parameters(tmpdir, weight_file: str):
     model_name = "sam_vit_b"
     config_path = Path(f"otx/algorithms/visual_prompting/configs/{model_name}/config.yaml")
     config = get_configurable_parameters(
-        output_path=output_path,
-        model_name=model_name,
-        config_path=config_path,
-        weight_file=weight_file
+        output_path=output_path, model_name=model_name, config_path=config_path, weight_file=weight_file
     )
 
     assert isinstance(config, DictConfig)
@@ -86,16 +83,15 @@ def test_get_configurable_parameters_without_any_arguments(tmpdir):
 @e2e_pytest_unit
 def test_update_visual_prompting_config():
     """Test update_visual_prompting_config."""
-    otx_config = OmegaConf.create({
-        "groups": ["learning_parameters"],
-        "learning_parameters": {
-            "parameters": ["param1"],
-            "param1": "updated_value1"
-        },
-        "parameters": []
-    })
+    otx_config = OmegaConf.create(
+        {
+            "groups": ["learning_parameters"],
+            "learning_parameters": {"parameters": ["param1"], "param1": "updated_value1"},
+            "parameters": [],
+        }
+    )
     visual_prompting_config = OmegaConf.create({"param1": "value1", "param2": "value2"})
 
     update_visual_prompting_config(visual_prompting_config, otx_config)
-    
+
     assert visual_prompting_config["param1"] == "updated_value1"

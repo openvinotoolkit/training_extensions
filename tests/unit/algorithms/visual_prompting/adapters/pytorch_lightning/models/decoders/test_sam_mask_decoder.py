@@ -29,12 +29,7 @@ class TestSAMMaskDecoder:
         self.num_multimask_outputs = 3
         self.sam_mask_decoder = SAMMaskDecoder(
             transformer_dim=8,
-            transformer_cfg=dict(
-                depth=2,
-                embedding_dim=8,
-                mlp_dim=8,
-                num_heads=2
-            ),
+            transformer_cfg=dict(depth=2, embedding_dim=8, mlp_dim=8, num_heads=2),
             num_multimask_outputs=self.num_multimask_outputs,
             iou_head_depth=1,
             iou_head_hidden_dim=8,
@@ -52,31 +47,72 @@ class TestSAMMaskDecoder:
         assert isinstance(self.sam_mask_decoder.iou_prediction_head, MLP)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("image_embeddings,image_pe,sparse_prompt_embeddings,dense_prompt_embeddings,multimask_output,expected",
+    @pytest.mark.parametrize(
+        "image_embeddings,image_pe,sparse_prompt_embeddings,dense_prompt_embeddings,multimask_output,expected",
         [
-            (torch.empty((1, 8, 2, 2)), torch.empty((1, 8, 2, 2)), torch.empty((1, 4, 8)), torch.empty((1, 8, 2, 2)), False, ((1, 1, 8, 8), (1, 1))),
-            (torch.empty((1, 8, 2, 2)), torch.empty((1, 8, 2, 2)), torch.empty((1, 4, 8)), torch.empty((1, 8, 2, 2)), True, ((1, 3, 8, 8), (1, 3)))
-        ]
+            (
+                torch.empty((1, 8, 2, 2)),
+                torch.empty((1, 8, 2, 2)),
+                torch.empty((1, 4, 8)),
+                torch.empty((1, 8, 2, 2)),
+                False,
+                ((1, 1, 8, 8), (1, 1)),
+            ),
+            (
+                torch.empty((1, 8, 2, 2)),
+                torch.empty((1, 8, 2, 2)),
+                torch.empty((1, 4, 8)),
+                torch.empty((1, 8, 2, 2)),
+                True,
+                ((1, 3, 8, 8), (1, 3)),
+            ),
+        ],
     )
-    def test_forward(self, image_embeddings: torch.Tensor, image_pe: torch.Tensor, sparse_prompt_embeddings: torch.Tensor, dense_prompt_embeddings: torch.Tensor, multimask_output: bool, expected: Tuple[Tuple[int]]):
+    def test_forward(
+        self,
+        image_embeddings: torch.Tensor,
+        image_pe: torch.Tensor,
+        sparse_prompt_embeddings: torch.Tensor,
+        dense_prompt_embeddings: torch.Tensor,
+        multimask_output: bool,
+        expected: Tuple[Tuple[int]],
+    ):
         """Test forward."""
-        results = self.sam_mask_decoder.forward(image_embeddings, image_pe, sparse_prompt_embeddings, dense_prompt_embeddings, multimask_output)
+        results = self.sam_mask_decoder.forward(
+            image_embeddings, image_pe, sparse_prompt_embeddings, dense_prompt_embeddings, multimask_output
+        )
         masks, iou_pred = results
 
         assert masks.shape == expected[0]
         assert iou_pred.shape == expected[1]
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("image_embeddings,image_pe,sparse_prompt_embeddings,dense_prompt_embeddings,expected",
+    @pytest.mark.parametrize(
+        "image_embeddings,image_pe,sparse_prompt_embeddings,dense_prompt_embeddings,expected",
         [
-            (torch.empty((1, 8, 2, 2)), torch.empty((1, 8, 2, 2)), torch.empty((1, 4, 8)), torch.empty((1, 8, 2, 2)), ((1, 4, 8, 8), (1, 4)))
-        ]
+            (
+                torch.empty((1, 8, 2, 2)),
+                torch.empty((1, 8, 2, 2)),
+                torch.empty((1, 4, 8)),
+                torch.empty((1, 8, 2, 2)),
+                ((1, 4, 8, 8), (1, 4)),
+            )
+        ],
     )
-    def test_predict_masks(self, image_embeddings: torch.Tensor, image_pe: torch.Tensor, sparse_prompt_embeddings: torch.Tensor, dense_prompt_embeddings: torch.Tensor, expected: Tuple[Tuple[int]]):
+    def test_predict_masks(
+        self,
+        image_embeddings: torch.Tensor,
+        image_pe: torch.Tensor,
+        sparse_prompt_embeddings: torch.Tensor,
+        dense_prompt_embeddings: torch.Tensor,
+        expected: Tuple[Tuple[int]],
+    ):
         """Test predict_masks."""
-        results = self.sam_mask_decoder.predict_masks(image_embeddings, image_pe, sparse_prompt_embeddings, dense_prompt_embeddings)
+        results = self.sam_mask_decoder.predict_masks(
+            image_embeddings, image_pe, sparse_prompt_embeddings, dense_prompt_embeddings
+        )
         masks, iou_pred = results
-        
+
         assert masks.shape == expected[0]
         assert iou_pred.shape == expected[1]
 
@@ -96,7 +132,7 @@ class TestMLP:
     def test_forward(self, inputs: torch.Tensor, expected: Tuple[int]):
         """Test forward."""
         results = self.mlp.forward(inputs)
-        
+
         assert results.shape == expected
 
 
@@ -107,10 +143,7 @@ class TestTwoWayTransformer:
         self.embedding_dim = 8
         self.num_heads = 2
         self.two_way_transformer = TwoWayTransformer(
-            depth=self.depth,
-            embedding_dim=self.embedding_dim,
-            num_heads=self.num_heads,
-            mlp_dim=self.embedding_dim
+            depth=self.depth, embedding_dim=self.embedding_dim, num_heads=self.num_heads, mlp_dim=self.embedding_dim
         )
 
     @e2e_pytest_unit
@@ -121,12 +154,17 @@ class TestTwoWayTransformer:
         assert isinstance(self.two_way_transformer.norm_final_attn, nn.LayerNorm)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("image_embedding,image_pe,point_embedding,expected",
-        [
-            (torch.empty((1, 8, 2, 2)), torch.empty((1, 8, 2, 2)), torch.empty((1, 1, 8)), ((1, 1, 8), (1, 4, 8)))
-        ]
+    @pytest.mark.parametrize(
+        "image_embedding,image_pe,point_embedding,expected",
+        [(torch.empty((1, 8, 2, 2)), torch.empty((1, 8, 2, 2)), torch.empty((1, 1, 8)), ((1, 1, 8), (1, 4, 8)))],
     )
-    def test_forward(self, image_embedding: torch.Tensor, image_pe: torch.Tensor, point_embedding: torch.Tensor, expected: Tuple[Tuple[int]]):
+    def test_forward(
+        self,
+        image_embedding: torch.Tensor,
+        image_pe: torch.Tensor,
+        point_embedding: torch.Tensor,
+        expected: Tuple[Tuple[int]],
+    ):
         """Test forward."""
         results = self.two_way_transformer.forward(image_embedding, image_pe, point_embedding)
         queries, keys = results
@@ -141,9 +179,7 @@ class TestTwoWayAttentionBlock:
         self.embedding_dim = 8
         self.num_heads = 2
         self.two_way_attention_block = TwoWayAttentionBlock(
-            embedding_dim=self.embedding_dim,
-            num_heads=self.num_heads,
-            mlp_dim=self.embedding_dim
+            embedding_dim=self.embedding_dim, num_heads=self.num_heads, mlp_dim=self.embedding_dim
         )
 
     @e2e_pytest_unit
@@ -161,7 +197,7 @@ class TestTwoWayAttentionBlock:
     @e2e_pytest_unit
     @pytest.mark.parametrize("queries,keys,query_pe,key_pe", [[torch.empty((1, 8, 8)) for _ in range(4)]])
     def test_forward(self, queries: torch.Tensor, keys: torch.Tensor, query_pe: torch.Tensor, key_pe: torch.Tensor):
-        """Test forward."""        
+        """Test forward."""
         results = self.two_way_attention_block.forward(queries, keys, query_pe, key_pe)
         queries, keys = results
 
@@ -174,10 +210,7 @@ class TestAttention:
     def setup(self) -> None:
         self.embedding_dim = 8
         self.num_heads = 2
-        self.attention = Attention(
-            embedding_dim=self.embedding_dim,
-            num_heads=self.num_heads
-        )
+        self.attention = Attention(embedding_dim=self.embedding_dim, num_heads=self.num_heads)
 
     @e2e_pytest_unit
     def test_init(self):
@@ -192,11 +225,12 @@ class TestAttention:
         assert self.attention.out_proj.out_features == self.embedding_dim
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("x,expected",
+    @pytest.mark.parametrize(
+        "x,expected",
         [
             (torch.empty((1, 4, 4)), (1, 2, 4, 2)),
             (torch.empty((1, 2, 2)), (1, 2, 2, 1)),
-        ]
+        ],
     )
     def test_separate_heads(self, x: torch.Tensor, expected: Tuple[int]):
         """Test _separate_heads."""
@@ -205,11 +239,12 @@ class TestAttention:
         assert results.shape == expected
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("x,expected",
+    @pytest.mark.parametrize(
+        "x,expected",
         [
             (torch.empty((1, 2, 4, 2)), (1, 4, 4)),
             (torch.empty((1, 2, 2, 1)), (1, 2, 2)),
-        ]
+        ],
     )
     def test_recombine_heads(self, x: torch.Tensor, expected: Tuple[int]):
         """Test _recombine_heads."""
@@ -218,10 +253,8 @@ class TestAttention:
         assert results.shape == expected
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("q,k,v,expected",
-        [
-            (torch.empty((1, 1, 8)), torch.empty((1, 1, 8)), torch.empty((1, 1, 8)), (1, 1, 8))
-        ]
+    @pytest.mark.parametrize(
+        "q,k,v,expected", [(torch.empty((1, 1, 8)), torch.empty((1, 1, 8)), torch.empty((1, 1, 8)), (1, 1, 8))]
     )
     def test_forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, expected: Tuple[int]):
         """Test forward."""

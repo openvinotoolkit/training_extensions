@@ -31,6 +31,7 @@ class SAMMaskDecoder(nn.Module):
         iou_head_depth (int): Depth of the MLP used to predict mask quality.
         iou_head_hidden_dim (int): Hidden dimension of the MLP used to predict mask quality.
     """
+
     def __init__(
         self,
         *,
@@ -60,15 +61,10 @@ class SAMMaskDecoder(nn.Module):
             activation(),
         )
         self.output_hypernetworks_mlps = nn.ModuleList(
-            [
-                MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3)
-                for i in range(self.num_mask_tokens)
-            ]
+            [MLP(transformer_dim, transformer_dim, transformer_dim // 8, 3) for i in range(self.num_mask_tokens)]
         )
 
-        self.iou_prediction_head = MLP(
-            transformer_dim, iou_head_hidden_dim, self.num_mask_tokens, iou_head_depth
-        )
+        self.iou_prediction_head = MLP(transformer_dim, iou_head_hidden_dim, self.num_mask_tokens, iou_head_depth)
 
     def forward(
         self,
@@ -117,13 +113,13 @@ class SAMMaskDecoder(nn.Module):
         dense_prompt_embeddings: Tensor,
     ) -> Tuple[Tensor, Tensor]:
         """Predicts masks. See 'forward' for more details.
-        
+
         Args:
             image_embeddings (Tensor): Embeddings from the image encoder.
             image_pe (Tensor): Positional encoding with the shape of image_embeddings.
             sparse_prompt_embeddings (Tensor): Embeddings of the points and boxes.
             dense_prompt_embeddings (Tensor): Embeddings of the mask inputs.
-            
+
         Returns:
             masks (Tensor): Batched predicted masks.
             iou_pred (Tensor): Batched predictions of mask quality.
@@ -164,7 +160,7 @@ class SAMMaskDecoder(nn.Module):
 # https://github.com/facebookresearch/MaskFormer/blob/main/mask_former/modeling/transformer/transformer_predictor.py # noqa
 class MLP(nn.Module):
     """Simple MLP with ReLU activations.
-    
+
     Args:
         input_dim (int): Input dimension.
         hidden_dim (int): Hidden dimension.
@@ -172,6 +168,7 @@ class MLP(nn.Module):
         num_layers (int): Number of layers.
         sigmoid_output (bool): Whether to apply sigmoid to the output.
     """
+
     def __init__(
         self,
         input_dim: int,
@@ -184,17 +181,15 @@ class MLP(nn.Module):
         super().__init__()
         self.num_layers = num_layers
         h = [hidden_dim] * (num_layers - 1)
-        self.layers = nn.ModuleList(
-            nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim])
-        )
+        self.layers = nn.ModuleList(nn.Linear(n, k) for n, k in zip([input_dim] + h, h + [output_dim]))
         self.sigmoid_output = sigmoid_output
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward pass.
-        
+
         Args:
             x (Tensor): Input tensor.
-            
+
         Returns:
             Tensor: Output tensor.
         """
@@ -215,6 +210,7 @@ class TwoWayTransformer(nn.Module):
         mlp_dim (int): Channel dimension internal to the MLP block in the transformer layers, defaults to 2048.
         activation (nn.Module): Activation to use in the MLP block, defaults to `nn.ReLU`.
     """
+
     def __init__(
         self,
         depth: int,
@@ -244,9 +240,7 @@ class TwoWayTransformer(nn.Module):
                 )
             )
 
-        self.final_attn_token_to_image = Attention(
-            embedding_dim, num_heads, downsample_rate=attention_downsample_rate
-        )
+        self.final_attn_token_to_image = Attention(embedding_dim, num_heads, downsample_rate=attention_downsample_rate)
         self.norm_final_attn = nn.LayerNorm(embedding_dim)
 
     def forward(
@@ -260,7 +254,8 @@ class TwoWayTransformer(nn.Module):
         Args:
           image_embedding (Tensor): Image to attend to. Should be shape B x embedding_dim x h x w for any h and w.
           image_pe (Tensor): Positional encoding to add to the image. Must have the same shape as image_embedding.
-          point_embedding (Tensor): Embedding to add to the query points. Must have shape B x N_points x embedding_dim for any N_points.
+          point_embedding (Tensor): Embedding to add to the query points. Must have shape B x N_points x embedding_dim
+            for any N_points.
 
         Returns:
           Tensor: Processed point_embedding with shape B x N_points x embedding_dim for any N_points.
@@ -295,10 +290,12 @@ class TwoWayTransformer(nn.Module):
 
 
 class TwoWayAttentionBlock(nn.Module):
-    """A transformer block with four layers: (1) self-attention of sparse
-    inputs, (2) cross attention of sparse inputs to dense inputs, (3) mlp
-    block on sparse inputs, and (4) cross attention of dense inputs to sparse
-    inputs.
+    """A transformer block with four layers.
+
+    (1) self-attention of sparse inputs,
+    (2) cross attention of sparse inputs to dense inputs,
+    (3) mlp block on sparse inputs, and
+    (4) cross attention of dense inputs to sparse inputs.
 
     Args:
         embedding_dim (int): Channel dimension of the embeddings in the transformer block.
@@ -307,6 +304,7 @@ class TwoWayAttentionBlock(nn.Module):
         activation (nn.Module): Activation of the mlp block, defaults to `nn.ReLU`.
         skip_first_layer_pe (bool): Skip the PE on the first layer of the transformer block.
     """
+
     def __init__(
         self,
         embedding_dim: int,
@@ -316,29 +314,23 @@ class TwoWayAttentionBlock(nn.Module):
         attention_downsample_rate: int = 2,
         skip_first_layer_pe: bool = False,
     ) -> None:
-        
+
         super().__init__()
         self.self_attn = Attention(embedding_dim, num_heads)
         self.norm1 = nn.LayerNorm(embedding_dim)
 
-        self.cross_attn_token_to_image = Attention(
-            embedding_dim, num_heads, downsample_rate=attention_downsample_rate
-        )
+        self.cross_attn_token_to_image = Attention(embedding_dim, num_heads, downsample_rate=attention_downsample_rate)
         self.norm2 = nn.LayerNorm(embedding_dim)
 
         self.mlp = MLPBlock(embedding_dim, mlp_dim, activation)
         self.norm3 = nn.LayerNorm(embedding_dim)
 
         self.norm4 = nn.LayerNorm(embedding_dim)
-        self.cross_attn_image_to_token = Attention(
-            embedding_dim, num_heads, downsample_rate=attention_downsample_rate
-        )
+        self.cross_attn_image_to_token = Attention(embedding_dim, num_heads, downsample_rate=attention_downsample_rate)
 
         self.skip_first_layer_pe = skip_first_layer_pe
 
-    def forward(
-        self, queries: Tensor, keys: Tensor, query_pe: Tensor, key_pe: Tensor
-    ) -> Tuple[Tensor, Tensor]:
+    def forward(self, queries: Tensor, keys: Tensor, query_pe: Tensor, key_pe: Tensor) -> Tuple[Tensor, Tensor]:
         """Apply the transformer block to the queries and keys.
 
         Args:
@@ -346,7 +338,7 @@ class TwoWayAttentionBlock(nn.Module):
             keys (Tensor): Keys to attend to. Should be shape B x N_keys x C for any N_keys.
             query_pe (Tensor): Positional encoding to add to the queries. Must have the same shape as queries.
             key_pe (Tensor): Positional encoding to add to the keys. Must have the same shape as keys.
-            
+
         Returns:
             Tensor: Processed queries.
             Tensor: Processed keys.
@@ -383,13 +375,16 @@ class TwoWayAttentionBlock(nn.Module):
 
 
 class Attention(nn.Module):
-    """An attention layer that allows for downscaling the size of the embedding after projection to queries, keys, and values.
+    """An attention layer.
+
+    It allows for downscaling the size of the embedding after projection to queries, keys, and values.
 
     Args:
         embedding_dim (int): Channel dimension of the embeddings.
-        num_heads (int): The number of heads in the attention layers. 
+        num_heads (int): The number of heads in the attention layers.
         downsample_rate (int): The rate to downsample the embedding by after projection to queries, keys, and values.
     """
+
     def __init__(
         self,
         embedding_dim: int,
@@ -410,11 +405,11 @@ class Attention(nn.Module):
 
     def _separate_heads(self, x: Tensor, num_heads: int) -> Tensor:
         """Separate the heads of the input tensor.
-        
+
         Args:
             x (Tensor): Input tensor of shape B x N_tokens x C.
             num_heads (int): The number of heads to separate the input tensor into.
-            
+
         Returns:
             Tensor: The input tensor separated into heads. Shape B x N_heads x N_tokens x C_per_head.
         """
@@ -424,10 +419,10 @@ class Attention(nn.Module):
 
     def _recombine_heads(self, x: Tensor) -> Tensor:
         """Recombine the heads of the input tensor.
-        
+
         Args:
             x (Tensor): Input tensor of shape B x N_heads x N_tokens x C_per_head.
-        
+
         Returns:
             Tensor: The input tensor recombined into tokens. Shape B x N_tokens x C.
         """
@@ -437,12 +432,12 @@ class Attention(nn.Module):
 
     def forward(self, q: Tensor, k: Tensor, v: Tensor) -> Tensor:
         """Apply the attention layer to the queries, keys, and values.
-        
+
         Args:
             q (Tensor): Queries to attend to. Should be shape B x N_queries x C for any N_queries.
             k (Tensor): Keys to attend to. Should be shape B x N_keys x C for any N_keys.
             v (Tensor): Values to attend to. Should be shape B x N_values x C for any N_values.
-            
+
         Returns:
             Tensor: The output of the attention layer. Shape B x N_queries x C.
         """

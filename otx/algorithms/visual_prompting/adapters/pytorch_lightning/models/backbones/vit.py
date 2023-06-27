@@ -42,6 +42,7 @@ class ViT(nn.Module):
         window_size (int): Window size for window attention blocks.
         global_attn_indexes (list): Indexes for blocks using global attention.
     """
+
     def __init__(
         self,
         img_size: int = 1024,
@@ -53,8 +54,8 @@ class ViT(nn.Module):
         mlp_ratio: float = 4.0,
         out_chans: int = 256,
         qkv_bias: bool = True,
-        norm_layer: Type[nn.Module] = nn.LayerNorm,
-        act_layer: Type[nn.Module] = nn.GELU,
+        norm_layer: nn.Module = nn.LayerNorm,
+        act_layer: nn.Module = nn.GELU,
         use_abs_pos: bool = True,
         use_rel_pos: bool = False,
         rel_pos_zero_init: bool = True,
@@ -75,9 +76,7 @@ class ViT(nn.Module):
         self.pos_embed: Optional[nn.Parameter] = None
         if use_abs_pos:
             # Initialize absolute positional embedding with pretrain image size.
-            self.pos_embed = nn.Parameter(
-                torch.zeros(1, img_size // patch_size, img_size // patch_size, embed_dim)
-            )
+            self.pos_embed = nn.Parameter(torch.zeros(1, img_size // patch_size, img_size // patch_size, embed_dim))
 
         self.blocks = nn.ModuleList()
         for i in range(depth):
@@ -115,10 +114,10 @@ class ViT(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward function.
-        
+
         Args:
             x (Tensor): Input tensor of shape (N, C, H, W).
-            
+
         Returns:
             Tensor: Output tensor of shape (N, out_chans, H, W).
         """
@@ -151,6 +150,7 @@ class Block(nn.Module):
         input_size (tuple(int, int) or None): Input resolution for calculating the relative
             positional parameter size.
     """
+
     def __init__(
         self,
         dim: int,
@@ -183,10 +183,10 @@ class Block(nn.Module):
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward function.
-        
+
         Args:
             x (Tensor): Input tensor of shape (N, H, W, C).
-            
+
         Returns:
             Tensor: Output tensor of shape (N, H, W, C).
         """
@@ -210,7 +210,7 @@ class Block(nn.Module):
 
 class Attention(nn.Module):
     """Multi-head Attention block with relative position embeddings.
-    
+
     Args:
         dim (int): Number of input channels.
         num_heads (int): Number of attention heads.
@@ -220,6 +220,7 @@ class Attention(nn.Module):
         input_size (tuple(int, int) or None): Input resolution for calculating the relative
             positional parameter size.
     """
+
     def __init__(
         self,
         dim: int,
@@ -240,19 +241,17 @@ class Attention(nn.Module):
 
         self.use_rel_pos = use_rel_pos
         if self.use_rel_pos:
-            assert (
-                input_size is not None
-            ), "Input size must be provided if using relative positional encoding."
+            assert input_size is not None, "Input size must be provided if using relative positional encoding."
             # initialize relative positional embeddings
             self.rel_pos_h = nn.Parameter(torch.zeros(2 * input_size[0] - 1, head_dim))
             self.rel_pos_w = nn.Parameter(torch.zeros(2 * input_size[1] - 1, head_dim))
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward function.
-        
+
         Args:
             x (Tensor): Input tensor of shape (N, H * W, C).
-            
+
         Returns:
             Tensor: Output tensor of shape (N, H * W, C).
         """
@@ -298,9 +297,7 @@ def window_partition(x: Tensor, window_size: int) -> Tuple[Tensor, Tuple[int, in
     return windows, (Hp, Wp)
 
 
-def window_unpartition(
-    windows: Tensor, window_size: int, pad_hw: Tuple[int, int], hw: Tuple[int, int]
-) -> Tensor:
+def window_unpartition(windows: Tensor, window_size: int, pad_hw: Tuple[int, int], hw: Tuple[int, int]) -> Tensor:
     """Window unpartition into original sequences and removing padding.
 
     Args:
@@ -365,7 +362,7 @@ def add_decomposed_rel_pos(
 ) -> Tensor:
     """Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
 
-    https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py   # noqa B950
+    https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py
 
     Args:
         attn (Tensor): attention map.
@@ -388,9 +385,9 @@ def add_decomposed_rel_pos(
     rel_h = torch.einsum("bhwc,hkc->bhwk", r_q, Rh)
     rel_w = torch.einsum("bhwc,wkc->bhwk", r_q, Rw)
 
-    attn = (
-        attn.view(B, q_h, q_w, k_h, k_w) + rel_h[:, :, :, :, None] + rel_w[:, :, :, None, :]
-    ).view(B, q_h * q_w, k_h * k_w)
+    attn = (attn.view(B, q_h, q_w, k_h, k_w) + rel_h[:, :, :, :, None] + rel_w[:, :, :, None, :]).view(
+        B, q_h * q_w, k_h * k_w
+    )
 
     return attn
 
@@ -405,6 +402,7 @@ class PatchEmbed(nn.Module):
         in_chans (int): Number of input image channels.
         embed_dim (int): Patch embedding dimension.
     """
+
     def __init__(
         self,
         kernel_size: Tuple[int, int] = (16, 16),
@@ -416,16 +414,14 @@ class PatchEmbed(nn.Module):
 
         super().__init__()
 
-        self.proj = nn.Conv2d(
-            in_chans, embed_dim, kernel_size=kernel_size, stride=stride, padding=padding
-        )
+        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=kernel_size, stride=stride, padding=padding)
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward call.
-        
+
         Args:
             x (Tensor): input image tensor with shape (B, C, H, W).
-            
+
         Returns:
             Tensor: output tensor with shape (B, H', W', C').
         """
@@ -437,11 +433,11 @@ class PatchEmbed(nn.Module):
 
 def build_vit(backbone: str, image_size: int):
     """Build ViT backbone.
-    
+
     Args:
         backbone (str): backbone name.
         image_size (int): input image size.
-        
+
     Returns:
         ViT: ViT backbone.
     """
@@ -463,7 +459,7 @@ def build_vit(backbone: str, image_size: int):
             depth=12,
             num_heads=12,
             global_attn_indexes=[2, 5, 8, 11],
-        )
+        ),
     )
 
     return ViT(
@@ -475,5 +471,5 @@ def build_vit(backbone: str, image_size: int):
         qkv_bias=True,
         use_rel_pos=True,
         window_size=14,
-        **model_params[backbone]
+        **model_params[backbone]  # type: ignore
     )

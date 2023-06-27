@@ -22,7 +22,7 @@ TASK_NAME_TO_TASK_TYPE = {
     "anomaly_segmentation": TaskType.ANOMALY_SEGMENTATION,
     "action_classification": TaskType.ACTION_CLASSIFICATION,
     "action_detection": TaskType.ACTION_DETECTION,
-    "visual_prompting": TaskType.VISUAL_PROMPTING
+    "visual_prompting": TaskType.VISUAL_PROMPTING,
 }
 
 TASK_NAME_TO_DATA_ROOT = {
@@ -95,8 +95,8 @@ TASK_NAME_TO_DATA_ROOT = {
             "train": "tests/assets/common_semantic_segmentation_dataset/train",
             "val": "tests/assets/common_semantic_segmentation_dataset/val",
             "test": "tests/assets/common_semantic_segmentation_dataset/val",
-        }
-    }
+        },
+    },
 }
 
 

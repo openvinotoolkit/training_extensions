@@ -6,7 +6,7 @@ dataset:
   num_workers: 4
   image_size: 1024 # dimensions to which images are resized (mandatory)
   offset_bbox: 20 # randomness for generating bounding box, pixel
-  
+
 model:
   name: SAM
   image_size: 1024
@@ -76,4 +76,3 @@ trainer:
   plugins: null
   move_metrics_to_cpu: false
   multiple_trainloader_mode: max_size_cycle
-  

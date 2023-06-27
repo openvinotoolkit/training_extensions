@@ -16,22 +16,19 @@
 
 import os
 from pathlib import Path
-from typing import Union, Optional
+from typing import Optional, Union
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
-from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.algorithms.common.utils.logger import get_logger
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
 
 logger = get_logger()
 
 
 def get_visual_promtping_config(
-    task_name: str,
-    otx_config: ConfigurableParameters,
-    output_path: str
+    task_name: str, otx_config: ConfigurableParameters, output_path: str
 ) -> Union[DictConfig, ListConfig]:
-
     """Get visual prompting configuration.
 
     Create an visual prompting config object that matches the values specified in the
@@ -43,7 +40,8 @@ def get_visual_promtping_config(
         output_path (str): Path to save the configuration file.
 
     Returns:
-        Union[DictConfig, ListConfig]: Visual prompting config object for the specified model type with overwritten default values.
+        Union[DictConfig, ListConfig]: Visual prompting config object for the specified model type
+            with overwritten default values.
     """
     if os.path.isfile(os.path.join(output_path, "config.yaml")):
         # If there is already a config.yaml file in the output path, load it
@@ -52,8 +50,10 @@ def get_visual_promtping_config(
         print(f"[*] Load configuration file at {config_path}")
     else:
         # Load the default config.yaml file
-        config_path = Path(f"otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml")
-        visual_prompting_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path, output_path=Path(output_path))
+        config_path = f"otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml"
+        visual_prompting_config = get_configurable_parameters(
+            model_name=task_name.lower(), config_path=Path(config_path), output_path=Path(output_path)
+        )
     update_visual_prompting_config(visual_prompting_config, otx_config)
     return visual_prompting_config
 
@@ -86,20 +86,24 @@ def get_configurable_parameters(
         )
 
     if config_path is None:
-        config_path = Path(f"otx/algorithms/visual_prompting/configs/{model_name}/{config_filename}.{config_file_extension}")
+        config_path = Path(
+            f"otx/algorithms/visual_prompting/configs/{model_name}/{config_filename}.{config_file_extension}"
+        )
 
     config = OmegaConf.load(config_path)
     print(f"[*] Load configuration file at {config_path}")
 
     if weight_file:
         config.trainer.resume_from_checkpoint = weight_file
-    
+
     (output_path / f"{config_filename}.{config_file_extension}").write_text(OmegaConf.to_yaml(config))
 
     return config
 
 
-def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters) -> None:
+def update_visual_prompting_config(
+    visual_prompting_config: Union[DictConfig, ListConfig], otx_config: ConfigurableParameters
+) -> None:
     """Update visual prompting configuration.
 
     Overwrite the default parameter values in the visual prompting config with the
@@ -107,7 +111,8 @@ def update_visual_prompting_config(visual_prompting_config: Union[DictConfig, Li
     each parameter group present in the OTX config.
 
     Args:
-        visual_prompting_config (Union[DictConfig, ListConfig]): Visual prompting config object for the specified model type with overwritten default values.
+        visual_prompting_config (Union[DictConfig, ListConfig]): Visual prompting config object
+            for the specified model type with overwritten default values.
         otx_config (ConfigurableParameters): OTX config object parsed from configuration.yaml file.
     """
     groups = getattr(otx_config, "groups", None)

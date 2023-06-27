@@ -138,6 +138,7 @@ class DiceAverage(IPerformanceProvider):
                                 combined_mask += np.where(annotation.shape.numpy > 0, labels_map[label], 0)
                     combined_mask = np.expand_dims(combined_mask, axis=2)
                     return combined_mask
+
                 hard_predictions.append(combine_masks(prediction_item.get_annotations()))
                 hard_references.append(combine_masks(reference_item.get_annotations()))
 

@@ -58,29 +58,25 @@ class TestOTXVIsualPromptingDataset:
         item = otx_dataset[0]
 
         # Check the returned item's keys
-        expected_keys = {'index', 'original_size', 'images', 'path', 'gt_masks', 'bboxes', 'points', 'labels'}
+        expected_keys = {"index", "original_size", "images", "path", "gt_masks", "bboxes", "points", "labels"}
         assert set(item.keys()) == expected_keys
 
         # Check specific values in the item
-        assert item['index'] == 0
-        assert (item['images'] == dataset[0].media.numpy).all()
-        assert item['original_size'] == dataset[0].media.numpy.shape[:2]
-        assert item['path'] == dataset[0].media.path
-        assert isinstance(item['gt_masks'], list)
-        assert isinstance(item['gt_masks'][0], np.ndarray)
-        assert isinstance(item['bboxes'], np.ndarray)
-        assert item['points'] == []
+        assert item["index"] == 0
+        assert (item["images"] == dataset[0].media.numpy).all()
+        assert item["original_size"] == dataset[0].media.numpy.shape[:2]
+        assert item["path"] == dataset[0].media.path
+        assert isinstance(item["gt_masks"], list)
+        assert isinstance(item["gt_masks"][0], np.ndarray)
+        assert isinstance(item["bboxes"], np.ndarray)
+        assert item["points"] == []
 
     @e2e_pytest_unit
     def test_convert_polygon_to_mask(self, dataset_polygon) -> None:
         """Test convert_polygon_to_mask."""
         otx_dataset = OTXVIsualPromptingDataset(dataset_polygon, self.transform)
 
-        polygon = Polygon(points=[
-            Point(x=0.1, y=0.1),
-            Point(x=0.2, y=0.2),
-            Point(x=0.3, y=0.3)
-        ])
+        polygon = Polygon(points=[Point(x=0.1, y=0.1), Point(x=0.2, y=0.2), Point(x=0.3, y=0.3)])
         width = 100
         height = 100
 
@@ -139,7 +135,7 @@ class TestOTXVisualPromptingDataModule:
         return OTXVisualPromptingDataModule(config, dataset)
 
     @e2e_pytest_unit
-    def test_setup(self, mocker, datamodule)  -> None:
+    def test_setup(self, mocker, datamodule) -> None:
         """Test setup."""
         mocker.patch.object(datamodule, "summary", return_value=None)
 
