@@ -40,6 +40,11 @@ class InferenceCallback(Callback):
     """
 
     def __init__(self, otx_dataset: DatasetEntity):
+        # decide if using mask or polygon annotations for predictions
+        if isinstance(otx_dataset[0].annotation_scene.annotations[0].shape, Image):
+            self.use_mask = True
+        else:
+            self.use_mask = False
         self.otx_dataset = otx_dataset.with_empty_annotations()
 
     def on_predict_epoch_end(self, _trainer: Trainer, _pl_module: LightningModule, outputs: List[Any]) -> None:
@@ -66,7 +71,7 @@ class InferenceCallback(Callback):
                     soft_threshold=0.5
                 )
 
-                if _pl_module.config.dataset.use_mask:
+                if self.use_mask:
                     # set mask as annotation
                     annotation = [Annotation(
                         shape=Image(data=hard_prediction.astype(np.uint8), size=hard_prediction.shape),
@@ -82,7 +87,7 @@ class InferenceCallback(Callback):
                     )
 
                 annotations.extend(annotation)
-            if _pl_module.config.dataset.use_mask:
+            if self.use_mask:
                 dataset_item.annotation_scene.append_annotations(annotations)
             else:
                 dataset_item.append_annotations(annotations)
