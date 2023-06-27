@@ -25,7 +25,7 @@ args_polygon = {
     "train_params": [
         "params",
         "--learning_parameters.trainer.max_epochs", "1",
-        "--learning_parameters.dataset.batch_size", "2",
+        "--learning_parameters.dataset.train_batch_size", "2",
         "--learning_parameters.dataset.use_mask", "False",
     ],
 }
@@ -38,7 +38,7 @@ args_mask = {
     "train_params": [
         "params",
         "--learning_parameters.trainer.max_epochs", "1",
-        "--learning_parameters.dataset.batch_size", "2",
+        "--learning_parameters.dataset.train_batch_size", "2",
         "--learning_parameters.dataset.use_mask", "True",
     ],
 }
@@ -47,7 +47,7 @@ args_mask = {
 resume_params = [
     "params",
     "--learning_parameters.trainer.max_epochs", "2",
-    "--learning_parameters.dataset.batch_size", "4",
+    "--learning_parameters.dataset.train_batch_size", "4",
 ]
 
 otx_dir = os.getcwd()
@@ -63,7 +63,7 @@ class TestVisualPromptingCLI:
     @pytest.mark.parametrize("args", [args_polygon, args_mask])
     def test_otx_train(self, args, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=False)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
