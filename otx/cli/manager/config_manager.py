@@ -214,7 +214,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 default_data_folder_name = "splitted_dataset"
                 data_yaml = self._get_arg_data_yaml()
                 self._save_data(splitted_dataset, default_data_folder_name, data_yaml)
-        if str(self.task_type).upper() == "VISUAL_PROMPTING":
+        if (str(self.task_type).upper() == "VISUAL_PROMPTING") and (self.mode == "train"):
             # TODO (sungchul): find proper way to update data_yaml
             # data_yaml is related to OmegaConf.to_yaml and it doesn't support defaultdict
             if "options" not in data_yaml:
