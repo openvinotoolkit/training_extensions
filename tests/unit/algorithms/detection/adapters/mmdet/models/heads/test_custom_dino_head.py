@@ -167,7 +167,6 @@ class TestCustomDINOHead:
             },
         ]
         losses = self.bbox_head.forward_train(inputs, img_metas, gt_bboxes, gt_labels)
-        print(losses)
         assert len(losses) == 39
 
     @e2e_pytest_unit
@@ -210,7 +209,6 @@ class TestCustomDINOHead:
         ]
         self.bbox_head.eval()
         results = self.bbox_head.simple_test_bboxes(feats, img_metas)
-        print(results)
         assert len(results) == 2
         assert results[0][0].shape == torch.Size([300, 5])
         assert results[0][1].shape == torch.Size([300])
