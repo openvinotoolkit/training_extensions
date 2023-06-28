@@ -136,7 +136,7 @@ def main():
     predicted_validation_dataset = task.infer(
         # temp (sungchul): remain annotation for visual prompting
         validation_dataset
-        if task.task_type == TaskType.VISUAL_PROMPTING
+        if getattr(task, "task_type", None) == TaskType.VISUAL_PROMPTING
         else validation_dataset.with_empty_annotations(),
         InferenceParameters(is_evaluation=False),
     )
