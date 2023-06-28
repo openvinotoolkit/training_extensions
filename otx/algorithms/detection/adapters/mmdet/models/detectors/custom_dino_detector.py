@@ -23,9 +23,6 @@ class CustomDINO(CustomDeformableDETR):
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, task_adapt=task_adapt, **kwargs)
-        self._register_load_state_dict_pre_hook(
-            self.load_state_dict_pre_hook,
-        )
 
         self.cls_layers.append("dn_query_generator.label_embedding.weight")
 
