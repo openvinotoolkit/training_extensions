@@ -87,10 +87,30 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         masks = masks[detections_filter]
         classes = classes[detections_filter]
 
-        scale_x = meta["resized_shape"][1] / meta["original_shape"][1]
-        scale_y = meta["resized_shape"][0] / meta["original_shape"][0]
-        boxes[:, 0::2] /= scale_x
-        boxes[:, 1::2] /= scale_y
+        inputImgWidth, inputImgHeight = (
+            meta["original_shape"][1],
+            meta["original_shape"][0],
+        )
+        invertedScaleX, invertedScaleY = (
+            inputImgWidth / self.orig_width,
+            inputImgHeight / self.orig_height,
+        )
+        padLeft, padTop = 0, 0
+        if "fit_to_window" == self.resize_type or "fit_to_window_letterbox" == self.resize_type:
+            invertedScaleX = invertedScaleY = max(invertedScaleX, invertedScaleY)
+            if "fit_to_window_letterbox" == self.resize_type:
+                padLeft = (self.orig_width - round(inputImgWidth / invertedScaleX)) // 2
+                padTop = (self.orig_height - round(inputImgHeight / invertedScaleY)) // 2
+
+        boxes -= (padLeft, padTop, padLeft, padTop)
+        boxes *= (invertedScaleX, invertedScaleY, invertedScaleX, invertedScaleY)
+        np.around(boxes, out=boxes)
+        np.clip(
+            boxes,
+            0.0,
+            [inputImgWidth, inputImgHeight, inputImgWidth, inputImgHeight],
+            out=boxes,
+        )
 
         resized_masks = []
         for box, cls, raw_mask in zip(boxes, classes, masks):
