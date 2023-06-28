@@ -342,7 +342,10 @@ class OTXDetectionTask(OTXTask, ABC):
             xml_file = outputs.get("xml")
 
             ir_extra_data = get_det_model_api_configuration(
-                self._task_environment.label_schema, self._task_type, self.confidence_threshold
+                self._task_environment.label_schema,
+                self._task_type,
+                self.confidence_threshold,
+                self._hyperparams.tiling_parameters,
             )
             embed_ir_model_data(xml_file, ir_extra_data)
 
