@@ -237,10 +237,12 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             dump_soft_prediction = not inference_parameters.is_evaluation
+            process_soft_prediction = inference_parameters.process_saliency_maps
             enable_async_inference = inference_parameters.enable_async_inference
         else:
             update_progress_callback = default_progress_callback
             dump_soft_prediction = True
+            process_soft_prediction = False
             enable_async_inference = True
 
         def add_prediction(
@@ -261,14 +263,15 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                     if label_index == 0:
                         continue
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
-                    class_act_map = get_activation_map(current_label_soft_prediction)
+                    if process_soft_prediction:
+                        current_label_soft_prediction = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(
                         name=label.name,
                         type="soft_prediction",
                         label=label,
                         annotation_scene=dataset_item.annotation_scene,
                         roi=dataset_item.roi,
-                        numpy=class_act_map,
+                        numpy=current_label_soft_prediction,
                     )
                     dataset_item.append_metadata_item(result_media, model=self.model)
 
