@@ -168,7 +168,7 @@ Let's prepare the object detection workspace running the following command:
   (otx) ...$ otx build ATSS --train-data-roots data/wgisd
 
   # or its path
-  (otx) ...$ otx build otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --train-data-roots data/wgisd
+  (otx) ...$ otx build src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --train-data-roots data/wgisd
 
   ...
   [*] Workspace Path: otx-workspace-DETECTION
