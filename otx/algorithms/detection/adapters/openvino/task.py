@@ -200,6 +200,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
+        model_configuration: Dict[str, Any] = {},
     ):
         """Initialize for OpenVINODetectionInferencer.
 
@@ -225,6 +226,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
+        configuration.update(model_configuration)
         model = Model.create_model(model_adapter, "OTX_SSD", configuration, preload=True)
         converter = DetectionToAnnotationConverter(label_schema, configuration)
 
@@ -453,6 +455,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             async_requests_num,
         ]
         if self.task_type == TaskType.DETECTION:
+            if self.task_environment.model_template.model_template_id == "Custom_Object_Detection_YOLOX":
+                args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
             if self.config.tiling_parameters.enable_tiling:
