@@ -53,6 +53,9 @@ class MockOTXMaskRCNNModel(OTXMaskRCNNModel):
         self.is_segmentoly = len(self.inputs) == 2
         self.output_blob_name = self._get_outputs()
         self.confidence_threshold = 0.5
+        self.orig_width = 100
+        self.orig_height = 100
+        self.resize_type = ""
         super().__init__(MockOpenvinoAdapter, {})
 
 
