@@ -18,6 +18,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 class TestCustomDINOHead:
     @pytest.fixture(autouse=True)
     def setup(self):
+        torch.manual_seed(555)
         cfg = ConfigDict(
             dict(
                 type="CustomDINOHead",
