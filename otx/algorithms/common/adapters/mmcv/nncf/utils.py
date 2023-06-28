@@ -119,6 +119,7 @@ def model_eval(
 
 def nncf_state_dict_pre_hook(state_dict, prefix, *args, **kwargs):
     """NNCF-specific state dict pre-hook.
+
     This hook removes extra prefixes from nncf-related parameters
     before loading to NNCF-ready model.
     """
@@ -134,6 +135,7 @@ def nncf_state_dict_pre_hook(state_dict, prefix, *args, **kwargs):
 
 def nncf_state_dict_hook(module, state_dict, prefix, *args, **kwargs):
     """NNCF-specific state dict post-hook.
+
     This hook prevents extra buffers from being saved to state dict,
     reverting this behavior, introduced by mmcv.
     """
