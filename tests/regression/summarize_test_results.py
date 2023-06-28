@@ -11,6 +11,7 @@ from tests.regression.regression_test_helpers import (
     TRAIN_TYPES,
 )
 
+
 ANOMALY_DATA = {
     "Task type": [],
     "MVTec Category": [],
@@ -66,6 +67,8 @@ def get_metric_dict(dict_data: Union[List[Dict[str, Any]], None], idx: int, mode
 
     """
     if dict_data and len(dict_data) > idx:
+        if dict_data[idx].get(model) is None:
+            return "-"
         return dict_data[idx][model]
     else:
         return "-"
@@ -201,20 +204,44 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
                 fill_model_performance(ptq_items, "ptq", result_data)
 
 
-def save_file(result_data: dict, output_path: str):
+def save_file(result_data: dict, output_path: str, file_name: str):
     df = pd.DataFrame(result_data)
-    df.to_csv(output_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path, exist_ok=True)
+    df.to_csv(os.path.join(output_path, file_name))
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--input_path", default="/tmp/regression_test_results", type=str)
-    parser.add_argument("--output_path", default="/tmp", type=str)
-    return parser.parse_args()
+# def parse_args():
+#     parser = argparse.ArgumentParser(add_help=False)
+#     parser.add_argument("--input_path", default="/tmp/regression_test_results", type=str)
+#     parser.add_argument("--output_path", default="/tmp", type=str)
+#     return parser.parse_args()
 
 
-def summarize_data(args):
-    input_path = args.input_path
+# def summarize_data(args):
+#     input_path = args.input_path
+
+#     for root, _, files in os.walk(input_path):
+#         for result_file in files:
+#             task_dict = filter_task(root)
+#             task_key, task = task_dict["task_key"], task_dict["task"]
+
+#             json_file_path = os.path.join(root, result_file)
+#             with open(json_file_path, "r") as f:
+#                 json_data = json.load(f)
+
+#             if is_anomaly_task(task) is True:
+#                 summarize_anomaly_data(task, task_key, json_data, ANOMALY_DATA)
+#             else:
+#                 summarize_non_anomaly_data(task, task_key, json_data, NON_ANOMALY_DATA)
+
+#     save_file(ANOMALY_DATA, f"{args.output_path}/anomaly_results.csv")
+#     save_file(NON_ANOMALY_DATA, f"{args.output_path}/non_anomaly_results.csv")
+
+
+def summarize_results_data(input_path: str, output_path: str):
+    """summarize regression test result data."""
+    input_path = input_path
 
     for root, _, files in os.walk(input_path):
         for result_file in files:
@@ -227,13 +254,12 @@ def summarize_data(args):
 
             if is_anomaly_task(task) is True:
                 summarize_anomaly_data(task, task_key, json_data, ANOMALY_DATA)
+                save_file(ANOMALY_DATA, output_path, f"tests-reg_{task}_{task_key}.csv")
             else:
                 summarize_non_anomaly_data(task, task_key, json_data, NON_ANOMALY_DATA)
-
-    save_file(ANOMALY_DATA, f"{args.output_path}/anomaly_results.csv")
-    save_file(NON_ANOMALY_DATA, f"{args.output_path}/non_anomaly_results.csv")
+                save_file(NON_ANOMALY_DATA, output_path, f"tests-reg_{task}_{task_key}.csv")
 
 
-if __name__ == "__main__":
-    args = parse_args()
-    summarize_data(args)
+# if __name__ == "__main__":
+#     args = parse_args()
+#     summarize_data(args)
