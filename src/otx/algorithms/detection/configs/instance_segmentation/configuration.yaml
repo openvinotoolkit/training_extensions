@@ -121,7 +121,7 @@ learning_parameters:
     warning: null
   early_stop_start:
     affects_outcome_of: TRAINING
-    default_value: 7
+    default_value: 16
     editable: true
     header: Start epoch for early stopping
     max_value: 1000
@@ -132,11 +132,11 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 7
+    value: 16
     visible_in_ui: false
   early_stop_patience:
     affects_outcome_of: TRAINING
-    default_value: 20
+    default_value: 13
     description: Training will stop if the model does not improve within the number of epochs of patience.
     editable: true
     header: Patience for early stopping
@@ -148,7 +148,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 20
+    value: 13
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
   early_stop_iteration_patience:
