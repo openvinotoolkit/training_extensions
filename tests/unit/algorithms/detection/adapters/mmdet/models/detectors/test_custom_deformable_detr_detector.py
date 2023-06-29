@@ -75,6 +75,6 @@ class TestCustomDeformableDETR:
             def state_dict(self):
                 return model_dict
 
-        model.load_state_dict_pre_hook(Model(), model_classes, chkpt_classes, chkpt_dict)
+        model.load_state_dict_pre_hook(model_classes, chkpt_classes, chkpt_dict)
         for k, gt in gt_dict.items():
             assert (chkpt_dict[k] != gt).sum() == 0
