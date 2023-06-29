@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.3.2\]
+
+### Enhancements
+
+- Enable per-class sailencymap to Mask R-CNN (<https://github.com/openvinotoolkit/training_extensions/pull/2227>)
+
+### Bug fixes
+
+- Disable semantic segmentation soft prediction processing (<https://github.com/openvinotoolkit/training_extensions/pull/2280>)
+
+### Known issues
+
+- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+  (working well up to torch==1.12.1) (<https://github.com/openvinotoolkit/training_extensions/issues/1906>)
+
 ## \[v1.3.1\]
 
 ### Enhancements

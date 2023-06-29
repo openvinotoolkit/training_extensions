@@ -16,8 +16,9 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
+import numpy as np
 import torch
 
 from otx.algorithms.classification import MMCLS_AVAILABLE
@@ -69,9 +70,23 @@ class BaseRecordingForwardHook(ABC):
         self, _: torch.nn.Module, x: torch.Tensor, output: torch.Tensor
     ):  # pylint: disable=unused-argument
         tensors = self.func(output)
-        tensors = tensors.detach().cpu().numpy()
-        for tensor in tensors:
+        if isinstance(tensors, torch.Tensor):
+            tensors_np = tensors.detach().cpu().numpy()
+        elif isinstance(tensors, np.ndarray):
+            tensors_np = tensors
+        else:
+            self._torch_to_numpy_from_list(tensors)
+            tensors_np = tensors
+
+        for tensor in tensors_np:
             self._records.append(tensor)
+
+    def _torch_to_numpy_from_list(self, tensor_list: List[Optional[torch.Tensor]]):
+        for i in range(len(tensor_list)):
+            if isinstance(tensor_list[i], list):
+                self._torch_to_numpy_from_list(tensor_list[i])
+            elif isinstance(tensor_list[i], torch.Tensor):
+                tensor_list[i] = tensor_list[i].detach().cpu().numpy()
 
     def __enter__(self) -> BaseRecordingForwardHook:
         """Enter."""

@@ -16,6 +16,7 @@
 
 from typing import Dict
 
+import cv2
 import numpy as np
 
 try:
@@ -106,6 +107,85 @@ class OTXMaskRCNNModel(MaskRCNNModel):
                 resized_masks.append(raw_cls_mask)
 
         return scores, classes, boxes, resized_masks
+
+    def get_saliency_map_from_prediction(self, outputs, meta, num_classes):
+        """Post process function for saliency map of OTX MaskRCNN model."""
+        boxes = outputs[self.output_blob_name["boxes"]]
+        if boxes.shape[0] == 1:
+            boxes = boxes.squeeze(0)
+        scores = boxes[:, 4]
+        boxes = boxes[:, :4]
+        masks = outputs[self.output_blob_name["masks"]]
+        if masks.shape[0] == 1:
+            masks = masks.squeeze(0)
+        classes = outputs[self.output_blob_name["labels"]].astype(np.uint32)
+        if classes.shape[0] == 1:
+            classes = classes.squeeze(0)
+
+        scale_x = meta["resized_shape"][1] / meta["original_shape"][1]
+        scale_y = meta["resized_shape"][0] / meta["original_shape"][0]
+        boxes[:, 0::2] /= scale_x
+        boxes[:, 1::2] /= scale_y
+
+        saliency_maps = [None for _ in range(num_classes)]
+        for box, score, cls, raw_mask in zip(boxes, scores, classes, masks):
+            resized_mask = self._resize_mask(box, raw_mask * score, *meta["original_shape"][:-1])
+            if saliency_maps[cls] is None:
+                saliency_maps[cls] = [resized_mask]
+            else:
+                saliency_maps[cls].append(resized_mask)
+
+        saliency_maps = self._average_and_normalize(saliency_maps, num_classes)
+        return saliency_maps
+
+    def _resize_mask(self, box, raw_cls_mask, im_h, im_w):
+        # Add zero border to prevent upsampling artifacts on segment borders.
+        raw_cls_mask = np.pad(raw_cls_mask, ((1, 1), (1, 1)), "constant", constant_values=0)
+        extended_box = self._expand_box(box, raw_cls_mask.shape[0] / (raw_cls_mask.shape[0] - 2.0)).astype(int)
+        w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
+        x0, y0 = np.clip(extended_box[:2], a_min=0, a_max=[im_w, im_h])
+        x1, y1 = np.clip(extended_box[2:] + 1, a_min=0, a_max=[im_w, im_h])
+
+        raw_cls_mask = cv2.resize(raw_cls_mask.astype(np.float32), (w, h))
+        # Put an object mask in an image mask.
+        im_mask = np.zeros((im_h, im_w), dtype=np.float32)
+        im_mask[y0:y1, x0:x1] = raw_cls_mask[
+            (y0 - extended_box[1]) : (y1 - extended_box[1]), (x0 - extended_box[0]) : (x1 - extended_box[0])
+        ]
+        return im_mask
+
+    @staticmethod
+    def _average_and_normalize(saliency_maps, num_classes):
+        for i in range(num_classes):
+            if saliency_maps[i] is not None:
+                saliency_maps[i] = np.array(saliency_maps[i]).mean(0)
+
+        for i in range(num_classes):
+            per_class_map = saliency_maps[i]
+            if per_class_map is not None:
+                max_values = np.max(per_class_map)
+                per_class_map = 255 * (per_class_map) / (max_values + 1e-12)
+                per_class_map = per_class_map.astype(np.uint8)
+                saliency_maps[i] = per_class_map
+        return saliency_maps
+
+    def get_tiling_saliency_map_from_prediction(self, detections, num_classes):
+        """Post process function for saliency map of OTX MaskRCNN model for tiling."""
+        saliency_maps = [None for _ in range(num_classes)]
+
+        # No detection case
+        if isinstance(detections, np.ndarray) and detections.size == 0:
+            return saliency_maps
+
+        classes = [int(cls) - 1 for cls in detections[1]]
+        masks = detections[3]
+        for mask, cls in zip(masks, classes):
+            if saliency_maps[cls] is None:
+                saliency_maps[cls] = [mask]
+            else:
+                saliency_maps[cls].append(mask)
+        saliency_maps = self._average_and_normalize(saliency_maps, num_classes)
+        return saliency_maps
 
     def segm_postprocess(self, *args, **kwargs):
         """Post-process for segmentation masks."""

@@ -10,7 +10,6 @@ from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.mask_rcnn import MaskRCNN
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
-    ActivationMapHook,
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
@@ -99,7 +98,7 @@ if is_mmdeploy_enabled():
     def custom_mask_rcnn__simple_test(ctx, self, img, img_metas, proposals=None, **kwargs):
         """Function for custom_mask_rcnn__simple_test."""
         assert self.with_bbox, "Bbox head must be implemented."
-        x = backbone_out = self.backbone(img)
+        x = self.backbone(img)
         if self.with_neck:
             x = self.neck(x)
         if proposals is None:
@@ -108,7 +107,8 @@ if is_mmdeploy_enabled():
 
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(x)
-            saliency_map = ActivationMapHook.func(backbone_out)
+            # Saliency map will be generated from predictions. Generate dummy saliency_map.
+            saliency_map = torch.empty(1, dtype=torch.uint8)
             return (*out, feature_vector, saliency_map)
 
         return out
