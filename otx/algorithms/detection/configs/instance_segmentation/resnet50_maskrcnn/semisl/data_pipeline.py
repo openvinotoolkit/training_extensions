@@ -19,15 +19,50 @@
 # This is from otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
 __img_size = (1344, 800)
-__img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
+__dataset_type = "CocoDataset"
+# TODO: A comparison experiment is needed to determine which value is appropriate for to_rgb.
+__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+
+# common_pipeline = [
+#     dict(type='Resize', img_scale=[(1333, 400), (1333, 1200)], keep_ratio=True),
+#     dict(type='RandomFlip', flip_ratio=0.5),
+#     dict(type="BranchImage", key_map=dict(img="img0")),
+#     dict(type="NDArrayToPILImage", keys=["img"]),
+#     dict(
+#         type="RandomApply",
+#         transform_cfgs=[
+#             dict(
+#                 type="PhotoMetricDistortion",
+#                 brightness_delta=32,
+#                 contrast_range=(0.5, 1.5),
+#                 saturation_range=(0.5, 1.5),
+#                 hue_delta=18,
+#             )
+#         ],
+#         p=0.8,
+#     ),
+#     dict(type="RandomGrayscale", p=0.2),
+#     dict(
+#         type="RandomApply",
+#         transform_cfgs=[
+#             dict(
+#                 type="RandomGaussianBlur",
+#                 sigma_min=0.1,
+#                 sigma_max=2.0,
+#             )
+#         ],
+#         p=0.5,
+#     ),
+
+#     dict(type="PILImageToNDArray", keys=["img"]),
+#     dict(type='Normalize', **__img_norm_cfg),
+#     dict(type='CutOut', n_holes=(1,5), cutout_shape=[(0,0), (33,20), (66,40), (132,80), (198,120), (264,160)] ),
+#     dict(type='Pad', size_divisor=32),
+#     dict(type="NDArrayToTensor", keys=["img", "img0"])
+# ]
 
 common_pipeline = [
-    dict(
-        type="Resize",
-        img_scale=__img_size,
-        multiscale_mode="value",
-        keep_ratio=False,
-    ),
+    dict(type='Resize', img_scale=__img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="BranchImage", key_map=dict(img="img0")),
     dict(type="NDArrayToPILImage", keys=["img"]),
@@ -58,29 +93,9 @@ common_pipeline = [
     ),
     dict(type="PILImageToNDArray", keys=["img"]),
     dict(type="Normalize", **__img_norm_cfg),
+    dict(type='CutOut', n_holes=(1,5), cutout_shape=[(0,0), (33,20), (66,40), (132,80), (198,120), (264,160)] ),
     dict(type="Pad", size_divisor=32),
     dict(type="NDArrayToTensor", keys=["img", "img0"]),
-    dict(
-        type="RandomErasing",
-        p=0.7,
-        scale=[0.05, 0.2],
-        ratio=[0.3, 3.3],
-        value="random",
-    ),
-    dict(
-        type="RandomErasing",
-        p=0.5,
-        scale=[0.02, 0.2],
-        ratio=[0.10, 6.0],
-        value="random",
-    ),
-    dict(
-        type="RandomErasing",
-        p=0.3,
-        scale=[0.02, 0.2],
-        ratio=[0.05, 8.0],
-        value="random",
-    ),
 ]
 
 train_pipeline = [
@@ -128,15 +143,26 @@ test_pipeline = [
     ),
 ]
 data = dict(
-    samples_per_gpu=10,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
+        type=__dataset_type,
+        ann_file="data/coco/annotations/instances_train2017.json",
+        img_prefix="data/coco/train2017",
         pipeline=train_pipeline,
     ),
     val=dict(
+        type=__dataset_type,
+        test_mode=True,
+        ann_file="data/coco/annotations/instances_val2017.json",
+        img_prefix="data/coco/val2017",
         pipeline=test_pipeline,
     ),
     test=dict(
+        type=__dataset_type,
+        test_mode=True,
+        ann_file="data/coco/annotations/instances_val2017.json",
+        img_prefix="data/coco/val2017",
         pipeline=test_pipeline,
     ),
     unlabeled=dict(

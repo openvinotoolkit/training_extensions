@@ -92,6 +92,10 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             gt_masks=gt_masks
         )
         losses.update(sl_losses)
+
+        if not self.unlabeled_loss_enabled:
+            return losses
+
         # Pseudo labels from teacher
         ul_args = kwargs.get("extra_0", {})  # Supposing ComposedDL([labeled, unlabeled]) data loader
         ul_img = ul_args.get("img")
@@ -105,6 +109,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 [ul_img_metas],
                 rescale=False,  # easy augmentation
             )
+
         current_device = ul_img0[0].device
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
@@ -113,35 +118,21 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
-        if not self.unlabeled_loss_enabled or self.unlabeled_loss_weight <= 0.001:  # TODO: move back
-            return losses
-
         # Unsupervised loss
         if self.bg_loss_weight >= 0.0:
             self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
-        # feats = self.extract_feat(ul_img)
-        # proposal_cfg = self.model_s.train_cfg.get('rpn_proposal',
-        #                                       self.test_cfg.rpn)
-        # rpn_losses, proposal_list = self.model_s.rpn_head.forward_train(
-        #     feats,
-        #     img_metas,
-        #     gt_bboxes,
-        #     gt_labels=None,
-        #     gt_bboxes_ignore=gt_bboxes_ignore,
-        #     proposal_cfg=proposal_cfg,
-        #     **kwargs)
-        # losses.update(rpn_losses)
+
         ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
         if self.bg_loss_weight >= 0.0:
             self.model_s.bbox_head.bg_loss_weight = -1.0
 
-        for ul_loss_name in self.unlabeled_loss_names:
-            ul_loss = ul_losses[ul_loss_name]
-            if isinstance(ul_loss, torch.Tensor):
-                ul_loss = [ul_loss]
-            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_loss_weight for loss in ul_loss]
-        # TODO: apply loss_bbox when adopting QFL;
-
+        for ul_loss_name in ul_losses.keys():
+            if ul_loss_name.startswith("loss_"):
+                ul_loss = ul_losses[ul_loss_name]
+                if isinstance(ul_loss, list):
+                    losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_loss_weight for loss in ul_loss]
+                else:
+                    losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_loss_weight
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
@@ -167,7 +158,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 pseudo_bboxes.append(teacher_bboxes[pseudo_indices, :4])  # model output: [x y w h conf]
                 pseudo_labels.append(np.full([sum(pseudo_indices)], label))
                 if np.any(pseudo_indices):
-                    pseudo_masks.append(np.stack(teacher_masks)[pseudo_indices])
+                    teacher_masks = [np.expand_dims(mask, 0) for mask in teacher_masks]
+                    pseudo_masks.append(np.concatenate(teacher_masks)[pseudo_indices])
                 else:
                     pseudo_masks.append(np.array([]).reshape(0, *ori_image_shape))
 

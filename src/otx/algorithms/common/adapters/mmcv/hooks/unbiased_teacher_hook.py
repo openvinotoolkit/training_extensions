@@ -24,19 +24,18 @@ class UnbiasedTeacherHook(DualModelEMAHook):
 
     def before_train_epoch(self, runner):
         """Enable unlabeled loss if over start epoch."""
-        super().before_train_epoch(runner)
-
         if runner.epoch + 1 < self.start_epoch:
             return
         if self.unlabeled_loss_enabled:
             return
 
+        super().before_train_epoch(runner)
+
         average_pseudo_label_ratio = self._get_average_pseudo_label_ratio(runner)
         logger.info(f"avr_ps_ratio: {average_pseudo_label_ratio}")
-        if average_pseudo_label_ratio > self.min_pseudo_label_ratio:
-            self._get_model(runner).enable_unlabeled_loss()
-            self.unlabeled_loss_enabled = True
-            logger.info("---------- Enabled unlabeled loss")
+        self._get_model(runner).enable_unlabeled_loss()
+        self.unlabeled_loss_enabled = True
+        logger.info("---------- Enabled unlabeled loss")
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
@@ -46,7 +45,6 @@ class UnbiasedTeacherHook(DualModelEMAHook):
 
         if runner.epoch + 1 < self.start_epoch or self.unlabeled_loss_enabled is False:
             # Just copy parameters before enabled
-            self._copy_model()
             return
 
         # EMA

@@ -3,6 +3,7 @@ _base_ = [
     "../_base_/logs/tensorboard_logger.py",
     "../_base_/optimizers/sgd.py",
     "../_base_/runners/epoch_runner_cancel.py",
+    "../_base_/schedules/plateau.py",
 ]
 
 optimizer = dict(
@@ -11,26 +12,25 @@ optimizer = dict(
     weight_decay=0.0001,
 )
 
-lr_config = dict(
-    _delete_=True,
-    policy='step',
-    warmup='linear',
-    warmup_iters=200,
-    warmup_ratio=0.001,
-    # [7] yields higher performance than [6]
-    step=[7])
-
 # lr_config = dict(
-#     policy="ReduceLROnPlateau",
-#     metric="mAP",
-#     patience=8,
-#     iteration_patience=0,
-#     interval=1,
-#     min_lr=0.000001,
-#     warmup="linear",
-#     warmup_iters=1000,
-#     warmup_ratio=1.0 / 3,
-# )
+#     policy='step',
+#     warmup='linear',
+#     warmup_iters=200,
+#     warmup_ratio=0.001,
+#     # [7] yields higher performance than [6]
+#     step=[7])
+
+lr_config = dict(
+    policy="ReduceLROnPlateau",
+    metric="mAP",
+    patience=8,
+    iteration_patience=0,
+    interval=1,
+    min_lr=0.000001,
+    warmup="linear",
+    warmup_iters=1000,
+    warmup_ratio=1.0 / 3,
+)
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP")
 early_stop_metric = "mAP"

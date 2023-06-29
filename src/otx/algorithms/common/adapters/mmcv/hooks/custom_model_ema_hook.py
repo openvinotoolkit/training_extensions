@@ -25,6 +25,26 @@ class CustomModelEMAHook(EMAHook):
         self.epoch_momentum = epoch_momentum
         self.interval = interval
 
+    def before_run(self, runner):
+        """To resume model with it's ema parameters more friendly.
+
+        Register ema parameter as ``named_buffer`` to model
+        """
+        if is_module_wrapper(runner.model):
+            model = runner.model.module.model_s
+        else:
+            model = runner.model.model_s
+        self.param_ema_buffer = {}
+        self.model_parameters = dict(model.named_parameters(recurse=True))
+        for name, value in self.model_parameters.items():
+            # "." is not allowed in module's buffer name
+            buffer_name = f"ema_{name.replace('.', '_')}"
+            self.param_ema_buffer[name] = buffer_name
+            model.register_buffer(buffer_name, value.data.clone())
+        self.model_buffers = dict(model.named_buffers(recurse=True))
+        if self.checkpoint is not None:
+            runner.resume(self.checkpoint)
+
     def before_train_epoch(self, runner):
         """Update the momentum."""
         if self.epoch_momentum > 0.0:

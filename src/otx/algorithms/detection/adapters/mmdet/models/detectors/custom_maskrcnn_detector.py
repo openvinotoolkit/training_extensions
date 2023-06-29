@@ -88,7 +88,7 @@ class CustomMaskRCNN(SAMDetectorMixin, L2SPDetectorMixin, MaskRCNN):
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param
 
-    def forward_mask_soft_prediction(self, imgs, img_metas, proposals=None, rescale=False, thresh=0.2):
+    def forward_mask_soft_prediction(self, imgs, img_metas, proposals=None, rescale=False):
         """Test without augmentation."""
         assert self.with_bbox, 'Bbox head must be implemented.'
         for img, img_meta in zip(imgs, img_metas):
@@ -116,10 +116,7 @@ class CustomMaskRCNN(SAMDetectorMixin, L2SPDetectorMixin, MaskRCNN):
         mask_pred = mask_results["mask_pred"]
         num_mask_roi_per_img = [len(det_bbox) for det_bbox in det_bboxes]
         mask_preds = mask_pred.split(num_mask_roi_per_img, 0)
-        breakpoint()
 
-        # segm_results = self.roi_head.simple_test_mask(
-        #     x, img_metas, det_bboxes, det_labels, rescale=rescale)
         return list(zip(bbox_results, mask_preds))
 
 

@@ -26,7 +26,7 @@ task = "instance-segmentation"
 
 model = dict(
     super_type="MeanTeacher",
-    pseudo_conf_thresh=0.25,
+    pseudo_conf_thresh=0.3,
     unlabeled_loss_weight=1.0,
     type="CustomMaskRCNN",
     neck=dict(
@@ -158,7 +158,6 @@ model = dict(
         ),
     ),
 )
-
 load_from = "https://download.openmmlab.com/mmdetection/\
 v2.0/mask_rcnn/mask_rcnn_r50_fpn_mstrain-poly_3x_coco/\
 mask_rcnn_r50_fpn_mstrain-poly_3x_coco_20210524_201154-21b550bb.pth"
