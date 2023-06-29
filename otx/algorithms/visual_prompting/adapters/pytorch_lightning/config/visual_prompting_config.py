@@ -63,8 +63,8 @@ def get_configurable_parameters(
     model_name: Optional[str] = None,
     config_path: Optional[Union[Path, str]] = None,
     weight_file: Optional[str] = None,
-    config_filename: Optional[str] = "config",
-    config_file_extension: Optional[str] = "yaml",
+    config_filename: str = "config",
+    config_file_extension: str = "yaml",
 ) -> Union[DictConfig, ListConfig]:
     """Get configurable parameters.
 
@@ -73,8 +73,8 @@ def get_configurable_parameters(
         model_name (Optional[str]): Name of the model to load configuration from Visual Prompting, defaults to None.
         config_path (Optional[Union[Path, str]]): Path to the configuration file, defaults to None.
         weight_file (Optional[str]): Path to the weight file.
-        config_filename (Optional[str]): Name of the configuration file, defaults to "config".
-        config_file_extension (Optional[str]): Extension of the configuration file, defaults to "yaml".
+        config_filename (str): Name of the configuration file, defaults to "config".
+        config_file_extension (str): Extension of the configuration file, defaults to "yaml".
 
     Returns:
         Union[DictConfig, ListConfig]: Configurable parameters in DictConfig object.
