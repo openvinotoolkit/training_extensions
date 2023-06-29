@@ -20,7 +20,7 @@ class TestCustomDeformableDETR:
         assert model.cls_layers is not None
 
     @e2e_pytest_unit
-    def test_custom_atss_load_state_dict_pre_hook(self, fxt_cfg_custom_deformable_detr):
+    def test_custom_deformable_detr_load_state_dict_pre_hook(self, fxt_cfg_custom_deformable_detr, mocker):
         model = build_detector(fxt_cfg_custom_deformable_detr)
         chkpt_classes = ["person", "car"]
         model_classes = ["tree", "car", "person"]
@@ -71,10 +71,7 @@ class TestCustomDeformableDETR:
             ),
         }
 
-        class Model:
-            def state_dict(self):
-                return model_dict
-
+        mocker.patch.object(model, "state_dict", return_value=model_dict)
         model.load_state_dict_pre_hook(model_classes, chkpt_classes, chkpt_dict)
         for k, gt in gt_dict.items():
             assert (chkpt_dict[k] != gt).sum() == 0
