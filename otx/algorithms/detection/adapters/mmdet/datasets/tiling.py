@@ -548,29 +548,30 @@ class Tile:
             merged_maps.append([np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)])
 
         for map, tile in zip(saliency_maps[self.num_images:], self.tiles[self.num_images:]):
-            if map is None:
-                continue
-            img_idx = tile["dataset_idx"]
-            x_1, y_1, x_2, y_2 = tile["tile_box"]
-            y_1, x_1 = ((y_1, x_1) * ratios[img_idx]).astype(np.uint8)
-            y_2, x_2 = ((y_2, x_2) * ratios[img_idx]).astype(np.uint8)
-            c = len(map)
-            h, w = map[0].shape
-            # if tile size is smaller near the image borders
-            h, w = min(h, y_2 - y_1), min(w, x_2 - x_1)
-            print('HERR')
-            for ci in range(c):
-                cv2.imwrite(f"/home/gzalessk/code/training_extensions/tiling-maskrcnn/tiled_saliency_maps/tiles/{x_1}{y_1}_class_{ci}.jpg", map[ci])
+            for class_idx in range(num_classes):
+                if map[class_idx] is None:
+                    continue
+                img_idx = tile["dataset_idx"]
+                x_1, y_1, x_2, y_2 = tile["tile_box"]
+                y_1, x_1 = ((y_1, x_1) * ratios[img_idx]).astype(np.uint16)
+                y_2, x_2 = ((y_2, x_2) * ratios[img_idx]).astype(np.uint16)
 
-            for ci, hi, wi in [(c_, h_, w_) for c_ in range(c) for h_ in range(h) for w_ in range(w)]:
-                map_pixel = map[ci][hi, wi]
-                # on tile overlap add 0.5 value of each tile
-                if merged_maps[img_idx][ci][y_1 + hi, x_1 + wi] != 0:
-                    merged_maps[img_idx][ci][y_1 + hi, x_1 + wi] = 0.5 * (
-                        map_pixel + merged_maps[img_idx][ci][y_1 + hi, x_1 + wi]
-                    )
-                else:
-                    merged_maps[img_idx][ci][y_1 + hi, x_1 + wi] = map_pixel
+                map_h, map_w = map[class_idx].shape
+                # resize feature map if it got from the tile which width and height is less the tile_size 
+                if (map_h > y_2-y_1) and (map_w > x_2 - x_1):
+                    map[class_idx] = cv2.resize(map[class_idx], (x_2 - x_1, y_2-y_1))
+                # cut the rest of the feature map that went out of the image borders
+                map_h, map_w = y_2 - y_1, x_2 - x_1
+                
+                for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
+                    map_pixel = map[class_idx][hi, wi]
+                    # on tile overlap add 0.5 value of each tile
+                    if merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] != 0:
+                        merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] = 0.5 * (
+                            map_pixel + merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi]
+                        )
+                    else:
+                        merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] = map_pixel
 
         norm_maps = []
         for merged_map, image_sal_map in zip(merged_maps, saliency_maps[: self.num_images]):
@@ -583,9 +584,8 @@ class Tile:
                     # resize the feature map for whole image to add it to merged saliency maps
                     if image_sal_map[class_idx] is not None:
                         image_sal_map[class_idx] = cv2.resize(image_sal_map[class_idx], (map_w, map_h))
-                        # merged_map[class_idx] += (0.5 * image_sal_map[class_idx]).astype(dtype)
+                        merged_map[class_idx] += (0.5 * image_sal_map[class_idx]).astype(dtype)
                     merged_map[class_idx] = non_linear_normalization(merged_map[class_idx])
-                    # merged_map[class_idx] = merged_map[class_idx].astype(np.uint8)
             norm_maps.append(merged_map)
 
         return norm_maps

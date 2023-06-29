@@ -216,11 +216,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         test_cfg = self._module.roi_head.test_cfg.copy()
         test_cfg["mask_thr_binary"] = -1
 
-        saliency_maps = []  # type: List[List[Optional[np.ndarray]]]
-        for i in range(batch_size):
-            saliency_maps.append([])
-            for j in range(self._module.roi_head.mask_head.num_classes):
-                saliency_maps[i].append(None)
+        saliency_maps = [[None for _ in range(self._module.roi_head.mask_head.num_classes)] for _ in range(batch_size)]
 
         for i in range(batch_size):
             if det_bboxes[i].shape[0] == 0:

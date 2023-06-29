@@ -376,13 +376,6 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
             features: list including feature vector and saliency map
         """
         detections, features = self.tiler.predict(image, mode)
-
-        _, saliency_map = features
-        if saliency_map is not None and isinstance(self.model, OTXMaskRCNNModel):
-            num_classes = len(self.converter.labels)  # type: ignore
-            saliency_map = self.model.get_tiling_saliency_map_from_prediction(detections, num_classes)
-            features = features[0], saliency_map
-
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
 

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
 - Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
 - Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (https://github.com/openvinotoolkit/training_extensions/pull/2195)
+- Add per-class XAI saliency maps for Mask R-CNN model (https://github.com/openvinotoolkit/training_extensions/pull/2227)
 
 ### Enhancements
 

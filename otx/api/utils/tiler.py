@@ -146,9 +146,9 @@ class Tiler:
 
             tile_results.append(tile_result)
 
-        results = self.merge_results(tile_results, image.shape)
-        merged_tile_features = self.merge_features(features)
-        return results, merged_tile_features
+        merged_results = self.merge_results(tile_results, image.shape)
+        merged_features = self.merge_features(features, merged_results)
+        return merged_results, merged_features
 
     def predict_async(self, image: np.ndarray, tile_coords: List[List[int]]):
         """Predict by cropping full image to tiles asynchronously.
@@ -186,7 +186,9 @@ class Tiler:
             tile_result = self.postprocess_tile(tile_prediction, *meta["coord"][:2])
             tile_results.append(tile_result)
         assert j == num_tiles - 1, "Number of tiles processed does not match number of tiles"
-        return self.merge_results(tile_results, image.shape), self.merge_features(features)
+        merged_results = self.merge_results(tile_results, image.shape)
+        merged_features = self.merge_features(features, merged_results)
+        return merged_results, merged_features
 
     def postprocess_tile(self, predictions: Union[List, Tuple], offset_x: int, offset_y: int) -> Dict[str, List]:
         """Postprocess single tile prediction.
@@ -273,19 +275,28 @@ class Tiler:
                 detections = *Tiler.detection2tuple(detections), masks
         return detections
 
-    def merge_features(self, features: List) -> Union[Tuple[None, None], List[np.ndarray]]:
+    def merge_features(self, features: List, predictions: List) -> Union[Tuple[None, None], List[np.ndarray]]:
         """Merge tile-level feature vectors to image-level features.
 
         Args:
             features: tile-level features.
+            predictions: predictions with masks for whole image.
 
         Returns:
-            merged_features (list[np.ndarray]): Merged features for entire image.
+            image_vector (np.ndarray): Merged feature vector for entire image.
+            image_saliency_map (List): Merged saliency map for entire image
         """
         if len(features) == 0:
             return (None, None)
         image_vector = self.merge_vectors(features)
-        image_saliency_map = self.merge_maps(features)
+
+        (_, image_saliency_map), _ = features[0]
+        if isinstance(image_saliency_map, np.ndarray):
+            image_saliency_map = self.merge_maps(features)
+        else:
+            # if saliency maps weren't return from hook (Mask RCNN case)
+            image_saliency_map = self.get_tiling_saliency_map_from_segm_masks(predictions)
+        
         return image_vector, image_saliency_map
 
     def merge_vectors(self, features: List) -> np.ndarray:
@@ -297,7 +308,6 @@ class Tiler:
         Returns:
             merged_vectors (np.ndarray): Merged vectors for entire image.
         """
-
         vectors = [vector for (vector, _), _ in features]
         return np.average(vectors, axis=0)
 
@@ -305,45 +315,98 @@ class Tiler:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            features: tile-level features.
+            features: tile-level features ((vector, map), tile_meta). 
+            Each saliency map is a list of maps for each detected class or None if class wasn't detected.
 
         Returns:
             merged_maps (np.ndarray): Merged saliency maps for entire image.
         """
 
         (_, image_saliency_map), image_meta = features[0]
+
+        num_classes = len(image_saliency_map)
+        feat_h, feat_w = image_saliency_map[0].shape
         dtype = image_saliency_map[0][0].dtype
-        num_classes, feat_h, feat_w = image_saliency_map.shape
-        ratio = np.array([feat_h, feat_w]) / self.tile_size
+        
         image_h, image_w, _ = image_meta["original_shape"]
+        ratio = np.array([feat_h, feat_w]) / self.tile_size
 
         image_map_h = int(image_h * ratio[0])
         image_map_w = int(image_w * ratio[1])
-        merged_map = np.zeros((num_classes, image_map_h, image_map_w), dtype=dtype)
-
-        # resize the feature map for whole image to add it to merged saliency maps
-        image_saliency_map = np.array(
-            [cv2.resize(class_sal_map, (image_map_w, image_map_h)) for class_sal_map in image_saliency_map]
-        )
+        merged_map = [np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)]
 
         for (_, saliency_map), meta in features[1:]:
-            x_1, y_1, x_2, y_2 = meta["coord"]
-            y_1, x_1, y_2, x_2 = ((y_1, x_1, y_2, x_2) * np.tile(ratio, 2)).astype(np.uint8)
-            c, h, w = saliency_map.shape
-            # if tile size is smaller near the image borders
-            h, w = min(h, y_2 - y_1), min(w, x_2 - x_1)
+            for class_idx in range(num_classes):
+                if saliency_map[class_idx] is None:
+                    continue
+                x_1, y_1, x_2, y_2 = meta["coord"]
+                y_1, x_1 = ((y_1, x_1) * ratio).astype(np.uint16)
+                y_2, x_2 = ((y_2, x_2) * ratio).astype(np.uint16)
 
-            for ci, hi, wi in [(c_, h_, w_) for c_ in range(c) for h_ in range(h) for w_ in range(w)]:
-                map_pixel = saliency_map[ci, hi, wi]
-                # on tile overlap add 0.5 value of each tile
-                if merged_map[ci, y_1 + hi, x_1 + wi] != 0:
-                    merged_map[ci, y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_map[ci, y_1 + hi, x_1 + wi])
-                else:
-                    merged_map[ci, y_1 + hi, x_1 + wi] = map_pixel
+                map_h, map_w = saliency_map[class_idx].shape
+                # resize feature map if it got from the tile which width and height is less the tile_size 
+                if (map_h > y_2-y_1) and (map_w > x_2 - x_1):
+                    saliency_map[class_idx] = cv2.resize(saliency_map[class_idx], (x_2 - x_1, y_2-y_1))
+                # cut the rest of the feature map that went out of the image borders
+                map_h, map_w = y_2 - y_1, x_2 - x_1
 
-        merged_map += (0.5 * image_saliency_map).astype(dtype)
-        merged_map = non_linear_normalization(merged_map)
+                for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
+                    map_pixel = saliency_map[class_idx][hi, wi]
+                    # on tile overlap add 0.5 value of each tile
+                    if merged_map[class_idx][y_1 + hi, x_1 + wi] != 0:
+                        merged_map[class_idx][y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_map[class_idx][y_1 + hi, x_1 + wi])
+                    else:
+                        merged_map[class_idx][y_1 + hi, x_1 + wi] = map_pixel
+
+        for class_idx in range(num_classes):
+            if (merged_map[class_idx] == 0).all():
+                merged_map[class_idx] =  None
+            else:
+                # resize the feature map for whole image to add it to merged saliency maps
+                if image_saliency_map[class_idx] is not None:
+                    image_saliency_map[class_idx] = cv2.resize(image_saliency_map[class_idx], (image_map_w, image_map_h))  
+                    merged_map += (0.5 * image_saliency_map[class_idx]).astype(dtype)
+                merged_map = non_linear_normalization(merged_map)
         return merged_map
+
+
+    def get_tiling_saliency_map_from_segm_masks(self, detections):
+        """Post process function for saliency map of OTX MaskRCNN model for tiling."""
+
+        # No detection case
+        if isinstance(detections, np.ndarray) and detections.size == 0:
+            return [None]
+
+        classes = [int(cls) - 1 for cls in detections[1]]
+        num_classes = int(np.max(classes) + 1)
+        # if dataset have more classes than detected, saliency_maps[cls] is eihter None or non-existent
+        saliency_maps = [None for _ in range(num_classes)]
+        scores = detections[0].reshape(-1, 1, 1)
+        masks = detections[3]
+        weighted_masks = masks * scores 
+        for mask, cls in zip(weighted_masks, classes):
+            if saliency_maps[cls] is None:
+                saliency_maps[cls] = [mask]
+            else:
+                saliency_maps[cls].append(mask)
+        saliency_maps = self._merge_and_normalize(saliency_maps, num_classes)
+        return saliency_maps
+
+    @staticmethod
+    def _merge_and_normalize(saliency_maps, num_classes):
+        for i in range(num_classes):
+            if saliency_maps[i] is not None:
+                # combine masks for all objects within one class
+                saliency_maps[i] = np.max(np.array(saliency_maps[i]), axis=0)
+
+        for i in range(num_classes):
+            per_class_map = saliency_maps[i]
+            if per_class_map is not None:
+                max_values = np.max(per_class_map)
+                per_class_map = 255 * (per_class_map) / (max_values + 1e-12)
+                per_class_map = per_class_map.astype(np.uint8)
+                saliency_maps[i] = per_class_map
+        return saliency_maps
 
     def resize_masks(self, masks: List, dets: np.ndarray, shape: List[int]):
         """Resize Masks.
