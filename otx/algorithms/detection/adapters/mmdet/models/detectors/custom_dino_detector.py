@@ -31,7 +31,7 @@ class CustomDINO(CustomDeformableDETR):
 
         if list(ckpt_dict.keys())[0] == "level_embed":
             logger.info("----------------- CustomDINO.load_state_dict_pre_hook() called")
-            # This ckpt_dict is come from mmdet3.x
+            # This ckpt_dict comes from mmdet3.x
             ckpt_classes = [
                 "person",
                 "bicycle",
