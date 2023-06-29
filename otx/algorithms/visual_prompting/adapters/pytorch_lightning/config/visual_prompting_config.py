@@ -31,7 +31,7 @@ def get_visual_promtping_config(
 ) -> Union[DictConfig, ListConfig]:
     """Get visual prompting configuration.
 
-    Create an visual prompting config object that matches the values specified in the
+    Create a visual prompting config object that matches the values specified in the
     OTX config.
 
     Args:
