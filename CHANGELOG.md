@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
-- n/a
+- Disable semantic segmentation soft prediction processing (<https://github.com/openvinotoolkit/training_extensions/pull/2280>)
 
 ### Known issues
 
