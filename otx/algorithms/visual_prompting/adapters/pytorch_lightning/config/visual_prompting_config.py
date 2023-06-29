@@ -47,7 +47,7 @@ def get_visual_promtping_config(
         # If there is already a config.yaml file in the output path, load it
         config_path = os.path.join(output_path, "config.yaml")
         visual_prompting_config = OmegaConf.load(config_path)
-        print(f"[*] Load configuration file at {config_path}")
+        logger.info(f"[*] Load configuration file at {config_path}")
     else:
         # Load the default config.yaml file
         config_path = f"otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml"
@@ -91,7 +91,7 @@ def get_configurable_parameters(
         )
 
     config = OmegaConf.load(config_path)
-    print(f"[*] Load configuration file at {config_path}")
+    logger.info(f"[*] Load configuration file at {config_path}")
 
     if weight_file:
         config.trainer.resume_from_checkpoint = weight_file
@@ -130,10 +130,10 @@ def update_visual_prompting_config(
     parameters = getattr(otx_config, "parameters")
     for param in parameters:
         if param not in visual_prompting_config.keys():
-            print(f"[*] {param} is not presented in visual prompting config.")
-            print(f"    --> Available parameters are {visual_prompting_config.keys()}")
+            logger.info(f"[*] {param} is not presented in visual prompting config.")
+            logger.info(f"    --> Available parameters are {visual_prompting_config.keys()}")
             continue
         sc_value = getattr(otx_config, param)
         sc_value = sc_value.value if hasattr(sc_value, "value") else sc_value
-        print(f"[*] Update {param}: {visual_prompting_config[param]} -> {sc_value}")
+        logger.info(f"[*] Update {param}: {visual_prompting_config[param]} -> {sc_value}")
         visual_prompting_config[param] = sc_value
