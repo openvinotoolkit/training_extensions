@@ -87,6 +87,7 @@ class SemiClsHead(OTXHeadMixin):
                 max_probs, label_u = torch.max(pseudo_label, dim=-1)
 
                 # select Pseudo-Label using flexible threhold
+                self.classwise_acc = self.classwise_acc.to(label_u.device)
                 mask = max_probs.ge(self.classwise_acc[label_u]).float()
                 self.num_pseudo_label = mask.sum()
 
