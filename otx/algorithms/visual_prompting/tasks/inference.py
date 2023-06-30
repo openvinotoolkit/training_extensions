@@ -176,7 +176,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
             )
-        elif "path" in otx_model.model_adapters and otx_model.model_adapters.get("path").endswith(".ckpt"):  # type: ignore[attr-defined]
+        elif ("path" in otx_model.model_adapters) and (
+            otx_model.model_adapters.get("path").endswith(".ckpt")  # type: ignore[attr-defined]
+        ):
             # pytorch lightning checkpoint
             if not otx_model.model_adapters.get("resume"):
                 # If not resuming, just load weights in LightningModule
