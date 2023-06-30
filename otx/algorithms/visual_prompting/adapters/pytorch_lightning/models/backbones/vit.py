@@ -116,10 +116,10 @@ class ViT(nn.Module):
         """Forward function.
 
         Args:
-            x (Tensor): Input tensor of shape (N, C, H, W).
+            x (Tensor): Input tensor of shape (B, C, H, W).
 
         Returns:
-            Tensor: Output tensor of shape (N, out_chans, H, W).
+            Tensor: Output tensor of shape (B, out_chans, H, W).
         """
         x = self.patch_embed(x)
         if self.pos_embed is not None:
@@ -185,10 +185,10 @@ class Block(nn.Module):
         """Forward function.
 
         Args:
-            x (Tensor): Input tensor of shape (N, H, W, C).
+            x (Tensor): Input tensor of shape (B, H, W, C).
 
         Returns:
-            Tensor: Output tensor of shape (N, H, W, C).
+            Tensor: Output tensor of shape (B, H, W, C).
         """
         shortcut = x
         x = self.norm1(x)
@@ -250,10 +250,10 @@ class Attention(nn.Module):
         """Forward function.
 
         Args:
-            x (Tensor): Input tensor of shape (N, H * W, C).
+            x (Tensor): Input tensor of shape (B, H, W, C).
 
         Returns:
-            Tensor: Output tensor of shape (N, H * W, C).
+            Tensor: Output tensor of shape (B, H, W, C).
         """
         B, H, W, _ = x.shape
         # qkv with shape (3, B, nHead, H * W, C)

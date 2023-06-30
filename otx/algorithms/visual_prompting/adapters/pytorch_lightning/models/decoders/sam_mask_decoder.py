@@ -250,14 +250,14 @@ class TwoWayTransformer(nn.Module):
         """Apply the transformer to the image and point embeddings.
 
         Args:
-          image_embedding (Tensor): Image to attend to. Should be shape B x embedding_dim x h x w for any h and w.
-          image_pe (Tensor): Positional encoding to add to the image. Must have the same shape as image_embedding.
-          point_embedding (Tensor): Embedding to add to the query points. Must have shape B x N_points x embedding_dim
-            for any N_points.
+            image_embedding (Tensor): Image to attend to. Should be shape B x embedding_dim x h x w for any h and w.
+            image_pe (Tensor): Positional encoding to add to the image. Must have the same shape as image_embedding.
+            point_embedding (Tensor): Embedding to add to the query points. Must have shape B x N_points x embedding_dim
+                for any N_points.
 
         Returns:
-          Tensor: Processed point_embedding with shape B x N_points x embedding_dim for any N_points.
-          Tensor: Processed image_embedding with shape B x embedding_dim x h x w for any h and w.
+            Tensor: Processed point_embedding with shape B x N_points x embedding_dim for any N_points.
+            Tensor: Processed image_embedding with shape B x embedding_dim x h x w for any h and w.
         """
         # BxCxHxW -> BxHWxC == B x N_image_tokens x C
         bs, c, h, w = image_embedding.shape

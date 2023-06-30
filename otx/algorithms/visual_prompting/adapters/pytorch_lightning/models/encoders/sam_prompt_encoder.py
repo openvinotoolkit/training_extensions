@@ -170,9 +170,9 @@ class SAMPromptEncoder(nn.Module):
             masks (Tensor or none): masks to embed (N, H, W).
 
         Returns:
-            Tensor: sparse embeddings for the points and boxes, with shape BxNx(embed_dim),
+            Tensor: sparse embeddings for the points and boxes, with shape Nx1x(embed_dim),
                 where N is determined by the number of input points and boxes.
-            Tensor: dense embeddings for the masks, in the shape Bx(embed_dim)x(embed_H)x(embed_W).
+            Tensor: dense embeddings for the masks, in the shape Nx(embed_dim)x(embed_H)x(embed_W).
         """
         bs = self._get_batch_size(points, boxes, masks)
         sparse_embeddings = torch.empty((bs, 0, self.embed_dim), device=self._get_device())
@@ -215,10 +215,10 @@ class PositionEmbeddingRandom(nn.Module):
         """Positionally encode points that are normalized to [0,1].
 
         Args:
-            coords (Tensor): The coordinates to encode, as (N, 2).
+            coords (Tensor): Stacked x-y grids, as (H, W, 2).
 
         Returns:
-            Tensor: The positional encoding, as (N, num_pos_feats).
+            Tensor: The positional encoding, as (H, W, num_pos_feats * 2).
         """
         # assuming coords are in [0, 1]^2 square and have d_1 x ... x d_n x 2 shape
         coords = 2 * coords - 1
@@ -234,7 +234,7 @@ class PositionEmbeddingRandom(nn.Module):
             size (tuple(int, int)): The size of the grid to generate the encoding for.
 
         Returns:
-            Tensor: The positional encoding, as (num_pos_feats, H, W).
+            Tensor: The positional encoding, as (num_pos_feats * 2, H, W).
         """
         h, w = size
         device: Any = self.positional_encoding_gaussian_matrix.device
@@ -251,11 +251,11 @@ class PositionEmbeddingRandom(nn.Module):
         """Positionally encode points that are not normalized to [0,1].
 
         Args:
-            coords_input (Tensor): The coordinates to encode, as (B, N, 2).
+            coords_input (Tensor): The coordinates to encode, as (N, 1, 2).
             image_size (tuple(int, int)): The size of the image the coordinates are from.
 
         Returns:
-            Tensor: The positional encoding, as (B, N, num_pos_feats).
+            Tensor: The positional encoding, as (N, 1, num_pos_feats * 2).
         """
         coords = coords_input.clone()
         coords[:, :, 0] = coords[:, :, 0] / image_size[1]

@@ -174,17 +174,17 @@ class SegmentAnything(LightningModule):
                 state_dict = replace_state_dict_keys(state_dict, revise_keys)
                 self.load_state_dict(state_dict)
 
-    def forward(self, images: Tensor, bboxes: Tensor, points: Optional[Tensor] = None):
+    def forward(self, images: Tensor, bboxes: List[Tensor], points: Optional[Tuple[Tensor, Tensor]] = None):
         """Forward method for SAM.
 
         Args:
             images (Tensor): Images with shape (B, C, H, W).
-            bboxes (Tensor): Bounding boxes with shape (B, 4).
-            points (Optional[Tensor], optional): Points with shape (B, 2). Defaults to None.
+            bboxes (List[Tensor]): List with bounding boxes with shape (N, 4).
+            points (Tuple[Tensor, Tensor], optional): To be supported.
 
         Returns:
-            pred_masks (List[Tensor]): Predicted masks with shape (B, 1, H, W).
-            ious (List[Tensor]): IoU predictions with shape (B, 1).
+            pred_masks (List[Tensor]): List with predicted masks with shape (B, 1, H, W).
+            ious (List[Tensor]): List with IoU predictions with shape (N, 1).
         """
         image_embeddings = self.image_encoder(images)
         pred_masks = []
@@ -336,15 +336,15 @@ class SegmentAnything(LightningModule):
     def postprocess_masks(
         self,
         masks: Tensor,
-        input_size: Tuple[int, ...],
+        input_size: Tuple[int, int],
         padding: Optional[Tuple[int, ...]] = None,
-        original_size: Optional[Tuple[int, ...]] = None,
+        original_size: Optional[Tuple[int, int]] = None,
         is_predict: bool = False,
     ) -> Tensor:
         """Remove padding and upscale masks to the original image size.
 
         Args:
-            masks (Tensor): Batched masks from the mask_decoder, in BxCxHxW format.
+            masks (Tensor): Predicted masks from the mask_decoder with (N, 1, H/downsized_ratio, W/downsized_ratio).
             input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format.
                 Used to remove padding.
             padding (tuple(int, int, int, int), optional): The padding applied to the image before input to the model,
@@ -354,7 +354,7 @@ class SegmentAnything(LightningModule):
             is_predict (bool, optional): Whether to upscale the masks to the original image size. Defaults to False.
 
         Returns:
-          (Tensor): Batched masks in BxCxHxW format, where (H, W) is given by original_size.
+          (Tensor): Postprocessed masks in NxHxW format, where (H, W) is given by original_size.
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
         if is_predict:
