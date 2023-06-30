@@ -572,9 +572,13 @@ def patch_persistent_workers(config: Config):
         data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
 
-def get_adaptive_num_workers():
+def get_adaptive_num_workers() -> Union[int, None]:
     """Measure appropriate num_workers value and return it."""
-    return min(multiprocessing.cpu_count() // torch.cuda.device_count(), 8)  # max available num_workers is 8
+    num_gpus = torch.cuda.device_count()
+    if num_gpus == 0:
+        logger.warning("There is no GPUs. Use existing num_worker value.")
+        return None
+    return min(multiprocessing.cpu_count() // num_gpus, 8)  # max available num_workers is 8
 
 
 def patch_from_hyperparams(config: Config, hyperparams):
@@ -612,7 +616,9 @@ def patch_from_hyperparams(config: Config, hyperparams):
     )
 
     if hyperparams.learning_parameters.auto_num_workers:
-        hparams.data.workers_per_gpu = get_adaptive_num_workers()
+        adapted_num_worker = get_adaptive_num_workers()
+        if adapted_num_worker is not None:
+            hparams.data.workers_per_gpu = adapted_num_worker
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
