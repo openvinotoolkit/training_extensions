@@ -109,13 +109,42 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Union[DictConfig, ListConfig]: Visual Prompting config.
         """
         self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
-        config = get_visual_promtping_config(self.model_name, self.hyper_parameters, self.base_dir)
+
+        # set checkpoints
+        resume_from_checkpoint = model_checkpoint = None
+        if self.task_environment.model is not None:
+            # self.task_environment.model is set for two cases:
+            # 1. otx train : args.load_weights or args.resume_from
+            #   - path and resume are set into model_adapters
+            # 2. otx eval
+            #   - both resume_from and path are not needed to be set, path is not set into model_adapters,
+            #     so it can be distinguished by using it
+            resume_from_checkpoint = model_checkpoint = self.task_environment.model.model_adapters.get("path", None)
+            if isinstance(resume_from_checkpoint, str) and resume_from_checkpoint.endswith(".pth"):
+                # TODO (sungchul): support resume from checkpoint
+                logger.info("[*] Pytorch checkpoint cannot be used for resuming. It will be supported.")
+                resume_from_checkpoint = None
+            elif not self.task_environment.model.model_adapters.get("resume", False):
+                # If not resuming, set resume_from_checkpoint to None to avoid training in resume environment
+                # and saving to configuration.
+                resume_from_checkpoint = None
+            else:
+                # If resuming, set model_checkpoint to None to avoid loading weights twice and saving to configuration.
+                model_checkpoint = None
+
+        config = get_visual_promtping_config(
+            self.model_name,
+            self.hyper_parameters,
+            self.output_path,  # type: ignore[arg-type]
+            model_checkpoint,  # type: ignore[arg-type]
+            resume_from_checkpoint,  # type: ignore[arg-type]
+        )
 
         config.dataset.task = "visual_prompting"
 
         return config
 
-    def load_model(self, otx_model: Optional[ModelEntity]) -> LightningModule:
+    def load_model(self, otx_model: Optional[ModelEntity] = None) -> LightningModule:
         """Create and Load Visual Prompting Module.
 
         Currently, load model through `sam_model_registry` because there is only SAM.
@@ -141,33 +170,39 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 )
             return model
 
+        state_dict = None
         if otx_model is None:
-            model = get_model(config=self.config)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
             )
+        elif otx_model.model_adapters.get("path").endswith(".ckpt"):  # type: ignore[attr-defined]
+            # pytorch lightning checkpoint
+            if not otx_model.model_adapters.get("resume"):
+                # If not resuming, just load weights in LightningModule
+                logger.info("Load pytorch lightning checkpoint.")
         else:
+            # pytorch checkpoint saved by otx
             buffer = io.BytesIO(otx_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
-            from_lightning = False
-            if model_data.get("config", None):
-                from_lightning = True
-                logger.info("Load pytorch lightning checkpoint.")
+            if model_data.get("model", None) and model_data.get("config", None):
                 if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
                     logger.warning(
                         "Backbone of the model in the Task Environment is different from the one in the template. "
                         f"creating model with backbone={model_data['config']['model']['backbone']}"
                     )
                     self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
+                state_dict = model_data["model"]
+                logger.info("Load pytorch checkpoint from weights.pth.")
             else:
+                state_dict = model_data
                 logger.info("Load pytorch checkpoint.")
 
-            try:
-                model = get_model(config=self.config, state_dict=model_data["model"] if from_lightning else model_data)
-                logger.info("Complete to load model weights.")
-            except BaseException as exception:
-                raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+        try:
+            model = get_model(config=self.config, state_dict=state_dict)
+            logger.info("Complete to load model.")
+        except BaseException as exception:
+            raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
         return model
 

@@ -90,6 +90,10 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         # compose performance statistics
         best_score = self.trainer.checkpoint_callback.best_model_score
+        if best_score is None:
+            results = self.trainer.validate(model=self.model, datamodule=datamodule)
+            best_score = results[0].get(self.config.callback.checkpoint.monitor)
+
         # save resulting model
         self.save_model(output_model)
         performance = Performance(

@@ -5,7 +5,7 @@
 #
 
 import os
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -21,6 +21,7 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
@@ -101,12 +102,12 @@ def generate_visual_prompting_dataset(number_of_images: int = 1, use_mask: bool 
     return DatasetEntity(items)
 
 
-def init_environment():
+def init_environment(model: Optional[ModelEntity] = None):
     model_template = parse_model_template(os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR, "template.yaml"))
     hyper_parameters = create(model_template.hyper_parameters.data)
     labels_schema = generate_otx_label_schema()
     environment = TaskEnvironment(
-        model=None,
+        model=model,
         hyper_parameters=hyper_parameters,
         label_schema=labels_schema,
         model_template=model_template,

@@ -48,7 +48,7 @@ class SegmentAnything(LightningModule):
 
     def __init__(self, config: DictConfig, state_dict: Optional[OrderedDict] = None) -> None:
         super().__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore="state_dict")
         self.config = config
 
         self.set_models()
