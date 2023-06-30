@@ -76,8 +76,7 @@ class OTXVIsualPromptingDataset(Dataset):
             Dict[str, Union[int, List, Tensor]]: Dataset item.
         """
         dataset_item = self.dataset[index]
-        item: Dict[str, Union[int, Tensor]] = {}
-        item = {"index": index}
+        item: Dict[str, Union[int, Tensor]] = {"index": index}
 
         width, height = dataset_item.width, dataset_item.height
         bboxes: List[List[int]] = []
