@@ -17,7 +17,13 @@ model:
   freeze_image_encoder: true
   freeze_prompt_encoder: true
   freeze_mask_decoder: false
-  checkpoint: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+  checkpoint: pretrained
+  # just for inference
+  return_single_mask: true
+  use_stability_score: false
+  stability_score_offset: 1.
+  return_extra_metrics: false
+
 
 optimizer:
   name: Adam

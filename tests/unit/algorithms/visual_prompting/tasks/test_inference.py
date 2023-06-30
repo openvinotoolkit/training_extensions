@@ -12,8 +12,9 @@ import logging
 from omegaconf import DictConfig
 
 from otx.algorithms.visual_prompting.tasks.inference import InferenceTask
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.entities.metrics import NullPerformance
-from otx.api.entities.model import ModelEntity
+from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from otx.api.entities.resultset import ResultSetEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from otx.algorithms.common.utils.logger import get_logger
@@ -161,3 +162,29 @@ class TestInferenceTask:
 
         mocker_io_bytes_io.assert_called_once()
         mocker_torch_save.assert_called_once()
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("export_type", [ExportType.ONNX, ExportType.OPENVINO])
+    def test_export(self, load_inference_task, export_type: ExportType):
+        """Test export."""
+        inference_task = load_inference_task()
+        dataset = generate_visual_prompting_dataset()
+        output_model = ModelEntity(dataset, inference_task.task_environment.get_model_configuration())
+
+        inference_task.export(export_type, output_model, dump_features=False)
+
+        if export_type == ExportType.ONNX:
+            assert output_model.model_format == ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            assert "sam_image_encoder.onnx" in output_model.model_adapters
+            assert "sam_decoder.onnx" in output_model.model_adapters
+
+        elif export_type == ExportType.OPENVINO:
+            assert output_model.model_format == ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            assert "openvino_sam_image_encoder.bin" in output_model.model_adapters
+            assert "openvino_sam_image_encoder.xml" in output_model.model_adapters
+            assert "openvino_sam_decoder.bin" in output_model.model_adapters
+            assert "openvino_sam_decoder.xml" in output_model.model_adapters
+
+        assert not output_model.has_xai

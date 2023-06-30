@@ -15,9 +15,13 @@
 # and limitations under the License.
 
 import ctypes
+import json
+from glob import glob
+import warnings
 import io
 import os
 import shutil
+import subprocess
 import tempfile
 import time
 from collections import OrderedDict
@@ -45,6 +49,7 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import (
     ModelEntity,
+    ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
     OptimizationMethod,
@@ -248,8 +253,56 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def _export_to_onnx(self, onnx_path: str):
-        raise NotImplementedError
+    def _export_to_onnx(self, onnx_path: Dict[str, str]):
+        """Export model to ONNX.
+
+        Args:
+             onnx_path (Dict[str, str]): Paths to save ONNX models.
+        """
+        height = width = self.config.model.image_size
+        for module, path in onnx_path.items():
+            if module == "sam_image_encoder":
+                dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float)}
+                output_names = ["image_embeddings"]
+                dynamic_axes = None
+                model_to_export = self.model.image_encoder
+
+            else:
+                # sam without backbone
+                embed_dim = self.model.prompt_encoder.embed_dim
+                embed_size = self.model.prompt_encoder.image_embedding_size
+                mask_input_size = [4 * x for x in embed_size]
+                dynamic_axes = {
+                    "point_coords": {1: "num_points"},
+                    "point_labels": {1: "num_points"},
+                }
+                dummy_inputs = {
+                    "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
+                    "point_coords": torch.randint(low=0, high=1024, size=(1, 5, 2), dtype=torch.float),
+                    "point_labels": torch.randint(low=0, high=4, size=(1, 5), dtype=torch.float),
+                    "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
+                    "has_mask_input": torch.tensor([1], dtype=torch.float),
+                    "orig_size": torch.tensor([height, width], dtype=torch.float),
+                }
+                output_names = ["masks", "iou_predictions", "low_res_masks"]
+                model_to_export = self.model
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)
+                warnings.filterwarnings("ignore", category=UserWarning)
+                with open(path, "wb") as f:
+                    torch.onnx.export(
+                        model_to_export,
+                        tuple(dummy_inputs.values()),
+                        f,
+                        export_params=True,
+                        verbose=False,
+                        opset_version=12,
+                        do_constant_folding=True,
+                        input_names=list(dummy_inputs.keys()),
+                        output_names=output_names,
+                        dynamic_axes=dynamic_axes,
+                    )
 
     def export(  # noqa: D102
         self,
@@ -258,7 +311,72 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = False,
     ) -> None:
-        raise NotImplementedError
+        """Export model to OpenVINO IR.
+
+        When SAM gets an image for inference, image encoder runs just once to get image embedding.
+        After that, prompt encoder + mask decoder runs repeatedly to get mask prediction.
+        For this case, SAM should be divided into two parts, image encoder and prompt encoder + mask decoder.
+
+        Args:
+            export_type (ExportType): Export type should be ExportType.OPENVINO
+            output_model (ModelEntity): The model entity in which to write the OpenVINO IR data
+            precision (bool): Output model weights and inference precision
+            dump_features (bool): Flag to return "feature_vector" and "saliency_map".
+
+        Raises:
+            Exception: If export_type is not ExportType.OPENVINO
+        """
+        if dump_features:
+            logger.warning(
+                "Feature dumping is not implemented for the visual prompting task."
+                "The saliency maps and representation vector outputs will not be dumped in the exported model."
+            )
+
+        if export_type == ExportType.ONNX:
+            output_model.model_format = ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            if precision == ModelPrecision.FP16:
+                raise RuntimeError("Export to FP16 ONNX is not supported")
+        elif export_type == ExportType.OPENVINO:
+            output_model.model_format = ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.MO
+        else:
+            raise RuntimeError(f"not supported export type {export_type}")
+
+        self.precision[0] = precision
+        output_model.has_xai = dump_features
+
+        logger.info("Exporting to the OpenVINO model.")
+        onnx_path = {
+            "sam_image_encoder": os.path.join(self.output_path, "sam_image_encoder.onnx"),
+            "sam_decoder": os.path.join(self.output_path, "sam_decoder.onnx")
+        }
+        self._export_to_onnx(onnx_path)
+
+        if export_type == ExportType.ONNX:
+            for module, path in onnx_path.items():
+                with open(path, "rb") as file:
+                    output_model.set_data(f"{module}.onnx", file.read())
+        else:
+            for module, path in onnx_path.items():
+                optimize_command = [
+                    "mo", "--input_model", path,
+                    "--output_dir", self.output_path,
+                    "--model_name", module]
+                if precision == ModelPrecision.FP16:
+                    optimize_command.append("--compress_to_fp16")
+                subprocess.run(optimize_command, check=True)
+                bin_file = glob(os.path.join(self.output_path, "*.bin"))[0]
+                xml_file = glob(os.path.join(self.output_path, "*.xml"))[0]
+                with open(bin_file, "rb") as file:
+                    output_model.set_data(f"openvino_{module}.bin", file.read())
+                with open(xml_file, "rb") as file:
+                    output_model.set_data(f"openvino_{module}.xml", file.read())
+
+        output_model.precision = self.precision
+        output_model.optimization_methods = self.optimization_methods
+
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
 
     def model_info(self) -> Dict:
         """Return model info to save the model weights.
