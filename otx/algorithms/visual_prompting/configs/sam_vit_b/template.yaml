@@ -4,7 +4,7 @@ name: SAM_ViT_B
 task_type: VISUAL_PROMPTING
 task_family: VISION
 instantiation: "CLASS"
-summary: TODO
+summary: Visual Prompting with ViT-B for the accurate predictions
 application: ~
 
 # Algo backend.
@@ -23,6 +23,7 @@ max_nodes: 1
 training_targets:
   - GPU
   - CPU
+
 # Computational Complexity
-# gigaflops: 3.9
-# size: 168.4
+gigaflops: 487
+size: 374
