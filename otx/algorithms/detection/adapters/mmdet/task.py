@@ -612,15 +612,15 @@ class MMDetectionTask(OTXDetectionTask):
         while hasattr(mm_dataset, "dataset") and not isinstance(mm_dataset, ImageTilingDataset):
             mm_dataset = mm_dataset.dataset
 
-        per_class_xai_algorithm: Union[partial[MaskRCNNRecordingForwardHook], DetClassProbabilityMapHook]
+        per_class_xai_algorithm: Union[partial[MaskRCNNRecordingForwardHook], partial[DetClassProbabilityMapHook]]
         if isinstance(feature_model, TwoStageDetector):
             height, width, _ = mm_dataset[0]["img_metas"][0].data["img_shape"]
             per_class_xai_algorithm = partial(
                 MaskRCNNRecordingForwardHook, input_img_shape=(width, height), normalize=True
             )
         else:
-            per_class_xai_algorithm = DetClassProbabilityMapHook(
-                feature_model,
+            per_class_xai_algorithm = partial(
+                DetClassProbabilityMapHook,
                 use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
                 normalize=not isinstance(mm_dataset, ImageTilingDataset),
             )

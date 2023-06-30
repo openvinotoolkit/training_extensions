@@ -339,19 +339,20 @@ class Tiler:
             for class_idx in range(num_classes):
                 if saliency_map[class_idx] is None:
                     continue
+                cls_map = saliency_map[class_idx]
                 x_1, y_1, x_2, y_2 = meta["coord"]
                 y_1, x_1 = ((y_1, x_1) * ratio).astype(np.uint16)
                 y_2, x_2 = ((y_2, x_2) * ratio).astype(np.uint16)
 
-                map_h, map_w = saliency_map[class_idx].shape
+                map_h, map_w = cls_map.shape
                 # resize feature map if it got from the tile which width and height is less the tile_size
-                if (map_h > y_2 - y_1) and (map_w > x_2 - x_1):
-                    saliency_map[class_idx] = cv2.resize(saliency_map[class_idx], (x_2 - x_1, y_2 - y_1))
+                if (map_h > y_2 - y_1 > 0) and (map_w > x_2 - x_1 > 0):
+                    cls_map = cv2.resize(cls_map, (x_2 - x_1, y_2 - y_1))
                 # cut the rest of the feature map that went out of the image borders
                 map_h, map_w = y_2 - y_1, x_2 - x_1
 
                 for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
-                    map_pixel = saliency_map[class_idx][hi, wi]
+                    map_pixel = cls_map[hi, wi]
                     # on tile overlap add 0.5 value of each tile
                     if merged_map[class_idx][y_1 + hi, x_1 + wi] != 0:
                         merged_map[class_idx][y_1 + hi, x_1 + wi] = 0.5 * (
@@ -364,12 +365,13 @@ class Tiler:
             if (merged_map[class_idx] == 0).all():
                 merged_map[class_idx] = None
             else:
+                image_map_cls = image_saliency_map[class_idx]
                 # resize the feature map for whole image to add it to merged saliency maps
-                if image_saliency_map[class_idx] is not None:
-                    image_saliency_map[class_idx] = cv2.resize(
-                        image_saliency_map[class_idx], (image_map_w, image_map_h)
+                if image_map_cls is not None:
+                    image_map_cls = cv2.resize(
+                        image_map_cls, (image_map_w, image_map_h)
                     )
-                    merged_map += (0.5 * image_saliency_map[class_idx]).astype(dtype)
+                    merged_map += (0.5 * image_map_cls).astype(dtype)
                 merged_map = non_linear_normalization(merged_map)
         return merged_map
 

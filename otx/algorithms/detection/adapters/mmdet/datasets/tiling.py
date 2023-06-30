@@ -552,20 +552,21 @@ class Tile:
             for class_idx in range(num_classes):
                 if map[class_idx] is None:
                     continue
+                cls_map = map[class_idx]
                 img_idx = tile["dataset_idx"]
                 x_1, y_1, x_2, y_2 = tile["tile_box"]
                 y_1, x_1 = ((y_1, x_1) * ratios[img_idx]).astype(np.uint16)
                 y_2, x_2 = ((y_2, x_2) * ratios[img_idx]).astype(np.uint16)
 
-                map_h, map_w = map[class_idx].shape
+                map_h, map_w = cls_map.shape
                 # resize feature map if it got from the tile which width and height is less the tile_size
-                if (map_h > y_2 - y_1) and (map_w > x_2 - x_1):
-                    map[class_idx] = cv2.resize(map[class_idx], (x_2 - x_1, y_2 - y_1))
+                if (map_h > y_2 - y_1 > 0) and (map_w > x_2 - x_1 > 0):
+                    cls_map = cv2.resize(cls_map, (x_2 - x_1, y_2 - y_1))
                 # cut the rest of the feature map that went out of the image borders
                 map_h, map_w = y_2 - y_1, x_2 - x_1
 
                 for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
-                    map_pixel = map[class_idx][hi, wi]
+                    map_pixel = cls_map[hi, wi]
                     # on tile overlap add 0.5 value of each tile
                     if merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] != 0:
                         merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] = 0.5 * (
@@ -581,11 +582,12 @@ class Tile:
                 if (merged_map[class_idx] == 0).all():
                     merged_map[class_idx] = None
                 else:
-                    map_h, map_w = merged_map[class_idx].shape
+                    image_map_cls = image_sal_map[class_idx]
                     # resize the feature map for whole image to add it to merged saliency maps
-                    if image_sal_map[class_idx] is not None:
-                        image_sal_map[class_idx] = cv2.resize(image_sal_map[class_idx], (map_w, map_h))
-                        merged_map[class_idx] += (0.5 * image_sal_map[class_idx]).astype(dtype)
+                    if image_map_cls is not None:
+                        map_h, map_w = merged_map[class_idx].shape
+                        image_map_cls = cv2.resize(image_map_cls, (map_w, map_h))
+                        merged_map[class_idx] += (0.5 * image_map_cls).astype(dtype)
                     merged_map[class_idx] = non_linear_normalization(merged_map[class_idx])
             norm_maps.append(merged_map)
 
