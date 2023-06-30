@@ -15,15 +15,22 @@
 
 import colorsys
 import random
-from typing import Optional, Sequence
+from typing import Any, List, Optional, Sequence, Tuple
 
+import cv2
 import numpy as np
+import pycocotools.mask as mask_util
 
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.ellipse import Ellipse
+from otx.api.entities.shapes.polygon import Point, Polygon
+from otx.api.entities.shapes.rectangle import Rectangle
 
 # pylint: disable=invalid-name
 
@@ -97,20 +104,37 @@ def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Dom
     return label_schema
 
 
-def get_det_model_api_configuration(label_schema: LabelSchemaEntity, task_type: TaskType, confidence_threshold: float):
+def get_det_model_api_configuration(
+    label_schema: LabelSchemaEntity, task_type: TaskType, confidence_threshold: float, tiling_parameters: Any
+):
     """Get ModelAPI config."""
     omz_config = {}
+    all_labels = ""
     if task_type == TaskType.DETECTION:
         omz_config[("model_info", "model_type")] = "ssd"
     if task_type == TaskType.INSTANCE_SEGMENTATION:
         omz_config[("model_info", "model_type")] = "MaskRCNN"
+        all_labels = "otx_empty_lbl "
+        if tiling_parameters.enable_tiling:
+            omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
     if task_type == TaskType.ROTATED_DETECTION:
         omz_config[("model_info", "model_type")] = "rotated_detection"
+        all_labels = "otx_empty_lbl "
+        if tiling_parameters.enable_tiling:
+            omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
 
     omz_config[("model_info", "confidence_threshold")] = str(confidence_threshold)
     omz_config[("model_info", "iou_threshold")] = str(0.5)
 
-    all_labels = ""
+    if tiling_parameters.enable_tiling:
+        omz_config[("model_info", "tile_size")] = str(
+            int(tiling_parameters.tile_size * tiling_parameters.tile_ir_scale_factor)
+        )
+        omz_config[("model_info", "tiles_overlap")] = str(
+            tiling_parameters.tile_overlap / tiling_parameters.tile_ir_scale_factor
+        )
+        omz_config[("model_info", "max_pred_number")] = str(tiling_parameters.tile_max_number)
+
     for lbl in label_schema.get_labels(include_empty=False):
         all_labels += lbl.name.replace(" ", "_") + " "
     all_labels = all_labels.strip()
@@ -118,3 +142,167 @@ def get_det_model_api_configuration(label_schema: LabelSchemaEntity, task_type: 
     omz_config[("model_info", "labels")] = all_labels
 
     return omz_config
+
+
+def expand_box(box: np.ndarray, scale_h: float, scale_w: float):
+    """Expand the box.
+
+    Args:
+        box (np.ndarray): bounding box
+        scale_h (float): scaling factor for height
+        scale_w (float): scaling factor for width
+
+    Returns:
+        expanded box (np.ndarray): x1, y1, x2, y2 coordinates of the expanded box
+    """
+    w_half = (box[2] - box[0]) * 0.5
+    h_half = (box[3] - box[1]) * 0.5
+    x_c = (box[2] + box[0]) * 0.5
+    y_c = (box[3] + box[1]) * 0.5
+    w_half *= scale_w
+    h_half *= scale_h
+    expanded_box = np.zeros(box.shape)
+    expanded_box[0] = x_c - w_half
+    expanded_box[2] = x_c + w_half
+    expanded_box[1] = y_c - h_half
+    expanded_box[3] = y_c + h_half
+    return expanded_box
+
+
+def mask_resize(box: np.ndarray, mask: np.ndarray):
+    """Resize mask to the size of the bounding box.
+
+    Args:
+        box (np.ndarray): bounding box which enclosing the mask
+        mask (np.ndarray): mask to be resize
+
+    Returns:
+        mask (np.ndarray): resized mask
+    """
+    # scaling bbox to prevent up-sampling artifacts on segment borders.
+    mask = np.pad(mask, ((1, 1), (1, 1)), "constant", constant_values=0)
+    scale_h = mask.shape[0] / (mask.shape[0] - 2.0)
+    scale_w = mask.shape[1] / (mask.shape[1] - 2.0)
+    extended_box = expand_box(box, scale_h=scale_h, scale_w=scale_w).astype(int)
+    w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
+    mask = cv2.resize(mask.astype(np.float32), (w, h))
+    mask = mask.astype(np.uint8)
+    return mask
+
+
+def create_detection_shapes(
+    pred_results: List[np.ndarray],
+    width: int,
+    height: int,
+    confidence_threshold: float,
+    use_ellipse_shapes: bool,
+    labels: List,
+):
+    """Create prediction detection shapes.
+
+    Args:
+        pred_results (list(np.ndarray)): per class predicted boxes
+        width (int): image width
+        height (int): image height
+        confidence_threshold (float): confidence threshold for filtering predictions
+        use_ellipse_shapes (bool): if True, use ellipse shapes
+        labels (list): dataset labels
+
+    Returns:
+        shapes: list of prediction shapes (Annotation)
+    """
+
+    shapes = []
+    for label_idx, detections in enumerate(pred_results):
+        for det in detections:
+            probability = float(det[4])
+            coords = det[:4].astype(float).copy()
+            coords /= np.array([width, height, width, height], dtype=float)
+            coords = np.clip(coords, 0, 1)
+
+            if (probability < confidence_threshold) or (coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0):
+                continue
+
+            assigned_label = [ScoredLabel(labels[label_idx], probability=probability)]
+            if not use_ellipse_shapes:
+                shapes.append(
+                    Annotation(
+                        Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
+                        labels=assigned_label,
+                    )
+                )
+            else:
+                shapes.append(
+                    Annotation(
+                        Ellipse(coords[0], coords[1], coords[2], coords[3]),
+                        labels=assigned_label,
+                    )
+                )
+    return shapes
+
+
+def create_mask_shapes(
+    pred_results: Tuple,
+    width: int,
+    height: int,
+    confidence_threshold: float,
+    use_ellipse_shapes: bool,
+    labels: List,
+    rotated_polygon: bool = False,
+):
+    """Create prediction mask shapes.
+
+    Args:
+        pred_results (tuple): tuple of predicted boxes and masks for each dataset item
+        width (int): image width
+        height (int): image height
+        confidence_threshold (float): confidence threshold for filtering predictions
+        use_ellipse_shapes (bool): if True, use ellipse shapes
+        labels (list): dataset labels
+        rotated_polygon (bool, optional): if True, use rotated polygons for mask shapes
+
+    Returns:
+        shapes: list of prediction shapes (Annotation)
+    """
+    shapes = []
+    for label_idx, (boxes, masks) in enumerate(zip(*pred_results)):
+        for mask, box in zip(masks, boxes):
+            probability = float(box[4])
+            if probability < confidence_threshold:
+                continue
+
+            assigned_label = [ScoredLabel(labels[label_idx], probability=probability)]
+            coords = box[:4].astype(float).copy()
+            left, top = coords[:2]
+            if not use_ellipse_shapes:
+                if isinstance(mask, dict):
+                    mask = mask_util.decode(mask)
+                mask = mask_resize(coords, mask)
+
+                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                if hierarchies is None:
+                    continue
+                for contour, hierarchy in zip(contours, hierarchies[0]):
+                    # skip inner contours
+                    if hierarchy[3] != -1 or len(contour) <= 2:
+                        continue
+
+                    if rotated_polygon:
+                        box_points = cv2.boxPoints(cv2.minAreaRect(contour))
+                        points = [
+                            Point(x=(point[0] + left) / width, y=(point[1] + top) / height) for point in box_points
+                        ]
+                    else:
+                        points = [
+                            Point(x=(point[0][0] + left) / width, y=(point[0][1] + top) / height) for point in contour
+                        ]
+
+                    polygon = Polygon(points=points)
+                    if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
+                        shapes.append(Annotation(polygon, labels=assigned_label, id=ID(f"{label_idx:08}")))
+            else:
+                ellipse = Ellipse(
+                    (box[0] + left) / width, (box[1] + top) / height, (box[2] + left) / width, (box[3] + top) / height
+                )
+                shapes.append(Annotation(ellipse, labels=assigned_label, id=ID(f"{label_idx:08}")))
+    return shapes

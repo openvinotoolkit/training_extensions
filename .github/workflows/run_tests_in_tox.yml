@@ -45,6 +45,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-results-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}
-          path: .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.xml
+          path: |
+            .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.csv
+            .tox/anomaly_results.csv
+            .tox/non_anomaly_results.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ inputs.upload-artifact && always() }}

@@ -375,13 +375,6 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         if cfg.distributed:
             torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-            if cfg.dist_params.get("linear_scale_lr", False):
-                new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
-                logger.info(
-                    f"enabled linear scaling rule to the learning rate. \
-                    changed LR from {cfg.optimizer.lr} to {new_lr}"
-                )
-                cfg.optimizer.lr = new_lr
 
         validate = bool(cfg.data.get("val", None))
 

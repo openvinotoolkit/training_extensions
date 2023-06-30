@@ -29,7 +29,7 @@ from torch import distributed as dist
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.hooks.cancel_hook import CancelInterfaceHook
 from otx.algorithms.common.configs.training_base import TrainType
-from otx.algorithms.common.utils import UncopiableDefaultDict, set_random_seed
+from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix, set_random_seed
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -122,11 +122,11 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         # This is for hpo, and this should be removed
         self.project_path = self._output_path
 
-        if self._is_multi_gpu_training():
-            self._setup_multigpu_training()
+        if self._is_distributed_training():
+            self._setup_distributed_training()
 
     @staticmethod
-    def _is_multi_gpu_training():
+    def _is_distributed_training():
         multi_gpu_env = ["MASTER_ADDR", "MASTER_PORT", "LOCAL_WORLD_SIZE", "WORLD_SIZE", "LOCAL_RANK", "RANK"]
         for env in multi_gpu_env:
             if env not in os.environ:
@@ -135,7 +135,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         return torch.cuda.is_available()
 
     @staticmethod
-    def _setup_multigpu_training():
+    def _setup_distributed_training():
         if not dist.is_initialized():
             torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
             dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
@@ -168,7 +168,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         model = self._task_environment.model
         state_dict = self._load_model_ckpt(model)
         if state_dict:
-            self._model_ckpt = os.path.join(self._output_path, "env_model_ckpt.pth")
+            self._model_ckpt = append_dist_rank_suffix(os.path.join(self._output_path, "env_model_ckpt.pth"))
             if os.path.exists(self._model_ckpt):
                 os.remove(self._model_ckpt)
             torch.save(state_dict, self._model_ckpt)

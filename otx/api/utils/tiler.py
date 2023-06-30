@@ -12,10 +12,13 @@ from typing import Any, Dict, List, Tuple, Union
 import numpy as np
 from openvino.model_zoo.model_api.models import Model
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.utils.async_pipeline import OTXDetectionAsyncPipeline
 from otx.api.utils.detection_utils import detection2array
 from otx.api.utils.nms import multiclass_nms
 from otx.api.utils.dataset_utils import non_linear_normalization
+
+logger = get_logger()
 
 
 class Tiler:
@@ -71,8 +74,8 @@ class Tiler:
             x2 = min(loc_j + self.tile_size, width)
             y2 = min(loc_i + self.tile_size, height)
             coords.append([loc_j, loc_i, x2, y2])
-        print(f"------------------------> Num tiles: {len(coords)}")
-        print(f"------------------------> {height}x{width} ~ {self.tile_size}")
+        logger.debug(f"------------------------> Num tiles: {len(coords)}")
+        logger.debug(f"------------------------> {height}x{width} ~ {self.tile_size}")
         return coords
 
     def filter_tiles_by_objectness(
@@ -368,9 +371,7 @@ class Tiler:
                 image_map_cls = image_saliency_map[class_idx]
                 # resize the feature map for whole image to add it to merged saliency maps
                 if image_map_cls is not None:
-                    image_map_cls = cv2.resize(
-                        image_map_cls, (image_map_w, image_map_h)
-                    )
+                    image_map_cls = cv2.resize(image_map_cls, (image_map_w, image_map_h))
                     merged_map += (0.5 * image_map_cls).astype(dtype)
                 merged_map = non_linear_normalization(merged_map)
         return merged_map

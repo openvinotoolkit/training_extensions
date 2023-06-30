@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
 - Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (https://github.com/openvinotoolkit/training_extensions/pull/2195)
 - Add per-class XAI saliency maps for Mask R-CNN model (https://github.com/openvinotoolkit/training_extensions/pull/2227)
+- Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
+- Add new object detecotr DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
 
 ### Enhancements
 
@@ -18,11 +20,12 @@ All notable changes to this project will be documented in this file.
 - Set persistent_workers and pin_memory as True in detection task (<https://github.com/openvinotoolkit/training_extensions/pull/2224>)
 - New algorithm for Semi-SL semantic segmentation based on metric lerning via class prototypes (https://github.com/openvinotoolkit/training_extensions/pull/2156)
 - Self-SL for classification now can recieve just folder with any images to start contrastive pretraining (https://github.com/openvinotoolkit/training_extensions/pull/2219)
-- Improve XAI saliency map generation for tiling detection (https://github.com/openvinotoolkit/training_extensions/pull/2240)
+- Improve XAI saliency map generation for tiling detection and tiling instance segmentation (https://github.com/openvinotoolkit/training_extensions/pull/2240)
 
 ### Bug fixes
 
 - Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
+- Fix the bug that learning rate isn't scaled when multi-GPU trianing is enabled(<https://github.com/openvinotoolkit/training_extensions/pull/2254>)
 
 ### Known issues
 

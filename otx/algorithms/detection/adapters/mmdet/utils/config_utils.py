@@ -14,21 +14,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import math
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_keys,
     get_configs_by_pairs,
     get_dataset_configs,
     get_meta_keys,
-    is_epoch_based_runner,
     patch_color_conversion,
-    prepare_work_dir,
     remove_from_config,
-    update_config,
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -39,7 +34,7 @@ from otx.algorithms.detection.utils.data import (
     get_sizes_from_dataset_entity,
 )
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
-from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label import Domain
 from otx.api.entities.subset import Subset
 
 try:
@@ -53,152 +48,6 @@ except ImportError:
 
 
 logger = get_logger()
-
-
-def patch_config(
-    config: Config,
-    work_dir: str,
-    labels: List[LabelEntity],
-):  # pylint: disable=too-many-branches
-    """Update config function."""
-
-    # Add training cancelation hook.
-    if "custom_hooks" not in config:
-        config.custom_hooks = []
-    if "CancelTrainingHook" not in {hook.type for hook in config.custom_hooks}:
-        config.custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
-
-    # Remove high level data pipelines definition leaving them only inside `data` section.
-    remove_from_config(config, "train_pipeline")
-    remove_from_config(config, "test_pipeline")
-
-    evaluation_metric = config.evaluation.get("metric")
-    if evaluation_metric is not None:
-        config.evaluation.save_best = evaluation_metric
-    config.checkpoint_config.max_keep_ckpts = 5
-    config.checkpoint_config.interval = config.evaluation.get("interval", 1)
-
-    set_data_classes(config, labels)
-
-    config.gpu_ids = range(1)
-    config.work_dir = work_dir
-
-
-def patch_model_config(
-    config: Config,
-    labels: List[LabelEntity],
-):
-    """Patch model config."""
-    set_num_classes(config, len(labels))
-
-
-def set_hyperparams(config: Config, hyperparams: DetectionConfig):
-    """Set function for hyperparams (DetectionConfig)."""
-    config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
-    config.data.workers_per_gpu = int(hyperparams.learning_parameters.num_workers)
-    config.optimizer.lr = float(hyperparams.learning_parameters.learning_rate)
-
-    total_iterations = int(hyperparams.learning_parameters.num_iters)
-
-    config.lr_config.warmup_iters = int(hyperparams.learning_parameters.learning_rate_warmup_iters)
-    if config.lr_config.warmup_iters == 0:
-        config.lr_config.warmup = None
-    if is_epoch_based_runner(config.runner):
-        config.runner.max_epochs = total_iterations
-    else:
-        config.runner.max_iters = total_iterations
-
-
-def patch_adaptive_repeat_dataset(
-    config: Union[Config, ConfigDict],
-    num_samples: int,
-    decay: float = -0.002,
-    factor: float = 30,
-):
-    """Patch the repeat times and training epochs adatively.
-
-    Frequent dataloading inits and evaluation slow down training when the
-    sample size is small. Adjusting epoch and dataset repetition based on
-    empirical exponential decay improves the training time by applying high
-    repeat value to small sample size dataset and low repeat value to large
-    sample.
-
-    :param config: mmcv config
-    :param num_samples: number of training samples
-    :param decay: decaying rate
-    :param factor: base repeat factor
-    """
-    data_train = config.data.train
-    if data_train.type == "MultiImageMixDataset":
-        data_train = data_train.dataset
-    if data_train.type == "RepeatDataset" and getattr(data_train, "adaptive_repeat_times", False):
-        if is_epoch_based_runner(config.runner):
-            cur_epoch = config.runner.max_epochs
-            new_repeat = max(round(math.exp(decay * num_samples) * factor), 1)
-            new_epoch = math.ceil(cur_epoch / new_repeat)
-            if new_epoch == 1:
-                return
-            config.runner.max_epochs = new_epoch
-            data_train.times = new_repeat
-
-
-def prepare_for_training(
-    config: Union[Config, ConfigDict],
-    data_config: ConfigDict,
-) -> Union[Config, ConfigDict]:
-    """Prepare configs for training phase."""
-    prepare_work_dir(config)
-
-    train_num_samples = 0
-    for subset in ["train", "val", "test"]:
-        data_config_ = data_config.data.get(subset)
-        config_ = config.data.get(subset)
-        if data_config_ is None:
-            continue
-        for key in ["otx_dataset", "labels"]:
-            found = get_configs_by_keys(data_config_, key, return_path=True)
-            if len(found) == 0:
-                continue
-            assert len(found) == 1
-            if subset == "train" and key == "otx_dataset":
-                found_value = list(found.values())[0]
-                if found_value:
-                    train_num_samples = len(found_value)
-            update_config(config_, found)
-
-    if train_num_samples > 0:
-        patch_adaptive_repeat_dataset(config, train_num_samples)
-
-    return config
-
-
-def set_data_classes(config: Config, labels: List[LabelEntity]):
-    """Setter data classes into config."""
-    # Save labels in data configs.
-    for subset in ("train", "val", "test"):
-        for cfg in get_dataset_configs(config, subset):
-            cfg.labels = labels
-            #  config.data[subset].labels = labels
-
-
-def set_num_classes(config: Config, num_classes: int):
-    """Set num classes."""
-    # Set proper number of classes in model's detection heads.
-    head_names = ("mask_head", "bbox_head", "segm_head")
-    if "roi_head" in config.model:
-        for head_name in head_names:
-            if head_name in config.model.roi_head:
-                if isinstance(config.model.roi_head[head_name], List):
-                    for head in config.model.roi_head[head_name]:
-                        head.num_classes = num_classes
-                else:
-                    config.model.roi_head[head_name].num_classes = num_classes
-    else:
-        for head_name in head_names:
-            if head_name in config.model:
-                config.model[head_name].num_classes = num_classes
-    # FIXME. ?
-    # self.config.model.CLASSES = label_names
 
 
 def patch_datasets(
