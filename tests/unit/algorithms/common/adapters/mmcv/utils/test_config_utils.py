@@ -13,6 +13,7 @@ def test_get_adaptive_num_workers(mocker):
 
     assert get_adaptive_num_workers() == num_cpu // num_gpu
 
+
 def test_get_adaptive_num_workers_no_gpu(mocker):
     num_gpu = 0
     mock_torch = mocker.patch.object(config_utils, "torch")
