@@ -229,7 +229,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         callbacks = [TQDMProgressBar(), inference_callback]
 
         self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
-        results = self.trainer.test(model=self.model, datamodule=datamodule)
+        self.trainer.predict(model=self.model, datamodule=datamodule)
 
         return inference_callback.otx_dataset
 
