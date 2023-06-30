@@ -64,7 +64,8 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
-
+from otx.api.usecases.exportable_code.visualizers import Visualizer
+from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 logger = get_logger()
 
 
@@ -440,13 +441,22 @@ class OTXDetectionTask(OTXTask, ABC):
         process_saliency_maps=False,
         explain_predicted_classes=True,
         use_ellipse_shapes=False,
+        show_predictions=True,
     ):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
+        if show_predictions:
+            visualizer = Visualizer(window_name="Result")
+
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             shapes = self._get_shapes(
                 all_results, dataset_item.width, dataset_item.height, confidence_threshold, use_ellipse_shapes
             )
             dataset_item.append_annotations(shapes)
+            if show_predictions:
+                annotation_scene = AnnotationSceneEntity(
+                    annotations=shapes,
+                    kind=AnnotationSceneKind.PREDICTION)
+                output = visualizer.draw(dataset_item.numpy, annotation_scene)
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))

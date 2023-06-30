@@ -25,6 +25,7 @@ import warnings
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
+import cv2
 import attr
 import numpy as np
 from addict import Dict as ADDict
@@ -89,6 +90,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.detection_utils import detection2array
 from otx.api.utils.tiler import Tiler
+from otx.api.usecases.exportable_code.visualizers import Visualizer
 
 logger = get_logger()
 
@@ -530,10 +532,14 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         if self.config.tiling_parameters.enable_tiling:
             enable_async_inference = False
+        visualizer = Visualizer(window_name="Result")
 
-        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
+        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple, show_predictions: bool = False):
             dataset_item = dataset[id]
             dataset_item.append_annotations(predicted_scene.annotations)
+            if show_predictions:
+                output = visualizer.draw(dataset_item.numpy, predicted_scene)
+
             feature_vector, saliency_map = aux_data
             if feature_vector is not None:
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
