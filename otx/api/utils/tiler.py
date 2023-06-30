@@ -278,7 +278,9 @@ class Tiler:
                 detections = *Tiler.detection2tuple(detections), masks
         return detections
 
-    def merge_features(self, features: List, predictions: List) -> Union[Tuple[None, None], List[np.ndarray]]:
+    def merge_features(
+        self, features: List, predictions: Union[Tuple, np.ndarray]
+    ) -> Union[Tuple[None, None], List[np.ndarray]]:
         """Merge tile-level feature vectors to image-level features.
 
         Args:
@@ -376,7 +378,7 @@ class Tiler:
                 merged_map = non_linear_normalization(merged_map)
         return merged_map
 
-    def get_tiling_saliency_map_from_segm_masks(self, detections):
+    def get_tiling_saliency_map_from_segm_masks(self, detections: Union[Tuple, np.ndarray]) -> List:
         """Post process function for saliency map of OTX MaskRCNN model for tiling."""
 
         # No detection case
@@ -386,7 +388,7 @@ class Tiler:
         classes = [int(cls) - 1 for cls in detections[1]]
         num_classes = int(np.max(classes) + 1)
         # if dataset have more classes than detected, saliency_maps[cls] is eihter None or non-existent
-        saliency_maps = [None for _ in range(num_classes)]
+        saliency_maps: List = [None for _ in range(num_classes)]
         scores = detections[0].reshape(-1, 1, 1)
         masks = detections[3]
         weighted_masks = masks * scores
@@ -399,7 +401,7 @@ class Tiler:
         return saliency_maps
 
     @staticmethod
-    def _merge_and_normalize(saliency_maps, num_classes):
+    def _merge_and_normalize(saliency_maps: List, num_classes: int) -> List:
         for i in range(num_classes):
             if saliency_maps[i] is not None:
                 # combine masks for all objects within one class

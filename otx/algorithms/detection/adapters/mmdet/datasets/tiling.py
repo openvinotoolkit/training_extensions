@@ -479,10 +479,10 @@ class Tile:
         """Merge tile-level feature vectors to image-level feature vector.
 
         Args:
-            feature_vectors: tile-level feature vectors.
+            feature_vectors (List[np.ndarray]): tile-level feature vectors.
 
         Returns:
-            merged_vectors (list[np.ndarray]): Merged vectors for each image.
+            merged_vectors (List[np.ndarray]): Merged vectors for each image.
         """
 
         vect_per_image = len(feature_vectors) // self.num_images
@@ -496,11 +496,11 @@ class Tile:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            saliency_maps: tile-level saliency maps. Each map is a list of maps for each detected
+            saliency_maps (List[np.ndarray]): tile-level saliency maps. Each map is a list of maps for each detected
             class or None if class wasn't detected.
 
         Returns:
-            merged_maps (list[np.ndarray]): Merged saliency maps for each image.
+            merged_maps (List[np.ndarray | None]): Merged saliency maps for each image.
         """
         merged_maps = []
         ratios = {}

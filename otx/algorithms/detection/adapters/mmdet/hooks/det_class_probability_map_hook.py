@@ -60,8 +60,8 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         else:
             cls_scores = self._get_cls_scores_from_feature_map(feature_map)
 
-        # Do not use softmax for tiles in Tiling Detection, because it tile doesn't contain objects,
-        # it would highlight one of the classes map as a background class
+        # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
+        # it would highlight one of the class maps as a background class
         if self.use_cls_softmax:
             cls_scores = [torch.softmax(t, dim=1) for t in cls_scores]
 

@@ -395,11 +395,11 @@ class ImageTilingDataset(OTXDetDataset):
         """Merge tile-level feature vectors to image-level feature-vector.
 
         Args:
-            feature_vectors (list): tile-level feature vectors.
+            feature_vectors (list[np.ndarray]): tile-level feature vectors.
             dump_vectors (bool): whether to dump vectors.
 
         Returns:
-            merged_vectors (np.ndarray): Merged vector for each image.
+            merged_vectors (np.ndarray | List[None]): Merged vector for each image.
         """
 
         if dump_vectors:
@@ -411,11 +411,11 @@ class ImageTilingDataset(OTXDetDataset):
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            saliency_maps: tile-level saliency maps.
+            saliency_maps (list[np.ndarray]): tile-level saliency maps.
             dump_maps (bool): whether to dump saliency maps.
 
         Returns:
-            merged_maps (list[np.ndarray]): Merged saliency map for each image.
+            merged_maps (List[np.ndarray | None]): Merged saliency map for each image.
         """
 
         if dump_maps:

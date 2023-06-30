@@ -642,7 +642,6 @@ class MMDetectionTask(OTXDetectionTask):
             raise NotImplementedError(f"Explainer algorithm {explainer} not supported!")
         logger.info(f"Explainer algorithm: {explainer}")
 
-        # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         eval_predictions = []
         with explainer_hook(feature_model) as saliency_hook:  # type: ignore
             for data in dataloader:
