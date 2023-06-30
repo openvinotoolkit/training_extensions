@@ -296,7 +296,7 @@ class Tiler:
         else:
             # if saliency maps weren't return from hook (Mask RCNN case)
             image_saliency_map = self.get_tiling_saliency_map_from_segm_masks(predictions)
-        
+
         return image_vector, image_saliency_map
 
     def merge_vectors(self, features: List) -> np.ndarray:
@@ -315,7 +315,7 @@ class Tiler:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            features: tile-level features ((vector, map), tile_meta). 
+            features: tile-level features ((vector, map), tile_meta).
             Each saliency map is a list of maps for each detected class or None if class wasn't detected.
 
         Returns:
@@ -327,7 +327,7 @@ class Tiler:
         num_classes = len(image_saliency_map)
         feat_h, feat_w = image_saliency_map[0].shape
         dtype = image_saliency_map[0][0].dtype
-        
+
         image_h, image_w, _ = image_meta["original_shape"]
         ratio = np.array([feat_h, feat_w]) / self.tile_size
 
@@ -344,9 +344,9 @@ class Tiler:
                 y_2, x_2 = ((y_2, x_2) * ratio).astype(np.uint16)
 
                 map_h, map_w = saliency_map[class_idx].shape
-                # resize feature map if it got from the tile which width and height is less the tile_size 
-                if (map_h > y_2-y_1) and (map_w > x_2 - x_1):
-                    saliency_map[class_idx] = cv2.resize(saliency_map[class_idx], (x_2 - x_1, y_2-y_1))
+                # resize feature map if it got from the tile which width and height is less the tile_size
+                if (map_h > y_2 - y_1) and (map_w > x_2 - x_1):
+                    saliency_map[class_idx] = cv2.resize(saliency_map[class_idx], (x_2 - x_1, y_2 - y_1))
                 # cut the rest of the feature map that went out of the image borders
                 map_h, map_w = y_2 - y_1, x_2 - x_1
 
@@ -354,21 +354,24 @@ class Tiler:
                     map_pixel = saliency_map[class_idx][hi, wi]
                     # on tile overlap add 0.5 value of each tile
                     if merged_map[class_idx][y_1 + hi, x_1 + wi] != 0:
-                        merged_map[class_idx][y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_map[class_idx][y_1 + hi, x_1 + wi])
+                        merged_map[class_idx][y_1 + hi, x_1 + wi] = 0.5 * (
+                            map_pixel + merged_map[class_idx][y_1 + hi, x_1 + wi]
+                        )
                     else:
                         merged_map[class_idx][y_1 + hi, x_1 + wi] = map_pixel
 
         for class_idx in range(num_classes):
             if (merged_map[class_idx] == 0).all():
-                merged_map[class_idx] =  None
+                merged_map[class_idx] = None
             else:
                 # resize the feature map for whole image to add it to merged saliency maps
                 if image_saliency_map[class_idx] is not None:
-                    image_saliency_map[class_idx] = cv2.resize(image_saliency_map[class_idx], (image_map_w, image_map_h))  
+                    image_saliency_map[class_idx] = cv2.resize(
+                        image_saliency_map[class_idx], (image_map_w, image_map_h)
+                    )
                     merged_map += (0.5 * image_saliency_map[class_idx]).astype(dtype)
                 merged_map = non_linear_normalization(merged_map)
         return merged_map
-
 
     def get_tiling_saliency_map_from_segm_masks(self, detections):
         """Post process function for saliency map of OTX MaskRCNN model for tiling."""
@@ -383,7 +386,7 @@ class Tiler:
         saliency_maps = [None for _ in range(num_classes)]
         scores = detections[0].reshape(-1, 1, 1)
         masks = detections[3]
-        weighted_masks = masks * scores 
+        weighted_masks = masks * scores
         for mask, cls in zip(weighted_masks, classes):
             if saliency_maps[cls] is None:
                 saliency_maps[cls] = [mask]

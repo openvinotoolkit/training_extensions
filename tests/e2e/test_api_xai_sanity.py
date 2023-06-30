@@ -213,6 +213,7 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
                     only_predicted=only_predicted,
                 )
 
+
 class TestOVDetTilXAIAPI(DetectionTaskAPIBase):
     ref_raw_saliency_shapes = {
         "ATSS": (6, 8),
@@ -358,6 +359,7 @@ class TestOVISegmXAIAPI:
                 processed_saliency_maps=processed_saliency_maps,
                 only_predicted=only_predicted,
             )
+
 
 class TestOVISegmTilXAIAPI:
     @e2e_pytest_api

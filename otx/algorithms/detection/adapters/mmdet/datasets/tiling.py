@@ -527,7 +527,8 @@ class Tile:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            saliency_maps: tile-level saliency maps. Each map is a list of maps for each detected class or None if class wasn't detected.
+            saliency_maps: tile-level saliency maps. Each map is a list of maps for each detected
+            class or None if class wasn't detected.
 
         Returns:
             merged_maps (list[np.ndarray]): Merged saliency maps for each image.
@@ -547,7 +548,7 @@ class Tile:
             image_map_w = int(image_w * ratios[img_idx][1])
             merged_maps.append([np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)])
 
-        for map, tile in zip(saliency_maps[self.num_images:], self.tiles[self.num_images:]):
+        for map, tile in zip(saliency_maps[self.num_images :], self.tiles[self.num_images :]):
             for class_idx in range(num_classes):
                 if map[class_idx] is None:
                     continue
@@ -557,12 +558,12 @@ class Tile:
                 y_2, x_2 = ((y_2, x_2) * ratios[img_idx]).astype(np.uint16)
 
                 map_h, map_w = map[class_idx].shape
-                # resize feature map if it got from the tile which width and height is less the tile_size 
-                if (map_h > y_2-y_1) and (map_w > x_2 - x_1):
-                    map[class_idx] = cv2.resize(map[class_idx], (x_2 - x_1, y_2-y_1))
+                # resize feature map if it got from the tile which width and height is less the tile_size
+                if (map_h > y_2 - y_1) and (map_w > x_2 - x_1):
+                    map[class_idx] = cv2.resize(map[class_idx], (x_2 - x_1, y_2 - y_1))
                 # cut the rest of the feature map that went out of the image borders
                 map_h, map_w = y_2 - y_1, x_2 - x_1
-                
+
                 for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
                     map_pixel = map[class_idx][hi, wi]
                     # on tile overlap add 0.5 value of each tile
@@ -578,7 +579,7 @@ class Tile:
             for class_idx in range(num_classes):
                 # don't have detections for this class on merged map
                 if (merged_map[class_idx] == 0).all():
-                    merged_map[class_idx] =  None
+                    merged_map[class_idx] = None
                 else:
                     map_h, map_w = merged_map[class_idx].shape
                     # resize the feature map for whole image to add it to merged saliency maps
