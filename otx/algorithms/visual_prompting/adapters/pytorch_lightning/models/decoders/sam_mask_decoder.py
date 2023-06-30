@@ -156,8 +156,6 @@ class SAMMaskDecoder(nn.Module):
         return masks, iou_pred
 
 
-# Lightly adapted from
-# https://github.com/facebookresearch/MaskFormer/blob/main/mask_former/modeling/transformer/transformer_predictor.py # noqa
 class MLP(nn.Module):
     """Simple MLP with ReLU activations.
 
