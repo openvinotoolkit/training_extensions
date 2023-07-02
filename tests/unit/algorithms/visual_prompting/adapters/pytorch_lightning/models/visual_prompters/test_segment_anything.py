@@ -283,7 +283,7 @@ class TestSegmentAnything:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(
-        "loss_type,expected", [("sam", torch.tensor(2.4290099144)), ("medsam", torch.tensor(0.9650863409))]
+        "loss_type,expected", [("sam", torch.tensor(9.7160396576)), ("medsam", torch.tensor(3.8603453636))]
     )
     def test_training_step(self, mocker, loss_type: str, expected: Tensor) -> None:
         """Test training_step."""

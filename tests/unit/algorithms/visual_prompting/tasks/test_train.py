@@ -19,7 +19,8 @@ from tests.unit.algorithms.visual_prompting.test_helpers import (
 
 class TestTrainingTask:
     @pytest.fixture(autouse=True)
-    def setup(self, tmpdir):
+    def setup(self, tmpdir, mocker):
+        mocker.patch("pathlib.Path.write_text")
         self.task_environment = init_environment()
         self.output_path = str(tmpdir.mkdir("visual_prompting_training_test"))
         self.training_task = TrainingTask(self.task_environment, self.output_path)
