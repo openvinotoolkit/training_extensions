@@ -91,9 +91,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         # Hyperparameters.
         self._work_dir_is_temp = False
         self.output_path = output_path
+        self.mode = "train"
         if self.output_path is None:
             self.output_path = tempfile.mkdtemp(prefix="otx-visual_prompting")
             self._work_dir_is_temp = True
+            self.mode = "inference"
         self.config = self.get_config()
 
         # Set default model attributes.
@@ -116,33 +118,29 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
 
         # set checkpoints
-        resume_from_checkpoint = model_checkpoint = None
-        if self.task_environment.model is not None:
-            # self.task_environment.model is set for two cases:
-            # 1. otx train : args.load_weights or args.resume_from
-            #   - path and resume are set into model_adapters
-            # 2. otx eval
-            #   - both resume_from and path are not needed to be set, path is not set into model_adapters,
-            #     so it can be distinguished by using it
+        model_checkpoint = None
+        resume_from_checkpoint = None
+        if self.mode == "train" and self.task_environment.model is not None:
+            # when args.load_weights or args.resume_from is set
             resume_from_checkpoint = model_checkpoint = self.task_environment.model.model_adapters.get("path", None)
-            if isinstance(resume_from_checkpoint, str) and resume_from_checkpoint.endswith(".pth"):
-                # TODO (sungchul): support resume from checkpoint
-                logger.info("[*] Pytorch checkpoint cannot be used for resuming. It will be supported.")
-                resume_from_checkpoint = None
-            elif not self.task_environment.model.model_adapters.get("resume", False):
+            if self.task_environment.model.model_adapters.get("resume", False):
+                if resume_from_checkpoint.endswith(".pth"):
+                    logger.info("[*] Pytorch checkpoint cannot be used for resuming. It will be supported.")
+                    resume_from_checkpoint = None
+                else:
+                    model_checkpoint = None
+            else:
                 # If not resuming, set resume_from_checkpoint to None to avoid training in resume environment
                 # and saving to configuration.
                 resume_from_checkpoint = None
-            else:
-                # If resuming, set model_checkpoint to None to avoid loading weights twice and saving to configuration.
-                model_checkpoint = None
 
         config = get_visual_promtping_config(
-            self.model_name,
-            self.hyper_parameters,
-            self.output_path,  # type: ignore[arg-type]
-            model_checkpoint,  # type: ignore[arg-type]
-            resume_from_checkpoint,  # type: ignore[arg-type]
+            task_name=self.model_name,
+            otx_config=self.hyper_parameters,
+            config_dir=self.base_dir,
+            mode=self.mode,
+            model_checkpoint=model_checkpoint,
+            resume_from_checkpoint=resume_from_checkpoint,
         )
 
         config.dataset.task = "visual_prompting"
@@ -205,11 +203,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 state_dict = model_data
                 logger.info("Load pytorch checkpoint.")
 
-        try:
-            model = get_model(config=self.config, state_dict=state_dict)
-            logger.info("Complete to load model.")
-        except BaseException as exception:
-            raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+        # try:
+        model = get_model(config=self.config, state_dict=state_dict)
+        logger.info("Complete to load model.")
+        # except BaseException as exception:
+        #     raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
         return model
 
