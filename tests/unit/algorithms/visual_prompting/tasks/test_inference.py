@@ -204,9 +204,9 @@ class TestInferenceTask:
         elif export_type == ExportType.OPENVINO:
             assert output_model.model_format == ModelFormat.OPENVINO
             output_model.optimization_type = ModelOptimizationType.ONNX
-            assert "openvino_sam_image_encoder.bin" in output_model.model_adapters
-            assert "openvino_sam_image_encoder.xml" in output_model.model_adapters
-            assert "openvino_sam_decoder.bin" in output_model.model_adapters
-            assert "openvino_sam_decoder.xml" in output_model.model_adapters
+            assert "sam_image_encoder.bin" in output_model.model_adapters
+            assert "sam_image_encoder.xml" in output_model.model_adapters
+            assert "sam_decoder.bin" in output_model.model_adapters
+            assert "sam_decoder.xml" in output_model.model_adapters
 
         assert not output_model.has_xai

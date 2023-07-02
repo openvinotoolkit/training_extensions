@@ -367,9 +367,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 bin_file = glob(os.path.join(self.output_path, "*.bin"))[0]
                 xml_file = glob(os.path.join(self.output_path, "*.xml"))[0]
                 with open(bin_file, "rb") as file:
-                    output_model.set_data(f"openvino_{module}.bin", file.read())
+                    output_model.set_data(f"{module}.bin", file.read())
                 with open(xml_file, "rb") as file:
-                    output_model.set_data(f"openvino_{module}.xml", file.read())
+                    output_model.set_data(f"{module}.xml", file.read())
 
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
