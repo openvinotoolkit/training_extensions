@@ -47,6 +47,10 @@ model_adapter_keys = (
     "config.json",
     "tile_classifier.xml",
     "tile_classifier.bin",
+    "sam_image_encoder.xml",
+    "sam_image_encoder.bin",
+    "sam_decoder.xml",
+    "sam_decoder.bin",
 )
 
 
