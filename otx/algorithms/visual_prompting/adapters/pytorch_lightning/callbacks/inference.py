@@ -52,14 +52,14 @@ class InferenceCallback(Callback):
         # collect generic predictions
         pred_masks: List = []
         iou_predictions: List = []
-        gt_labels: List = []
+        pred_labels: List = []
         for output in outputs[0]:
             pred_masks.append(output["masks"][0])
             iou_predictions.append(output["iou_predictions"][0])
-            gt_labels.append(output["labels"][0])
+            pred_labels.append(output["labels"][0])
 
         for dataset_item, pred_mask, iou_prediction, labels in zip(
-            self.otx_dataset, pred_masks, iou_predictions, gt_labels
+            self.otx_dataset, pred_masks, iou_predictions, pred_labels
         ):
             annotations: List[Annotation] = []
             for soft_prediction, iou, label in zip(pred_mask, iou_prediction, labels):
