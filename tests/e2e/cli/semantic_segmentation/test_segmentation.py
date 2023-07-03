@@ -240,7 +240,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
     def test_pot_optimize(self, template, tmp_dir_path):
         if template.name != "Lite-HRNet-18":
-            pytest.skip(reason="Skip POT test for models different tnah Lite-HRNet-18 due to CI time limit.")
+            pytest.skip(reason="Skip POT test for models different tnan Lite-HRNet-18 due to CI time limit.")
         tmp_dir_path = tmp_dir_path / "segmentation"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -249,7 +249,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
         if template.name != "Lite-HRNet-18":
-            pytest.skip(reason="Skip POT test for models different tnah Lite-HRNet-18 due to CI time limit.")
+            pytest.skip(reason="Skip POT test for models different tnan Lite-HRNet-18 due to CI time limit.")
         tmp_dir_path = tmp_dir_path / "segmentation"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "semantic_segmentation", type(self).__name__)
 
@@ -258,7 +258,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
     def test_pot_eval(self, template, tmp_dir_path):
         if template.name != "Lite-HRNet-18":
-            pytest.skip(reason="Skip POT test for models different tnah Lite-HRNet-18 due to CI time limit.")
+            pytest.skip(reason="Skip POT test for models different tnan Lite-HRNet-18 due to CI time limit.")
         tmp_dir_path = tmp_dir_path / "segmentation"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
