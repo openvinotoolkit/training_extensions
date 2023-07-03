@@ -7,9 +7,6 @@ reference: https://github.com/facebookresearch/segment-anything
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
-# Copyright (C) 2023 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
 
 import re
 from collections import OrderedDict
