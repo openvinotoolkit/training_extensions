@@ -412,7 +412,7 @@ class TestOVISegmTilXAIAPI:
             saliency_maps_check(
                 predicted_dataset,
                 task_labels,
-                (224, 224),
+                (33, 44),
                 processed_saliency_maps=processed_saliency_maps,
                 only_predicted=only_predicted,
             )

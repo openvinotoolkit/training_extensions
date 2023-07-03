@@ -41,6 +41,7 @@ class Tiler:
         max_number: int,
         detector: Any,
         classifier: Model,
+        num_classes: int,
         segm: bool = False,
         mode: str = "async",
     ):  # pylint: disable=too-many-arguments
@@ -49,6 +50,8 @@ class Tiler:
         self.max_number = max_number
         self.model = detector
         self.classifier = classifier
+        # needed to create saliency maps for IRs for Mask RCNN
+        self.num_classes = num_classes
         self.segm = segm
         if self.segm:
             self.model.disable_mask_resizing()
@@ -374,8 +377,8 @@ class Tiler:
                 # resize the feature map for whole image to add it to merged saliency maps
                 if image_map_cls is not None:
                     image_map_cls = cv2.resize(image_map_cls, (image_map_w, image_map_h))
-                    merged_map += (0.5 * image_map_cls).astype(dtype)
-                merged_map = non_linear_normalization(merged_map)
+                    merged_map[class_idx] += (0.5 * image_map_cls).astype(dtype)
+                merged_map[class_idx] = non_linear_normalization(merged_map[class_idx])
         return merged_map
 
     def get_tiling_saliency_map_from_segm_masks(self, detections: Union[Tuple, np.ndarray]) -> List:
@@ -386,9 +389,7 @@ class Tiler:
             return [None]
 
         classes = [int(cls) - 1 for cls in detections[1]]
-        num_classes = int(np.max(classes) + 1)
-        # if dataset have more classes than detected, saliency_maps[cls] is eihter None or non-existent
-        saliency_maps: List = [None for _ in range(num_classes)]
+        saliency_maps: List = [None for _ in range(self.num_classes)]
         scores = detections[0].reshape(-1, 1, 1)
         masks = detections[3]
         weighted_masks = masks * scores
@@ -397,7 +398,7 @@ class Tiler:
                 saliency_maps[cls] = [mask]
             else:
                 saliency_maps[cls].append(mask)
-        saliency_maps = self._merge_and_normalize(saliency_maps, num_classes)
+        saliency_maps = self._merge_and_normalize(saliency_maps, self.num_classes)
         return saliency_maps
 
     @staticmethod
