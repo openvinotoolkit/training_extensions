@@ -323,7 +323,7 @@ class Tiler:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            features: tile-level features ((vector, map), tile_meta).
+            features: tile-level features ((vector, map: np.array), tile_meta).
             Each saliency map is a list of maps for each detected class or None if class wasn't detected.
 
         Returns:
@@ -332,8 +332,7 @@ class Tiler:
 
         (_, image_saliency_map), image_meta = features[0]
 
-        num_classes = len(image_saliency_map)
-        feat_h, feat_w = image_saliency_map[0].shape
+        num_classes, feat_h, feat_w = image_saliency_map.shape
         dtype = image_saliency_map[0][0].dtype
 
         image_h, image_w, _ = image_meta["original_shape"]
@@ -344,41 +343,31 @@ class Tiler:
         merged_map = [np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)]
 
         for (_, saliency_map), meta in features[1:]:
-            for class_idx in range(num_classes):
-                if saliency_map[class_idx] is None:
-                    continue
-                cls_map = saliency_map[class_idx]
-                x_1, y_1, x_2, y_2 = meta["coord"]
-                y_1, x_1 = ((y_1, x_1) * ratio).astype(np.uint16)
-                y_2, x_2 = ((y_2, x_2) * ratio).astype(np.uint16)
+            x_1, y_1, x_2, y_2 = meta["coord"]
+            y_1, x_1 = ((y_1, x_1) * ratio).astype(np.uint16)
+            y_2, x_2 = ((y_2, x_2) * ratio).astype(np.uint16)
 
-                map_h, map_w = cls_map.shape
-                # resize feature map if it got from the tile which width and height is less the tile_size
-                if (map_h > y_2 - y_1 > 0) and (map_w > x_2 - x_1 > 0):
-                    cls_map = cv2.resize(cls_map, (x_2 - x_1, y_2 - y_1))
-                # cut the rest of the feature map that went out of the image borders
-                map_h, map_w = y_2 - y_1, x_2 - x_1
+            map_h, map_w = saliency_map[0].shape
+            # resize feature map if it got from the tile which width and height is less the tile_size
+            if (map_h > y_2 - y_1 > 0) and (map_w > x_2 - x_1 > 0):
+                saliency_map = np.array([cv2.resize(cls_map, (x_2 - x_1, y_2 - y_1)) for cls_map in saliency_map])
+            # cut the rest of the feature map that went out of the image borders
+            map_h, map_w = y_2 - y_1, x_2 - x_1
 
-                for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
-                    map_pixel = cls_map[hi, wi]
-                    # on tile overlap add 0.5 value of each tile
-                    if merged_map[class_idx][y_1 + hi, x_1 + wi] != 0:
-                        merged_map[class_idx][y_1 + hi, x_1 + wi] = 0.5 * (
-                            map_pixel + merged_map[class_idx][y_1 + hi, x_1 + wi]
-                        )
-                    else:
-                        merged_map[class_idx][y_1 + hi, x_1 + wi] = map_pixel
+            for ci, hi, wi in [(c_, h_, w_) for c_ in range(num_classes) for h_ in range(map_h) for w_ in range(map_w)]:
+                map_pixel = saliency_map[ci, hi, wi]
+                # on tile overlap add 0.5 value of each tile
+                if merged_map[ci][y_1 + hi, x_1 + wi] != 0:
+                    merged_map[ci][y_1 + hi, x_1 + wi] = 0.5 * (map_pixel + merged_map[ci][y_1 + hi, x_1 + wi])
+                else:
+                    merged_map[ci][y_1 + hi, x_1 + wi] = map_pixel
 
         for class_idx in range(num_classes):
-            if (merged_map[class_idx] == 0).all():
-                merged_map[class_idx] = None
-            else:
-                image_map_cls = image_saliency_map[class_idx]
-                # resize the feature map for whole image to add it to merged saliency maps
-                if image_map_cls is not None:
-                    image_map_cls = cv2.resize(image_map_cls, (image_map_w, image_map_h))
-                    merged_map[class_idx] += (0.5 * image_map_cls).astype(dtype)
-                merged_map[class_idx] = non_linear_normalization(merged_map[class_idx])
+            image_map_cls = image_saliency_map[class_idx]
+            # resize the feature map for whole image to add it to merged saliency maps
+            image_map_cls = cv2.resize(image_map_cls, (image_map_w, image_map_h))
+            merged_map[class_idx] += (0.5 * image_map_cls).astype(dtype)
+            merged_map[class_idx] = non_linear_normalization(merged_map[class_idx])
         return merged_map
 
     def get_tiling_saliency_map_from_segm_masks(self, detections: Union[Tuple, np.ndarray]) -> List:
