@@ -35,6 +35,7 @@ from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
+from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -61,11 +62,11 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.usecases.exportable_code.visualizers import Visualizer
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
-from otx.api.usecases.exportable_code.visualizers import Visualizer
-from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
+
 logger = get_logger()
 
 
@@ -453,10 +454,8 @@ class OTXDetectionTask(OTXTask, ABC):
             )
             dataset_item.append_annotations(shapes)
             if show_predictions:
-                annotation_scene = AnnotationSceneEntity(
-                    annotations=shapes,
-                    kind=AnnotationSceneKind.PREDICTION)
-                output = visualizer.draw(dataset_item.numpy, annotation_scene)
+                annotation_scene = AnnotationSceneEntity(annotations=shapes, kind=AnnotationSceneKind.PREDICTION)
+                visualizer.draw(dataset_item.numpy, annotation_scene)
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
