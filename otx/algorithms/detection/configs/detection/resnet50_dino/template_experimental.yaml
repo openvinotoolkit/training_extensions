@@ -34,7 +34,7 @@ hyper_parameters:
       learning_rate_warmup_iters:
         default_value: 3
       num_iters:
-        default_value: 12
+        default_value: 200
     nncf_optimization:
       enable_quantization:
         default_value: true
@@ -55,8 +55,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: ???
-size: ???
+gigaflops: 235
+size: 182.0
 # # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
 # inference_targets:
 #   - CPU

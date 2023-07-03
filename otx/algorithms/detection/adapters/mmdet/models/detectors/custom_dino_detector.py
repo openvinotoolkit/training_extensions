@@ -23,17 +23,97 @@ class CustomDINO(CustomDeformableDETR):
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, task_adapt=task_adapt, **kwargs)
-        self._register_load_state_dict_pre_hook(
-            self.load_state_dict_pre_hook,
-        )
 
-    @staticmethod
-    def load_state_dict_pre_hook(ckpt_dict, *args, **kwargs):
+        self.cls_layers.append("dn_query_generator.label_embedding.weight")
+
+    def load_state_dict_pre_hook(self, model_classes, ckpt_classes, ckpt_dict, *args, **kwargs):
         """Modify mmdet3.x version's weights before weight loading."""
 
         if list(ckpt_dict.keys())[0] == "level_embed":
             logger.info("----------------- CustomDINO.load_state_dict_pre_hook() called")
             # This ckpt_dict comes from mmdet3.x
+            ckpt_classes = [
+                "person",
+                "bicycle",
+                "car",
+                "motorcycle",
+                "airplane",
+                "bus",
+                "train",
+                "truck",
+                "boat",
+                "traffic light",
+                "fire hydrant",
+                "stop sign",
+                "parking meter",
+                "bench",
+                "bird",
+                "cat",
+                "dog",
+                "horse",
+                "sheep",
+                "cow",
+                "elephant",
+                "bear",
+                "zebra",
+                "giraffe",
+                "backpack",
+                "umbrella",
+                "handbag",
+                "tie",
+                "suitcase",
+                "frisbee",
+                "skis",
+                "snowboard",
+                "sports ball",
+                "kite",
+                "baseball bat",
+                "baseball glove",
+                "skateboard",
+                "surfboard",
+                "tennis racket",
+                "bottle",
+                "wine glass",
+                "cup",
+                "fork",
+                "knife",
+                "spoon",
+                "bowl",
+                "banana",
+                "apple",
+                "sandwich",
+                "orange",
+                "broccoli",
+                "carrot",
+                "hot dog",
+                "pizza",
+                "donut",
+                "cake",
+                "chair",
+                "couch",
+                "potted plant",
+                "bed",
+                "dining table",
+                "toilet",
+                "tv",
+                "laptop",
+                "mouse",
+                "remote",
+                "keyboard",
+                "cell phone",
+                "microwave",
+                "oven",
+                "toaster",
+                "sink",
+                "refrigerator",
+                "book",
+                "clock",
+                "vase",
+                "scissors",
+                "teddy bear",
+                "hair drier",
+                "toothbrush",
+            ]
             ckpt_dict["bbox_head.transformer.level_embeds"] = ckpt_dict.pop("level_embed")
             replaced_params = {}
             for param in ckpt_dict:
@@ -56,6 +136,7 @@ class CustomDINO(CustomDeformableDETR):
 
             for origin, new in replaced_params.items():
                 ckpt_dict[new] = ckpt_dict.pop(origin)
+        super().load_state_dict_pre_hook(model_classes, ckpt_classes, ckpt_dict, *args, **kwargs)
 
 
 if is_mmdeploy_enabled():
