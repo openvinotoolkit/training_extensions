@@ -13,10 +13,12 @@ import torch
 from torch import Tensor
 from torchvision.transforms import Normalize
 
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms import (
+    ResizeLongestSide,
+)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.transforms import (
     MultipleInputsCompose,
     Pad,
-    ResizeLongestSide,
     collate_fn,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
