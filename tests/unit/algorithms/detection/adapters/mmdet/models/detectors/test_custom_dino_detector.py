@@ -6,6 +6,9 @@ from typing import Dict
 import torch
 from mmdet.models.builder import build_detector
 
+from otx.algorithms.detection.adapters.mmdet.models.detectors.custom_deformable_detr_detector import (
+    CustomDeformableDETR,
+)
 from otx.algorithms.detection.adapters.mmdet.models.detectors.custom_dino_detector import (
     CustomDINO,
 )
@@ -18,7 +21,9 @@ class TestCustomDINO:
         model = build_detector(fxt_cfg_custom_dino)
         assert isinstance(model, CustomDINO)
 
-    def test_custom_dino_load_state_pre_hook(self, fxt_cfg_custom_dino: Dict):
+    @e2e_pytest_unit
+    def test_custom_dino_load_state_pre_hook(self, fxt_cfg_custom_dino: Dict, mocker):
+        mocker.patch.object(CustomDeformableDETR, "load_state_dict_pre_hook", return_value=True)
         model = build_detector(fxt_cfg_custom_dino)
         ckpt_dict = {
             "level_embed": "level_embed",
@@ -34,7 +39,7 @@ class TestCustomDINO:
             "memory_trans_fc": "memory_trans_fc",
             "memory_trans_norm": "memory_trans_norm",
         }
-        model.load_state_dict_pre_hook(ckpt_dict)
+        model.load_state_dict_pre_hook([], [], ckpt_dict)
 
         assert ckpt_dict["bbox_head.transformer.level_embeds"] == "level_embed"
         assert ckpt_dict["bbox_head.transformer.encoder.attentions.0"] == "encoder.self_attn"
