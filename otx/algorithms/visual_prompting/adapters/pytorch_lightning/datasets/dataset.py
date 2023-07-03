@@ -41,7 +41,7 @@ from pytorch_lightning import LightningDataModule
 logger = get_logger()
 
 
-class OTXVIsualPromptingDataset(Dataset):
+class OTXVisualPromptingDataset(Dataset):
     """Visual Prompting Dataset Adaptor.
 
     Args:
@@ -236,10 +236,10 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                 ]
             )
 
-            self.train_dataset = OTXVIsualPromptingDataset(
+            self.train_dataset = OTXVisualPromptingDataset(
                 train_otx_dataset, train_transform, offset_bbox=self.config.offset_bbox
             )
-            self.val_dataset = OTXVIsualPromptingDataset(val_otx_dataset, val_transform)
+            self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, val_transform)
 
         if stage == "test":
             test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
@@ -250,7 +250,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                     transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
                 ]
             )
-            self.test_dataset = OTXVIsualPromptingDataset(test_otx_dataset, test_transform)
+            self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, test_transform)
 
         if stage == "predict":
             predict_otx_dataset = self.dataset
@@ -261,7 +261,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
                     transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
                 ]
             )
-            self.predict_dataset = OTXVIsualPromptingDataset(predict_otx_dataset, predict_transform)
+            self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, predict_transform)
 
     def summary(self):
         """Print size of the dataset, number of images."""
