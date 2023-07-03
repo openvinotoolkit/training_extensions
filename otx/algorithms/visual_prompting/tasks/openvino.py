@@ -30,6 +30,7 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
+from otx.api.entities.dataset_item import DatasetItemEntity
 
 import otx.algorithms.anomaly.adapters.anomalib.exportable_code
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
@@ -76,7 +77,7 @@ from pathlib import Path
 from importlib.util import find_spec
 if find_spec("openvino") is not None:
     from openvino.inference_engine import IECore
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import OTXVisualPromptingDataModule
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets import OTXVisualPromptingDataset
 
 logger = get_logger(__name__)
 
@@ -96,11 +97,12 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         template_file_path = task_environment.model_template.model_template_path
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
         self.mode = "openvino"
+        self.device = "CPU"
 
         self.config = self.get_config()
 
         # load models
-        self.load_model(
+        self.sam_image_encoder, self.sam_decoder = self.load_model(
             paths=dict(
                 sam_image_encoder=(
                     self.task_environment.model.get_data("sam_image_encoder.xml"),
@@ -138,15 +140,26 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         
         """
         ie_core = IECore()
-        self.sam_image_encoder = ie_core.read_network(
+        sam_image_encoder_newtork = ie_core.read_network(
             model=paths["sam_image_encoder"][0],
             weights=paths["sam_image_encoder"][1],
             init_from_buffer=True)
+        sam_image_encoder_executable_network = ie_core.load_network(
+            network=sam_image_encoder_newtork, device_name=self.device)
 
-        self.sam_decoder = ie_core.read_network(
+        sam_decoder_network = ie_core.read_network(
             model=paths["sam_decoder"][0],
             weights=paths["sam_decoder"][1],
             init_from_buffer=True)
+        sam_decoder_executable_network = ie_core.load_network(
+            network=sam_decoder_network, device_name=self.device)
+
+        return sam_image_encoder_executable_network, sam_decoder_executable_network
+
+    def pre_process(self, dataset_item: DatasetItemEntity) -> np.ndarray:
+        """Preprocess image for inference."""
+        image = dataset_item.numpy
+
 
     def infer(self, dataset: DatasetEntity, inference_parameters: InferenceParameters) -> DatasetEntity:
         """Perform Inference.
@@ -166,15 +179,15 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
-        datamodule = OTXVisualPromptingDataModule(self.config, dataset)
-        datamodule.setup(stage="predict")
-        dataloader = datamodule.predict_dataloader()
-
         # This always assumes that threshold is available in the task environment's model
         meta_data = self.get_metadata()
-        for idx, dataset_item in enumerate(dataloader):
+        self.transform = OTXVisualPromptingDataset
+        for idx, dataset_item in enumerate(dataset):
+            # preprocess inputs
+            image, mask, bboxes, points = self.pre_process(dataset_item)
+
             # get image embeddings
-            images = dataset_item["images"].detach().cpu().numpy()
+            images = dataset_item["images"]
             image_embeddings = self.sam_image_encoder(images)
 
             # get result per prompt
