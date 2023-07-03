@@ -41,7 +41,7 @@ class InferenceCallback(Callback):
 
     def __init__(self, otx_dataset: DatasetEntity):
         # decide if using mask or polygon annotations for predictions
-        if isinstance(otx_dataset[0].annotation_scene.annotations[0].shape, Image):
+        if any(isinstance(shape, Image) for shape in otx_dataset[0].annotation_scene.shapes):
             self.use_mask = True
         else:
             self.use_mask = False
