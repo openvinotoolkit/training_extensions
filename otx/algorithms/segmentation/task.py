@@ -120,10 +120,12 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-            is_evaluation = inference_parameters.is_evaluation
+            dump_soft_prediction = not inference_parameters.is_evaluation
+            process_soft_prediction = inference_parameters.process_saliency_maps
         else:
             update_progress_callback = default_infer_progress_callback
-            is_evaluation = False
+            dump_soft_prediction = True
+            process_soft_prediction = False
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
@@ -133,7 +135,7 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         predictions = self._infer_model(dataset, InferenceParameters(is_evaluation=True))
         prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
-        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
+        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction, process_soft_prediction)
 
         logger.info("Inference completed")
         return dataset
@@ -263,7 +265,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
+    def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction, process_soft_prediction):
         """Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTX format."""
         for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
@@ -288,14 +290,15 @@ class OTXSegmentationTask(OTXTask, ABC):
                     if label_index == 0:
                         continue
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
-                    class_act_map = get_activation_map(current_label_soft_prediction)
+                    if process_soft_prediction:
+                        current_label_soft_prediction = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(
                         name=label.name,
                         type="soft_prediction",
                         label=label,
                         annotation_scene=dataset_item.annotation_scene,
                         roi=dataset_item.roi,
-                        numpy=class_act_map,
+                        numpy=current_label_soft_prediction,
                     )
                     dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
 
