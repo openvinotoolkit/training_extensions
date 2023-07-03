@@ -30,7 +30,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from tests.test_helpers import generate_random_annotated_image
 
-DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR = os.path.join("otx/algorithms/visual_prompting/configs", "sam_vit_b")
+DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR = os.path.join("src/otx/algorithms/visual_prompting/configs", "sam_vit_b")
 
 labels_names = ("rectangle", "ellipse", "triangle")
 

@@ -48,12 +48,12 @@ otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
-    os.path.join("otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml")
+    os.path.join("src/otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml")
 )
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
+templates = Registry("src/otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 

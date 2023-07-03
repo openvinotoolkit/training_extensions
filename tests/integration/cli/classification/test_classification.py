@@ -69,7 +69,7 @@ otx_dir = os.getcwd()
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
     os.path.join(
-        "otx/algorithms/classification",
+        "src/otx/algorithms/classification",
         "configs",
         "efficientnet_b0_cls_incr",
         "template.yaml",
@@ -78,7 +78,7 @@ default_template = parse_model_template(
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
+templates = Registry("src/otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 

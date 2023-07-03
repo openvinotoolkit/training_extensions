@@ -61,7 +61,7 @@ resume_params = [
 otx_dir = os.getcwd()
 
 
-templates = Registry("otx/algorithms/visual_prompting").filter(task_type="VISUAL_PROMPTING").templates
+templates = Registry("src/otx/algorithms/visual_prompting").filter(task_type="VISUAL_PROMPTING").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
