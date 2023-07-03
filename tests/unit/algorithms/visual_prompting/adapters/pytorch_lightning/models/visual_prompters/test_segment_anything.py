@@ -16,6 +16,7 @@ from torch import Tensor
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import (
     SegmentAnything,
+    CKPT_PATHS
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
@@ -231,6 +232,30 @@ class TestSegmentAnything:
             assert v == sam_state_dict[k]
 
     @e2e_pytest_unit
+    def test_load_checkpoint_pretrained_weights(self, mocker, monkeypatch):
+        """Test load_checkpoint with pretrained weights."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
+        mocker_CKPT_PATHS = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.CKPT_PATHS",
+        )
+        monkeypatch.setattr("torch.hub.load_state_dict_from_url", lambda *args, **kwargs: OrderedDict())
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
+        )
+
+        config = self.base_config.copy()
+        config.model.checkpoint = "pretrained"
+
+        sam = SegmentAnything(config, state_dict=None)
+
+        mocker_CKPT_PATHS.__getitem__.assert_called_once()
+
+    @e2e_pytest_unit
     @pytest.mark.parametrize("checkpoint", [None, "checkpoint", "http://checkpoint"])
     def test_load_checkpoint(self, mocker, monkeypatch, checkpoint: str):
         """Test load_checkpoint."""
@@ -270,13 +295,48 @@ class TestSegmentAnything:
             mocker_load_from_checkpoint.assert_called_once()
 
     @e2e_pytest_unit
+    @pytest.mark.skip(reason="This test will be implemented.")
     def test_forward(self) -> None:
+        """Test forward."""    
+    
+    @e2e_pytest_unit
+    @pytest.mark.skip(reason="This test will be implemented.")
+    def test_embed_points(self) -> None:
+        """Test _embed_points."""    
+    
+    @e2e_pytest_unit
+    @pytest.mark.skip(reason="This test will be implemented.")
+    def test_embed_masks(self) -> None:
+        """Test _embed_masks."""    
+    
+    @e2e_pytest_unit
+    @pytest.mark.skip(reason="This test will be implemented.")
+    def test_calculate_stability_score(self) -> None:
+        """Test calculate_stability_score."""    
+    
+    @e2e_pytest_unit
+    @pytest.mark.skip(reason="This test will be implemented.")
+    def test_select_masks(self) -> None:
+        """Test select_masks."""    
+    
+    @e2e_pytest_unit
+    @pytest.mark.skip(reason="This test will be implemented.")
+    def test_mask_postprocessing(self) -> None:
+        """Test mask_postprocessing."""    
+    
+    @e2e_pytest_unit
+    @pytest.mark.skip(reason="This test will be implemented.")
+    def test_resize_longest_image_size(self) -> None:
+        """Test resize_longest_image_size."""
+
+    @e2e_pytest_unit
+    def test_forward_train(self) -> None:
         """Test forward."""
         sam = SegmentAnything(config=self.base_config)
         images = torch.zeros((1))
         bboxes = torch.zeros((1))
 
-        results = sam.forward(images=images, bboxes=bboxes, points=None)
+        results = sam.forward_train(images=images, bboxes=bboxes, points=None)
         pred_masks, ious = results
 
         assert len(bboxes) == len(pred_masks) == len(ious)
