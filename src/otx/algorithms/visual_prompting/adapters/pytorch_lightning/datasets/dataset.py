@@ -52,13 +52,11 @@ class OTXVisualPromptingDataset(Dataset):
 
     def __init__(self, dataset: DatasetEntity, image_size: int, offset_bbox: int = 0) -> None:
         self.dataset = dataset
-        self.transform = MultipleInputsCompose(
-        [
+        self.transform = MultipleInputsCompose([
             ResizeLongestSide(target_length=max(image_size)),
             Pad(),
             transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
-        ]
-    )
+        ])
         self.offset_bbox = offset_bbox
 
         self.labels = dataset.get_labels()
