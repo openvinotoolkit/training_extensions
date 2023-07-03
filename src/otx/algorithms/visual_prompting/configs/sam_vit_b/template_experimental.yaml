@@ -13,6 +13,7 @@ framework: OTXVisualPrompting v0.1.0
 # Task implementations.
 entrypoints:
   base: otx.algorithms.visual_prompting.tasks.TrainingTask
+  openvino: otx.algorithms.visual_prompting.tasks.openvino.OpenVINOTask
 
 # Hyper Parameters
 hyper_parameters:
