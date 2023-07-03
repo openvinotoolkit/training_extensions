@@ -26,6 +26,7 @@ from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from tests.test_helpers import generate_random_annotated_image
 
@@ -57,11 +58,11 @@ def generate_otx_label_schema(labels_names: List[str] = labels_names):
     return label_schema
 
 
-def generate_visual_prompting_dataset(number_of_images: int = 1, use_mask: bool = False) -> DatasetEntity:
+def generate_visual_prompting_dataset(use_mask: bool = False) -> DatasetEntity:
     items = []
     labels_schema = generate_otx_label_schema()
     labels_list = labels_schema.get_labels(False)
-    for _ in range(number_of_images):
+    for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING, Subset.NONE]:
         image_numpy, shapes = generate_random_annotated_image(
             image_width=640,
             image_height=480,
@@ -97,7 +98,7 @@ def generate_visual_prompting_dataset(number_of_images: int = 1, use_mask: bool 
                 out_shapes.append(Annotation(Polygon(points=points), labels=shape_labels))
         image = Image(data=image_numpy)
         annotation = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=out_shapes)
-        items.append(DatasetItemEntity(media=image, annotation_scene=annotation))
+        items.append(DatasetItemEntity(media=image, annotation_scene=annotation, subset=subset))
 
     return DatasetEntity(items)
 

@@ -46,7 +46,7 @@ class TestOTXVIsualPromptingDataset:
     def test_len(self, dataset_polygon) -> None:
         """Test __len__."""
         otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
-        assert len(otx_dataset) == 1
+        assert len(otx_dataset) == 4
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("use_mask", [False, True])

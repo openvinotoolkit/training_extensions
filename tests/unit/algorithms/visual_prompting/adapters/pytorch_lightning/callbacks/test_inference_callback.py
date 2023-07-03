@@ -85,7 +85,7 @@ class TestInferenceCallback:
         inference_callback.on_predict_epoch_end(self.mocker_trainer, self.mocker_lightning_module, outputs)
         predicted_otx_dataset = inference_callback.otx_dataset
 
-        assert len(predicted_otx_dataset) == 1
+        assert len(predicted_otx_dataset) == 4
         dataset_item = predicted_otx_dataset[0]
         assert len(dataset_item.annotation_scene.annotations) == 1
 
