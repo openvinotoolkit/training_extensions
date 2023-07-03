@@ -455,7 +455,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             async_requests_num,
         ]
         if self.task_type == TaskType.DETECTION:
-            if self.task_environment.model_template.model_template_id == "Custom_Object_Detection_YOLOX":
+            if (
+                self.task_environment.model_template.model_template_id == "Custom_Object_Detection_YOLOX"
+                and not self.config.tiling_parameters.enable_tiling
+            ):
                 args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
