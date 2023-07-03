@@ -282,7 +282,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         """
         return DataLoader(
             self.train_dataset,
-            shuffle=False,
+            shuffle=True,
             batch_size=self.config.train_batch_size,
             num_workers=self.config.num_workers,
             collate_fn=collate_fn,
