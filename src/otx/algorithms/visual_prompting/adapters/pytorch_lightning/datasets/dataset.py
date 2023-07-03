@@ -41,6 +41,15 @@ from otx.api.utils.shape_factory import ShapeFactory
 logger = get_logger()
 
 
+def get_transform(image_size: int, mean: List[float], std: List[float]) -> MultipleInputsCompose:
+    return MultipleInputsCompose([
+        ResizeLongestSide(target_length=image_size),
+        Pad(),
+        transforms.Normalize(mean=mean, std=std),
+        #  [123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
+    ])
+
+
 class OTXVisualPromptingDataset(Dataset):
     """Visual Prompting Dataset Adaptor.
 
@@ -50,15 +59,18 @@ class OTXVisualPromptingDataset(Dataset):
         offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
     """
 
-    def __init__(self, dataset: DatasetEntity, image_size: int, offset_bbox: int = 0) -> None:
-        self.dataset = dataset
-        self.transform = MultipleInputsCompose([
-            ResizeLongestSide(target_length=max(image_size)),
-            Pad(),
-            transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
-        ])
-        self.offset_bbox = offset_bbox
+    def __init__(
+        self,
+        dataset: DatasetEntity,
+        image_size: int,
+        mean: List[float],
+        std: List[float],
+        offset_bbox: int = 0
+    ) -> None:
 
+        self.dataset = dataset
+        self.transform = get_transform(image_size, mean, std)
+        self.offset_bbox = offset_bbox
         self.labels = dataset.get_labels()
 
     def __len__(self) -> int:
@@ -223,6 +235,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             self.summary()
 
         image_size = self.config.image_size
+        mean = self.config.normalize.mean
+        std = self.config.normalize.std
         if isinstance(image_size, int):
             image_size = [image_size]
 
@@ -231,17 +245,17 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
 
             self.train_dataset = OTXVisualPromptingDataset(
-                train_otx_dataset, image_size, offset_bbox=self.config.offset_bbox
+                train_otx_dataset, image_size, mean, std, offset_bbox=self.config.offset_bbox
             )
-            self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, image_size)
+            self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, image_size, mean, std)
 
         if stage == "test":
             test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
-            self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, image_size)
+            self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, image_size, mean, std)
 
         if stage == "predict":
             predict_otx_dataset = self.dataset
-            self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, image_size)
+            self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, image_size, mean, std)
 
     def summary(self):
         """Print size of the dataset, number of images."""

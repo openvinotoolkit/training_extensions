@@ -5,6 +5,15 @@ dataset:
   test_batch_size: 1
   num_workers: 4
   image_size: 1024 # dimensions to which images are resized (mandatory)
+  normalize:
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375
   offset_bbox: 20 # randomness for generating bounding box, pixel
 
 model:

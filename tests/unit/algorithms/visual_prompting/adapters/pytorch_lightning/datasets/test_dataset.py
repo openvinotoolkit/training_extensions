@@ -13,9 +13,13 @@ from torch.utils.data import DataLoader
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataModule,
     OTXVisualPromptingDataset,
+    get_transform
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
     collate_fn,
+    MultipleInputsCompose,
+    ResizeLongestSide,
+    Pad
 )
 from otx.api.entities.image import Image
 from otx.api.entities.shapes.polygon import Point, Polygon
@@ -25,12 +29,30 @@ from tests.unit.algorithms.visual_prompting.test_helpers import (
     generate_visual_prompting_dataset,
 )
 from otx.api.entities.datasets import DatasetEntity
+from torchvision import transforms
+
+
+@e2e_pytest_unit
+def test_get_transform():
+    """Test get_transform."""
+    transform = get_transform(image_size=32, mean=[1., 1., 1.], std=[0., 0., 0.])
+
+    assert isinstance(transform, MultipleInputsCompose)
+    assert isinstance(transform.transforms[0], ResizeLongestSide)
+    assert transform.transforms[0].target_length == 32
+    assert isinstance(transform.transforms[1], Pad)
+    assert isinstance(transform.transforms[2], transforms.Normalize)
+    assert transform.transforms[2].mean == [1., 1., 1.]
+    assert transform.transforms[2].std == [0., 0., 0.]
 
 
 class TestOTXVIsualPromptingDataset:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.transform = lambda items: items
+        self.image_size = 32
+        self.mean=[1., 1., 1.]
+        self.std=[0., 0., 0.]
 
     @pytest.fixture
     def dataset_polygon(self) -> DatasetEntity:
@@ -43,17 +65,23 @@ class TestOTXVIsualPromptingDataset:
         return generate_visual_prompting_dataset(use_mask=True)
 
     @e2e_pytest_unit
-    def test_len(self, dataset_polygon) -> None:
+    def test_len(self, mocker, dataset_polygon) -> None:
         """Test __len__."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=self.transform)
+        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.image_size, self.mean, self.std)
         assert len(otx_dataset) == 4
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("use_mask", [False, True])
-    def test_getitem(self, dataset_polygon, dataset_mask, use_mask: bool) -> None:
+    def test_getitem(self, mocker, dataset_polygon, dataset_mask, use_mask: bool) -> None:
         """Test __getitem__."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=self.transform)
         dataset = dataset_mask if use_mask else dataset_polygon
-        otx_dataset = OTXVisualPromptingDataset(dataset=dataset, transform=self.transform)
+        otx_dataset = OTXVisualPromptingDataset(dataset, self.image_size, self.mean, self.std)
 
         item = otx_dataset[0]
 
@@ -72,9 +100,12 @@ class TestOTXVIsualPromptingDataset:
         assert item["points"] == []
 
     @e2e_pytest_unit
-    def test_convert_polygon_to_mask(self, dataset_polygon) -> None:
+    def test_convert_polygon_to_mask(self, mocker, dataset_polygon) -> None:
         """Test convert_polygon_to_mask."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=self.transform)
+        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.image_size, self.mean, self.std)
 
         polygon = Polygon(points=[Point(x=0.1, y=0.1), Point(x=0.2, y=0.2), Point(x=0.3, y=0.3)])
         width = 100
@@ -87,9 +118,12 @@ class TestOTXVIsualPromptingDataset:
         assert mask.sum() == 21
 
     @e2e_pytest_unit
-    def test_generate_bbox(self, dataset_polygon) -> None:
+    def test_generate_bbox(self, mocker, dataset_polygon) -> None:
         """Test generate_bbox."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=self.transform)
+        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.image_size, self.mean, self.std)
 
         x1, y1, x2, y2 = 10, 20, 30, 40
         width = 100
@@ -105,9 +139,12 @@ class TestOTXVIsualPromptingDataset:
         assert bbox[3] >= 0 and bbox[3] <= height
 
     @e2e_pytest_unit
-    def test_generate_bbox_from_mask(self, dataset_polygon) -> None:
+    def test_generate_bbox_from_mask(self, mocker, dataset_polygon) -> None:
         """Test generate_bbox_from_mask."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=self.transform)
+        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.image_size, self.mean, self.std)
 
         gt_mask = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
         width = 3
