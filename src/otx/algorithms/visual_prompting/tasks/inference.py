@@ -19,6 +19,7 @@ import json
 from glob import glob
 import warnings
 import io
+import json
 import os
 import shutil
 import subprocess
@@ -375,6 +376,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        self._set_metadata(output_model)
 
     def model_info(self) -> Dict:
         """Return model info to save the model weights.
@@ -403,6 +405,21 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
+
+    def _set_metadata(self, output_model: ModelEntity) -> None:
+        """Set metadata to the output model."""
+        if hasattr(self, "trainer") and hasattr(self.trainer, "datamodule"):
+            if hasattr(self.trainer.datamodule, "test_otx_dataset"):
+                transform = self.trainer.datamodule.test_dataloader().dataset.transform
+            else:
+                transform = self.trainer.datamodule.train_dataloader().dataset.transform
+        metadata = {
+            "transform": transform.to_dict(),
+            "image_shape": list(self.config.model.input_size),
+        }
+        # Set the task type for inferencer
+        metadata["task"] = str(self.task_type).lower().split("_")[-1]
+        output_model.set_data("metadata", json.dumps(metadata).encode())
 
     @staticmethod
     def _is_docker() -> bool:
