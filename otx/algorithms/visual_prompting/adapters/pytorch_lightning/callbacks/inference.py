@@ -49,13 +49,11 @@ class InferenceCallback(Callback):
 
     def on_predict_epoch_end(self, _trainer: Trainer, _pl_module: LightningModule, outputs: List[Any]) -> None:
         """Call when the predict epoch ends."""
-        outputs = outputs[0]
-
         # collect generic predictions
         pred_masks: List = []
         iou_predictions: List = []
         gt_labels: List = []
-        for output in outputs:
+        for output in outputs[0]:
             pred_masks.append(output["masks"][0])
             iou_predictions.append(output["iou_predictions"][0])
             gt_labels.append(output["labels"][0])
