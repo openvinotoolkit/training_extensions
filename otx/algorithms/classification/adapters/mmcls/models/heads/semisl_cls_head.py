@@ -31,8 +31,6 @@ class SemiClsHead(OTXHeadMixin):
         )  # the range of threshold will be [min_thr, 1.0]
         self.num_pseudo_label = 0
         self.classwise_acc = torch.ones((self.num_classes,)) * self.min_threshold
-        if torch.cuda.is_available():
-            self.classwise_acc = self.classwise_acc.cuda()
 
     def loss(self, logits, gt_label, pseudo_label=None, mask=None):
         """Loss function in which unlabeled data is considered.
@@ -89,8 +87,7 @@ class SemiClsHead(OTXHeadMixin):
                 max_probs, label_u = torch.max(pseudo_label, dim=-1)
 
                 # select Pseudo-Label using flexible threhold
-                if torch.cuda.is_available():
-                    max_probs = max_probs.cuda()
+                self.classwise_acc = self.classwise_acc.to(label_u.device)
                 mask = max_probs.ge(self.classwise_acc[label_u]).float()
                 self.num_pseudo_label = mask.sum()
 
