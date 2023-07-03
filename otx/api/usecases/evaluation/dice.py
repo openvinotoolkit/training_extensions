@@ -6,6 +6,7 @@
 
 
 from typing import Dict, List, Optional, Tuple
+import numpy as np
 
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import (
@@ -26,6 +27,7 @@ from otx.api.usecases.evaluation.performance_provider_interface import (
 )
 from otx.api.utils.segmentation_utils import mask_from_dataset_item
 from otx.api.utils.time_utils import timeit
+from otx.api.entities.image import Image
 
 
 class DiceAverage(IPerformanceProvider):
@@ -112,13 +114,33 @@ class DiceAverage(IPerformanceProvider):
         resultset_labels = set(resultset.prediction_dataset.get_labels() + resultset.ground_truth_dataset.get_labels())
         model_labels = set(resultset.model.configuration.get_label_schema().get_labels(include_empty=False))
         labels = sorted(resultset_labels.intersection(model_labels))
+        labels_map = {label: i + 1 for i, label in enumerate(labels)}
         hard_predictions = []
         hard_references = []
         for prediction_item, reference_item in zip(
             list(resultset.prediction_dataset), list(resultset.ground_truth_dataset)
         ):
-            hard_predictions.append(mask_from_dataset_item(prediction_item, labels))
-            hard_references.append(mask_from_dataset_item(reference_item, labels))
+            try:
+                hard_predictions.append(mask_from_dataset_item(prediction_item, labels))
+                hard_references.append(mask_from_dataset_item(reference_item, labels))
+            except:
+                # when item consists of masks with Image properties
+                # TODO (sungchul): how to add condition to check if polygon or mask?
+                def combine_masks(annotations):
+                    combined_mask = None
+                    for annotation in annotations:
+                        if isinstance(annotation.shape, Image):
+                            scored_label = annotation.get_labels()[0]
+                            label = scored_label.label
+                            if combined_mask is None:
+                                combined_mask = np.where(annotation.shape.numpy > 0, labels_map[label], 0)
+                            else:
+                                combined_mask += np.where(annotation.shape.numpy > 0, labels_map[label], 0)
+                    combined_mask = np.expand_dims(combined_mask, axis=2)
+                    return combined_mask
+
+                hard_predictions.append(combine_masks(prediction_item.get_annotations()))
+                hard_references.append(combine_masks(reference_item.get_annotations()))
 
         all_intersection, all_cardinality = get_intersections_and_cardinalities(
             hard_references, hard_predictions, labels

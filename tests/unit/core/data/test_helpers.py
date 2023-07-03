@@ -22,6 +22,7 @@ TASK_NAME_TO_TASK_TYPE = {
     "anomaly_segmentation": TaskType.ANOMALY_SEGMENTATION,
     "action_classification": TaskType.ACTION_CLASSIFICATION,
     "action_detection": TaskType.ACTION_DETECTION,
+    "visual_prompting": TaskType.VISUAL_PROMPTING,
 }
 
 TASK_NAME_TO_DATA_ROOT = {
@@ -78,6 +79,23 @@ TASK_NAME_TO_DATA_ROOT = {
         "train": "tests/assets/cvat_dataset/action_detection/train",
         "val": "tests/assets/cvat_dataset/action_detection/train",
         "test": "tests/assets/cvat_dataset/action_detection/train",
+    },
+    "visual_prompting": {
+        "coco": {
+            "train": "tests/assets/car_tree_bug",
+            "val": "tests/assets/car_tree_bug",
+            "test": "tests/assets/car_tree_bug",
+        },
+        "voc": {
+            "train": "tests/assets/voc_dataset/voc_dataset1",
+            "val": "tests/assets/voc_dataset/voc_dataset1",
+            "test": "tests/assets/voc_dataset/voc_dataset1",
+        },
+        "common_semantic_segmentation": {
+            "train": "tests/assets/common_semantic_segmentation_dataset/train",
+            "val": "tests/assets/common_semantic_segmentation_dataset/val",
+            "test": "tests/assets/common_semantic_segmentation_dataset/val",
+        },
     },
 }
 

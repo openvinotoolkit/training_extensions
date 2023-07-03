@@ -219,6 +219,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     if args.load_weights or args.resume_from:
         ckpt_path = args.resume_from if args.resume_from else args.load_weights
         model_adapters = {
+            "path": ckpt_path,
             "weights.pth": ModelAdapter(read_binary(ckpt_path)),
             "resume": bool(args.resume_from),
         }

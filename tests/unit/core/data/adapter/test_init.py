@@ -22,6 +22,8 @@ def test_get_dataset_adapter_incremental(task_name, train_type):
     root_path = os.getcwd()
     task_type = TASK_NAME_TO_TASK_TYPE[task_name]
     data_root = TASK_NAME_TO_DATA_ROOT[task_name]
+    if str(task_type).upper() == "VISUAL_PROMPTING":
+        data_root = data_root.get("coco")
 
     get_dataset_adapter(
         task_type=task_type,
