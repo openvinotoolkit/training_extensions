@@ -692,7 +692,9 @@ class MMClassificationTask(OTXClassificationTask):
         )
 
         if self._hyperparams.learning_parameters.auto_num_workers:
-            config.data.workers_per_gpu = get_adaptive_num_workers()
+            adapted_num_worker = get_adaptive_num_workers()
+            if adapted_num_worker is not None:
+                config.data.workers_per_gpu = adapted_num_worker
 
         if self._train_type.value == "Semisupervised":
             unlabeled_config = ConfigDict(

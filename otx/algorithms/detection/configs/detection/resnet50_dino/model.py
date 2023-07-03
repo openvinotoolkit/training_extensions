@@ -1,6 +1,9 @@
-"""Model config for Deformable DETR."""
+"""Model config for DINO."""
+_base_ = [
+    "../../../../../recipes/stages/detection/incremental.py",
+]
 model = dict(
-    type="CustomDeformableDETR",
+    type="CustomDINO",
     backbone=dict(
         type="ResNet",
         depth=50,
@@ -22,88 +25,76 @@ model = dict(
         num_outs=4,
     ),
     bbox_head=dict(
-        type="DeformableDETRHead",
-        num_query=300,
+        type="CustomDINOHead",
+        num_query=900,
         num_classes=80,
         in_channels=2048,
         sync_cls_avg_factor=True,
         with_box_refine=True,
         as_two_stage=True,
         transformer=dict(
-            type="DeformableDetrTransformer",
+            type="CustomDINOTransformer",
             encoder=dict(
                 type="DetrTransformerEncoder",
                 num_layers=6,
                 transformerlayers=dict(
                     type="BaseTransformerLayer",
-                    attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256),
-                    feedforward_channels=1024,
-                    ffn_dropout=0.1,
+                    attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
+                    feedforward_channels=2048,
+                    ffn_dropout=0.0,
                     operation_order=("self_attn", "norm", "ffn", "norm"),
                 ),
             ),
             decoder=dict(
-                type="DeformableDetrTransformerDecoder",
+                type="DINOTransformerDecoder",
                 num_layers=6,
                 return_intermediate=True,
                 transformerlayers=dict(
                     type="DetrTransformerDecoderLayer",
                     attn_cfgs=[
-                        dict(type="MultiheadAttention", embed_dims=256, num_heads=8, dropout=0.1),
-                        dict(type="MultiScaleDeformableAttention", embed_dims=256),
+                        dict(type="MultiheadAttention", embed_dims=256, num_heads=8, dropout=0.0),
+                        dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
                     ],
-                    feedforward_channels=1024,
-                    ffn_dropout=0.1,
+                    feedforward_channels=2048,
+                    ffn_dropout=0.0,
                     operation_order=("self_attn", "norm", "cross_attn", "norm", "ffn", "norm"),
                 ),
             ),
         ),
-        positional_encoding=dict(type="SinePositionalEncoding", num_feats=128, normalize=True, offset=-0.5),
-        loss_cls=dict(type="FocalLoss", use_sigmoid=True, gamma=2.0, alpha=0.25, loss_weight=2.0),
+        positional_encoding=dict(
+            type="SinePositionalEncoding", num_feats=128, normalize=True, offset=0.0, temperature=20
+        ),
+        loss_cls=dict(type="FocalLoss", use_sigmoid=True, gamma=2.0, alpha=0.25, loss_weight=1.0),
         loss_bbox=dict(type="L1Loss", loss_weight=5.0),
         loss_iou=dict(type="GIoULoss", loss_weight=2.0),
+        dn_cfg=dict(
+            label_noise_scale=0.5,
+            box_noise_scale=1.0,  # 0.4 for DN-DETR
+            group_cfg=dict(dynamic=True, num_groups=None, num_dn_queries=100),
+        ),
     ),
     # training and testing settings
     train_cfg=dict(
         assigner=dict(
             type="HungarianAssigner",
-            cls_cost=dict(type="FocalLossCost", weight=2.0),
+            cls_cost=dict(type="FocalLossCost", weight=1.0),
             reg_cost=dict(type="BBoxL1Cost", weight=5.0, box_format="xywh"),
             iou_cost=dict(type="IoUCost", iou_mode="giou", weight=2.0),
         )
     ),
-    test_cfg=dict(max_per_img=100),
+    test_cfg=dict(max_per_img=300),
 )
 # optimizer
 optimizer = dict(
+    _delete_=True,
     type="AdamW",
-    lr=2e-4,
+    lr=1e-4,
     weight_decay=0.0001,
-    paramwise_cfg=dict(
-        custom_keys={
-            "backbone": dict(lr_mult=0.1),
-            "sampling_offsets": dict(lr_mult=0.1),
-            "reference_points": dict(lr_mult=0.1),
-        }
-    ),
 )
 optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
-# learning policy
-lr_config = dict(policy="step", step=[10])
-runner = dict(type="EpochRunnerWithCancel", max_epochs=12)
-load_from = "https://download.openmmlab.com/mmdetection/v2.0/deformable_detr/\
-deformable_detr_twostage_refine_r50_16x2_50e_coco/\
-deformable_detr_twostage_refine_r50_16x2_50e_coco_20210419_220613-9d28ab72.pth"
-resume_from = None
-
-checkpoint_config = dict(interval=1)
-# yapf:disable
-log_config = dict(
-    interval=100,
-    hooks=[
-        dict(type="TextLoggerHook"),
-    ],
+load_from = (
+    "https://download.openmmlab.com/mmdetection/v3.0/dino/"
+    "dino-4scale_r50_8xb2-12e_coco/dino-4scale_r50_8xb2-12e_coco_20221202_182705-55b2bba2.pth"
 )
-log_level = "INFO"
-workflow = [("train", 1)]
-task_adapt = dict(op="REPLACE", type="temp", efficient_mode=False, use_mpa_anchor=False)
+resume_from = None
+ignore = False

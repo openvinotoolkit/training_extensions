@@ -216,6 +216,14 @@ class TaskType(Enum):
         ACTION_DETECTION = 15, TaskInfo(
             domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
         )
+    if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+        VISUAL_PROMPTING = 16, TaskInfo(  # TODO: Is 16 okay when action flag is False?
+            domain=Domain.VISUAL_PROMPTING,
+            is_trainable=True,
+            is_anomaly=False,
+            is_global=False,
+            is_local=True,  # TODO: check whether is it local or not
+        )
 
     def __str__(self) -> str:
         """Returns name."""
@@ -253,6 +261,11 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
             **mapping,
             TaskType.ACTION_CLASSIFICATION: Domain.ACTION_CLASSIFICATION,
             TaskType.ACTION_DETECTION: Domain.ACTION_DETECTION,
+        }
+    if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+        mapping = {
+            **mapping,
+            TaskType.VISUAL_PROMPTING: Domain.VISUAL_PROMPTING,
         }
 
     try:
@@ -592,6 +605,11 @@ if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
         *TRAINABLE_TASK_TYPES,
         TaskType.ACTION_CLASSIFICATION,
         TaskType.ACTION_DETECTION,
+    )
+if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
+    TRAINABLE_TASK_TYPES = (
+        *TRAINABLE_TASK_TYPES,
+        TaskType.VISUAL_PROMPTING,
     )
 
 

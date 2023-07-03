@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_Deformable_DETR
-name: Deformable_DETR
+model_template_id: Custom_Object_Detection_Gen3_DINO
+name: DINO
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for Deformable_DETR
+summary: Class-Incremental Object Detection for DINO
 application: ~
 
 # Algo backend.
@@ -29,12 +29,12 @@ hyper_parameters:
         default_value: 2
         auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.0002
+        default_value: 0.0001
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 3
       num_iters:
-        default_value: 12
+        default_value: 200
     nncf_optimization:
       enable_quantization:
         default_value: true
@@ -55,8 +55,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: ???
-size: ???
+gigaflops: 235
+size: 182.0
 # # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
 # inference_targets:
 #   - CPU

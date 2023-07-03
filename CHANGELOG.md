@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
 - Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (https://github.com/openvinotoolkit/training_extensions/pull/2195)
 - Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
+- Add new object detecotr DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
+- Add new visual prompting task (https://github.com/openvinotoolkit/training_extensions/pull/2203)
 
 ### Enhancements
 

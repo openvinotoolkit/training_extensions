@@ -193,6 +193,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         if encryption_key is not None:
             dataset_kwargs["encryption_key"] = encryption_key
 
+        if self.task_type == TaskType.VISUAL_PROMPTING:
+            if self.data_type in ["coco"]:
+                dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
+
         dataset = DatumDataset.import_from(**dataset_kwargs)
 
         return dataset
@@ -344,6 +348,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         return Annotation(
             Polygon(points),
             labels=[ScoredLabel(label=self.label_entities[annotation.label])],
+        )
+
+    def _get_mask_entity(self, annotation: DatumAnnotation) -> Annotation:
+        """Get mask entity."""
+        mask = Image(data=annotation.image, size=annotation.image.shape)
+        return Annotation(
+            mask, labels=[ScoredLabel(label=self.label_entities[annotation.label])]  # type: ignore[arg-type]
         )
 
     def remove_unused_label_entities(self, used_labels: List):
