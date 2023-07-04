@@ -45,11 +45,83 @@ def get_transform(
     image_size: int = 1024,
     mean: List[float] = [123.675, 116.28, 103.53],
     std: List[float] = [58.395, 57.12, 57.375]) -> MultipleInputsCompose:
+    """Get transform pipeline.
+    
+    Args:
+        image_size (int): Size of image. Defaults to 1024.
+        mean (List[float]): Mean for normalization. Defaults to [123.675, 116.28, 103.53].
+        std (List[float]): Standard deviation for normalization. Defaults to [58.395, 57.12, 57.375].
+        
+    Returns:
+        MultipleInputsCompose: Transform pipeline.
+    """
     return MultipleInputsCompose([
         ResizeLongestSide(target_length=image_size),
         Pad(),
         transforms.Normalize(mean=mean, std=std),
     ])
+
+
+def convert_polygon_to_mask(shape: Polygon, width: int, height: int) -> np.ndarray:
+    """Convert polygon to mask.
+
+    Args:
+        shape (Polygon): Polygon to convert.
+        width (int): Width of image.
+        height (int): Height of image.
+
+    Returns:
+        np.ndarray: Generated mask from given polygon.
+    """
+    polygon = ShapeFactory.shape_as_polygon(shape)
+    contour = [[int(point.x * width), int(point.y * height)] for point in polygon.points]
+    gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
+    gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
+    return gt_mask
+
+
+def generate_bbox(x1: int, y1: int, x2: int, y2: int, width: int, height: int, offset_bbox: int = 0) -> List[int]:  # noqa: D417
+    """Generate bounding box.
+
+    Args:
+        x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
+        width (int): Width of image.
+        height (int): Height of image.
+        offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
+
+    Returns:
+        List[int]: Generated bounding box.
+    """
+
+    def get_randomness(length: int) -> int:
+        if offset_bbox == 0:
+            return 0
+        return np.random.normal(0, min(length * 0.1, offset_bbox))
+
+    bbox = [
+        max(0, x1 + get_randomness(width)),
+        max(0, y1 + get_randomness(height)),
+        min(width, x2 + get_randomness(width)),
+        min(height, y2 + get_randomness(height)),
+    ]
+    return bbox
+
+
+def generate_bbox_from_mask(gt_mask: np.ndarray, width: int, height: int) -> List[int]:
+    """Generate bounding box from given mask.
+
+    Args:
+        gt_mask (np.ndarry): Mask to generate bounding box.
+        width (int): Width of image.
+        height (int): Height of image.
+
+    Returns:
+        List[int]: Generated bounding box from given mask.
+    """
+    y_indices, x_indices = np.where(gt_mask == 1)
+    x_min, x_max = np.min(x_indices), np.max(x_indices)
+    y_min, y_max = np.min(y_indices), np.max(y_indices)
+    return generate_bbox(x_min, y_min, x_max, y_max, width, height)
 
 
 class OTXVisualPromptingDataset(Dataset):
@@ -106,7 +178,7 @@ class OTXVisualPromptingDataset(Dataset):
                 gt_mask = annotation.shape.numpy.astype(np.uint8)
             elif isinstance(annotation.shape, Polygon):
                 # convert polygon to mask
-                gt_mask = self.convert_polygon_to_mask(annotation.shape, width, height)
+                gt_mask = convert_polygon_to_mask(annotation.shape, width, height)
             else:
                 continue
 
@@ -116,7 +188,7 @@ class OTXVisualPromptingDataset(Dataset):
             gt_masks.append(gt_mask)
 
             # generate bbox based on gt_mask
-            bbox = self.generate_bbox_from_mask(gt_mask, width, height)
+            bbox = generate_bbox_from_mask(gt_mask, width, height)
             bboxes.append(bbox)
 
             # TODO (sungchul): generate random points from gt_mask
@@ -149,64 +221,6 @@ class OTXVisualPromptingDataset(Dataset):
         )
         item = self.transform(item)
         return item
-
-    def convert_polygon_to_mask(self, shape: Polygon, width: int, height: int) -> np.ndarray:
-        """Convert polygon to mask.
-
-        Args:
-            shape (Polygon): Polygon to convert.
-            width (int): Width of image.
-            height (int): Height of image.
-
-        Returns:
-            np.ndarray: Generated mask from given polygon.
-        """
-        polygon = ShapeFactory.shape_as_polygon(shape)
-        contour = [[int(point.x * width), int(point.y * height)] for point in polygon.points]
-        gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
-        gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
-        return gt_mask
-
-    def generate_bbox(self, x1: int, y1: int, x2: int, y2: int, width: int, height: int) -> List[int]:  # noqa: D417
-        """Generate bounding box.
-
-        Args:
-            x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
-            width (int): Width of image.
-            height (int): Height of image.
-
-        Returns:
-            List[int]: Generated bounding box.
-        """
-
-        def get_randomness(length: int) -> int:
-            if self.offset_bbox == 0:
-                return 0
-            return np.random.normal(0, min(length * 0.1, self.offset_bbox))
-
-        bbox = [
-            max(0, x1 + get_randomness(width)),
-            max(0, y1 + get_randomness(height)),
-            min(width, x2 + get_randomness(width)),
-            min(height, y2 + get_randomness(height)),
-        ]
-        return bbox
-
-    def generate_bbox_from_mask(self, gt_mask: np.ndarray, width: int, height: int) -> List[int]:
-        """Generate bounding box from given mask.
-
-        Args:
-            gt_mask (np.ndarry): Mask to generate bounding box.
-            width (int): Width of image.
-            height (int): Height of image.
-
-        Returns:
-            List[int]: Generated bounding box from given mask.
-        """
-        y_indices, x_indices = np.where(gt_mask == 1)
-        x_min, x_max = np.min(x_indices), np.max(x_indices)
-        y_min, y_max = np.min(y_indices), np.max(y_indices)
-        return self.generate_bbox(x_min, y_min, x_max, y_max, width, height)
 
 
 class OTXVisualPromptingDataModule(LightningDataModule):
