@@ -253,9 +253,6 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         image_size = self.config.image_size
         mean = self.config.normalize.mean
         std = self.config.normalize.std
-        if isinstance(image_size, int):
-            image_size = [image_size]
-
         if stage == "fit" or stage is None:
             train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
             val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
