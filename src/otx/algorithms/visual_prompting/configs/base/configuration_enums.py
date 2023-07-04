@@ -1,4 +1,4 @@
-"""Configs Initialization of OTX Visual Prompting."""
+"""Collection of utils for task implementation in Visual Prompting Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,7 +14,15 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import VisualPromptingBaseConfig
-from .configuration_enums import Models
+import logging
 
-__all__ = ["VisualPromptingBaseConfig", "Models"]
+from otx.api.configuration import ConfigurableEnum
+
+logger = logging.getLogger(__name__)
+
+
+# pylint: disable=invalid-name
+class Models(ConfigurableEnum):
+    """This Enum represents the types of models for inference."""
+
+    VisualPrompting = "visual_prompting"
