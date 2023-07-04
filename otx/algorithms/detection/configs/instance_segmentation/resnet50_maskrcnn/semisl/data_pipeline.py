@@ -93,15 +93,36 @@ common_pipeline = [
     ),
     dict(type="PILImageToNDArray", keys=["img"]),
     dict(type="Normalize", **__img_norm_cfg),
-    dict(type='CutOut', n_holes=(1,5), cutout_shape=[(0,0), (33,20), (66,40), (132,80), (198,120), (264,160)] ),
     dict(type="Pad", size_divisor=32),
     dict(type="NDArrayToTensor", keys=["img", "img0"]),
+    dict(
+        type="RandomErasing",
+        p=0.7,
+        scale=[0.05, 0.2],
+        ratio=[0.3, 3.3],
+        value="random",
+    ),
+    dict(
+        type="RandomErasing",
+        p=0.5,
+        scale=[0.02, 0.2],
+        ratio=[0.10, 6.0],
+        value="random",
+    ),
+    dict(
+        type="RandomErasing",
+        p=0.3,
+        scale=[0.02, 0.2],
+        ratio=[0.05, 8.0],
+        value="random",
+    )
 ]
 
 train_pipeline = [
     dict(type="LoadImageFromFile"),
     dict(type="LoadAnnotations", with_bbox=True, with_mask=True, poly2mask=False),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
+    dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
+    dict(type="Resize", img_scale=[(1333, 400), (1333, 1200)], keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
