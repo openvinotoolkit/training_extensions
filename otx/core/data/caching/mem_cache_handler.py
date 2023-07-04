@@ -9,7 +9,6 @@ from multiprocessing.managers import DictProxy
 from typing import Any, Dict, Optional, Union
 
 import numpy as np
-from mmcv.runner import get_dist_info
 from multiprocess.synchronize import Lock
 
 from otx.algorithms.common.utils.logger import get_logger
@@ -178,7 +177,14 @@ class MemCacheHandlerSingleton:
         """
         logger.info(f"Try to create a {mem_size} size memory pool.")
 
-        _, world_size = get_dist_info()
+        # COPY FROM mmcv.runner.get_dist_info
+        from torch import distributed
+
+        if distributed.is_available() and distributed.is_initialized():
+            world_size = distributed.get_world_size()
+        else:
+            world_size = 1
+
         if world_size > 1:
             mem_size = mem_size // world_size
             logger.info(f"Since world_size={world_size} > 1, each worker a {mem_size} size memory pool.")

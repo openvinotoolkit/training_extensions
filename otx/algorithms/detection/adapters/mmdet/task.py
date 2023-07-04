@@ -32,6 +32,7 @@ from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTenso
 from mmdet.models.detectors import DETR, TwoStageDetector
 from mmdet.utils import collect_env
 
+from otx.algorithms.common.adapters.mmcv.hooks import LossDynamicsTrackingHook
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     BaseRecordingForwardHook,
@@ -89,7 +90,6 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
-from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook
 
 logger = get_logger()
 
