@@ -48,8 +48,8 @@ from tests.unit.algorithms.action.test_helpers import (
     return_inputs,
 )
 
-DEFAULT_ACTION_CLS_DIR = os.path.join("otx/algorithms/action/configs/classification", "x3d")
-DEFAULT_ACTION_DET_DIR = os.path.join("otx/algorithms/action/configs/detection", "x3d_fast_rcnn")
+DEFAULT_ACTION_CLS_DIR = os.path.join("src/otx/algorithms/action/configs/classification", "x3d")
+DEFAULT_ACTION_DET_DIR = os.path.join("src/otx/algorithms/action/configs/detection", "x3d_fast_rcnn")
 
 
 class MockModule(nn.Module):

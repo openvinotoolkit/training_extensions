@@ -43,7 +43,7 @@ using the command below:
 
 .. code-block::
 
-    (otx) ...$ otx deploy otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
+    (otx) ...$ otx deploy src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml \
                --load-weights outputs/openvino/openvino.xml \
                --output outputs/deploy
 

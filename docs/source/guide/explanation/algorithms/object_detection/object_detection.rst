@@ -71,15 +71,15 @@ Models
 
 We support the following ready-to-use model templates:
 
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
-| Template ID                                                                                                                                                                           | Name    | Complexity (GFLOPs) | Model size (MB) |
-+=======================================================================================================================================================================================+=========+=====================+=================+
-| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml>`_      | YOLOX   | 6.5                 | 20.4            |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_SSD <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml>`_    | SSD     | 9.4                 | 7.6             |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  | ATSS    | 20.6                | 9.1             |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
+| Template ID                                                                                                                                                                               | Name    | Complexity (GFLOPs) | Model size (MB) |
++===========================================================================================================================================================================================+=========+=====================+=================+
+| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml>`_      | YOLOX   | 6.5                 | 20.4            |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_SSD <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml>`_    | SSD     | 9.4                 | 7.6             |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  | ATSS    | 20.6                | 9.1             |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
 
 `ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases.
 `SSD <https://arxiv.org/abs/1512.02325>`_ and `YOLOX <https://arxiv.org/abs/2107.08430>`_ are light models, that a perfect for the fastest inference on low-power hardware.

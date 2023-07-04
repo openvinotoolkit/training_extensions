@@ -15,10 +15,10 @@ from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hoo
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
-templates_det = Registry("otx/algorithms").filter(task_type="DETECTION").templates
+templates_det = Registry("src/otx/algorithms").filter(task_type="DETECTION").templates
 templates_det_ids = [template.model_template_id for template in templates_det]
 
-templates_two_stage_det = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
+templates_two_stage_det = Registry("src/otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
 templates_two_stage_det_ids = [template.model_template_id for template in templates_two_stage_det]
 
 
