@@ -276,11 +276,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 }
                 dummy_inputs = {
                     "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
-                    "point_coords": torch.randint(low=0, high=1024, size=(1, 5, 2), dtype=torch.float),
-                    "point_labels": torch.randint(low=0, high=4, size=(1, 5), dtype=torch.float),
+                    "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float),
+                    "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
                     "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
-                    "has_mask_input": torch.tensor([1], dtype=torch.float),
-                    "orig_size": torch.tensor([height, width], dtype=torch.float),
+                    "has_mask_input": torch.tensor([[1]], dtype=torch.float),
+                    "orig_size": torch.tensor([[height, width]], dtype=torch.float),
                 }
                 output_names = ["masks", "iou_predictions", "low_res_masks"]
                 model_to_export = self.model

@@ -205,7 +205,9 @@ class SegmentAnything(LightningModule):
             mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
                 This must be supplied even if there is no mask input. In this case, it can just be zeros.
             has_mask_input (Tensor): An indicator for the mask input. 1 indicates a mask input, 0 indicates no mask input.
+                This input has 1x1 shape due to supporting openvino input layout.
             orig_size (Tensor): The size of the input image in (H,W) format, before any transformation.
+                This input has 1x2 shape due to supporting openvino input layout.
         """
         sparse_embedding = self._embed_points(point_coords, point_labels)
         dense_embedding = self._embed_masks(mask_input, has_mask_input)
@@ -225,7 +227,7 @@ class SegmentAnything(LightningModule):
         if self.config.model.return_single_mask:
             masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
 
-        upscaled_masks = self.mask_postprocessing(masks, orig_size)
+        upscaled_masks = self.mask_postprocessing(masks, orig_size[0])
 
         if self.config.model.return_extra_metrics:
             stability_scores = self.calculate_stability_score(
@@ -355,10 +357,8 @@ class SegmentAnything(LightningModule):
             align_corners=False,
         )
 
-        resized_orig_size = self.resize_longest_image_size(orig_size, self.config.model.image_size).to(torch.int64)
-        prepadded_size = self.config.model.image_size - resized_orig_size
-        masks = masks[..., prepadded_size[0]//2 : prepadded_size[0]//2+resized_orig_size[0],
-                      prepadded_size[1]//2 : prepadded_size[1]//2+resized_orig_size[1]]  # type: ignore
+        prepadded_size = self.resize_longest_image_size(orig_size, self.config.model.image_size).to(torch.int64)
+        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]  # type: ignore
 
         orig_size = orig_size.to(torch.int64)
         h, w = orig_size[0], orig_size[1]
