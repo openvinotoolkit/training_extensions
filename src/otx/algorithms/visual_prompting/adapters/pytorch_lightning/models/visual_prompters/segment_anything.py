@@ -355,8 +355,10 @@ class SegmentAnything(LightningModule):
             align_corners=False,
         )
 
-        prepadded_size = self.resize_longest_image_size(orig_size, self.config.model.image_size).to(torch.int64)
-        masks = masks[..., : prepadded_size[0], : prepadded_size[1]]  # type: ignore
+        resized_orig_size = self.resize_longest_image_size(orig_size, self.config.model.image_size).to(torch.int64)
+        prepadded_size = self.config.model.image_size - resized_orig_size
+        masks = masks[..., prepadded_size[0]//2 : prepadded_size[0]//2+resized_orig_size[0],
+                      prepadded_size[1]//2 : prepadded_size[1]//2+resized_orig_size[1]]  # type: ignore
 
         orig_size = orig_size.to(torch.int64)
         h, w = orig_size[0], orig_size[1]
@@ -455,8 +457,8 @@ class SegmentAnything(LightningModule):
             loss_ce = 0.0
 
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
-        for pred_mask, gt_mask, iou_prediction in zip(pred_masks, gt_masks, iou_predictions):
-            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
+        for i, (pred_mask, gt_mask, iou_prediction) in enumerate(zip(pred_masks, gt_masks, iou_predictions)):
+            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i])
             pred_mask = pred_mask.sigmoid()
             self.train_metrics["train_IoU"].update(pred_mask, gt_mask)
             self.train_metrics["train_F1"].update(pred_mask, gt_mask)
@@ -511,8 +513,8 @@ class SegmentAnything(LightningModule):
         gt_masks = batch["gt_masks"]
 
         pred_masks, _ = self.forward_train(images, bboxes, points)
-        for pred_mask, gt_mask in zip(pred_masks, gt_masks):
-            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:])
+        for i, (pred_mask, gt_mask) in enumerate(zip(pred_masks, gt_masks)):
+            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i])
             pred_mask = pred_mask.sigmoid()
             for k, v in self.val_metrics.items():
                 v.update(pred_mask, gt_mask)
@@ -543,9 +545,7 @@ class SegmentAnything(LightningModule):
 
         masks: List[Tensor] = []
         for i, pred_mask in enumerate(pred_masks):
-            mask = self.postprocess_masks(
-                pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i], is_predict=True
-            )
+            mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i])
             if not self.config.model.return_logits:
                 mask = (mask > self.config.model.mask_threshold).to(mask.dtype)
             else:
@@ -558,9 +558,8 @@ class SegmentAnything(LightningModule):
         self,
         masks: Tensor,
         input_size: Tuple[int, int],
-        padding: Optional[Tuple[int, ...]] = None,
-        original_size: Optional[Tuple[int, int]] = None,
-        is_predict: bool = False,
+        padding: Tuple[int, ...],
+        original_size: Tuple[int, int],
     ) -> Tensor:
         """Remove padding and upscale masks to the original image size.
 
@@ -569,21 +568,16 @@ class SegmentAnything(LightningModule):
             input_size (tuple(int, int)): The size of the image input to the model, in (H, W) format.
                 Used to remove padding.
             padding (tuple(int, int, int, int), optional): The padding applied to the image before input to the model,
-                in (left, top, right, bottom) format. Defaults to None.
+                in (left, top, right, bottom) format.
             original_size (tuple(int, int)): The original size of the image before resizing for input to the model,
                 in (H, W) format.
-            is_predict (bool, optional): Whether to upscale the masks to the original image size. Defaults to False.
 
         Returns:
           (Tensor): Postprocessed masks in NxHxW format, where (H, W) is given by original_size.
         """
         masks = F.interpolate(masks, input_size, mode="bilinear", align_corners=False)
-        if is_predict:
-            if padding:
-                assert len(padding) == 4
-                masks = masks[..., padding[1] : input_size[0] - padding[3], padding[0] : input_size[1] - padding[2]]
-            if original_size:
-                masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
+        masks = masks[..., : input_size[0] - padding[3], : input_size[1] - padding[2]]
+        masks = F.interpolate(masks, original_size, mode="bilinear", align_corners=False)
         return masks.squeeze(1)
 
     def configure_optimizers(self) -> optim:
