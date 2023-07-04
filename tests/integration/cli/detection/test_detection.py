@@ -60,19 +60,19 @@ otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
-    os.path.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
+    os.path.join("src/otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
 )
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
+templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [
     parse_model_template(
-        "otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml"
+        "src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml"
     ),
-    parse_model_template("otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
+    parse_model_template("src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
 ]
 experimental_template_ids = [template.model_template_id for template in experimental_templates]
 

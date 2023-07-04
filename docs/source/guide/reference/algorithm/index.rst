@@ -68,7 +68,7 @@ Tasks
 Tasks contain implementations that correspond to each phase in the workflow from
 training to OpenVINO inference. Each algorithm expects ``train``, ``inference``,
 ``nncf`` and ``openvino`` python modules that implement the
-`task interfaces <https://github.com/openvinotoolkit/training_extensions/tree/develop/otx/api/usecases/tasks/interfaces>`_.
+`task interfaces <https://github.com/openvinotoolkit/training_extensions/tree/develop/src/otx/api/usecases/tasks/interfaces>`_.
 
 Tools
 ^^^^^
