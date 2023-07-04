@@ -458,50 +458,6 @@
 <h1>Tasks<a class="headerlink" href="#tasks" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<span class="target" id="module-otx.algorithms.segmentation.task"></span><p>Task of OTX Segmentation.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.task.OTXSegmentationTask">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.segmentation.task.</span></span><span class="sig-name descname"><span class="pre">OTXSegmentationTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">TaskEnvironment</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.task.OTXSegmentationTask" title="Permalink to this definition">#</a></dt>
-<dd><p>Task class for OTX segmentation.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.task.OTXSegmentationTask.evaluate">
-<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.evaluate" title="Permalink to this definition">#</a></dt>
-<dd><p>Evaluate function of OTX Segmentation Task.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.task.OTXSegmentationTask.explain">
-<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">explain_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ExplainParameters</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.explain" title="Permalink to this definition">#</a></dt>
-<dd><p>Main explain function of OTX Task.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.task.OTXSegmentationTask.export">
-<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ExportType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelPrecision" title="otx.api.entities.model.ModelPrecision"><span class="pre">ModelPrecision</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ModelPrecision.FP32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dump_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.export" title="Permalink to this definition">#</a></dt>
-<dd><p>Export function of OTX Task.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.task.OTXSegmentationTask.infer">
-<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">InferenceParameters</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.infer" title="Permalink to this definition">#</a></dt>
-<dd><p>Main infer function.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.task.OTXSegmentationTask.save_model">
-<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.save_model" title="Permalink to this definition">#</a></dt>
-<dd><p>Save best model weights in SegmentationTrainTask.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.segmentation.task.OTXSegmentationTask.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.train_parameters.TrainParameters" title="otx.api.entities.train_parameters.TrainParameters"><span class="pre">TrainParameters</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.train" title="Permalink to this definition">#</a></dt>
-<dd><p>Train function for OTX segmentation task.</p>
-<p>Actual training is processed by _train_model fucntion</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 
 
@@ -535,83 +491,6 @@
           
             <div class="bd-sidebar-secondary bd-toc">
               
-<div class="toc-item">
-  
-<div class="tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-</div>
-<nav id="bd-toc-nav" class="page-toc">
-    <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.segmentation.task.OTXSegmentationTask">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     OTXSegmentationTask
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.evaluate">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXSegmentationTask.evaluate()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.explain">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXSegmentationTask.explain()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.export">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXSegmentationTask.export()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.infer">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXSegmentationTask.infer()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.save_model">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXSegmentationTask.save_model()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.algorithms.segmentation.task.OTXSegmentationTask.train">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       OTXSegmentationTask.train()
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-
-</nav>
-</div>
-
 <div class="toc-item">
   
 <div id="searchbox"></div>

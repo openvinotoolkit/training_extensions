@@ -483,7 +483,7 @@ environment:</p>
 </section>
 <section id="dataset-preparation">
 <h2>Dataset preparation<a class="headerlink" href="#dataset-preparation" title="Permalink to this heading">#</a></h2>
-<p>Although we offer conversion codes from <a class="reference external" href="https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md">ava dataset format</a> to <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">cvat dataset format</a> from <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py">this code</a>, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from <a class="reference external" href="https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link">this link</a>.</p>
+<p>Although we offer conversion codes from <a class="reference external" href="https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md">ava dataset format</a> to <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">cvat dataset format</a> from <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/utils/convert_public_data_to_cvat.py">this code</a>, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from <a class="reference external" href="https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link">this link</a>.</p>
 <p>If you download data from link and extract to <code class="docutils literal notranslate"><span class="pre">training_extensions/data</span></code> folder(you should make data folder at first), you can see the structure below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>training_extensions
 └── data
@@ -513,11 +513,11 @@ The list of supported templates for action detection is available with the comma
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx find --task action_detection
 
-+------------------+---------------------------------------+---------------+---------------------------------------------------------------------+
-|       TASK       |                   ID                  |      NAME     |                              BASE PATH                              |
-+------------------+---------------------------------------+---------------+---------------------------------------------------------------------+
-| ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml |
-+------------------+---------------------------------------+---------------+---------------------------------------------------------------------+
++------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
+|       TASK       |                   ID                  |      NAME     |                                BASE PATH                                |
++------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
+| ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml |
++------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
 </pre></div>
 </div>
 <p>To have a specific example in this tutorial, all commands will be run on the X3D_FAST_RCNN  model. It’s a light model, that achieves competitive accuracy while keeping the inference fast.</p>

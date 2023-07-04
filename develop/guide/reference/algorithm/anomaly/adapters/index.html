@@ -461,63 +461,14 @@ Overall, these adapters could be categorized into <code class="docutils literal 
 <code class="docutils literal notranslate"><span class="pre">callbacks</span></code>, <code class="docutils literal notranslate"><span class="pre">logger</span></code> and <code class="docutils literal notranslate"><span class="pre">exportable_code</span></code>.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Config</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="config.html#otx.algorithms.anomaly.adapters.anomalib.config.get_anomalib_config"><code class="docutils literal notranslate"><span class="pre">get_anomalib_config()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#otx.algorithms.anomaly.adapters.anomalib.config.update_anomalib_config"><code class="docutils literal notranslate"><span class="pre">update_anomalib_config()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule"><code class="docutils literal notranslate"><span class="pre">OTXAnomalyDataModule</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">OTXAnomalyDataModule.predict_dataloader()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.setup"><code class="docutils literal notranslate"><span class="pre">OTXAnomalyDataModule.setup()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.summary"><code class="docutils literal notranslate"><span class="pre">OTXAnomalyDataModule.summary()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.test_dataloader"><code class="docutils literal notranslate"><span class="pre">OTXAnomalyDataModule.test_dataloader()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.train_dataloader"><code class="docutils literal notranslate"><span class="pre">OTXAnomalyDataModule.train_dataloader()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.html#otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule.val_dataloader"><code class="docutils literal notranslate"><span class="pre">OTXAnomalyDataModule.val_dataloader()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.AnomalyInferenceCallback"><code class="docutils literal notranslate"><span class="pre">AnomalyInferenceCallback</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.AnomalyInferenceCallback.on_predict_epoch_end"><code class="docutils literal notranslate"><span class="pre">AnomalyInferenceCallback.on_predict_epoch_end()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback"><code class="docutils literal notranslate"><span class="pre">ProgressCallback</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_predict_batch_end"><code class="docutils literal notranslate"><span class="pre">ProgressCallback.on_predict_batch_end()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_predict_start"><code class="docutils literal notranslate"><span class="pre">ProgressCallback.on_predict_start()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_test_batch_end"><code class="docutils literal notranslate"><span class="pre">ProgressCallback.on_test_batch_end()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_test_start"><code class="docutils literal notranslate"><span class="pre">ProgressCallback.on_test_start()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_train_batch_end"><code class="docutils literal notranslate"><span class="pre">ProgressCallback.on_train_batch_end()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_train_start"><code class="docutils literal notranslate"><span class="pre">ProgressCallback.on_train_start()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_validation_epoch_end"><code class="docutils literal notranslate"><span class="pre">ProgressCallback.on_validation_epoch_end()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="logger.html">Logger</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="logger.html#otx.algorithms.anomaly.adapters.anomalib.logger.get_logger"><code class="docutils literal notranslate"><span class="pre">get_logger()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="exportable_code.html">Exportable Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyBase"><code class="docutils literal notranslate"><span class="pre">AnomalyBase</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyBase.parameters"><code class="docutils literal notranslate"><span class="pre">AnomalyBase.parameters()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyClassification"><code class="docutils literal notranslate"><span class="pre">AnomalyClassification</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyClassification.postprocess"><code class="docutils literal notranslate"><span class="pre">AnomalyClassification.postprocess()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyDetection"><code class="docutils literal notranslate"><span class="pre">AnomalyDetection</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyDetection.postprocess"><code class="docutils literal notranslate"><span class="pre">AnomalyDetection.postprocess()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalySegmentation"><code class="docutils literal notranslate"><span class="pre">AnomalySegmentation</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="exportable_code.html#otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalySegmentation.postprocess"><code class="docutils literal notranslate"><span class="pre">AnomalySegmentation.postprocess()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="exportable_code.html">Exportable Code</a></li>
 </ul>
 </div>
 </section>

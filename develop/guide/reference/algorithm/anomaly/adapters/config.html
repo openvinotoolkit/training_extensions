@@ -454,45 +454,8 @@
             
             <article class="bd-article" role="main">
               
-  <section id="module-otx.algorithms.anomaly.adapters.anomalib.config">
-<span id="config"></span><h1>Config<a class="headerlink" href="#module-otx.algorithms.anomaly.adapters.anomalib.config" title="Permalink to this heading">#</a></h1>
-<p>Initialization of Configurable parameter conversion between OTX and Anomalib.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.algorithms.anomaly.adapters.anomalib.config.get_anomalib_config">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.config.</span></span><span class="sig-name descname"><span class="pre">get_anomalib_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">otx_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/configuration/index.html#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">ConfigurableParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ListConfig</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.adapters.anomalib.config.get_anomalib_config" title="Permalink to this definition">#</a></dt>
-<dd><p>Get anomalib configuration.</p>
-<p>Create an anomalib config object that matches the values specified in the
-OTX config.</p>
-<dl>
-<dt>Args:</dt><dd><p>task_name: Task name to load configuration from the Anomalib
-otx_config: ConfigurableParameters: OTX config object parsed from</p>
-<blockquote>
-<div><p>configuration.yaml file</p>
-</div></blockquote>
-</dd>
-<dt>Returns:</dt><dd><p>Anomalib config object for the specified model type with overwritten
-default values.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="otx.algorithms.anomaly.adapters.anomalib.config.update_anomalib_config">
-<span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.config.</span></span><span class="sig-name descname"><span class="pre">update_anomalib_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">anomalib_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ListConfig</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">otx_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/configuration/index.html#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">ConfigurableParameters</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.adapters.anomalib.config.update_anomalib_config" title="Permalink to this definition">#</a></dt>
-<dd><p>Update anomalib configuration.</p>
-<p>Overwrite the default parameter values in the anomalib config with the
-values specified in the OTX config. The function is recursively called for
-each parameter group present in the OTX config.</p>
-<dl>
-<dt>Args:</dt><dd><p>anomalib_config: DictConfig: Anomalib config object
-otx_config: ConfigurableParameters: OTX config object parsed from</p>
-<blockquote>
-<div><p>configuration.yaml file</p>
-</div></blockquote>
-</dd>
-</dl>
-</dd></dl>
-
+  <section id="config">
+<h1>Config<a class="headerlink" href="#config" title="Permalink to this heading">#</a></h1>
 </section>
 
 
@@ -526,36 +489,6 @@ otx_config: ConfigurableParameters: OTX config object parsed from</p>
           
             <div class="bd-sidebar-secondary bd-toc">
               
-<div class="toc-item">
-  
-<div class="tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-</div>
-<nav id="bd-toc-nav" class="page-toc">
-    <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.anomaly.adapters.anomalib.config.get_anomalib_config">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     get_anomalib_config()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.algorithms.anomaly.adapters.anomalib.config.update_anomalib_config">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     update_anomalib_config()
-    </span>
-   </code>
-  </a>
- </li>
-</ul>
-
-</nav>
-</div>
-
 <div class="toc-item">
   
 <div id="searchbox"></div>

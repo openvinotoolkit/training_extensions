@@ -114,9 +114,9 @@ In the train log, you can check that the train type is set to **Semisupervised**
   ...
   2023-02-22 06:21:54,492 | INFO : called _init_recipe()
   2023-02-22 06:21:54,492 | INFO : train type = Semisupervised
-  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised - loading training_extensions/otx/recipes/stages/classification/semisl.yaml
+  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised - loading training_extensions/src/otx/recipes/stages/classification/semisl.yaml
   2023-02-22 06:21:54,500 | INFO : Replacing runner from EpochRunnerWithCancel to EpochRunnerWithCancel.
-  2023-02-22 06:21:54,503 | INFO : initialized recipe = training_extensions/otx/recipes/stages/classification/semisl.yaml
+  2023-02-22 06:21:54,503 | INFO : initialized recipe = training_extensions/src/otx/recipes/stages/classification/semisl.yaml
   ...
 
 
@@ -132,7 +132,7 @@ specifying a path to unlabeled images.
 
 .. code-block::
 
-  (otx) ...$ otx train otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
+  (otx) ...$ otx train src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                       --train-data-roots data/flower_photos \
                       --unlabeled-data-roots tests/assets/imagenet_dataset
 
@@ -143,9 +143,9 @@ In the train log, you can check that the train type is set to **Semisupervised**
   ...
   2023-02-22 06:21:54,492 | INFO : called _init_recipe()
   2023-02-22 06:21:54,492 | INFO : train type = Semisupervised
-  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised - loading training_extensions/otx/recipes/stages/classification/semisl.yaml
+  2023-02-22 06:21:54,492 | INFO : train type = Semisupervised - loading training_extensions/src/otx/recipes/stages/classification/semisl.yaml
   2023-02-22 06:21:54,500 | INFO : Replacing runner from EpochRunnerWithCancel to EpochRunnerWithCancel.
-  2023-02-22 06:21:54,503 | INFO : initialized recipe = training_extensions/otx/recipes/stages/classification/semisl.yaml
+  2023-02-22 06:21:54,503 | INFO : initialized recipe = training_extensions/src/otx/recipes/stages/classification/semisl.yaml
   ...
 
 
@@ -163,7 +163,7 @@ save results to ``outputs/performance.json`` by the following command:
 
 .. code-block::
 
-  (otx) ...$ otx eval otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
+  (otx) ...$ otx eval src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml \
                       --test-data-roots splitted_dataset/val \
                       --load-weights models/weights.pth \
                       --output outputs

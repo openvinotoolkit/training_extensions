@@ -473,7 +473,7 @@ For the supervised training we use the following algorithms components:</p>
 </pre></div>
 </div>
 </li>
-<li><p><a class="reference external" href="https://github.dev/openvinotoolkit/training_extensions/blob/develop/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11">Balanced Sampler</a>: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.</p></li>
+<li><p><a class="reference external" href="https://github.dev/openvinotoolkit/training_extensions/blob/develop/src/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11">Balanced Sampler</a>: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.</p></li>
 </ul>
 </dd>
 </dl>
@@ -522,17 +522,17 @@ This format has the following structure:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml">Custom_Image_Classification_MobileNet-V3-large-1x</a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml">Custom_Image_Classification_MobileNet-V3-large-1x</a></p></td>
 <td><p>MobileNet-V3-large-1x</p></td>
 <td><p>0.44</p></td>
 <td><p>4.29</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml">Custom_Image_Classification_EfficinetNet-B0</a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml">Custom_Image_Classification_EfficinetNet-B0</a></p></td>
 <td><p>EfficientNet-B0</p></td>
 <td><p>0.81</p></td>
 <td><p>4.09</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml">Custom_Image_Classification_EfficientNet-V2-S</a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml">Custom_Image_Classification_EfficientNet-V2-S</a></p></td>
 <td><p>EfficientNet-V2-S</p></td>
 <td><p>5.76</p></td>
 <td><p>20.23</p></td>
@@ -797,7 +797,7 @@ The below table shows how much performance SupCon improved compared with baselin
 </table>
 <p>The SupCon training can be launched by adding additional option to template parameters like the below.
 It can be launched only with supervised (incremental) training type.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
             --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
             --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
             params \

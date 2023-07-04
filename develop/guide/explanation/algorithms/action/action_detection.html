@@ -467,9 +467,9 @@
 <section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this heading">#</a></h2>
 <p>For the dataset handling inside OpenVINO™ Training Extensions, we use <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Dataset Management Framework (Datumaro)</a>. Since current Datumaro does not support <a class="reference external" href="http://research.google.com/ava/">AVA dataset</a> format, therefore conversion to <a class="reference external" href="https://opencv.github.io/cvat/docs/manual/advanced/xml_format/">CVAT dataset format</a> is needed. Currently, we offer conversion code from the AVA dataset format to the CVAT dataset format. Please refer
-<a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py">this script</a></p>
+<a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/utils/convert_public_data_to_cvat.py">this script</a></p>
 <p>If you have your dataset in those formats, then you can simply run using one line of code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml \
             --train-data-roots &lt;path_to_data_root/train&gt; \
             --val-data-roots &lt;path_to_data_root/val&gt;
 </pre></div>
@@ -487,7 +487,7 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml">Custom_Action_Detection_X3D_FAST_RCNN</a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml">Custom_Action_Detection_X3D_FAST_RCNN</a></p></td>
 <td><p>x3d_fast_rcnn</p></td>
 <td><p>13.04</p></td>
 <td><p>8.32</p></td>
