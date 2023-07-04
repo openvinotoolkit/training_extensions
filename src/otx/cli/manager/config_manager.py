@@ -636,6 +636,14 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             self._copy_config_files(target_dir, file_name, dest_dir)
         (self.workspace_root / "template.yaml").write_text(OmegaConf.to_yaml(template_config))
 
+        # Copy deployment_tile_classifier for Instance Segmentation
+        if (model_dir / "deployment_tile_classifier.py").exists():
+            shutil.copyfile(
+                str(model_dir / "deployment_tile_classifier.py"),
+                str(train_type_dir / "deployment_tile_classifier.py"),
+            )
+            print(f"[*] \t- Updated: {str(train_type_dir / 'deployment_tile_classifier.py')}")
+
         # Copy compression_config.json
         if (model_dir / "compression_config.json").exists():
             shutil.copyfile(

@@ -84,7 +84,7 @@ class DetectionTaskAPIBase:
         return environment, dataset
 
     @staticmethod
-    def setup_configurable_parameters(template_dir, num_iters=10):
+    def setup_configurable_parameters(template_dir, num_iters=10, tiling=False):
         glb = glob.glob(f"{template_dir}/template*.yaml")
         template_path = glb[0] if glb else None
         if not template_path:
@@ -95,4 +95,6 @@ class DetectionTaskAPIBase:
         hyper_parameters.learning_parameters.num_iters = num_iters
         hyper_parameters.postprocessing.result_based_confidence_threshold = False
         hyper_parameters.postprocessing.confidence_threshold = 0.1
+        if tiling:
+            hyper_parameters.tiling_parameters.enable_tiling = True
         return hyper_parameters, model_template
