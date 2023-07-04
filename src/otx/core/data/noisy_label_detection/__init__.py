@@ -4,6 +4,5 @@
 #
 
 from .base import LossDynamicsTracker, LossDynamicsTrackingMixin
-from .loss_dynamics_tracking_hook import LossDynamicsTrackingHook
 
-__all__ = ["LossDynamicsTrackingHook", "LossDynamicsTracker", "LossDynamicsTrackingMixin"]
+__all__ = ["LossDynamicsTracker", "LossDynamicsTrackingMixin"]

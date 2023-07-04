@@ -14,8 +14,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
-
-from .base import LossDynamicsTracker, LossDynamicsTrackingMixin
+from otx.core.data.noisy_label_detection.base import LossDynamicsTracker, LossDynamicsTrackingMixin
 
 logger = get_logger()
 

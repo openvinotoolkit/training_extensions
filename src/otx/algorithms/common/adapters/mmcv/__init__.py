@@ -23,6 +23,8 @@ from .hooks import (
     EnsureCorrectBestCheckpointHook,
     Fp16SAMOptimizerHook,
     IBLossHook,
+    LossDynamicsTrackingHook,
+    MemCacheHook,
     NoBiasDecayHook,
     OTXLoggerHook,
     OTXProgressHook,
@@ -58,5 +60,7 @@ __all__ = [
     "CompressionHook",
     "AccuracyAwareRunner",
     "TwoCropTransformHook",
+    "MemCacheHook",
+    "LossDynamicsTrackingHook",
     "multi_scale_deformable_attn_pytorch",
 ]

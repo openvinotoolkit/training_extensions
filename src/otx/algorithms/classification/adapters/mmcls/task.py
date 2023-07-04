@@ -34,6 +34,7 @@ from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
 )
 from otx.algorithms.classification.task import OTXClassificationTask
+from otx.algorithms.common.adapters.mmcv.hooks import LossDynamicsTrackingHook
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
     BaseRecordingForwardHook,
@@ -69,7 +70,6 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data import caching
-from otx.core.data.noisy_label_detection import LossDynamicsTrackingHook
 
 from .configurer import (
     ClassificationConfigurer,
