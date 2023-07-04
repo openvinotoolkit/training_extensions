@@ -15,9 +15,6 @@
 # and limitations under the License.
 
 import ctypes
-import json
-from glob import glob
-import warnings
 import io
 import json
 import os
@@ -25,7 +22,9 @@ import shutil
 import subprocess
 import tempfile
 import time
+import warnings
 from collections import OrderedDict
+from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
@@ -408,15 +407,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def _set_metadata(self, output_model: ModelEntity) -> None:
         """Set metadata to the output model."""
-        if hasattr(self, "trainer") and hasattr(self.trainer, "datamodule"):
-            if hasattr(self.trainer.datamodule, "test_otx_dataset"):
-                transform = self.trainer.datamodule.test_dataloader().dataset.transform
-            else:
-                transform = self.trainer.datamodule.train_dataloader().dataset.transform
-        metadata = {
-            "transform": transform.to_dict(),
-            "image_shape": list(self.config.model.input_size),
-        }
+        metadata = {"image_size": int(self.config.dataset.image_size)}
+
         # Set the task type for inferencer
         metadata["task"] = str(self.task_type).lower().split("_")[-1]
         output_model.set_data("metadata", json.dumps(metadata).encode())
