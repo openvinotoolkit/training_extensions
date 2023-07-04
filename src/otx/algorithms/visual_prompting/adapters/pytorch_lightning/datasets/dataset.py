@@ -41,12 +41,14 @@ from otx.api.utils.shape_factory import ShapeFactory
 logger = get_logger()
 
 
-def get_transform(image_size: int, mean: List[float], std: List[float]) -> MultipleInputsCompose:
+def get_transform(
+    image_size: int = 1024,
+    mean: List[float] = [123.675, 116.28, 103.53],
+    std: List[float] = [58.395, 57.12, 57.375]) -> MultipleInputsCompose:
     return MultipleInputsCompose([
         ResizeLongestSide(target_length=image_size),
         Pad(),
         transforms.Normalize(mean=mean, std=std),
-        #  [123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
     ])
 
 
