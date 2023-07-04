@@ -43,12 +43,12 @@ otx_dir = os.getcwd()
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("otx/algorithms/action/configs", "detection", "x3d_fast_rcnn", "template.yaml")
+        os.path.join("src/otx/algorithms/action/configs", "detection", "x3d_fast_rcnn", "template.yaml")
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("otx/algorithms/action").filter(task_type="ACTION_DETECTION").templates
+    templates = Registry("src/otx/algorithms/action").filter(task_type="ACTION_DETECTION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 

@@ -68,19 +68,19 @@ MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "template.yaml")
+        os.path.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "template.yaml")
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
 else:
-    templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
+    templates = Registry("src/otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
     # add one experimental template for new segmentation model. In the future we will update them as main templates
     # but we need to start to test them now. For time saving - one new model will be validated
     # NNCF is not validated since the work in progress with optimization task
     template_experimental = parse_model_template(
-        os.path.join("otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
+        os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
     )
     templates_inc_segnext = copy.deepcopy(templates)
     templates_ids_inc_segnext = copy.deepcopy(templates_ids)

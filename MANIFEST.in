@@ -1,7 +1,8 @@
 recursive-include requirements *
-recursive-include otx *.pyx
-recursive-include otx *.yaml
-recursive-include otx *.json
-recursive-exclude otx *.c
+recursive-include src/otx *.pyx
+recursive-include src/otx *.yaml
+recursive-include src/otx *.json
+recursive-include src/otx requirements.txt
+recursive-exclude src/otx *.c
 graft tests
 global-exclude *.py[cod]

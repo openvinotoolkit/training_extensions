@@ -43,7 +43,7 @@ TASK_TYPE = "classification"
 TRAIN_TYPE = "supervised"
 
 otx_dir = os.getcwd()
-templates = Registry("otx/algorithms/classification").filter(task_type=TASK_TYPE.upper()).templates
+templates = Registry("src/otx/algorithms/classification").filter(task_type=TASK_TYPE.upper()).templates
 templates_ids = [template.model_template_id for template in templates]
 
 result_dict = get_result_dict(TASK_TYPE)

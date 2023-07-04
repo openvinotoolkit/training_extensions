@@ -67,12 +67,14 @@ otx_dir = os.getcwd()
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml")
+        os.path.join(
+            "src/otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml"
+        )
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
+    templates = Registry("src/otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 
