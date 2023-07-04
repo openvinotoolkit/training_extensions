@@ -198,7 +198,6 @@ setup(
         "Programming Language :: Cython",
     ],
     license="Apache License 2.0",
-    # packages=find_packages(exclude=["tests"]),
     packages=find_packages(where="src", include=["otx*"]),
     package_dir={"": "src"},
     package_data=package_data,
