@@ -399,7 +399,7 @@ class TestMMDetectionTask:
     @e2e_pytest_unit
     def test_anchor_clustering(self, mocker):
 
-        ssd_dir = os.path.join("otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
+        ssd_dir = os.path.join("src/otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
         ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
         model_template = parse_model_template(os.path.join(ssd_dir, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)

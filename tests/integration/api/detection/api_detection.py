@@ -24,7 +24,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_helpers import generate_random_annotated_image
 
-DEFAULT_DET_TEMPLATE_DIR = osp.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
+DEFAULT_DET_TEMPLATE_DIR = osp.join("src/otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
 
 
 class DetectionTaskAPIBase:
