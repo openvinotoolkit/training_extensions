@@ -28,26 +28,18 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
     def __init__(
         self,
         unlabeled_loss_weight=1.0,
-        unlabeled_loss_names=None,
         pseudo_conf_thresh=0.7,
         enable_unlabeled_loss=False,
         bg_loss_weight=-1.0,
         min_pseudo_label_ratio=0.0,
         arch_type="CustomMaskRCNN",
+        unlabeled_memory_bank=False,
         **kwargs
     ):
         super().__init__()
         self.unlabeled_loss_weight = unlabeled_loss_weight
-        self.unlabeled_loss_names = (
-            unlabeled_loss_names
-            if unlabeled_loss_names
-            else [
-                "loss_cls",
-            ]
-        )
-        self.pseudo_conf_thresh = pseudo_conf_thresh
         self.unlabeled_loss_enabled = enable_unlabeled_loss
-        self.unlabeled_memory_bank = True
+        self.unlabeled_memory_bank = unlabeled_memory_bank
         self.bg_loss_weight = bg_loss_weight
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
 
@@ -56,8 +48,12 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         self.model_s = build_detector(cfg)
         self.model_t = copy.deepcopy(self.model_s)
         self.num_classes = cfg["roi_head"]["bbox_head"]["num_classes"]
-        self.memory_cat_bank = [0 for i in range(self.num_classes)]
-        self.all_num_cat = 0
+        if self.unlabeled_memory_bank:
+            self.memory_cat_bank = [0 for i in range(self.num_classes)]
+            self.all_num_cat = 0
+            self.pseudo_conf_thresh = None
+        else:
+            self.pseudo_conf_thresh = [pseudo_conf_thresh] * self.num_classes
 
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
