@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from .inference import InferenceTask
-from .openvino import OpenVINOTask
+from .openvino import OpenVINOVisualPromptingTask
 from .train import TrainingTask
 
-__all__ = ["InferenceTask", "TrainingTask", "OpenVINOTask"]
+__all__ = ["InferenceTask", "TrainingTask", "OpenVINOVisualPromptingTask"]
