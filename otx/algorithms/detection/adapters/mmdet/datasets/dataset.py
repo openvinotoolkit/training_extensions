@@ -407,19 +407,23 @@ class ImageTilingDataset(OTXDetDataset):
         else:
             return [None] * self.num_samples
 
-    def merge_maps(self, saliency_maps: List[np.ndarray], dump_maps: bool) -> Union[List[np.ndarray], List[None]]:
+    def merge_maps(self, saliency_maps: List, dump_maps: bool) -> List:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            saliency_maps (list[np.ndarray]): tile-level saliency maps.
+            saliency_maps (list[list | np.ndarray]): tile-level saliency maps.
             dump_maps (bool): whether to dump saliency maps.
 
         Returns:
-            merged_maps (List[np.ndarray | None]): Merged saliency map for each image.
+            merged_maps (List[list | np.ndarray | None]): Merged saliency map for each image.
         """
 
         if dump_maps:
-            return self.tile_dataset.merge_maps(saliency_maps)
+            if not (np.array(saliency_maps) == None).all():  # noqa
+                return self.tile_dataset.merge_maps(saliency_maps)
+            else:
+                # retutn None for each class for each image
+                return saliency_maps[: self.num_samples]
         else:
             return [None] * self.num_samples
 

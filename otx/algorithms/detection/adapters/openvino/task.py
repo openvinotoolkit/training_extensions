@@ -33,9 +33,9 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
+
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
-
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
@@ -356,9 +356,9 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
             max_number=max_number,
             detector=inferencer.model,
             classifier=classifier,
-            num_classes=len(inferencer.converter.labels),  # type: ignore
             mode=mode,
             segm=bool(isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))),
+            num_classes=len(inferencer.converter.labels),  # type: ignore
         )
 
         super().__init__(inferencer.configuration, inferencer.model, inferencer.converter)

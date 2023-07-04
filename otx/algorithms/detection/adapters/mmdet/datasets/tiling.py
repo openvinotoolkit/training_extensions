@@ -492,15 +492,15 @@ class Tile:
         ]
         return np.average(image_vectors, axis=1)
 
-    def merge_maps(self, saliency_maps: List[List[np.ndarray]]) -> List[List[np.ndarray]]:
+    def merge_maps(self, saliency_maps: Union[List[List[np.ndarray]], List[np.ndarray]]) -> List:
         """Merge tile-level saliency maps to image-level saliency map.
 
         Args:
-            saliency_maps (List[np.ndarray]): tile-level saliency maps. Each map is a list of maps for each detected
-            class or None if class wasn't detected.
+            saliency_maps (List[List[np.array] | np.ndarray]): tile-level saliency maps.
+            Each map is a list of maps for each detected class or None if class wasn't detected.
 
         Returns:
-            merged_maps (List[np.ndarray | None]): Merged saliency maps for each image.
+            merged_maps (List[list | np.ndarray | None]): Merged saliency maps for each image.
         """
         merged_maps = []
         ratios = {}

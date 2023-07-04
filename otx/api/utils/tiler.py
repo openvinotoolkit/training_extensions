@@ -41,9 +41,9 @@ class Tiler:
         max_number: int,
         detector: Any,
         classifier: Model,
-        num_classes: int,
         segm: bool = False,
         mode: str = "async",
+        num_classes: int = 0,
     ):  # pylint: disable=too-many-arguments
         self.tile_size = tile_size
         self.overlap = overlap
@@ -375,6 +375,9 @@ class Tiler:
 
         # No detection case
         if isinstance(detections, np.ndarray) and detections.size == 0:
+            return [None]
+        # Exportable demo case
+        if self.num_classes == 0:
             return [None]
 
         classes = [int(cls) - 1 for cls in detections[1]]
