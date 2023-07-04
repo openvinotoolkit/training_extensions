@@ -63,7 +63,7 @@ We will use the SSD object detection model in that tutorial. Let's initiate the 
 
 .. code-block::
 
-    templates_dir = 'otx/algorithms'
+    templates_dir = 'src/otx/algorithms'
     registry = Registry(templates_dir)
     model_template = registry.get('Custom_Object_Detection_Gen3_SSD')
 

@@ -38,15 +38,15 @@ def get_template_dir(template, root) -> str:
 
     # Get the template directory of the algorithm.
     # The location of the template files are as follows:
-    # ~/training_extensions/otx/algorithms/<algorithm>/**/template.yaml
+    # ~/training_extensions/src/otx/algorithms/<algorithm>/**/template.yaml
     # To get the ``algorithm``, index of the "algorithms" can be
     # searched, where ``algorithm`` comes next.
     template_path_parts = template.model_template_path.split(os.sep)
     idx = template_path_parts.index("algorithms")
     algorithm = template_path_parts[idx + 1]
 
-    algo_backend_dir = f"otx/algorithms/{algorithm}"
-    work_dir = os.path.join(root, f"otx/algorithms/{algorithm}")
+    algo_backend_dir = f"src/otx/algorithms/{algorithm}"
+    work_dir = os.path.join(root, f"src/otx/algorithms/{algorithm}")
     template_dir = os.path.dirname(os.path.relpath(template.model_template_path, start=algo_backend_dir))
     template_work_dir = os.path.join(work_dir, template_dir)
 

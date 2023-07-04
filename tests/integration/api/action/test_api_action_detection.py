@@ -26,7 +26,7 @@ from otx.api.entities.train_parameters import TrainParameters
 from otx.core.data.adapter import get_dataset_adapter
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "detection", "x3d_fast_rcnn")
+DEFAULT_ACTION_TEMPLATE_DIR = osp.join("src/otx/algorithms/action/configs", "detection", "x3d_fast_rcnn")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -53,7 +53,7 @@ class TestActionTaskAPI:
         model_templates = ["x3d_fast_rcnn"]
         for model_template in model_templates:
             parse_model_template(
-                osp.join("otx/algorithms/action/configs", "detection", model_template, "template.yaml")
+                osp.join("src/otx/algorithms/action/configs", "detection", model_template, "template.yaml")
             )
 
     def init_environment(self, params, model_template):

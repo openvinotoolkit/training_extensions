@@ -15,3 +15,4 @@
 import os
 
 os.environ["FEATURE_FLAGS_OTX_ACTION_TASKS"] = "1"
+os.environ["FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS"] = "1"

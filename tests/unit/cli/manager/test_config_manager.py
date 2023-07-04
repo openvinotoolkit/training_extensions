@@ -438,7 +438,9 @@ class TestConfigManager:
         assert config_manager._check_rebuild()
 
     @e2e_pytest_unit
-    def test_configure_data_config(self, mocker):
+    @pytest.mark.parametrize("mode", ["build", "train", "eval"])
+    @pytest.mark.parametrize("task_type", ["", "VISUAL_PROMPTING"])
+    def test_configure_data_config(self, mocker, mode: str, task_type: str):
         data_yaml = {
             "data": {
                 "train": {"ann-files": None, "data-roots": "train/data/roots"},
@@ -459,17 +461,30 @@ class TestConfigManager:
         mock_update_data_config = mocker.patch("otx.cli.manager.config_manager.ConfigManager.update_data_config")
 
         mock_args = mocker.MagicMock()
-        mock_args.mode = "build"
+        mock_args.mode = mode
 
         config_manager = ConfigManager(mock_args)
         config_manager.train_type = "Incremental"
+        config_manager.task_type = task_type
+        config_manager.mode = mode
+
         config_manager.configure_data_config(update_data_yaml=True)
+
         mock_configure_dataset.assert_called_once()
-        mock_auto_split.assert_called_once()
-        mock_get_data_yaml.assert_called_once()
-        mock_save_data.assert_called_once()
         mock_export_data_cfg.assert_called_once()
         mock_update_data_config.assert_called_once_with(data_yaml)
+        if mode in ("train", "build"):
+            mock_auto_split.assert_called_once()
+            mock_get_data_yaml.assert_called_once()
+            mock_save_data.assert_called_once()
+        else:
+            # mode == "eval"
+            mock_auto_split.assert_not_called()
+            mock_get_data_yaml.assert_not_called()
+            mock_save_data.assert_not_called()
+
+        if task_type == "VISUAL_PROMPTING" and mode == "train":
+            assert data_yaml.get("options", False)
 
     @e2e_pytest_unit
     def test__get_train_type_incremental(self, mocker):
