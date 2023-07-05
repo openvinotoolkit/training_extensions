@@ -364,11 +364,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 if precision == ModelPrecision.FP16:
                     optimize_command.append("--compress_to_fp16")
                 subprocess.run(optimize_command, check=True)
-                bin_file = glob(os.path.join(self.output_path, "*.bin"))[0]
-                xml_file = glob(os.path.join(self.output_path, "*.xml"))[0]
-                with open(bin_file, "rb") as file:
+                with open(path.replace(".onnx", ".bin"), "rb") as file:
                     output_model.set_data(f"{module}.bin", file.read())
-                with open(xml_file, "rb") as file:
+                with open(path.replace(".onnx", ".xml"), "rb") as file:
                     output_model.set_data(f"{module}.xml", file.read())
 
         output_model.precision = self.precision
