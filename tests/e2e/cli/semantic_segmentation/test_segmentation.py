@@ -82,8 +82,7 @@ else:
     # )
     templates_inc_segnext = copy.deepcopy(templates)
     templates_ids_inc_segnext = copy.deepcopy(templates_ids)
-    # templates_inc_segnext.extend([template_experimental])
-    # templates_ids_inc_segnext.extend([template_experimental.model_template_id])
+
 
 
 class TestToolsMPASegmentation:
