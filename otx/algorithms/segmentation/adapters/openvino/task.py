@@ -198,12 +198,10 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             update_progress_callback = inference_parameters.update_progress
             dump_soft_prediction = not inference_parameters.is_evaluation
             process_soft_prediction = inference_parameters.process_saliency_maps
-            enable_async_inference = inference_parameters.enable_async_inference
         else:
             update_progress_callback = default_progress_callback
             dump_soft_prediction = True
             process_soft_prediction = False
-            enable_async_inference = True
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
