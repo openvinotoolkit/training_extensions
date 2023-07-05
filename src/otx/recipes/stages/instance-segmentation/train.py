@@ -12,14 +12,6 @@ optimizer = dict(
     weight_decay=0.0001,
 )
 
-# lr_config = dict(
-#     policy='step',
-#     warmup='linear',
-#     warmup_iters=200,
-#     warmup_ratio=0.001,
-#     # [7] yields higher performance than [6]
-#     step=[7])
-
 lr_config = dict(
     policy="ReduceLROnPlateau",
     metric="mAP",
