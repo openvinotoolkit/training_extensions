@@ -485,12 +485,16 @@ class Tile:
             merged_vectors (List[np.ndarray]): Merged vectors for each image.
         """
 
-        vect_per_image = len(feature_vectors) // self.num_images
-        # split vectors on chunks of vectors related to the same image
-        image_vectors = [
-            feature_vectors[x : x + vect_per_image] for x in range(0, len(feature_vectors), vect_per_image)
-        ]
-        return np.average(image_vectors, axis=1)
+        image_vectors: dict = {}
+        for vector, tile in zip(feature_vectors, self.tiles):
+            data_idx = tile.get("index", None) if "index" in tile else tile.get("dataset_idx", None)
+            if data_idx in image_vectors:
+                # tile vectors
+                image_vectors[data_idx].append(vector)
+            else:
+                # whole image vector
+                image_vectors[data_idx] = [vector]
+        return [np.average(image, axis=0) for idx, image in image_vectors.items()]
 
     def merge_maps(self, saliency_maps: Union[List[List[np.ndarray]], List[np.ndarray]]) -> List:
         """Merge tile-level saliency maps to image-level saliency map.
