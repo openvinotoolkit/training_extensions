@@ -132,10 +132,10 @@ model = dict(
     ),
 )
 
-load_from = "https://download.openmmlab.com/\
-mmdetection/v2.0/convnext/\
-mask_rcnn_convnext-t_p4_w7_fpn_fp16_ms-crop_3x_coco/\
-mask_rcnn_convnext-t_p4_w7_fpn_fp16_ms-crop_3x_coco_20220426_154953-050731f4.pth"
+load_from = "https://storage.openvinotoolkit.org/\
+    repositories/openvino_training_extensions/\
+    models/instance_segmentation/\
+    mask_rcnn_convnext-t_p4_w7_fpn_fp16.pth"
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 ignore = True
