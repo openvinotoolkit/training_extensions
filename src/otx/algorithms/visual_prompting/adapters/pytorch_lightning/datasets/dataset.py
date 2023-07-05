@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Any
 
 import cv2
 import numpy as np
@@ -31,6 +31,8 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelin
     ResizeLongestSide,
     collate_fn,
 )
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.scored_label import ScoredLabel
@@ -155,24 +157,15 @@ class OTXVisualPromptingDataset(Dataset):
         """
         return len(self.dataset)
 
-    def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
-        """Get dataset item.
-
-        Args:
-            index (int): Index of the dataset sample.
-
-        Returns:
-            Dict[str, Union[int, List, Tensor]]: Dataset item.
-        """
-        dataset_item = self.dataset[index]
-        item: Dict[str, Union[int, Tensor]] = {"index": index}
-
+    @staticmethod
+    def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity]) -> Dict[str, Any]:
+        """"""
         width, height = dataset_item.width, dataset_item.height
         bboxes: List[List[int]] = []
         points: List = []  # TBD
         gt_masks: List[np.ndarray] = []
         labels: List[ScoredLabel] = []
-        for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
+        for annotation in dataset_item.get_annotations(labels=dataset_labels, include_empty=False, preserve_id=True):
             if isinstance(annotation.shape, Image):
                 # use mask as-is
                 gt_mask = annotation.shape.numpy.astype(np.uint8)
@@ -196,7 +189,29 @@ class OTXVisualPromptingDataset(Dataset):
             # add labels
             labels.extend(annotation.get_labels(include_empty=False))
 
-        if len(gt_masks) == 0:
+        bboxes = np.array(bboxes)
+        return dict(
+            original_size=(height, width),
+            gt_masks=gt_masks,
+            bboxes=bboxes,
+            points=points,  # TODO (sungchul): update point information
+            labels=labels,
+        )
+
+    def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
+        """Get dataset item.
+
+        Args:
+            index (int): Index of the dataset sample.
+
+        Returns:
+            Dict[str, Union[int, List, Tensor]]: Dataset item.
+        """
+        dataset_item = self.dataset[index]
+        item: Dict[str, Union[int, Tensor]] = {"index": index, "images": dataset_item.numpy}
+
+        prompts = self.get_prompts(dataset_item, self.labels)
+        if len(prompts["gt_masks"]) == 0:
             return {
                 "images": [],
                 "bboxes": [],
@@ -208,17 +223,7 @@ class OTXVisualPromptingDataset(Dataset):
             }
 
         bboxes = np.array(bboxes)
-        item.update(
-            dict(
-                original_size=(height, width),
-                images=dataset_item.numpy,
-                path=dataset_item.media.path,
-                gt_masks=gt_masks,
-                bboxes=bboxes,
-                points=points,  # TODO (sungchul): update point information
-                labels=labels,
-            )
-        )
+        item.update(**prompts)
         item = self.transform(item)
         return item
 
