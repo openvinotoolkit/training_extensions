@@ -22,7 +22,7 @@ import shutil
 import subprocess  # nosec B404
 import tempfile
 from glob import glob
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from anomalib.data.utils.transform import get_transforms
@@ -369,10 +369,12 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
+        """Sets metadata in output_model."""
         metadata = self._get_metadata_dict()
         output_model.set_data("metadata", json.dumps(metadata).encode())
 
-    def _get_metadata_dict(self):
+    def _get_metadata_dict(self) -> Dict[str, Any]:
+        """Returns metadata dict."""
         image_threshold = (
             self.model.image_threshold.value.cpu().numpy().tolist() if hasattr(self.model, "image_threshold") else 0.5
         )
