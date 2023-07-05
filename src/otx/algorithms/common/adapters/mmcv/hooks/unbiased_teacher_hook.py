@@ -17,13 +17,14 @@ logger = get_logger()
 class UnbiasedTeacherHook(DualModelEMAHook):
     """UnbiasedTeacherHook for semi-supervised learnings."""
 
-    def __init__(self, min_pseudo_label_ratio=0.1, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.min_pseudo_label_ratio = min_pseudo_label_ratio
         self.unlabeled_loss_enabled = False
 
     def before_train_epoch(self, runner):
         """Enable unlabeled loss if over start epoch."""
+        if runner.epoch > 1:
+            self._get_model(runner).turnoff_memory_bank()
         if runner.epoch + 1 < self.start_epoch:
             return
         if self.unlabeled_loss_enabled:

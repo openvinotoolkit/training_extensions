@@ -32,6 +32,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         pseudo_conf_thresh=0.7,
         enable_unlabeled_loss=False,
         bg_loss_weight=-1.0,
+        min_pseudo_label_ratio=0.0,
         arch_type="CustomMaskRCNN",
         **kwargs
     ):
@@ -46,12 +47,17 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         )
         self.pseudo_conf_thresh = pseudo_conf_thresh
         self.unlabeled_loss_enabled = enable_unlabeled_loss
+        self.unlabeled_memory_bank = True
         self.bg_loss_weight = bg_loss_weight
+        self.min_pseudo_label_ratio = min_pseudo_label_ratio
 
         cfg = kwargs.copy()
         cfg["type"] = arch_type
         self.model_s = build_detector(cfg)
         self.model_t = copy.deepcopy(self.model_s)
+        self.num_classes = cfg["roi_head"]["bbox_head"]["num_classes"]
+        self.memory_cat_bank = [0 for i in range(self.num_classes)]
+        self.all_num_cat = 0
 
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
@@ -77,10 +83,30 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         """Enable function for UnbiasedTeacher unlabeled loss."""
         self.unlabeled_loss_enabled = mode
 
+    def turnoff_memory_bank(self):
+        """Enable function for UnbiasedTeacher unlabeled loss."""
+        self.unlabeled_memory_bank = False
+
+    def compute_dynamic_thrsh(self):
+        """Enable function for UnbiasedTeacher unlabeled loss."""
+        per_cat_num_obj = np.array(self.memory_cat_bank) / self.all_num_cat
+        max_num_pbj = np.max(per_cat_num_obj)
+        range_of_variation = (max_num_pbj - 0.01) / 2 # 1%
+        # quadratic approximation. 0.01 -> 0.25, med -> 0.5, max -> 0.75
+        koeffs = np.polyfit([0.01, range_of_variation, max_num_pbj], [0.2, 0.5, 0.75], 2)
+        thrsh = [koeffs[0]*(x**2) + koeffs[1]*x + koeffs[2] for x in per_cat_num_obj]
+        print(f"[*] Computed per class thresholds: {thrsh} with given distribution: {per_cat_num_obj}")
+        return thrsh
+
+    def update_memory_bank(self, gt_labels):
+        for bbox in gt_labels:
+            for l in bbox:
+                self.memory_cat_bank[l] += 1
+                self.all_num_cat += 1
+
     def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_masks, gt_bboxes_ignore=None, **kwargs):
         """Forward function for UnbiasedTeacher."""
         losses = {}
-
         # Supervised loss
         # TODO: check img0 only option (which is common for mean teacher method)
         sl_losses = self.model_s.forward_train(
@@ -92,7 +118,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             gt_masks=gt_masks
         )
         losses.update(sl_losses)
-
+        if self.unlabeled_memory_bank:
+            self.update_memory_bank(gt_labels)
         if not self.unlabeled_loss_enabled:
             return losses
 
@@ -110,6 +137,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 rescale=False,  # easy augmentation
             )
 
+        if not isinstance(self.pseudo_conf_thresh, list):
+            self.pseudo_conf_thresh = self.compute_dynamic_thrsh()
         current_device = ul_img0[0].device
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
@@ -119,20 +148,21 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         # Unsupervised loss
-        if self.bg_loss_weight >= 0.0:
-            self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
+        # Compute only if min_pseudo_label_ratio is reached
+        if pseudo_ratio >= self.min_pseudo_label_ratio:
+            if self.bg_loss_weight >= 0.0:
+                self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
+            ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
+            if self.bg_loss_weight >= 0.0:
+                self.model_s.bbox_head.bg_loss_weight = -1.0
 
-        ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
-        if self.bg_loss_weight >= 0.0:
-            self.model_s.bbox_head.bg_loss_weight = -1.0
-
-        for ul_loss_name in ul_losses.keys():
-            if ul_loss_name.startswith("loss_"):
-                ul_loss = ul_losses[ul_loss_name]
-                if isinstance(ul_loss, list):
-                    losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_loss_weight for loss in ul_loss]
-                else:
-                    losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_loss_weight
+            for ul_loss_name in ul_losses.keys():
+                if ul_loss_name.startswith("loss_"):
+                    ul_loss = ul_losses[ul_loss_name]
+                    if isinstance(ul_loss, list):
+                        losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_loss_weight for loss in ul_loss]
+                    else:
+                        losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_loss_weight
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
@@ -154,7 +184,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 teacher_bboxes = teacher_bboxes_masks[0]
                 teacher_masks = teacher_bboxes_masks[1]
                 confidences = teacher_bboxes[:, -1]
-                pseudo_indices = confidences > self.pseudo_conf_thresh
+                pseudo_indices = confidences > self.pseudo_conf_thresh[label]
                 pseudo_bboxes.append(teacher_bboxes[pseudo_indices, :4])  # model output: [x y w h conf]
                 pseudo_labels.append(np.full([sum(pseudo_indices)], label))
                 if np.any(pseudo_indices):
