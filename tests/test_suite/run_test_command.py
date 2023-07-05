@@ -38,15 +38,15 @@ def get_template_dir(template, root) -> str:
 
     # Get the template directory of the algorithm.
     # The location of the template files are as follows:
-    # ~/training_extensions/otx/algorithms/<algorithm>/**/template.yaml
+    # ~/training_extensions/src/otx/algorithms/<algorithm>/**/template.yaml
     # To get the ``algorithm``, index of the "algorithms" can be
     # searched, where ``algorithm`` comes next.
     template_path_parts = template.model_template_path.split(os.sep)
     idx = template_path_parts.index("algorithms")
     algorithm = template_path_parts[idx + 1]
 
-    algo_backend_dir = f"otx/algorithms/{algorithm}"
-    work_dir = os.path.join(root, f"otx/algorithms/{algorithm}")
+    algo_backend_dir = f"src/otx/algorithms/{algorithm}"
+    work_dir = os.path.join(root, f"src/otx/algorithms/{algorithm}")
     template_dir = os.path.dirname(os.path.relpath(template.model_template_path, start=algo_backend_dir))
     template_work_dir = os.path.join(work_dir, template_dir)
 
@@ -140,6 +140,8 @@ def otx_train_testing(template, root, otx_dir, args, deterministic=True):
         command_line.extend(["--gpus", args["--gpus"]])
         if "--multi-gpu-port" in args:
             command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
+    if "--train-type" in args:
+        command_line.extend(["--train-type", args["--train-type"]])
     if deterministic:
         command_line.extend(["--deterministic"])
     if "train_params" in args:
@@ -679,10 +681,7 @@ def xfail_templates(templates, xfail_template_ids_reasons):
 
 def otx_explain_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
-    if "RCNN" in template.model_template_id:
-        test_algorithm = "ActivationMap"
-    else:
-        test_algorithm = "ClassWiseSaliencyMap"
+    test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
     if "hierarchical" in train_ann_file:
@@ -717,10 +716,7 @@ def otx_explain_testing(template, root, otx_dir, args, trained=False):
 
 def otx_explain_testing_all_classes(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
-    if "RCNN" in template.model_template_id:
-        test_algorithm = "ActivationMap"
-    else:
-        test_algorithm = "ClassWiseSaliencyMap"
+    test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
     if "hierarchical" in train_ann_file:
@@ -761,10 +757,7 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
 
 def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
-    if "RCNN" in template.model_template_id:
-        test_algorithm = "ActivationMap"
-    else:
-        test_algorithm = "ClassWiseSaliencyMap"
+    test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
     if "hierarchical" in train_ann_file:
@@ -800,10 +793,7 @@ def otx_explain_testing_process_saliency_maps(template, root, otx_dir, args, tra
 
 def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
-    if "RCNN" in template.model_template_id:
-        test_algorithm = "ActivationMap"
-    else:
-        test_algorithm = "ClassWiseSaliencyMap"
+    test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
     if "hierarchical" in train_ann_file:
@@ -839,10 +829,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args, trained=False):
 
 def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
-    if "RCNN" in template.model_template_id:
-        test_algorithm = "ActivationMap"
-    else:
-        test_algorithm = "ClassWiseSaliencyMap"
+    test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
     if "hierarchical" in train_ann_file:
@@ -884,10 +871,7 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
 
 def otx_explain_process_saliency_maps_openvino_testing(template, root, otx_dir, args, trained=False):
     template_work_dir = get_template_dir(template, root)
-    if "RCNN" in template.model_template_id:
-        test_algorithm = "ActivationMap"
-    else:
-        test_algorithm = "ClassWiseSaliencyMap"
+    test_algorithm = "ClassWiseSaliencyMap"
 
     train_ann_file = args.get("--train-ann-file", "")
     if "hierarchical" in train_ann_file:

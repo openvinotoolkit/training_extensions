@@ -17,7 +17,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
-templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates
+templates_cls = Registry("src/otx/algorithms").filter(task_type="CLASSIFICATION").templates
 templates_cls_ids = [template.model_template_id for template in templates_cls]
 
 

@@ -11,6 +11,7 @@ import tempfile
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.segmentation.adapters.mmseg import configurer
 from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     SegmentationConfigurer,
     IncrSegmentationConfigurer,
@@ -134,10 +135,14 @@ class TestSegmentationConfigurer:
             "torch.distributed.is_initialized",
             return_value=True,
         )
+        world_size = 2
+        mocker.patch.object(configurer, "dist").get_world_size.return_value = world_size
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
+        origin_lr = config.optimizer.lr
         self.configurer.configure_device(config, True)
         assert config.distributed is True
+        assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
 
         mocker.patch(
             "torch.distributed.is_initialized",

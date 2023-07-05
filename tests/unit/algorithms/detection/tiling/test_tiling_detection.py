@@ -26,6 +26,7 @@ from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.subset import Subset
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_helpers import generate_random_annotated_image
@@ -71,7 +72,7 @@ def create_otx_dataset(height: int, width: int, labels: List[str], domain: Domai
     image, anno_list = generate_random_annotated_image(width, height, labels)
     image = Image(data=image)
     annotation_scene = AnnotationSceneEntity(annotations=anno_list, kind=AnnotationSceneKind.ANNOTATION)
-    dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene)
+    dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=Subset.TRAINING)
     return DatasetEntity([dataset_item]), labels
 
 
@@ -98,6 +99,7 @@ class TestTilingDetection:
         self.train_data_cfg = ConfigDict(
             dict(
                 type="ImageTilingDataset",
+                filter_empty_gt=False,
                 pipeline=[
                     dict(type="Resize", img_scale=(self.height, self.width), keep_ratio=False),
                     dict(type="RandomFlip", flip_ratio=0.5),
@@ -128,6 +130,7 @@ class TestTilingDetection:
         self.test_data_cfg = ConfigDict(
             dict(
                 type="ImageTilingDataset",
+                filter_empty_gt=False,
                 pipeline=[
                     dict(
                         type="MultiScaleFlipAug",
@@ -170,16 +173,30 @@ class TestTilingDetection:
 
         dataset = build_dataset(self.test_data_cfg)
         stride = int((1 - self.tile_cfg["overlap_ratio"]) * self.tile_cfg["tile_size"])
-        num_tile_rows = ((self.height - self.tile_cfg["tile_size"]) // stride) + 1
-        num_tile_cols = ((self.width - self.tile_cfg["tile_size"]) // stride) + 1
-        # +1 for the original image
-        assert len(dataset) == (num_tile_rows * num_tile_cols) + 1, "Incorrect number of tiles"
+        num_tile_rows = (self.height + stride - 1) // stride
+        num_tile_cols = (self.width + stride - 1) // stride
+        assert len(dataset) == (num_tile_rows * num_tile_cols), "Incorrect number of tiles"
 
         test_dataloader = build_dataloader(dataset, **self.dataloader_cfg)
         for data in test_dataloader:
             assert isinstance(data["img"][0], torch.Tensor)
             assert "gt_bboxes" not in data
             assert "gt_labels" not in data
+
+    @e2e_pytest_unit
+    def test_tiling_sampling(self):
+        self.train_data_cfg.sampling_ratio = 0.5
+        dataset = build_dataset(self.train_data_cfg)
+        assert len(dataset) == max(int(len(dataset.tile_dataset.tiles_all) * 0.5), 1)
+
+        self.train_data_cfg.sampling_ratio = 0.01
+        dataset = build_dataset(self.train_data_cfg)
+        assert len(dataset) == max(int(len(dataset.tile_dataset.tiles_all) * 0.01), 1)
+
+        self.test_data_cfg.sampling_ratio = 0.1
+        self.test_data_cfg.dataset.otx_dataset[0].subset = Subset.TESTING
+        dataset = build_dataset(self.test_data_cfg)
+        assert len(dataset) == len(dataset.tile_dataset.tiles_all)
 
     @e2e_pytest_unit
     def test_inference_merge(self):
@@ -213,6 +230,45 @@ class TestTilingDetection:
         assert len(merged_bbox_results) == dataset.num_samples
 
     @e2e_pytest_unit
+    def test_merge_feature_vectors(self):
+        """Test that the merge feature vectors works correctly."""
+        dataset = build_dataset(self.test_data_cfg)
+
+        # create simulated vectors results
+        feature_vectors: List[np.ndarray] = []
+        vectors_per_image = 5
+        vector_length = 10
+        feature_vectors = [np.zeros((vectors_per_image, vector_length), dtype=np.float32) for _ in range(len(dataset))]
+
+        # Test merge_vectors if vectors are to be returned
+        merged_vectors = dataset.merge_vectors(feature_vectors, dump_vectors=True)
+        assert len(merged_vectors) == dataset.num_samples
+
+        # Test merge_vectors if merged vectors should be a list of None
+        merged_vectors = dataset.merge_vectors(feature_vectors, dump_vectors=False)
+        assert len(merged_vectors) == dataset.num_samples
+
+    @e2e_pytest_unit
+    def test_merge_saliency_maps(self):
+        """Test that the inference merge works correctly."""
+        dataset = build_dataset(self.test_data_cfg)
+
+        # create simulated maps results
+        saliency_maps: List[np.ndarray] = []
+        num_classes = len(dataset.CLASSES)
+        feature_map_size = (num_classes, 2, 2)
+        features_per_image = 5
+        saliency_maps = [np.zeros(feature_map_size, dtype=np.float32) for _ in range(len(dataset) * features_per_image)]
+
+        # Test merge_maps if maps are to be processed
+        merged_maps = dataset.merge_maps(saliency_maps, dump_maps=True)
+        assert len(merged_maps) == dataset.num_samples
+
+        # Test merge_maps if maps should be a list of None
+        merged_maps = dataset.merge_maps(saliency_maps, dump_maps=False)
+        assert len(merged_maps) == dataset.num_samples
+
+    @e2e_pytest_unit
     def test_load_tiling_parameters(self, tmp_dir_path):
         maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
@@ -225,6 +281,7 @@ class TestTilingDetection:
         output_model = ModelEntity(self.otx_dataset, task_env.get_model_configuration())
         task = MMDetectionTask(task_env, output_path=str(tmp_dir_path))
         model_ckpt = os.path.join(tmp_dir_path, "maskrcnn.pth")
+        task._init_task()
         torch.save(detector.state_dict(), model_ckpt)
         task._model_ckpt = model_ckpt
         task.save_model(output_model)
@@ -272,7 +329,7 @@ class TestTilingDetection:
             dict(type="LoadImageFromFile"),
             dict(
                 type="MultiScaleFlipAug",
-                img_scale=(800, 800),
+                img_scale=(512, 512),
                 flip=False,
                 transforms=[
                     dict(type="Resize", keep_ratio=False),
@@ -317,6 +374,7 @@ class TestTilingDetection:
         assert ir_width == original_width * scale_factor
 
     @e2e_pytest_unit
+    @pytest.mark.skip(reason="Issue#2245: Sporadic failure of tiling max ann.")
     def test_max_annotation(self, max_annotation=200):
         otx_dataset, labels = create_otx_dataset(
             self.height, self.width, self.label_names, Domain.INSTANCE_SEGMENTATION

@@ -36,10 +36,10 @@ from tests.test_suite.run_test_command import (
 )
 
 args = {
-    "--train-data-roots": "tests/assets/small_objects",
-    "--val-data-roots": "tests/assets/small_objects",
-    "--test-data-roots": "tests/assets/small_objects",
-    "--input": "tests/assets/small_objects/images/train",
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -67,12 +67,14 @@ otx_dir = os.getcwd()
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml")
+        os.path.join(
+            "src/otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml"
+        )
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
+    templates = Registry("src/otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 

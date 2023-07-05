@@ -27,7 +27,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.core.data.adapter import get_dataset_adapter
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "classification", "x3d")
+DEFAULT_ACTION_TEMPLATE_DIR = osp.join("src/otx/algorithms/action/configs", "classification", "x3d")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -54,7 +54,7 @@ class TestActionTaskAPI:
         model_templates = ["x3d"]
         for model_template in model_templates:
             parse_model_template(
-                osp.join("otx/algorithms/action/configs", "classification", model_template, "template.yaml")
+                osp.join("src/otx/algorithms/action/configs", "classification", model_template, "template.yaml")
             )
 
     def init_environment(self, params, model_template):

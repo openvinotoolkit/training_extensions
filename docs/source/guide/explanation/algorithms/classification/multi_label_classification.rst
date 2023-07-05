@@ -24,7 +24,7 @@ Dataset Format
 **************
 
 As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection format: `COCO <https://cocodataset.org/#format-data>`_.
-Specifically, this format should be converted in our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel>`_ first. We provided a `script <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/classification/utils/convert_coco_to_multilabel.py>` to help with conversion.
+Specifically, this format should be converted in our `internal representation <https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel>`_ first. We provided a `script <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/utils/convert_coco_to_multilabel.py>` to help with conversion.
 To convert the COCO data format to our internal one, run this script in similar way:
 
 .. code-block::

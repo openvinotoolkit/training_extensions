@@ -3,7 +3,7 @@
 #
 
 
-import pickle  # nosec
+import pickle  # nosec B403
 
 import pytest
 from bson import ObjectId
@@ -36,6 +36,6 @@ class TestPickle:
         """
         original_id = ID(ObjectId())
         pickled_id = pickle.dumps(original_id)
-        unpickled_id = pickle.loads(pickled_id)  # nosec
+        unpickled_id = pickle.loads(pickled_id)  # nosec B301
         assert id(original_id) != id(pickled_id), "Expected two different memory instanced"
         assert original_id == unpickled_id, "Expected content of entities to be equal"
