@@ -222,8 +222,8 @@ class OTXVisualPromptingDataset(Dataset):
                 "labels": [],
             }
 
-        bboxes = np.array(bboxes)
-        item.update(**prompts)
+        prompts["bboxes"] = np.array(prompts["bboxes"])
+        item.update({**prompts, "path": dataset_item.media.path})
         item = self.transform(item)
         return item
 
