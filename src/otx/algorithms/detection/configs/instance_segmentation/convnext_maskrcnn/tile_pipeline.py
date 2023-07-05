@@ -1,4 +1,4 @@
-"""Tiling Pipeline of Resnet model for Instance-Seg Task."""
+"""Tiling Pipeline of ConvNeXt model for Instance-Seg Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
