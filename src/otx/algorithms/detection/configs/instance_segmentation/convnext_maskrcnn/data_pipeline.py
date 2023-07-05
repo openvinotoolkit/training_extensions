@@ -1,4 +1,4 @@
-"""Data Pipeline of Resnet model for Instance-Seg Task."""
+"""Data Pipeline of ConvNeXt model for Instance-Seg Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
