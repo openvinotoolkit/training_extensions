@@ -23,6 +23,7 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 
+from otx.api.entities.label_schema import natural_sort_label_id
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
@@ -91,7 +92,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         self._model_name = task_environment.model_template.name
         self._train_type = self._hyperparams.algo_backend.train_type
         self.metric = "mDice"
-        self._label_dictionary = dict(enumerate(sorted(self._labels), 1))
+        self._label_dictionary = dict(enumerate(sorted(self._labels, key=natural_sort_label_id), 1))
 
         self._model_dir = os.path.join(
             os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),

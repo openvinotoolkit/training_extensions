@@ -8,6 +8,7 @@
 from typing import Dict, List, Optional, Tuple
 import numpy as np
 
+from otx.api.entities.label_schema import natural_sort_label_id
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import (
     BarChartInfo,
@@ -113,7 +114,7 @@ class DiceAverage(IPerformanceProvider):
             )
         resultset_labels = set(resultset.prediction_dataset.get_labels() + resultset.ground_truth_dataset.get_labels())
         model_labels = set(resultset.model.configuration.get_label_schema().get_labels(include_empty=False))
-        labels = sorted(resultset_labels.intersection(model_labels))
+        labels = sorted(resultset_labels.intersection(model_labels), key=natural_sort_label_id)
         labels_map = {label: i + 1 for i, label in enumerate(labels)}
         hard_predictions = []
         hard_references = []
