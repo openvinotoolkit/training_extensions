@@ -506,11 +506,24 @@ class Tile:
         Returns:
             merged_maps (List[list | np.ndarray | None]): Merged saliency maps for each image.
         """
+
+        dtype = None
+        for map in saliency_maps:
+            for cl_map in map:
+                # find first class map which is not None
+                if cl_map is not None and dtype is None:
+                    dtype = map[0].dtype
+                    feat_h, feat_w = map[0].shape
+                    break
+            if dtype is not None:
+                break
+        else:
+            # if None for each class for each image
+            return saliency_maps[self.num_images :]
+
         merged_maps = []
         ratios = {}
         num_classes = len(saliency_maps[0])
-        feat_h, feat_w = saliency_maps[0][0].shape
-        dtype = saliency_maps[0][0][0].dtype
 
         for orig_image in self.cached_results:
             img_idx = orig_image["index"]

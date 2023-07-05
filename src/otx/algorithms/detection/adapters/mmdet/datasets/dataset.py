@@ -419,11 +419,7 @@ class ImageTilingDataset(OTXDetDataset):
         """
 
         if dump_maps:
-            if not (np.array(saliency_maps) == None).all():  # noqa
-                return self.tile_dataset.merge_maps(saliency_maps)
-            else:
-                # retutn None for each class for each image
-                return saliency_maps[: self.num_samples]
+            return self.tile_dataset.merge_maps(saliency_maps)
         else:
             return [None] * self.num_samples
 
