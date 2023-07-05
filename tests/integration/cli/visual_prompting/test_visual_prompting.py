@@ -8,7 +8,7 @@ import os
 import copy
 import pytest
 
-from otx.cli.registry import Registry
+from src.otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     get_template_dir,
@@ -61,7 +61,9 @@ resume_params = [
 otx_dir = os.getcwd()
 
 
-templates = Registry("src/otx/algorithms/visual_prompting").filter(task_type="VISUAL_PROMPTING").templates
+templates = (
+    Registry("src/otx/algorithms/visual_prompting", experimental=True).filter(task_type="VISUAL_PROMPTING").templates
+)
 templates_ids = [template.model_template_id for template in templates]
 
 
