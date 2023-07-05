@@ -182,6 +182,8 @@ def create_converter(
         converter = MaskToAnnotationConverter(labels, configuration)
     elif converter_type == Domain.ROTATED_DETECTION:
         converter = RotatedRectToAnnotationConverter(labels, configuration)
+    elif converter_type == Domain.VISUAL_PROMPTING:
+        converter = VisualPromptingToAnnotationConverter(labels)
     else:
         raise ValueError(f"Unknown converter type: {converter_type}")
 
@@ -435,7 +437,7 @@ class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
         labels = label_schema.get_labels(include_empty=False)
         self.label_map = dict(enumerate(labels, 1))
 
-    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
@@ -446,13 +448,15 @@ class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         soft_prediction = metadata.get("soft_prediction", np.ones(predictions.shape))
+        # TODO (sungchul): condition to distinguish between mask and polygon
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=predictions,
             soft_prediction=soft_prediction,
-            label_map=self.label_map,
+            label_map={1: metadata["label"].label},
         )
 
-        return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
+        return annotations
+        # return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
