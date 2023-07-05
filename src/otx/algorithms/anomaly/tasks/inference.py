@@ -34,6 +34,7 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from omegaconf import DictConfig, ListConfig
+from openvino.runtime import Core, serialize
 from pytorch_lightning import Trainer
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
@@ -307,11 +308,31 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             with open(xml_file, "rb") as file:
                 output_model.set_data("openvino.xml", file.read())
 
+        self._convert_to_new_format(xml_file)
+
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
+
+    def _convert_to_new_format(self, xml_file: str) -> None:
+        """Adds the metadata to the model IR.
+
+        Adds the metadata to the model IR. So that it can be used with the new modelAPI.
+        This is because the metadata.json is not used by the new modelAPI.
+        # TODO CVS-114640
+        # TODO: Step 1. Remove metadata.json when modelAPI becomes the default inference method.
+        # TODO: Step 2. Remove this function when Anomalib is upgraded as the model graph will contain the required ops
+        # TODO: Step 3. Update modelAPI to remove pre/post-processing steps when Anomalib version is upgraded.
+        """
+        metadata = self._get_metadata_dict()
+        core = Core()
+        model = core.read_model(xml_file)
+        for key, value in metadata.items():
+            model.set_rt_info(value, ["model_info", key])
+        model.set_rt_info("AnomalyDetection", ["model_info", "model_type"])
+        serialize(model, xml_file)
 
     def model_info(self) -> Dict:
         """Return model info to save the model weights.
@@ -348,6 +369,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
+        metadata = self._get_metadata_dict()
+        output_model.set_data("metadata", json.dumps(metadata).encode())
+
+    def _get_metadata_dict(self):
         image_threshold = (
             self.model.image_threshold.value.cpu().numpy().tolist() if hasattr(self.model, "image_threshold") else 0.5
         )
@@ -384,7 +409,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             metadata["max"] = max
         # Set the task type for inferencer
         metadata["task"] = str(self.task_type).lower().split("_")[-1]
-        output_model.set_data("metadata", json.dumps(metadata).encode())
+        return metadata
 
     @staticmethod
     def _is_docker() -> bool:
