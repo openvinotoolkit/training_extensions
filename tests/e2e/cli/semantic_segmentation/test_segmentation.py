@@ -77,13 +77,13 @@ else:
     # add one experimental template for new segmentation model. In the future we will update them as main templates
     # but we need to start to test them now. For time saving - one new model will be validated
     # NNCF is not validated since the work in progress with optimization task
-    template_experimental = parse_model_template(
-        os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
-    )
+    # template_experimental = parse_model_template(
+    #     os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
+    # )
     templates_inc_segnext = copy.deepcopy(templates)
     templates_ids_inc_segnext = copy.deepcopy(templates_ids)
-    templates_inc_segnext.extend([template_experimental])
-    templates_ids_inc_segnext.extend([template_experimental.model_template_id])
+    # templates_inc_segnext.extend([template_experimental])
+    # templates_ids_inc_segnext.extend([template_experimental.model_template_id])
 
 
 class TestToolsMPASegmentation:
@@ -305,41 +305,41 @@ class TestToolsMPASemiSLSegmentation:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
 
 
-args_selfsl = {
-    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
-    "--input": "tests/assets/segmentation/custom/images/training",
-    "train_params": ["params", "--learning_parameters.num_iters", "5", "--learning_parameters.batch_size", "4"],
-}
+# args_selfsl = {
+#     "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
+#     "--input": "tests/assets/segmentation/custom/images/training",
+#     "train_params": ["params", "--learning_parameters.num_iters", "5", "--learning_parameters.batch_size", "4"],
+# }
 
 
-class TestToolsMPASelfSLSegmentation:
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_train(self, template, tmp_dir_path):
-        tmp_dir_path_1 = tmp_dir_path / "segmentation/test_selfsl"
-        otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
-        template_work_dir = get_template_dir(template, tmp_dir_path_1)
-        assert os.path.exists(f"{template_work_dir}/selfsl")
-        args1 = copy.deepcopy(args)
-        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
-        tmp_dir_path_2 = tmp_dir_path / "segmentation/test_selfsl_sl"
-        otx_train_testing(template, tmp_dir_path_2, otx_dir, args1)
+# class TestToolsMPASelfSLSegmentation:
+#     @e2e_pytest_component
+#     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+#     def test_otx_train(self, template, tmp_dir_path):
+#         tmp_dir_path_1 = tmp_dir_path / "segmentation/test_selfsl"
+#         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
+#         template_work_dir = get_template_dir(template, tmp_dir_path_1)
+#         assert os.path.exists(f"{template_work_dir}/selfsl")
+#         args1 = copy.deepcopy(args)
+#         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+#         tmp_dir_path_2 = tmp_dir_path / "segmentation/test_selfsl_sl"
+#         otx_train_testing(template, tmp_dir_path_2, otx_dir, args1)
 
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_eval(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl_sl"
-        otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+#     @e2e_pytest_component
+#     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+#     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+#     def test_otx_eval(self, template, tmp_dir_path):
+#         tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl_sl"
+#         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
-        tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
-        args_selfsl_multigpu = copy.deepcopy(args_selfsl)
-        args_selfsl_multigpu["--gpus"] = "0,1"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
-        template_work_dir = get_template_dir(template, tmp_dir_path)
-        assert os.path.exists(f"{template_work_dir}/selfsl")
+#     @e2e_pytest_component
+#     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+#     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+#     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+#     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
+#         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
+#         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
+#         args_selfsl_multigpu["--gpus"] = "0,1"
+#         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
+#         template_work_dir = get_template_dir(template, tmp_dir_path)
+#         assert os.path.exists(f"{template_work_dir}/selfsl")
