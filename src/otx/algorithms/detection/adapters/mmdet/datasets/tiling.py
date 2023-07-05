@@ -519,7 +519,7 @@ class Tile:
                 break
         else:
             # if None for each class for each image
-            return saliency_maps[self.num_images :]
+            return saliency_maps[: self.num_images]
 
         merged_maps = []
         ratios = {}
