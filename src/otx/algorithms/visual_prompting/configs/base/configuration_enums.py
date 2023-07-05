@@ -25,4 +25,5 @@ logger = logging.getLogger(__name__)
 class Models(ConfigurableEnum):
     """This Enum represents the types of models for inference."""
 
-    VisualPrompting = "visual_prompting"
+    ImageEncoder = "image_encoder"
+    Decoder = "decoder"

@@ -47,13 +47,6 @@ class VisualPromptingBaseConfig(BaseConfig):
         header = string_attribute("Postprocessing")
         description = header
 
-        class_name = selectable(
-            default_value=Models.VisualPrompting,
-            header="Model class for inference",
-            description="Model classes with defined pre- and postprocessing",
-            editable=False,
-            visible_in_ui=True,
-        )
         blur_strength = configurable_integer(
             header="Blur strength",
             description="With a higher value, the segmentation output will be smoother, but less accurate.",
