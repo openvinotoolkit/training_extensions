@@ -259,7 +259,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         height = width = self.config.model.image_size
         for module, path in onnx_path.items():
-            if module == "image_encoder":
+            if module == "visual_prompting_image_encoder":
                 dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float)}
                 output_names = ["image_embeddings"]
                 dynamic_axes = None
@@ -346,8 +346,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         logger.info("Exporting to the OpenVINO model.")
         onnx_path = {
-            "image_encoder": os.path.join(self.output_path, "image_encoder.onnx"),
-            "decoder": os.path.join(self.output_path, "decoder.onnx")
+            "visual_prompting_image_encoder": os.path.join(self.output_path, "visual_prompting_image_encoder.onnx"),
+            "visual_prompting_decoder": os.path.join(self.output_path, "visual_prompting_decoder.onnx")
         }
         self._export_to_onnx(onnx_path)
 
