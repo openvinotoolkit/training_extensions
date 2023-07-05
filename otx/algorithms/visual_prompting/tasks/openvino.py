@@ -24,6 +24,7 @@ import numpy as np
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
+import otx.algorithms.visual_prompting.adapters.openvino.model_wrappers
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
@@ -116,9 +117,8 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         items = {"index": 0, "images": dataset_item.numpy, **prompts}
         return self.transform(items)
 
-    def post_process(self, prediction: Dict[str, np.ndarray], label) -> Tuple[AnnotationSceneEntity, Any, Any]:
+    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> Tuple[AnnotationSceneEntity, Any, Any]:
         """Post-process function of OpenVINO Visual Prompting Inferencer."""
-        metadata = {"label": label}
         hard_prediction, soft_prediction = self.model["decoder"].postprocess(prediction, metadata)
         annotation = self.converter.convert_to_annotation(hard_prediction, metadata)
         return annotation, hard_prediction, soft_prediction
@@ -148,9 +148,10 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
 
             # forward decoder to get predicted mask
             prediction = self.forward_decoder(inputs_decoder)
+            metadata = {"label": label, "original_size": np.array(items["original_size"])}
 
             # set annotation for eval
-            annotation, hard_prediction, soft_prediction = self.post_process(prediction, label)
+            annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
             annotations.extend(annotation)
             hard_predictions.append(hard_prediction)
             soft_predictions.append(soft_prediction)
@@ -164,13 +165,18 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         """Forward function of OpenVINO Visual Prompting Inferencer."""
         return self.model["decoder"].infer_sync(inputs)
 
-    def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
+    def enqueue_prediction(self, dataset_item: DatasetItemEntity, id: int, result_handler: Any) -> None:
         """Runs async inference."""
-        if not self.model.is_ready():
-            self.model.await_any()
-        image, metadata = self.pre_process(image)
+        if not self.model["image_encoder"].is_ready():
+            self.model["image_encoder"].await_any()
+
+        if not self.model["decoder"].is_ready():
+            self.model["decoder"].await_any()
+
+        items = self.pre_process(dataset_item)
+        image, metadata = self.pre_process(dataset_item)
         callback_data = id, metadata, result_handler
-        self.model.infer_async(image, callback_data)
+        self.model.infer_async({"images": items}, callback_data)
 
     def await_all(self) -> None:
         """Await all running infer requests if any."""
@@ -218,8 +224,8 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         return OpenVINOVisualPromptingInferencer(
             self.hparams,
             self.task_environment.label_schema,
-            {"image_encoder": self.model.get_data("sam_image_encoder.xml"), "decoder": self.model.get_data("sam_decoder.xml")},
-            {"image_encoder": self.model.get_data("sam_image_encoder.bin"), "decoder": self.model.get_data("sam_decoder.bin")},
+            {"image_encoder": self.model.get_data("visual_prompting_image_encoder.xml"), "decoder": self.model.get_data("visual_prompting_decoder.xml")},
+            {"image_encoder": self.model.get_data("visual_prompting_image_encoder.bin"), "decoder": self.model.get_data("visual_prompting_decoder.bin")},
             num_requests=get_default_async_reqs_num(),
         )
 
