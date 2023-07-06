@@ -340,6 +340,9 @@ class Tiler:
 
         image_map_h = int(image_h * ratio[0])
         image_map_w = int(image_w * ratio[1])
+        # happens because of the bug then tile_size for IR in a few times more than original image
+        if image_map_h == 0 or image_map_w == 0:
+            return [None] * num_classes
         merged_map = [np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)]
 
         for (_, saliency_map), meta in features[1:]:

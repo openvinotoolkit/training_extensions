@@ -260,8 +260,6 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
             if dump_soft_prediction:
                 for label_index, label in self._label_dictionary.items():
-                    if label_index == 0:
-                        continue
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     if process_soft_prediction:
                         current_label_soft_prediction = get_activation_map(current_label_soft_prediction)
