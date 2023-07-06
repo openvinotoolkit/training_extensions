@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 import cv2
 
 import numpy as np
@@ -50,9 +50,19 @@ class Decoder(BlurSegmentation):
     """
     __model__ = "decoder"
 
-    def preprocess(self, inputs: Dict[str, Any], metadata: Dict[str, Any]) -> Dict[str, Any]:
-        """To be implemented."""
-        return inputs
+    def preprocess(self, bbox: np.ndarray, original_size: Tuple[int]) -> Dict[str, Any]:
+        """Ready decoder inputs."""
+        point_coords = bbox.reshape((-1, 2, 2))
+        point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
+        inputs_decoder = {
+            "point_coords": point_coords,
+            "point_labels": point_labels,
+            # TODO (sungchul): how to generate mask_input and has_mask_input
+            "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+            "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+            "orig_size": np.array(original_size, dtype=np.float32).reshape((-1, 2))
+        }
+        return inputs_decoder
 
     @classmethod
     def parameters(cls):
@@ -61,12 +71,13 @@ class Decoder(BlurSegmentation):
         return parameters
 
     def _get_inputs(self):
-        """"""
+        """Get input layer name and shape."""
         image_blob_names = [name for name in self.inputs.keys()]
         image_info_blob_names = []
         return image_blob_names, image_info_blob_names
 
     def _get_outputs(self):
+        """Get output layer name and shape."""
         layer_name = "low_res_masks"
         layer_shape = self.outputs[layer_name].shape
 
@@ -80,11 +91,15 @@ class Decoder(BlurSegmentation):
         return layer_name
 
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> Tuple[np.ndarray]:
-        """
+        """Postprocess to convert soft prediction to hard prediction.
         
         Args:
             outputs (Dict[str, np.ndarray]): The output of the model.
             meta (Dict[str, Any]): Contain label and original size.
+
+        Returns:
+            hard_prediction (np.ndarray): The hard prediction.
+            soft_prediction (np.ndarray): Resized, cropped, and normalized soft prediction.
         """
         def sigmoid(x):
             return 1/(1 + np.exp(-x))
@@ -104,7 +119,15 @@ class Decoder(BlurSegmentation):
         return hard_prediction, soft_prediction
 
     def resize_and_crop(self, soft_prediction: np.ndarray, original_size: np.ndarray) -> np.ndarray:
-        """"""
+        """Resize and crop soft prediction.
+        
+        Args:
+            soft_prediction (np.ndarray): Predicted soft prediction with HxW shape.
+            original_size (np.ndarray): The original image size.
+        
+        Returns:
+            final_soft_prediction (np.ndarray): Resized and cropped soft prediction for the original image.
+        """
         resized_soft_prediction = cv2.resize(soft_prediction, (self.image_size, self.image_size), 0, 0, interpolation=cv2.INTER_LINEAR)
 
         prepadded_size = self.resize_longest_image_size(original_size, self.image_size).astype(np.int64)

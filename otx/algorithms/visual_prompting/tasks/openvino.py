@@ -116,6 +116,7 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
 
     def pre_process(self, dataset_item: DatasetItemEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
+        # TODO (sungchul): change to modelapi.
         prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)
         items = {"index": 0, "images": dataset_item.numpy, **prompts}
         return self.transform(items)
@@ -137,17 +138,8 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         hard_predictions: List[np.ndarray] = []
         soft_predictions: List[np.ndarray] = []
         for idx, (bbox, label) in enumerate(zip(items["bboxes"], items["labels"])):
-            point_coords = np.array(bbox, dtype=np.float32).reshape((-1, 2, 2))
-            point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
-            inputs_decoder = {
-                **image_embeddings,
-                "point_coords": point_coords,
-                "point_labels": point_labels,
-                # TODO (sungchul): how to generate mask_input and has_mask_input
-                "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                "orig_size": np.array(items["original_size"], dtype=np.float32).reshape((-1, 2))
-            }
+            inputs_decoder = self.model["decoder"].preprocess(bbox, items["original_size"])
+            inputs_decoder.update(image_embeddings)
 
             # forward decoder to get predicted mask
             prediction = self.forward_decoder(inputs_decoder)
