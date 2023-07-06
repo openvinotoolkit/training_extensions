@@ -247,15 +247,17 @@ class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Image
             if model_name not in model_dict or chkpt_name not in chkpt_dict:
                 logger.info(f"Skipping weight copy: {chkpt_name}")
                 continue
-
+            
             # Mix weights
-            chkpt_param = chkpt_dict[chkpt_name]
-            for module, c in enumerate(model2chkpt):
-                if c >= 0:
-                    model_param[module].copy_(chkpt_param[c])
+            # NOTE: Label mix is not supported for H-label classification.
+            if not model.hierarchical:
+                chkpt_param = chkpt_dict[chkpt_name]
+                for module, c in enumerate(model2chkpt):
+                    if c >= 0:
+                        model_param[module].copy_(chkpt_param[c])
 
-            # Replace checkpoint weight by mixed weights
-            chkpt_dict[chkpt_name] = model_param
+                # Replace checkpoint weight by mixed weights
+                chkpt_dict[chkpt_name] = model_param
 
     def extract_feat(self, img):
         """Directly extract features from the backbone + neck.
