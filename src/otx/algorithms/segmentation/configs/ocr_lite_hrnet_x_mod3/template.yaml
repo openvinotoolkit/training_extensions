@@ -31,6 +31,11 @@ hyper_parameters:
       learning_rate:
         default_value: 0.001
         auto_hpo_state: POSSIBLE
+<<<<<<< HEAD
+=======
+      learning_rate_fixed_iters:
+        default_value: 0
+>>>>>>> e5a25387d (return HRNETs back)
       learning_rate_warmup_iters:
         default_value: 100
       num_iters:
@@ -57,6 +62,9 @@ training_targets:
 # Stats.
 gigaflops: 13.97
 size: 6.4
+<<<<<<< HEAD
 
 # Model spec
 model_category: ACCURACY
+=======
+>>>>>>> e5a25387d (return HRNETs back)
