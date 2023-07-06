@@ -79,7 +79,6 @@ from otx.api.usecases.exportable_code.prediction_to_annotation_converter import 
     MaskToAnnotationConverter,
     RotatedRectToAnnotationConverter,
 )
-from otx.api.usecases.exportable_code.visualizers import Visualizer
 from otx.api.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -531,16 +530,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         if self.config.tiling_parameters.enable_tiling:
             enable_async_inference = False
-        visualizer = Visualizer(window_name="Result")
 
-        def add_prediction(
-            id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple, show_predictions: bool = False
-        ):
+        def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
             dataset_item = dataset[id]
             dataset_item.append_annotations(predicted_scene.annotations)
-            if show_predictions:
-                visualizer.draw(dataset_item.numpy, predicted_scene)
-
             feature_vector, saliency_map = aux_data
             if feature_vector is not None:
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))

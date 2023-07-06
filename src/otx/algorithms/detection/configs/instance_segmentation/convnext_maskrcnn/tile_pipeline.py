@@ -5,8 +5,6 @@
 
 # pylint: disable=invalid-name
 
-dataset_type = "CocoDataset"
-
 img_size = (512, 512)
 
 tile_cfg = dict(
