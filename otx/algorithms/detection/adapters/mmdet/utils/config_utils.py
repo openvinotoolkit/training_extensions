@@ -458,7 +458,7 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     w, h = size
     logger.info(f"Patching OpenVINO IR input shape: {size}")
     deploy_cfg.ir_config.input_shape = (w, h)
-    deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, h, w]))]
+    deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[-1, 3, h, w]))]
 
 
 def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionConfig):
