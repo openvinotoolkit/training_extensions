@@ -433,30 +433,25 @@ class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
         labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
-    def __init__(self, label_schema: LabelSchemaEntity):
-        labels = label_schema.get_labels(include_empty=False)
-        self.label_map = dict(enumerate(labels, 1))
-
-    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:
+    def convert_to_annotation(self, hard_prediction: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
-            predictions (tuple): Raw predictions from the model.
+            hard_prediction (np.ndarray): Hard_prediction from the model.
             metadata (Dict[str, Any]): Variable containing metadata information.
 
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
-        soft_prediction = metadata.get("soft_prediction", np.ones(predictions.shape))
+        soft_prediction = metadata.get("soft_prediction", np.ones(hard_prediction.shape))
         # TODO (sungchul): condition to distinguish between mask and polygon
         annotations = create_annotation_from_segmentation_map(
-            hard_prediction=predictions,
+            hard_prediction=hard_prediction,
             soft_prediction=soft_prediction,
             label_map={1: metadata["label"].label},
         )
 
         return annotations
-        # return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):

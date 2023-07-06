@@ -105,7 +105,7 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
                 )
             }
             self.model[name] = Model.create_model(name, model_adapter, self.configuration, preload=True)
-        self.converter = VisualPromptingToAnnotationConverter(label_schema)
+        self.converter = VisualPromptingToAnnotationConverter()
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 

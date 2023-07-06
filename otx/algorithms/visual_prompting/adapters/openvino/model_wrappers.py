@@ -106,6 +106,7 @@ class Decoder(BlurSegmentation):
         soft_prediction = outputs[self.output_blob_name].squeeze()
         soft_prediction = self.resize_and_crop(soft_prediction, meta["original_size"])
         soft_prediction = sigmoid(soft_prediction)
+        meta["soft_prediction"] = soft_prediction
 
         hard_prediction = create_hard_prediction_from_soft_prediction(
             soft_prediction=soft_prediction,
