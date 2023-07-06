@@ -5,5 +5,3 @@
 
 from .inference import InferenceTask
 from .train import TrainingTask
-
-__all__ = ["TrainingTask", "InferenceTask"]
