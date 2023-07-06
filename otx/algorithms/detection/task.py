@@ -456,7 +456,7 @@ class OTXDetectionTask(OTXTask, ABC):
 
             if saliency_map is not None:
                 labels = self._labels.copy()
-                if saliency_map.shape[0] == len(labels) + 1:
+                if len(saliency_map) == len(labels) + 1:
                     # Include the background as the last category
                     labels.append(LabelEntity("background", Domain.DETECTION))
 
@@ -567,7 +567,7 @@ class OTXDetectionTask(OTXTask, ABC):
         """Add saliency map to the dataset."""
         for dataset_item, detection, saliency_map in zip(dataset, detections, explain_results):
             labels = self._labels.copy()
-            if saliency_map.shape[0] == len(labels) + 1:
+            if len(saliency_map) == len(labels) + 1:
                 # Include the background as the last category
                 labels.append(LabelEntity("background", Domain.DETECTION))
 
