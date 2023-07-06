@@ -303,44 +303,44 @@ class Evaluator:
         eval_results = []
 
         ctx = mp.get_context("spawn")
-        with ctx.Pool(self.nproc) as p:
-            for class_id in range(self.num_classes):
-                # get gt and det bboxes of this class
-                cls_dets, cls_scores = self.get_mask_det_results(results, class_id)
-                cls_gts = self.annotation[class_id]
+        for class_id in range(self.num_classes):
+            # get gt and det bboxes of this class
+            cls_dets, cls_scores = self.get_mask_det_results(results, class_id)
+            cls_gts = self.annotation[class_id]
 
-                # compute tp and fp for each image with multiple processes
+            # compute tp and fp for each image with multiple processes
+            with ctx.Pool(self.nproc) as p:
                 tpfpmiou = p.starmap(
                     tpfpmiou_func, zip(cls_dets, cls_gts, cls_scores, [iou_thr for _ in range(num_imgs)])
                 )
-        tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
+            tp, fp, miou = tuple(zip(*tpfpmiou))  # pylint: disable=invalid-name
 
-        # sort all det bboxes by score, also sort tp and fp
-        cls_scores = np.hstack(cls_scores)
-        num_dets = cls_scores.shape[0]
-        num_gts = np.sum([len(cls_gts) for cls_gts in cls_gts])
-        sort_inds = np.argsort(cls_scores)[::-1]
-        tp = np.hstack(tp)[sort_inds]  # pylint: disable=invalid-name
-        fp = np.hstack(fp)[sort_inds]  # pylint: disable=invalid-name
-        # calculate recall and precision with tp and fp
-        tp = np.cumsum(tp)  # pylint: disable=invalid-name
-        fp = np.cumsum(fp)  # pylint: disable=invalid-name
-        eps = np.finfo(np.float32).eps
-        recalls = tp / np.maximum(num_gts, eps)
-        precisions = tp / np.maximum((tp + fp), eps)
-        miou = np.mean(np.stack(miou))
-        # calculate AP
-        ap = average_precision(recalls, precisions, "area")  # pylint: disable=invalid-name
-        eval_results.append(
-            {
-                "num_gts": num_gts,
-                "num_dets": num_dets,
-                "recall": recalls,
-                "precision": precisions,
-                "ap": ap,
-                "miou": miou,
-            }
-        )
+            # sort all det bboxes by score, also sort tp and fp
+            cls_scores = np.hstack(cls_scores)
+            num_dets = cls_scores.shape[0]
+            num_gts = np.sum([len(cls_gts) for cls_gts in cls_gts])
+            sort_inds = np.argsort(cls_scores)[::-1]
+            tp = np.hstack(tp)[sort_inds]  # pylint: disable=invalid-name
+            fp = np.hstack(fp)[sort_inds]  # pylint: disable=invalid-name
+            # calculate recall and precision with tp and fp
+            tp = np.cumsum(tp)  # pylint: disable=invalid-name
+            fp = np.cumsum(fp)  # pylint: disable=invalid-name
+            eps = np.finfo(np.float32).eps
+            recalls = tp / np.maximum(num_gts, eps)
+            precisions = tp / np.maximum((tp + fp), eps)
+            miou = np.mean(np.stack(miou))
+            # calculate AP
+            ap = average_precision(recalls, precisions, "area")  # pylint: disable=invalid-name
+            eval_results.append(
+                {
+                    "num_gts": num_gts,
+                    "num_dets": num_dets,
+                    "recall": recalls,
+                    "precision": precisions,
+                    "ap": ap,
+                    "miou": miou,
+                }
+            )
 
         metrics = {"mAP": 0.0, "mIoU": 0.0}
         mious, aps = [], []
