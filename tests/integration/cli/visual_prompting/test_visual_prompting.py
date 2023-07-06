@@ -4,15 +4,18 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import os
 import copy
+import os
+
 import pytest
 
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     get_template_dir,
+    otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_export_testing,
     otx_resume_testing,
     otx_train_testing,
 )
@@ -76,3 +79,28 @@ class TestVisualPromptingCLI:
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "visual_prompting"
+        otx_export_testing(template, tmp_dir_path, False, check_ir_meta=False)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_fp16(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "visual_prompting"
+        otx_export_testing(template, tmp_dir_path, half_precision=True)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export_onnx(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "visual_prompting"
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("half_precision", [True, False])
+    def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
+        tmp_dir_path = tmp_dir_path / "visual_prompting"
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0, half_precision=half_precision)

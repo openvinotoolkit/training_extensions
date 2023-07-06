@@ -242,16 +242,27 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
     path_to_xml = os.path.join(save_path, "openvino.xml")
     assert os.path.exists(os.path.join(save_path, "label_schema.json"))
     if not is_onnx:
-        assert os.path.exists(path_to_xml)
-        assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+        if "Visual_Prompting" in template.model_template_id:
+            path_to_xml = os.path.join(save_path, "visual_prompting_decoder.xml")
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.xml"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.bin"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.xml"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.bin"))
+        else:
+            assert os.path.exists(path_to_xml)
+            assert os.path.exists(os.path.join(save_path, "openvino.bin"))
     else:
-        path_to_onnx = os.path.join(save_path, "model.onnx")
-        assert os.path.exists(path_to_onnx)
-        # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
-        if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
-            onnx.checker.check_model(path_to_onnx)
-            onnxruntime.InferenceSession(path_to_onnx)
-        return
+        if "Visual_Prompting" in template.model_template_id:
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.onnx"))
+        else:
+            path_to_onnx = os.path.join(save_path, "model.onnx")
+            assert os.path.exists(path_to_onnx)
+            # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
+            if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
+                onnx.checker.check_model(path_to_onnx)
+                onnxruntime.InferenceSession(path_to_onnx)
+            return
 
     if dump_features:
         with open(path_to_xml, encoding="utf-8") as stream:
