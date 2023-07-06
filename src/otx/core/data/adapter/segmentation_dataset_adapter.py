@@ -55,8 +55,7 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         if hasattr(self, "data_type_candidates"):
             if "voc" in self.data_type_candidates[0]:
                 self.set_voc_labels()
-
-            if self.data_type_candidates[0] == "common_semantic_segmentation":
+            elif self.data_type_candidates[0] == "common_semantic_segmentation":
                 self.set_common_labels()
 
         else:

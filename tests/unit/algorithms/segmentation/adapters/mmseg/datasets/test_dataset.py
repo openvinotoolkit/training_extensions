@@ -67,7 +67,7 @@ class TestMPASegDataset:
         self.otx_dataset: DatasetEntity = DatasetEntity(items=[dataset_item()])
         self.pipeline: list[dict] = [{"type": "LoadImageFromOTXDataset", "to_float32": True}]
         self.classes: list[str] = [f"class_{i+1}" for i in range(11)]
-        labels_entities = [label_entity(name, i) for i, name in enumerate(self.classes)]
+        labels_entities = [label_entity(name, str(i)) for i, name in enumerate(self.classes)]
 
         mocker.patch.object(MPASegDataset, "filter_labels", return_value=labels_entities)
 

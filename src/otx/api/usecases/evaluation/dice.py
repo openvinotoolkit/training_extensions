@@ -8,7 +8,6 @@
 from typing import Dict, List, Optional, Tuple
 import numpy as np
 
-from otx.api.entities.label_schema import natural_sort_label_id
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metrics import (
     BarChartInfo,
@@ -114,8 +113,7 @@ class DiceAverage(IPerformanceProvider):
             )
         resultset_labels = set(resultset.prediction_dataset.get_labels() + resultset.ground_truth_dataset.get_labels())
         model_labels = set(resultset.model.configuration.get_label_schema().get_labels(include_empty=False))
-        labels = sorted(resultset_labels.intersection(model_labels), key=natural_sort_label_id)
-        labels_map = {label: i + 1 for i, label in enumerate(labels)}
+        labels = sorted(resultset_labels.intersection(model_labels))
         hard_predictions = []
         hard_references = []
         for prediction_item, reference_item in zip(
@@ -127,6 +125,7 @@ class DiceAverage(IPerformanceProvider):
             except:
                 # when item consists of masks with Image properties
                 # TODO (sungchul): how to add condition to check if polygon or mask?
+                labels_map = {label: i + 1 for i, label in enumerate(labels)}
                 def combine_masks(annotations):
                     combined_mask = None
                     for annotation in annotations:
