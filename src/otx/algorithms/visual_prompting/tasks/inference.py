@@ -203,11 +203,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 state_dict = model_data
                 logger.info("Load pytorch checkpoint.")
 
-        # try:
-        model = get_model(config=self.config, state_dict=state_dict)
-        logger.info("Complete to load model.")
-        # except BaseException as exception:
-        #     raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+        try:
+            model = get_model(config=self.config, state_dict=state_dict)
+            logger.info("Complete to load model.")
+        except BaseException as exception:
+            raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
         return model
 
