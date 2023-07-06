@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -31,10 +31,10 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelin
     ResizeLongestSide,
     collate_fn,
 )
-from otx.api.entities.label import LabelEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
+from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.subset import Subset
@@ -44,24 +44,25 @@ logger = get_logger()
 
 
 def get_transform(
-    image_size: int = 1024,
-    mean: List[float] = [123.675, 116.28, 103.53],
-    std: List[float] = [58.395, 57.12, 57.375]) -> MultipleInputsCompose:
+    image_size: int = 1024, mean: List[float] = [123.675, 116.28, 103.53], std: List[float] = [58.395, 57.12, 57.375]
+) -> MultipleInputsCompose:
     """Get transform pipeline.
-    
+
     Args:
         image_size (int): Size of image. Defaults to 1024.
         mean (List[float]): Mean for normalization. Defaults to [123.675, 116.28, 103.53].
         std (List[float]): Standard deviation for normalization. Defaults to [58.395, 57.12, 57.375].
-        
+
     Returns:
         MultipleInputsCompose: Transform pipeline.
     """
-    return MultipleInputsCompose([
-        ResizeLongestSide(target_length=image_size),
-        Pad(),
-        transforms.Normalize(mean=mean, std=std),
-    ])
+    return MultipleInputsCompose(
+        [
+            ResizeLongestSide(target_length=image_size),
+            Pad(),
+            transforms.Normalize(mean=mean, std=std),
+        ]
+    )
 
 
 def convert_polygon_to_mask(shape: Polygon, width: int, height: int) -> np.ndarray:
@@ -82,7 +83,9 @@ def convert_polygon_to_mask(shape: Polygon, width: int, height: int) -> np.ndarr
     return gt_mask
 
 
-def generate_bbox(x1: int, y1: int, x2: int, y2: int, width: int, height: int, offset_bbox: int = 0) -> List[int]:  # noqa: D417
+def generate_bbox(  # noqa: D417
+    x1: int, y1: int, x2: int, y2: int, width: int, height: int, offset_bbox: int = 0
+) -> List[int]:
     """Generate bounding box.
 
     Args:
@@ -138,12 +141,7 @@ class OTXVisualPromptingDataset(Dataset):
     """
 
     def __init__(
-        self,
-        dataset: DatasetEntity,
-        image_size: int,
-        mean: List[float],
-        std: List[float],
-        offset_bbox: int = 0
+        self, dataset: DatasetEntity, image_size: int, mean: List[float], std: List[float], offset_bbox: int = 0
     ) -> None:
 
         self.dataset = dataset
@@ -162,7 +160,7 @@ class OTXVisualPromptingDataset(Dataset):
     @staticmethod
     def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity]) -> Dict[str, Any]:
         """Get propmts from dataset_item.
-        
+
         Args:
             dataset_item (DatasetItemEntity): Dataset item entity.
             dataset_labels (List[LabelEntity]): Label information.

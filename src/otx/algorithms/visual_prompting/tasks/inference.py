@@ -24,7 +24,6 @@ import tempfile
 import time
 import warnings
 from collections import OrderedDict
-from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
@@ -120,13 +119,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
 
         # set checkpoints
-        model_checkpoint = None
-        resume_from_checkpoint = None
+        model_checkpoint: Optional[str] = None
+        resume_from_checkpoint: Optional[str] = None
         if self.mode == "train" and self.task_environment.model is not None:
             # when args.load_weights or args.resume_from is set
-            resume_from_checkpoint = model_checkpoint = self.task_environment.model.model_adapters.get("path", None)
+            resume_from_checkpoint = model_checkpoint = self.task_environment.model.model_adapters.get("path", None)  # type: ignore  # noqa: E501
             if self.task_environment.model.model_adapters.get("resume", False):
-                if resume_from_checkpoint.endswith(".pth"):
+                if resume_from_checkpoint.endswith(".pth"):  # type: ignore
                     logger.info("[*] Pytorch checkpoint cannot be used for resuming. It will be supported.")
                     resume_from_checkpoint = None
                 else:
@@ -349,7 +348,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         logger.info("Exporting to the OpenVINO model.")
         onnx_path = {
             "visual_prompting_image_encoder": os.path.join(self.output_path, "visual_prompting_image_encoder.onnx"),
-            "visual_prompting_decoder": os.path.join(self.output_path, "visual_prompting_decoder.onnx")
+            "visual_prompting_decoder": os.path.join(self.output_path, "visual_prompting_decoder.onnx"),
         }
         self._export_to_onnx(onnx_path)
 
@@ -360,9 +359,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         else:
             for module, path in onnx_path.items():
                 optimize_command = [
-                    "mo", "--input_model", path,
-                    "--output_dir", self.output_path,
-                    "--model_name", module]
+                    "mo",
+                    "--input_model",
+                    path,
+                    "--output_dir",
+                    self.output_path,
+                    "--model_name",
+                    module,
+                ]
                 if precision == ModelPrecision.FP16:
                     optimize_command.append("--compress_to_fp16")
                 subprocess.run(optimize_command, check=True)
@@ -410,7 +414,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         metadata = {"image_size": int(self.config.dataset.image_size)}
 
         # Set the task type for inferencer
-        metadata["task"] = str(self.task_type).lower().split("_")[-1]
+        metadata["task"] = str(self.task_type).lower().split("_")[-1]  # type: ignore
         output_model.set_data("metadata", json.dumps(metadata).encode())
 
     @staticmethod

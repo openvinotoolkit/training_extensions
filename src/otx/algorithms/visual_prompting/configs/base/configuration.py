@@ -22,12 +22,9 @@ from otx.api.configuration.elements import (
     add_parameter_group,
     configurable_float,
     configurable_integer,
-    selectable,
     string_attribute,
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
-
-from .configuration_enums import Models
 
 
 @attrs

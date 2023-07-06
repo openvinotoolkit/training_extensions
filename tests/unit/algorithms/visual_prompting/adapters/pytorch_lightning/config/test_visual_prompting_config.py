@@ -39,7 +39,7 @@ def test_get_visual_promtping_config(
         config_dir=config_dir,
         mode=mode,
         model_checkpoint=model_checkpoint,
-        resume_from_checkpoint=resume_from_checkpoint
+        resume_from_checkpoint=resume_from_checkpoint,
     )
 
     assert isinstance(config, DictConfig)

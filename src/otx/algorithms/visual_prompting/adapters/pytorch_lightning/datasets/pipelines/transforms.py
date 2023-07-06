@@ -90,7 +90,7 @@ class Pad:
 
         item["padding"] = padding
         item["images"] = pad(item["images"], padding, fill=0, padding_mode="constant")
-        
+
         return item
 
 

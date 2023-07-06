@@ -31,7 +31,7 @@ class TestInferenceTask:
         def _load_inference_task(
             output_path: Optional[str] = str(tmpdir.mkdir("visual_prompting_training_test")),
             path: Optional[str] = None,
-            resume: bool = False
+            resume: bool = False,
         ):
             if path is None:
                 mocker_model = None
@@ -120,7 +120,9 @@ class TestInferenceTask:
     @e2e_pytest_unit
     def test_infer(self, mocker, load_inference_task):
         """Test infer."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
         mocker_trainer = mocker.patch("otx.algorithms.visual_prompting.tasks.inference.Trainer")
 
         inference_task = load_inference_task(output_path=None)
@@ -134,7 +136,9 @@ class TestInferenceTask:
     @e2e_pytest_unit
     def test_evaluate(self, mocker, load_inference_task):
         """Test evaluate."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
         mocker_dice_average = mocker.patch("otx.api.usecases.evaluation.metrics_helper.DiceAverage")
 
         inference_task = load_inference_task(output_path=None)
@@ -153,7 +157,9 @@ class TestInferenceTask:
     @e2e_pytest_unit
     def test_model_info(self, mocker, load_inference_task):
         """Test model_info."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
 
         inference_task = load_inference_task(output_path=None)
         setattr(inference_task, "trainer", None)
@@ -170,7 +176,9 @@ class TestInferenceTask:
     @e2e_pytest_unit
     def test_save_model(self, mocker, load_inference_task):
         """Test save_model."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
 
         inference_task = load_inference_task(output_path=None)
         mocker.patch.object(inference_task, "model_info")
@@ -187,7 +195,9 @@ class TestInferenceTask:
     @pytest.mark.parametrize("export_type", [ExportType.ONNX, ExportType.OPENVINO])
     def test_export(self, mocker, load_inference_task, export_type: ExportType):
         """Test export."""
-        mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint")
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
+        )
 
         inference_task = load_inference_task(output_path=None)
         dataset = generate_visual_prompting_dataset()

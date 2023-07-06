@@ -52,7 +52,9 @@ class TestOpenVINOVisualPromptingInferencer:
         ]
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
-        mocker.patch.object(VisualPromptingToAnnotationConverter, "convert_to_annotation", return_value=self.fake_annotation)
+        mocker.patch.object(
+            VisualPromptingToAnnotationConverter, "convert_to_annotation", return_value=self.fake_annotation
+        )
         self.task_environment = init_environment()
         visual_prompting_hparams = self.task_environment.get_hyper_parameters(VisualPromptingBaseConfig)
         label_schema = self.task_environment.label_schema
@@ -61,8 +63,11 @@ class TestOpenVINOVisualPromptingInferencer:
             visual_prompting_hparams,
             label_schema,
             {"image_encoder": "", "decoder": ""},
-            {"image_encoder": "", "decoder": ""})
-        self.visual_prompting_ov_inferencer.model["decoder"] = mocker.patch("openvino.model_zoo.model_api.models.Model", autospec=True)
+            {"image_encoder": "", "decoder": ""},
+        )
+        self.visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
+            "openvino.model_zoo.model_api.models.Model", autospec=True
+        )
 
     @e2e_pytest_unit
     def test_pre_process(self, mocker):
@@ -83,7 +88,10 @@ class TestOpenVINOVisualPromptingInferencer:
         """Test post_process."""
         fake_prediction = {"masks": np.empty((1, 1, 2, 2))}
         fake_metadata = {"label": mocker.Mock(spec=LabelEntity), "original_size": np.array((2, 2))}
-        self.visual_prompting_ov_inferencer.model["decoder"].postprocess.return_value = (np.ones((2, 2)), np.ones((2, 2)))
+        self.visual_prompting_ov_inferencer.model["decoder"].postprocess.return_value = (
+            np.ones((2, 2)),
+            np.ones((2, 2)),
+        )
 
         returned_value = self.visual_prompting_ov_inferencer.post_process(fake_prediction, fake_metadata)
 
@@ -103,11 +111,18 @@ class TestOpenVINOVisualPromptingInferencer:
                 "images": torch.rand((1, 3, 2, 2)),
                 "bboxes": [np.array([[[1, 1], [2, 2]]])],
                 "labels": [1, 2],
-                "original_size": (4, 4)
-            })
-        mocker_pre_process_decoder = mocker.patch.object(self.visual_prompting_ov_inferencer.model["decoder"], "preprocess", return_value={})
-        mocker_forward = mocker.patch.object(OpenVINOVisualPromptingInferencer, "forward", return_value={"image_embeddings": np.empty((4, 2, 2))})
-        mocker_forward_decoder = mocker.patch.object(OpenVINOVisualPromptingInferencer, "forward_decoder", return_value=None)
+                "original_size": (4, 4),
+            },
+        )
+        mocker_pre_process_decoder = mocker.patch.object(
+            self.visual_prompting_ov_inferencer.model["decoder"], "preprocess", return_value={}
+        )
+        mocker_forward = mocker.patch.object(
+            OpenVINOVisualPromptingInferencer, "forward", return_value={"image_embeddings": np.empty((4, 2, 2))}
+        )
+        mocker_forward_decoder = mocker.patch.object(
+            OpenVINOVisualPromptingInferencer, "forward_decoder", return_value=None
+        )
         mocker_post_process = mocker.patch.object(
             OpenVINOVisualPromptingInferencer, "post_process", return_value=(self.fake_annotation, None, None)
         )
@@ -156,7 +171,7 @@ class TestOpenVINOVisualPromptingTask:
             visual_prompting_hparams,
             self.task_environment.label_schema,
             {"image_encoder": "", "decoder": ""},
-            {"image_encoder": "", "decoder": ""}
+            {"image_encoder": "", "decoder": ""},
         )
 
         self.task_environment.model = mocker.patch("otx.api.entities.model.ModelEntity")
@@ -178,8 +193,10 @@ class TestOpenVINOVisualPromptingTask:
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
 
         dataset = generate_visual_prompting_dataset()
-        
-        updated_dataset = self.visual_prompting_ov_task.infer(dataset, InferenceParameters(enable_async_inference=False))
+
+        updated_dataset = self.visual_prompting_ov_task.infer(
+            dataset, InferenceParameters(enable_async_inference=False)
+        )
 
         for updated in updated_dataset:
             assert updated.annotation_scene.contains_any([LabelEntity(name="fake", domain="VISUALPROMPTING")])
@@ -203,4 +220,3 @@ class TestOpenVINOVisualPromptingTask:
         self.visual_prompting_ov_task.evaluate(result_set)
 
         assert result_set.performance.score.value == 0.1
-

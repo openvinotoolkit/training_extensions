@@ -120,8 +120,8 @@ def init_environment(model: Optional[ModelEntity] = None):
 
 class MockDatasetConfig:
     class _normalize:
-        mean=[1., 1., 1.]
-        std=[0., 0., 0.]
+        mean = [1.0, 1.0, 1.0]
+        std = [0.0, 0.0, 0.0]
 
     def __init__(self, use_mask: bool = False):
         self.image_size: Tuple[int] = (4, 4)

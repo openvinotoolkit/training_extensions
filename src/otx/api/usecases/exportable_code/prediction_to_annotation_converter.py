@@ -431,7 +431,7 @@ class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
         labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
-    def convert_to_annotation(self, hard_prediction: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:
+    def convert_to_annotation(self, hard_prediction: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:  # type: ignore
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:

@@ -33,7 +33,6 @@ model:
   stability_score_offset: 1.
   return_extra_metrics: false
 
-
 optimizer:
   name: Adam
   lr: 0.0001

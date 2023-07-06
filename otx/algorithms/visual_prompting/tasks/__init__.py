@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference import InferenceTask
-from .openvino import OpenVINOVisualPromptingTask
-from .train import TrainingTask
+from .inference import InferenceTask  # noqa: F401
+from .openvino import OpenVINOVisualPromptingTask  # noqa: F401
+from .train import TrainingTask  # noqa: F401

@@ -191,20 +191,23 @@ class SegmentAnything(LightningModule):
         orig_size: Tensor,
     ):
         """Forward method for SAM inference (export/deploy).
-        
+
         Args:
             image_embeddings (Tensor): The image embedding with a batch index of length 1.
                 If it is a zero tensor, the image embedding will be computed from the image.
-            point_coords (Tensor): Coordinates of sparse input prompts, corresponding to both point inputs and box inputs.
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs.
                 Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
                 Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
             point_labels (Tensor): Labels for the sparse input prompts.
                 0 is a negative input point, 1 is a positive input point,
                 2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
-                If there is no box input, a single padding point with label -1 and coordinates (0.0, 0.0) should be concatenated.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
             mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
                 This must be supplied even if there is no mask input. In this case, it can just be zeros.
-            has_mask_input (Tensor): An indicator for the mask input. 1 indicates a mask input, 0 indicates no mask input.
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
                 This input has 1x1 shape due to supporting openvino input layout.
             orig_size (Tensor): The size of the input image in (H,W) format, before any transformation.
                 This input has 1x2 shape due to supporting openvino input layout.
@@ -240,15 +243,19 @@ class SegmentAnything(LightningModule):
 
     def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
         """Embed sparse input prompts.
-        
+
         Args:
-            point_coords (Tensor): Coordinates of sparse input prompts, corresponding to both point inputs and box inputs.
-                Boxes are encoded using two points, one for the top-left corner and one for the bottom-right corner.
+            point_coords (Tensor): Coordinates of sparse input prompts,
+                corresponding to both point inputs and box inputs. Boxes are encoded using two points,
+                one for the top-left corner and one for the bottom-right corner.
                 Coordinates must already be transformed to long-side 1024. Has a batch index of length 1.
             point_labels (Tensor): Labels for the sparse input prompts.
                 0 is a negative input point, 1 is a positive input point,
                 2 is a top-left box corner, 3 is a bottom-right box corner, and -1 is a padding point.
-                If there is no box input, a single padding point with label -1 and coordinates (0.0, 0.0) should be concatenated.
+                If there is no box input, a single padding point with label -1 and
+                coordinates (0.0, 0.0) should be concatenated.
+
+
         Returns:
             point_embedding (Tensor): The embedded sparse input prompts.
         """
@@ -258,39 +265,34 @@ class SegmentAnything(LightningModule):
         point_labels = point_labels.unsqueeze(-1).expand_as(point_embedding)
 
         point_embedding = point_embedding * (point_labels != -1)
-        point_embedding = point_embedding + self.prompt_encoder.not_a_point_embed.weight * (
-            point_labels == -1
-        )
+        point_embedding = point_embedding + self.prompt_encoder.not_a_point_embed.weight * (point_labels == -1)
 
         for i in range(self.prompt_encoder.num_point_embeddings):
-            point_embedding = point_embedding + self.prompt_encoder.point_embeddings[
-                i
-            ].weight * (point_labels == i)
+            point_embedding = point_embedding + self.prompt_encoder.point_embeddings[i].weight * (point_labels == i)
 
         return point_embedding
 
     def _embed_masks(self, input_mask: Tensor, has_mask_input: Tensor) -> Tensor:
         """Embed the mask input.
-        
+
         Args:
-            mask_input (Tensor): A mask input to the model with shape 1x1x256x256.
+            input_mask (Tensor): A mask input to the model with shape 1x1x256x256.
                 This must be supplied even if there is no mask input. In this case, it can just be zeros.
-            has_mask_input (Tensor): An indicator for the mask input. 1 indicates a mask input, 0 indicates no mask input.
-        
+            has_mask_input (Tensor): An indicator for the mask input.
+                1 indicates a mask input, 0 indicates no mask input.
+
         Returns:
             mask_embedding (Tensor): The embedded mask input.
         """
         mask_embedding = has_mask_input * self.prompt_encoder.mask_downscaling(input_mask)
-        mask_embedding = mask_embedding + (
-            1 - has_mask_input
-        ) * self.prompt_encoder.no_mask_embed.weight.reshape(1, -1, 1, 1)
+        mask_embedding = mask_embedding + (1 - has_mask_input) * self.prompt_encoder.no_mask_embed.weight.reshape(
+            1, -1, 1, 1
+        )
         return mask_embedding
 
-    def calculate_stability_score(
-        self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.
-    ) -> Tensor:
+    def calculate_stability_score(self, masks: Tensor, mask_threshold: float, threshold_offset: float = 1.0) -> Tensor:
         """Computes the stability score for a batch of masks.
-        
+
         The stability score is the IoU between the binary masks obtained
         by thresholding the predicted mask logits at high and low values.
 
@@ -305,34 +307,26 @@ class SegmentAnything(LightningModule):
         # One mask is always contained inside the other.
         # Save memory by preventing unnecessary cast to torch.int64
         intersections = (
-            (masks > (mask_threshold + threshold_offset))
-            .sum(-1, dtype=torch.int16)
-            .sum(-1, dtype=torch.int32)
+            (masks > (mask_threshold + threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
         )
-        unions = (
-            (masks > (mask_threshold - threshold_offset))
-            .sum(-1, dtype=torch.int16)
-            .sum(-1, dtype=torch.int32)
-        )
+        unions = (masks > (mask_threshold - threshold_offset)).sum(-1, dtype=torch.int16).sum(-1, dtype=torch.int32)
         return intersections / unions
 
     def select_masks(self, masks: Tensor, iou_preds: Tensor, num_points: int) -> Tuple[Tensor, Tensor]:
         """Selects the best mask from a batch of masks.
-        
+
         Args:
             masks (Tensor): A batch of predicted masks with shape BxMxHxW.
             iou_preds (Tensor): A batch of predicted IoU scores with shape BxM.
             num_points (int): The number of points in the input.
-            
+
         Returns:
             masks (Tensor): The selected masks with shape Bx1xHxW.
             iou_preds (Tensor): The selected IoU scores with shape Bx1.
         """
         # Determine if we should return the multiclick mask or not from the number of points.
         # The reweighting is used to avoid control flow.
-        score_reweight = torch.tensor(
-            [[1000] + [0] * (self.mask_decoder.num_mask_tokens - 1)]
-        ).to(iou_preds.device)
+        score_reweight = torch.tensor([[1000] + [0] * (self.mask_decoder.num_mask_tokens - 1)]).to(iou_preds.device)
         score = iou_preds + (num_points - 2.5) * score_reweight
         best_idx = torch.argmax(score, dim=1)
         masks = masks[torch.arange(masks.shape[0]), best_idx, :, :].unsqueeze(1)
@@ -342,11 +336,11 @@ class SegmentAnything(LightningModule):
 
     def mask_postprocessing(self, masks: Tensor, orig_size: Tensor) -> Tensor:
         """Postprocesses the predicted masks.
-        
+
         Args:
             masks (Tensor): A batch of predicted masks with shape Bx1xHxW.
             orig_size (Tensor): The original image size with shape Bx2.
-            
+
         Returns:
             masks (Tensor): The postprocessed masks with shape Bx1xHxW.
         """
@@ -367,11 +361,11 @@ class SegmentAnything(LightningModule):
 
     def resize_longest_image_size(self, input_image_size: Tensor, longest_side: int) -> Tensor:
         """Resizes the longest side of the image to the given size.
-        
+
         Args:
             input_image_size (Tensor): The original image size with shape Bx2.
             longest_side (int): The size of the longest side.
-            
+
         Returns:
             transformed_size (Tensor): The transformed image size with shape Bx2.
         """
@@ -458,7 +452,9 @@ class SegmentAnything(LightningModule):
 
         num_masks = sum(len(pred_mask) for pred_mask in pred_masks)
         for i, (pred_mask, gt_mask, iou_prediction) in enumerate(zip(pred_masks, gt_masks, iou_predictions)):
-            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i])
+            pred_mask = self.postprocess_masks(
+                pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i]
+            )
             pred_mask = pred_mask.sigmoid()
             self.train_metrics["train_IoU"].update(pred_mask, gt_mask)
             self.train_metrics["train_F1"].update(pred_mask, gt_mask)
@@ -514,7 +510,9 @@ class SegmentAnything(LightningModule):
 
         pred_masks, _ = self.forward_train(images, bboxes, points)
         for i, (pred_mask, gt_mask) in enumerate(zip(pred_masks, gt_masks)):
-            pred_mask = self.postprocess_masks(pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i])
+            pred_mask = self.postprocess_masks(
+                pred_mask, images.shape[2:], batch["padding"][i], batch["original_size"][i]
+            )
             pred_mask = pred_mask.sigmoid()
             for k, v in self.val_metrics.items():
                 v.update(pred_mask, gt_mask)

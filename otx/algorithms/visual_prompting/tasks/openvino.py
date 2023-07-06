@@ -24,7 +24,7 @@ import numpy as np
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
-import otx.algorithms.visual_prompting.adapters.openvino.model_wrappers
+import otx.algorithms.visual_prompting.adapters.openvino.model_wrappers  # noqa: F401
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
@@ -32,7 +32,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
     get_transform,
 )
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
-from otx.api.entities.annotation import Annotation, AnnotationSceneEntity
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -65,16 +65,19 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
     """Inferencer implementation for Visual Prompting using OpenVINO backend.
 
     This inferencer has two models, image encoder and decoder.
-    
+
     Args:
         hparams (VisualPromptingBaseConfig): Hyper parameters that the model should use.
         label_schema (LabelSchemaEntity): LabelSchemaEntity that was used during model training.
-        model_files (Dict[str, Union[str, Path, bytes]]): Path or bytes to model to load, `.xml`, `.bin` or `.onnx` file.
-        weight_files (Dict[str, Union[str, Path, bytes, None]], optional): Path or bytes to weights to load, `.xml`, `.bin` or `.onnx` file. Defaults to None.
+        model_files (Dict[str, Union[str, Path, bytes]]): Path or bytes to model to load,
+            `.xml`, `.bin` or `.onnx` file.
+        weight_files (Dict[str, Union[str, Path, bytes, None]], optional): Path or bytes to weights to load,
+            `.xml`, `.bin` or `.onnx` file. Defaults to None.
         device (str): Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
         num_requests (int) : Maximum number of requests that the inferencer can make.
             Good value is the number of available cores. Defaults to 1.
     """
+
     def __init__(
         self,
         hparams: VisualPromptingBaseConfig,
@@ -109,20 +112,22 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 
-    def pre_process(self, dataset_item: DatasetItemEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+    def pre_process(self, dataset_item: DatasetItemEntity) -> Dict[str, Any]:  # type: ignore
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
         # TODO (sungchul): change to modelapi.
         prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)
         items = {"index": 0, "images": dataset_item.numpy, **prompts}
         return self.transform(items)
 
-    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> Tuple[AnnotationSceneEntity, Any, Any]:
+    def post_process(
+        self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
+    ) -> Tuple[List[Annotation], Any, Any]:
         """Post-process function of OpenVINO Visual Prompting Inferencer."""
         hard_prediction, soft_prediction = self.model["decoder"].postprocess(prediction, metadata)
         annotation = self.converter.convert_to_annotation(hard_prediction, metadata)
         return annotation, hard_prediction, soft_prediction
 
-    def predict(self, dataset_item: DatasetItemEntity) -> Tuple[AnnotationSceneEntity, Any, Any]:
+    def predict(self, dataset_item: DatasetItemEntity) -> List[Annotation]:  # type: ignore
         """Perform a prediction for a given input image."""
         # forward image encoder
         items = self.pre_process(dataset_item)
@@ -188,8 +193,14 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         return OpenVINOVisualPromptingInferencer(
             self.hparams,
             self.task_environment.label_schema,
-            {"image_encoder": self.model.get_data("visual_prompting_image_encoder.xml"), "decoder": self.model.get_data("visual_prompting_decoder.xml")},
-            {"image_encoder": self.model.get_data("visual_prompting_image_encoder.bin"), "decoder": self.model.get_data("visual_prompting_decoder.bin")},
+            {
+                "image_encoder": self.model.get_data("visual_prompting_image_encoder.xml"),
+                "decoder": self.model.get_data("visual_prompting_decoder.xml"),
+            },
+            {
+                "image_encoder": self.model.get_data("visual_prompting_image_encoder.bin"),
+                "decoder": self.model.get_data("visual_prompting_decoder.bin"),
+            },
             num_requests=get_default_async_reqs_num(),
         )
 
@@ -199,7 +210,7 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         inference_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
         """Infer function of OpenVINOVisualPromptingTask.
-        
+
         Currently, asynchronous execution is not supported, synchronous execution will be executed instead.
         """
         if inference_parameters is not None:
@@ -211,9 +222,7 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
         # FIXME (sungchul): Support async inference.
         if enable_async_inference:
-            logger.warning(
-                "Asynchronous inference doesn't work, synchronous inference will be executed."
-            )
+            logger.warning("Asynchronous inference doesn't work, synchronous inference will be executed.")
             enable_async_inference = False
         predicted_validation_dataset = dataset.with_empty_annotations()
 
@@ -262,4 +271,3 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
     ):
         """Optimize function of OpenVINOVisualPromptingTask."""
         raise NotImplementedError
-

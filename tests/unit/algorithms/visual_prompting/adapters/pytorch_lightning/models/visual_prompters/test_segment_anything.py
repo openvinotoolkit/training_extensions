@@ -16,7 +16,7 @@ from torch import Tensor
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything import (
     SegmentAnything,
-    CKPT_PATHS
+    CKPT_PATHS,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
@@ -298,35 +298,40 @@ class TestSegmentAnything:
             mocker_load_state_dict.assert_called_once()
         else:
             mocker_load_from_checkpoint.assert_called_once()
-    
+
     @e2e_pytest_unit
-    @pytest.mark.parametrize("point_coords,point_labels,expected",
+    @pytest.mark.parametrize(
+        "point_coords,point_labels,expected",
         [
             (Tensor([[[1, 1]]]), Tensor([[1]]), (1, 1, 4)),
             (Tensor([[[1, 1], [2, 2]]]), Tensor([[2, 3]]), (1, 2, 4)),
-        ])
+        ],
+    )
     def test_embed_points(self, mocker, point_coords: Tensor, point_labels: Tensor, expected: Tuple[int]) -> None:
         """Test _embed_points."""
         sam = SegmentAnything(config=self.base_config)
         sam.prompt_encoder.not_a_point_embed = nn.Embedding(1, sam.prompt_encoder.embed_dim)
         sam.prompt_encoder.num_point_embeddings = 4
-        point_embeddings = [nn.Embedding(1, sam.prompt_encoder.embed_dim) for i in range(sam.prompt_encoder.num_point_embeddings)]
+        point_embeddings = [
+            nn.Embedding(1, sam.prompt_encoder.embed_dim) for i in range(sam.prompt_encoder.num_point_embeddings)
+        ]
         sam.prompt_encoder.point_embeddings = nn.ModuleList(point_embeddings)
-        
+
         num_points = point_coords.shape[1]
 
         mocker_pe_layer = mocker.patch.object(sam.prompt_encoder, "pe_layer")
         mocker_pe_layer._pe_encoding.return_value = torch.empty((1, num_points, 4))
 
         results = sam._embed_points(point_coords, point_labels)
-        
+
         assert results.shape == expected
-    
+
     @e2e_pytest_unit
-    @pytest.mark.parametrize("masks_input,has_mask_input,expected",
+    @pytest.mark.parametrize(
+        "masks_input,has_mask_input,expected",
         [
             (torch.randn(1, 1, 4, 4, dtype=torch.float), torch.tensor([1], dtype=torch.float), (1, 4, 2, 2)),
-        ]
+        ],
     )
     def test_embed_masks(self, mocker, masks_input: Tensor, has_mask_input: Tensor, expected: Tuple[int]) -> None:
         """Test _embed_masks."""
@@ -339,24 +344,25 @@ class TestSegmentAnything:
         has_mask_input = torch.tensor([1], dtype=torch.float)
 
         results = sam._embed_masks(masks_input, has_mask_input)
-        
+
         assert results.shape == expected
-    
+
     @e2e_pytest_unit
-    @pytest.mark.parametrize("masks,expected",
+    @pytest.mark.parametrize(
+        "masks,expected",
         [
             (Tensor([[[-2, -2], [2, 2]]]), 1),
             (Tensor([[[-2, -2], [1, 1]]]), 0),
-
-        ])
+        ],
+    )
     def test_calculate_stability_score(self, masks: Tensor, expected: int) -> None:
         """Test calculate_stability_score."""
         sam = SegmentAnything(config=self.base_config)
 
-        results = sam.calculate_stability_score(masks, mask_threshold=0., threshold_offset=1.)
+        results = sam.calculate_stability_score(masks, mask_threshold=0.0, threshold_offset=1.0)
 
         assert results == expected
-    
+
     @e2e_pytest_unit
     def test_select_masks(self) -> None:
         """Test select_masks."""
@@ -368,14 +374,14 @@ class TestSegmentAnything:
 
         selected_mask, selected_iou_pred = sam.select_masks(masks, iou_preds, num_points)
 
-        assert masks[:,-1,:,:] == selected_mask
-        assert iou_preds[:,-1] == selected_iou_pred
-    
+        assert masks[:, -1, :, :] == selected_mask
+        assert iou_preds[:, -1] == selected_iou_pred
+
     @e2e_pytest_unit
     def test_mask_postprocessing(self, mocker) -> None:
         """Test mask_postprocessing."""
         sam = SegmentAnything(config=self.base_config)
-        mocker.patch.object(sam, "resize_longest_image_size", return_value = Tensor((6, 6)))
+        mocker.patch.object(sam, "resize_longest_image_size", return_value=Tensor((6, 6)))
         sam.config.image_size = 6
 
         masks = torch.empty(1, 1, 2, 2)
@@ -383,8 +389,8 @@ class TestSegmentAnything:
 
         results = sam.mask_postprocessing(masks, orig_size)
 
-        assert results[0,0].shape == tuple(orig_size)
-    
+        assert results[0, 0].shape == tuple(orig_size)
+
     @e2e_pytest_unit
     def test_resize_longest_image_size(self) -> None:
         """Test resize_longest_image_size."""
@@ -433,7 +439,7 @@ class TestSegmentAnything:
             bboxes=torch.Tensor([[0, 0, 1, 1]]),
             points=[],
             padding=[[0, 0, 0, 0]],
-            original_size=[[4, 4]]
+            original_size=[[4, 4]],
         )
 
         results = sam.training_step(batch, None)
