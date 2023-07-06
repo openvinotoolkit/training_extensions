@@ -247,7 +247,7 @@ class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Image
             if model_name not in model_dict or chkpt_name not in chkpt_dict:
                 logger.info(f"Skipping weight copy: {chkpt_name}")
                 continue
-            
+
             # Mix weights
             # NOTE: Label mix is not supported for H-label classification.
             if not model.hierarchical:
