@@ -91,7 +91,7 @@ class OTXSegmentationTask(OTXTask, ABC):
         self._model_name = task_environment.model_template.name
         self._train_type = self._hyperparams.algo_backend.train_type
         self.metric = "mDice"
-        self._label_dictionary = dict(enumerate(self._labels, 1))
+        self._label_dictionary = dict(enumerate(self._labels, 1))  # It should have same order as model class order
 
         self._model_dir = os.path.join(
             os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path)),
