@@ -126,6 +126,7 @@ class DiceAverage(IPerformanceProvider):
                 # when item consists of masks with Image properties
                 # TODO (sungchul): how to add condition to check if polygon or mask?
                 labels_map = {label: i + 1 for i, label in enumerate(labels)}
+
                 def combine_masks(annotations):
                     combined_mask = None
                     for annotation in annotations:

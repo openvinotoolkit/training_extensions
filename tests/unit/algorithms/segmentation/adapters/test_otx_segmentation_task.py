@@ -78,15 +78,9 @@ class TestMMSegmentationTask:
 
         fake_label = []
         for i in range(20):
-            fake_label.append(
-                LabelEntity(
-                    name=f"class_{i}",
-                    domain=Domain.SEGMENTATION,
-                    id=ID(str(i))
-                )
-            )
+            fake_label.append(LabelEntity(name=f"class_{i}", domain=Domain.SEGMENTATION, id=ID(str(i))))
         mock_environemnt.get_labels.return_value = fake_label
         task = MMSegmentationTask(mock_environemnt)
-    
+
         for i, label_entity in task._label_dictionary.items():
             assert label_entity.name == f"class_{i-1}"
