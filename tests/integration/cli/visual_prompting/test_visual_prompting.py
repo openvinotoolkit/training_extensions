@@ -8,7 +8,7 @@ import os
 import copy
 import pytest
 
-from src.otx.cli.registry import Registry
+from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     get_template_dir,
