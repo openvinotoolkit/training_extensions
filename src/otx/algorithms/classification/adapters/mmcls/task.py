@@ -656,61 +656,6 @@ class MMClassificationTask(OTXClassificationTask):
 
         return deploy_cfg
 
-<<<<<<< HEAD:otx/algorithms/classification/adapters/mmcls/task.py
-=======
-    def _init_hparam(self) -> dict:
-        params = self._hyperparams.learning_parameters
-        warmup_iters = int(params.learning_rate_warmup_iters)
-        if self._multilabel:
-            # hack to use 1cycle policy
-            lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-        else:
-            lr_config = (
-                ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
-            )
-
-        early_stop = False
-        if self._recipe_cfg is not None:
-            if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
-                early_stop = ConfigDict(
-                    start=int(params.early_stop_start),
-                    patience=int(params.early_stop_patience),
-                    iteration_patience=int(params.early_stop_iteration_patience),
-                )
-
-        if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
-            runner = ConfigDict(max_iters=int(params.num_iters))
-        else:
-            runner = ConfigDict(max_epochs=int(params.num_iters))
-
-        config = ConfigDict(
-            optimizer=ConfigDict(lr=params.learning_rate),
-            lr_config=lr_config,
-            early_stop=early_stop,
-            data=ConfigDict(
-                samples_per_gpu=int(params.batch_size),
-                workers_per_gpu=int(params.num_workers),
-            ),
-            runner=runner,
-        )
-
-        if self._hyperparams.learning_parameters.auto_num_workers:
-            adapted_num_worker = get_adaptive_num_workers()
-            if adapted_num_worker is not None:
-                config.data.workers_per_gpu = adapted_num_worker
-
-        if self._train_type.value == "Semisupervised":
-            unlabeled_config = ConfigDict(
-                data=ConfigDict(
-                    unlabeled_dataloader=ConfigDict(
-                        samples_per_gpu=int(params.unlabeled_batch_size),
-                        workers_per_gpu=int(params.num_workers),
-                    )
-                )
-            )
-            config.update(unlabeled_config)
-        return config
-
     # This should be removed
     def update_override_configurations(self, config):
         """Update override_configs."""
