@@ -198,15 +198,15 @@ class TestInferenceTask:
         if export_type == ExportType.ONNX:
             assert output_model.model_format == ModelFormat.ONNX
             output_model.optimization_type = ModelOptimizationType.ONNX
-            assert "sam_image_encoder.onnx" in output_model.model_adapters
-            assert "sam_decoder.onnx" in output_model.model_adapters
+            assert "visual_prompting_image_encoder.onnx" in output_model.model_adapters
+            assert "visual_prompting_decoder.onnx" in output_model.model_adapters
 
         elif export_type == ExportType.OPENVINO:
             assert output_model.model_format == ModelFormat.OPENVINO
             output_model.optimization_type = ModelOptimizationType.ONNX
-            assert "sam_image_encoder.bin" in output_model.model_adapters
-            assert "sam_image_encoder.xml" in output_model.model_adapters
-            assert "sam_decoder.bin" in output_model.model_adapters
-            assert "sam_decoder.xml" in output_model.model_adapters
+            assert "visual_prompting_image_encoder.bin" in output_model.model_adapters
+            assert "visual_prompting_image_encoder.xml" in output_model.model_adapters
+            assert "visual_prompting_decoder.bin" in output_model.model_adapters
+            assert "visual_prompting_decoder.xml" in output_model.model_adapters
 
         assert not output_model.has_xai
