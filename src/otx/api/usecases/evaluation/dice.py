@@ -114,7 +114,6 @@ class DiceAverage(IPerformanceProvider):
         resultset_labels = set(resultset.prediction_dataset.get_labels() + resultset.ground_truth_dataset.get_labels())
         model_labels = set(resultset.model.configuration.get_label_schema().get_labels(include_empty=False))
         labels = sorted(resultset_labels.intersection(model_labels))
-        labels_map = {label: i + 1 for i, label in enumerate(labels)}
         hard_predictions = []
         hard_references = []
         for prediction_item, reference_item in zip(
@@ -126,6 +125,8 @@ class DiceAverage(IPerformanceProvider):
             except:
                 # when item consists of masks with Image properties
                 # TODO (sungchul): how to add condition to check if polygon or mask?
+                labels_map = {label: i + 1 for i, label in enumerate(labels)}
+
                 def combine_masks(annotations):
                     combined_mask = None
                     for annotation in annotations:
