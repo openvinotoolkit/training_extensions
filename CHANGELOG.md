@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.2.4\]
+
+### Bug fixes
+
+- Fix 'None' node issue in label schema mapping in case of label deletion (#2300)
+
+### Enhancements
+
+- Per-class saliency maps for M-RCNN (#2301)
+- Disable semantic segmentation soft prediction processing (#2302)
+
 ## \[v1.2.3\]
 
 ### Bug fixes
