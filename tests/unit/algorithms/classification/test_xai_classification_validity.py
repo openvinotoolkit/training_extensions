@@ -31,7 +31,7 @@ class TestExplainMethods:
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_cls, ids=templates_cls_ids)
     def test_saliency_map_cls(self, template):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         torch.manual_seed(0)
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))

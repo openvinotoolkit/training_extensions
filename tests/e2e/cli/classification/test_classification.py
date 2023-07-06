@@ -101,7 +101,7 @@ class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_supcon(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Supcon for ViT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_supcon"
         args1 = copy.deepcopy(args)
@@ -137,7 +137,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "deit-tiny" and dump_features:
+        if template.name == "DeiT-Tiny" and dump_features:
             pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
@@ -160,7 +160,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
@@ -169,7 +169,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
@@ -285,7 +285,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Fake quantization for DeiT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
@@ -398,7 +398,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "deit-tiny" and dump_features:
+        if template.name == "DeiT-Tiny" and dump_features:
             pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
@@ -414,7 +414,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_m)
@@ -508,7 +508,7 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Fake quantization for DeiT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
@@ -576,7 +576,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "deit-tiny" and dump_features:
+        if template.name == "DeiT-Tiny" and dump_features:
             pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
@@ -592,7 +592,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_h)
@@ -693,7 +693,7 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Fake quantization for DeiT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
@@ -729,7 +729,7 @@ class TestToolsSelfSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_selfsl_train(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         tmp_dir_path_1 = tmp_dir_path / "multi_class_cls/test_selfsl"
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
@@ -744,7 +744,7 @@ class TestToolsSelfSLClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_selfsl_eval(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl_sl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
@@ -754,7 +754,7 @@ class TestToolsSelfSLClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_selfsl"
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
