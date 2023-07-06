@@ -18,9 +18,9 @@ from typing import Any, Dict, Tuple
 
 import cv2
 import numpy as np
-
 from openvino.model_zoo.model_api.models import ImageModel
 from openvino.model_zoo.model_api.models.types import NumericalValue
+
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     BlurSegmentation,
 )
