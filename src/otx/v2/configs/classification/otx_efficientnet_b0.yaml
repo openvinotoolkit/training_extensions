@@ -112,34 +112,39 @@ data:
   workers_per_gpu: 2
 
 #### Other Configuration for Task
-checkpoint_config:
-  interval: 1
-  max_keep_ckpts: 1
-  type: CheckpointHookWithValResults
-cudnn_benchmark: true
-deterministic: false
-dist_params:
-  backend: nccl
-  linear_scale_lr: true
-evaluation:
-  metric:
-    - accuracy
-    - class_accuracy
-fp16:
-  loss_scale: 512.0
-hparams:
-  dummy: 0
-load_from: null
+log_level: INFO
 log_config:
   hooks:
     - ignore_last: false
       type: TextLoggerHook
     - type: TensorboardLoggerHook
   interval: 100
-log_level: INFO
+checkpoint_config:
+  interval: 1
+  max_keep_ckpts: 1
+  type: CheckpointHookWithValResults
 lr_config:
   min_lr_ratio: 0.0001
   policy: CosineAnnealing
+
+cudnn_benchmark: true
+dist_params:
+  backend: nccl
+  linear_scale_lr: true
+
+deterministic: false
+
+evaluation:
+  metric:
+    - accuracy
+    - class_accuracy
+
+fp16:
+  loss_scale: 512.0
+hparams:
+  dummy: 0
+load_from: null
+
 optimizer:
   lr: 0.01
   momentum: 0.9
@@ -148,6 +153,7 @@ optimizer:
 optimizer_config:
   grad_clip: null
   type: SAMOptimizerHook
+
 resume_from: null
 runner:
   max_epochs: 20
