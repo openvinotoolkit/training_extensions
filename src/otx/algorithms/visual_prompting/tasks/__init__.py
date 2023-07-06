@@ -2,3 +2,6 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
+from .inference import InferenceTask  # noqa: F401
+from .train import TrainingTask  # noqa: F401
