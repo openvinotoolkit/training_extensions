@@ -1,11 +1,11 @@
 # See help here: https://github.com/marketplace/actions/labeler
 
 CLI:
-  - "otx/cli/**/*"
+  - "src/otx/cli/**/*"
 API:
-  - "otx/api/**/*"
+  - "src/otx/api/**/*"
 ALGO:
-  - "otx/algorithms/**/*"
+  - "src/otx/algorithms/**/*"
 TEST:
   - "tests/**/*"
 DOC:

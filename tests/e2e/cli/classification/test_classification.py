@@ -84,7 +84,7 @@ TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
         os.path.join(
-            "otx/algorithms/classification",
+            "src/otx/algorithms/classification",
             "configs",
             "efficientnet_b0_cls_incr",
             "template.yaml",
@@ -93,7 +93,7 @@ if TT_STABILITY_TESTS:
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
+    templates = Registry("src/otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 

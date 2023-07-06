@@ -1442,7 +1442,7 @@ Also the following operations should be done
 
 ```python
 pytest_plugins = get_pytest_plugins_from_ote()
-otx_conftest_insertion(default_repository_name='otx/training_extensions/external/mmdetection')
+otx_conftest_insertion(default_repository_name='src/otx/training_extensions/external/mmdetection')
 ```
 
 The first line points to pytest additional modules from which the fixtures should be loaded -- these
