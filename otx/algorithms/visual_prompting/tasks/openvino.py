@@ -105,12 +105,7 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
                 )
             }
             self.model[name] = Model.create_model(name, model_adapter, self.configuration, preload=True)
-            if name == "image_encoder":
-                self.model[name].model_adapter.set_callback(self._async_callback_image_encoder)
-            else:
-                self.model[name].model_adapter.set_callback(self._async_callback_decoder)
         self.converter = VisualPromptingToAnnotationConverter(label_schema)
-        self.callback_exceptions: List[Exception] = []
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 
@@ -160,83 +155,10 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         """Forward function of OpenVINO Visual Prompting Inferencer."""
         return self.model["decoder"].infer_sync(inputs)
 
-    def enqueue_prediction(self, dataset_item: DatasetItemEntity, id: int, result_handler: Any) -> None:
-        """Runs async inference."""
-        if not self.model["image_encoder"].is_ready():
-            self.model["image_encoder"].await_any()
-
-        if not self.model["decoder"].is_ready():
-            self.model["decoder"].await_any()
-
-        items = self.pre_process(dataset_item)
-
-        # forward image encoder
-        image_embeddings = {}
-        def store_image_encoder_output(id: int, predicted_image_embeddings):
-            image_embeddings.update(**predicted_image_embeddings)
-
-        callback_data_image_encoder = id, store_image_encoder_output
-        self.model["image_encoder"].infer_async(
-            {"images": items["images"].unsqueeze(0).numpy()}, callback_data_image_encoder)
-
-        # TODO (sungchul): generate random points from gt_mask
-        annotations: List[Annotation] = []
-        hard_predictions: List[np.ndarray] = []
-        soft_predictions: List[np.ndarray] = []
-        def store_decoder_output(id: int, annotation: Annotation, hard_prediction: np.ndarray, soft_prediction: np.ndarray) -> None:
-            annotations.extend(annotation)
-            hard_predictions.append(hard_prediction)
-            soft_predictions.append(soft_prediction)
-
-        for idx, (bbox, label) in enumerate(zip(items["bboxes"], items["labels"])):
-            point_coords = np.array(bbox, dtype=np.float32).reshape((-1, 2, 2))
-            point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
-            inputs_decoder = {
-                **image_embeddings,
-                "point_coords": point_coords,
-                "point_labels": point_labels,
-                # TODO (sungchul): how to generate mask_input and has_mask_input
-                "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                "orig_size": np.array(items["original_size"], dtype=np.float32).reshape((-1, 2))
-            }
-            metadata = {"label": label, "original_size": np.array(items["original_size"])}
-            callback_data_decoder = id, metadata, store_decoder_output
-
-            # forward decoder to get predicted mask
-            self.model["decoder"].infer_async(inputs_decoder, callback_data_decoder)
-        result_handler(id, annotations)
-
     def await_all(self) -> None:
         """Await all running infer requests if any."""
         self.model["image_encoder"].await_all()
         self.model["decoder"].await_all()
-
-    def _async_callback_image_encoder(self, request: Any, callback_args: tuple) -> None:
-        """Fetches the results of async inference for image encoder."""
-        try:
-            res_copy_func, args = callback_args
-            id, result_handler = args
-            prediction = res_copy_func(request)
-
-            result_handler(id, prediction)
-
-        except Exception as e:
-            self.callback_exceptions.append(e)
-
-    def _async_callback_decoder(self, request: Any, callback_args: tuple) -> None:
-        """Fetches the results of async inference for decoder."""
-        try:
-            res_copy_func, args = callback_args
-            id, metadata, result_handler = args
-            prediction = res_copy_func(request)
-
-            annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
-
-            result_handler(id, annotation, hard_prediction, soft_prediction)
-
-        except Exception as e:
-            self.callback_exceptions.append(e)
 
 
 class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
@@ -276,7 +198,10 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset: DatasetEntity,
         inference_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
-        """Infer function of OpenVINOVisualPromptingTask."""
+        """Infer function of OpenVINOVisualPromptingTask.
+        
+        Currently, asynchronous execution is not supported, synchronous execution will be executed instead.
+        """
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             enable_async_inference = inference_parameters.enable_async_inference
@@ -284,7 +209,7 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
             update_progress_callback = default_progress_callback
             enable_async_inference = True
 
-        # FIXME (sungchul): There is peformance degradation issue during async inference.
+        # FIXME (sungchul): Support async inference.
         if enable_async_inference:
             logger.warning(
                 "Asynchronous inference doesn't work, synchronous inference will be executed."
@@ -300,14 +225,12 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             start_time = time.perf_counter()
-            if enable_async_inference:
-                self.inferencer.enqueue_prediction(dataset_item, i - 1, add_prediction)
-            else:
-                annotations = self.inferencer.predict(dataset_item)
-                add_prediction(i - 1, annotations)
+
+            annotations = self.inferencer.predict(dataset_item)
+            add_prediction(i - 1, annotations)
+
             end_time = time.perf_counter() - start_time
             total_time += end_time
-
             update_progress_callback(int(i / dataset_size * 100), None)
 
         self.inferencer.await_all()
