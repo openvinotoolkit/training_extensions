@@ -5,17 +5,13 @@
 #
 
 from typing import Any, Dict, Tuple
-from unittest import mock
 
-import numpy as np
 import pytest
 import torch
 from torch import Tensor
+import numpy as np
 from torchvision.transforms import Normalize
 
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms import (
-    ResizeLongestSide,
-)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.transforms import (
     MultipleInputsCompose,
     Pad,
@@ -30,10 +26,10 @@ def test_collate_fn():
     batch = [
         {
             "index": 0,
-            "images": torch.Tensor([1, 2, 3]),
-            "bboxes": [],
+            "images": Tensor([1, 2, 3]),
+            "bboxes": np.array([[1, 2, 3, 4], [5, 6, 7, 8]]),
             "points": [],
-            "gt_masks": [torch.Tensor([1, 2, 3])],
+            "gt_masks": [Tensor([1, 2, 3])],
             "original_size": [],
             "padding": [],
             "path": [],
@@ -41,10 +37,10 @@ def test_collate_fn():
         },
         {
             "index": 1,
-            "images": torch.Tensor([4, 5, 6]),
-            "bboxes": [],
+            "images": Tensor([4, 5, 6]),
+            "bboxes": np.array([[9, 10, 11, 12]]),
             "points": [],
-            "gt_masks": [torch.Tensor([4, 5, 6])],
+            "gt_masks": [Tensor([4, 5, 6])],
             "original_size": [],
             "padding": [],
             "path": [],
@@ -53,10 +49,10 @@ def test_collate_fn():
     ]
     expected = {
         "index": [0, 1],
-        "images": torch.Tensor([[1, 2, 3], [4, 5, 6]]),
-        "bboxes": None,
+        "images": Tensor([[1, 2, 3], [4, 5, 6]]),
+        "bboxes": [Tensor([[1, 2, 3, 4], [5, 6, 7, 8]]), Tensor([[9, 10, 11, 12]])],
         "points": None,
-        "gt_masks": [torch.Tensor([[1, 2, 3]]), torch.Tensor([[4, 5, 6]])],
+        "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
         "original_size": [[], []],
         "path": [[], []],
         "labels": [[], []],
@@ -67,7 +63,8 @@ def test_collate_fn():
 
     assert results["index"] == expected["index"]
     assert torch.all(results["images"] == expected["images"])
-    assert results["bboxes"] == expected["bboxes"]
+    for r, e in zip(results["bboxes"], expected["bboxes"]):
+        assert torch.all(r == e)
     assert results["points"] == expected["points"]
     assert len(results["gt_masks"]) == len(expected["gt_masks"])
     for r, e in zip(results["gt_masks"], expected["gt_masks"]):
@@ -76,66 +73,6 @@ def test_collate_fn():
     assert results["path"] == expected["path"]
     assert results["labels"] == expected["labels"]
     assert results["padding"] == expected["padding"]
-
-
-class TestResizeLongestSide:
-    @e2e_pytest_unit
-    def test_apply_boxes(self):
-        """Test apply_boxes."""
-        resize_longest_side = ResizeLongestSide(100)
-        boxes = np.array([[10, 20, 30, 40], [50, 60, 70, 80]])
-        original_size = (200, 200)
-        expected_result = np.array([[5, 10, 15, 20], [25, 30, 35, 40]])
-
-        result = resize_longest_side.apply_boxes(boxes, original_size)
-
-        assert np.array_equal(result, expected_result)
-
-    @e2e_pytest_unit
-    def test_apply_image_torch(self):
-        """Test apply_image_torch."""
-        resize_longest_side = ResizeLongestSide(100)
-        image = torch.zeros((1, 3, 200, 300), dtype=torch.float32)
-        expected_result_shape = (1, 3, 67, 100)
-
-        result = resize_longest_side.apply_image_torch(image)
-
-        assert result.shape == expected_result_shape
-
-    @e2e_pytest_unit
-    def test_apply_coords_torch(self):
-        """Test apply_coords_torch."""
-        resize_longest_side = ResizeLongestSide(100)
-        coords = torch.Tensor([[50, 50], [100, 100]])
-        original_size = (200, 200)
-        expected_result = torch.Tensor([[25, 25], [50, 50]])
-
-        result = resize_longest_side.apply_coords_torch(coords, original_size)
-
-        assert torch.allclose(result, expected_result)
-
-    @e2e_pytest_unit
-    def test_apply_boxes_torch(self):
-        """Test apply_boxes_torch."""
-        resize_longest_side = ResizeLongestSide(100)
-        boxes = torch.Tensor([[10, 20, 30, 40], [50, 60, 70, 80]])
-        original_size = (200, 200)
-        expected_result = torch.Tensor([[5, 10, 15, 20], [25, 30, 35, 40]])
-
-        result = resize_longest_side.apply_boxes_torch(boxes, original_size)
-
-        assert torch.allclose(result, expected_result)
-
-    @e2e_pytest_unit
-    def test_get_preprocess_shape(self):
-        """Test get_preprocess_shape."""
-        resize_longest_side = ResizeLongestSide(100)
-        oldh, oldw = 200, 300
-        expected_result = (67, 100)
-
-        result = resize_longest_side.get_preprocess_shape(oldh, oldw, resize_longest_side.target_length)
-
-        assert result == expected_result
 
 
 class TestPad:
@@ -150,11 +87,11 @@ class TestPad:
                     bboxes=[[1, 1, 3, 3]],
                     points=[[1, 1, 2, 2]],
                 ),
-                ((0, 1, 0, 1), (3, 6, 6), [(6, 6)], [[1, 2, 3, 4]], [[1, 2, 2, 3]]),
+                ((0, 0, 0, 2), (3, 6, 6), [(4, 6)], [[1, 1, 3, 3]], [[1, 1, 2, 2]]),
             ),
             (
                 dict(images=torch.zeros((3, 4, 6)), gt_masks=[torch.zeros((4, 6))], bboxes=[[1, 1, 3, 3]], points=None),
-                ((0, 1, 0, 1), (3, 6, 6), [(6, 6)], [[1, 2, 3, 4]], None),
+                ((0, 0, 0, 2), (3, 6, 6), [(4, 6)], [[1, 1, 3, 3]], None),
             ),
         ],
     )
@@ -175,10 +112,10 @@ class TestPad:
 
 class TestMultipleInputsCompose:
     @e2e_pytest_unit
-    def test_call(self):
+    def test_call(self, mocker):
         """Test __call__."""
-        transform1_mock = mock.Mock()
-        transform2_mock = mock.Mock(spec=Normalize)
+        transform1_mock = mocker.Mock()
+        transform2_mock = mocker.Mock(spec=Normalize)
 
         # Create a sample item
         item = {"images": Tensor([1, 2, 3])}
