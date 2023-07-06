@@ -17,7 +17,7 @@ from tests.test_suite.run_test_command import (
     otx_train_testing,
 )
 
-args_polygon = {
+args = {
     "--train-data-roots": "tests/assets/car_tree_bug",
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
@@ -33,22 +33,6 @@ args_polygon = {
     ],
 }
 
-args_mask = {
-    "--train-data-roots": "tests/assets/car_tree_bug",
-    "--val-data-roots": "tests/assets/car_tree_bug",
-    "--test-data-roots": "tests/assets/car_tree_bug",
-    "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": [
-        "params",
-        "--learning_parameters.trainer.max_epochs",
-        "1",
-        "--learning_parameters.dataset.train_batch_size",
-        "2",
-        "--learning_parameters.dataset.use_mask",
-        "True",
-    ],
-}
-
 # Training params for resume, num_iters*2
 resume_params = [
     "params",
@@ -61,22 +45,22 @@ resume_params = [
 otx_dir = os.getcwd()
 
 
-templates = Registry("src/otx/algorithms/visual_prompting").filter(task_type="VISUAL_PROMPTING").templates
+templates = (
+    Registry("src/otx/algorithms/visual_prompting", experimental=True).filter(task_type="VISUAL_PROMPTING").templates
+)
 templates_ids = [template.model_template_id for template in templates]
 
 
 class TestVisualPromptingCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", [args_polygon, args_mask])
-    def test_otx_train(self, args, template, tmp_dir_path):
+    def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
         otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=False)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", [args_polygon, args_mask])
-    def test_otx_resume(self, args, template, tmp_dir_path):
+    def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "visual_prompting/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
@@ -89,7 +73,6 @@ class TestVisualPromptingCLI:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", [args_polygon, args_mask])
-    def test_otx_eval(self, args, template, tmp_dir_path):
+    def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)

@@ -491,6 +491,7 @@ class MMDetectionTask(OTXDetectionTask):
         dump_features: bool,
     ):
         """Main export function of OTX MMDetection Task."""
+        self._data_cfg = None
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)

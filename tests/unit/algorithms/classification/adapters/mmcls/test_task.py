@@ -441,3 +441,85 @@ class TestMMClassificationTask:
         outputs = self.mc_cls_task.explain(self.mc_cls_dataset, explain_parameters)
         assert isinstance(outputs, DatasetEntity)
         assert len(outputs) == 200
+
+    @e2e_pytest_unit
+    def test_geti_scenario(self, mocker):
+        """Test Geti scenario.
+
+        Train -> Eval -> Export
+        """
+
+        def _mock_train_model(*args, **kwargs):
+            with open(os.path.join(self.mc_cls_task._output_path, "latest.pth"), "wb") as f:
+                torch.save({"dummy": torch.randn(1, 3, 3, 3)}, f)
+
+        # TRAIN
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataset",
+            return_value=MockDataset(self.mc_cls_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataloader",
+            return_value=MockDataLoader(self.mc_cls_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.train_model",
+            side_effect=_mock_train_model,
+        )
+        mocker.patch.object(MMClassificationTask, "build_model", return_value=MockModel())
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_data_parallel",
+            return_value=MockModel(),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+
+        # mock for testing num_workers
+        num_cpu = 20
+        mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
+        mock_multiprocessing.cpu_count.return_value = num_cpu
+        num_gpu = 5
+        mock_torch = mocker.patch.object(config_utils, "torch")
+        mock_torch.cuda.device_count.return_value = num_gpu
+
+        _config = ModelConfiguration(ClassificationConfig("header"), self.mc_cls_label_schema)
+        output_model = ModelEntity(self.mc_cls_dataset, _config)
+        self.mc_cls_task.train(self.mc_cls_dataset, output_model)
+
+        # INFERENCE
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataset",
+            return_value=MockDataset(self.mc_cls_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataloader",
+            return_value=MockDataLoader(self.mc_cls_dataset),
+        )
+        mocker.patch.object(MMClassificationTask, "build_model", return_value=MockModel())
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_data_parallel",
+            return_value=MockModel(),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+
+        inference_parameters = InferenceParameters(is_evaluation=True)
+        outputs = self.mc_cls_task.infer(self.mc_cls_dataset.with_empty_annotations(), inference_parameters)
+
+        # EXPORT
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.ClassificationExporter",
+            return_value=MockExporter(self.mc_cls_task),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.task.embed_ir_model_data",
+            return_value=True,
+        )
+
+        export_type = ExportType.OPENVINO
+        precision = ModelPrecision.FP32
+        self.mc_cls_task.export(export_type, output_model, precision, False)

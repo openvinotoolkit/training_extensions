@@ -423,6 +423,7 @@ class MMSegmentationTask(OTXSegmentationTask):
     ):
         """Export function of OTX Segmentation Task."""
         # copied from OTX inference_task.py
+        self._data_cfg = None
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
