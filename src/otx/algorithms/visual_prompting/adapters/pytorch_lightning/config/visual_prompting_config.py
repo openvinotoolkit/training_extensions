@@ -57,7 +57,7 @@ def get_visual_promtping_config(
     else:
         # Load the default config.yaml file
         logger.info("[*] Load default config.yaml.")
-        config_path = f"otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml"
+        config_path = f"src/otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml"
 
     config = OmegaConf.load(config_path)
     logger.info(f"[*] Load configuration file at {config_path}")
