@@ -92,6 +92,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self._work_dir_is_temp = False
         self.output_path = output_path
         self.mode = "train"
+        if task_environment.model is not None and task_environment.model.train_dataset is None:
+            self.mode = "export"
         if self.output_path is None:
             self.output_path = tempfile.mkdtemp(prefix="otx-visual_prompting")
             self._work_dir_is_temp = True
