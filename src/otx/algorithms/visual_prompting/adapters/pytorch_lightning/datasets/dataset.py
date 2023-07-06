@@ -131,7 +131,9 @@ class OTXVisualPromptingDataset(Dataset):
 
     Args:
         dataset (DatasetEntity): Dataset entity.
-        transform (MultipleInputsCompose): Transformations to apply to the dataset.
+        image_size (int): Target size to resize image.
+        mean (List[float]): Mean for normalization.
+        std (List[float]): Standard deviation for normalization.
         offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
     """
 
@@ -159,7 +161,15 @@ class OTXVisualPromptingDataset(Dataset):
 
     @staticmethod
     def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity]) -> Dict[str, Any]:
-        """"""
+        """Get propmts from dataset_item.
+        
+        Args:
+            dataset_item (DatasetItemEntity): Dataset item entity.
+            dataset_labels (List[LabelEntity]): Label information.
+
+        Returns:
+            Dict[str, Any]: Processed prompts with ground truths.
+        """
         width, height = dataset_item.width, dataset_item.height
         bboxes: List[List[int]] = []
         points: List = []  # TBD
