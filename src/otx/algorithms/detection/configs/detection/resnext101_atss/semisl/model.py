@@ -80,6 +80,6 @@ model = dict(
     ),
 )
 
-load_from = None
+load_from = None  # This will be updated after uploading weight to storage server
 
 fp16 = dict(loss_scale=512.0)
