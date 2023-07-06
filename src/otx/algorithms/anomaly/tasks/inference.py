@@ -303,12 +303,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             subprocess.run(optimize_command, check=True)
             bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
             xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
+
+            self._convert_to_new_format(xml_file)
+
             with open(bin_file, "rb") as file:
                 output_model.set_data("openvino.bin", file.read())
             with open(xml_file, "rb") as file:
                 output_model.set_data("openvino.xml", file.read())
-
-        self._convert_to_new_format(xml_file)
 
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
@@ -330,7 +331,15 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         core = Core()
         model = core.read_model(xml_file)
         for key, value in metadata.items():
+            if key == "transform":
+                continue
             model.set_rt_info(value, ["model_info", key])
+        # Add transforms
+        if "transform" in metadata:
+            for transform_dict in metadata["transform"]["transform"]["transforms"]:
+                transform = transform_dict.pop("__class_fullname__")
+                for key, value in transform_dict.items():
+                    model.set_rt_info(value, ["model_info", "transforms", transform, key])
         model.set_rt_info("AnomalyDetection", ["model_info", "model_type"])
         serialize(model, xml_file)
 
