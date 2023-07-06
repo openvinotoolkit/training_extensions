@@ -182,8 +182,6 @@ def create_converter(
         converter = MaskToAnnotationConverter(labels, configuration)
     elif converter_type == Domain.ROTATED_DETECTION:
         converter = RotatedRectToAnnotationConverter(labels, configuration)
-    elif converter_type == Domain.VISUAL_PROMPTING:
-        converter = VisualPromptingToAnnotationConverter(labels)
     else:
         raise ValueError(f"Unknown converter type: {converter_type}")
 
