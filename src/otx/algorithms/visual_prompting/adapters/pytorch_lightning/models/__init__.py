@@ -4,5 +4,3 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .visual_prompters import SegmentAnything
-
-__all__ = ["SegmentAnything"]

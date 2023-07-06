@@ -17,5 +17,3 @@
 from .inference import InferenceTask
 from .openvino import OpenVINOVisualPromptingTask
 from .train import TrainingTask
-
-__all__ = ["InferenceTask", "TrainingTask", "OpenVINOVisualPromptingTask"]

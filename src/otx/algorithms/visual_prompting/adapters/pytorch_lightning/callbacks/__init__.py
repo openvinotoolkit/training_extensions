@@ -15,5 +15,3 @@
 # and limitations under the License.
 
 from .inference import InferenceCallback
-
-__all__ = ["InferenceCallback"]

@@ -15,5 +15,3 @@
 # and limitations under the License.
 
 from .configuration import VisualPromptingConfig
-
-__all__ = ["VisualPromptingConfig"]

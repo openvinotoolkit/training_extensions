@@ -5,5 +5,3 @@
 
 from .sam_transforms import ResizeLongestSide
 from .transforms import MultipleInputsCompose, Pad, collate_fn
-
-__all__ = ["ResizeLongestSide", "collate_fn", "MultipleInputsCompose", "Pad"]

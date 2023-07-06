@@ -16,5 +16,3 @@
 
 from .configuration import VisualPromptingBaseConfig
 from .configuration_enums import Models
-
-__all__ = ["VisualPromptingBaseConfig", "Models"]

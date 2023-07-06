@@ -9,8 +9,3 @@ from .dataset import (
     get_transform,
 )
 from .pipelines import MultipleInputsCompose, Pad, ResizeLongestSide
-
-__all__ = [
-    "OTXVisualPromptingDataModule", "OTXVisualPromptingDataset", "get_transform",
-    "ResizeLongestSide", "MultipleInputsCompose", "Pad"
-]
