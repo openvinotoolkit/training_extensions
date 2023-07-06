@@ -293,7 +293,11 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
             enable_async_inference = True
 
         # FIXME (sungchul): There is peformance degradation issue during async inference.
-        enable_async_inference = False
+        if enable_async_inference:
+            logger.warning(
+                "Asynchronous inference doesn't work, synchronous inference will be executed."
+            )
+            enable_async_inference = False
         predicted_validation_dataset = dataset.with_empty_annotations()
 
         def add_prediction(id: int, annotations: List[Annotation]):
