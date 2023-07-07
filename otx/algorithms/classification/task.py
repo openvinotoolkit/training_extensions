@@ -144,7 +144,7 @@ class OTXClassificationTask(OTXTask, ABC):
         self._multilabel = self._is_multi_label(label_groups, all_labels)
         if self._multilabel:
             logger.info("Classification mode: multilabel")
-        if not self._multilabel and len(label_groups) > 1:
+        elif len(label_groups) > 1:
             logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(self._task_environment.label_schema)
