@@ -21,8 +21,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import attr
 import numpy as np
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
 
 import otx.algorithms.visual_prompting.adapters.openvino.model_wrappers  # noqa: F401
 from otx.algorithms.common.utils.logger import get_logger
