@@ -69,7 +69,7 @@ logger = get_logger()
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Visual Prompting Task.
 
-    Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
+    Train, Infer, and Export an Visual Prompting Task.
 
     Args:
         task_environment (TaskEnvironment): OTX Task environment.
