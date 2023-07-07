@@ -416,7 +416,10 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         )
 
         eval_results["MHAcc"] = total_acc
-        eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
+        if self.hierarchical_info["num_multiclass_head"] > 0:
+            eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
+        else:
+            eval_results["avgClsAcc"] = total_acc_sl
         eval_results["mAP"] = mAP_value
         eval_results["accuracy"] = total_acc
 

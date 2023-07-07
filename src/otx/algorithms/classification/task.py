@@ -47,6 +47,8 @@ from otx.api.entities.inference_parameters import (
 from otx.api.entities.inference_parameters import (
     default_progress_callback as default_infer_progress_callback,
 )
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelGroup
 from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.metrics import (
     CurveMetric,
