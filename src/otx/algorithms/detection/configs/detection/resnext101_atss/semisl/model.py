@@ -80,6 +80,7 @@ model = dict(
     ),
 )
 
-load_from = None  # This will be updated after uploading weight to storage server
+load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/\
+models/object_detection/v2/resnext101_atss_070623.pth"
 
 fp16 = dict(loss_scale=512.0)
