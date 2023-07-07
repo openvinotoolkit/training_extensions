@@ -490,28 +490,9 @@ If you have your dataset in those formats, then you can simply run using one lin
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this heading">#</a></h2>
 <p>We support the following ready-to-use model templates:</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Template ID</p></th>
-<th class="head"><p>Name</p></th>
-<th class="head"><p>Complexity (GFLOPs)</p></th>
-<th class="head"><p>Model size (MB)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml">Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B</a></p></td>
-<td><p>MaskRCNN-EfficientNetB2B</p></td>
-<td><p>68.48</p></td>
-<td><p>13.27</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml">Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50</a></p></td>
-<td><p>MaskRCNN-ResNet50</p></td>
-<td><p>533.80</p></td>
-<td><p>177.90</p></td>
-</tr>
-</tbody>
-</table>
-<p><code class="docutils literal notranslate"><span class="pre">MaskRCNN-ResNet50</span></code> uses <a class="reference external" href="https://arxiv.org/abs/1512.03385">ResNet-50</a> as the backbone network for the image features extraction. It has more parameters and FLOPs and needs more time to train, meanwhile providing superior performance in terms of accuracy. <code class="docutils literal notranslate"><span class="pre">MaskRCNN-EfficientNetB2B</span></code> uses <a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B2</a> as the backbone network. It is a good trade-off between accuracy and speed. It is a better choice when training time and computational cost are in priority.</p>
+<p>MaskRCNN-ResNet50 utilizes the <a class="reference external" href="https://arxiv.org/abs/1512.03385">ResNet-50</a> architecture as the backbone network for extracting image features. This choice of backbone network results in a higher number of parameters and FLOPs, which consequently requires more training time. However, the model offers superior performance in terms of accuracy.</p>
+<p>On the other hand, MaskRCNN-EfficientNetB2B employs the <a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B2</a> architecture as the backbone network. This selection strikes a balance between accuracy and speed, making it a preferable option when prioritizing training time and computational cost.</p>
+<p>Recently, we have made updates to MaskRCNN-ConvNeXt, incorporating the <a class="reference external" href="https://arxiv.org/abs/2201.03545">ConvNeXt backbone</a>. Through our experiments, we have observed that this variant achieves better accuracy compared to MaskRCNN-ResNet50 while utilizing less GPU memory. However, it is important to note that the training time and inference duration may slightly increase. If minimizing training time is a significant concern, we recommend considering a switch to MaskRCNN-EfficientNetB2B.</p>
 </section>
 </section>
 
