@@ -458,6 +458,57 @@
 <h1>openvino<a class="headerlink" href="#openvino" title="Permalink to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.algorithms.action.adapters.openvino.dataloader"></span><p>Data loaders for OpenVINO action recognition models.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.openvino.dataloader.</span></span><span class="sig-name descname"><span class="pre">ActionOVClsDataLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader" title="Permalink to this definition">#</a></dt>
+<dd><p>DataLoader for evaluation of action classification models.</p>
+<p>It iterates through clustered video, and it samples frames from given video</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader.add_prediction">
+<span class="sig-name descname"><span class="pre">add_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prediction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">AnnotationSceneEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader.add_prediction" title="Permalink to this definition">#</a></dt>
+<dd><p>Add prediction to dataset.</p>
+<p>Add prediction result to dataset_item in dataset, which has same video id with video data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.openvino.dataloader.</span></span><span class="sig-name descname"><span class="pre">ActionOVDemoDataLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader" title="Permalink to this definition">#</a></dt>
+<dd><p>DataLoader for online demo purpose.</p>
+<p>Since it is for online demo purpose it selects background frames from neighbor of key frame</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader.add_prediction">
+<span class="sig-name descname"><span class="pre">add_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prediction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">AnnotationSceneEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader.add_prediction" title="Permalink to this definition">#</a></dt>
+<dd><p>Add prediction results to key frame.</p>
+<p>From sampling methods, we know that data[len(data) // 2] is key frame</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.openvino.dataloader.</span></span><span class="sig-name descname"><span class="pre">ActionOVDetDataLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader" title="Permalink to this definition">#</a></dt>
+<dd><p>DataLoader for evaluation of spatio-temporal action detection models.</p>
+<p>It iterates through DatasetEntity, which only contains non-empty frame(frame with actor annotation)
+It samples background frames from original DatasetEntity, which contain both empty frame and non-empty frame</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader.add_prediction">
+<span class="sig-name descname"><span class="pre">add_prediction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.dataset_item.DatasetItemEntity" title="otx.api.entities.dataset_item.DatasetItemEntity"><span class="pre">DatasetItemEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prediction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">AnnotationSceneEntity</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader.add_prediction" title="Permalink to this definition">#</a></dt>
+<dd><p>Add prediction results to key frame.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.action.adapters.openvino.dataloader.get_ovdataloader">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.action.adapters.openvino.dataloader.</span></span><span class="sig-name descname"><span class="pre">get_ovdataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.action.adapters.openvino.dataloader.get_ovdataloader" title="Permalink to this definition">#</a></dt>
+<dd><p>Find proper dataloader for dataset and task type.</p>
+<p>If dataset has only a single video, this returns DataLoader for online demo
+If dataset has multiple videos, this return DataLoader for academia evaluation</p>
+</dd></dl>
+
 </section>
 
 
@@ -491,6 +542,87 @@
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ActionOVClsDataLoader
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVClsDataLoader.add_prediction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ActionOVClsDataLoader.add_prediction()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ActionOVDemoDataLoader
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDemoDataLoader.add_prediction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ActionOVDemoDataLoader.add_prediction()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ActionOVDetDataLoader
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.openvino.dataloader.ActionOVDetDataLoader.add_prediction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ActionOVDetDataLoader.add_prediction()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#otx.algorithms.action.adapters.openvino.dataloader.get_ovdataloader">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     get_ovdataloader()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
