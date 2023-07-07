@@ -11,8 +11,9 @@ All notable changes to this project will be documented in this file.
 - Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (https://github.com/openvinotoolkit/training_extensions/pull/2195)
 - Add per-class XAI saliency maps for Mask R-CNN model (https://github.com/openvinotoolkit/training_extensions/pull/2227)
 - Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
-- Add new object detecotr DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
+- Add new object detector DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
 - Add new visual prompting task (https://github.com/openvinotoolkit/training_extensions/pull/2203), (https://github.com/openvinotoolkit/training_extensions/pull/2274)
+- Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
 
 ### Enhancements
 

@@ -73,6 +73,7 @@ experimental_templates = [
         "src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml"
     ),
     parse_model_template("src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
+    parse_model_template("src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml"),
 ]
 experimental_template_ids = [template.model_template_id for template in experimental_templates]
 
@@ -88,7 +89,7 @@ class TestDetectionCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
@@ -126,7 +127,7 @@ class TestDetectionCLI:
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "detection"

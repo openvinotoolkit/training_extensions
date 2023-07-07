@@ -9,7 +9,7 @@ import torch
 import pytest
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import OTXVisualPromptingDataset
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.models import Model
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
 from otx.algorithms.visual_prompting.tasks.openvino import (
     OpenVINOVisualPromptingInferencer,
@@ -66,7 +66,7 @@ class TestOpenVINOVisualPromptingInferencer:
             {"image_encoder": "", "decoder": ""},
         )
         self.visual_prompting_ov_inferencer.model["decoder"] = mocker.patch(
-            "openvino.model_zoo.model_api.models.Model", autospec=True
+            "openvino.model_api.models.Model", autospec=True
         )
 
     @e2e_pytest_unit
