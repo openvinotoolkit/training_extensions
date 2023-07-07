@@ -335,4 +335,5 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         """Optimize function of OpenVINOVisualPromptingTask."""
+        logger.info("Start PTQ optimization")
         raise NotImplementedError
