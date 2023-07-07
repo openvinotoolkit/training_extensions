@@ -13,6 +13,12 @@ build-backend = "setuptools.build_meta"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# CIBUILDWHEEL CONFIGURATION.                                                 #
+[tool.cibuildwheel]
+build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # COVERAGE CONFIGURATION.                                                     #
 [tool.coverage.run]
 source = [
