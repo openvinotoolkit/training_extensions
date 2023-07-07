@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
-from openvino.model_zoo.model_api.models import utils
+from openvino.model_api.models import utils
 
 from otx.api.entities.annotation import (
     Annotation,

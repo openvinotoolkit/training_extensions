@@ -36,7 +36,7 @@ class PadV1(Operation[PadV1Attribute]):
     """PadV1 class."""
 
     TYPE = "Pad"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = PadV1Attribute
 
     def __init__(self, *args, **kwargs):
@@ -81,7 +81,7 @@ class ConcatV0(Operation[ConcatV0Attribute]):
     """ConcatV0 class."""
 
     TYPE = "Concat"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConcatV0Attribute
 
     def forward(self, *inputs):
@@ -101,7 +101,7 @@ class TransposeV1(Operation[TransposeV1Attribute]):
     """TransposeV1 class."""
 
     TYPE = "Transpose"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = TransposeV1Attribute
 
     def forward(self, inputs, order):
@@ -125,7 +125,7 @@ class GatherV0(Operation[GatherV0Attribute]):
     """GatherV0 class."""
 
     TYPE = "Gather"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = GatherV0Attribute
 
     def forward(self, inputs, indices, axis):
@@ -178,7 +178,7 @@ class GatherV1(Operation[GatherV1Attribute]):
     """GatherV1 class."""
 
     TYPE = "Gather"
-    VERSION = 1
+    VERSION = "opset2"
     ATTRIBUTE_FACTORY = GatherV1Attribute
 
     def forward(self, inputs, indices, axis):
@@ -202,7 +202,7 @@ class StridedSliceV1(Operation[StridedSliceV1Attribute]):
     """StridedSliceV1 class."""
 
     TYPE = "StridedSlice"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = StridedSliceV1Attribute
 
     def forward(self, inputs, begin, end, stride=None):
@@ -268,7 +268,7 @@ class SplitV1(Operation[SplitV1Attribute]):
     """SplitV1 class."""
 
     TYPE = "Split"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SplitV1Attribute
 
     def forward(self, inputs, axis):
@@ -289,7 +289,7 @@ class VariadicSplitV1(Operation[VariadicSplitV1Attribute]):
     """VariadicSplitV1 class."""
 
     TYPE = "VariadicSplit"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = VariadicSplitV1Attribute
 
     def forward(self, inputs, axis, split_lengths):
@@ -327,7 +327,7 @@ class ShuffleChannelsV0(Operation[ShuffleChannelsV0Attribute]):
     """ShuffleChannelsV0 class."""
 
     TYPE = "ShuffleChannels"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ShuffleChannelsV0Attribute
 
     def forward(self, inputs):
@@ -382,7 +382,7 @@ class BroadcastV3(Operation[BroadcastV3Attribute]):
     """BroadcastV3 class."""
 
     TYPE = "Broadcast"
-    VERSION = 3
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = BroadcastV3Attribute
 
     def forward(self, inputs, target_shape, axes_mapping=None):
@@ -415,7 +415,7 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
     """ScatterNDUpdateV3 class."""
 
     TYPE = "ScatterNDUpdate"
-    VERSION = 3
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ScatterNDUpdateV3Attribute
 
     def forward(self, inputs, indicies, updates):
@@ -449,7 +449,7 @@ class ScatterUpdateV3(Operation[ScatterUpdateV3Attribute]):
     """ScatterUpdateV3 class."""
 
     TYPE = "ScatterUpdate"
-    VERSION = 3
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ScatterUpdateV3Attribute
 
     def forward(self, inputs, indicies, updates, axis):
@@ -482,7 +482,7 @@ class TileV0(Operation[TileV0Attribute]):
     """TileV0 class."""
 
     TYPE = "Tile"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = TileV0Attribute
 
     def forward(self, inputs, repeats):

@@ -13,7 +13,7 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import _collections_abc
 import networkx as nx
-from openvino.pyopenvino import Model  # pylint: disable=no-name-in-module
+from openvino.runtime import Model
 
 from otx.algorithms.common.utils.logger import get_logger
 

@@ -17,7 +17,7 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
   - `demo.py`
   - `requirements.txt`
 
-> **NOTE**: Zip archive contains model_wrappers when [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api) has no appropriate standard model wrapper for the model.
+> **NOTE**: Zip archive contains model_wrappers when [ModelAPI](https://github.com/openvinotoolkit/model_api) has no appropriate standard model wrapper for the model.
 
 ## Prerequisites
 

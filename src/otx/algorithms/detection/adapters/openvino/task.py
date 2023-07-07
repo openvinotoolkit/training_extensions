@@ -17,7 +17,6 @@
 import copy
 import io
 import json
-import multiprocessing
 import os
 import tempfile
 import time
@@ -26,16 +25,16 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import attr
+import nncf
 import numpy as np
+import openvino.runtime as ov
 from addict import Dict as ADDict
-from compression.api import DataLoader
-from compression.engines.ie_engine import IEEngine
-from compression.graph import load_model, save_model
-from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
-from compression.pipeline.initializer import create_pipeline
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
+from nncf.common.quantization.structs import QuantizationPreset
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import ImageModel, Model
 
+from otx.algorithms.common.utils import OTXOpenVinoDataLoader
+from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.detection.adapters.openvino import model_wrappers
@@ -152,9 +151,8 @@ class BaseInferencerWithConverter(BaseInferencer):
     def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
-            res_copy_func, args = callback_args
-            id, preprocessing_meta, result_handler = args
-            prediction = res_copy_func(request)
+            id, preprocessing_meta, result_handler = callback_args
+            prediction = self.model.inference_adapter.copy_raw_result(request)
             processed_prediciton = self.post_process(prediction, preprocessing_meta)
 
             if "feature_vector" not in prediction or "saliency_map" not in prediction:
@@ -177,14 +175,14 @@ class BaseInferencerWithConverter(BaseInferencer):
     def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
         if not self.is_callback_set:
-            self.model.model_adapter.set_callback(self._async_callback)
+            self.model.inference_adapter.set_callback(self._async_callback)
             self.is_callback_set = True
 
         if not self.model.is_ready():
             self.model.await_any()
         image, metadata = self.pre_process(image)
         callback_data = id, metadata, result_handler
-        self.model.infer_async(image, callback_data)
+        self.model.inference_adapter.infer_async(image, callback_data)
 
     def await_all(self) -> None:
         """Await all running infer requests if any."""
@@ -202,6 +200,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
+        model_configuration: Dict[str, Any] = {},
     ):
         """Initialize for OpenVINODetectionInferencer.
 
@@ -227,7 +226,8 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
-        model = Model.create_model("OTX_SSD", model_adapter, configuration, preload=True)
+        configuration.update(model_configuration)
+        model = Model.create_model(model_adapter, "OTX_SSD", configuration, preload=True)
         converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
@@ -250,6 +250,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
+        model_configuration: Dict[str, Any] = {},
     ):
         model_adapter = OpenvinoAdapter(
             create_core(),
@@ -265,10 +266,10 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
                 hparams.postprocessing,
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
             ),
-            "resize_type": "fit_to_window",  # Resize(keep_ratio=True)
         }
+        configuration.update(model_configuration)
 
-        model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
+        model = Model.create_model(model_adapter, "OTX_MaskRCNN", configuration, preload=True)
         converter = MaskToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
@@ -302,7 +303,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             )
         }
 
-        model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
+        model = Model.create_model(model_adapter, "OTX_MaskRCNN", configuration, preload=True)
 
         converter = RotatedRectToAnnotationConverter(label_schema, configuration)
 
@@ -348,7 +349,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
                 device=device,
                 max_num_requests=num_requests,
             )
-            classifier = Model(model_adapter=adapter, preload=True)
+            classifier = ImageModel(inference_adapter=adapter, configuration={}, preload=True)
 
         self.tiler = Tiler(
             tile_size=int(tile_size * tile_ir_scale_factor),
@@ -379,26 +380,6 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
         detections, features = self.tiler.predict(image, mode)
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
-
-
-class OTXOpenVinoDataLoader(DataLoader):
-    """Data loader for OTXDetection using OpenVINO backend."""
-
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
-        self.dataset = dataset
-        self.inferencer = inferencer
-
-    def __getitem__(self, index: int):
-        """Return dataset item from index."""
-        image = self.dataset[index].numpy
-        annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(image)
-
-        return (index, annotation), inputs, metadata
-
-    def __len__(self):
-        """Length of OTXOpenVinoDataLoader."""
-        return len(self.dataset)
 
 
 class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
@@ -468,8 +449,15 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             async_requests_num,
         ]
         if self.task_type == TaskType.DETECTION:
+            if (
+                self.task_environment.model_template.model_template_id == "Custom_Object_Detection_YOLOX"
+                and not self.config.tiling_parameters.enable_tiling
+            ):
+                args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
+            if self.config.tiling_parameters.enable_tiling:
+                args.append({"resize_type": "fit_to_window_letterbox"})
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
@@ -700,15 +688,17 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         """Optimize function of OpenVINODetectionTask."""
-        logger.info("Start POT optimization")
+        logger.info("Start PTQ optimization")
 
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("POT is the only supported optimization type for OpenVino models")
+            raise ValueError("PTQ is the only supported optimization type for OpenVino models")
         if self.model is None:
             raise RuntimeError("Optimize failed, model is None")
 
         dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
+
+        quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
@@ -718,61 +708,39 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             with open(bin_path, "wb") as f:
                 f.write(self.model.get_data("openvino.bin"))
 
-            model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
-
-            model = load_model(model_config)
-
-            if get_nodes_by_type(model, ["FakeQuantize"]):
-                raise RuntimeError("Model is already optimized by POT")
+            ov_model = ov.Core().read_model(xml_path)
+            if check_if_quantized(ov_model):
+                raise RuntimeError("Model is already optimized by PTQ")
 
         if optimization_parameters:
             optimization_parameters.update_progress(10, None)
 
-        engine_config = ADDict(
-            {
-                "device": "CPU",
-                "stat_requests_number": min(
-                    self.hparams.pot_parameters.stat_requests_number, multiprocessing.cpu_count()
-                ),
-            }
-        )
-
         stat_subset_size = self.hparams.pot_parameters.stat_subset_size
-        preset = self.hparams.pot_parameters.preset.name.lower()
+        preset = QuantizationPreset(self.hparams.pot_parameters.preset.name.lower())
 
-        algorithms = [
-            {
-                "name": "DefaultQuantization",
-                "params": {
-                    "target_device": "ANY",
-                    "preset": preset,
-                    "stat_subset_size": min(stat_subset_size, len(data_loader)),
-                    "shuffle_data": True,
-                },
-            }
-        ]
-
-        engine = IEEngine(config=engine_config, data_loader=data_loader, metric=None)
-
-        pipeline = create_pipeline(algorithms, engine)
-
-        compressed_model = pipeline.run(model)
-
-        compress_model_weights(compressed_model)
+        compressed_model = nncf.quantize(
+            ov_model, quantization_dataset, subset_size=min(stat_subset_size, len(data_loader)), preset=preset
+        )
 
         if optimization_parameters:
             optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
-            save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as f:
+            xml_path = os.path.join(tempdir, "model.xml")
+            ov.serialize(compressed_model, xml_path)
+            with open(xml_path, "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
-            output_model.set_data(
-                "confidence_threshold",
-                np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
-            )
+        output_model.set_data(
+            "confidence_threshold",
+            np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
+        )
+
+        # tile classifier is bypassed PTQ for now
+        if self.config.tiling_parameters.enable_tiling and self.config.tiling_parameters.enable_tile_classifier:
+            output_model.set_data("tile_classifier.xml", self.model.get_data("tile_classifier.xml"))
+            output_model.set_data("tile_classifier.bin", self.model.get_data("tile_classifier.bin"))
 
         output_model.set_data(
             "label_schema.json",
@@ -788,7 +756,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         self.model = output_model
         self.inferencer = self.load_inferencer()
-        logger.info("POT optimization completed")
+        logger.info("PTQ optimization completed")
 
         if optimization_parameters:
             optimization_parameters.update_progress(100, None)

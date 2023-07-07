@@ -121,7 +121,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_export_eval_openvino(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 

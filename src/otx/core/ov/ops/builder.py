@@ -24,7 +24,7 @@ class OperationRegistry(Registry):
                 layer_name = obj.__name__
             layer_type = obj.TYPE
             layer_version = obj.VERSION
-            assert layer_type and layer_version >= 0
+            assert layer_type and layer_version
             if self._add_name_as_attr:
                 setattr(obj, self.REGISTERED_NAME_ATTR, layer_name)
             self._register(obj, layer_name, layer_type, layer_version)

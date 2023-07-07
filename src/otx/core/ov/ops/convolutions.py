@@ -36,7 +36,7 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
     """ConvolutionV1 class."""
 
     TYPE = "Convolution"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConvolutionV1Attribute
 
     def forward(self, inputs, weight):
@@ -85,7 +85,7 @@ class GroupConvolutionV1(Operation[GroupConvolutionV1Attribute]):
     """GroupConvolutionV1 class."""
 
     TYPE = "GroupConvolution"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = GroupConvolutionV1Attribute
 
     def forward(self, inputs, weight):

@@ -19,27 +19,25 @@
 from typing import Any, Dict
 
 import numpy as np
-
-try:
-    from openvino.model_zoo.model_api.models.classification import Classification
-    from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
-except ImportError:
-    import warnings
-
-    warnings.warn("ModelAPI was not found.")
+from openvino.model_api.models import ClassificationModel, classification
+from openvino.model_api.models.types import BooleanValue, DictValue
 
 
-class OTXClassification(Classification):
+class OTXClassification(ClassificationModel):
     """OTX classification class for openvino."""
 
     __model__ = "otx_classification"
 
     def __init__(self, model_adapter, configuration=None, preload=False):
+        backup_fn = classification.addOrFindSoftmaxAndTopkOutputs
+        classification.addOrFindSoftmaxAndTopkOutputs = lambda a, b, c: None
         super().__init__(model_adapter, configuration, preload)
+        classification.addOrFindSoftmaxAndTopkOutputs = backup_fn
         if self.hierarchical:
             logits_range_dict = self.multihead_class_info.get("head_idx_to_logits_range", False)
             if logits_range_dict:
                 self.multihead_class_info["head_idx_to_logits_range"] = dict(logits_range_dict.items())
+        self.out_layer_names = [self._get_output()]
 
     @classmethod
     def parameters(cls):
@@ -59,7 +57,7 @@ class OTXClassification(Classification):
     def _check_io_number(self, number_of_inputs, number_of_outputs):
         pass
 
-    def _get_outputs(self):
+    def _get_output(self):
         layer_name = "logits"
         for name, meta in self.outputs.items():
             if "logits" in meta.names:
@@ -86,18 +84,18 @@ class OTXClassification(Classification):
 
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
         """Post-process."""
-        logits = outputs[self.out_layer_name].squeeze()
+        logits = outputs[self.out_layer_names[-1]].squeeze()
         if self.multilabel:
             return get_multilabel_predictions(logits)
         if self.hierarchical:
             return get_hierarchical_predictions(logits, self.multihead_class_info)
 
-        return get_multiclass_predictions(logits)
+        return get_multiclass_predictions(logits, activate=True)
 
     # pylint: disable=unused-argument
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         """Post-process for auxiliary outputs."""
-        logits = outputs[self.out_layer_name].squeeze()
+        logits = outputs[self.out_layer_names[-1]].squeeze()
         if self.multilabel:
             probs = sigmoid_numpy(logits)
         elif self.hierarchical:

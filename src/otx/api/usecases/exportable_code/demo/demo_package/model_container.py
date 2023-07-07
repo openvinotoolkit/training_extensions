@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any, Optional, Tuple
 
 import numpy as np
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import ImageModel, Model
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
@@ -33,6 +33,9 @@ class ModelContainer:
 
         try:
             config_data = model_adapter.model.get_rt_info(["otx_config"])
+            if type(config_data) != str:
+                # OV 2023.0 return OVAny which needs to be casted with astype()
+                config_data = config_data.astype(str)
             self.parameters = json.loads(config_data)
         except RuntimeError:
             self.parameters = get_parameters(model_dir / "config.json")
@@ -50,8 +53,8 @@ class ModelContainer:
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
-            self.parameters["type_of_model"],
             model_adapter,
+            self.parameters["type_of_model"],
             self.model_parameters,
             preload=True,
         )
@@ -74,10 +77,10 @@ class ModelContainer:
         tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]
         max_number = self.parameters["tiling_parameters"]["tile_max_number"]
 
-        classifier = {}
+        classifier = None
         if self.parameters["tiling_parameters"].get("enable_tile_classifier", False):
             adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "tile_classifier.xml"), device=device)
-            classifier = Model(model_adapter=adapter, preload=True)
+            classifier = ImageModel(inference_adapter=adapter, configuration={}, preload=True)
 
         if self.parameters["tiling_parameters"].get("tile_ir_scale_factor", False):
             tile_size = int(tile_size * self.parameters["tiling_parameters"]["tile_ir_scale_factor"])
@@ -113,7 +116,8 @@ class ModelContainer:
             frame_meta (Dict): dict with original shape
         """
         # getting result include preprocessing, infer, postprocessing for sync infer
-        predictions, frame_meta = self.core_model(frame)
+        predictions = self.core_model(frame)
+        frame_meta = {"original_shape": frame.shape}
 
         # MaskRCNN returns tuple so no need to process
         if self._task_type == TaskType.DETECTION:

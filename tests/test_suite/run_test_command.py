@@ -533,13 +533,18 @@ def pot_optimize_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
 
 
-def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name):
+def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name, update=False):
     num_fq = get_number_of_fakequantizers_in_xml(xml_path)
     assert os.path.exists(path_to_ref_data), f"Reference file does not exist: {path_to_ref_data} [num_fq = {num_fq}]"
 
     with open(path_to_ref_data, encoding="utf-8") as stream:
         ref_data = yaml.safe_load(stream)
     ref_num_fq = ref_data.get(test_name, {}).get(compression_type, {}).get("number_of_fakequantizers", -1)
+    if update:
+        print(f"Updating FQ refs: {ref_num_fq}->{num_fq} for {compression_type}")
+        ref_data[test_name][compression_type]["number_of_fakequantizers"] = num_fq
+        with open(path_to_ref_data, encoding="utf-8", mode="w") as stream:
+            stream.write(yaml.safe_dump(ref_data))
     assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
 
 

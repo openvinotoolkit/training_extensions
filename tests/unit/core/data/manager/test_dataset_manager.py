@@ -35,7 +35,7 @@ DATA_ROOTS2FORMAT = {
 
 
 class TestOTXDatasetManager:
-    def setup(self) -> None:
+    def setup_method(self) -> None:
         self.dataset = {}
         for subset in AVAILABLE_SUBSETS:
             self.dataset[subset] = {}

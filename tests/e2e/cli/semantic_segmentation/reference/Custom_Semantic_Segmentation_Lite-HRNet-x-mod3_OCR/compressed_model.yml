@@ -1,5 +1,5 @@
 TestToolsMPASegmentation:
-  pot:
-    number_of_fakequantizers: 979
   nncf:
-    number_of_fakequantizers: 1130
+    number_of_fakequantizers: 1138
+  pot:
+    number_of_fakequantizers: 978

@@ -124,7 +124,7 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
@@ -140,7 +140,7 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
@@ -155,7 +155,7 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args)
@@ -163,7 +163,7 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
@@ -171,7 +171,7 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
@@ -179,7 +179,7 @@ class TestToolsTilingInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args)

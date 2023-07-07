@@ -651,13 +651,14 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
                 str(train_type_dir / "compression_config.json"),
             )
             print(f"[*] \t- Updated: {str(train_type_dir / 'compression_config.json')}")
-        # Copy compression_config.json
-        if (model_dir / "pot_optimization_config.json").exists():
+
+        # copy PTQ config
+        if (model_dir / "ptq_optimization_config.py").exists():
             shutil.copyfile(
-                str(model_dir / "pot_optimization_config.json"),
-                str(train_type_dir / "pot_optimization_config.json"),
+                str(model_dir / "ptq_optimization_config.py"),
+                str(train_type_dir / "ptq_optimization_config.py"),
             )
-            print(f"[*] \t- Updated: {str(train_type_dir / 'pot_optimization_config.json')}")
+            print(f"[*] \t- Updated: {str(train_type_dir / 'ptq_optimization_config.py')}")
 
         if not (self.workspace_root / "data.yaml").exists():
             data_yaml = self._get_arg_data_yaml()
