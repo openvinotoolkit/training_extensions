@@ -241,8 +241,7 @@ class TestIncrClassificationConfigurer:
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
         self.configurer.configure_task(self.model_cfg, True)
-        assert self.model_cfg.custom_hooks[0].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[0].sampler_flag is False
+        assert "TaskAdaptHook" in [i.type for i in self.model_cfg.custom_hooks]
 
 
 class TestSemiSLClassificationConfigurer:

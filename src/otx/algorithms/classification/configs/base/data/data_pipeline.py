@@ -20,11 +20,8 @@ __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375
 __resize_target_size = 224
 
 __train_pipeline = [
-    dict(type="Resize", size=__resize_target_size),
+    dict(type="RandomResizedCrop", size=224, efficientnet_style=True),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
-    dict(type="AugMixAugment", config_str="augmix-m5-w3-d1"),
-    dict(type="RandomRotate", p=0.35, angle=(-10, 10)),
-    dict(type="PILImageToNDArray", keys=["img"]),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="ToTensor", keys=["gt_label"]),
@@ -32,7 +29,8 @@ __train_pipeline = [
 ]
 
 __test_pipeline = [
-    dict(type="Resize", size=__resize_target_size),
+    dict(type="Resize", size=(256, -1)),
+    dict(type="CenterCrop", crop_size=224),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="Collect", keys=["img"]),

@@ -40,8 +40,8 @@ class EarlyStoppingHook(Hook):
                                continues if the number of iteration is lower than iteration_patience
                                This variable makes sure a model is trained enough for some
                                iterations after the last improvement before stopping.
-    :param min_delta: Minimal decay applied to lr. If the difference between new and old lr is
-                      smaller than eps, the update is ignored
+    :param min_delta_ratio: Minimal ratio value to check the best score. If the difference between current and
+                      best score is smaller than (current_score * (1-min_delta_ratio)), best score will not be changed.
     """
 
     rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
@@ -56,16 +56,16 @@ class EarlyStoppingHook(Hook):
         rule: Optional[str] = None,
         patience: int = 5,
         iteration_patience: int = 500,
-        min_delta: float = 0.0,
+        min_delta_ratio: float = 0.0,
     ):
         super().__init__()
         self.patience = patience
         self.iteration_patience = iteration_patience
         self.interval = interval
-        self.min_delta = min_delta
+        self.min_delta_ratio = min_delta_ratio
         self._init_rule(rule, metric)
 
-        self.min_delta *= 1 if self.rule == "greater" else -1
+        self.min_delta_ratio *= 1 if self.rule == "greater" else -1
         self.last_iter = 0
         self.wait_count = 0
         self.best_score = self.init_value_map[self.rule]
@@ -141,7 +141,7 @@ class EarlyStoppingHook(Hook):
                 )
 
             key_score = runner.log_buffer.output[self.key_indicator]
-            if self.compare_func(key_score - self.min_delta, self.best_score):
+            if self.compare_func(key_score - (key_score * self.min_delta_ratio), self.best_score):
                 self.best_score = key_score
                 self.wait_count = 0
                 self.last_iter = runner.iter
@@ -184,11 +184,11 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
         rule: str = None,
         patience: int = 5,
         iteration_patience: int = 500,
-        min_delta: float = 0.0,
+        min_delta_ratio: float = 0.0,
         start: int = None,
     ):
         self.start = start
-        super().__init__(interval, metric, rule, patience, iteration_patience, min_delta)
+        super().__init__(interval, metric, rule, patience, iteration_patience, min_delta_ratio)
 
     def _should_check_stopping(self, runner):
         if self.by_epoch:
@@ -352,6 +352,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
                     logger=runner.logger,
                 )
                 return self.current_lr
+
             self.last_iter = runner.iter
             self.bad_count = 0
             print_log(
