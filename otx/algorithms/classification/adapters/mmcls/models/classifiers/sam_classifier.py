@@ -15,13 +15,14 @@ from .mixin import ClsLossDynamicsTrackingMixin, SAMClassifierMixin
 
 logger = get_logger()
 
-def is_hierarchical_chkpt(chkpt:dict):
+
+def is_hierarchical_chkpt(chkpt: dict):
     """Detect whether previous checkpoint is hierarchical or not."""
     for k, v in chkpt.items():
         if "fc" in k:
-            return True    
+            return True
     return False
-    
+
 
 @CLASSIFIERS.register_module()
 class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
@@ -201,18 +202,18 @@ class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Image
         model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs
     ):  # pylint: disable=unused-argument, too-many-branches, too-many-locals
         """Modify input state_dict according to class name matching before weight loading.
-        
-        If previous training is hierarchical training, 
+
+        If previous training is hierarchical training,
         then the current training should be hierarchical training. vice versa.
-                
+
         """
         backbone_type = type(model.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
-        
+
         if model.hierarchical != is_hierarchical_chkpt(chkpt_dict):
             return
-         
+
         # Dst to src mapping index
         model_classes = list(model_classes)
         chkpt_classes = list(chkpt_classes)
