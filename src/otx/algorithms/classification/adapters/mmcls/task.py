@@ -562,6 +562,11 @@ class MMClassificationTask(OTXClassificationTask):
         export_options["precision"] = str(precision)
         export_options["type"] = str(export_format)
 
+        # [TODO] Enable dump_features for ViT backbones
+        model_type = cfg.model.backbone.type.split(".")[-1]  # mmcls.VisionTransformer => VisionTransformer
+        if model_type in TRANSFORMER_BACKBONES:
+            dump_features = False
+
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
             output_names = export_options["deploy_cfg"]["ir_config"]["output_names"]

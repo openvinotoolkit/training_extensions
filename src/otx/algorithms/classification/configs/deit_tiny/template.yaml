@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_deit-tiny
-name: deit-tiny
+model_template_id: Custom_Image_Classification_DeiT-Tiny
+name: DeiT-Tiny
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Custom Image Classification for deit-tiny
+summary: Custom Image Classification for DeiT-Tiny
 application: ~
 
 # Algo backend.
