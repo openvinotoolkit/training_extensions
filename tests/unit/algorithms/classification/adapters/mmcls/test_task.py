@@ -112,7 +112,8 @@ class MockExporter:
     def __init__(self, task):
         self._output_path = task._output_path
 
-    def run(self, *args, **kwargs):
+    def run(self, cfg, *args, **kwargs):
+        assert cfg.model.head.num_classes == 2
         with open(os.path.join(self._output_path, "openvino.bin"), "wb") as f:
             f.write(np.ndarray([0]))
         with open(os.path.join(self._output_path, "openvino.xml"), "wb") as f:
