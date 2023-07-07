@@ -4,39 +4,42 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from copy import deepcopy
+
 import numpy as np
-import torch
 import pytest
-from otx.api.entities.dataset_item import DatasetItemEntity
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import OTXVisualPromptingDataset
+import torch
 from openvino.model_api.models import Model
+
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
+    OTXVisualPromptingDataset,
+)
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
 from otx.algorithms.visual_prompting.tasks.openvino import (
     OpenVINOVisualPromptingInferencer,
     OpenVINOVisualPromptingTask,
 )
-from otx.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.api.entities.annotation import Annotation
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import Performance, ScoreMetric
+from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
+    VisualPromptingToAnnotationConverter,
+)
 from otx.api.utils.shape_factory import ShapeFactory
-
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.visual_prompting.test_helpers import (
     generate_visual_prompting_dataset,
     init_environment,
-)
-from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
-    VisualPromptingToAnnotationConverter,
 )
 
 
@@ -159,8 +162,16 @@ class TestOpenVINOVisualPromptingInferencer:
 
 
 class TestOpenVINOVisualPromptingTask:
+    @pytest.fixture
+    def otx_model(self):
+        model_configuration = ModelConfiguration(
+            configurable_parameters=ConfigurableParameters(header="header", description="description"),
+            label_schema=LabelSchemaEntity(),
+        )
+        return ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
+
     @pytest.fixture(autouse=True)
-    def setup(self, mocker):
+    def setup(self, mocker, otx_model):
         """Load the OpenVINOVisualPromptingTask."""
         mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
@@ -174,7 +185,8 @@ class TestOpenVINOVisualPromptingTask:
             {"image_encoder": "", "decoder": ""},
         )
 
-        self.task_environment.model = mocker.patch("otx.api.entities.model.ModelEntity")
+        # self.task_environment.model = mocker.patch("otx.api.entities.model.ModelEntity")
+        self.task_environment.model = otx_model
         mocker.patch.object(OpenVINOVisualPromptingTask, "load_inferencer", return_value=visual_prompting_ov_inferencer)
         self.visual_prompting_ov_task = OpenVINOVisualPromptingTask(task_environment=self.task_environment)
 
@@ -220,3 +232,14 @@ class TestOpenVINOVisualPromptingTask:
         self.visual_prompting_ov_task.evaluate(result_set)
 
         assert result_set.performance.score.value == 0.1
+
+    @e2e_pytest_unit
+    def test_deploy(self):
+        output_model = deepcopy(self.task_environment.model)
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_image_encoder.bin", b"image_encoder_bin")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_image_encoder.xml", b"image_encoder_xml")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.bin", b"decoder_bin")
+        self.visual_prompting_ov_task.model.set_data("visual_prompting_decoder.xml", b"deocder_xml")
+        self.visual_prompting_ov_task.deploy(output_model)
+
+        assert output_model.exportable_code is not None

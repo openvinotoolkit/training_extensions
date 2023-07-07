@@ -14,19 +14,24 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import io
+import json
 import os
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
+from zipfile import ZipFile
 
 import attr
 import numpy as np
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
-import otx.algorithms.visual_prompting.adapters.openvino.model_wrappers  # noqa: F401
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
+from otx.algorithms.visual_prompting.adapters.openvino import (  # noqa: F401
+    model_wrappers,
+)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
     get_transform,
@@ -45,7 +50,9 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.usecases.exportable_code import demo
 from otx.api.usecases.exportable_code.inference import BaseInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     VisualPromptingToAnnotationConverter,
@@ -260,7 +267,60 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
     def deploy(self, output_model: ModelEntity) -> None:
         """Deploy function of OpenVINOVisualPromptingTask."""
-        raise NotImplementedError
+        logger.info("Deploying the model")
+        if self.model is None:
+            raise RuntimeError("deploy failed, model is None")
+
+        work_dir = os.path.dirname(demo.__file__)
+        parameters = {}
+        parameters["converter_type"] = f"{self.task_type}"
+        parameters["model_parameters"] = self.inferencer.configuration  # type: ignore
+        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)  # type: ignore # noqa: E501
+
+        zip_buffer = io.BytesIO()
+        with ZipFile(zip_buffer, "w") as arch:
+            # model files
+            arch.writestr(
+                os.path.join("model", "visual_prompting_image_encoder.xml"),
+                self.model.get_data("visual_prompting_image_encoder.xml"),
+            )
+            arch.writestr(
+                os.path.join("model", "visual_prompting_image_encoder.bin"),
+                self.model.get_data("visual_prompting_image_encoder.bin"),
+            )
+            arch.writestr(
+                os.path.join("model", "visual_prompting_decoder.xml"),
+                self.model.get_data("visual_prompting_decoder.xml"),
+            )
+            arch.writestr(
+                os.path.join("model", "visual_prompting_decoder.bin"),
+                self.model.get_data("visual_prompting_decoder.bin"),
+            )
+            arch.writestr(
+                os.path.join("model", "config.json"),
+                json.dumps(parameters, ensure_ascii=False, indent=4),
+            )
+            # model_wrappers files
+            for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
+                if "__pycache__" in root:
+                    continue
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arch.write(
+                        file_path,
+                        os.path.join(
+                            "python",
+                            "model_wrappers",
+                            file_path.split("model_wrappers/")[0],
+                        ),
+                    )
+            # other python files
+            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+            arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
+            arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+            arch.write(os.path.join(work_dir, "README.md"), os.path.join(".", "README.md"))
+        output_model.exportable_code = zip_buffer.getvalue()
+        logger.info("Deploying completed")
 
     def optimize(
         self,
