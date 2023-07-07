@@ -171,7 +171,7 @@ learning_parameters:
     visible_in_ui: false
   early_stop_patience:
     affects_outcome_of: TRAINING
-    default_value: 8
+    default_value: 3
     description: Training will stop if the model does not improve within the number of epochs of patience.
     editable: true
     header: Patience for early stopping
@@ -207,9 +207,9 @@ learning_parameters:
     warning: This is applied exclusively when early stopping is enabled.
   use_adaptive_interval:
     affects_outcome_of: TRAINING
-    default_value: false
+    default_value: true
     description: Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
-    editable: false
+    editable: true
     header: Use adaptive validation interval
     type: BOOLEAN
     ui_rules:
@@ -217,7 +217,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    visible_in_ui: false
+    visible_in_ui: true
     warning: This will automatically control the patience and interval when early stopping is enabled.
   enable_supcon:
     affects_outcome_of: TRAINING

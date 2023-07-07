@@ -22,7 +22,9 @@ import shutil
 import subprocess  # nosec B404
 import tempfile
 from glob import glob
-from typing import Dict, List, Optional, Union
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+from warnings import warn
 
 import torch
 from anomalib.data.utils.transform import get_transforms
@@ -34,6 +36,7 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from omegaconf import DictConfig, ListConfig
+from openvino.runtime import Core, serialize
 from pytorch_lightning import Trainer
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
@@ -302,6 +305,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             subprocess.run(optimize_command, check=True)
             bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
             xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
+
+            self._add_metadata_to_ir(xml_file)
+
             with open(bin_file, "rb") as file:
                 output_model.set_data("openvino.bin", file.read())
             with open(xml_file, "rb") as file:
@@ -312,6 +318,45 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
+
+    def _add_metadata_to_ir(self, xml_file: str) -> None:
+        """Adds the metadata to the model IR.
+
+        Adds the metadata to the model IR. So that it can be used with the new modelAPI.
+        This is because the metadata.json is not used by the new modelAPI.
+        # TODO CVS-114640
+        # TODO: Step 1. Remove metadata.json when modelAPI becomes the default inference method.
+        # TODO: Step 2. Remove this function when Anomalib is upgraded as the model graph will contain the required ops
+        # TODO: Step 3. Update modelAPI to remove pre/post-processing steps when Anomalib version is upgraded.
+        """
+        metadata = self._get_metadata_dict()
+        core = Core()
+        model = core.read_model(xml_file)
+        for key, value in metadata.items():
+            if key == "transform":
+                continue
+            model.set_rt_info(value, ["model_info", key])
+        # Add transforms
+        if "transform" in metadata:
+            for transform_dict in metadata["transform"]["transform"]["transforms"]:
+                transform = transform_dict.pop("__class_fullname__")
+                if transform == "Normalize":
+                    model.set_rt_info(self._serialize_list(transform_dict["mean"]), ["model_info", "mean_values"])
+                    model.set_rt_info(self._serialize_list(transform_dict["std"]), ["model_info", "scale_values"])
+                elif transform == "Resize":
+                    model.set_rt_info(transform_dict["height"], ["model_info", "orig_height"])
+                    model.set_rt_info(transform_dict["width"], ["model_info", "orig_width"])
+                else:
+                    warn(f"Transform {transform} is not supported currently")
+        model.set_rt_info("AnomalyDetection", ["model_info", "model_type"])
+        tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
+        serialize(model, str(tmp_xml_path))
+        tmp_xml_path.rename(xml_file)
+        Path(str(tmp_xml_path.parent / tmp_xml_path.stem) + ".bin").unlink()
+
+    def _serialize_list(self, arr: Union[Tuple, List]) -> str:
+        """Converts a list to space separated string."""
+        return " ".join(map(str, arr))
 
     def model_info(self) -> Dict:
         """Return model info to save the model weights.
@@ -348,6 +393,12 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
+        """Sets metadata in output_model."""
+        metadata = self._get_metadata_dict()
+        output_model.set_data("metadata", json.dumps(metadata).encode())
+
+    def _get_metadata_dict(self) -> Dict[str, Any]:
+        """Returns metadata dict."""
         image_threshold = (
             self.model.image_threshold.value.cpu().numpy().tolist() if hasattr(self.model, "image_threshold") else 0.5
         )
@@ -384,7 +435,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             metadata["max"] = max
         # Set the task type for inferencer
         metadata["task"] = str(self.task_type).lower().split("_")[-1]
-        output_model.set_data("metadata", json.dumps(metadata).encode())
+        return metadata
 
     @staticmethod
     def _is_docker() -> bool:

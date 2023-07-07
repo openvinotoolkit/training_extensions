@@ -53,10 +53,9 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         self.updated_label_id: Dict[int, int] = {}
 
         if hasattr(self, "data_type_candidates"):
-            if self.data_type_candidates[0] == "voc":
+            if "voc" in self.data_type_candidates[0]:
                 self.set_voc_labels()
-
-            if self.data_type_candidates[0] == "common_semantic_segmentation":
+            elif self.data_type_candidates[0] == "common_semantic_segmentation":
                 self.set_common_labels()
 
         else:

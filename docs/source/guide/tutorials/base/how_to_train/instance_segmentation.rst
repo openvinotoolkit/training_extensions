@@ -136,6 +136,7 @@ The list of supported templates for instance segmentation is available with the 
   +-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
   | INSTANCE_SEGMENTATION |    Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50     |    MaskRCNN-ResNet50     |     src/otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml    |
   | INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B | MaskRCNN-EfficientNetB2B | src/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml |
+  | INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_ConvNeXt        | MaskRCNN-ConvNeXt        | src/otx/algorithms/detection/configs/instance_segmentation/convnext_maskrcnn/template.yaml        |
   +-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
 
 2. We need to create
