@@ -14,6 +14,4 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference import InferenceCallback
-
-__all__ = ["InferenceCallback"]
+from .inference import InferenceCallback  # noqa: F401

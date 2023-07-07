@@ -20,15 +20,47 @@ from attr import attrs
 from otx.algorithms.common.configs import BaseConfig
 from otx.api.configuration.elements import (
     add_parameter_group,
+    configurable_float,
+    configurable_integer,
     string_attribute,
 )
+from otx.api.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs
 class VisualPromptingBaseConfig(BaseConfig):
-    """Base OTX configurable parameters for visual prompting task."""
+    """Configurations of OTX Visual Prompting."""
 
     header = string_attribute("Configuration for a visual prompting task of OTX")
     description = header
 
-    learning_parameters = add_parameter_group(BaseConfig.BaseLearningParameters)
+    @attrs
+    class __LearningParameters(BaseConfig.BaseLearningParameters):
+        header = string_attribute("Learning Parameters")
+        description = header
+
+    @attrs
+    class __Postprocessing(BaseConfig.BasePostprocessing):
+        header = string_attribute("Postprocessing")
+        description = header
+
+        blur_strength = configurable_integer(
+            header="Blur strength",
+            description="With a higher value, the segmentation output will be smoother, but less accurate.",
+            default_value=1,
+            min_value=1,
+            max_value=25,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+        soft_threshold = configurable_float(
+            default_value=0.5,
+            header="Soft threshold",
+            description="The threshold to apply to the probability output of the model, for each pixel. A higher value "
+            "means a stricter segmentation prediction.",
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+    learning_parameters = add_parameter_group(__LearningParameters)
+    postprocessing = add_parameter_group(__Postprocessing)

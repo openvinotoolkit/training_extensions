@@ -38,7 +38,7 @@ class ResizeLongestSide:
         item["images"] = torch.as_tensor(
             self.apply_image(item["images"]).transpose((2, 0, 1)), dtype=torch.get_default_dtype()
         )
-        item["gt_masks"] = [torch.as_tensor(self.apply_image(gt_mask)) for gt_mask in item["gt_masks"]]
+        item["gt_masks"] = [torch.as_tensor(gt_mask) for gt_mask in item["gt_masks"]]
         item["bboxes"] = self.apply_boxes(item["bboxes"], item["original_size"])
         if item["points"]:
             item["points"] = self.apply_coords(item["points"], item["original_size"])

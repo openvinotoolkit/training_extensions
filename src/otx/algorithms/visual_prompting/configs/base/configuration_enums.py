@@ -1,4 +1,4 @@
-"""Config setting for visual prompting task."""
+"""Collection of utils for task implementation in Visual Prompting Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,7 +14,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .visual_prompting_config import (
-    get_visual_promtping_config,  # noqa: F401
-    update_visual_prompting_config,  # noqa: F401
-)
+from otx.api.configuration import ConfigurableEnum
+
+
+# pylint: disable=invalid-name
+class Models(ConfigurableEnum):
+    """This Enum represents the types of models for inference."""
+
+    ImageEncoder = "image_encoder"
+    Decoder = "decoder"

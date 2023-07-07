@@ -424,6 +424,34 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
+class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
+    """Converts Visual Prompting Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
+    """
+
+    def convert_to_annotation(self, hard_prediction: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:  # type: ignore
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            hard_prediction (np.ndarray): Hard_prediction from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
+        soft_prediction = metadata.get("soft_prediction", np.ones(hard_prediction.shape))
+        # TODO (sungchul): condition to distinguish between mask and polygon
+        annotations = create_annotation_from_segmentation_map(
+            hard_prediction=hard_prediction,
+            soft_prediction=soft_prediction,
+            label_map={1: metadata["label"].label},
+        )
+
+        return annotations
+
+
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
     """Converts DetectionBox Predictions ModelAPI to Annotations."""
 

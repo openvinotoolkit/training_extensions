@@ -72,8 +72,10 @@ class SAMPromptEncoder(nn.Module):
         """Embeds point prompts.
 
         Args:
-            points (Tensor): The points to embed, as (N, 2).
-            labels (Tensor): The labels of the points, as (N, 1).
+            points (Tensor): A BxNx2 array of point prompts to the model.
+                Each point is in (X,Y) in pixels.
+            labels (Tensor): A BxN array of labels for the point prompts.
+                1 indicates a foreground point and 0 indicates a background point.
             pad (bool): Whether to pad the points with a zero point.
 
         Returns:
@@ -96,7 +98,7 @@ class SAMPromptEncoder(nn.Module):
         """Embeds box prompts.
 
         Args:
-            boxes (Tensor): The boxes to embed, as (N, 4).
+            boxes (Tensor): A Bx4 array given a box prompt to the model, in XYXY format.
 
         Returns:
             Tensor: The embedded boxes, as (N, embed_dim).
@@ -112,7 +114,10 @@ class SAMPromptEncoder(nn.Module):
         """Embeds mask inputs.
 
         Args:
-            masks (Tensor): The masks to embed, as (N, H, W).
+            masks (Tensor): A low resolution mask input to the model, typically
+                coming from a previous prediction iteration. Has form Bx1xHxW, where
+                for SAM, H=W=256. Masks returned by a previous iteration of the
+                predict method do not need further transformation.
 
         Returns:
             Tensor: The embedded masks, as (N, embed_dim).
@@ -162,14 +167,20 @@ class SAMPromptEncoder(nn.Module):
         """Embeds different types of prompts, returning both sparse and dense embeddings.
 
         Args:
-            points (tuple(Tensor, Tensor) or none): point coordinates and labels to embed.
-            boxes (Tensor or none): boxes to embed (N, 4).
-            masks (Tensor or none): masks to embed (N, H, W).
+            points (tuple(Tensor, Tensor) or none): Point coordinates and labels to embed.
+                Point coordinates are BxNx2 arrays of point prompts to the model.
+                Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
+                1 indicates a foreground point and 0 indicates a background point.
+            boxes (Tensor or none): A Bx4 array given a box prompt to the model, in XYXY format.
+            masks (Tensor or none): A low resolution mask input to the model, typically
+                coming from a previous prediction iteration. Has form Bx1xHxW, where
+                for SAM, H=W=256. Masks returned by a previous iteration of the
+                predict method do not need further transformation.
 
         Returns:
-            Tensor: sparse embeddings for the points and boxes, with shape Nx1x(embed_dim),
+            sparse_embeddings (Tensor): sparse embeddings for the points and boxes, with shape Nx1x(embed_dim),
                 where N is determined by the number of input points and boxes.
-            Tensor: dense embeddings for the masks, in the shape Nx(embed_dim)x(embed_H)x(embed_W).
+            dense_embeddings (Tensor): dense embeddings for the masks, in the shape Nx(embed_dim)x(embed_H)x(embed_W).
         """
         bs = self._get_batch_size(points, boxes, masks)
         sparse_embeddings = torch.empty((bs, 0, self.embed_dim), device=self._get_device())
