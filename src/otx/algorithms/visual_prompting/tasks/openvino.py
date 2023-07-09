@@ -98,11 +98,13 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         assert all(module in model_files for module in ["image_encoder", "decoder"])
 
         self.model = {}
+        model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
         for name in ["image_encoder", "decoder"]:
             model_adapter = OpenvinoAdapter(
-                create_core(),
-                model_files.get(name),
-                weight_files.get(name, None),
+                core=create_core(),
+                model=model_files.get(name),
+                weights_path=weight_files.get(name, None),
+                model_parameters=model_parameters.get(name, {}),
                 device=device,
                 max_num_requests=num_requests,
                 plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
