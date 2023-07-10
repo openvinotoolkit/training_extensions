@@ -295,6 +295,8 @@ class OTXSegmentationTask(OTXTask, ABC):
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     if process_soft_prediction:
                         current_label_soft_prediction = get_activation_map(current_label_soft_prediction)
+                    else:
+                        current_label_soft_prediction = (current_label_soft_prediction * 255).astype(np.uint8)
                     result_media = ResultMediaEntity(
                         name=label.name,
                         type="soft_prediction",
