@@ -101,19 +101,20 @@ class TestDecoder:
         results = self.decoder._apply_coords(coords, original_size)
 
         assert results.shape == (1, 2, 2)
-        assert np.all(results == np.array([[[0.5, 0.5], [1., 1.]]]))
+        assert np.all(results == np.array([[[0.5, 0.5], [1.0, 1.0]]]))
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("old_h,old_w,image_size,expected",
+    @pytest.mark.parametrize(
+        "old_h,old_w,image_size,expected",
         [
             (4, 3, 6, (6, 5)),
             (3, 4, 6, (5, 6)),
-        ]
+        ],
     )
     def test_get_preprocess_shape(self, old_h: int, old_w: int, image_size: int, expected: Tuple[int]):
         """Test _get_preprocess_shape."""
         result = self.decoder._get_preprocess_shape(old_h, old_w, image_size)
-        
+
         assert result == expected
 
     @e2e_pytest_unit

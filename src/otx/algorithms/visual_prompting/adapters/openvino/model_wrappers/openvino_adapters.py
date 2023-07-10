@@ -25,8 +25,7 @@ from openvino.runtime.utils.decorators import custom_preprocess_function
 
 
 def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio, interpolation, pad_value):
-    """https://github.com/openvinotoolkit/model_api/blob/master/model_api/python/openvino/model_api/adapters/utils.py#L273-L341
-    """
+    """https://github.com/openvinotoolkit/model_api/blob/0.1.3/model_api/python/openvino/model_api/adapters/utils.py#L273-L341."""
     h_axis = 1
     w_axis = 2
     w, h = size
@@ -46,12 +45,8 @@ def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio, interpo
     w_ratio = opset.divide(np.float32(w), iw)
     h_ratio = opset.divide(np.float32(h), ih)
     scale = opset.minimum(w_ratio, h_ratio)
-    nw = opset.convert(
-        opset.round(opset.multiply(iw, scale), "half_to_even"), destination_type="i32"
-    )
-    nh = opset.convert(
-        opset.round(opset.multiply(ih, scale), "half_to_even"), destination_type="i32"
-    )
+    nw = opset.convert(opset.round(opset.multiply(iw, scale), "half_to_even"), destination_type="i32")
+    nh = opset.convert(opset.round(opset.multiply(ih, scale), "half_to_even"), destination_type="i32")
     new_size = opset.concat([opset.unsqueeze(nh, 0), opset.unsqueeze(nw, 0)], axis=0)
     image = opset.interpolate(
         input,
@@ -84,8 +79,7 @@ def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio, interpo
 
 
 def resize_image_with_aspect(size, interpolation, pad_value):
-    """https://github.com/openvinotoolkit/model_api/blob/master/model_api/python/openvino/model_api/adapters/utils.py#L356-L365
-    """
+    """https://github.com/openvinotoolkit/model_api/blob/0.1.3/model_api/python/openvino/model_api/adapters/utils.py#L356-L365."""
     return custom_preprocess_function(
         partial(
             resize_image_with_aspect_pad,
@@ -99,10 +93,11 @@ def resize_image_with_aspect(size, interpolation, pad_value):
 
 class VisualPromptingOpenvinoAdapter(OpenvinoAdapter):
     """Openvino Adapter Wrappers of OTX Visual Prompting.
-    
+
     This class is to use fixed `fit_to_window` resize module.
     When model API version in otx is upgraded, it can be removed.
     """
+
     def embed_preprocessing(
         self,
         layout,
@@ -116,17 +111,14 @@ class VisualPromptingOpenvinoAdapter(OpenvinoAdapter):
         scale=None,
         input_idx=0,
     ):
-        """https://github.com/openvinotoolkit/model_api/blob/master/model_api/python/openvino/model_api/adapters/openvino_adapter.py#L340-L411
-        """
-        ppp = PrePostProcessor(self.model)
+        """https://github.com/openvinotoolkit/model_api/blob/0.1.3/model_api/python/openvino/model_api/adapters/openvino_adapter.py#L340-L411."""
+        ppp = PrePostProcessor(self.model)  # type: ignore[has-type]
 
         # Change the input type to the 8-bit image
         if dtype == type(int):
             ppp.input(input_idx).tensor().set_element_type(Type.u8)
 
-        ppp.input(input_idx).tensor().set_layout(ov.Layout("NHWC")).set_color_format(
-            ColorFormat.BGR
-        )
+        ppp.input(input_idx).tensor().set_layout(ov.Layout("NHWC")).set_color_format(ColorFormat.BGR)
 
         INTERPOLATION_MODE_MAP = {
             "LINEAR": "linear",
@@ -152,9 +144,7 @@ class VisualPromptingOpenvinoAdapter(OpenvinoAdapter):
                 )
 
             else:
-                raise ValueError(
-                    f"Upsupported resize type in model preprocessing: {resize_mode}"
-                )
+                raise ValueError(f"Upsupported resize type in model preprocessing: {resize_mode}")
 
         # Handle layout
         ppp.input(input_idx).model().set_layout(ov.Layout(layout))

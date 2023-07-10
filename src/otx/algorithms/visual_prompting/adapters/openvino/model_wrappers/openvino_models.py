@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import cv2
 import numpy as np
 from openvino.model_api.adapters.inference_adapter import InferenceAdapter
-from openvino.model_api.models import DetectionModel, ImageModel
+from openvino.model_api.models import ImageModel
 from openvino.model_api.models.types import (
     BooleanValue,
     ListValue,
@@ -96,18 +96,20 @@ class Decoder(ImageModel):
             # TODO (sungchul): add condition to check whether using bbox or point
             point_coords = self._apply_coords(bbox.reshape(-1, 2, 2), inputs["original_size"])
             point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
-            processed_prompts.append({
-                "point_coords": point_coords,
-                "point_labels": point_labels,
-                # TODO (sungchul): how to generate mask_input and has_mask_input
-                "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-                "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-                "orig_size": np.array(inputs["original_size"], dtype=np.float32).reshape((-1, 2)),
-                "label": label
-            })
+            processed_prompts.append(
+                {
+                    "point_coords": point_coords,
+                    "point_labels": point_labels,
+                    # TODO (sungchul): how to generate mask_input and has_mask_input
+                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+                    "orig_size": np.array(inputs["original_size"], dtype=np.float32).reshape((-1, 2)),
+                    "label": label,
+                }
+            )
         return processed_prompts
 
-    def _apply_coords(self, coords: np.ndarray, original_size: Union[List[int], Tuple[int]]) -> np.ndarray:
+    def _apply_coords(self, coords: np.ndarray, original_size: Union[List[int], Tuple[int, int]]) -> np.ndarray:
         """Process coords according to preprocessed image size using image meta."""
         old_h, old_w = original_size
         new_h, new_w = self._get_preprocess_shape(original_size[0], original_size[1], self.image_size)
@@ -123,7 +125,7 @@ class Decoder(ImageModel):
         new_w = int(new_w + 0.5)
         new_h = int(new_h + 0.5)
         return (new_h, new_w)
-    
+
     def _check_io_number(self, number_of_inputs, number_of_outputs):
         pass
 
@@ -146,7 +148,7 @@ class Decoder(ImageModel):
         """
 
         def sigmoid(x):
-            return np.tanh(x * 0.5) * 0.5 + 0.5 # to avoid overflow
+            return np.tanh(x * 0.5) * 0.5 + 0.5  # to avoid overflow
 
         soft_prediction = outputs[self.output_blob_name].squeeze()
         soft_prediction = self.resize_and_crop(soft_prediction, meta["original_size"][0])

@@ -286,7 +286,9 @@ class TestSegmentAnything:
         )
         mocker.patch("builtins.open").__enter__.return_value = True
         mocker.patch("torch.load", return_value=OrderedDict())
-        mocker_load_from_checkpoint = mocker.patch("otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint")
+        mocker_load_from_checkpoint = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
+        )
         mocker_load_state_dict = mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
         )

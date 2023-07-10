@@ -24,11 +24,12 @@ from zipfile import ZipFile
 
 import attr
 import numpy as np
-from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.adapters import create_core
 from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
+from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
 from otx.algorithms.visual_prompting.adapters.openvino.model_wrappers import (
     VisualPromptingOpenvinoAdapter,
 )

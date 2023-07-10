@@ -19,11 +19,12 @@ from attr import attrs
 
 from otx.algorithms.common.configs import BaseConfig
 from otx.api.configuration.elements import (
+    ParameterGroup,
     add_parameter_group,
+    configurable_boolean,
     configurable_float,
     configurable_integer,
     string_attribute,
-    configurable_boolean
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
@@ -41,7 +42,7 @@ class VisualPromptingBaseConfig(BaseConfig):
         description = header
 
     @attrs
-    class __Postprocessing:
+    class __Postprocessing(ParameterGroup):
         header = string_attribute("Postprocessing")
         description = header
 
@@ -86,7 +87,7 @@ class VisualPromptingBaseConfig(BaseConfig):
             default_value=64,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
-        
+
         orig_height = configurable_integer(
             header="Original height",
             description="Model input height before embedding processing.",
