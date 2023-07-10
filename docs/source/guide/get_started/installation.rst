@@ -88,13 +88,51 @@ Install ``tox`` and create a development environment:
 
 Then you may change code, and all fixes will be directly applied to the editable package.
 
-**************
-Run unit tests
-**************
+****************************************************
+Install OpenVINO™ Training Extensions by using Docker
+****************************************************
 
 .. code-block::
 
-    pytest tests/unit
+    $ docker build \
+        -t trainer \ # image tag, required
+        --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
+        --build-arg PYTHON_VER=3.9 \ # default Python version, optional
+        --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
+        . # training_extensions/
+    $ docker run \
+        -it \ # enter interactive terminal
+        --rm \ # remove container after use
+        -v "$(pwd)/shared:/mnt/shared:rw" \ # shared volume to host machine
+        --shm-size=4g \ # increase mounted shared memory
+        trainer
+    trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
+
+*********
+Run tests
+*********
+
+To run some tests, need to have development environment on your host. The development requirements file (requirements/dev.txt)
+would be used to setup them.
+
+.. code-block::
+
+    $ pip install -r requirements/dev.txt
+    $ pytest tests/
+
+Another option to run the tests is using the testing automation tool `tox <https://tox.wiki/en/latest/index.html>`_. Following commands will install
+the tool ``tox`` to your host and run all test codes inside of ``tests/`` folder.
+
+.. code-block::
+
+    $ pip install tox
+    $ tox -e tests-all-py310 -- tests/
+
+.. note::
+
+    When running the ``tox`` command above first time, it will create virtual env by installing all dependencies of this project into
+    the newly created environment for your testing before running the actual testing. So, it is expected to wait more than 10 minutes
+    before to see the actual testing results.
 
 ***************
 Troubleshooting

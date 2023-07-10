@@ -19,6 +19,8 @@ from tests.test_suite.run_test_command import (
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
+    otx_resume_testing,
+    get_template_dir,
 )
 
 # Finetuning arguments
@@ -30,18 +32,27 @@ args = {
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
+# Training params for resume, num_iters*2
+resume_params = [
+    "params",
+    "--learning_parameters.num_iters",
+    "4",
+    "--learning_parameters.batch_size",
+    "4",
+]
+
 otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("otx/algorithms/action/configs", "detection", "x3d_fast_rcnn", "template.yaml")
+        os.path.join("src/otx/algorithms/action/configs", "detection", "x3d_fast_rcnn", "template.yaml")
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("otx/algorithms/action").filter(task_type="ACTION_DETECTION").templates
+    templates = Registry("src/otx/algorithms/action").filter(task_type="ACTION_DETECTION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 
@@ -51,6 +62,20 @@ class TestToolsOTXActionDetection:
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_resume(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "action_det/test_resume"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args)
+        args1["train_params"] = resume_params
+        args1[
+            "--resume-from"
+        ] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/models/weights.pth"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -68,24 +93,24 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
     def test_pot_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
     def test_pot_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)

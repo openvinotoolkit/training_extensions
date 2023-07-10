@@ -5,6 +5,7 @@ VER_CUDA="11.7.1"
 TAG_RUNNER="latest"
 ADDITIONAL_LABELS=""
 MOUNT_PATH=""
+DOCKER_REG_ADDR="local"
 DEBUG_CONTAINER=false
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -36,6 +37,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -r|--reg)
+      DOCKER_REG_ADDR="$2"
+      shift # past argument
+      shift # past value
+      ;;
     -d|--debug)
       DEBUG_CONTAINER=true
       shift # past argument
@@ -56,17 +62,18 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [[ "$#" -lt 3 ||  "$DEFAULT" == "yes" ]] && [ $DEBUG_CONTAINER = false ]; then
 cat << EndofMessage
-    USAGE: $0 <container-name> <github-token> <instance-name> [Options]
+    USAGE: $0 <container-prefix> <github-token> <runner-prefix> [Options]
     Positional args
-        <container-name>    Prefix to the ci container
+        <container-prefix>  Prefix to the ci container
         <github-token>      Github token string
-        <instance-name>     Prefix to the actions-runner
+        <runner-prefix>     Prefix to the actions-runner
     Options
         -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
         -c|--cuda           Specify CUDA version
         -t|--tag            Specify TAG for the CI container
         -l|--labels         Additional label string to set the actions-runner
         -m|--mount          Dataset root path to be mounted to the started container (absolute path)
+        -r|--reg            Specify docker registry URL <default: local>
         -d|--debug          Flag to start debugging CI container
         -h|--help           Print this message
 EndofMessage
@@ -110,7 +117,6 @@ if [ $RET -eq 0 ]; then
     docker stop "$CONTAINER_NAME"
     yes | docker rm "$CONTAINER_NAME"
 fi
-
 
 if [ "$DEBUG_CONTAINER" = true ]; then
     # shellcheck disable=SC2086

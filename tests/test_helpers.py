@@ -42,6 +42,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.image import Image
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,7 @@ def generate_random_annotated_image(
     max_shapes: int = 10,
     intensity_range: List[Tuple[int, int]] = None,
     random_seed: Optional[int] = None,
+    use_mask_as_annotation: bool = False,
 ) -> Tuple[np.ndarray, List[Annotation]]:
     """
     Generate a random image with the corresponding annotation entities.
@@ -120,6 +122,7 @@ def generate_random_annotated_image(
     :param min_size: Minimum size of the shape(s)
     :param max_size: Maximum size of the shape(s)
     :param random_seed: Seed to initialize the random number generator
+    :param use_mask_as_annotation: If True, masks will be added in annotation
     :return: uint8 array, list of shapes
     """
     from skimage.draw import random_shapes, rectangle
@@ -220,6 +223,21 @@ def generate_random_annotated_image(
                 annotation = box_annotation
 
             annotations.append(annotation)
+
+            if use_mask_as_annotation:
+                mask = np.zeros_like(image1, dtype=np.uint8)
+                y_min, y_max = int(y_min * image_height), int(y_max * image_height)
+                x_min, x_max = int(x_min * image_width), int(x_max * image_width)
+
+                coords_object = np.where(image1[y_min:y_max, x_min:x_max] < 255)
+                mask[y_min:y_max, x_min:x_max][coords_object] = 1
+                mask = mask.sum(axis=-1)
+                mask[mask > 0] = 1
+                mask_annotation = Annotation(
+                    Image(data=mask, size=mask.shape),
+                    labels=box_annotation.get_labels(include_empty=True),
+                )
+                annotations.append(mask_annotation)
         else:
             logger.warning(
                 "Generated a random image, but was not able to associate a label with a shape. "

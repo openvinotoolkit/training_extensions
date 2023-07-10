@@ -325,3 +325,30 @@ class TestLabelTreeMapper:
         }
         with pytest.raises(ValueError):
             LabelTreeMapper.backward(instance=forward, all_labels=labels)
+        # Checking label deletion case
+        forward = {
+            "type": "tree",
+            "directed": True,
+            "nodes": ["0", "0_1", "0_2", "0_1_1", "0_2_1"],
+            "edges": [("0_1", "0"), ("0_2", "0"), ("0_1_1", "0_1"), ("0_2_1", "0_2")],
+        }
+        labels = {
+            ID("0"): self.label_0,
+            ID("0_1"): self.label_0_1,
+            # ID("0_2"): self.label_0_2,
+            ID("0_1_1"): self.label_0_1_1,
+            # ID("0_1_2"): self.label_0_1_2,
+            ID("0_2_1"): self.label_0_2_1,
+        }
+        expected_backward = LabelTree()
+        for node in labels.values():
+            expected_backward.add_node(node)
+        for parent, child in [
+            (self.label_0, self.label_0_1),
+            # (self.label_0, self.label_0_2),
+            (self.label_0_1, self.label_0_1_1),
+            # (self.label_0_2, self.label_0_2_1),
+        ]:
+            expected_backward.add_child(parent, child)
+        actual_backward = LabelTreeMapper.backward(instance=forward, all_labels=labels)
+        assert LabelTreeMapper.forward(actual_backward) == LabelTreeMapper.forward(expected_backward)

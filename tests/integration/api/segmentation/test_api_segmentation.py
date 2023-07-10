@@ -45,7 +45,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.test_helpers import generate_random_annotated_image
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-DEFAULT_SEG_TEMPLATE_DIR = osp.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
+DEFAULT_SEG_TEMPLATE_DIR = osp.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -72,7 +72,7 @@ class TestMPASegAPI:
             "ocr_lite_hrnet_x_mod3",
         ]
         for model_template in segmentation_template:
-            parse_model_template(osp.join("otx/algorithms/segmentation/configs", model_template, "template.yaml"))
+            parse_model_template(osp.join("src/otx/algorithms/segmentation/configs", model_template, "template.yaml"))
 
     @staticmethod
     def generate_label_schema(label_names):

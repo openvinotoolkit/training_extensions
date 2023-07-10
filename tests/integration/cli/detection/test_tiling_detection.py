@@ -42,7 +42,7 @@ args = {
 otx_dir = os.getcwd()
 
 default_template = parse_model_template(
-    os.path.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
+    os.path.join("src/otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
 )
 templates = [default_template]
 templates_ids = [default_template.model_template_id]

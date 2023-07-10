@@ -32,9 +32,9 @@ Currently OpenVINO™ Training Extensions supports `X3D <https://arxiv.org/abs/2
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
 | Template ID                                                                                                                                                                            | Name    | Complexity (GFLOPs) | Model size (MB)         |
 +========================================================================================================================================================================================+=========+=====================+=========================+
-| `Custom_Action_Classification_X3D <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/configs/classification/x3d/template.yaml>`_               | X3D     | 2.49                | 3.79                    |
+| `Custom_Action_Classification_X3D <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/configs/classification/x3d/template.yaml>`_           | X3D     | 2.49                | 3.79                    |
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
-| `Custom_Action_Classificaiton_MoViNet <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/configs/classification/movinet/template.yaml>`_       | MoViNet | 2.71                | 3.10                    |
+| `Custom_Action_Classificaiton_MoViNet <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/configs/classification/movinet/template.yaml>`_   | MoViNet | 2.71                | 3.10                    |
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-------------------------+
 
 

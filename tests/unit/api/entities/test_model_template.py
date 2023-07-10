@@ -226,7 +226,7 @@ class TestTaskType:
         2. Check TaskType elements value attribute
         3. Check TaskType str method
         """
-        assert len(TaskType) == 15
+        assert len(TaskType) == 16
         assert TaskType.NULL.value == 1
         assert TaskType.DATASET.value == 2
         assert TaskType.CLASSIFICATION.value == 3
@@ -242,6 +242,7 @@ class TestTaskType:
         assert TaskType.ROTATED_DETECTION.value == 13
         assert TaskType.ACTION_CLASSIFICATION.value == 14
         assert TaskType.ACTION_DETECTION.value == 15
+        assert TaskType.VISUAL_PROMPTING.value == 16
         assert str(TaskType.NULL) == "NULL"
         assert str(TaskType.DATASET) == "DATASET"
         assert str(TaskType.CLASSIFICATION) == "CLASSIFICATION"
@@ -257,6 +258,7 @@ class TestTaskType:
         assert str(TaskType.ROTATED_DETECTION) == "ROTATED_DETECTION"
         assert str(TaskType.ACTION_CLASSIFICATION) == "ACTION_CLASSIFICATION"
         assert str(TaskType.ACTION_DETECTION) == "ACTION_DETECTION"
+        assert str(TaskType.VISUAL_PROMPTING) == "VISUAL_PROMPTING"
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -990,6 +992,7 @@ class TestTaskTypesConstants:
             TaskType.ROTATED_DETECTION,
             TaskType.ACTION_CLASSIFICATION,
             TaskType.ACTION_DETECTION,
+            TaskType.VISUAL_PROMPTING,
         )
 
 

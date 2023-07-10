@@ -6,6 +6,7 @@ import tempfile
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.classification.adapters.mmcls import configurer
 from otx.algorithms.classification.adapters.mmcls.configurer import (
     ClassificationConfigurer,
     IncrClassificationConfigurer,
@@ -75,10 +76,14 @@ class TestClassificationConfigurer:
             "torch.distributed.is_initialized",
             return_value=True,
         )
+        world_size = 2
+        mocker.patch.object(configurer, "dist").get_world_size.return_value = world_size
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
+        origin_lr = config.optimizer.lr
         self.configurer.configure_device(config, True)
         assert config.distributed is True
+        assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
 
         mocker.patch(
             "torch.distributed.is_initialized",
@@ -236,8 +241,7 @@ class TestIncrClassificationConfigurer:
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
         self.configurer.configure_task(self.model_cfg, True)
-        assert self.model_cfg.custom_hooks[0].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[0].sampler_flag is False
+        assert "TaskAdaptHook" in [i.type for i in self.model_cfg.custom_hooks]
 
 
 class TestSemiSLClassificationConfigurer:

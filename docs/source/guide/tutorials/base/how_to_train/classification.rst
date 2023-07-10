@@ -91,13 +91,13 @@ The list of supported templates for classification is available with the command
 
   (otx) ...$ otx find --task classification
 
-  +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-  |      TASK      |                         ID                        |          NAME         |                                        PATH                                       |
-  +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-  | CLASSIFICATION | Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml |
-  | CLASSIFICATION |    Custom_Image_Classification_EfficinetNet-B0    |    EfficientNet-B0    |    otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml   |
-  | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
-  +----------------+---------------------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+  +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
+  |      TASK      |                         ID                        |          NAME         |                                          PATH                                         |
+  +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
+  | CLASSIFICATION | Custom_Image_Classification_MobileNet-V3-large-1x | MobileNet-V3-large-1x | src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml |
+  | CLASSIFICATION |    Custom_Image_Classification_EfficinetNet-B0    |    EfficientNet-B0    |    src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml   |
+  | CLASSIFICATION |   Custom_Image_Classification_EfficientNet-V2-S   |   EfficientNet-V2-S   |   src/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml  |
+  +----------------+---------------------------------------------------+-----------------------+---------------------------------------------------------------------------------------+
 
 To have a specific example in this tutorial, all commands will be run on the :ref:`MobileNet-V3-large-1x <classification_models>`  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 

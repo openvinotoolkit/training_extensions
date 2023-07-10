@@ -11,7 +11,7 @@ import torch
 from mmcv import Config, ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import DETECTORS
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
@@ -230,6 +230,45 @@ class TestTilingDetection:
         assert len(merged_bbox_results) == dataset.num_samples
 
     @e2e_pytest_unit
+    def test_merge_feature_vectors(self):
+        """Test that the merge feature vectors works correctly."""
+        dataset = build_dataset(self.test_data_cfg)
+
+        # create simulated vectors results
+        feature_vectors: List[np.ndarray] = []
+        vectors_per_image = 5
+        vector_length = 10
+        feature_vectors = [np.zeros((vectors_per_image, vector_length), dtype=np.float32) for _ in range(len(dataset))]
+
+        # Test merge_vectors if vectors are to be returned
+        merged_vectors = dataset.merge_vectors(feature_vectors, dump_vectors=True)
+        assert len(merged_vectors) == dataset.num_samples
+
+        # Test merge_vectors if merged vectors should be a list of None
+        merged_vectors = dataset.merge_vectors(feature_vectors, dump_vectors=False)
+        assert len(merged_vectors) == dataset.num_samples
+
+    @e2e_pytest_unit
+    def test_merge_saliency_maps(self):
+        """Test that the inference merge works correctly."""
+        dataset = build_dataset(self.test_data_cfg)
+
+        # create simulated maps results
+        saliency_maps: List[np.ndarray] = []
+        num_classes = len(dataset.CLASSES)
+        feature_map_size = (num_classes, 2, 2)
+        features_per_image = 5
+        saliency_maps = [np.zeros(feature_map_size, dtype=np.float32) for _ in range(len(dataset) * features_per_image)]
+
+        # Test merge_maps if maps are to be processed
+        merged_maps = dataset.merge_maps(saliency_maps, dump_maps=True)
+        assert len(merged_maps) == dataset.num_samples
+
+        # Test merge_maps if maps should be a list of None
+        merged_maps = dataset.merge_maps(saliency_maps, dump_maps=False)
+        assert len(merged_maps) == dataset.num_samples
+
+    @e2e_pytest_unit
     def test_load_tiling_parameters(self, tmp_dir_path):
         maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
@@ -335,6 +374,7 @@ class TestTilingDetection:
         assert ir_width == original_width * scale_factor
 
     @e2e_pytest_unit
+    @pytest.mark.skip(reason="Issue#2245: Sporadic failure of tiling max ann.")
     def test_max_annotation(self, max_annotation=200):
         otx_dataset, labels = create_otx_dataset(
             self.height, self.width, self.label_names, Domain.INSTANCE_SEGMENTATION

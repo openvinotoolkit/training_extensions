@@ -62,7 +62,7 @@ resume_params = [
 otx_dir = os.getcwd()
 
 default_template = parse_model_template(
-    os.path.join("otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml")
+    os.path.join("src/otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml")
 )
 templates = [default_template]
 templates_ids = [default_template.model_template_id]

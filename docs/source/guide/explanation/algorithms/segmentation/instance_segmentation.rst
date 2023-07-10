@@ -61,12 +61,18 @@ We support the following ready-to-use model templates:
 +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                                                                                | Name                       | Complexity (GFLOPs) | Model size (MB) |
 +============================================================================================================================================================================================================================================+============================+=====================+=================+
-| `Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml>`_      | MaskRCNN-EfficientNetB2B   | 68.48               | 13.27           |
+| `Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml>`_      | MaskRCNN-EfficientNetB2B   | 68.48           | 13.27           |
 +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
-| `Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml>`_                    | MaskRCNN-ResNet50          | 533.80              | 177.90          |
+| `Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50 <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml>`_                    | MaskRCNN-ResNet50          | 533.80          | 177.90          |
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
+| `Custom_Counting_Instance_Segmentation_MaskRCNN_ConvNeXt <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/instance_segmentation/convnext_maskrcnn/template.yaml>`_                    | MaskRCNN-ConvNeXt          | 266.78          | 192.4          |
 +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+---------------------+-----------------+
 
-``MaskRCNN-ResNet50`` uses `ResNet-50 <https://arxiv.org/abs/1512.03385>`_ as the backbone network for the image features extraction. It has more parameters and FLOPs and needs more time to train, meanwhile providing superior performance in terms of accuracy. ``MaskRCNN-EfficientNetB2B`` uses `EfficientNet-B2 <https://arxiv.org/abs/1905.11946>`_ as the backbone network. It is a good trade-off between accuracy and speed. It is a better choice when training time and computational cost are in priority.
+MaskRCNN-ResNet50 utilizes the `ResNet-50 <https://arxiv.org/abs/1512.03385>`_ architecture as the backbone network for extracting image features. This choice of backbone network results in a higher number of parameters and FLOPs, which consequently requires more training time. However, the model offers superior performance in terms of accuracy.
+
+On the other hand, MaskRCNN-EfficientNetB2B employs the `EfficientNet-B2 <https://arxiv.org/abs/1905.11946>`_ architecture as the backbone network. This selection strikes a balance between accuracy and speed, making it a preferable option when prioritizing training time and computational cost.
+
+Recently, we have made updates to MaskRCNN-ConvNeXt, incorporating the `ConvNeXt backbone <https://arxiv.org/abs/2201.03545>`_. Through our experiments, we have observed that this variant achieves better accuracy compared to MaskRCNN-ResNet50 while utilizing less GPU memory. However, it is important to note that the training time and inference duration may slightly increase. If minimizing training time is a significant concern, we recommend considering a switch to MaskRCNN-EfficientNetB2B.
 
 .. In the table below the `mAP <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ metric on some academic datasets using our :ref:`supervised pipeline <instance_segmentation_supervised_pipeline>` is presented. The results were obtained on our templates without any changes. We use 1024x1024 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.
 
@@ -76,6 +82,8 @@ We support the following ready-to-use model templates:
 .. | MaskRCNN-EfficientNetB2B  | N/A          | N/A        | N/A             |
 .. +---------------------------+--------------+------------+-----------------+
 .. | MaskRCNN-ResNet50         | N/A          | N/A        | N/A             |
+.. +---------------------------+--------------+------------+-----------------+
+.. | MaskRCNN-ConvNeXt         | N/A          | N/A        | N/A             |
 .. +---------------------------+--------------+------------+-----------------+
 
 .. *******************

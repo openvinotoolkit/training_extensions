@@ -5,21 +5,28 @@
 
    ```bash
    training_extensions$ .ci/build.sh --help
-     USAGE: .ci/build.sh <tag> [Options]
-     Options
-        -p|--push           Push built image(s) to registry
-        -u|--url            url to get Github actions-runner package
-        -c|--cuda           Specify CUDA version
-        -h|--help           Print this message
+      USAGE: .ci/build.sh <tag> [Options]
+      Positional args
+         <tag>               Tag name to be tagged to newly built image
+      Options
+         -p|--push           Push built image(s) to registry
+         -u|--url            url to get Github actions-runner package
+         -c|--cuda           Specify CUDA version
+         -r|--reg            Specify docker registry URL <default: local>
+         -h|--help           Print this message
    ```
 
-   Below example builds an image using actions-runner v2.299.1 based on `NVIDIA CUDA 11.1.1` image and tag it as `2.299.1`.
+   Below example builds an image using actions-runner v2.305.0 based on `NVIDIA CUDA 11.7.1` image and tag it as `2.305.0`.
 
    ```bash
-   training_extensions$ .ci/build.sh 2.299.1 -u https://github.com/actions/runner/releases/download/v2.299.1/actions-runner-linux-x64-2.299.1.tar.gz -c 11.1.1
+   training_extensions$ .ci/build.sh 2.305.0 -u https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz -c 11.7.1
    ```
 
    > **_Note_**: While building an image, script will use your system's environment variables `http_proxy`, `https_proxy`, and `no_proxy`. If you need to use proxy to access external entity, please check those settings before using this script.
+
+   <!-- -->
+
+   > **_Note_**: The docker image name will be `<DOCKER_REG_ADDR>/ote/ci/cu<VER_CUDA>/runner:<TAG>`
 
    <!-- -->
 
@@ -29,18 +36,26 @@
 
    ```bash
    training_extensions$ .ci/start-runner.sh --help
-     USAGE: .ci/start-runner.sh <container-name> <github-token> <codacy-token> [Options]
-         Options
-             -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
-             -c|--cuda           Specify CUDA version
-             -d|--debug          Flag to start debugging CI container
-             -h|--help           Print this message
+      USAGE: .ci/start-runner.sh <container-prefix> <github-token> <runner-prefix> [Options]
+      Positional args
+         <container-prefix>  Prefix to the ci container
+         <github-token>      Github token string
+         <runner-prefix>     Prefix to the actions-runner
+      Options
+         -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
+         -c|--cuda           Specify CUDA version
+         -t|--tag            Specify TAG for the CI container
+         -l|--labels         Additional label string to set the actions-runner
+         -m|--mount          Dataset root path to be mounted to the started container (absolute path)
+         -r|--reg            Specify docker registry URL <default: local>
+         -d|--debug          Flag to start debugging CI container
+         -h|--help           Print this message
    ```
 
    Below example starts a runner named as `otx-ci-container` with GPU ID 0
 
    ```bash
-   training_extensions$ .ci/start-runner.sh otx-ci-container <github-token> <codacy-token> -g 0
+   training_extensions$ .ci/start-runner.sh otx-ci-container <github-token> <instance-name> -g 0
    ```
 
    If there exist the container named as same, it will be stopped before starting a new container.

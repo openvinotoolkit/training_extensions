@@ -4,7 +4,7 @@ natsort>=6.0.0
 prettytable
 protobuf>=3.20.0
 pyyaml
-datumaro==1.2.0rc3
+datumaro@ git+https://github.com/openvinotoolkit/datumaro@3e77b3138d063db68a4efba3c03a6bac7df086b1#egg=datumaro
 psutil
 scipy>=1.8
 bayesian-optimization>=1.2.0

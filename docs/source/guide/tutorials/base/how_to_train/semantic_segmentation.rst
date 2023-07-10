@@ -82,14 +82,14 @@ The list of supported templates for semantic segmentation is available with the 
 
   (otx) ...$ otx find --task segmentation
 
-  +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
-  |     TASK     |                          ID                         |        NAME        |                                BASE PATH                                 |
-  +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
-  | SEGMENTATION |    Custom_Semantic_Segmentation_Lite-HRNet-18_OCR   |   Lite-HRNet-18    |   otx/algorithms/segmentation/configs/ocr_lite_hrnet_18/template.yaml    |
-  | SEGMENTATION | Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 | otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml |
-  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR | Lite-HRNet-s-mod2  | otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml  |
-  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3  | otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml  |
-  +--------------+-----------------------------------------------------+--------------------+--------------------------------------------------------------------------+
+  +--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
+  |     TASK     |                          ID                         |        NAME        |                                  BASE PATH                                   |
+  +--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
+  | SEGMENTATION |    Custom_Semantic_Segmentation_Lite-HRNet-18_OCR   |   Lite-HRNet-18    |   src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18/template.yaml    |
+  | SEGMENTATION | Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml |
+  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR | Lite-HRNet-s-mod2  | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml  |
+  | SEGMENTATION |  Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3  | src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml  |
+  +--------------+-----------------------------------------------------+--------------------+------------------------------------------------------------------------------+
 
 .. note::
 

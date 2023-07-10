@@ -55,6 +55,6 @@ def test_get_backbone_registry_for_unsupported_backend():
 @e2e_pytest_unit
 def test_get_otx_root_path(mocker):
     mocker.patch.object(importlib, "import_module", return_value=mocker.MagicMock())
-    mocker.patch.object(inspect, "getfile", return_value="otx/__init__.py")
+    mocker.patch.object(inspect, "getfile", return_value="src/otx/__init__.py")
     otx_root_path = get_otx_root_path()
-    assert otx_root_path == "otx"
+    assert otx_root_path == "src/otx"

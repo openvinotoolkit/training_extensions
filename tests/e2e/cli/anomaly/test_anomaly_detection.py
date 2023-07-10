@@ -50,7 +50,7 @@ args = {
 
 otx_dir = os.getcwd()
 
-templates = Registry("otx/algorithms").filter(task_type="ANOMALY_DETECTION").templates
+templates = Registry("src/otx/algorithms").filter(task_type="ANOMALY_DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
