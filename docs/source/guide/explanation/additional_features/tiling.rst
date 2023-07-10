@@ -184,4 +184,7 @@ After exporting the model, you can run inference on the exported model using the
     ote eval Custom_Object_Detection_Gen3_SSD --test-data-roots tests/assets/small_objects --load-weights <path_to_exported_model>/openvino.xml
 
 .. warning::
-    Tiling trades off speed for accuracy as it increases the number of images to be processed. Therefore, it is normal to see a longer training and inference time when tiling is enabled.
+    When tiling is enabled, there is a trade-off between speed and accuracy as it increases the number of images to be processed. 
+    As a result, longer training and inference times are expected. If you encounter GPU out of memory errors, 
+    you can mitigate the issue by reducing the number of batches through the command-line interface (CLI) or 
+    by adjusting the batch size value in ``template.yaml`` file located in the workspace.
