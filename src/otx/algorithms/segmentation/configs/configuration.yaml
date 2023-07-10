@@ -231,7 +231,7 @@ learning_parameters:
     visible_in_ui: true
     warning: null
   input_size:
-    affects_outcome_of: TRAINING
+    affects_outcome_of: INFERENCE
     default_value: 0
     description: null
     editable: true
