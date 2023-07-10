@@ -335,7 +335,7 @@ class TestMultilabelClassificationCLI:
         args1["--val-data-roots"] = "tests/assets/datumaro_multilabel_class_decremental"
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
@@ -475,7 +475,7 @@ class TestHierarchicalClassificationCLI:
         args1["--val-data-roots"] = "tests/assets/datumaro_h-label_class_decremental"
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
