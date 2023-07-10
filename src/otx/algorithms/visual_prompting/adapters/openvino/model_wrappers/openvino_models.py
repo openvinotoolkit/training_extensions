@@ -36,6 +36,9 @@ class ImageEncoder(ImageModel):
 
     __model__ = "image_encoder"
 
+    def __init__(self, inference_adapter, configuration=None, preload=False):
+        super().__init__(inference_adapter, configuration, preload)
+
     @classmethod
     def parameters(cls) -> Dict[str, Any]:  # noqa: D102
         parameters = super().parameters()
@@ -69,6 +72,22 @@ class Decoder(ImageModel):
         super().__init__(model_adapter, configuration, preload)
         self.output_blob_name = "low_res_masks"
 
+    @classmethod
+    def parameters(cls):  # noqa: D102
+        # TODO (sungchul): where to update parameters
+        parameters = super().parameters()
+        parameters.update(
+            {
+                "image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048),
+                "soft_threshold": NumericalValue(default_value=0.5, min=0.0, max=1.0),
+                "blur_strength": NumericalValue(value_type=int, default_value=1, min=0, max=25),
+                "embedded_processing": BooleanValue(default_value=True),
+                "orig_width": NumericalValue(default_value=64),
+                "orig_height": NumericalValue(default_value=64),
+            }
+        )
+        return parameters
+
     def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]):
         """Preprocess prompts."""
         processed_prompts = []
@@ -92,7 +111,7 @@ class Decoder(ImageModel):
         """Process coords according to preprocessed image size using image meta."""
         old_h, old_w = original_size
         new_h, new_w = self._get_preprocess_shape(original_size[0], original_size[1], self.image_size)
-        coords = deepcopy(coords).astype(float)
+        coords = deepcopy(coords).astype(np.float32)
         coords[..., 0] = coords[..., 0] * (new_w / old_w)
         coords[..., 1] = coords[..., 1] * (new_h / old_h)
         return coords
@@ -104,22 +123,6 @@ class Decoder(ImageModel):
         new_w = int(new_w + 0.5)
         new_h = int(new_h + 0.5)
         return (new_h, new_w)
-
-    @classmethod
-    def parameters(cls):  # noqa: D102
-        # TODO (sungchul): where to update parameters
-        parameters = super().parameters()
-        parameters.update(
-            {
-                "image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048),
-                "soft_threshold": NumericalValue(default_value=0.5, min=0.0, max=1.0),
-                "blur_strength": NumericalValue(value_type=int, default_value=1, min=0, max=25),
-                "embedded_processing": BooleanValue(default_value=True),
-                "orig_width": NumericalValue(default_value=64),
-                "orig_height": NumericalValue(default_value=64),
-            }
-        )
-        return parameters
     
     def _check_io_number(self, number_of_inputs, number_of_outputs):
         pass
