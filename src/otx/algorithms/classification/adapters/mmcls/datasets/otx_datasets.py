@@ -416,7 +416,8 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         )
 
         eval_results["MHAcc"] = total_acc
-        if self.hierarchical_info["num_multiclass_head"] > 0:
+        breakpoint()
+        if self.hierarchical_info["num_multiclass_heads"] > 0:
             eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
         else:
             eval_results["avgClsAcc"] = total_acc_sl
