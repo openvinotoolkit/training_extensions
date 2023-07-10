@@ -101,7 +101,6 @@ class TestVisualPromptingCLI:
         otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
 
     @e2e_pytest_component
-    @pytest.mark.skip("arguments order of create_model and decoder's input layout will be updated.")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
