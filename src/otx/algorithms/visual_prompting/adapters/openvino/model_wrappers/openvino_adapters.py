@@ -1,4 +1,12 @@
-"""Openvino Adapter Wrappers of OTX Visual Prompting."""
+"""Openvino Adapter Wrappers of OTX Visual Prompting.
+
+There is a bug on fit_to_window resize module in model API.
+VisualPromptingOpenvinoAdapter is temporarily implemented to use updated `fit_to_window` resize function.
+When model API version in otx is upgraded, it can be removed.
+
+Issue: https://github.com/openvinotoolkit/model_api/issues/99
+Updated PR: https://github.com/openvinotoolkit/model_api/pull/100
+"""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -16,8 +24,9 @@ from openvino.runtime import opset10 as opset
 from openvino.runtime.utils.decorators import custom_preprocess_function
 
 
-def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio=True, interpolation="linear", pad_value=0):
-    """Resize and pad image."""
+def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio, interpolation, pad_value):
+    """https://github.com/openvinotoolkit/model_api/blob/master/model_api/python/openvino/model_api/adapters/utils.py#L273-L341
+    """
     h_axis = 1
     w_axis = 2
     w, h = size
@@ -75,12 +84,15 @@ def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio=True, in
 
 
 def resize_image_with_aspect(size, interpolation, pad_value):
+    """https://github.com/openvinotoolkit/model_api/blob/master/model_api/python/openvino/model_api/adapters/utils.py#L356-L365
+    """
     return custom_preprocess_function(
         partial(
             resize_image_with_aspect_pad,
             size=size,
             keep_aspect_ratio=True,
             interpolation=interpolation,
+            pad_value=pad_value,
         )
     )
 
@@ -88,10 +100,8 @@ def resize_image_with_aspect(size, interpolation, pad_value):
 class VisualPromptingOpenvinoAdapter(OpenvinoAdapter):
     """Openvino Adapter Wrappers of OTX Visual Prompting.
     
-    This class is just to use customized `resize_image_with_aspect_pad` function instead of other resize functions.
-    When model api version is updated, it can be removed.
-    Issue: https://github.com/openvinotoolkit/model_api/issues/99
-    Updated PR: https://github.com/openvinotoolkit/model_api/pull/100
+    This class is to use fixed `fit_to_window` resize module.
+    When model API version in otx is upgraded, it can be removed.
     """
     def embed_preprocessing(
         self,
@@ -106,6 +116,8 @@ class VisualPromptingOpenvinoAdapter(OpenvinoAdapter):
         scale=None,
         input_idx=0,
     ):
+        """https://github.com/openvinotoolkit/model_api/blob/master/model_api/python/openvino/model_api/adapters/openvino_adapter.py#L340-L411
+        """
         ppp = PrePostProcessor(self.model)
 
         # Change the input type to the 8-bit image
