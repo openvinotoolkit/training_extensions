@@ -463,10 +463,13 @@ def adaptive_tile_params(
 
     all_sizes = np.zeros((0), dtype=np.float32)
     labels = dataset.get_labels(include_empty=False)
+    img_sizes = []
     domain = labels[0].domain
     max_object = 0
     for dataset_item in dataset:
         result = get_annotation_mmdet_format(dataset_item, labels, domain)
+        h, w, c = dataset_item.numpy.shape
+        img_sizes.append(0.5 * (h + w))
         if len(result["bboxes"]):
             bboxes = result["bboxes"]
             sizes = 0.5 * (bboxes[:, 2] - bboxes[:, 0] + bboxes[:, 3] - bboxes[:, 1])
@@ -474,6 +477,7 @@ def adaptive_tile_params(
             if len(bboxes) > max_object:
                 max_object = len(bboxes)
 
+    avg_img_size = np.mean(img_sizes)
     log_sizes = np.log(all_sizes)
     avg_log_size = np.mean(log_sizes)
     std_log_size = np.std(log_sizes)
@@ -511,6 +515,11 @@ def adaptive_tile_params(
         # Use the average object area if the tile overlap is too large to prevent 0 stride.
         tile_overlap = object_size / tile_size
         logger.info(f"----> (too big) tile_overlap: {object_size} / {tile_size} = {tile_overlap}")
+
+    if tiling_parameters.tile_ir_scale_factor * tile_size > avg_img_size:
+        # Set tile IR scale factor to 1 to avoid 0 stride.
+        logger.info(f"----> (too big) tile_size: {tiling_parameters.tile_ir_scale_factor} to 1.0")
+        tiling_parameters.tile_ir_scale_factor = 1.0
 
     # validate parameters are in range
     tile_size = max(
