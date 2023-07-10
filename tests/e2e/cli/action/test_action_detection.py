@@ -17,8 +17,8 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
+    ptq_eval_testing,
+    ptq_optimize_testing,
     otx_resume_testing,
     get_template_dir,
 )
@@ -103,17 +103,17 @@ class TestToolsOTXActionDetection:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
-    def test_pot_optimize(self, template, tmp_dir_path):
+    def test_ptq_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
-    def test_pot_eval(self, template, tmp_dir_path):
+    def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
-        pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

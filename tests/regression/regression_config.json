@@ -209,7 +209,7 @@
             "MobileNet-V3-large-1x": 0.733,
             "EfficientNet-B0": 0.742
           },
-          "pot": {
+          "ptq": {
             "EfficientNet-V2-S": 0.711,
             "MobileNet-V3-large-1x": 0.692,
             "EfficientNet-B0": 0.725
@@ -236,7 +236,7 @@
             "MobileNet-V3-large-1x": 0.965,
             "EfficientNet-B0": 0.965
           },
-          "pot": {
+          "ptq": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
             "EfficientNet-B0": 0.964
@@ -263,7 +263,7 @@
             "MobileNet-V3-large-1x": 0.622,
             "EfficientNet-B0": 0.638
           },
-          "pot": {
+          "ptq": {
             "EfficientNet-V2-S": 0.577,
             "MobileNet-V3-large-1x": 0.472,
             "EfficientNet-B0": 0.605
@@ -342,7 +342,7 @@
             "SSD": 0.181,
             "ATSS": 0.446
           },
-          "pot": {
+          "ptq": {
             "YOLOX": 0.531,
             "SSD": 0.18,
             "ATSS": 0.458
@@ -389,7 +389,7 @@
             "SSD": 0.0,
             "ATSS": 0.0
           },
-          "pot": {
+          "ptq": {
             "YOLOX": 0.531,
             "SSD": 0.192,
             "ATSS": 0.459
@@ -424,7 +424,7 @@
             "Lite-HRNet-18": 0.79,
             "Lite-HRNet-x-mod3": 0.668
           },
-          "pot": {
+          "ptq": {
             "Lite-HRNet-s-mod2": 0.725,
             "Lite-HRNet-18-mod2": 0.269,
             "Lite-HRNet-18": 0.115,
@@ -490,7 +490,7 @@
             "MaskRCNN-ResNet50": 0.437,
             "MaskRCNN-EfficientNetB2B": 0.286
           },
-          "pot": {
+          "ptq": {
             "MaskRCNN-ResNet50": 0.0,
             "MaskRCNN-EfficientNetB2B": 0.0
           }
@@ -522,7 +522,7 @@
             "MaskRCNN-ResNet50": 0.0,
             "MaskRCNN-EfficientNetB2B": 0.0
           },
-          "pot": {
+          "ptq": {
             "MaskRCNN-ResNet50": 0.0,
             "MaskRCNN-EfficientNetB2B": 0.0
           }
@@ -540,7 +540,7 @@
             "X3D": 0.589,
             "MoViNet": 0.0
           },
-          "pot": {
+          "ptq": {
             "X3D": 0.58,
             "MoViNet": 0.0
           }
@@ -805,7 +805,7 @@
           "PADIM": 0.834
         }
       },
-      "pot": {
+      "ptq": {
         "bottle": {
           "STFPM": 0.759,
           "PADIM": 0.781
@@ -1117,7 +1117,7 @@
           "PADIM": 0.123
         }
       },
-      "pot": {
+      "ptq": {
         "bottle": {
           "STFPM": 0.0,
           "PADIM": 0.306
@@ -1429,7 +1429,7 @@
           "PADIM": 0.273
         }
       },
-      "pot": {
+      "ptq": {
         "bottle": {
           "STFPM": 0.253,
           "PADIM": 0.555

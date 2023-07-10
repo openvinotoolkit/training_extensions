@@ -511,7 +511,7 @@ def otx_demo_deployment_testing(template, root, otx_dir, args):
     assert os.path.exists(os.path.join(deployment_dir, "output"))
 
 
-def pot_optimize_testing(template, root, otx_dir, args):
+def ptq_optimize_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -524,13 +524,13 @@ def pot_optimize_testing(template, root, otx_dir, args):
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--output",
-        f"{template_work_dir}/pot_{template.model_template_id}",
+        f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin")
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/label_schema.json")
 
 
 def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name, update=False):
@@ -548,16 +548,16 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
     assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
 
 
-def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
-    xml_path = f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
+    xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
     path_to_ref_data = os.path.join(
         otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
     )
-    _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
+    _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
 
 
-def pot_eval_testing(template, root, otx_dir, args):
+def ptq_eval_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -566,16 +566,16 @@ def pot_eval_testing(template, root, otx_dir, args):
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
+        f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml",
         "--output",
-        f"{template_work_dir}/pot_{template.model_template_id}",
+        f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json")
 
-    with open(f"{template_work_dir}/pot_{template.model_template_id}/performance.json") as read_file:
-        pot_performance = json.load(read_file)
+    with open(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json") as read_file:
+        ptq_performance = json.load(read_file)
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):

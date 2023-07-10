@@ -19,17 +19,17 @@ ANOMALY_DATA = {
     "export": [],
     "deploy": [],
     "nncf": [],
-    "pot": [],
+    "ptq": [],
     "train E2E Time (Sec.)": [],
     "export E2E Time (Sec.)": [],
     "deploy E2E Time (Sec.)": [],
     "nncf E2E Time (Sec.)": [],
-    "pot E2E Time (Sec.)": [],
+    "ptq E2E Time (Sec.)": [],
     "train Eval Time (Sec.)": [],
     "export Eval Time (Sec.)": [],
     "deploy Eval Time (Sec.)": [],
     "nncf Eval Time (Sec.)": [],
-    "pot Eval Time (Sec.)": [],
+    "ptq Eval Time (Sec.)": [],
 }
 
 NON_ANOMALY_DATA = {
@@ -41,17 +41,17 @@ NON_ANOMALY_DATA = {
     "export": [],
     "deploy": [],
     "nncf": [],
-    "pot": [],
+    "ptq": [],
     "train E2E Time (Sec.)": [],
     "export E2E Time (Sec.)": [],
     "deploy E2E Time (Sec.)": [],
     "nncf E2E Time (Sec.)": [],
-    "pot E2E Time (Sec.)": [],
+    "ptq E2E Time (Sec.)": [],
     "train Eval Time (Sec.)": [],
     "export Eval Time (Sec.)": [],
     "deploy Eval Time (Sec.)": [],
     "nncf Eval Time (Sec.)": [],
-    "pot Eval Time (Sec.)": [],
+    "ptq Eval Time (Sec.)": [],
 }
 
 
@@ -141,7 +141,7 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
             export_data = task_data.get("export", None)
             deploy_data = task_data.get("deploy", None)
             nncf_data = task_data.get("nncf", None)
-            pot_data = task_data.get("pot", None)
+            ptq_data = task_data.get("ptq", None)
 
             for i, per_model_data in enumerate(train_data):
                 for model in per_model_data:
@@ -149,7 +149,7 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
                     export_items = get_metric_items(get_metric_dict(export_data, i, model))
                     deploy_items = get_metric_items(get_metric_dict(deploy_data, i, model))
                     nncf_items = get_metric_items(get_metric_dict(nncf_data, i, model))
-                    pot_items = get_metric_items(get_metric_dict(pot_data, i, model))
+                    ptq_items = get_metric_items(get_metric_dict(ptq_data, i, model))
 
                     result_data["Task type"].append(task)
                     result_data["Train type"].append(train_type)
@@ -160,7 +160,7 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
                     fill_model_performance(export_items, "export", result_data)
                     fill_model_performance(deploy_items, "deploy", result_data)
                     fill_model_performance(nncf_items, "nncf", result_data)
-                    fill_model_performance(pot_items, "pot", result_data)
+                    fill_model_performance(ptq_items, "ptq", result_data)
 
 
 def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_data: dict) -> dict:
@@ -173,14 +173,14 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
     export_data = task_data.get("export")
     deploy_data = task_data.get("deploy")
     nncf_data = task_data.get("nncf")
-    pot_data = task_data.get("pot")
+    ptq_data = task_data.get("ptq")
 
     for anomaly_category in ANOMALY_DATASET_CATEGORIES:
         train_cat_data = train_data.get(anomaly_category)
         export_cat_data = export_data.get(anomaly_category)
         deploy_cat_data = deploy_data.get(anomaly_category)
         nncf_cat_data = nncf_data.get(anomaly_category)
-        pot_cat_data = pot_data.get(anomaly_category)
+        ptq_cat_data = ptq_data.get(anomaly_category)
 
         for i, per_model_data in enumerate(train_cat_data):
             for model in per_model_data:
@@ -188,7 +188,7 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
                 export_items = get_metric_items(get_metric_dict(export_cat_data, i, model))
                 deploy_items = get_metric_items(get_metric_dict(deploy_cat_data, i, model))
                 nncf_items = get_metric_items(get_metric_dict(nncf_cat_data, i, model))
-                pot_items = get_metric_items(get_metric_dict(pot_cat_data, i, model))
+                ptq_items = get_metric_items(get_metric_dict(ptq_cat_data, i, model))
 
                 result_data["Task type"].append(task)
                 result_data["MVTec Category"].append(anomaly_category)
@@ -198,7 +198,7 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
                 fill_model_performance(export_items, "export", result_data)
                 fill_model_performance(deploy_items, "deploy", result_data)
                 fill_model_performance(nncf_items, "nncf", result_data)
-                fill_model_performance(pot_items, "pot", result_data)
+                fill_model_performance(ptq_items, "ptq", result_data)
 
 
 def save_file(result_data: dict, output_path: str):
