@@ -27,7 +27,7 @@ from tests.regression.regression_command import (
     regression_openvino_testing,
     regression_deployment_testing,
     regression_nncf_eval_testing,
-    regression_pot_eval_testing,
+    regression_ptq_eval_testing,
     regression_train_time_testing,
     regression_eval_time_testing,
 )

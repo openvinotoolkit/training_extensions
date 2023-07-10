@@ -1,5 +1,5 @@
 TestToolsAnomalyClassification:
   nncf:
     number_of_fakequantizers: 55
-  pot:
+  ptq:
     number_of_fakequantizers: 71
