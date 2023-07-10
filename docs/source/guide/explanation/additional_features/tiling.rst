@@ -33,7 +33,7 @@ The tiling strategy is implemented in the OpenVINO Training Extensions through t
 
 .. note::
 
-    While running `ote eval` on models trained with tiling enabled, the evaluation will be performed on all tiles, this process including mergeing all the tile-level prediction. 
+    While running `ote eval` on models trained with tiling enabled, the evaluation will be performed on all tiles, this process includes merging all the tile-level prediction. 
     The below context will be provided during evaluation:
 
     .. code-block:: 
@@ -59,6 +59,39 @@ To enable tiling in OTX training, set ``tiling_parameters.enable_tiling`` parame
 
     To learn how to run the demo in CLI and visualize results, refer to :doc:`../../tutorials/base/demo`.
 
+Enable Tiling via OTX Build
+===========================
+Here's another way of enabling tiling for the SSD model template using the workspace:
+
+.. code-block::
+
+    otx build Custom_Object_Detection_Gen3_SSD --train-data-roots tests/assets/small_objects --val-data-roots tests/assets/small_objects
+
+The above command will create a workspace folder with the necessary files for training under ``otx-workspace-DETECTION``.
+
+You can then train the model with tiling enabled using the following command without specifying any data-related paths:
+
+.. code-block::
+
+    cd otx-workspace-DETECTION
+    otx train params --tiling_parameters.enable_tiling 1
+
+Alternatively, you can update the ``tiling_parameters`` in ``configuration.yaml`` file under the workspace folder to configure tiling parameters:
+
+.. code-block::
+
+    hyper_parameters:
+      parameter_overrides:
+        tiling_parameters:
+          enable_tiling:
+            default_value: true
+
+And then train the model with tiling enabled using the following command:
+
+.. code-block::
+
+    otx train
+
 
 Tile Size and Tile Overlap Optimization
 -----------------------------------------
@@ -74,10 +107,12 @@ Here's an example of setting the object size ratio to 5%:
 
 .. code-block:: 
     
-    otx train Custom_Object_Detection_Gen3_SSD --train-data-roots tests/assets/small_objects --val-data-roots tests/assets/small_objects
-    params --tiling_parameters.enable_tiling 1          \  # enable tiling
-           --tiling_parameters.enable_adaptive_params 1 \  # enable automatic tiling parameter optimization
-           --tiling_parameters.object_tile_ratio 0.05   \  # set the object size ratio to 5%
+    otx train Custom_Object_Detection_Gen3_SSD
+        --train-data-roots tests/assets/small_objects \
+        --val-data-roots tests/assets/small_objects \
+        params --tiling_parameters.enable_tiling 1          \  # enable tiling
+               --tiling_parameters.enable_adaptive_params 1 \  # enable automatic tiling parameter optimization
+               --tiling_parameters.object_tile_ratio 0.05   \  # set the object size ratio to 5%
 
 After determining the tile size, the tile overlap is computed by dividing the largest object size in the training dataset by the adaptive tile size. 
 This calculation ensures that the largest object on the border of a tile is not split into two tiles and is covered by adjacent tiles.
@@ -97,10 +132,12 @@ This can be configured with ``tiling_parameters.tile_sampling_ratio`` parameter.
 
 .. code-block:: 
     
-    otx train Custom_Object_Detection_Gen3_SSD --train-data-roots tests/assets/small_objects --val-data-roots tests/assets/small_objects
-    params --tiling_parameters.enable_tiling 1          \  # enable tiling
-           --tiling_parameters.enable_adaptive_params 1 \  # enable automatic tiling parameter optimization
-           --tiling_parameters.tile_sampling_ratio 0.5   \  # set the tile sampling ratio to 50%
+    otx train Custom_Object_Detection_Gen3_SSD
+        --train-data-roots tests/assets/small_objects \
+        --val-data-roots tests/assets/small_objects \
+        params --tiling_parameters.enable_tiling 1           \  # enable tiling
+               --tiling_parameters.enable_adaptive_params 1  \  # enable automatic tiling parameter optimization
+               --tiling_parameters.tile_sampling_ratio 0.5   \  # set the tile sampling ratio to 50%
 
 
 Manual Tiling Parameter Configuration
@@ -110,11 +147,13 @@ Users can disable adaptive tiling and customize the tiling process by setting th
 
 .. code-block:: 
     
-    otx train Custom_Object_Detection_Gen3_SSD --train-data-roots tests/assets/small_objects --val-data-roots tests/assets/small_objects
-    params --tiling_parameters.enable_tiling 1          \  # enable tiling
-           --tiling_parameters.enable_adaptive_params 0 \  # disable automatic tiling parameter optimization
-           --tiling_parameters.tile_size 512 \             # tile size configured to 512x512
-           --tiling_parameters.tile_overlap 0.1 \          # 10% overlap between tiles
+    otx train Custom_Object_Detection_Gen3_SSD
+        --train-data-roots tests/assets/small_objects \
+        --val-data-roots tests/assets/small_objects \
+        params --tiling_parameters.enable_tiling 1          \  # enable tiling
+               --tiling_parameters.enable_adaptive_params 0 \  # disable automatic tiling parameter optimization
+               --tiling_parameters.tile_size 512            \  # tile size configured to 512x512
+               --tiling_parameters.tile_overlap 0.1         \  # 10% overlap between tiles
 
 By specifying these parameters, automatic tiling parameter optimization is disabled, and the tile size is configured to 512x512 pixels with a 10% overlap between tiles.
 
