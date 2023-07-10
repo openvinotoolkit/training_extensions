@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .otx_pipelines import (
-    LoadImageFromOTXDataset,
     OTXColorJitter,
     PILImageToNDArray,
     PostAug,
@@ -22,7 +21,6 @@ from .transforms import (
 __all__ = [
     "PostAug",
     "PILImageToNDArray",
-    "LoadImageFromOTXDataset",
     "RandomAppliedTrans",
     "OTXColorJitter",
     "AugMixAugment",

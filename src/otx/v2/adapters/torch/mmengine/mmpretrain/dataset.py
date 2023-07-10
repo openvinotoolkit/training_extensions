@@ -11,7 +11,7 @@ from otx.v2.adapters.torch.mmengine.mmpretrain.modules.datasets import (
     OTXMultilabelClsDataset,
     SelfSLDataset,
 )
-from otx.v2.adapters.torch.mmengine.modules.utils import MPAConfig
+from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig
 from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
 from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
@@ -26,6 +26,26 @@ from mmengine.dist import get_dist_info
 from mmengine.utils import digit_version
 
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
+
+
+def get_default_pipeline():
+    # TODO: This is function for experiment // Need to remove this function
+    try:
+        import mmpretrain
+
+        return [
+            dict(type="Resize", scale=[224, 224]),
+            dict(type="mmpretrain.PackInputs"),
+        ]
+    except:
+        return [
+            dict(type="Resize", size=224),
+            dict(type="PILImageToNDArray", keys=["img"]),
+            dict(type="Normalize", mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(type="ToTensor", keys=["gt_label"]),
+            dict(type="Collect", keys=["img", "gt_label"]),
+        ]
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -79,7 +99,7 @@ class Dataset(BaseDataset):
         self,
         subset: str,
         pipeline: Optional[List[Union[Dict, Any]]] = None,
-        config: Optional[Union[str, Dict[str, Any], MPAConfig]] = None,
+        config: Optional[Union[str, Dict[str, Any], CustomConfig]] = None,
     ) -> Optional[TorchDataset]:
         if not self.initialize:
             self._initialize()
@@ -89,9 +109,9 @@ class Dataset(BaseDataset):
 
         # Config Setting
         if isinstance(config, str):
-            config = MPAConfig.fromfile(filename=config)
+            config = CustomConfig.fromfile(filename=config)
         elif isinstance(config, dict):
-            config = MPAConfig(cfg_dict=config)
+            config = CustomConfig(cfg_dict=config)
 
         otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
         labels = self.label_schema.get_labels(include_empty=False)
@@ -99,7 +119,7 @@ class Dataset(BaseDataset):
             return None
         # Case without config
         if config is None:
-            pipeline = pipeline if pipeline is not None else BaseDataset.get_default_pipeline()
+            pipeline = pipeline if pipeline is not None else get_default_pipeline()
             return self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=pipeline)
 
         # Case with config
@@ -181,9 +201,9 @@ class Dataset(BaseDataset):
     ):
         # Config Setting
         if isinstance(config, str):
-            config = MPAConfig.fromfile(filename=config)
+            config = CustomConfig.fromfile(filename=config)
         elif isinstance(config, dict):
-            config = MPAConfig(cfg_dict=config)
+            config = CustomConfig(cfg_dict=config)
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]

@@ -9,7 +9,7 @@ from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
 from .automatic_bs import adapt_batch_size
 from .builder import build_dataloader, build_dataset
 from .config_utils import (
-    MPAConfig,
+    CustomConfig,
     align_data_config_with_recipe,
     config_from_string,
     get_data_cfg,
@@ -58,6 +58,6 @@ __all__ = [
     "get_meta_keys",
     "prepare_work_dir",
     "get_data_cfg",
-    "MPAConfig",
+    "CustomConfig",
     "adapt_batch_size",
 ]

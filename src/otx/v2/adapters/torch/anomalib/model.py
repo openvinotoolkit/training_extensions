@@ -3,13 +3,13 @@ from typing import Any, Dict, Optional, Union
 import torch
 from omegaconf import DictConfig, OmegaConf
 
-from anomalib.models import get_model
+from anomalib.models import get_model as anomalib_get_model
 
 
-def build_model_from_config(
+def get_model(
     config: Optional[Union[Dict[str, Any], DictConfig, str]] = None,
     checkpoint: Optional[str] = None,
-    num_classes: int = 1000,  # TODO: Remove..?
+    num_classes: Optional[int] = None,
 ) -> torch.nn.Module:
     """_summary_.
 
@@ -27,7 +27,7 @@ def build_model_from_config(
         config["init_weights"] = checkpoint
     if isinstance(config, dict):
         config = OmegaConf.create(config)
-    return get_model(config=config)
+    return anomalib_get_model(config=config)
 
 
 if __name__ == "__main__":
@@ -41,4 +41,4 @@ if __name__ == "__main__":
             "input_size": [256, 256],
         }
     }
-    model = build_model_from_config(model_config)
+    model = get_model(model_config)

@@ -76,7 +76,7 @@ def set_adapters_from_string(framework: str):
     dataset_builder = get_impl_class(f"{adapter}.Dataset")
     if dataset_builder is None:
         raise NotImplementedError(f"{adapter}.Dataset")
-    model_build_function = get_impl_class(f"{adapter}.build_model_from_config")
+    model_build_function = get_impl_class(f"{adapter}.get_model")
     return sub_engine, dataset_builder, model_build_function
 
 

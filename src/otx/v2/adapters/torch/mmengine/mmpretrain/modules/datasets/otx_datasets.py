@@ -11,8 +11,8 @@ from typing import Any, Dict, List, Union
 import numpy as np
 from mmpretrain.datasets.base_dataset import BaseDataset
 from mmpretrain.datasets.builder import DATASETS
-from mmpretrain.datasets.transforms import TRANSFORMS
 from mmpretrain.evaluation import AveragePrecision, MultiLabelMetric
+from otx.v2.adapters.torch.mmengine.mmpretrain.registry import TRANSFORMS
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity

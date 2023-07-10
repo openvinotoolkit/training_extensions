@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Union
 
 import torch
 from mmpretrain.models import build_backbone, build_classifier, build_neck
-from otx.v2.adapters.torch.mmengine.modules.utils import MPAConfig
+from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig
 from otx.v2.api.utils.logger import get_logger
 
 from mmengine.runner import load_checkpoint
@@ -65,16 +65,16 @@ def configure_in_channels(model_config, input_shape=[3, 224, 224]):
     return model_config
 
 
-def build_model_from_config(
+def get_model(
     config: Optional[Union[Dict[str, Any], str]] = None,
     checkpoint: Optional[str] = None,
     num_classes: int = 1000,
     channel_last: bool = False,
 ) -> torch.nn.Module:
     if isinstance(config, str):
-        config = MPAConfig.fromfile(filename=config)
+        config = CustomConfig.fromfile(filename=config)
     elif isinstance(config, dict):
-        config = MPAConfig(cfg_dict=config)
+        config = CustomConfig(cfg_dict=config)
     model_config = config["model"]
     model_config = configure_in_channels(model_config)
     # Update num_classes

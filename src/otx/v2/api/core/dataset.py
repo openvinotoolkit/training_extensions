@@ -194,26 +194,6 @@ class BaseDataset:
         self.unlabeled_file_list = unlabeled_file_list
         self.data_format = data_format
 
-    @staticmethod
-    def get_default_pipeline():
-        # TODO: This is function for experiment // Need to remove this function
-        try:
-            import mmpretrain
-
-            return [
-                dict(type="Resize", scale=[224, 224]),
-                dict(type="PackInputs"),
-            ]
-        except:
-            return [
-                dict(type="Resize", size=224),
-                dict(type="PILImageToNDArray", keys=["img"]),
-                dict(type="Normalize", mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True),
-                dict(type="ImageToTensor", keys=["img"]),
-                dict(type="ToTensor", keys=["gt_label"]),
-                dict(type="Collect", keys=["img", "gt_label"]),
-            ]
-
     def set_datumaro_adapters(self, data_roots: Optional[str] = None):
         """Functions that provide the ability to load datasets from datumaro.
 

@@ -16,6 +16,7 @@
 
 
 import importlib
+import inspect
 
 
 def get_impl_class(impl_path):
@@ -26,3 +27,14 @@ def get_impl_class(impl_path):
     task_impl_class = getattr(task_impl_module, task_impl_class_name)
 
     return task_impl_class
+
+
+def get_non_default_args(func):
+    signature = inspect.signature(func)
+    non_default_args = []
+
+    for name, parameter in signature.parameters.items():
+        if parameter.default is not inspect.Parameter.empty and parameter.default is not None:
+            non_default_args.append((name, parameter.default))
+
+    return non_default_args

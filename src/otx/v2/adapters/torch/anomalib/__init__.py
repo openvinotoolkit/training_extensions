@@ -5,6 +5,6 @@
 
 from .dataset import Dataset
 from .engine import AnomalibEngine as Engine
-from .model import build_model_from_config
+from .model import get_model
 
-__all__ = ["Dataset", "Engine", "build_model_from_config"]
+__all__ = ["Dataset", "Engine", "get_model"]

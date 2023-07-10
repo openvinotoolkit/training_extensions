@@ -6,9 +6,8 @@ import copy
 from typing import Any, Dict, List
 
 import numpy as np
-import otx.v2.adapters.datumaro.pipelines.load_image_from_otx_dataset as load_image_base
 from mmpretrain.datasets.transforms import TRANSFORMS
-from PIL import Image, ImageFilter
+from PIL import Image
 from torchvision import transforms as T
 
 from mmengine.dataset import Compose
@@ -16,11 +15,6 @@ from mmengine.registry import build_from_cfg
 
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.
-
-
-@TRANSFORMS.register_module()
-class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
-    """Pipeline element that loads an image from a OTX Dataset on the fly."""
 
 
 @TRANSFORMS.register_module()

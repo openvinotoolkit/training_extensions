@@ -95,11 +95,11 @@ class CustomLinearClsHead(LinearClsHead):
             return cls_score
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
-        return self.post_process(pred)
+        return pred
 
     def forward(self, x):
         """Forward fuction of CustomLinearHead class."""
-        return self.predict(x)
+        return self.simple_test(x)
 
     def forward_train(self, x, gt_label):
         """Forward_train fuction of CustomLinearHead class."""

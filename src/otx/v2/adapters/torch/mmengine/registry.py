@@ -68,3 +68,6 @@ class MMEngineRegistry(BaseRegistry):
             if module_type in module:
                 return module.get(module_type)
         return None
+
+    def __repr__(self):
+        return self.module_registry

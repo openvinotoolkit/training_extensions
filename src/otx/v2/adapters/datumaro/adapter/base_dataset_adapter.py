@@ -163,10 +163,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             elif "val" in train_dataset.subsets():
                 dataset[Subset.VALIDATION] = self._get_subset_data("val", train_dataset)
 
-        if test_data_roots is not None and train_data_roots is None:
+        if test_data_roots is not None:
             test_dataset = self._import_dataset(test_data_roots, test_ann_files, encryption_key, Subset.TESTING)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
-            self.is_train_phase = False
+            # FIXME: The flow for is_train_phase needs to be modified.
+            # self.is_train_phase = False
 
         if unlabeled_data_roots is not None:
             dataset[Subset.UNLABELED] = DatumDataset.import_from(unlabeled_data_roots, format="image_dir")
@@ -258,7 +259,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         datumaro_dataset: Dict[Subset, DatumDataset],
     ) -> Dict[str, Any]:
         # Get datumaro category information
-        if self.is_train_phase:
+        if self.is_train_phase and Subset.TRAINING in datumaro_dataset:
             label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumAnnotationType.label, None)
         else:
             label_categories_list = datumaro_dataset[Subset.TESTING].categories().get(DatumAnnotationType.label, None)
