@@ -79,11 +79,11 @@ class Decoder(ImageModel):
         parameters.update(
             {
                 "image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048),
-                "soft_threshold": NumericalValue(default_value=0.5, min=0.0, max=1.0),
+                "soft_threshold": NumericalValue(value_type=float, default_value=0.5, min=0.0, max=1.0),
                 "blur_strength": NumericalValue(value_type=int, default_value=1, min=0, max=25),
                 "embedded_processing": BooleanValue(default_value=True),
-                "orig_width": NumericalValue(default_value=64),
-                "orig_height": NumericalValue(default_value=64),
+                "orig_width": NumericalValue(value_type=int, default_value=64),
+                "orig_height": NumericalValue(value_type=int, default_value=64),
             }
         )
         return parameters

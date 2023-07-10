@@ -99,6 +99,15 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
 
         self.model = {}
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
+        self.configuration = {
+            "decoder": {
+                **attr.asdict(
+                    hparams.postprocessing,
+                    filter=lambda attr, value: attr.name
+                    not in ["header", "description", "type", "visible_in_ui", "class_name"],
+                )
+            }
+        }
         for name in ["image_encoder", "decoder"]:
             model_adapter = VisualPromptingOpenvinoAdapter(
                 core=create_core(),
@@ -109,14 +118,7 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
                 max_num_requests=num_requests,
                 plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
             )
-            self.configuration = {
-                **attr.asdict(
-                    hparams.postprocessing,
-                    filter=lambda attr, value: attr.name
-                    not in ["header", "description", "type", "visible_in_ui", "class_name"],
-                )
-            }
-            self.model[name] = Model.create_model(model_adapter, name, self.configuration, preload=True)
+            self.model[name] = Model.create_model(model_adapter, name, self.configuration.get(name, {}), preload=True)
         self.converter = VisualPromptingToAnnotationConverter()
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
