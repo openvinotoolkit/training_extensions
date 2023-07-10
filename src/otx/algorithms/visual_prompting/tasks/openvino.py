@@ -29,8 +29,8 @@ from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
-from otx.algorithms.visual_prompting.adapters.openvino import (  # noqa: F401
-    model_wrappers,
+from otx.algorithms.visual_prompting.adapters.openvino.model_wrappers import (
+    VisualPromptingOpenvinoAdapter,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
@@ -100,7 +100,7 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         self.model = {}
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
         for name in ["image_encoder", "decoder"]:
-            model_adapter = OpenvinoAdapter(
+            model_adapter = VisualPromptingOpenvinoAdapter(
                 core=create_core(),
                 model=model_files.get(name),
                 weights_path=weight_files.get(name, None),
@@ -123,10 +123,11 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
 
     def pre_process(self, dataset_item: DatasetItemEntity) -> Dict[str, Any]:  # type: ignore
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
-        # TODO (sungchul): change to modelapi.
-        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)
-        items = {"index": 0, "images": dataset_item.numpy, **prompts}
-        return self.transform(items)
+        images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy)
+        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)  # to be replaced
+        prompts = self.model["decoder"].preprocess(prompts, meta)
+        items = {**images, **meta, "prompts": prompts}
+        return items
 
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
@@ -140,19 +141,18 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         """Perform a prediction for a given input image."""
         # forward image encoder
         items = self.pre_process(dataset_item)
-        image_embeddings = self.forward({"images": items["images"].unsqueeze(0).numpy()})
+        image_embeddings = self.forward({"images": items["images"]})
 
-        # TODO (sungchul): generate random points from gt_mask
         annotations: List[Annotation] = []
         hard_predictions: List[np.ndarray] = []
         soft_predictions: List[np.ndarray] = []
-        for idx, (bbox, label) in enumerate(zip(items["bboxes"], items["labels"])):
-            inputs_decoder = self.model["decoder"].preprocess(bbox, items["original_size"])
-            inputs_decoder.update(image_embeddings)
+        for prompt in items["prompts"]:
+            label = prompt.pop("label")
+            prompt.update(image_embeddings)
 
             # forward decoder to get predicted mask
-            prediction = self.forward_decoder(inputs_decoder)
-            metadata = {"label": label, "original_size": np.array(items["original_size"])}
+            prediction = self.forward_decoder(prompt)
+            metadata = {"label": label, "original_size": prompt["orig_size"]}
 
             # set annotation for eval
             annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)

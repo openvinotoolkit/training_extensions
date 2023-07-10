@@ -1,6 +1,6 @@
-"""OpenVINO modules for visual prompting task."""
+"""Wrapper Initialization of OTX Visual Prompting."""
 
-# Copyright (C) 2023 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +14,5 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .model_wrappers import *
+from .openvino_models import ImageEncoder, Decoder  # noqa: F401
+from .openvino_adapters import VisualPromptingOpenvinoAdapter  # noqa: F401
