@@ -134,7 +134,7 @@ class OTXClassificationTask(OTXTask, ABC):
         return (
             (len(label_groups) > 1) and (len(label_groups) == len(all_labels)) and (False not in find_multilabel_symbol)
         )
-        
+
     def _set_train_mode(self):
         label_groups = self._task_environment.label_schema.get_groups(include_empty=False)
         all_labels = self._task_environment.label_schema.get_labels(include_empty=False)
