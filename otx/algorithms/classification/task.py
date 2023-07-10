@@ -47,6 +47,8 @@ from otx.api.entities.inference_parameters import (
 from otx.api.entities.inference_parameters import (
     default_progress_callback as default_infer_progress_callback,
 )
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelGroup
 from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.metrics import (
     CurveMetric,
@@ -127,16 +129,22 @@ class OTXClassificationTask(OTXTask, ABC):
         if self._task_environment.model is not None:
             self._load_model()
 
+    def _is_multi_label(self, label_groups: List[LabelGroup], all_labels: List[LabelEntity]):
+        """Check whether the current training mode is multi-label or not."""
+        # NOTE: In the current Geti, multi-label should have `___` symbol for all group names.
+        find_multilabel_symbol = ["___" in getattr(i, "name", "") for i in label_groups]
+        return (
+            (len(label_groups) > 1) and (len(label_groups) == len(all_labels)) and (False not in find_multilabel_symbol)
+        )
+
     def _set_train_mode(self):
-        self._multilabel = len(self._task_environment.label_schema.get_groups(False)) > 1 and len(
-            self._task_environment.label_schema.get_groups(False)
-        ) == len(
-            self._task_environment.get_labels(include_empty=False)
-        )  # noqa:E127
+        label_groups = self._task_environment.label_schema.get_groups(include_empty=False)
+        all_labels = self._task_environment.label_schema.get_labels(include_empty=False)
+
+        self._multilabel = self._is_multi_label(label_groups, all_labels)
         if self._multilabel:
             logger.info("Classification mode: multilabel")
-
-        if not self._multilabel and len(self._task_environment.label_schema.get_groups(False)) > 1:
+        elif len(label_groups) > 1:
             logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(self._task_environment.label_schema)
