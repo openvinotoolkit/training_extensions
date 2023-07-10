@@ -37,14 +37,13 @@ def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio=True, in
     w_ratio = opset.divide(np.float32(w), iw)
     h_ratio = opset.divide(np.float32(h), ih)
     scale = opset.minimum(w_ratio, h_ratio)
-
     nw = opset.convert(
         opset.round(opset.multiply(iw, scale), "half_to_even"), destination_type="i32"
     )
     nh = opset.convert(
         opset.round(opset.multiply(ih, scale), "half_to_even"), destination_type="i32"
     )
-    new_size = opset.concat([opset.unsqueeze(nh, 0), opset.unsqueeze(nw, 0)], axis=-1)
+    new_size = opset.concat([opset.unsqueeze(nh, 0), opset.unsqueeze(nw, 0)], axis=0)
     image = opset.interpolate(
         input,
         new_size,
@@ -54,27 +53,18 @@ def resize_image_with_aspect_pad(input: Output, size, keep_aspect_ratio=True, in
         shape_calculation_mode="sizes",
     )
 
-    dx = opset.subtract(opset.constant(w, dtype=np.int32), nw)
-    dy = opset.subtract(opset.constant(h, dtype=np.int32), nh)
-    pads_begin = opset.concat(
+    dx_border = opset.subtract(opset.constant(w, dtype=np.int32), nw)
+    dy_border = opset.subtract(opset.constant(h, dtype=np.int32), nh)
+    pads_begin = np.array([0, 0, 0, 0], np.int32)
+    pads_end = opset.concat(
         [
             opset.constant([0], dtype=np.int32),
-            opset.constant([0], dtype=np.int32),
-            opset.constant([0], dtype=np.int32),
+            opset.unsqueeze(dy_border, 0),
+            opset.unsqueeze(dx_border, 0),
             opset.constant([0], dtype=np.int32),
         ],
         axis=0,
     )
-    pads_end = opset.concat(
-        [
-            opset.constant([0], dtype=np.int32),
-            opset.unsqueeze(dy, 0),
-            opset.unsqueeze(dx, 0),
-            opset.constant([0], dtype=np.int32),
-        ],
-        axis=0
-    )
-
     return opset.pad(
         image,
         pads_begin,
@@ -99,6 +89,9 @@ class VisualPromptingOpenvinoAdapter(OpenvinoAdapter):
     """Openvino Adapter Wrappers of OTX Visual Prompting.
     
     This class is just to use customized `resize_image_with_aspect_pad` function instead of other resize functions.
+    When model api version is updated, it can be removed.
+    Issue: https://github.com/openvinotoolkit/model_api/issues/99
+    Updated PR: https://github.com/openvinotoolkit/model_api/pull/100
     """
     def embed_preprocessing(
         self,
