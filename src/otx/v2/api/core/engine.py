@@ -84,13 +84,19 @@ class Engine:
     def __init__(self) -> None:
         pass
 
-    def train(self, model, train_dataset, *args, **params):
+    def train(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def evaluate(self, **params):
+    def val(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def export(self, **params):
+    def test(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def predict(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def export(self, *args, **kwargs):
         raise NotImplementedError()
 
 

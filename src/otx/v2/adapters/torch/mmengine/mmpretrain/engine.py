@@ -1,9 +1,8 @@
-from typing import Callable, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
 from mmpretrain import ImageClassificationInferencer
-from mmpretrain.apis import inference_model
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.api.utils.logger import get_logger
@@ -17,14 +16,11 @@ class MMPTEngine(MMXEngine):
     def __init__(
         self,
         config: Optional[Union[Dict, Config, str]] = None,
-        **params,
+        **kwargs,
     ) -> None:
         super().__init__(config=config)
         self.module_registry = MMPretrainRegistry()
         self.base_runner = self.module_registry.get("Runner")
-
-    def _get_inferencer():
-        pass
 
     def predict(
         self,
@@ -47,6 +43,3 @@ class MMPTEngine(MMXEngine):
         inferencer = ImageClassificationInferencer(model=model)
 
         return inferencer(img)
-
-    def evaluate(self, **params):
-        raise NotImplementedError()
