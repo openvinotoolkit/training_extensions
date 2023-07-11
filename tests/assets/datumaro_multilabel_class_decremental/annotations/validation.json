@@ -9,11 +9,6 @@
           "labels": ["tom"]
         },
         {
-          "name": "Classification labels___john",
-          "group_type": "exclusive",
-          "labels": ["john"]
-        },
-        {
           "name": "Classification labels___mary",
           "group_type": "exclusive",
           "labels": ["mary"]
@@ -22,11 +17,6 @@
       "labels": [
         {
           "name": "tom",
-          "parent": "",
-          "attributes": []
-        },
-        {
-          "name": "john",
           "parent": "",
           "attributes": []
         },
@@ -41,7 +31,7 @@
   },
   "items": [
     {
-      "id": "a",
+      "id": "d",
       "annotations": [
         {
           "id": 0,
@@ -52,26 +42,12 @@
         {
           "id": 1,
           "type": "label",
-          "group": 1,
+          "group": 0,
           "label_id": 1
         }
       ],
       "image": {
-        "path": "a.jpg"
-      }
-    },
-    {
-      "id": "b",
-      "annotations": [
-        {
-          "id": 0,
-          "type": "label",
-          "group": 2,
-          "label_id": 2
-        }
-      ],
-      "image": {
-        "path": "b.jpg"
+        "path": "d.jpg"
       }
     }
   ]
