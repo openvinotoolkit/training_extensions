@@ -6,9 +6,9 @@ import shutil
 from typing import List
 from tempfile import TemporaryDirectory
 
-import datumaro as dm
 import pytest
 
+from datumaro.components.dataset import DatasetSubset
 from otx.cli.manager.config_manager import TASK_TYPE_TO_SUPPORTED_FORMAT
 from otx.core.data.manager.dataset_manager import DatasetManager
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -51,7 +51,7 @@ class TestOTXDatasetManager:
                 DatasetManager.get_train_dataset(self.dataset[subset][task])
         else:
             train_dataset = DatasetManager.get_train_dataset(self.dataset[subset][task])
-            assert isinstance(train_dataset, dm.DatasetSubset)
+            assert isinstance(train_dataset, DatasetSubset)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("task", AVAILABLE_TASKS)
@@ -61,7 +61,7 @@ class TestOTXDatasetManager:
             assert DatasetManager.get_val_dataset(self.dataset[subset][task]) is None
         else:
             val_dataset = DatasetManager.get_val_dataset(self.dataset[subset][task])
-            assert isinstance(val_dataset, dm.DatasetSubset)
+            assert isinstance(val_dataset, DatasetSubset)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("data_root", AVAILABLE_DATA_ROOTS)
