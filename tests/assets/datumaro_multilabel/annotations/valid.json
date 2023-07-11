@@ -4,40 +4,35 @@
     "label": {
       "label_groups": [
         {
-          "name": "blue",
+          "name": "rectangle",
           "group_type": "exclusive",
-          "labels": ["blue_rectangle", "blue_circle", "blue_triangle"]
+          "labels": ["rectangle"]
         },
         {
-          "name": "green",
+          "name": "circle",
           "group_type": "exclusive",
-          "labels": ["green_rectangle", "green_circle"]
+          "labels": ["circle"]
+        },
+        {
+          "name": "triangle",
+          "group_type": "exclusive",
+          "labels": ["triangle"]
         }
       ],
       "labels": [
         {
-          "name": "blue_rectangle",
-          "parent": "blue",
+          "name": "rectangle",
+          "parent": "",
           "attributes": []
         },
         {
-          "name": "blue_circle",
-          "parent": "blue",
+          "name": "circle",
+          "parent": "",
           "attributes": []
         },
         {
-          "name": "blue_triangle",
-          "parent": "blue",
-          "attributes": []
-        },
-        {
-          "name": "green_rectangle",
-          "parent": "green",
-          "attributes": []
-        },
-        {
-          "name": "green_circle",
-          "parent": "green",
+          "name": "triangle",
+          "parent": "",
           "attributes": []
         }
       ],
@@ -65,18 +60,6 @@
           "type": "label",
           "group": 0,
           "label_id": 2
-        },
-        {
-          "id": 3,
-          "type": "label",
-          "group": 1,
-          "label_id": 3
-        },
-        {
-          "id": 4,
-          "type": "label",
-          "group": 1,
-          "label_id": 4
         }
       ],
       "image": {
@@ -103,18 +86,6 @@
           "type": "label",
           "group": 0,
           "label_id": 2
-        },
-        {
-          "id": 3,
-          "type": "label",
-          "group": 1,
-          "label_id": 3
-        },
-        {
-          "id": 4,
-          "type": "label",
-          "group": 1,
-          "label_id": 4
         }
       ],
       "image": {
@@ -141,18 +112,6 @@
           "type": "label",
           "group": 0,
           "label_id": 2
-        },
-        {
-          "id": 3,
-          "type": "label",
-          "group": 1,
-          "label_id": 3
-        },
-        {
-          "id": 4,
-          "type": "label",
-          "group": 1,
-          "label_id": 4
         }
       ],
       "image": {
@@ -173,18 +132,6 @@
           "type": "label",
           "group": 0,
           "label_id": 1
-        },
-        {
-          "id": 2,
-          "type": "label",
-          "group": 1,
-          "label_id": 3
-        },
-        {
-          "id": 3,
-          "type": "label",
-          "group": 2,
-          "label_id": 4
         }
       ],
       "image": {
@@ -205,18 +152,6 @@
           "type": "label",
           "group": 0,
           "label_id": 1
-        },
-        {
-          "id": 2,
-          "type": "label",
-          "group": 1,
-          "label_id": 3
-        },
-        {
-          "id": 3,
-          "type": "label",
-          "group": 2,
-          "label_id": 4
         }
       ],
       "image": {
@@ -237,18 +172,6 @@
           "type": "label",
           "group": 0,
           "label_id": 1
-        },
-        {
-          "id": 2,
-          "type": "label",
-          "group": 1,
-          "label_id": 3
-        },
-        {
-          "id": 3,
-          "type": "label",
-          "group": 2,
-          "label_id": 4
         }
       ],
       "image": {
@@ -259,22 +182,16 @@
       "id": "06",
       "annotations": [
         {
-          "id": 0,
+          "id": 1,
           "type": "label",
           "group": 0,
           "label_id": 1
         },
         {
-          "id": 1,
-          "type": "label",
-          "group": 0,
-          "label_id": 2
-        },
-        {
           "id": 2,
           "type": "label",
           "group": 0,
-          "label_id": 4
+          "label_id": 2
         }
       ],
       "image": {
@@ -285,22 +202,16 @@
       "id": "07",
       "annotations": [
         {
-          "id": 0,
+          "id": 1,
           "type": "label",
           "group": 0,
           "label_id": 1
         },
         {
-          "id": 1,
-          "type": "label",
-          "group": 0,
-          "label_id": 2
-        },
-        {
           "id": 2,
           "type": "label",
           "group": 0,
-          "label_id": 4
+          "label_id": 2
         }
       ],
       "image": {
@@ -311,22 +222,16 @@
       "id": "08",
       "annotations": [
         {
-          "id": 0,
+          "id": 1,
           "type": "label",
           "group": 0,
           "label_id": 1
         },
         {
-          "id": 1,
-          "type": "label",
-          "group": 0,
-          "label_id": 2
-        },
-        {
           "id": 2,
           "type": "label",
           "group": 0,
-          "label_id": 4
+          "label_id": 2
         }
       ],
       "image": {
@@ -343,16 +248,10 @@
           "label_id": 0
         },
         {
-          "id": 1,
-          "type": "label",
-          "group": 0,
-          "label_id": 2
-        },
-        {
           "id": 2,
           "type": "label",
           "group": 0,
-          "label_id": 3
+          "label_id": 2
         }
       ],
       "image": {
@@ -369,16 +268,10 @@
           "label_id": 0
         },
         {
-          "id": 1,
-          "type": "label",
-          "group": 0,
-          "label_id": 2
-        },
-        {
           "id": 2,
           "type": "label",
           "group": 0,
-          "label_id": 3
+          "label_id": 2
         }
       ],
       "image": {
@@ -395,16 +288,10 @@
           "label_id": 0
         },
         {
-          "id": 1,
-          "type": "label",
-          "group": 0,
-          "label_id": 2
-        },
-        {
           "id": 2,
           "type": "label",
           "group": 0,
-          "label_id": 3
+          "label_id": 2
         }
       ],
       "image": {
