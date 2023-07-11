@@ -38,7 +38,6 @@ from tests.unit.algorithms.detection.test_helpers import (
 from otx.algorithms.detection.utils.data import adaptive_tile_params
 
 
-
 @DETECTORS.register_module(force=True)
 class MockDetModel(nn.Module):
     def __init__(self, backbone, train_cfg=None, test_cfg=None, init_cfg=None):
