@@ -6,12 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
-- Fix 'None' node issue in label schema mapping in case of label deletion (#2300)
+- Fix 'None' node issue in label schema mapping in case of label deletion (<https://github.com/openvinotoolkit/training_extensions/pull/2300>)
+- Squeeze anomaly mpas in metadata (<https://github.com/openvinotoolkit/training_extensions/pull/2310>)
+- Fix semantic segmentation soft prediction dtype (<https://github.com/openvinotoolkit/training_extensions/pull/2321>)
+- Fix label deletion issue (<https://github.com/openvinotoolkit/training_extensions/pull/2315>)
 
 ### Enhancements
 
-- Per-class saliency maps for M-RCNN (#2301)
-- Disable semantic segmentation soft prediction processing (#2302)
+- Per-class saliency maps for M-RCNN (<https://github.com/openvinotoolkit/training_extensions/pull/2301>)
+- Disable semantic segmentation soft prediction processing (<https://github.com/openvinotoolkit/training_extensions/pull/2302>)
+- Update export and nncf hyperparameters (<https://github.com/openvinotoolkit/training_extensions/pull/2306>)
 
 ## \[v1.2.3\]
 

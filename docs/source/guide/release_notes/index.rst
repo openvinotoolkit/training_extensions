@@ -4,6 +4,24 @@ Release Notes
 .. toctree::
    :maxdepth: 2
 
+******
+v1.2.4
+******
+
+- Per-class saliency maps for M-RCNN
+- Disable semantic segmentation soft prediction processing
+- Update export and nncf hyperparameters
+
+*************
+v1.2.1-v1.2.3
+*************
+
+- Upgrade 'mmdeploy==0.14.0' from PyPI
+- Integrate new ignored loss in semantic segmentation
+- Tiling Spatial Concatenation for OpenVINO IR
+- Optimize conuting train & inference speed and memory consumption
+- Improve warning message for tiling configurable parameter
+
 *************
 v1.2.0 (1Q23)
 *************
