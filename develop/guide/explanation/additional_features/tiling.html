@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Explainable AI (XAI) &#8212; OpenVINO™ Training Extensions 1.4.0 documentation</title>
+    <title>Improve Small Object Detection with Image Tiling &#8212; OpenVINO™ Training Extensions 1.4.0 documentation</title>
   
   
   
@@ -42,11 +42,11 @@
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/xai';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/tiling';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Noisy Label Detection" href="noisy_label_detection.html" />
-    <link rel="prev" title="Auto-configuration" href="auto_configuration.html" />
+    <link rel="next" title="API" href="../../reference/api/index.html" />
+    <link rel="prev" title="Fast Data Loading" href="fast_data_loading.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -282,10 +282,10 @@
 <li class="toctree-l2"><a class="reference internal" href="models_optimization.html">Models Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hpo.html">Hyperparameters Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auto_configuration.html">Auto-configuration</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Explainable AI (XAI)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xai.html">Explainable AI (XAI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="noisy_label_detection.html">Noisy Label Detection</a></li>
 <li class="toctree-l2"><a class="reference internal" href="fast_data_loading.html">Fast Data Loading</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tiling.html">Improve Small Object Detection with Image Tiling</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Improve Small Object Detection with Image Tiling</a></li>
 </ul>
 </li>
 </ul>
@@ -455,114 +455,146 @@
             
             <article class="bd-article" role="main">
               
-  <section id="explainable-ai-xai">
-<h1>Explainable AI (XAI)<a class="headerlink" href="#explainable-ai-xai" title="Permalink to this heading">#</a></h1>
-<p><strong>Explainable AI (XAI)</strong> is a field of research that aims to make machine learning models more transparent and interpretable to humans.
-The goal is to help users understand how and why AI systems make decisions and provide insight into their inner workings. It allows us to detect, analyze, and prevent common mistakes, for example, when the model uses irrelevant features to make a prediction.
-XAI can help to build trust in AI, make sure that the model is safe for development and increase its adoption in various domains.</p>
-<p>Most XAI methods generate <strong>saliency maps</strong> as a result. Saliency map is a visual representation, suitable for human comprehension, that highlights the most important parts of the image from the model point of view.
-It looks like a heatmap, where warm-colored areas represent the areas with main focus.</p>
-<figure class="align-default" id="id1">
-<a class="reference internal image-reference" href="../../../_images/xai_example.jpg"><img alt="this image shows the result of XAI algorithm" src="../../../_images/xai_example.jpg" style="width: 600px;" /></a>
-<figcaption>
-<p><span class="caption-text">These images are taken from <a class="reference external" href="https://arxiv.org/abs/2006.03204">D-RISE paper</a>.</span><a class="headerlink" href="#id1" title="Permalink to this image">#</a></p>
-</figcaption>
-</figure>
-<p>We can generate saliency maps for a certain model that was trained in OpenVINO™ Training Extensions, using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">explain</span></code> command line. Learn more about its usage in  <a class="reference internal" href="../../tutorials/base/explain.html"><span class="doc">How to explain the model behavior</span></a> tutorial.</p>
-<section id="xai-algorithms-for-classification">
-<h2>XAI algorithms for classification<a class="headerlink" href="#xai-algorithms-for-classification" title="Permalink to this heading">#</a></h2>
-<a class="reference internal image-reference" href="../../../_images/xai_cls.jpg"><img alt="this image shows the comparison of XAI classification algorithms" class="align-center" src="../../../_images/xai_cls.jpg" style="width: 600px;" /></a>
-<p>For classification networks these algorithms are used to generate saliency maps:</p>
-<ul class="simple">
-<li><p><strong>Activation Map​</strong> - this is the most basic and naive approach. It takes the outputs of the model’s feature extractor (backbone) and averages it in channel dimension. The results highly rely on the backbone and ignore neck and head computations. Basically, it gives a relatively good and fast result.</p></li>
-<li><p><a class="reference external" href="https://arxiv.org/abs/2008.00299​">Eigen-Cam</a> uses Principal Component Analysis (PCA).  It returns the first principal component of the feature extractor output, which most of the time corresponds to the dominant object. The results highly rely on the backbone as well and ignore neck and head computations.</p></li>
-<li><p><a class="reference external" href="https://arxiv.org/pdf/2209.14074">Recipro-CAM​</a> uses Class Activation Mapping (CAM) to weigh the activation map for each class, so it can generate different saliency per class. Recipro-CAM is a fast gradient-free Reciprocal CAM method. The method involves spatially masking the extracted feature maps to exploit the correlation between activation maps and network predictions for target classes.</p></li>
-</ul>
-<p>Below we show the comparison of described algorithms. <code class="docutils literal notranslate"><span class="pre">Access</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">model</span> <span class="pre">internal</span> <span class="pre">state</span></code> means the necessity to modify the model’s outputs and dump inner features.
-<code class="docutils literal notranslate"><span class="pre">Per-class</span> <span class="pre">explanation</span> <span class="pre">support</span></code> means generation different saliency maps for different classes.</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Classification algorithm</p></th>
-<th class="head"><p>Activation Map</p></th>
-<th class="head"><p>Eigen-Cam</p></th>
-<th class="head"><p>Recipro-CAM</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Need access to model internal state</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-</tr>
-<tr class="row-odd"><td><p>Gradient-free</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Single-shot</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-<td><p>No (re-infer neck + head H*W times, where HxW – feature map size)</p></td>
-</tr>
-<tr class="row-odd"><td><p>Per-class explanation support</p></td>
-<td><p>No</p></td>
-<td><p>No</p></td>
-<td><p>Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Execution speed</p></td>
-<td><p>Fast</p></td>
-<td><p>Fast</p></td>
-<td><p>Medium</p></td>
-</tr>
-</tbody>
-</table>
+  <section id="improve-small-object-detection-with-image-tiling">
+<h1>Improve Small Object Detection with Image Tiling<a class="headerlink" href="#improve-small-object-detection-with-image-tiling" title="Permalink to this heading">#</a></h1>
+<p>The OpenVINO Training Extensions introduces the concept of image tiling to enhance the accuracy of detection algorithms and instance segmentation algorithms, particularly for small and densely packed objects in high-resolution images.</p>
+<p>Image tiling involves dividing the original full-resolution image into multiple smaller tiles or patches. This division allows objects within the tiles to appear larger in relation to the tile size, effectively addressing the challenge of objects becoming nearly invisible in deeper layers of feature maps due to downsampling operations. Image tiling proves especially beneficial for datasets where objects can be as small as 20 by 20 pixels in a 4K image.</p>
+<p>However, it’s important to consider the trade-off associated with image tiling. Dividing a single image sample into several tiles increases the number of samples for training, evaluation, and testing. This trade-off impacts the execution speed, as processing more images requires additional computational resources. To strike a balance between patch size and computational efficiency, the OpenVINO Training  incorporates tile dataset samples and adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.</p>
+<p>By leveraging image tiling, the OpenVINO Training Extensions empowers detection and instance segmentation algorithms to effectively detect and localize small and crowded objects in large-resolution images, ultimately leading to improved overall performance and accuracy.</p>
+<section id="tiling-strategies">
+<h2>Tiling Strategies<a class="headerlink" href="#tiling-strategies" title="Permalink to this heading">#</a></h2>
+<p>Below we provided an example of tiling used on one of the image from <a class="reference external" href="https://captain-whu.github.io/DOTA/dataset.html">DOTA</a>.</p>
+<a class="reference internal image-reference" href="../../../_images/dota_tiling_example.jpg"><img alt="this image uploaded from this `source &lt;https://captain-whu.github.io/DOTA/dataset.html&gt;`_" src="../../../_images/dota_tiling_example.jpg" style="width: 800px;" /></a>
+<p>In this example, the full image is cropped into 9 tiles. During training, only the tiles with annotations (bounding boxes or masks) are used for training.</p>
+<p>During evaluation in training, only the tiles with annotations are used for evaluation, and evaluation is performed at the tile level.</p>
+<p>During testing, each tile is processed and predicted separately. The tiles are then stitched back together to form the full image, and the tile predictions are merged to form the full image prediction.</p>
+<p>The tiling strategy is implemented in the OpenVINO Training Extensions through the following steps:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="n">Training</span><span class="p">:</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">ImageTilingDataset</span> <span class="k">with</span> <span class="n">annotated</span> <span class="n">tiles</span> <span class="o">-&gt;</span> <span class="n">Train</span> <span class="k">with</span> <span class="n">annotated</span> <span class="n">tile</span> <span class="n">images</span> <span class="o">-&gt;</span> <span class="n">Evaluate</span> <span class="n">on</span> <span class="n">annotated</span> <span class="n">tiles</span>
+<span class="o">*</span> <span class="n">Testing</span><span class="p">:</span> <span class="n">Create</span> <span class="n">an</span> <span class="n">ImageTilingDataset</span> <span class="n">including</span> <span class="nb">all</span> <span class="n">tiles</span> <span class="o">-&gt;</span> <span class="n">Test</span> <span class="k">with</span> <span class="nb">all</span> <span class="n">tile</span> <span class="n">images</span> <span class="o">-&gt;</span> <span class="n">Stitching</span> <span class="o">-&gt;</span> <span class="n">Merge</span> <span class="n">tile</span><span class="o">-</span><span class="n">level</span> <span class="n">predictions</span> <span class="o">-&gt;</span> <span class="n">Full</span> <span class="n">Image</span> <span class="n">Prediction</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While running <cite>ote eval</cite> on models trained with tiling enabled, the evaluation will be performed on all tiles, this process includes merging all the tile-level prediction.
+The below context will be provided during evaluation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="o">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><span class="p">]</span> <span class="mi">650</span><span class="o">/</span><span class="mi">650</span><span class="p">,</span> <span class="mf">17.2</span> <span class="n">task</span><span class="o">/</span><span class="n">s</span><span class="p">,</span> <span class="n">elapsed</span><span class="p">:</span> <span class="mi">38</span><span class="n">s</span><span class="p">,</span> <span class="n">ETA</span><span class="p">:</span>     <span class="mi">0</span><span class="n">s</span>
+<span class="o">====</span> <span class="n">merge</span><span class="p">:</span> <span class="mf">7.326097726821899</span> <span class="n">sec</span> <span class="o">====</span>
+</pre></div>
+</div>
+</div>
 </section>
-<section id="xai-algorithms-for-detection">
-<h2>XAI algorithms for detection<a class="headerlink" href="#xai-algorithms-for-detection" title="Permalink to this heading">#</a></h2>
-<p>For detection networks these algorithms are used to generate saliency maps:</p>
+<section id="enable-tiling-via-otx-training-cli">
+<h2>Enable Tiling via OTX Training CLI<a class="headerlink" href="#enable-tiling-via-otx-training-cli" title="Permalink to this heading">#</a></h2>
+<p>Currently, tiling is supported for both detection and instance segmentation models. Please refer to <a class="reference internal" href="../algorithms/object_detection/object_detection.html"><span class="doc">Object Detection</span></a> and <a class="reference internal" href="../algorithms/segmentation/instance_segmentation.html"><span class="doc">Instance Segmentation</span></a> for more details.</p>
+<p>To enable tiling in OTX training, set <code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_tiling</span></code> parameter to 1. Here’s an example of enabling tiling for the SSD model template:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To learn how to deploy the trained model and run the exported demo, refer to <a class="reference internal" href="../../tutorials/base/deploy.html"><span class="doc">How to deploy the model and use demo in exportable code</span></a>.</p>
+<p>To learn how to run the demo in CLI and visualize results, refer to <a class="reference internal" href="../../tutorials/base/demo.html"><span class="doc">How to run the demonstration mode with OpenVINO™ Training Extensions CLI</span></a>.</p>
+</div>
+</section>
+<section id="enable-tiling-via-otx-build">
+<h2>Enable Tiling via OTX Build<a class="headerlink" href="#enable-tiling-via-otx-build" title="Permalink to this heading">#</a></h2>
+<p>Here’s another way of enabling tiling for the SSD model template using the workspace:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">build</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span>
+</pre></div>
+</div>
+<p>The above command will create a workspace folder with the necessary files for training under <code class="docutils literal notranslate"><span class="pre">otx-workspace-DETECTION</span></code>.</p>
+<p>You can then train the model with tiling enabled using the following command without specifying any data-related paths:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">otx</span><span class="o">-</span><span class="n">workspace</span><span class="o">-</span><span class="n">DETECTION</span>
+<span class="n">otx</span> <span class="n">train</span> <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Alternatively, you can update the <code class="docutils literal notranslate"><span class="pre">tiling_parameters</span></code> in <code class="docutils literal notranslate"><span class="pre">configuration.yaml</span></code> file under the workspace folder to configure tiling parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hyper_parameters</span><span class="p">:</span>
+  <span class="n">parameter_overrides</span><span class="p">:</span>
+    <span class="n">tiling_parameters</span><span class="p">:</span>
+      <span class="n">enable_tiling</span><span class="p">:</span>
+        <span class="n">default_value</span><span class="p">:</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>And then train the model with tiling enabled using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span>
+</pre></div>
+</div>
+<section id="tile-size-and-tile-overlap-optimization">
+<h3>Tile Size and Tile Overlap Optimization<a class="headerlink" href="#tile-size-and-tile-overlap-optimization" title="Permalink to this heading">#</a></h3>
+<p>By default, the OpenVINO Training Extensions automatically optimize tile size and tile overlap to ensure efficient execution without compromising accuracy.</p>
+<p>To strike a balance between patch size and computational efficiency, the OpenVINO Training Extensions incorporate adaptive tiling parameter optimization. These features enable the proper tuning of tile size and other tiling-related parameters to ensure efficient execution without compromising accuracy.</p>
+<p>Adaptive tiling parameter optimization works by finding the average object size in the training dataset and using that to determine the tile size. Currently, the average object size to tile size ratio is set to 3%. For example, if the average object size is 100x100 pixels, the tile size will be around 577x577 pixels.</p>
+<p>This computation is performed by dividing the average object size by the desired object size ratio (default: 3%) and then taking the square root. This ensures that the objects are large enough to be detected by the model. The object size to tile size ratio can also be configured with <code class="docutils literal notranslate"><span class="pre">tiling_parameters.object_tile_ratio</span></code> parameter.</p>
+<p>Here’s an example of setting the object size ratio to 5%:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
+    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>          \  <span class="c1"># enable tiling</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">1</span> \  <span class="c1"># enable automatic tiling parameter optimization</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">object_tile_ratio</span> <span class="mf">0.05</span>   \  <span class="c1"># set the object size ratio to 5%</span>
+</pre></div>
+</div>
+<p>After determining the tile size, the tile overlap is computed by dividing the largest object size in the training dataset by the adaptive tile size.
+This calculation ensures that the largest object on the border of a tile is not split into two tiles and is covered by adjacent tiles.</p>
+<p>You can also manually configure the tile overlap using <code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_overlap</span> <span class="pre">parameter</span></code> parameter. For more details, please refer to the section on <a class="reference internal" href="#manual-tiling-parameter-configuration">Manual Tiling Parameter Configuration</a> .</p>
+</section>
+<section id="tiling-sampling-strategy">
+<h3>Tiling Sampling Strategy<a class="headerlink" href="#tiling-sampling-strategy" title="Permalink to this heading">#</a></h3>
+<p>To accelerate the training process, the OpenVINO Training Extensions introduces a tile sampling strategy. This strategy involves randomly sampling a percentage of tile images from the dataset to be used for training.</p>
+<p>Since training and validation on all tiles from a high-resolution image dataset can be time-consuming, sampling the tile dataset can significantly reduce the training and validation time.</p>
+<p>It’s important to note that sampling is applied to the training and validation datasets, not the test dataset.</p>
+<p>This can be configured with <code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_sampling_ratio</span></code> parameter. Here’s an example of setting the tile sampling ratio to 50%:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
+    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>           \  <span class="c1"># enable tiling</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">1</span>  \  <span class="c1"># enable automatic tiling parameter optimization</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_sampling_ratio</span> <span class="mf">0.5</span>   \  <span class="c1"># set the tile sampling ratio to 50%</span>
+</pre></div>
+</div>
+</section>
+<section id="manual-tiling-parameter-configuration">
+<h3>Manual Tiling Parameter Configuration<a class="headerlink" href="#manual-tiling-parameter-configuration" title="Permalink to this heading">#</a></h3>
+<p>Users can disable adaptive tiling and customize the tiling process by setting the following parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">train</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span>
+    <span class="o">--</span><span class="n">train</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="o">--</span><span class="n">val</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> \
+    <span class="n">params</span> <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_tiling</span> <span class="mi">1</span>          \  <span class="c1"># enable tiling</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">enable_adaptive_params</span> <span class="mi">0</span> \  <span class="c1"># disable automatic tiling parameter optimization</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_size</span> <span class="mi">512</span>            \  <span class="c1"># tile size configured to 512x512</span>
+           <span class="o">--</span><span class="n">tiling_parameters</span><span class="o">.</span><span class="n">tile_overlap</span> <span class="mf">0.1</span>         \  <span class="c1"># 10% overlap between tiles</span>
+</pre></div>
+</div>
+<p>By specifying these parameters, automatic tiling parameter optimization is disabled, and the tile size is configured to 512x512 pixels with a 10% overlap between tiles.</p>
+<p>The following parameters can be configured to customize the tiling process:</p>
 <ul class="simple">
-<li><p><strong>Activation Map​</strong> - the same approach as for classification networks, which uses the outputs from feature extractor. This is an algorithm is used to generate saliency maps for two-stage detectors.</p></li>
-<li><p><strong>DetClassProbabilityMap</strong> - this approach takes the raw classification head output and uses class probability maps to calculate regions of interest for each class. So, it creates different salience maps for each class. This algorithm is implemented for single-stage detectors only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_tiling</span></code>: Enable or disable tiling (0 or 1)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.enable_adaptive_params</span></code>: Enable or disable adaptive tiling parameter optimization (0 or 1)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.object_tile_ratio</span></code>: Ratio of average object size to tile size (float between 0.0 and 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_size</span></code>: Tile edge length in pixels (integer between 100 and 4096)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_overlap</span></code>: The overlap between adjacent tiles as a percentage (float between 0.0 and 1.0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tiling_parameters.tile_sampling_ratio</span></code>: The percentage of tiles to sample from the dataset (float between 0.0 and 1.0)</p></li>
 </ul>
-<a class="reference internal image-reference" href="../../../_images/xai_det.jpg"><img alt="this image shows the detailed description of XAI detection algorithm" class="align-center" src="../../../_images/xai_det.jpg" style="width: 600px;" /></a>
-<p>The main limitation of this method is that, due to training loss design of most single-stage detectors, activation values drift towards the center of the object while propagating through the network.
-This prevents from getting clear explanation in the input image space using intermediate activations.</p>
-<p>Below we show the comparison of described algorithms. <code class="docutils literal notranslate"><span class="pre">Access</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">model</span> <span class="pre">internal</span> <span class="pre">state</span></code> means the necessity to modify the model’s outputs and dump inner features.
-<code class="docutils literal notranslate"><span class="pre">Per-class</span> <span class="pre">explanation</span> <span class="pre">support</span></code> means generation different saliency maps for different classes. <code class="docutils literal notranslate"><span class="pre">Per-box</span> <span class="pre">explanation</span> <span class="pre">support</span></code> means generation standalone saliency maps for each detected prediction.</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Detection algorithm</p></th>
-<th class="head"><p>Activation Map</p></th>
-<th class="head"><p>DetClassProbabilityMap</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Need access to model internal state</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-</tr>
-<tr class="row-odd"><td><p>Gradient-free</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Single-shot</p></td>
-<td><p>Yes</p></td>
-<td><p>Yes</p></td>
-</tr>
-<tr class="row-odd"><td><p>Per-class explanation support</p></td>
-<td><p>No</p></td>
-<td><p>Yes</p></td>
-</tr>
-<tr class="row-even"><td><p>Per-box explanation support</p></td>
-<td><p>No</p></td>
-<td><p>No</p></td>
-</tr>
-<tr class="row-odd"><td><p>Execution speed</p></td>
-<td><p>Fast</p></td>
-<td><p>Fast</p></td>
-</tr>
-</tbody>
-</table>
+</section>
+</section>
+<section id="run-tiling-on-openvino-exported-model">
+<h2>Run Tiling on OpenVINO Exported Model<a class="headerlink" href="#run-tiling-on-openvino-exported-model" title="Permalink to this heading">#</a></h2>
+<p>After training a model with tiling enabled, you can export the model to OpenVINO IR format using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">otx</span> <span class="n">export</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="o">&lt;</span><span class="n">path_to_trained_model</span><span class="o">&gt;/</span><span class="n">weights</span><span class="o">.</span><span class="n">pth</span> <span class="o">--</span><span class="n">output</span> <span class="o">&lt;</span><span class="n">path_to_exported_model</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>After exporting the model, you can run inference on the exported model using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ote</span> <span class="nb">eval</span> <span class="n">Custom_Object_Detection_Gen3_SSD</span> <span class="o">--</span><span class="n">test</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">roots</span> <span class="n">tests</span><span class="o">/</span><span class="n">assets</span><span class="o">/</span><span class="n">small_objects</span> <span class="o">--</span><span class="n">load</span><span class="o">-</span><span class="n">weights</span> <span class="o">&lt;</span><span class="n">path_to_exported_model</span><span class="o">&gt;/</span><span class="n">openvino</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When tiling is enabled, there is a trade-off between speed and accuracy as it increases the number of images to be processed.
+As a result, longer training and inference times are expected. If you encounter GPU out of memory errors,
+you can mitigate the issue by reducing the number of batches through the command-line interface (CLI) or
+by adjusting the batch size value in <code class="docutils literal notranslate"><span class="pre">template.yaml</span></code> file located in the workspace.</p>
+</div>
 </section>
 </section>
 
@@ -574,17 +606,17 @@ This prevents from getting clear explanation in the input image space using inte
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="auto_configuration.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="fast_data_loading.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Auto-configuration</p>
+          <p class="prev-next-title">Fast Data Loading</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="noisy_label_detection.html" title="next page">
+  <a class='right-next' id="next-link" href="../../reference/api/index.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Noisy Label Detection</p>
+      <p class="prev-next-title">API</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -605,13 +637,40 @@ This prevents from getting clear explanation in the input image space using inte
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#xai-algorithms-for-classification">
-   XAI algorithms for classification
+  <a class="reference internal nav-link" href="#tiling-strategies">
+   Tiling Strategies
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#xai-algorithms-for-detection">
-   XAI algorithms for detection
+  <a class="reference internal nav-link" href="#enable-tiling-via-otx-training-cli">
+   Enable Tiling via OTX Training CLI
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-tiling-via-otx-build">
+   Enable Tiling via OTX Build
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tile-size-and-tile-overlap-optimization">
+     Tile Size and Tile Overlap Optimization
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#tiling-sampling-strategy">
+     Tiling Sampling Strategy
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#manual-tiling-parameter-configuration">
+     Manual Tiling Parameter Configuration
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#run-tiling-on-openvino-exported-model">
+   Run Tiling on OpenVINO Exported Model
   </a>
  </li>
 </ul>
@@ -631,7 +690,7 @@ This prevents from getting clear explanation in the input image space using inte
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/explanation/additional_features/xai.rst.txt">
+    <a href="../../../_sources/guide/explanation/additional_features/tiling.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>
