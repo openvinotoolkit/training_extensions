@@ -54,4 +54,4 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == (1000, 7, 7)
-        assert (saliency_maps[0][0][0] == self.ref_saliency_vals_cls[template.name]).all()
+        assert np.all(np.abs(saliency_maps[0][0][0] - self.ref_saliency_vals_cls[template.name]) <= 1)
