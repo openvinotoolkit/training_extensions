@@ -325,27 +325,27 @@
           "train": {
             "YOLOX": 0.537,
             "SSD": 0.179,
-            "ATSS": 0.446
+            "MobileNetV2-ATSS": 0.446
           },
           "export": {
             "YOLOX": 0.534,
             "SSD": 0.179,
-            "ATSS": 0.455
+            "MobileNetV2-ATSS": 0.455
           },
           "deploy": {
             "YOLOX": 0.534,
             "SSD": 0.179,
-            "ATSS": 0.455
+            "MobileNetV2-ATSS": 0.455
           },
           "nncf": {
             "YOLOX": 0.517,
             "SSD": 0.181,
-            "ATSS": 0.446
+            "MobileNetV2-ATSS": 0.446
           },
           "pot": {
             "YOLOX": 0.531,
             "SSD": 0.18,
-            "ATSS": 0.458
+            "MobileNetV2-ATSS": 0.458
           }
         }
       },
@@ -354,7 +354,7 @@
           "train": {
             "YOLOX": 0.532,
             "SSD": 0.2,
-            "ATSS": 0.443
+            "MobileNetV2-ATSS": 0.443
           }
         }
       },
@@ -363,7 +363,7 @@
           "train": {
             "YOLOX": 0.398,
             "SSD": 0.142,
-            "ATSS": 0.414
+            "MobileNetV2-ATSS": 0.414
           }
         }
       },
@@ -372,27 +372,27 @@
           "train": {
             "YOLOX": 0.545,
             "SSD": 0.19,
-            "ATSS": 0.459
+            "MobileNetV2-ATSS": 0.459
           },
           "export": {
             "YOLOX": 0.549,
             "SSD": 0.19,
-            "ATSS": 0.469
+            "MobileNetV2-ATSS": 0.469
           },
           "deploy": {
             "YOLOX": 0.549,
             "SSD": 0.19,
-            "ATSS": 0.469
+            "MobileNetV2-ATSS": 0.469
           },
           "nncf": {
             "YOLOX": 0.0,
             "SSD": 0.0,
-            "ATSS": 0.0
+            "MobileNetV2-ATSS": 0.0
           },
           "pot": {
             "YOLOX": 0.531,
             "SSD": 0.192,
-            "ATSS": 0.459
+            "MobileNetV2-ATSS": 0.459
           }
         }
       }
@@ -1573,7 +1573,7 @@
           "train": {
             "YOLOX": 4226.84,
             "SSD": 1992.196,
-            "ATSS": 1843.627
+            "MobileNetV2-ATSS": 1843.627
           }
         }
       },
@@ -1582,7 +1582,7 @@
           "train": {
             "YOLOX": 3059.355,
             "SSD": 1439.16,
-            "ATSS": 1531.103
+            "MobileNetV2-ATSS": 1531.103
           }
         }
       },
@@ -1591,7 +1591,7 @@
           "train": {
             "YOLOX": 4962.307,
             "SSD": 6410.017,
-            "ATSS": 6263.435
+            "MobileNetV2-ATSS": 6263.435
           }
         }
       },
@@ -1600,7 +1600,7 @@
           "train": {
             "YOLOX": 1689.117,
             "SSD": 2052.821,
-            "ATSS": 2074.501
+            "MobileNetV2-ATSS": 2074.501
           }
         }
       }
@@ -1973,7 +1973,7 @@
           "train": {
             "YOLOX": 82.169,
             "SSD": 86.989,
-            "ATSS": 73.888
+            "MobileNetV2-ATSS": 73.888
           }
         }
       },
@@ -1982,7 +1982,7 @@
           "train": {
             "YOLOX": 59.154,
             "SSD": 89.412,
-            "ATSS": 62.492
+            "MobileNetV2-ATSS": 62.492
           }
         }
       },
@@ -1991,7 +1991,7 @@
           "train": {
             "YOLOX": 47.199,
             "SSD": 76.703,
-            "ATSS": 50.34
+            "MobileNetV2-ATSS": 50.34
           }
         }
       },
@@ -2000,7 +2000,7 @@
           "train": {
             "YOLOX": 146.561,
             "SSD": 169.937,
-            "ATSS": 84.882
+            "MobileNetV2-ATSS": 84.882
           }
         }
       }

@@ -33,7 +33,7 @@ from otx.core.data.manager.dataset_manager import DatasetManager
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
-    "DETECTION": "Custom_Object_Detection_Gen3_ATSS",
+    "DETECTION": "Custom_Object_Detection_Gen3_MobileNetV2_ATSS",
     "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
     "ROTATED_DETECTION": "Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50",
     "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",

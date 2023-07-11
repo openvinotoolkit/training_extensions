@@ -147,7 +147,7 @@ class TestOVClsXAIAPI(ClassificationTaskAPIBase):
 
 class TestOVDetXAIAPI(DetectionTaskAPIBase):
     ref_raw_saliency_shapes = {
-        "ATSS": (6, 8),
+        "MobileNetV2-ATSS": (6, 8),
     }
 
     @e2e_pytest_api
@@ -216,7 +216,7 @@ class TestOVDetXAIAPI(DetectionTaskAPIBase):
 
 class TestOVDetTilXAIAPI(DetectionTaskAPIBase):
     ref_raw_saliency_shapes = {
-        "ATSS": (6, 8),
+        "MobileNetV2-ATSS": (6, 8),
     }
 
     @e2e_pytest_api

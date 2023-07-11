@@ -133,7 +133,7 @@ Examples of test parameters short names
 
 So, examples of test parameters strings are
 
-- `ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife`
+- `ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_MobileNetV2_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife`
 - `ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficinetNet-B0,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife`
 
 The test parameters strings are used in the test suite as test id-s.
