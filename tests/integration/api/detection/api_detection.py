@@ -24,7 +24,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.utils.shape_factory import ShapeFactory
 from tests.test_helpers import generate_random_annotated_image
 
-DEFAULT_DET_TEMPLATE_DIR = osp.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
+DEFAULT_DET_TEMPLATE_DIR = osp.join("src/otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
 
 
 class DetectionTaskAPIBase:
@@ -84,7 +84,7 @@ class DetectionTaskAPIBase:
         return environment, dataset
 
     @staticmethod
-    def setup_configurable_parameters(template_dir, num_iters=10):
+    def setup_configurable_parameters(template_dir, num_iters=10, tiling=False):
         glb = glob.glob(f"{template_dir}/template*.yaml")
         template_path = glb[0] if glb else None
         if not template_path:
@@ -95,4 +95,6 @@ class DetectionTaskAPIBase:
         hyper_parameters.learning_parameters.num_iters = num_iters
         hyper_parameters.postprocessing.result_based_confidence_threshold = False
         hyper_parameters.postprocessing.confidence_threshold = 0.1
+        if tiling:
+            hyper_parameters.tiling_parameters.enable_tiling = True
         return hyper_parameters, model_template

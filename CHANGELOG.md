@@ -9,7 +9,11 @@ All notable changes to this project will be documented in this file.
 - Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
 - Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
 - Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (https://github.com/openvinotoolkit/training_extensions/pull/2195)
+- Add per-class XAI saliency maps for Mask R-CNN model (https://github.com/openvinotoolkit/training_extensions/pull/2227)
 - Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
+- Add new object detector DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
+- Add new visual prompting task (https://github.com/openvinotoolkit/training_extensions/pull/2203), (https://github.com/openvinotoolkit/training_extensions/pull/2274)
+- Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
 
 ### Enhancements
 
@@ -18,6 +22,8 @@ All notable changes to this project will be documented in this file.
 - Set persistent_workers and pin_memory as True in detection task (<https://github.com/openvinotoolkit/training_extensions/pull/2224>)
 - New algorithm for Semi-SL semantic segmentation based on metric lerning via class prototypes (https://github.com/openvinotoolkit/training_extensions/pull/2156)
 - Self-SL for classification now can recieve just folder with any images to start contrastive pretraining (https://github.com/openvinotoolkit/training_extensions/pull/2219)
+- Update OpenVINO version to 2023.0, and NNCF verion to 2.5 (<https://github.com/openvinotoolkit/training_extensions/pull/2090>)
+- Improve XAI saliency map generation for tiling detection and tiling instance segmentation (https://github.com/openvinotoolkit/training_extensions/pull/2240)
 
 ### Bug fixes
 
@@ -26,7 +32,7 @@ All notable changes to this project will be documented in this file.
 
 ### Known issues
 
-- OpenVINO(==2022.3) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
 
 ## \[v1.3.1\]
 

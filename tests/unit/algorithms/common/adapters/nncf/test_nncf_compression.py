@@ -10,7 +10,6 @@ from torch import nn
 from otx.algorithms.common.adapters.nncf.compression import (
     AccuracyAwareLrUpdater,
     NNCFMetaState,
-    get_uncompressed_model,
     is_checkpoint_nncf,
     is_state_nncf,
 )
@@ -81,15 +80,6 @@ def mock_model():
             super().__init__()
 
     return MockModule()
-
-
-@e2e_pytest_unit
-def test_get_uncompressed_model(mock_model):
-    returns_with_params = [
-        (mock_model, [mock_model], {}),
-    ]
-
-    helper(get_uncompressed_model, returns_with_params)
 
 
 class TestAccuracyAwareLrUpdater:

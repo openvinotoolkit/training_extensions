@@ -171,7 +171,7 @@ class TestDetectionConfigurer:
 
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
-        ssd_dir = os.path.join("otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
+        ssd_dir = os.path.join("src/otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
         ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
         ssd_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
         model_cfg = copy.deepcopy(ssd_cfg)

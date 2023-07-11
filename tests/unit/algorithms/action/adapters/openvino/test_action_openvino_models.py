@@ -9,7 +9,7 @@ from typing import Dict
 import numpy as np
 import pytest
 from mmcv.utils import Config
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
+from openvino.model_api.adapters import OpenvinoAdapter
 
 from otx.algorithms.action.adapters.openvino.model_wrappers.openvino_models import (
     OTXOVActionCls,

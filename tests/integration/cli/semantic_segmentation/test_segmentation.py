@@ -69,7 +69,7 @@ otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
-    os.path.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "template.yaml")
+    os.path.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "template.yaml")
 )
 templates = [default_template]
 templates_ids = [default_template.model_template_id]
@@ -77,7 +77,7 @@ templates_ids = [default_template.model_template_id]
 # add integration test for semi-sl with new SegNext model and prototype based approach
 # other tests will be updated accordingly after fully transfer to segnext templates
 segnext_experimental_template = parse_model_template(
-    os.path.join("otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
+    os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
 )
 templates_inc_segnext = [segnext_experimental_template, default_template]
 templates_ids_inc_segnext = [segnext_experimental_template.model_template_id, default_template.model_template_id]

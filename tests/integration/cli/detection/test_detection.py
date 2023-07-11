@@ -60,21 +60,25 @@ otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
-    os.path.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
+    os.path.join("src/otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
 )
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
+templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
 
-experimental_template = parse_model_template(
-    "otx/algorithms/detection/configs/detection/resnet50_deformable-detr/template_experimental.yaml"
-)
-experimental_template_id = experimental_template.model_template_id
+experimental_templates = [
+    parse_model_template(
+        "src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml"
+    ),
+    parse_model_template("src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
+    parse_model_template("src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml"),
+]
+experimental_template_ids = [template.model_template_id for template in experimental_templates]
 
-templates_w_experimental = templates + [experimental_template]
-templates_ids_w_experimental = templates_ids + [experimental_template_id]
+templates_w_experimental = templates + experimental_templates
+templates_ids_w_experimental = templates_ids + experimental_template_ids
 
 
 class TestDetectionCLI:
@@ -85,7 +89,7 @@ class TestDetectionCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
@@ -123,7 +127,7 @@ class TestDetectionCLI:
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "detection"

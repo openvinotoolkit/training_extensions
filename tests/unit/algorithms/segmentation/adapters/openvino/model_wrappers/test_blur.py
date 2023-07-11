@@ -4,8 +4,8 @@
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.adapters.openvino_adapter import OpenvinoAdapter
-from openvino.model_zoo.model_api.models import SegmentationModel
+from openvino.model_api.adapters.openvino_adapter import OpenvinoAdapter
+from openvino.model_api.models import SegmentationModel
 
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     BlurSegmentation,

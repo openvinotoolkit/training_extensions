@@ -131,12 +131,13 @@ The list of supported templates for instance segmentation is available with the 
 
   (otx) ...$ otx find --template --task instance_segmentation
 
-  +-----------------------+----------------------------------------------------------------+--------------------------+-----------------------------------------------------------------------------------------------+
-  |          TASK         |                               ID                               |           NAME           |                                           BASE PATH                                           |
-  +-----------------------+----------------------------------------------------------------+--------------------------+-----------------------------------------------------------------------------------------------+
-  | INSTANCE_SEGMENTATION |    Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50     |    MaskRCNN-ResNet50     |     otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml    |
-  | INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B | MaskRCNN-EfficientNetB2B | otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml |
-  +-----------------------+----------------------------------------------------------------+--------------------------+-----------------------------------------------------------------------------------------------+
+  +-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
+  |          TASK         |                               ID                               |           NAME           |                                             BASE PATH                                             |
+  +-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
+  | INSTANCE_SEGMENTATION |    Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50     |    MaskRCNN-ResNet50     |     src/otx/algorithms/detection/configs/instance_segmentation/resnet50_maskrcnn/template.yaml    |
+  | INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B | MaskRCNN-EfficientNetB2B | src/otx/algorithms/detection/configs/instance_segmentation/efficientnetb2b_maskrcnn/template.yaml |
+  | INSTANCE_SEGMENTATION | Custom_Counting_Instance_Segmentation_MaskRCNN_ConvNeXt        | MaskRCNN-ConvNeXt        | src/otx/algorithms/detection/configs/instance_segmentation/convnext_maskrcnn/template.yaml        |
+  +-----------------------+----------------------------------------------------------------+--------------------------+---------------------------------------------------------------------------------------------------+
 
 2. We need to create
 OpenVINO™ Training Extensions workspace first.

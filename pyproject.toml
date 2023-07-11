@@ -13,19 +13,25 @@ build-backend = "setuptools.build_meta"
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# CIBUILDWHEEL CONFIGURATION.                                                 #
+[tool.cibuildwheel]
+build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # COVERAGE CONFIGURATION.                                                     #
 [tool.coverage.run]
 source = [
-    "otx/",
+    "src/otx/",
 ]
 omit = [
-    "otx/algorithms/*/configs/**/*pipeline*.py",
-    "otx/algorithms/*/configs/**/model*.py",
-    "otx/algorithms/*/configs/**/deployment.py",
-    "otx/algorithms/**/configs/**/backbones/*",
-    "otx/algorithms/**/*sample*.py",
+    "src/otx/algorithms/*/configs/**/*pipeline*.py",
+    "src/otx/algorithms/*/configs/**/model*.py",
+    "src/otx/algorithms/*/configs/**/deployment.py",
+    "src/otx/algorithms/**/configs/**/backbones/*",
+    "src/otx/algorithms/**/*sample*.py",
     "**/__init__.py",
-    "otx/recipes/*",
+    "src/otx/recipes/*",
 ]
 
 
@@ -101,7 +107,7 @@ exclude = [
 
 # Extended exclude for the project specific
 extend-exclude = [
-    "otx/api"
+    "src/otx/api"
 ]
 
 # Same as Black.

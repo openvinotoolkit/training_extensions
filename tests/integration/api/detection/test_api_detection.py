@@ -27,7 +27,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.integration.api.detection.api_detection import DetectionTaskAPIBase
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-DEFAULT_DET_TEMPLATE_DIR = osp.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
+DEFAULT_DET_TEMPLATE_DIR = osp.join("src/otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -51,7 +51,7 @@ class TestDetectionTaskAPI(DetectionTaskAPIBase):
         detection_template = ["mobilenetv2_atss"]
         for model_template in detection_template:
             parse_model_template(
-                osp.join("otx/algorithms/detection/configs", "detection", model_template, "template.yaml")
+                osp.join("src/otx/algorithms/detection/configs", "detection", model_template, "template.yaml")
             )
 
     @e2e_pytest_api

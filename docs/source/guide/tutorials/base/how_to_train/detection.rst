@@ -134,13 +134,13 @@ The list of supported templates for object detection is available with the comma
 .. code-block::
 
   (otx) ...$ otx find --template --task DETECTION
-  +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
-  |    TASK   |                 ID                |  NAME |                                    PATH                                   |
-  +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
-  | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-  | DETECTION |  Custom_Object_Detection_Gen3_SSD |  SSD  |  otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
-  | DETECTION | Custom_Object_Detection_Gen3_ATSS |  ATSS | otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
-  +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
+  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
+  |    TASK   |                 ID                |  NAME |                                      PATH                                     |
+  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
+  | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
+  | DETECTION |  Custom_Object_Detection_Gen3_SSD |  SSD  |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
+  | DETECTION | Custom_Object_Detection_Gen3_ATSS |  ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
+  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
 
 .. _detection_workspace:
 

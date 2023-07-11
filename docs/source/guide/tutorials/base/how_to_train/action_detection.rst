@@ -36,7 +36,7 @@ environment:
 Dataset preparation
 ***************************
 
-Although we offer conversion codes from `ava dataset format <https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md>`_ to `cvat dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ from `this code <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/action/utils/convert_public_data_to_cvat.py>`_, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from `this link <https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link>`_.
+Although we offer conversion codes from `ava dataset format <https://github.com/open-mmlab/mmaction2/blob/master/tools/data/ava/README.md>`_ to `cvat dataset format <https://opencv.github.io/cvat/docs/manual/advanced/xml_format/>`_ from `this code <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/action/utils/convert_public_data_to_cvat.py>`_, for easy beginning you can download subset of JHMDB dataset, which already transformed to CVAT format from `this link <https://drive.google.com/file/d/1ZgUYkhOAJ9_-xMCujPJlMLFILuGkhI4X/view?usp=share_link>`_.
 
 If you download data from link and extract to ``training_extensions/data`` folder(you should make data folder at first), you can see the structure below:
 
@@ -74,11 +74,11 @@ The list of supported templates for action detection is available with the comma
 
   (otx) ...$ otx find --task action_detection
 
-  +------------------+---------------------------------------+---------------+---------------------------------------------------------------------+
-  |       TASK       |                   ID                  |      NAME     |                              BASE PATH                              |
-  +------------------+---------------------------------------+---------------+---------------------------------------------------------------------+
-  | ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml |
-  +------------------+---------------------------------------+---------------+---------------------------------------------------------------------+
+  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
+  |       TASK       |                   ID                  |      NAME     |                                BASE PATH                                |
+  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
+  | ACTION_DETECTION | Custom_Action_Detection_X3D_FAST_RCNN | X3D_FAST_RCNN | src/otx/algorithms/action/configs/detection/x3d_fast_rcnn/template.yaml |
+  +------------------+---------------------------------------+---------------+-------------------------------------------------------------------------+
 
 To have a specific example in this tutorial, all commands will be run on the X3D_FAST_RCNN  model. It's a light model, that achieves competitive accuracy while keeping the inference fast.
 

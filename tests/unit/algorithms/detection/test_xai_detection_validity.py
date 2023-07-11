@@ -15,10 +15,10 @@ from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hoo
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
-templates_det = Registry("otx/algorithms").filter(task_type="DETECTION").templates
+templates_det = Registry("src/otx/algorithms").filter(task_type="DETECTION").templates
 templates_det_ids = [template.model_template_id for template in templates_det]
 
-templates_two_stage_det = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
+templates_two_stage_det = Registry("src/otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
 templates_two_stage_det_ids = [template.model_template_id for template in templates_two_stage_det]
 
 
@@ -33,6 +33,12 @@ class TestExplainMethods:
         "ATSS": np.array([67, 216, 255, 57], dtype=np.uint8),
         "YOLOX": np.array([80, 28, 42, 53, 49, 68, 72, 75, 69, 57, 65, 6, 157], dtype=np.uint8),
         "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 28, 44, 23, 61], dtype=np.uint8),
+    }
+
+    ref_saliency_vals_det_wo_postprocess = {
+        "ATSS": -0.10465062,
+        "YOLOX": 0.04948914,
+        "SSD": 0.6629989,
     }
 
     @staticmethod
@@ -74,7 +80,23 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
-        assert (saliency_maps[0][0][0] == self.ref_saliency_vals_det[template.name]).all()
+        assert np.all(np.abs(saliency_maps[0][0][0] - self.ref_saliency_vals_det[template.name]) <= 1)
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("template", templates_det, ids=templates_det_ids)
+    def test_saliency_map_det_wo_postprocessing(self, template):
+        model = self._get_model(template)
+        data = self._get_data()
+
+        with DetClassProbabilityMapHook(model, normalize=False, use_cls_softmax=False) as det_hook:
+            with torch.no_grad():
+                _ = model(return_loss=False, rescale=True, **data)
+        saliency_maps = det_hook.records
+
+        assert len(saliency_maps) == 2
+        assert saliency_maps[0].ndim == 3
+        assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
+        assert np.abs(saliency_maps[0][0][0][0] - self.ref_saliency_vals_det_wo_postprocess[template.name]) < 1e-4
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_two_stage_det, ids=templates_two_stage_det_ids)

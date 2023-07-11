@@ -46,12 +46,12 @@ MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("otx/algorithms/action/configs", "classification", "x3d", "template.yaml")
+        os.path.join("src/otx/algorithms/action/configs", "classification", "x3d", "template.yaml")
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("otx/algorithms/action").filter(task_type="ACTION_CLASSIFICATION").templates
+    templates = Registry("src/otx/algorithms/action").filter(task_type="ACTION_CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 
@@ -108,6 +108,8 @@ class TestToolsOTXActionClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
+        if template.model_template_id == "Custom_Action_Classification_MoViNet":
+            pytest.xfail("Issue#2058: MoViNet inference fails in OV 2023.0")
         tmp_dir_path = tmp_dir_path / "action_cls"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 

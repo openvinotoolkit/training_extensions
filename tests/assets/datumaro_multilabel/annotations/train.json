@@ -4,12 +4,17 @@
     "label": {
       "label_groups": [
         {
-          "name": "tom",
+          "name": "Classification labels___tom",
           "group_type": "exclusive",
           "labels": ["tom"]
         },
         {
-          "name": "mary",
+          "name": "Classification labels___john",
+          "group_type": "exclusive",
+          "labels": ["john"]
+        },
+        {
+          "name": "Classification labels___mary",
           "group_type": "exclusive",
           "labels": ["mary"]
         }
@@ -17,6 +22,11 @@
       "labels": [
         {
           "name": "tom",
+          "parent": "",
+          "attributes": []
+        },
+        {
+          "name": "john",
           "parent": "",
           "attributes": []
         },
@@ -42,7 +52,7 @@
         {
           "id": 1,
           "type": "label",
-          "group": 0,
+          "group": 1,
           "label_id": 1
         }
       ],
@@ -56,8 +66,8 @@
         {
           "id": 0,
           "type": "label",
-          "group": 0,
-          "label_id": 0
+          "group": 2,
+          "label_id": 2
         }
       ],
       "image": {

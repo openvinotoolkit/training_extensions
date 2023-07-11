@@ -8,6 +8,8 @@ import torch
 import pytest
 from mmcv import ConfigDict
 
+from otx.api.entities.label import LabelEntity, Domain
+from otx.api.entities.id import ID
 from otx.algorithms.segmentation.adapters.mmseg.task import MMSegmentationTask
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 from otx.api.configuration.helper import create
@@ -67,3 +69,18 @@ class TestMMSegmentationTask:
 
         mocker_load.assert_called_once()
         mocker_save.assert_called_once()
+
+    @e2e_pytest_unit
+    def test_label_order(self, mocker):
+        mocker.patch("otx.algorithms.segmentation.task.os")
+        mocker.patch("otx.algorithms.segmentation.task.TRAIN_TYPE_DIR_PATH")
+        mock_environemnt = mocker.MagicMock()
+
+        fake_label = []
+        for i in range(20):
+            fake_label.append(LabelEntity(name=f"class_{i}", domain=Domain.SEGMENTATION, id=ID(str(i))))
+        mock_environemnt.get_labels.return_value = fake_label
+        task = MMSegmentationTask(mock_environemnt)
+
+        for i, label_entity in task._label_dictionary.items():
+            assert label_entity.name == f"class_{i-1}"

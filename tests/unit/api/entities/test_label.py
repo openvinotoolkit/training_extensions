@@ -36,7 +36,7 @@ class TestDomain:
         Test passes if the results match
         """
         domain = Domain
-        assert len(domain) == 11
+        assert len(domain) == 12
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
