@@ -66,7 +66,6 @@ def get_args():
         "--input-size",
         help="Set input size of model to export.",
         type=int,
-        default=0,
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
