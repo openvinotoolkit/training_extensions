@@ -53,7 +53,8 @@ class TestOpenVINOVisualPromptingInferencer:
                 labels=[ScoredLabel(LabelEntity(name="fake", domain="VISUALPROMPTING"), probability=1.0)],
             )
         ]
-        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
+        # FIXME: change VisualPromptingOpenvinoAdapter to OpenvinoAdapter after model api version update
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.VisualPromptingOpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         mocker.patch.object(
             VisualPromptingToAnnotationConverter, "convert_to_annotation", return_value=self.fake_annotation
@@ -77,13 +78,13 @@ class TestOpenVINOVisualPromptingInferencer:
         """Test pre_process."""
         mocker_get_prompts = mocker.patch.object(OTXVisualPromptingDataset, "get_prompts", return_value={})
         mocker.patch.object(self.visual_prompting_ov_inferencer, "transform", lambda items: items)
+        mocker.patch.object(self.visual_prompting_ov_inferencer.model["image_encoder"], "preprocess", return_value=({}, {}))
+        mocker.patch.object(self.visual_prompting_ov_inferencer.model["decoder"], "preprocess", return_value=[{}])
         fake_input = mocker.Mock(spec=DatasetItemEntity)
 
         returned_value = self.visual_prompting_ov_inferencer.pre_process(fake_input)
 
-        assert "index" in returned_value
-        assert returned_value.get("index") == 0
-        assert "images" in returned_value
+        assert isinstance(returned_value, dict)
         mocker_get_prompts.assert_called_once()
 
     @e2e_pytest_unit
@@ -112,13 +113,13 @@ class TestOpenVINOVisualPromptingInferencer:
             return_value={
                 "index": 0,
                 "images": torch.rand((1, 3, 2, 2)),
-                "bboxes": [np.array([[[1, 1], [2, 2]]])],
-                "labels": [1, 2],
-                "original_size": (4, 4),
+                "prompts": [{
+                    "point_coords": [np.array([[[1, 1], [2, 2]]])],
+                    "point_labels": [1, 2],
+                    "label": LabelEntity(name="fake", domain="VISUALPROMPTING"),
+                    "orig_size": (4, 4)
+                }]
             },
-        )
-        mocker_pre_process_decoder = mocker.patch.object(
-            self.visual_prompting_ov_inferencer.model["decoder"], "preprocess", return_value={}
         )
         mocker_forward = mocker.patch.object(
             OpenVINOVisualPromptingInferencer, "forward", return_value={"image_embeddings": np.empty((4, 2, 2))}
@@ -134,7 +135,6 @@ class TestOpenVINOVisualPromptingInferencer:
         returned_value = self.visual_prompting_ov_inferencer.predict(fake_input)
 
         mocker_pre_process.assert_called_once()
-        mocker_pre_process_decoder.assert_called_once()
         mocker_forward.assert_called_once()
         mocker_forward_decoder.assert_called_once()
         mocker_post_process.assert_called_once()
@@ -173,7 +173,8 @@ class TestOpenVINOVisualPromptingTask:
     @pytest.fixture(autouse=True)
     def setup(self, mocker, otx_model):
         """Load the OpenVINOVisualPromptingTask."""
-        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
+        # FIXME: change VisualPromptingOpenvinoAdapter to OpenvinoAdapter after model api version update
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.VisualPromptingOpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.task_environment = init_environment()
         visual_prompting_hparams = self.task_environment.get_hyper_parameters(VisualPromptingBaseConfig)
