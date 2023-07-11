@@ -78,7 +78,9 @@ class TestOpenVINOVisualPromptingInferencer:
         """Test pre_process."""
         mocker_get_prompts = mocker.patch.object(OTXVisualPromptingDataset, "get_prompts", return_value={})
         mocker.patch.object(self.visual_prompting_ov_inferencer, "transform", lambda items: items)
-        mocker.patch.object(self.visual_prompting_ov_inferencer.model["image_encoder"], "preprocess", return_value=({}, {}))
+        mocker.patch.object(
+            self.visual_prompting_ov_inferencer.model["image_encoder"], "preprocess", return_value=({}, {})
+        )
         mocker.patch.object(self.visual_prompting_ov_inferencer.model["decoder"], "preprocess", return_value=[{}])
         fake_input = mocker.Mock(spec=DatasetItemEntity)
 
@@ -113,12 +115,14 @@ class TestOpenVINOVisualPromptingInferencer:
             return_value={
                 "index": 0,
                 "images": torch.rand((1, 3, 2, 2)),
-                "prompts": [{
-                    "point_coords": [np.array([[[1, 1], [2, 2]]])],
-                    "point_labels": [1, 2],
-                    "label": LabelEntity(name="fake", domain="VISUALPROMPTING"),
-                    "orig_size": (4, 4)
-                }]
+                "prompts": [
+                    {
+                        "point_coords": [np.array([[[1, 1], [2, 2]]])],
+                        "point_labels": [1, 2],
+                        "label": LabelEntity(name="fake", domain="VISUALPROMPTING"),
+                        "orig_size": (4, 4),
+                    }
+                ],
             },
         )
         mocker_forward = mocker.patch.object(
