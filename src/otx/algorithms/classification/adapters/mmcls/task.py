@@ -558,7 +558,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         return eval_predictions, saliency_maps
 
-    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
+    def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool, input_size: Optional[int] = None):
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -578,7 +578,7 @@ class MMClassificationTask(OTXClassificationTask):
         self._precision[0] = precision
         assert len(self._precision) == 1
         export_options: Dict[str, Any] = {}
-        export_options["deploy_cfg"] = self._init_deploy_cfg(cfg)
+        export_options["deploy_cfg"] = self._init_deploy_cfg(cfg, input_size)
 
         export_options["precision"] = str(precision)
         export_options["type"] = str(export_format)
@@ -624,7 +624,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         return results
 
-    def _init_deploy_cfg(self, cfg: Config) -> Union[Config, None]:
+    def _init_deploy_cfg(self, cfg: Config, input_size: Optional[int] = None) -> Union[Config, None]:
         base_dir = os.path.abspath(os.path.dirname(self._task_environment.model_template.model_template_path))
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
@@ -674,14 +674,17 @@ class MMClassificationTask(OTXClassificationTask):
                 mo_options.flags.extend(options["flags"])
                 mo_options.flags = list(set(mo_options.flags))
 
-            def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_pairs(
-                    cfg.data.test.pipeline,
-                    dict(type="Resize"),
-                )
-                assert len(resize_cfg) == 1
-                resize_cfg = resize_cfg[0]
-                size = resize_cfg.size
+            def patch_input_shape(deploy_cfg, input_size=None):
+                if input_size is None:
+                    resize_cfg = get_configs_by_pairs(
+                        cfg.data.test.pipeline,
+                        dict(type="Resize"),
+                    )
+                    assert len(resize_cfg) == 1
+                    resize_cfg = resize_cfg[0]
+                    size = resize_cfg.size
+                else:
+                    size = input_size
                 if isinstance(size, int):
                     size = (size, size)
                 assert all(isinstance(i, int) and i > 0 for i in size)
@@ -690,8 +693,8 @@ class MMClassificationTask(OTXClassificationTask):
                 deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
             patch_input_preprocessing(deploy_cfg)
-            if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(deploy_cfg)
+            if not deploy_cfg.backend_config.get("model_inputs", []) or input_size is not None:
+                patch_input_shape(deploy_cfg, input_size)
 
         return deploy_cfg
 
