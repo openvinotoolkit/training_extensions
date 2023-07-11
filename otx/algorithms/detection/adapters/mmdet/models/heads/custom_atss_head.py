@@ -14,6 +14,7 @@ from mmdet.core import (
 )
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.atss_head import ATSSHead
+from mmdet.models.losses.utils import weight_reduce_loss
 
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     CrossDatasetDetectorHead,
@@ -98,11 +99,14 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             _,
             valid_label_mask,
             num_total_pos,
-            __,
+            num_total_neg,
         ) = cls_reg_targets
 
-        num_total_samples = reduce_mean(torch.tensor(num_total_pos, dtype=torch.float, device=device)).item()
-        num_total_samples = max(num_total_samples, 1.0)
+        num_total_pos = reduce_mean(torch.tensor(num_total_pos, dtype=torch.float, device=device)).item()
+        num_total_pos = max(num_total_pos, 1.0)
+        
+        num_total_neg = reduce_mean(torch.tensor(num_total_neg, dtype=torch.float, device=device)).item()
+        num_total_neg = max(num_total_neg, 1.0)
 
         losses_cls, losses_bbox, loss_centerness, bbox_avg_factor = multi_apply(
             self.loss_single,
@@ -114,9 +118,9 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             label_weights_list,
             bbox_targets_list,
             valid_label_mask,
-            num_total_samples=num_total_samples,
+            num_pos_samples=num_total_pos,
+            num_neg_samples=num_total_neg
         )
-
         bbox_avg_factor = sum(bbox_avg_factor)
         bbox_avg_factor = reduce_mean(bbox_avg_factor).item()
         if bbox_avg_factor < EPS:
@@ -134,7 +138,8 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         label_weights,
         bbox_targets,
         valid_label_mask,
-        num_total_samples,
+        num_pos_samples,
+        num_neg_samples
     ):
         """Compute loss of a single scale level.
 
@@ -155,13 +160,14 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
                 shape (N, num_total_anchors, 4).
             valid_label_mask (Tensor): Label mask for consideration of ignored
                 label with shape (N, num_total_anchors, 1).
-            num_total_samples (int): Number of positive samples that is
+            num_pos_samples (int): Number of positive samples that is
+                reduced over all GPUs.
+            num_neg_samples (int): Number of negative samples that is
                 reduced over all GPUs.
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-
         anchors = anchors.reshape(-1, 4)
         cls_score = cls_score.permute(0, 2, 3, 1).reshape(-1, self.cls_out_channels).contiguous()
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(-1, 4)
@@ -196,7 +202,7 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             loss_bbox = self._get_loss_bbox(pos_bbox_targets, pos_bbox_pred, centerness_targets)
 
             # centerness loss
-            loss_centerness = self._get_loss_centerness(num_total_samples, pos_centerness, centerness_targets)
+            loss_centerness = self._get_loss_centerness(num_pos_samples, pos_centerness, centerness_targets)
 
         else:
             loss_bbox = bbox_pred.sum() * 0
@@ -204,19 +210,68 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             centerness_targets = bbox_targets.new_tensor(0.0)
 
         # Re-weigting BG loss
-        if self.bg_loss_weight >= 0.0:
-            neg_indices = labels == self.num_classes
-            label_weights[neg_indices] = self.bg_loss_weight
-
         if self.use_qfl:
             labels = (labels, quality)  # For quality focal loss arg spec
-
-        # classification loss
-        cls_score = cls_score[pos_inds]
-        labels = labels[pos_inds]
-        label_weights = label_weights[pos_inds]
-        loss_cls = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, num_total_samples)
-
+        
+        # Reference: MMDetection
+        # If there is an single class and the number of positive prediction is too small than overall labels,
+        # use_balanced_focal_loss will be enabled, it calculates the positive and negative loss separately.
+        # use_balanced_focal_loss = (self.num_classes == 1) or (len(pos_inds) / len(labels)) < 0.05
+        use_balanced_focal_loss = num_pos_samples < 90
+        if use_balanced_focal_loss:
+            neg_inds = labels == self.num_classes
+            pred = cls_score.contiguous().sigmoid()
+            target = torch.nn.functional.one_hot(labels.contiguous(), num_classes=self.num_classes + 1)
+            target = target[:, :self.num_classes]
+            target = target.type_as(pred)
+            
+            pt = (1- pred) * target + pred * (1-target)
+            # alpha = self.loss_cls.alpha
+            alpha = (num_neg_samples / (num_pos_samples + num_neg_samples)) / 1.1
+            # gamma = self.loss_cls.gamma # 2
+            gamma = 0.5
+            
+            focal_weight = (alpha * target + (1-alpha) * (1-target)) * pt.pow(gamma)
+            loss = torch.nn.functional.binary_cross_entropy(
+                pred, target, reduction='none'
+            )
+            focal_loss = loss * focal_weight
+            if label_weights is not None:
+                if label_weights.shape != focal_loss.shape:
+                    if label_weights.size(0) == focal_loss.size(0):
+                        label_weights = label_weights.view(-1, 1)
+                    else:
+                        assert label_weights.numel() == focal_loss.numel()
+                        label_weights = label_weights.view(focal_loss.size(0), -1)
+                assert label_weights.ndim == loss.ndim
+            pos_focal_loss = weight_reduce_loss(
+                focal_loss[pos_inds], label_weights[pos_inds], reduction='mean', avg_factor=num_pos_samples
+            )
+            neg_focal_loss = weight_reduce_loss(
+                focal_loss[neg_inds], label_weights[neg_inds], reduction='mean', avg_factor=num_pos_samples
+            )
+            balanced_focal_loss = pos_focal_loss * 3.0 + neg_focal_loss
+            loss_cls = balanced_focal_loss
+            print()
+            print(f"alpha: {alpha}, gamma: {gamma}")
+            print(f"p(t): {pt.mean()}")
+            print(f"num positive samples: {num_pos_samples}, num negative samples: {num_neg_samples}")
+            print(f"num labels: {len(labels)}, num pos: {len(pos_inds)}, num neg: {len(neg_inds)}")
+            print(f"pred (pos): {pred[pos_inds].mean()}, pred (neg): {pred[neg_inds].mean()}")
+            print(f"(before reduce, sum) pos loss : {focal_loss[pos_inds].sum()}, neg loss: {focal_loss[neg_inds].sum()}")
+            print(f"(before reduce, sum) focal loss: {focal_loss.sum()}")
+            print(f"(after reduce) pos loss : {pos_focal_loss}, neg loss: {neg_focal_loss}")
+            # print(f"balanced_loss: {balanced_focal_loss}")
+            
+            origin_loss_cls = weight_reduce_loss(focal_loss, label_weights, reduction='mean', avg_factor=num_pos_samples)
+            # loss_cls = origin_loss_cls
+            print(f"original_loss: {origin_loss_cls}")
+            # breakpoint()
+        else: 
+            real_loss = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, num_pos_samples)
+            loss_cls = real_loss
+            
+            
         return loss_cls, loss_bbox, loss_centerness, centerness_targets.sum()
 
     def _get_pos_inds(self, labels):
