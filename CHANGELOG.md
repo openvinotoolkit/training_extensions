@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 - Add per-class XAI saliency maps for Mask R-CNN model (https://github.com/openvinotoolkit/training_extensions/pull/2227)
 - Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
 - Add new object detector DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
-- Add new visual prompting task (https://github.com/openvinotoolkit/training_extensions/pull/2203), (https://github.com/openvinotoolkit/training_extensions/pull/2274)
+- Add new visual prompting task (https://github.com/openvinotoolkit/training_extensions/pull/2203, https://github.com/openvinotoolkit/training_extensions/pull/2274, https://github.com/openvinotoolkit/training_extensions/pull/2311)
 - Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
 
 ### Enhancements
