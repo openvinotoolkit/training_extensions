@@ -35,6 +35,8 @@ from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_ISEG_TEMPLATE_DIR,
     init_environment,
 )
+from otx.algorithms.detection.utils.data import adaptive_tile_params
+
 
 
 @DETECTORS.register_module(force=True)
@@ -428,3 +430,33 @@ class TestTilingDetection:
             assert len(data["gt_bboxes"].data[0][0]) <= max_annotation
             assert len(data["gt_labels"].data[0][0]) <= max_annotation
             assert len(data["gt_masks"].data[0][0]) <= max_annotation
+
+    @e2e_pytest_unit
+    def test_adaptive_tile_parameters(self):
+        model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
+        hp = create(model_template.hyper_parameters.data)
+
+        default_tile_size = hp.tiling_parameters.tile_size
+        default_tile_overlap = hp.tiling_parameters.tile_overlap
+        default_ir_scale_factor = hp.tiling_parameters.tile_ir_scale_factor
+        default_tile_max_number = hp.tiling_parameters.tile_max_number
+
+        img_sizes = []
+        for dataset_item in self.otx_dataset:
+            h, w = dataset_item.numpy.shape[:2]
+            img_sizes.append(0.5 * (h + w))
+        avg_img_sizes = np.mean(img_sizes)
+
+        adaptive_tile_params(hp.tiling_parameters, self.otx_dataset)
+        # check ir scale factor is changes if tile size * default_ir_scale_factor is larger than avg image size
+        if hp.tiling_parameters.tile_size * default_ir_scale_factor > avg_img_sizes:
+            assert hp.tiling_parameters.tile_ir_scale_factor == 1.0
+
+        # check tile size is changed
+        assert hp.tiling_parameters.tile_size != default_tile_size
+
+        # check tile overlap is changed
+        assert hp.tiling_parameters.tile_overlap != default_tile_overlap
+
+        # check max output prediction size is changed
+        assert hp.tiling_parameters.tile_max_number != default_tile_max_number
