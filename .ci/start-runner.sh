@@ -6,6 +6,7 @@ TAG_RUNNER="latest"
 ADDITIONAL_LABELS=""
 MOUNT_PATH=""
 DOCKER_REG_ADDR="local"
+FIX_CPUS="0"
 DEBUG_CONTAINER=false
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -42,6 +43,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -f|--fix-cpus)
+      FIX_CPUS="$2"
+      shift # past argument
+      shift # past value
+      ;;
     -d|--debug)
       DEBUG_CONTAINER=true
       shift # past argument
@@ -75,6 +81,7 @@ cat << EndofMessage
         -m|--mount          Dataset root path to be mounted to the started container (absolute path)
         -r|--reg            Specify docker registry URL <default: local>
         -d|--debug          Flag to start debugging CI container
+        -f|--fix-cpus       Specify the number of CPUs to set for the CI container
         -h|--help           Print this message
 EndofMessage
 exit 0
@@ -118,13 +125,19 @@ if [ $RET -eq 0 ]; then
     yes | docker rm "$CONTAINER_NAME"
 fi
 
+CPU_OPTIONS="--cpu-shares=1024"
+
+if [ "$FIX_CPUS" != "0" ]; then
+  CPU_OPTIONS="--cpus=$FIX_CPUS"
+fi
+
 if [ "$DEBUG_CONTAINER" = true ]; then
     # shellcheck disable=SC2086
     docker run -itd \
         --runtime=nvidia \
         --ipc=private \
         --shm-size=24g \
-        --cpu-shares=1024 \
+        "$CPU_OPTIONS" \
         --name "$CONTAINER_NAME" \
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         ${ENV_FLAGS} \
@@ -144,7 +157,7 @@ else
         --runtime=nvidia \
         --ipc=private \
         --shm-size=24g \
-        --cpu-shares=1024 \
+        "$CPU_OPTIONS" \
         --name "$CONTAINER_NAME" \
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         ${ENV_FLAGS} \
