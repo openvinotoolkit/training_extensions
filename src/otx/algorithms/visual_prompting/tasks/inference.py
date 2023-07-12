@@ -372,7 +372,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                         "--mean_values",
                         str(self.config.dataset.normalize.mean).replace(", ", ","),
                         "--scale_values",
-                        str(self.config.dataset.normalize.std).replace(", ", ",")
+                        str(self.config.dataset.normalize.std).replace(", ", ","),
                     ]
                 if precision == ModelPrecision.FP16:
                     optimize_command.append("--compress_to_fp16")
