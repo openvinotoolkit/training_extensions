@@ -174,9 +174,9 @@ class SegmentAnything(LightningModule):
                 state_dict = replace_state_dict_keys(state_dict, revise_keys)
                 self.load_state_dict(state_dict)
 
-    #################################################
-    #     forward for inference (export/deploy)     #
-    #################################################
+    ##########################################################
+    #     forward for inference (export/deploy/optimize)     #
+    ##########################################################
     @torch.no_grad()
     def forward(
         self,
