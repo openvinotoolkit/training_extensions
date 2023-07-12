@@ -67,7 +67,6 @@ class Decoder(SegmentationModel):
 
     @classmethod
     def parameters(cls):  # noqa: D102
-        # TODO (sungchul): where to update parameters
         parameters = super().parameters()
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         return parameters

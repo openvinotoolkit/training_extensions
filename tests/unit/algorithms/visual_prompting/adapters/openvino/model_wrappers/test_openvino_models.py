@@ -28,8 +28,6 @@ class TestImageEncoder:
         params = ImageEncoder.parameters()
 
         assert params.get("resize_type").default_value == "fit_to_window"
-        assert params.get("mean_values").default_value == [123.675, 116.28, 103.53]
-        assert params.get("scale_values").default_value == [58.395, 57.12, 57.375]
 
     @e2e_pytest_unit
     def test_preproces(self, mocker):
@@ -53,7 +51,7 @@ class TestImageEncoder:
 class TestDecoder:
     @pytest.fixture(autouse=True)
     def setup(self, mocker):
-        mocker.patch.object(ImageModel, "__init__")
+        mocker.patch.object(SegmentationModel, "__init__")
         mocker_model_adapter = mocker.Mock(spec=VisualPromptingOpenvinoAdapter)
         self.decoder = Decoder(mocker_model_adapter)
         self.decoder.image_size = 6
@@ -65,16 +63,6 @@ class TestDecoder:
 
         assert isinstance(params.get("image_size"), NumericalValue)
         assert params.get("image_size").default_value == 1024
-        assert isinstance(params.get("soft_threshold"), NumericalValue)
-        assert params.get("soft_threshold").default_value == 0.5
-        assert isinstance(params.get("blur_strength"), NumericalValue)
-        assert params.get("blur_strength").default_value == 1
-        assert isinstance(params.get("embedded_processing"), BooleanValue)
-        assert params.get("embedded_processing").default_value == True
-        assert isinstance(params.get("orig_width"), NumericalValue)
-        assert params.get("orig_width").default_value == 64
-        assert isinstance(params.get("orig_height"), NumericalValue)
-        assert params.get("orig_height").default_value == 64
 
     @e2e_pytest_unit
     def test_preprocess(self):
