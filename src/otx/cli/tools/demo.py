@@ -20,6 +20,8 @@ from collections import deque
 import cv2
 import numpy as np
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.image import Image

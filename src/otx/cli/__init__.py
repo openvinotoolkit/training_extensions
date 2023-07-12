@@ -5,6 +5,7 @@
 
 import os
 
+# This must be called before the first TaskType is imported to take effect.
 # How to make an Action Template invisible in Geti
 # Check FEATURE_FLAGS_OTX_ACTION_TASKS in the API to determine whether to use the Action
 # Always 1 in the OTX CLI
