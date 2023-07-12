@@ -22,6 +22,8 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import Optional
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
