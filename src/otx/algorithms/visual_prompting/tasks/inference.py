@@ -69,7 +69,7 @@ logger = get_logger()
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Visual Prompting Task.
 
-    Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
+    Train, Infer, and Export an Visual Prompting Task.
 
     Args:
         task_environment (TaskEnvironment): OTX Task environment.
@@ -367,6 +367,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     "--model_name",
                     module,
                 ]
+                if module == "visual_prompting_image_encoder":
+                    optimize_command += [
+                        "--mean_values",
+                        str(self.config.dataset.normalize.mean).replace(", ", ","),
+                        "--scale_values",
+                        str(self.config.dataset.normalize.std).replace(", ", ","),
+                    ]
                 if precision == ModelPrecision.FP16:
                     optimize_command.append("--compress_to_fp16")
                 subprocess.run(optimize_command, check=True)
