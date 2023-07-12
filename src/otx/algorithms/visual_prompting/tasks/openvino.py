@@ -20,6 +20,7 @@ import os
 import random
 import tempfile
 import time
+import random
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -40,6 +41,7 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
     OTXVisualPromptingDataset,
     get_transform,
 )
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
