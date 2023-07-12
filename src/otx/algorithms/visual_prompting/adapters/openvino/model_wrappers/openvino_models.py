@@ -23,7 +23,6 @@ from openvino.model_api.adapters.inference_adapter import InferenceAdapter
 from openvino.model_api.models import ImageModel
 from openvino.model_api.models.types import (
     BooleanValue,
-    ListValue,
     NumericalValue,
     StringValue,
 )
@@ -45,8 +44,6 @@ class ImageEncoder(ImageModel):
         parameters.update(
             {
                 "resize_type": StringValue(default_value="fit_to_window"),
-                "mean_values": ListValue(default_value=[123.675, 116.28, 103.53]),
-                "scale_values": ListValue(default_value=[58.395, 57.12, 57.375]),
             }
         )
         return parameters
