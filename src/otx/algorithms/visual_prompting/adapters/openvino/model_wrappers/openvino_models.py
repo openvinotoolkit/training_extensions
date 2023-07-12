@@ -20,12 +20,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import cv2
 import numpy as np
 from openvino.model_api.adapters.inference_adapter import InferenceAdapter
-from openvino.model_api.models import ImageModel
-from openvino.model_api.models.types import (
-    BooleanValue,
-    NumericalValue,
-    StringValue,
-)
+from openvino.model_api.models import ImageModel, SegmentationModel
+from openvino.model_api.models.types import NumericalValue, StringValue
 
 from otx.api.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
 
@@ -55,7 +51,7 @@ class ImageEncoder(ImageModel):
         return dict_inputs, meta
 
 
-class Decoder(ImageModel):
+class Decoder(SegmentationModel):
     """Decoder class for visual prompting of openvino model wrapper."""
 
     __model__ = "decoder"
@@ -73,16 +69,7 @@ class Decoder(ImageModel):
     def parameters(cls):  # noqa: D102
         # TODO (sungchul): where to update parameters
         parameters = super().parameters()
-        parameters.update(
-            {
-                "image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048),
-                "soft_threshold": NumericalValue(value_type=float, default_value=0.5, min=0.0, max=1.0),
-                "blur_strength": NumericalValue(value_type=int, default_value=1, min=0, max=25),
-                "embedded_processing": BooleanValue(default_value=True),
-                "orig_width": NumericalValue(value_type=int, default_value=64),
-                "orig_height": NumericalValue(value_type=int, default_value=64),
-            }
-        )
+        parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         return parameters
 
     def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]):
@@ -117,7 +104,7 @@ class Decoder(ImageModel):
 
     def _get_preprocess_shape(self, old_h: int, old_w: int, image_size: int) -> Tuple[int, int]:
         """Compute the output size given input size and target image size."""
-        scale = image_size * 1.0 / max(old_h, old_w)
+        scale = image_size / max(old_h, old_w)
         new_h, new_w = old_h * scale, old_w * scale
         new_w = int(new_w + 0.5)
         new_h = int(new_h + 0.5)
