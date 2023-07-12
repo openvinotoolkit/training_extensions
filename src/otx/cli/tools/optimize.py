@@ -17,6 +17,8 @@
 import json
 from pathlib import Path
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters

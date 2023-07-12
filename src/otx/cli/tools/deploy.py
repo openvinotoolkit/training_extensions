@@ -16,6 +16,8 @@
 
 from pathlib import Path
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.configuration.helper import create
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.task_environment import TaskEnvironment
