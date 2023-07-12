@@ -15,15 +15,19 @@
 # and limitations under the License.
 
 
+from sys import maxsize
+
 from attr import attrs
 
-from otx.algorithms.common.configs import BaseConfig
+from otx.algorithms.common.configs import BaseConfig, POTQuantizationPreset
 from otx.api.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
+    boolean_attribute,
     configurable_boolean,
     configurable_float,
     configurable_integer,
+    selectable,
     string_attribute,
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
@@ -95,5 +99,20 @@ class VisualPromptingBaseConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+    @attrs
+    class __POTParameter(BaseConfig.BasePOTParameter):
+        header = string_attribute("POT Parameters")
+        description = header
+        visible_in_ui = boolean_attribute(False)
+
+        preset = selectable(
+            default_value=POTQuantizationPreset.MIXED,
+            header="Preset",
+            description="Quantization preset that defines quantization scheme",
+            editable=True,
+            visible_in_ui=True,
+        )
+
     learning_parameters = add_parameter_group(__LearningParameters)
     postprocessing = add_parameter_group(__Postprocessing)
+    pot_parameters = add_parameter_group(__POTParameter)
