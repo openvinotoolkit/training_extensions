@@ -164,11 +164,12 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         soft_predictions: List[np.ndarray] = []
         for prompt in prompts:
             label = prompt.pop("label")
+            orig_size = prompt.pop("orig_size")
             prompt.update(image_embeddings)
 
             # forward decoder to get predicted mask
             prediction = self.forward_decoder(prompt)
-            metadata = {"label": label, "original_size": prompt["orig_size"]}
+            metadata = {"label": label, "original_size": orig_size}
 
             # set annotation for eval
             annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
@@ -230,6 +231,7 @@ class OTXOpenVinoDataLoader:
             image_embeddings = self.compressed_model(processed_image[None])
             prompt = prompts[0]  # only use the first prompt
             prompt.pop("label")
+            prompt.pop("orig_size")
             prompt.update({"image_embeddings": image_embeddings["image_embeddings"]})
             return prompt
             # TODO (sungchul): change has_mask_input
@@ -408,6 +410,13 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         for i, (name, is_encoder) in enumerate(
             zip(["image_encoder", "decoder"], [True, False]), 1
         ):
+            if name == "decoder":
+                # TODO (sungchul): quantize decoder, too
+                logger.info(f"{name} won't do PTQ.")
+                output_model.set_data(f"visual_prompting_{name}.xml", self.model.get_data(f"visual_prompting_{name}.xml"))
+                output_model.set_data(f"visual_prompting_{name}.bin", self.model.get_data(f"visual_prompting_{name}.bin"))
+                continue
+
             data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model)
             quantization_dataset = nncf.Dataset(data_loader, lambda data: data)
 
@@ -428,11 +437,9 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
             stat_subset_size = self.hparams.pot_parameters.stat_subset_size
             preset = QuantizationPreset(self.hparams.pot_parameters.preset.name.lower())
-            from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
-            advanced_parameters = AdvancedQuantizationParameters(backend_params={"use_pot": True})
 
             compressed_model = nncf.quantize(
-                ov_model, quantization_dataset, subset_size=min(stat_subset_size, len(data_loader)), preset=preset, advanced_parameters=advanced_parameters
+                ov_model, quantization_dataset, subset_size=min(stat_subset_size, len(data_loader)), preset=preset
             )
 
             if optimization_parameters is not None:
