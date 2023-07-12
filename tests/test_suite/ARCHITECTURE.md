@@ -499,30 +499,30 @@ the info to identify the test.
 
 Examples of such keys are:
 
-- `ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_MobileNetV2_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife`
+- `ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife`
 - `ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficinetNet-B0,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife`
 
 Example of the whole part of expected metrics configuration for one of mmdetection test cases
 
 ```yaml
-"ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_MobileNetV2_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
+"ACTION-training_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
   "metrics.accuracy.f-measure":
     "target_value": 0.81
     "max_diff_if_less_threshold": 0.005
     "max_diff_if_greater_threshold": 0.06
-"ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_MobileNetV2_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
+"ACTION-export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
   "metrics.accuracy.f-measure":
     "base": "training_evaluation.metrics.accuracy.f-measure"
     "max_diff": 0.01
-"ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_MobileNetV2_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
+"ACTION-pot_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
   "metrics.accuracy.f-measure":
     "base": "export_evaluation.metrics.accuracy.f-measure"
     "max_diff": 0.01
-"ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_MobileNetV2_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
+"ACTION-nncf_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
   "metrics.accuracy.f-measure":
     "base": "training_evaluation.metrics.accuracy.f-measure"
     "max_diff_if_less_threshold": 0.01
-"ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_MobileNetV2_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
+"ACTION-nncf_export_evaluation,model-Custom_Object_Detection_Gen3_ATSS,dataset-bbcd,num_iters-CONFIG,batch-CONFIG,usecase-reallife":
   "metrics.accuracy.f-measure":
     "base": "nncf_evaluation.metrics.accuracy.f-measure"
     "max_diff": 0.01
@@ -962,7 +962,7 @@ Example of a test bunch that could be in `external/mmdetection/tests/test_otx_tr
 [
     dict(
         model_name=[
-           'Custom_Object_Detection_Gen3_MobileNetV2_ATSS',
+           'Custom_Object_Detection_Gen3_ATSS',
            'Custom_Object_Detection_Gen3_SSD',
         ],
         dataset_name='dataset1_tiled_shortened_500_A',
@@ -971,7 +971,7 @@ Example of a test bunch that could be in `external/mmdetection/tests/test_otx_tr
     ...
     dict(
         model_name=[
-           'Custom_Object_Detection_Gen3_MobileNetV2_ATSS',
+           'Custom_Object_Detection_Gen3_ATSS',
            'Custom_Object_Detection_Gen3_SSD',
         ],
         dataset_name=[

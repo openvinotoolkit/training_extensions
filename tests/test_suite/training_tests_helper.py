@@ -51,7 +51,7 @@ class OTXTestCreationParametersInterface(ABC):
                 dict(
                     model_name=[
                        'gen3_mobilenetV2_SSD',
-                       'gen3_mobilenetV2_MobileNetV2_ATSS',
+                       'gen3_mobilenetV2_ATSS',
                        'gen3_resnet50_VFNet',
                     ],
                     dataset_name='dataset1_tiled_shortened_500_A',

@@ -37,7 +37,7 @@ Example to find ready-to-use templates for the detection task:
     +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
     | DETECTION |        Custom_Object_Detection_Gen3_SSD       |       SSD        |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
     | DETECTION |         Custom_Object_Detection_YOLOX         |      YOLOX       | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-    | DETECTION | Custom_Object_Detection_Gen3_MobileNetV2_ATSS | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
+    | DETECTION |        Custom_Object_Detection_Gen3_ATSS      | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
     +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
 
 
@@ -101,12 +101,12 @@ Building workspace folder
       --seed SEED           Set seed for configuration.
 
 
-For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_MobileNetV2_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
+For example, the following command line will create an object detection ``Custom_Object_Detection_Gen3_ATSS`` model template with ResNet backbone from `mmdetection <https://github.com/open-mmlab/mmdetection>`_:
 To learn more about backbone replacement, please refer to the :doc:`following advanced tutorial <../tutorials/advanced/backbones>`.
 
 .. code-block::
 
-    (otx) ...$ otx build Custom_Object_Detection_Gen3_MobileNetV2_ATSS --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
+    (otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --backbone mmdet.ResNet --train-data-roots <path/to/train/root> --val-data-roots <path/to/val/root>
 
 ----------------
 Dataset handling

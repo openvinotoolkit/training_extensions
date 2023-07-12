@@ -139,7 +139,7 @@ The list of supported templates for object detection is available with the comma
   +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
   | DETECTION |        Custom_Object_Detection_Gen3_SSD       |       SSD        |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
   | DETECTION |         Custom_Object_Detection_YOLOX         |      YOLOX       | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-  | DETECTION | Custom_Object_Detection_Gen3_MobileNetV2_ATSS | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
+  | DETECTION |        Custom_Object_Detection_Gen3_ATSS      | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
   +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+v
 
 .. _detection_workspace:
@@ -147,7 +147,7 @@ The list of supported templates for object detection is available with the comma
 2. On this step we will create **otx-workspace-Detection**
 with:
 
-- all necessary configs for Custom_Object_Detection_Gen3_MobileNetV2_ATSS
+- all necessary configs for Custom_Object_Detection_Gen3_ATSS
 - prepared ``data.yaml`` to simplify CLI commands launch
 - train/validation sets, based on provided annotation.
 
@@ -162,7 +162,7 @@ Let's prepare the object detection workspace running the following command:
 .. code-block::
 
   # we can specify the template by its ID
-  (otx) ...$ otx build Custom_Object_Detection_Gen3_MobileNetV2_ATSS --train-data-roots data/wgisd
+  (otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --train-data-roots data/wgisd
 
   # or its name
   (otx) ...$ otx build MobileNetV2-ATSS --train-data-roots data/wgisd
@@ -172,7 +172,7 @@ Let's prepare the object detection workspace running the following command:
 
   ...
   [*] Workspace Path: otx-workspace-DETECTION
-  [*] Load Model Template ID: Custom_Object_Detection_Gen3_MobileNetV2_ATSS
+  [*] Load Model Template ID: Custom_Object_Detection_Gen3_ATSS
   [*] Load Model Name: MobileNetV2-ATSS
   [*]     - Updated: otx-workspace-DETECTION/model.py
   [*]     - Updated: otx-workspace-DETECTION/data_pipeline.py
