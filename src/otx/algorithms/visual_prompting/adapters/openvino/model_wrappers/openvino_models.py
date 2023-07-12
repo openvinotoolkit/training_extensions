@@ -63,13 +63,15 @@ class Decoder(SegmentationModel):
         preload: bool = False,
     ):
         super().__init__(model_adapter, configuration, preload)
-        self.output_blob_name = "low_res_masks"
 
     @classmethod
     def parameters(cls):  # noqa: D102
         parameters = super().parameters()
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         return parameters
+
+    def _get_outputs(self):
+        return "low_res_masks"
 
     def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]):
         """Preprocess prompts."""
