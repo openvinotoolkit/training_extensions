@@ -4,12 +4,12 @@
     "label": {
       "label_groups": [
         {
-          "name": "rectangle",
+          "name": "___rectangle",
           "group_type": "exclusive",
           "labels": ["rectangle"]
         },
         {
-          "name": "circle",
+          "name": "___circle",
           "group_type": "exclusive",
           "labels": ["circle"]
         }
