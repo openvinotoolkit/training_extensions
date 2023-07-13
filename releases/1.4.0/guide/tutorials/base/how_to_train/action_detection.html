@@ -525,7 +525,7 @@ The list of supported templates for action detection is available with the comma
 <p>2. Next, we need to create workspace
 for various tasks we provide.</p>
 <p>Let’s prepare an OpenVINO™ Training Extensions action detection workspace running the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build --train-data-roots ./data/JHMDB_5%/train --val-data-roots ./data/JHMDB_5%/test --model X3D_FAST_RCNN
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx build x3d_fast_rcnn --train-data-roots ./data/JHMDB_5%/train --val-data-roots ./data/JHMDB_5%/test
 
 [*] Workspace Path: otx-workspace-ACTION_DETECTION
 [*] Load Model Template ID: Custom_Action_Detection_X3D_FAST_RCNN
@@ -568,9 +568,9 @@ and save performance results in <code class="docutils literal notranslate"><span
 <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">14</span><span class="p">,</span><span class="mi">749</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Done</span><span class="o">.</span>
 <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">24</span><span class="p">,</span><span class="mi">345</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Inference</span> <span class="n">completed</span>
 <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">24</span><span class="p">,</span><span class="mi">347</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">called</span> <span class="n">evaluate</span><span class="p">()</span>
-<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">349</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Final</span> <span class="n">model</span> <span class="n">performance</span><span class="p">:</span> <span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.537625754527163</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
+<span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">349</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Final</span> <span class="n">model</span> <span class="n">performance</span><span class="p">:</span> <span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.5086285195277019</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
 <span class="mi">2023</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">21</span> <span class="mi">22</span><span class="p">:</span><span class="mi">44</span><span class="p">:</span><span class="mi">26</span><span class="p">,</span><span class="mi">349</span> <span class="o">-</span> <span class="n">mmaction</span> <span class="o">-</span> <span class="n">INFO</span> <span class="o">-</span> <span class="n">Evaluation</span> <span class="n">completed</span>
-<span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.537625754527163</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
+<span class="n">Performance</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="mf">0.5086285195277019</span><span class="p">,</span> <span class="n">dashboard</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="n">metric</span> <span class="n">groups</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -581,7 +581,7 @@ and save performance results in <code class="docutils literal notranslate"><span
 <section id="export">
 <h2>Export<a class="headerlink" href="#export" title="Permalink to this heading">#</a></h2>
 <p>1. <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span></code> exports a trained Pytorch <cite>.pth</cite> model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
+It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of two files: <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> for weights and <code class="docutils literal notranslate"><span class="pre">openvino.bin</span></code> for architecture.</p>
 <p>2. Run the command line below to export the trained model
 and save the exported model to the <code class="docutils literal notranslate"><span class="pre">openvino</span></code> folder.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export
@@ -605,31 +605,28 @@ using <code class="docutils literal notranslate"><span class="pre">otx</span> <s
 
 ...
 
-Performance(score: 0.0, dashboard: (3 metric groups))
+Performance(score: 0.47351524879614754, dashboard: (3 metric groups))
 </pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Unfortunately, openvino has trouble in export from ONNX file, which comes from torch 1.13.
-You can get proper openvino IR when you downgrade torch version to 1.12.1 when exporting.</p>
 </div>
 </section>
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
 <p>1. You can further optimize the model with <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">optimize</span></code>.
-Currently, only POT is supported for action detection. NNCF will be supported in near future.
+Currently, only PTQ is supported for action detection. NNCF will be supported in near future.
 Refer to <a class="reference internal" href="../../../explanation/additional_features/models_optimization.html"><span class="doc">optimization explanation</span></a> section for more details on model optimization.</p>
 <p>2. Example command for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ POT.</p>
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx optimize --load-weights openvino/openvino.xml \
                         --save-model-to pot_model
 
 ...
 
-Performance(score: 0.0, dashboard: (3 metric groups))
+[*] Update data configuration file to: data.yaml
+Statistics collection: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [04:16&lt;00:00,  1.17it/s]Biases correction: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 168/168 [00:15&lt;00:00, 10.63it/s][&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;] 1572/1572, 7.3 task/s, elapsed: 216s, ETA:     0s
+Performance(score: 0.4621155288822204, dashboard: (1 metric groups))
 </pre></div>
 </div>
-<p>Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
+<p>Keep in mind that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.</p>
 <p>3. Now, you have fully trained, optimized and exported an
 efficient model representation ready-to-use action detection model.</p>
 </section>
