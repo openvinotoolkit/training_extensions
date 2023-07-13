@@ -1,8 +1,12 @@
 import copy
-from typing import Dict, List, Optional, Union
+import glob
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
+from otx.v2.adapters.torch.mmengine.mmdeploy import is_mmdeploy_enabled
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils.importing import get_non_default_args
@@ -20,12 +24,15 @@ MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
 class MMXEngine(Engine):
     def __init__(
         self,
+        work_dir: Optional[str] = None,
         config: Optional[Union[Dict, Config, str]] = None,
     ) -> None:
         super().__init__()
+        self.work_dir = work_dir
         self.runner = None
-        self.module_registry = MMEngineRegistry()
-        self.base_runner = self.module_registry.get("Runner")
+        self.latest_model = {"model": None, "checkpoint": None}
+        self.registry = MMEngineRegistry()
+        # self.base_runner = self.registry.get("RUNNER")
         self.initial_config(config)
 
     def initial_config(self, config: Optional[Union[Dict, Config, str]]):
@@ -47,6 +54,10 @@ class MMXEngine(Engine):
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
+        if "work_dir" not in kwargs:
+            if self.work_dir is None:
+                raise ValueError("Engine.work_dir is None.")
+            kwargs["work_dir"] = self.work_dir
 
         # Update Model & Dataloaders & Custom hooks
         model = func_args.get("model", None)
@@ -94,7 +105,7 @@ class MMXEngine(Engine):
         if val_dataloader is not None:
             if "val_cfg" not in kwargs or kwargs["val_cfg"] is None:
                 kwargs["val_cfg"] = dict()
-            if precision == "float16":
+            if precision in ["float16", "fp16"]:
                 kwargs["val_cfg"]["fp16"] = True
 
             # Update val_evaluator
@@ -106,7 +117,7 @@ class MMXEngine(Engine):
         if test_dataloader is not None:
             if "test_cfg" not in kwargs or kwargs["test_cfg"] is None:
                 kwargs["test_cfg"] = dict()
-            if precision == "float16":
+            if precision in ["float16", "fp16"]:
                 kwargs["test_cfg"]["fp16"] = True
 
             # Update test_evaluator
@@ -191,19 +202,32 @@ class MMXEngine(Engine):
 
         update_check = self.update_config(func_args=train_args, **kwargs)
         if self.runner is None or update_check:
-            self.runner = self.base_runner.from_cfg(self.config)
-            self.config = self.runner.cfg
+            base_runner = self.registry.get("Runner")
+            self.runner = base_runner(**self.config)
+        # TODO: Need to align outputs
+        config_path = Path(self.work_dir) / f"{self.runner.timestamp}" / "configs.py"
+        self.config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
 
         output_model = self.runner.train()
-        return output_model
 
-    def val(
+        # Get CKPT path
+        if self.config.train_cfg.by_epoch:
+            ckpt_path = glob.glob(str(Path(self.work_dir) / "epoch*.pth"))[-1]
+        else:
+            ckpt_path = glob.glob(str(Path(self.work_dir) / "iter*.pth"))[-1]
+        best_ckpt_path = glob.glob(str(Path(self.work_dir) / "best_*.pth"))
+        if len(best_ckpt_path) >= 1:
+            ckpt_path = best_ckpt_path[0]
+        self.latest_model = {"model": output_model, "checkpoint": ckpt_path}
+        return output_model, ckpt_path
+
+    def validate(
         self,
         model: Optional[Union[torch.nn.Module, Dict]] = None,
         val_dataloader: Optional[Union[DataLoader, Dict]] = None,
         precision: Optional[str] = None,
         **kwargs,
-    ):  # Metric (data_class or dict)
+    ) -> Dict[str, float]:  # Metric (data_class or dict)
         val_args = {
             "model": model,
             "val_dataloader": val_dataloader,
@@ -211,12 +235,15 @@ class MMXEngine(Engine):
         }
         update_check = self.update_config(func_args=val_args, **kwargs)
         if self.runner is None:
-            self.runner = self.base_runner.from_cfg(self.config)
-            self.config = self.runner.cfg
+            base_runner = self.registry.get("Runner")
+            self.runner = base_runner(**self.config)
         elif update_check:
             self.runner._val_dataloader = self.config["val_dataloader"]
             self.runner._val_loop = self.config["val_cfg"]
             self.runner._val_evaluator = self.config["val_evaluator"]
+
+        Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
+        self.config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
 
         return self.runner.val()
 
@@ -226,20 +253,25 @@ class MMXEngine(Engine):
         test_dataloader: Optional[DataLoader] = None,
         precision: Optional[str] = None,
         **kwargs,
-    ):  # Metric (data_class or dict)
+    ) -> Dict[str, float]:  # Metric (data_class or dict)
         test_args = {
             "model": model,
             "test_dataloader": test_dataloader,
             "precision": precision,
         }
         update_check = self.update_config(func_args=test_args, **kwargs)
+        # self.config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
         if self.runner is None:
-            self.runner = self.base_runner.from_cfg(self.config)
-            self.config = self.runner.cfg
+            base_runner = self.registry.get("Runner")
+            # self.runner = base_runner.from_cfg(self.config)
+            self.runner = base_runner(**self.config)
         elif update_check:
             self.runner._test_dataloader = self.config["test_dataloader"]
             self.runner._test_loop = self.config["test_cfg"]
             self.runner._test_evaluator = self.config["test_evaluator"]
+
+        config_path = Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
+        self.config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
 
         return self.runner.test()
 
@@ -248,11 +280,130 @@ class MMXEngine(Engine):
         model: Optional[Union[torch.nn.Module, Dict]] = None,
         dataloader: Optional[Union[DataLoader, Dict]] = None,
         checkpoint: Optional[str] = None,
-    ):  # TorchInferencer -> Tensor
+    ):
         raise NotImplementedError()
 
-    def export(self):  # IR Model (file: xml, bin) return file_path
-        raise NotImplementedError()
+    def export(
+        self,
+        model: Optional[
+            Union[torch.nn.Module, str, Config]
+        ] = None,  # Module with _build_config OR Model Config OR config-file
+        checkpoint: Optional[str] = None,
+        task: Optional[str] = None,
+        codebase: Optional[str] = None,
+        precision: str = "float32",  # ["float16", "fp16", "float32", "fp32"]
+        export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
+        deploy_config: Optional[str] = None,  # File path only?
+        dump_features: bool = False,  # TODO
+        device: str = "cpu",
+        input_shape: Optional[Tuple[int, int]] = None,
+        **kwargs,
+    ):  # Output: IR Models
+        if not is_mmdeploy_enabled():
+            raise ModuleNotFoundError("MMXEngine's export is dependent on mmdeploy.")
+        from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
+        from otx.v2.adapters.torch.mmengine.mmdeploy.exporter import Exporter
+        from otx.v2.adapters.torch.mmengine.mmdeploy.utils.deploy_cfg_utils import (
+            patch_input_preprocessing,
+            patch_input_shape,
+        )
+
+        # Configure model_cfg
+        model_cfg = None
+        if model is not None:
+            if isinstance(model, str):
+                model_cfg = Config.fromfile(model)
+            elif isinstance(model, Config):
+                model_cfg = copy.deepcopy(model)
+            elif isinstance(model, torch.nn.Module) and hasattr(model, "_build_config"):
+                model_cfg = Config(model._build_config)
+            else:
+                raise NotImplementedError()
+        elif self.config.get("model", None) and self.config["model"] is not None:
+            if isinstance(self.config["model"], dict):
+                model_cfg = Config(self.config["model"])
+            else:
+                model_cfg = self.config["model"]
+        else:
+            raise ValueError("Not fount target model.")
+        if checkpoint is None:
+            checkpoint = self.latest_model.get("checkpoint", None)
+        self.config["model"] = model_cfg
+
+        # Configure deploy_cfg
+        codebase_config = None
+        ir_config = None
+        backend_config = None
+        if deploy_config is not None:
+            deploy_config = load_config(deploy_config)[0]
+            ir_config = get_ir_config(deploy_config)
+            backend_config = get_backend_config(deploy_config)
+            codebase_config = get_codebase_config(deploy_config)
+        else:
+            deploy_config = {}
+
+        # CODEBASE_COFIG Update
+        if codebase_config is None:
+            codebase = codebase if codebase is not None else self.registry.name
+            codebase_config = dict(type=codebase, task=task)
+            deploy_config["codebase_config"] = codebase_config
+        # IR_COFIG Update
+        if ir_config is None:
+            ir_config = dict(
+                type="onnx",
+                export_params=True,
+                keep_initializers_as_inputs=False,
+                opset_version=11,
+                save_file="end2end.onnx",
+                input_names=["input"],
+                output_names=["output"],
+                input_shape=None,
+                optimize=True,
+                dynamic_axes={"input": {0: "batch", 2: "height", 3: "width"}, "output": {0: "batch"}},
+            )
+            deploy_config["ir_config"] = ir_config
+        # BACKEND_CONFIG Update
+        if backend_config is None:
+            backend_config = dict(type="openvino", model_inputs=[dict(opt_shapes=dict(input=[1, 3, 224, 224]))])
+            deploy_config["backend_config"] = backend_config
+
+        # Patch input's configuration
+        if isinstance(deploy_config, dict):
+            deploy_config = Config(deploy_config)
+        data_preprocessor = self.config.get("data_preprocessor", None)
+        mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
+        std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
+        to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
+        patch_input_preprocessing(deploy_cfg=deploy_config, mean=mean, std=std, to_rgb=to_rgb)
+        if not deploy_config.backend_config.get("model_inputs", []):
+            if input_shape is None:
+                # TODO: Patch From self.config's test pipeline
+                pass
+            patch_input_shape(deploy_config, input_shape=input_shape)
+
+        exporter = Exporter(
+            config=self.config,
+            checkpoint=checkpoint,
+            deploy_config=deploy_config,
+            work_dir=f"{self.work_dir}/openvino",
+            precision=precision,
+            export_type=export_type,
+            device=device,
+        )
+        exporter.export()
+
+        results: Dict[str, Dict[str, str]] = {"outputs": {}}
+
+        if export_type.upper() == "ONNX":
+            onnx_file = [f for f in Path(self.work_dir).iterdir() if str(f).endswith(".onnx")][0]
+            results["outputs"]["onnx"] = str(Path(self.work_dir) / onnx_file)
+        else:
+            bin_file = [f for f in Path(self.work_dir).iterdir() if str(f).endswith(".bin")][0]
+            xml_file = [f for f in Path(self.work_dir).iterdir() if str(f).endswith(".xml")][0]
+            results["outputs"]["bin"] = str(Path(self.work_dir) / bin_file)
+            results["outputs"]["xml"] = str(Path(self.work_dir) / xml_file)
+
+        return results
 
 
 ### DONE ### CLI -> Geti~

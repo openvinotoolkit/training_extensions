@@ -15,14 +15,15 @@ from typing import Any, Dict, Optional
 
 import torch
 import torch.distributed as dist
-from mmpretrain.models.builder import CLASSIFIERS, build_backbone, build_head, build_neck
+from mmpretrain.models.builder import build_backbone, build_head, build_neck
+from mmpretrain.registry import MODELS
 from otx.v2.api.utils.logger import get_logger
 from torch import nn
 
 logger = get_logger()
 
 
-@CLASSIFIERS.register_module()
+@MODELS.register_module()
 class OTXBYOL(nn.Module):
     """BYOL Implementation.
 

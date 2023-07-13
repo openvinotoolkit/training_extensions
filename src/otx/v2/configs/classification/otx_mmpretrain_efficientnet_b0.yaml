@@ -1,5 +1,5 @@
 # Basic Information for Config
-framework: mmcls
+framework: mmpretrain
 task: Classification
 train_type: Incremental
 
@@ -8,7 +8,7 @@ model:
   type: SAMImageClassifier
   backbone:
     pretrained: true
-    type: otx.OTXEfficientNet
+    type: OTXEfficientNet
     version: b0
   head:
     in_channels: -1
@@ -45,7 +45,7 @@ train_dataloader:
       - scale: 224
         type: Resize
       - direction: horizontal
-        flip_prob: 0.5
+        prob: 0.5
         type: RandomFlip
       - config_str: augmix-m5-w3-d1
         type: AugMixAugment
@@ -54,9 +54,6 @@ train_dataloader:
           - 10
         p: 0.35
         type: RandomRotate
-      - keys:
-          - img
-        type: PILImageToNDArray
       - type: PackInputs
 
 val_dataloader:
@@ -65,24 +62,9 @@ val_dataloader:
   dataset:
     type: OTXClsDataset
     pipeline:
-      - size: 224
+      - scale: 224
         type: Resize
-      - mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: true
-        type: Normalize
-      - keys:
-          - img
-        type: ImageToTensor
-      - keys:
-          - img
-        type: Collect
+      - type: PackInputs
     test_mode: true
 
 test_dataloader:
@@ -91,50 +73,10 @@ test_dataloader:
   dataset:
     type: OTXClsDataset
     pipeline:
-      - size: 224
+      - scale: 224
         type: Resize
-      - mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: true
-        type: Normalize
-      - keys:
-          - img
-        type: ImageToTensor
-      - keys:
-          - img
-        type: Collect
+      - type: PackInputs
     test_mode: true
-
-data:
-  samples_per_gpu: 32
-  test:
-    pipeline:
-      - size: 224
-        type: Resize
-      - mean:
-          - 123.675
-          - 116.28
-          - 103.53
-        std:
-          - 58.395
-          - 57.12
-          - 57.375
-        to_rgb: true
-        type: Normalize
-      - keys:
-          - img
-        type: ImageToTensor
-      - keys:
-          - img
-        type: Collect
-    test_mode: true
-    type: OTXClsDataset
 
 # Hooks
 default_hooks:
@@ -148,7 +90,8 @@ default_hooks:
   checkpoint:
     interval: 1
     max_keep_ckpts: 1
-    type: CheckpointHookWithValResults
+    save_best: auto
+    type: CheckpointHook
   visualization:
     type: VisualizationHook
     enable: false
@@ -188,7 +131,3 @@ optim_wrapper:
     lr: 0.01
     momentum: 0.9
     weight_decay: 0.0005
-# seed: 5
-# task_adapt:
-#   op: REPLACE
-#   type: mpa

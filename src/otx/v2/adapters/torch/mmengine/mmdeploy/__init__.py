@@ -3,10 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .ops import squeeze__default
 from .utils.mmdeploy import is_mmdeploy_enabled
 
 __all__ = [
-    "squeeze__default",
     "is_mmdeploy_enabled",
 ]
+
+if is_mmdeploy_enabled():
+    from .ops import squeeze__default
+
+    __all__.append("squeeze__default")

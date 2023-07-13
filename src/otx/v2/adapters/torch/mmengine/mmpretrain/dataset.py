@@ -11,7 +11,7 @@ from otx.v2.adapters.torch.mmengine.mmpretrain.modules.datasets import (
     OTXMultilabelClsDataset,
     SelfSLDataset,
 )
-from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig
+from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
 from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
@@ -99,7 +99,7 @@ class Dataset(BaseDataset):
         self,
         subset: str,
         pipeline: Optional[List[Union[Dict, Any]]] = None,
-        config: Optional[Union[str, Dict[str, Any], CustomConfig]] = None,
+        config: Optional[Union[str, Dict[str, Any], Config]] = None,
     ) -> Optional[TorchDataset]:
         if not self.initialize:
             self._initialize()
@@ -109,9 +109,9 @@ class Dataset(BaseDataset):
 
         # Config Setting
         if isinstance(config, str):
-            config = CustomConfig.fromfile(filename=config)
+            config = Config.fromfile(filename=config)
         elif isinstance(config, dict):
-            config = CustomConfig(cfg_dict=config)
+            config = Config(cfg_dict=config)
 
         otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
         labels = self.label_schema.get_labels(include_empty=False)
@@ -120,27 +120,37 @@ class Dataset(BaseDataset):
         # Case without config
         if config is None:
             pipeline = pipeline if pipeline is not None else get_default_pipeline()
-            return self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=pipeline)
+            dataset = self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=pipeline)
+            dataset._build_config = {
+                "type": str(self.base_dataset.__qualname__),
+                "data_root": getattr(self, f"{subset}_data_roots"),
+                "ann_file": getattr(self, f"{subset}_ann_files"),
+                "data_prefix": "",
+                "pipeline": pipeline,
+            }
+            return dataset
 
-        # Case with config
-        if subset not in config["data"]:
-            raise ValueError(f"{subset} is not in dataset config")
-        config = config["data"][subset]
-        config["otx_dataset"] = otx_dataset
-        config["labels"] = labels
+        # Case with Config
+        dataset_config = config.get("dataset", None)
+        if dataset_config is None:
+            raise ValueError("The config used does not have a dataset.")
+        init_config = dataset_config.copy()
+        dataset_config["otx_dataset"] = otx_dataset
+        dataset_config["labels"] = labels
         if pipeline is not None:
-            config["pipeline"] = pipeline
-        config.pop("data_roots", None)
-        config.pop("ann_files", None)
-        config.pop("file_list", None)
-        return mmpretrain_build_dataset(config)
+            dataset_config["pipeline"] = pipeline
+        dataset_config.pop("data_roots", None)
+        dataset_config.pop("ann_files", None)
+        dataset_config.pop("file_list", None)
+        dataset = mmpretrain_build_dataset(dataset_config)
+        dataset._build_config = init_config
+        return dataset
 
     def build_dataloader(
         self,
         dataset: Optional[TorchDataset],
         batch_size: int = 1,
         num_workers: int = 0,
-        num_gpus: int = 1,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
@@ -161,16 +171,11 @@ class Dataset(BaseDataset):
         if sampler is not None:
             shuffle = False
 
-        # if distributed:
-        #     samples_per_gpu = batch_size
-        # else:
-        #     samples_per_gpu = int(batch_size // num_gpus)
-
         init_fn = partial(worker_init_fn, num_workers=num_workers, rank=rank, seed=seed) if seed is not None else None
         if digit_version(torch.__version__) >= digit_version("1.8.0"):
             kwargs["persistent_workers"] = persistent_workers
 
-        return TorchDataLoader(
+        dataloader = TorchDataLoader(
             dataset,
             batch_size=batch_size,
             sampler=sampler,
@@ -182,15 +187,26 @@ class Dataset(BaseDataset):
             drop_last=drop_last,
             **kwargs,
         )
+        sampler_cfg = sampler if isinstance(sampler, dict) else dict(type=f"{sampler.__class__.__qualname__}")
+        dataset_cfg = dataset._build_config if hasattr(dataset, "_build_config") else dataset
+        dataloader._build_config = dict(
+            batch_size=batch_size,
+            sampler=sampler_cfg,
+            num_workers=num_workers,
+            collate_fn=dict(type="default_collate"),
+            pin_memory=pin_memory,
+            shuffle=shuffle,
+            dataset=dataset_cfg,
+        )
+        return dataloader
 
     def subset_dataloader(
         self,
         subset: str,
         pipeline: Optional[Union[List[Union[Dict, Any]], Dict[str, List[Union[Dict, Any]]]]] = None,
         config: Optional[Union[str, Dict[str, Any]]] = None,
-        batch_size: int = 1,
-        num_workers: int = 0,
-        num_gpus: int = 1,
+        batch_size: Optional[int] = None,
+        num_workers: Optional[int] = None,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
@@ -201,19 +217,26 @@ class Dataset(BaseDataset):
     ):
         # Config Setting
         if isinstance(config, str):
-            config = CustomConfig.fromfile(filename=config)
+            config = Config.fromfile(filename=config)
         elif isinstance(config, dict):
-            config = CustomConfig(cfg_dict=config)
+            config = Config(cfg_dict=config)
+        elif config is None:
+            config = Config(cfg_dict={})
+        dataloader_config = config.get(f"{subset}_dataloader", None)
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self.build_dataset(subset=subset, pipeline=pipeline, config=config)
+        subset_dataset = self.build_dataset(subset=subset, pipeline=pipeline, config=dataloader_config)
         # TODO: argument update with configuration (config is not None case)
+        if batch_size is None:
+            batch_size = config.get("batch_size", 1)
+        if num_workers is None:
+            num_workers = config.get("num_workers", 0)
+
         subset_dataloader = self.build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
             num_workers=num_workers,
-            num_gpus=num_gpus,
             shuffle=shuffle,
             pin_memory=pin_memory,
             drop_last=drop_last,
@@ -232,7 +255,6 @@ class Dataset(BaseDataset):
                 dataset=unlabeled_dataset,
                 batch_size=unlabeled_batch_size,
                 num_workers=num_workers,
-                num_gpus=num_gpus,
                 shuffle=shuffle,
                 pin_memory=pin_memory,
                 drop_last=drop_last,

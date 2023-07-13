@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Tuple
+
 import torch
 import torch.nn.functional as F
 from mmpretrain.models.builder import HEADS
@@ -19,8 +21,9 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
-    def loss(self, cls_score, gt_label, feature=None):
+    def loss(self, feats, gt_label, feature=None):
         """Calculate loss for given cls_score/gt_label."""
+        cls_score = self.classifier(feats)
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
@@ -40,12 +43,6 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         """Forward fuction of CustomNonLinearHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label):
-        """Forward_train fuction of CustomNonLinearHead class."""
-        logit = self.classifier(cls_score)
-        losses = self.loss(logit, gt_label, feature=cls_score)
-        return losses
-
 
 @HEADS.register_module()
 class CustomLinearClsHead(LinearClsHead):
@@ -64,8 +61,7 @@ class CustomLinearClsHead(LinearClsHead):
         super().__init__(num_classes, in_channels, init_cfg=init_cfg, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
-    def loss(self, cls_score, data_samples, feature=None):
-        """Calculate loss for given cls_score/gt_label."""
+    def _get_loss(self, cls_score: torch.Tensor, data_samples, feature=None, **kwargs):
         num_samples = len(cls_score)
         losses = dict()
         if "gt_score" in data_samples[0]:
@@ -86,23 +82,23 @@ class CustomLinearClsHead(LinearClsHead):
         losses["loss"] = loss
         return losses
 
-    def simple_test(self, img):
+    def loss(self, feats, data_samples, **kwargs):
+        """Calculate loss for given cls_score/gt_label."""
+        cls_score = self.fc(feats)
+        losses = self._get_loss(cls_score, data_samples, **kwargs)
+
+        return losses
+
+    def predict(self, feats, data_samples=None):
         """Test without augmentation."""
-        cls_score = self.fc(img)
+        cls_score = self.fc(feats)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         if torch.onnx.is_in_onnx_export():
             return cls_score
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        prediction = self._get_predictions(cls_score, data_samples)
+        return prediction
 
-        return pred
-
-    def forward(self, x):
+    def forward(self, feats):
         """Forward fuction of CustomLinearHead class."""
-        return self.simple_test(x)
-
-    def forward_train(self, x, gt_label):
-        """Forward_train fuction of CustomLinearHead class."""
-        cls_score = self.fc(x)
-        losses = self.loss(cls_score, gt_label, feature=x)
-        return losses
+        return self.predict(feats)

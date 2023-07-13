@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from mmpretrain.models.builder import CLASSIFIERS
+from mmpretrain.registry import MODELS
 from otx.v2.api.utils.logger import get_logger
 
 from .sam_classifier import SAMImageClassifier
@@ -11,7 +11,7 @@ from .sam_classifier import SAMImageClassifier
 logger = get_logger()
 
 
-@CLASSIFIERS.register_module()
+@MODELS.register_module()
 class SemiSLMultilabelClassifier(SAMImageClassifier):
     """Semi-SL Multilabel Classifier which supports unlabeled data by overriding forward_train."""
 

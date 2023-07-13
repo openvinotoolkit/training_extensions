@@ -4,7 +4,7 @@
 #
 
 import torch
-from mmpretrain.models.builder import CLASSIFIERS
+from mmpretrain.registry import MODELS
 from otx.v2.api.utils.logger import get_logger
 
 from .sam_classifier import SAMImageClassifier
@@ -12,7 +12,7 @@ from .sam_classifier import SAMImageClassifier
 logger = get_logger()
 
 
-@CLASSIFIERS.register_module()
+@MODELS.register_module()
 class SemiSLClassifier(SAMImageClassifier):
     """Semi-SL Classifier.
 

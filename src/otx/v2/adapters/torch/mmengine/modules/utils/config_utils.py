@@ -26,11 +26,13 @@ import tempfile
 import warnings
 from collections.abc import Mapping
 from importlib import import_module
-from typing import Any, Callable, Dict, List, Tuple, Union
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.utils.logger import get_logger
+from torch.utils.data import DataLoader
 
 from mmengine.config import Config, ConfigDict
 from mmengine.config.config import BASE_KEY, DEPRECATION_KEY
@@ -681,3 +683,42 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
     while "dataset" in data_cfg:
         data_cfg = data_cfg.dataset
     return data_cfg
+
+
+WARN_MSG = (
+    "The config used in the build is"
+    "stored as an object in the configuration"
+    "file because the object doesn't have it."
+    "This can result in a non-reusable configs.py."
+)
+
+
+def dump_lazy_config(config: Config, file: Optional[Union[str, Path]], scope: str = "mmengine") -> Config:
+    # Dump Model(torch.nn.Module) Object to Dict
+    model = config.get("model", None)
+    if isinstance(model, torch.nn.Module):
+        model_config = {}
+        if hasattr(model, "_build_config"):
+            model_config = model._build_config
+        else:
+            logger.warning(WARN_MSG)
+        model_config["type"] = f"{model.__class__.__qualname__}"
+        model_config["_scope_"] = scope
+        config["model"] = model_config
+    # Dump Dataloader Object to Dict
+    for subset in ["train", "val", "test"]:
+        dataloader = config.get(f"{subset}_dataloader", None)
+        if isinstance(dataloader, DataLoader):
+            dl_config = {}
+            if hasattr(dataloader, "_build_config"):
+                dl_config = dataloader._build_config
+            else:
+                logger.warning(WARN_MSG)
+            dl_config["dataset"]["_scope_"] = scope
+            config[f"{subset}_dataloader"] = dl_config
+    if file is not None:
+        # TODO: filename is not member of runner.__init__
+        # config["filename"] = str(file)
+        config.dump(file=file)
+
+    return config

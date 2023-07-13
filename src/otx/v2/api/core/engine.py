@@ -15,23 +15,23 @@ from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
 # TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"
 DEFAULT_FRAMEWORK_PER_TASK_TYPE = {
-    TaskType.CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmcls",
-    TaskType.DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmdet",
-    TaskType.INSTANCE_SEGMENTATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmdet",
-    TaskType.ROTATED_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmdet",
-    TaskType.SEGMENTATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmseg",
+    TaskType.CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmengine.mmpretrain",
+    TaskType.DETECTION: f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
+    TaskType.INSTANCE_SEGMENTATION: f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
+    TaskType.ROTATED_DETECTION: f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
+    TaskType.SEGMENTATION: f"{ADAPTERS_ROOT}.torch.mmengine.mmseg",
     # TaskType.ACTION_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     TaskType.ANOMALY_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.anomalib",
-    TaskType.ANOMALY_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.anomalib",
-    TaskType.ANOMALY_SEGMENTATION: f"{ADAPTERS_ROOT}.torch.mmcv.anomalib",
+    TaskType.ANOMALY_DETECTION: f"{ADAPTERS_ROOT}.torch.anomalib",
+    TaskType.ANOMALY_SEGMENTATION: f"{ADAPTERS_ROOT}.torch.anomalib",
 }
 
 
 ADAPTER_QUICK_LINK = {
-    "mmcls": "torch.mmcv.mmcls",
-    "mmdet": "torch.mmcv.mmdet",
-    "mmseg": "torch.mmcv.mmseg",
+    "mmpretrain": "torch.mmengine.mmpretrain",
+    "mmdet": "torch.mmengine.mmdet",
+    "mmseg": "torch.mmengine.mmseg",
     "anomalib": "torch.anomalib",
 }
 
@@ -87,7 +87,7 @@ class Engine:
     def train(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def val(self, *args, **kwargs):
+    def validate(self, *args, **kwargs):
         raise NotImplementedError()
 
     def test(self, *args, **kwargs):
@@ -108,7 +108,6 @@ class AutoEngine:
         task: Optional[Union[str, TaskType]] = None,
         train_type: Optional[Union[str, TrainType]] = None,
         work_dir: Optional[str] = None,
-        # Dataset Paths
         train_data_roots: Optional[str] = None,
         train_ann_files: Optional[str] = None,
         val_data_roots: Optional[str] = None,
@@ -162,7 +161,7 @@ class AutoEngine:
             data_format=data_format,
             **dataset_params,
         )
-        self.engine = engine_module()
+        self.engine = engine_module(work_dir=self.work_dir)
         # TODO: Check config: if self.config["model"] is empty -> model + data pipeline + recipes selection
 
     def auto_configuration(self, framework, task, train_type):

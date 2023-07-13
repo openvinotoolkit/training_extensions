@@ -4,8 +4,9 @@
 #
 from functools import partial
 
-from mmpretrain.models.builder import CLASSIFIERS
+import torch
 from mmpretrain.models.classifiers.image import ImageClassifier
+from mmpretrain.registry import MODELS
 from otx.v2.adapters.torch.mmengine.mmdeploy.utils import is_mmdeploy_enabled
 from otx.v2.adapters.torch.mmengine.modules.utils.task_adapt import map_class_names
 from otx.v2.api.utils.logger import get_logger
@@ -15,13 +16,14 @@ from .mixin import ClsLossDynamicsTrackingMixin, SAMClassifierMixin
 logger = get_logger()
 
 
-@CLASSIFIERS.register_module()
+@MODELS.register_module()
 class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
     """SAM-enabled ImageClassifier."""
 
-    def __init__(self, task_adapt=None, **kwargs):
+    def __init__(self, **kwargs):
         self.multilabel = kwargs.pop("multilabel", False)
         self.hierarchical = kwargs.pop("hierarchical", False)
+        task_adapt = kwargs.pop("task_adapt", None)
         super().__init__(**kwargs)
         self.is_export = False
         # Hooks for redirect state_dict load/save
@@ -254,22 +256,6 @@ class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Image
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param
 
-    def extract_feat(self, img):
-        """Directly extract features from the backbone + neck.
-
-        Overriding for OpenVINO export with features
-        """
-        x = self.backbone(img)
-        # For Global Backbones (det/seg/etc..),
-        # In case of tuple or list, only the feat of the last layer is used.
-        if isinstance(x, (tuple, list)):
-            x = x[-1]
-
-        if self.with_neck:
-            x = self.neck(x)
-
-        return x
-
 
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
@@ -281,8 +267,9 @@ if is_mmdeploy_enabled():
     @FUNCTION_REWRITER.register_rewriter(
         "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.SAMImageClassifier.extract_feat"
     )
-    def sam_image_classifier__extract_feat(ctx, self, img):  # pylint: disable=unused-argument
+    def sam_image_classifier__extract_feat(self, img, **kwargs):  # pylint: disable=unused-argument
         """Feature extraction function for SAMClassifier with mmdeploy."""
+        dump_features = kwargs.get("dump_features", False)
         feat = self.backbone(img)
         # For Global Backbones (det/seg/etc..),
         # In case of tuple or list, only the feat of the last layer is used.
@@ -291,17 +278,19 @@ if is_mmdeploy_enabled():
         backbone_feat = feat
         if self.with_neck:
             feat = self.neck(feat)
-        return feat, backbone_feat
+        if dump_features:
+            return feat, backbone_feat
+        return feat
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.SAMImageClassifier.simple_test"
+        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.SAMImageClassifier.predict"
     )
-    def sam_image_classifier__simple_test(ctx, self, img, img_metas):  # pylint: disable=unused-argument
+    def sam_image_classifier__predict(self, img, **kwargs):  # pylint: disable=unused-argument
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
-        feat, backbone_feat = self.extract_feat(img)
+        feat, backbone_feat = self.extract_feat(img, dump_features=True)
         logit = self.head.simple_test(feat)
 
-        if ctx.cfg["dump_features"]:
+        if kwargs.get("dump_features", False):
             saliency_map = ReciproCAMHook(self).func(backbone_feat)
             feature_vector = FeatureVectorHook.func(backbone_feat)
             return logit, feature_vector, saliency_map

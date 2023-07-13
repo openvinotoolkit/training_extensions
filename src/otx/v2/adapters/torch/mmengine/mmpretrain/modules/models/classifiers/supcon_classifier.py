@@ -4,11 +4,11 @@
 #
 
 import torch
-from mmpretrain.models.builder import CLASSIFIERS
 from mmpretrain.models.classifiers.image import ImageClassifier
+from mmpretrain.registry import MODELS
 
 
-@CLASSIFIERS.register_module()
+@MODELS.register_module()
 class SupConClassifier(ImageClassifier):
     """SupConClassifier with support for classification tasks."""
 

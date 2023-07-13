@@ -17,5 +17,5 @@
 from mmengine.registry import MODELS as MMENGINE_MODELS
 from mmengine.registry import Registry
 
-BACKBONES = Registry("models", parent=MMENGINE_MODELS, scope="otx")
-TORCHVISION_BACKBONES = Registry("models", parent=MMENGINE_MODELS, scope="torchvision")
+BACKBONES = MMENGINE_MODELS
+TORCHVISION_BACKBONES = MMENGINE_MODELS

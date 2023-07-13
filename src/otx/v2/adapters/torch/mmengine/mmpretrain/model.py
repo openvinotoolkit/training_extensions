@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Union
 
 import torch
+from mmpretrain import get_model as get_mmpretrain_model
 from mmpretrain.models import build_backbone, build_classifier, build_neck
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig
 from otx.v2.api.utils.logger import get_logger
@@ -66,7 +67,7 @@ def configure_in_channels(model_config, input_shape=[3, 224, 224]):
 
 
 def get_model(
-    config: Optional[Union[Dict[str, Any], str]] = None,
+    config: Union[Dict, str],
     checkpoint: Optional[str] = None,
     num_classes: int = 1000,
     channel_last: bool = False,
@@ -75,7 +76,7 @@ def get_model(
         config = CustomConfig.fromfile(filename=config)
     elif isinstance(config, dict):
         config = CustomConfig(cfg_dict=config)
-    model_config = config["model"]
+    model_config = config.get("model", config)
     model_config = configure_in_channels(model_config)
     # Update num_classes
     model_config["head"]["num_classes"] = num_classes
@@ -90,6 +91,7 @@ def get_model(
     if checkpoint is not None:
         load_checkpoint(model, checkpoint, map_location=device)
     # model_config["load_from"] = checkpoint
+    model._build_config = model_config
 
     if channel_last:
         model = model.to(memory_format=torch.channels_last)
