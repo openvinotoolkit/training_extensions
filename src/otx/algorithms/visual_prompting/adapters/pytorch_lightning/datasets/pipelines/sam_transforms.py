@@ -91,56 +91,6 @@ class ResizeLongestSide:
         boxes = self.apply_coords(boxes.reshape(-1, 2, 2), original_size)
         return boxes.reshape(-1, 4)
 
-    def apply_image_torch(self, image: torch.Tensor) -> torch.Tensor:
-        """Expects batched images with shape BxCxHxW and float format.
-
-        This transformation may not exactly match apply_image.
-        apply_image is the transformation expected by the model.
-
-        Args:
-            image (torch.Tensor): Image tensor.
-
-        Returns:
-            torch.Tensor: Resized image.
-        """
-        # Expects an image in BCHW format. May not exactly match apply_image.
-        target_size = self.get_preprocess_shape(image.shape[2], image.shape[3], self.target_length)
-        return F.interpolate(image, target_size, mode="bilinear", align_corners=False, antialias=True)
-
-    def apply_coords_torch(self, coords: torch.Tensor, original_size: Tuple[int, ...]) -> torch.Tensor:
-        """Expects a torch tensor with length 2 in the last dimension.
-
-        Requires the original image size in (H, W) format.
-
-        Args:
-            coords (torch.Tensor): Coordinates tensor.
-            original_size (Tuple[int, ...]): Original size of image.
-
-        Returns:
-            torch.Tensor: Resized coordinates.
-        """
-        old_h, old_w = original_size
-        new_h, new_w = self.get_preprocess_shape(original_size[0], original_size[1], self.target_length)
-        coords = deepcopy(coords).to(torch.float)
-        coords[..., 0] = coords[..., 0] * (new_w / old_w)
-        coords[..., 1] = coords[..., 1] * (new_h / old_h)
-        return coords
-
-    def apply_boxes_torch(self, boxes: torch.Tensor, original_size: Tuple[int, ...]) -> torch.Tensor:
-        """Expects a torch tensor with shape Bx4.
-
-        Requires the original image size in (H, W) format.
-
-        Args:
-            boxes (torch.Tensor): Boxes tensor.
-            original_size (Tuple[int, ...]): Original size of image.
-
-        Returns:
-            torch.Tensor: Resized boxes.
-        """
-        boxes = self.apply_coords_torch(boxes.reshape(-1, 2, 2), original_size)
-        return boxes.reshape(-1, 4)
-
     @staticmethod
     def get_preprocess_shape(oldh: int, oldw: int, long_side_length: int) -> Tuple[int, int]:
         """Compute the output size given input size and target long side length.
