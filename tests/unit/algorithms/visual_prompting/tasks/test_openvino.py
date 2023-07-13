@@ -22,7 +22,7 @@ from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConf
 from otx.algorithms.visual_prompting.tasks.openvino import (
     OpenVINOVisualPromptingInferencer,
     OpenVINOVisualPromptingTask,
-    OTXOpenVinoDataLoader
+    OTXOpenVinoDataLoader,
 )
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.annotation import Annotation
@@ -176,7 +176,10 @@ class TestOTXOpenVinoDataLoader:
         def _load_dataloader(is_encoder: bool = True, output_model: Optional[ModelEntity] = None):
             dataset = generate_visual_prompting_dataset()
             dataset = dataset.get_subset(Subset.TRAINING)
-            return OTXOpenVinoDataLoader(dataset, self.mocker_inferencer, is_encoder=is_encoder, output_model=output_model)
+            return OTXOpenVinoDataLoader(
+                dataset, self.mocker_inferencer, is_encoder=is_encoder, output_model=output_model
+            )
+
         return _load_dataloader
 
     @pytest.fixture(autouse=True)
@@ -198,12 +201,16 @@ class TestOTXOpenVinoDataLoader:
         dataloader = load_dataloader(is_encoder, mocker_output_model)
 
         setattr(dataloader, "target_length", 8)
-        mocker.patch.object(dataloader.inferencer, "pre_process", return_value=({"images": np.zeros((1, 4, 3, 3), dtype=np.uint8)}, None, [{"label": 1, "orig_size": 1}]))
-        
+        mocker.patch.object(
+            dataloader.inferencer,
+            "pre_process",
+            return_value=({"images": np.zeros((1, 4, 3, 3), dtype=np.uint8)}, None, [{"label": 1, "orig_size": 1}]),
+        )
+
         results = dataloader.__getitem__(0)
-        
+
         if is_encoder:
-            assert results['images'].shape == (1, 3, 8, 8)
+            assert results["images"].shape == (1, 3, 8, 8)
         else:
             self.mocker_read_model.assert_called_once()
             self.mocker_compile_model.assert_called_once()
@@ -301,6 +308,7 @@ class TestOpenVINOVisualPromptingTask:
     @e2e_pytest_unit
     def test_optimize(self, mocker):
         """Test optimize."""
+
         def patch_save_model(model, output_xml):
             with open(output_xml, "wb") as f:
                 f.write(b"compressed_image_encoder_xml")
@@ -322,8 +330,13 @@ class TestOpenVINOVisualPromptingTask:
 
         fake_quantize.assert_called_once()
         # check if only image encoder was compressed
-        assert self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.xml") == b"compressed_image_encoder_xml"
-        assert self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.bin") == b"compressed_image_encoder_bin"
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.xml")
+            == b"compressed_image_encoder_xml"
+        )
+        assert (
+            self.visual_prompting_ov_task.model.get_data("visual_prompting_image_encoder.bin")
+            == b"compressed_image_encoder_bin"
+        )
         assert self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.xml") == b"decoder_xml"
         assert self.visual_prompting_ov_task.model.get_data("visual_prompting_decoder.bin") == b"decoder_bin"
-

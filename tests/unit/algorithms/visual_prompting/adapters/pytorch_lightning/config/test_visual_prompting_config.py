@@ -1,4 +1,3 @@
-
 """Tests the methods in config."""
 
 # Copyright (C) 2023 Intel Corporation
@@ -69,7 +68,9 @@ def test_update_visual_prompting_config():
             "parameters": [],
         }
     )
-    visual_prompting_config = OmegaConf.create({"param1": "value1", "param2": "value2", "param3": "value3", "param4": "value4"})
+    visual_prompting_config = OmegaConf.create(
+        {"param1": "value1", "param2": "value2", "param3": "value3", "param4": "value4"}
+    )
 
     update_visual_prompting_config(visual_prompting_config, otx_config)
 

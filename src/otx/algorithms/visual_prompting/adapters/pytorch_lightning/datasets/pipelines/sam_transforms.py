@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Tuple, Union
 import numpy as np
 import torch
 from torch import Tensor
-from torch.nn import functional as F
 from torchvision.transforms.functional import resize, to_pil_image  # type: ignore
 
 
@@ -36,8 +35,7 @@ class ResizeLongestSide:
         Dict[str, Union[List, Tensor]]: Dictionary of batch data.
         """
         item["images"] = torch.as_tensor(
-            self.apply_image(item["images"], self.target_length).transpose((2, 0, 1)),
-            dtype=torch.get_default_dtype()
+            self.apply_image(item["images"], self.target_length).transpose((2, 0, 1)), dtype=torch.get_default_dtype()
         )
         item["gt_masks"] = [torch.as_tensor(gt_mask) for gt_mask in item["gt_masks"]]
         item["bboxes"] = self.apply_boxes(item["bboxes"], item["original_size"])

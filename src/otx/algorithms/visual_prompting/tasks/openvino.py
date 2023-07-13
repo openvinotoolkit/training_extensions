@@ -17,9 +17,9 @@
 import io
 import json
 import os
+import random
 import tempfile
 import time
-import random
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -138,12 +138,14 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 
-    def pre_process(self, dataset_item: DatasetItemEntity) -> Dict[str, Any]:  # type: ignore
+    def pre_process(  # type: ignore
+        self, dataset_item: DatasetItemEntity
+    ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
         images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy)
         prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)  # to be replaced
         prompts = self.model["decoder"].preprocess(prompts, meta)
-        return images, meta, prompts
+        return images, meta, prompts  # type: ignore
 
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
@@ -195,7 +197,14 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
 class OTXOpenVinoDataLoader:
     """DataLoader implementation for VisualPromptingOpenVINOTask."""
 
-    def __init__(self, dataset: Any, inferencer: BaseInferencer, shuffle: bool = True, is_encoder: bool = True, output_model: Optional[ModelEntity] = None):
+    def __init__(
+        self,
+        dataset: Any,
+        inferencer: OpenVINOVisualPromptingInferencer,
+        shuffle: bool = True,
+        is_encoder: bool = True,
+        output_model: Optional[ModelEntity] = None,
+    ):
         self.dataset = dataset
         self.inferencer = inferencer
         self.shuffler = None
@@ -209,10 +218,11 @@ class OTXOpenVinoDataLoader:
             core = ov.Core()
             compressed_model = core.read_model(
                 output_model.get_data("visual_prompting_image_encoder.xml"),
-                output_model.get_data("visual_prompting_image_encoder.bin"))
+                output_model.get_data("visual_prompting_image_encoder.bin"),
+            )
             self.compressed_model = core.compile_model(
-                model=compressed_model,
-                device_name=inferencer.model["image_encoder"].inference_adapter.device)
+                model=compressed_model, device_name=inferencer.model["image_encoder"].inference_adapter.device
+            )
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
@@ -407,17 +417,21 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
         dataset = dataset.get_subset(Subset.TRAINING)
 
-        for i, (name, is_encoder) in enumerate(
-            zip(["image_encoder", "decoder"], [True, False]), 1
-        ):
+        for i, (name, is_encoder) in enumerate(zip(["image_encoder", "decoder"], [True, False]), 1):
             if name == "decoder":
                 # TODO (sungchul): quantize decoder, too
                 logger.info(f"{name} won't do PTQ.")
-                output_model.set_data(f"visual_prompting_{name}.xml", self.model.get_data(f"visual_prompting_{name}.xml"))
-                output_model.set_data(f"visual_prompting_{name}.bin", self.model.get_data(f"visual_prompting_{name}.bin"))
+                output_model.set_data(
+                    f"visual_prompting_{name}.xml", self.model.get_data(f"visual_prompting_{name}.xml")
+                )
+                output_model.set_data(
+                    f"visual_prompting_{name}.bin", self.model.get_data(f"visual_prompting_{name}.bin")
+                )
                 continue
 
-            data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model)
+            data_loader = OTXOpenVinoDataLoader(
+                dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model
+            )
             quantization_dataset = nncf.Dataset(data_loader, lambda data: data)
 
             with tempfile.TemporaryDirectory() as tempdir:

@@ -24,11 +24,12 @@ class TestResizeLongestSide:
         """Test __call__."""
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("image,expected",
+    @pytest.mark.parametrize(
+        "image,expected",
         [
             (np.zeros((2, 4, 3), dtype=np.uint8), (4, 8, 3)),
             (np.zeros((12, 16, 3), dtype=np.uint8), (6, 8, 3)),
-        ]
+        ],
     )
     def test_apply_image(self, image: np.ndarray, expected: Tuple[int, int, int]):
         """Test apply_image."""
@@ -37,11 +38,12 @@ class TestResizeLongestSide:
         assert results.shape == expected
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("coords,original_size,expected",
+    @pytest.mark.parametrize(
+        "coords,original_size,expected",
         [
             (np.array([[1, 1], [2, 2]]), (4, 4), np.array([[2, 2], [4, 4]])),
             (np.array([[4, 4], [8, 8]]), (16, 16), np.array([[2, 2], [4, 4]])),
-        ]
+        ],
     )
     def test_apply_coords(self, coords: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray):
         """Test apply_coords."""
@@ -50,11 +52,12 @@ class TestResizeLongestSide:
         assert np.array_equal(result, expected)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("boxes,original_size,expected",
+    @pytest.mark.parametrize(
+        "boxes,original_size,expected",
         [
             (np.array([[1, 1, 2, 2], [2, 2, 3, 3]]), (4, 4), np.array([[2, 2, 4, 4], [4, 4, 6, 6]])),
             (np.array([[4, 4, 8, 8], [8, 8, 12, 12]]), (16, 16), np.array([[2, 2, 4, 4], [4, 4, 6, 6]])),
-        ]
+        ],
     )
     def test_apply_boxes(self, boxes: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray):
         """Test apply_boxes."""
@@ -63,11 +66,12 @@ class TestResizeLongestSide:
         assert np.array_equal(result, expected)
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("oldh,oldw,expected",
+    @pytest.mark.parametrize(
+        "oldh,oldw,expected",
         [
             (3, 4, (6, 8)),
             (12, 16, (6, 8)),
-        ]
+        ],
     )
     def test_get_preprocess_shape(self, oldh: int, oldw: int, expected: Tuple[int, int]):
         """Test get_preprocess_shape."""
