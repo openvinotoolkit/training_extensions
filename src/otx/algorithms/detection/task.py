@@ -246,10 +246,6 @@ class OTXDetectionTask(OTXTask, ABC):
             best_confidence_threshold = None
             logger.info("Adjusting the confidence threshold")
             metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
-            save_path = '/'.join(self._output_path.split('/')[:8])
-            with open(os.path.join(save_path, "f1_conf.txt"), "w") as f:
-                for i, fv in enumerate(metric.f_measure_per_confidence.ys):
-                    f.write(f"Confidence threshold: {round(i*0.025, 4)}, F-measure: {fv}\n")
             if metric.best_confidence_threshold:
                 best_confidence_threshold = metric.best_confidence_threshold.value
             if best_confidence_threshold is None:
