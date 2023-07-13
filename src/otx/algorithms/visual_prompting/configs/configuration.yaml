@@ -148,7 +148,7 @@ pot_parameters:
     affects_outcome_of: NONE
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: Performance
+    default_value: Mixed
     description: Quantization preset that defines quantization scheme
     editable: true
     enum_name: POTQuantizationPreset
@@ -162,7 +162,7 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: Performance
+    value: Mixed
     visible_in_ui: true
     warning: null
   stat_subset_size:
