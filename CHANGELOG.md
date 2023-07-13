@@ -32,7 +32,7 @@ All notable changes to this project will be documented in this file.
 - Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
 - Fix the bug that learning rate isn't scaled when multi-GPU trianing is enabled(<https://github.com/openvinotoolkit/training_extensions/pull/2254>)
 - Fix the bug that ATSS could be unstable for extremly imbalanced scenario
-  (<https://jira.devtools.intel.com/browse/CVS-106990>)
+  (<https://github.com/openvinotoolkit/training_extensions/pull/2355>)
 
 ### Known issues
 
