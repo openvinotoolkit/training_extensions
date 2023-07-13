@@ -466,7 +466,6 @@ def adaptive_tile_params(
     max_object = 0
     for dataset_item in dataset:
         result = get_annotation_mmdet_format(dataset_item, labels, domain)
-        h, w, c = dataset_item.numpy.shape
         if len(result["bboxes"]):
             bboxes = result["bboxes"]
             sizes = 0.5 * (bboxes[:, 2] - bboxes[:, 0] + bboxes[:, 3] - bboxes[:, 1])
