@@ -15,8 +15,6 @@
 # and limitations under the License.
 
 
-from sys import maxsize
-
 from attr import attrs
 
 from otx.algorithms.common.configs import BaseConfig, POTQuantizationPreset
