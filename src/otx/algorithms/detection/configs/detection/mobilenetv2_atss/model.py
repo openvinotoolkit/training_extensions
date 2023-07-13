@@ -51,7 +51,13 @@ model = dict(
             target_means=[0.0, 0.0, 0.0, 0.0],
             target_stds=[0.1, 0.1, 0.2, 0.2],
         ),
-        loss_cls=dict(type="FocalLoss", use_sigmoid=True, gamma=2.0, alpha=0.25, loss_weight=1.0),
+        loss_cls=dict(
+            type="FocalLoss", 
+            use_sigmoid=True, 
+            gamma=2.0, 
+            alpha=0.25, 
+            loss_weight=1.0,
+        ),
         loss_bbox=dict(type="GIoULoss", loss_weight=2.0),
         loss_centerness=dict(type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0),
         use_qfl=False,
@@ -60,6 +66,12 @@ model = dict(
             use_sigmoid=True,
             beta=2.0,
             loss_weight=1.0,
+        ),
+        use_adaptive_params=True,
+        adaptive_params=dict(
+            alpha_param=1.2,
+            gamma=1.0,
+            pos_weight=3.0
         ),
     ),
     train_cfg=dict(

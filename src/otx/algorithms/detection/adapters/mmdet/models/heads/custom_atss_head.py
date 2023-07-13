@@ -46,6 +46,9 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
                     loss_weight=1.0,
                 )
             )
+        self.use_adaptive_params = kwargs.pop("use_adaptive_params", False)
+        if self.use_adaptive_params:
+            self.adaptive_params = kwargs.pop("adaptive_params")
         super().__init__(*args, **kwargs)
         self.bg_loss_weight = bg_loss_weight
         self.use_qfl = use_qfl
@@ -217,19 +220,17 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         # If there is an single class and the number of positive prediction is too small than overall labels,
         # use_balanced_focal_loss will be enabled, it calculates the positive and negative loss separately.
         # use_balanced_focal_loss = (self.num_classes == 1) or (len(pos_inds) / len(labels)) < 0.05
-        use_balanced_focal_loss = num_pos_samples < 90
-        if use_balanced_focal_loss:
-            neg_inds = labels == self.num_classes
+        num_neg_ratio = num_neg_samples / (num_pos_samples + num_neg_samples)
+        use_pos_enhanced_focal_loss = num_neg_ratio > 0.999 
+        if use_pos_enhanced_focal_loss and self.adaptive_params.is_small_data and self.use_adaptive_params:
             pred = cls_score.contiguous().sigmoid()
             target = torch.nn.functional.one_hot(labels.contiguous(), num_classes=self.num_classes + 1)
             target = target[:, :self.num_classes]
             target = target.type_as(pred)
             
             pt = (1- pred) * target + pred * (1-target)
-            # alpha = self.loss_cls.alpha
-            alpha = (num_neg_samples / (num_pos_samples + num_neg_samples)) / 1.1
-            # gamma = self.loss_cls.gamma # 2
-            gamma = 0.5
+            alpha = num_neg_ratio / self.adaptive_params.get("alpha_param", 1.2)
+            gamma = self.adaptive_params.get("gamma", 1.0)
             
             focal_weight = (alpha * target + (1-alpha) * (1-target)) * pt.pow(gamma)
             loss = torch.nn.functional.binary_cross_entropy(
@@ -247,30 +248,13 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             pos_focal_loss = weight_reduce_loss(
                 focal_loss[pos_inds], label_weights[pos_inds], reduction='mean', avg_factor=num_pos_samples
             )
+            neg_inds = labels == self.num_classes
             neg_focal_loss = weight_reduce_loss(
                 focal_loss[neg_inds], label_weights[neg_inds], reduction='mean', avg_factor=num_pos_samples
             )
-            balanced_focal_loss = pos_focal_loss * 3.0 + neg_focal_loss
-            loss_cls = balanced_focal_loss
-            print()
-            print(f"alpha: {alpha}, gamma: {gamma}")
-            print(f"p(t): {pt.mean()}")
-            print(f"num positive samples: {num_pos_samples}, num negative samples: {num_neg_samples}")
-            print(f"num labels: {len(labels)}, num pos: {len(pos_inds)}, num neg: {len(neg_inds)}")
-            print(f"pred (pos): {pred[pos_inds].mean()}, pred (neg): {pred[neg_inds].mean()}")
-            print(f"(before reduce, sum) pos loss : {focal_loss[pos_inds].sum()}, neg loss: {focal_loss[neg_inds].sum()}")
-            print(f"(before reduce, sum) focal loss: {focal_loss.sum()}")
-            print(f"(after reduce) pos loss : {pos_focal_loss}, neg loss: {neg_focal_loss}")
-            # print(f"balanced_loss: {balanced_focal_loss}")
-            
-            origin_loss_cls = weight_reduce_loss(focal_loss, label_weights, reduction='mean', avg_factor=num_pos_samples)
-            # loss_cls = origin_loss_cls
-            print(f"original_loss: {origin_loss_cls}")
-            # breakpoint()
+            loss_cls = pos_focal_loss * self.adaptive_params.get("pos_weight", 3.0) + neg_focal_loss
         else: 
-            real_loss = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, num_pos_samples)
-            loss_cls = real_loss
-            
+            loss_cls = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, num_pos_samples)
             
         return loss_cls, loss_bbox, loss_centerness, centerness_targets.sum()
 
