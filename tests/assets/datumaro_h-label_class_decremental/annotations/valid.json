@@ -16,6 +16,16 @@
       ],
       "labels": [
         {
+          "name": "blue",
+          "parent": "",
+          "attribute": []
+        },
+        {
+          "name": "green",
+          "parent": "",
+          "attribute": []
+        },
+        {
           "name": "blue_rectangle",
           "parent": "blue",
           "attributes": []
