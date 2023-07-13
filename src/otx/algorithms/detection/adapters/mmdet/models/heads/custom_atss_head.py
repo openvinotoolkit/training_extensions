@@ -107,7 +107,7 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
 
         num_total_pos = reduce_mean(torch.tensor(num_total_pos, dtype=torch.float, device=device)).item()
         num_total_pos = max(num_total_pos, 1.0)
-        
+
         num_total_neg = reduce_mean(torch.tensor(num_total_neg, dtype=torch.float, device=device)).item()
         num_total_neg = max(num_total_neg, 1.0)
 
@@ -122,7 +122,7 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
             bbox_targets_list,
             valid_label_mask,
             num_pos_samples=num_total_pos,
-            num_neg_samples=num_total_neg
+            num_neg_samples=num_total_neg,
         )
         bbox_avg_factor = sum(bbox_avg_factor)
         bbox_avg_factor = reduce_mean(bbox_avg_factor).item()
@@ -142,7 +142,7 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         bbox_targets,
         valid_label_mask,
         num_pos_samples,
-        num_neg_samples
+        num_neg_samples,
     ):
         """Compute loss of a single scale level.
 
@@ -215,27 +215,25 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         # Re-weigting BG loss
         if self.use_qfl:
             labels = (labels, quality)  # For quality focal loss arg spec
-        
+
         # Reference: MMDetection
         # If number of positive anchors are too small than the negatives and user want to adaptive param,
         # OTX enhances the loss of positive samples by modifying alpha and weight of positive loss.
         num_neg_ratio = num_neg_samples / (num_pos_samples + num_neg_samples)
         if self.adaptive_params:
-            use_pos_enhanced_focal_loss = num_neg_ratio > self.adaptive_params.neg_ratio_threshold 
+            use_pos_enhanced_focal_loss = num_neg_ratio > self.adaptive_params.neg_ratio_threshold
             if use_pos_enhanced_focal_loss and self.adaptive_params.is_small_data and self.use_adaptive_params:
                 pred = cls_score.contiguous().sigmoid()
                 target = torch.nn.functional.one_hot(labels.contiguous(), num_classes=self.num_classes + 1)
-                target = target[:, :self.num_classes]
+                target = target[:, : self.num_classes]
                 target = target.type_as(pred)
-                
-                pt = (1- pred) * target + pred * (1-target)
+
+                pt = (1 - pred) * target + pred * (1 - target)
                 alpha = num_neg_ratio / self.adaptive_params.get("alpha_param", 1.2)
                 gamma = self.adaptive_params.get("gamma", 1.0)
-                
-                focal_weight = (alpha * target + (1-alpha) * (1-target)) * pt.pow(gamma)
-                loss = torch.nn.functional.binary_cross_entropy(
-                    pred, target, reduction='none'
-                )
+
+                focal_weight = (alpha * target + (1 - alpha) * (1 - target)) * pt.pow(gamma)
+                loss = torch.nn.functional.binary_cross_entropy(pred, target, reduction="none")
                 focal_loss = loss * focal_weight
                 if label_weights is not None:
                     if label_weights.shape != focal_loss.shape:
@@ -246,18 +244,18 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
                             label_weights = label_weights.view(focal_loss.size(0), -1)
                     assert label_weights.ndim == loss.ndim
                 pos_focal_loss = weight_reduce_loss(
-                    focal_loss[pos_inds], label_weights[pos_inds], reduction='mean', avg_factor=num_pos_samples
+                    focal_loss[pos_inds], label_weights[pos_inds], reduction="mean", avg_factor=num_pos_samples
                 )
                 neg_inds = labels == self.num_classes
                 neg_focal_loss = weight_reduce_loss(
-                    focal_loss[neg_inds], label_weights[neg_inds], reduction='mean', avg_factor=num_pos_samples
+                    focal_loss[neg_inds], label_weights[neg_inds], reduction="mean", avg_factor=num_pos_samples
                 )
                 loss_cls = pos_focal_loss * self.adaptive_params.get("pos_weight", 3.0) + neg_focal_loss
-            else: 
+            else:
                 loss_cls = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, num_pos_samples)
-        else: 
+        else:
             loss_cls = self._get_loss_cls(cls_score, labels, label_weights, valid_label_mask, num_pos_samples)
-            
+
         return loss_cls, loss_bbox, loss_centerness, centerness_targets.sum()
 
     def _get_pos_inds(self, labels):

@@ -372,7 +372,7 @@ class DetectionConfigurer:
                 alpha=alpha,
                 gamma=gamma,
             )
-            
+
         n_train_data = len(cfg.data.train.otx_dataset)
         if n_train_data < 100:
             bbox_head.get("adaptive_params")["is_small_data"] = True
