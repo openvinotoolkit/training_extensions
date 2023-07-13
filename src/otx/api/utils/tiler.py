@@ -4,13 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import copy
 import cv2
 from itertools import product
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from openvino.model_api.models import Model, ImageModel
+
+from openvino.model_api.models.utils import DetectionResult
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.utils.async_pipeline import OTXDetectionAsyncPipeline
@@ -196,7 +197,7 @@ class Tiler:
         merged_features = self.merge_features(features, merged_results)
         return merged_results, merged_features
 
-    def postprocess_tile(self, predictions: Union[List, Tuple], offset_x: int, offset_y: int) -> Dict[str, List]:
+    def postprocess_tile(self, predictions: DetectionResult, offset_x: int, offset_y: int) -> Dict[str, List]:
         """Postprocess single tile prediction.
 
         Args:
