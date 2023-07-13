@@ -30,10 +30,12 @@ class TileClassifier(torch.nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2),
             ConvModule(192, 256, 3, padding=1, act_cfg=dict(type="ReLU")),
             nn.MaxPool2d(kernel_size=3, stride=2),
+            ConvModule(256, 256, 3, padding=1, act_cfg=dict(type="ReLU")),
+            nn.MaxPool2d(kernel_size=3, stride=2),
         )
-        self.avgpool = torch.nn.AvgPool2d(5, stride=2)
+        self.avgpool = torch.nn.AdaptiveAvgPool2d((1, 1))
         self.classifier = torch.nn.Sequential(
-            torch.nn.Linear(256 * 6 * 6, 256),
+            torch.nn.Linear(256, 256),
             torch.nn.ReLU(inplace=True),
             torch.nn.Linear(256, 256),
             torch.nn.ReLU(inplace=True),
