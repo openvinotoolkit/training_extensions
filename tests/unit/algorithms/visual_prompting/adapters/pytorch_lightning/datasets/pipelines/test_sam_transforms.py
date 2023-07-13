@@ -5,7 +5,8 @@
 #
 
 import numpy as np
-import torch
+from typing import Tuple
+import pytest
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines.sam_transforms import (
     ResizeLongestSide,
 )
@@ -14,60 +15,62 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 class TestResizeLongestSide:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.resize_longest_side = ResizeLongestSide(8)
+
     @e2e_pytest_unit
-    def test_apply_boxes(self):
+    def test_call(self):
+        """Test __call__."""
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("image,expected",
+        [
+            (np.zeros((2, 4, 3), dtype=np.uint8), (4, 8, 3)),
+            (np.zeros((12, 16, 3), dtype=np.uint8), (6, 8, 3)),
+        ]
+    )
+    def test_apply_image(self, image: np.ndarray, expected: Tuple[int, int, int]):
+        """Test apply_image."""
+        results = self.resize_longest_side.apply_image(image, self.resize_longest_side.target_length)
+
+        assert results.shape == expected
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("coords,original_size,expected",
+        [
+            (np.array([[1, 1], [2, 2]]), (4, 4), np.array([[2, 2], [4, 4]])),
+            (np.array([[4, 4], [8, 8]]), (16, 16), np.array([[2, 2], [4, 4]])),
+        ]
+    )
+    def test_apply_coords(self, coords: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray):
+        """Test apply_coords."""
+        result = self.resize_longest_side.apply_coords(coords, original_size)
+
+        assert np.array_equal(result, expected)
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("boxes,original_size,expected",
+        [
+            (np.array([[1, 1, 2, 2], [2, 2, 3, 3]]), (4, 4), np.array([[2, 2, 4, 4], [4, 4, 6, 6]])),
+            (np.array([[4, 4, 8, 8], [8, 8, 12, 12]]), (16, 16), np.array([[2, 2, 4, 4], [4, 4, 6, 6]])),
+        ]
+    )
+    def test_apply_boxes(self, boxes: np.ndarray, original_size: Tuple[int, int], expected: np.ndarray):
         """Test apply_boxes."""
-        resize_longest_side = ResizeLongestSide(100)
-        boxes = np.array([[10, 20, 30, 40], [50, 60, 70, 80]])
-        original_size = (200, 200)
-        expected_result = np.array([[5, 10, 15, 20], [25, 30, 35, 40]])
+        result = self.resize_longest_side.apply_boxes(boxes, original_size)
 
-        result = resize_longest_side.apply_boxes(boxes, original_size)
-
-        assert np.array_equal(result, expected_result)
+        assert np.array_equal(result, expected)
 
     @e2e_pytest_unit
-    def test_apply_image_torch(self):
-        """Test apply_image_torch."""
-        resize_longest_side = ResizeLongestSide(100)
-        image = torch.zeros((1, 3, 200, 300), dtype=torch.float32)
-        expected_result_shape = (1, 3, 67, 100)
-
-        result = resize_longest_side.apply_image_torch(image)
-
-        assert result.shape == expected_result_shape
-
-    @e2e_pytest_unit
-    def test_apply_coords_torch(self):
-        """Test apply_coords_torch."""
-        resize_longest_side = ResizeLongestSide(100)
-        coords = torch.Tensor([[50, 50], [100, 100]])
-        original_size = (200, 200)
-        expected_result = torch.Tensor([[25, 25], [50, 50]])
-
-        result = resize_longest_side.apply_coords_torch(coords, original_size)
-
-        assert torch.allclose(result, expected_result)
-
-    @e2e_pytest_unit
-    def test_apply_boxes_torch(self):
-        """Test apply_boxes_torch."""
-        resize_longest_side = ResizeLongestSide(100)
-        boxes = torch.Tensor([[10, 20, 30, 40], [50, 60, 70, 80]])
-        original_size = (200, 200)
-        expected_result = torch.Tensor([[5, 10, 15, 20], [25, 30, 35, 40]])
-
-        result = resize_longest_side.apply_boxes_torch(boxes, original_size)
-
-        assert torch.allclose(result, expected_result)
-
-    @e2e_pytest_unit
-    def test_get_preprocess_shape(self):
+    @pytest.mark.parametrize("oldh,oldw,expected",
+        [
+            (3, 4, (6, 8)),
+            (12, 16, (6, 8)),
+        ]
+    )
+    def test_get_preprocess_shape(self, oldh: int, oldw: int, expected: Tuple[int, int]):
         """Test get_preprocess_shape."""
-        resize_longest_side = ResizeLongestSide(100)
-        oldh, oldw = 200, 300
-        expected_result = (67, 100)
+        result = self.resize_longest_side.get_preprocess_shape(oldh, oldw, self.resize_longest_side.target_length)
 
-        result = resize_longest_side.get_preprocess_shape(oldh, oldw, resize_longest_side.target_length)
-
-        assert result == expected_result
+        assert result == expected
