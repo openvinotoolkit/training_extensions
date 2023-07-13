@@ -437,19 +437,9 @@ class TestTilingDetection:
 
         default_tile_size = hp.tiling_parameters.tile_size
         default_tile_overlap = hp.tiling_parameters.tile_overlap
-        default_ir_scale_factor = hp.tiling_parameters.tile_ir_scale_factor
         default_tile_max_number = hp.tiling_parameters.tile_max_number
 
-        img_sizes = []
-        for dataset_item in self.otx_dataset:
-            h, w = dataset_item.numpy.shape[:2]
-            img_sizes.append(0.5 * (h + w))
-        avg_img_sizes = np.mean(img_sizes)
-
         adaptive_tile_params(hp.tiling_parameters, self.otx_dataset)
-        # check ir scale factor is changes if tile size * default_ir_scale_factor is larger than avg image size
-        if hp.tiling_parameters.tile_size * default_ir_scale_factor > avg_img_sizes:
-            assert hp.tiling_parameters.tile_ir_scale_factor == 1.0
 
         # check tile size is changed
         assert hp.tiling_parameters.tile_size != default_tile_size

@@ -592,7 +592,7 @@ tiling_parameters:
     header: OpenVINO IR Scale Factor
     description: The purpose of the scale parameter is to optimize the performance and efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and input size, the scale parameter allows for more efficient parallelization of the workload and improve the overall performance and efficiency of the inference process on OpenVINO.
     affects_outcome_of: TRAINING
-    default_value: 2.0
+    default_value: 1.0
     min_value: 1.0
     max_value: 4.0
     type: FLOAT
@@ -602,7 +602,7 @@ tiling_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 2.0
+    value: 1.0
     visible_in_ui: true
     warning: null
 
