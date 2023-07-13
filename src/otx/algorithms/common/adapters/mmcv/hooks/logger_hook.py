@@ -43,7 +43,11 @@ class OTXLoggerHook(LoggerHook):
     @master_only
     def log(self, runner: BaseRunner):
         """Log function for OTXLoggerHook."""
-        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=())
+        tags_to_skip = (
+            "train/current_iter",
+            "val/current_iter",
+        )
+        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=tags_to_skip)
         if runner.max_epochs is not None:
             normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
         else:
@@ -56,6 +60,10 @@ class OTXLoggerHook(LoggerHook):
                 curve.y.pop()
             curve.x.append(normalized_iter)
             curve.y.append(value)
+
+    def before_run(self, runner: BaseRunner):
+        super().before_run(runner)
+        self.curves.clear()
 
     def after_train_epoch(self, runner: BaseRunner):
         """Called after_train_epoch in OTXLoggerHook."""
