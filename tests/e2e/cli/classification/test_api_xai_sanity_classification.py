@@ -34,7 +34,8 @@ assert_text_explain_predicted = "The number of saliency maps should be equal to 
 
 
 def saliency_maps_check(
-    predicted_dataset, task_labels, raw_sal_map_shape=None, processed_saliency_maps=False, only_predicted=True):
+    predicted_dataset, task_labels, raw_sal_map_shape=None, processed_saliency_maps=False, only_predicted=True
+):
     for data_point in predicted_dataset:
         saliency_map_counter = 0
         metadata_list = data_point.get_metadata()
