@@ -14,12 +14,22 @@ For fine-tuning `SAM <https://arxiv.org/abs/2304.02643>`_, we use following algo
 
 - ``Pre-processing``: Resize an image according to the longest axis and pad the rest with zero.
 
-- ``Optimizer``: We use `Adam <https://arxiv.org/abs/1412.6980>`_ optimizer with 1e-6 learning rate.
+- ``Optimizer``: We use `Adam <https://arxiv.org/abs/1412.6980>`_ optimizer.
 
 - ``Loss function``: We use standard loss combination, 20 * focal loss + dice loss + iou loss, used in `SAM <https://arxiv.org/abs/2304.02643>`_ as it is.
 
 - ``Additional training techniques``
     - ``Early stopping``: To add adaptability to the training pipeline and prevent overfitting. Early stopping will be automatically applied.
+
+
+.. note::
+
+    Currently, fine-tuning `SAM <https://arxiv.org/abs/2304.02643>`_ with bounding boxes in the OpenVINO Training Extensions is only supported.
+    We will support fine-tuning with other prompts (points and texts) and continuous fine-tuning with predicted mask information in the near future.
+
+.. note::
+
+    Currently, Post-Training Quantization (PTQ) for `SAM <https://arxiv.org/abs/2304.02643>`_ is only supported, not Quantization Aware Training (QAT).
 
 
 **************
@@ -59,20 +69,33 @@ Models
 .. _visual_prompting_model:
 
 We support the following model templates in experimental phase:
+
 +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------+---------------------+-----------------+
-| Template ID                                                                                                                                                                          | Name      | Complexity (GFLOPs) | Model size (MB) |
+|                                                                                     Template ID                                                                                      |   Name    | Complexity (GFLOPs) | Model size (MB) |
 +======================================================================================================================================================================================+===========+=====================+=================+
 | `Visual_Prompting_SAM_ViT_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/sam_vit_b/template_experimental.yaml>`_ | SAM_ViT_B | 487                 | 374             |
 +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------+---------------------+-----------------+
 
-In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_ on some academic datasets.
-The below table shows performance improvement after fine-tuning.
+To check feasibility of `SAM <https://arxiv.org/abs/2304.02643>`_, we did experiments using three public datasets with each other domains: `WGISD <https://github.com/thsant/wgisd>`_, `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_, and `FLARE22 <https://flare22.grand-challenge.org/>`_, and checked `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient>`_.
+We used sampled training data from `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ and `FLARE22 <https://flare22.grand-challenge.org/>`_, and full training data (=110) from `WGISD <https://github.com/thsant/wgisd>`_. The below table shows performance improvement after fine-tuning.
 
-+---------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
-| Model name    | `DIS5K <https://xuebinqin.github.io/dis/index.html>`_        | `Cityscapes <https://www.cityscapes-dataset.com/>`_ | `Pascal-VOC 2012 <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/>`_ | `KITTI full <https://www.cvlibs.net/datasets/kitti/index.php>`_ | Mean   |
-+===============+==============================================================+=====================================================+======================================================================+=================================================================+========+
-| SAM_ViT_B     | 79.95                                                        | 62.38                                               | 58.26                                                                | 36.06                                                           | 59.16  |
-+-----------------------+--------------------------------------------------------------+-----------------------------------------------------+----------------------------------------------------------------------+-----------------------------------------------------------------+--------+
++---------------------------------------------------------------+--------------------+--------+-------------------+
+|                            Dataset                            |      #samples      | Before | After fine-tuning |
++===============================================================+====================+========+===================+
+| `WGISD <https://github.com/thsant/wgisd>`_                    | 110                | 92.32  | 92.46 (+0.14)     |
++---------------------------------------------------------------+--------------------+--------+-------------------+
+| `Trashcan <https://conservancy.umn.edu/handle/11299/214865>`_ | 100                | 79.61  | 83.92 (+4.31)     |
++---------------------------------------------------------------+--------------------+--------+-------------------+
+| `FLARE22 <https://flare22.grand-challenge.org/>`_             | 1 CT (=100 slices) | 91.48  | 91.68 (+0.20)     |
++---------------------------------------------------------------+--------------------+--------+-------------------+
 
+According to datasets, ``learning rate`` and ``batch size`` can be adjusted like below:
 
+.. code-block::
 
+    $ otx train <model_template> \
+        --train-data-roots <path_to_data_root> \
+        --val-data-roots <path_to_data_root> \
+        params \
+        --learning_parameters.dataset.train_batch_size <batch_size_to_be_updated> \
+        --learning_parameters.optimizer.lr <learning_rate_to_be_updated>
