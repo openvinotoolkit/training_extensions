@@ -221,8 +221,8 @@ class Tiler:
             )
             output_dict["masks"] = tile_masks
         else:
-            assert isinstance(predictions, list)
-            out = detection2array(predictions)
+            assert isinstance(predictions.objects, list)
+            out = detection2array(predictions.objects)
             out[:, 2:] += np.tile([offset_x, offset_y], 2)
         output_dict["bboxes"] = out
         return output_dict
