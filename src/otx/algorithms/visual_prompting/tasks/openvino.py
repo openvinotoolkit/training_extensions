@@ -43,7 +43,6 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
     OTXVisualPromptingDataset,
     get_transform,
 )
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -115,13 +114,16 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         self.model = {}
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
         self.configuration = {
+            "image_encoder": {
+                **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size"])
+            },
             "decoder": {
                 **attr.asdict(
                     hparams.postprocessing,
                     filter=lambda attr, value: attr.name
                     not in ["header", "description", "type", "visible_in_ui", "class_name"],
                 )
-            }
+            },
         }
         for name in ["image_encoder", "decoder"]:
             model_adapter = VisualPromptingOpenvinoAdapter(
@@ -139,10 +141,10 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         self.transform = get_transform()  # TODO (sungchul): insert args
 
     def pre_process(  # type: ignore
-        self, dataset_item: DatasetItemEntity
+        self, dataset_item: DatasetItemEntity, extra_processing: bool = False
     ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
-        images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy)
+        images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy, extra_processing)
         prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)  # to be replaced
         prompts = self.model["decoder"].preprocess(prompts, meta)
         return images, meta, prompts  # type: ignore
@@ -230,15 +232,14 @@ class OTXOpenVinoDataLoader:
             index = self.shuffler[index]
 
         items = self.dataset[index]
-        images, _, prompts = self.inferencer.pre_process(items)
-        processed_image = ResizeLongestSide.apply_image(images["images"][0], self.target_length).transpose(2, 0, 1)
-        _, h, w = processed_image.shape
-        pad_width = ((0, 0), (0, self.target_length - h), (0, self.target_length - w))
-        processed_image = np.pad(processed_image, pad_width, mode="constant", constant_values=0)
+        images, _, prompts = self.inferencer.pre_process(items, extra_processing=True)
+        _, _, h, w = images["images"].shape
+        pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
+        images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
         if self.is_encoder:
-            return {"images": processed_image[None]}
+            return images
         else:
-            image_embeddings = self.compressed_model(processed_image[None])
+            image_embeddings = self.compressed_model(images["images"])
             prompt = prompts[0]  # only use the first prompt
             prompt.pop("label")
             prompt.pop("orig_size")

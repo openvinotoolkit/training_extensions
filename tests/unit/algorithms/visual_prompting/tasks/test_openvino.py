@@ -204,7 +204,7 @@ class TestOTXOpenVinoDataLoader:
         mocker.patch.object(
             dataloader.inferencer,
             "pre_process",
-            return_value=({"images": np.zeros((1, 4, 3, 3), dtype=np.uint8)}, None, [{"label": 1, "orig_size": 1}]),
+            return_value=({"images": np.zeros((1, 3, 4, 4), dtype=np.uint8)}, None, [{"label": 1, "orig_size": 1}]),
         )
 
         results = dataloader.__getitem__(0)
