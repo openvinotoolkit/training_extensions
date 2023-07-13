@@ -33,6 +33,19 @@ class OTXLoggerHook(LoggerHook):
                 points.append(f"({x},{y})")
             return "curve[" + ",".join(points) + "]"
 
+    _TAGS_TO_SKIP = (
+        "accuracy_top-1",
+        "current_iters",
+        "decode.acc_seg",
+        "decode.loss_ce_ignore",
+    )
+
+    _TAGS_TO_RENAME = {
+        "train/time": "train/time (sec/iter)",
+        "train/data_time": "train/data_time (sec/iter)",
+        "val/accuracy": "val/accuracy (%)",
+    }
+
     def __init__(
         self,
         curves: Optional[Dict[Any, Curve]] = None,
@@ -47,16 +60,13 @@ class OTXLoggerHook(LoggerHook):
     @master_only
     def log(self, runner: BaseRunner):
         """Log function for OTXLoggerHook."""
-        tags_to_skip = (
-            "train/current_iter",
-            "val/current_iter",
-        )
-        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=tags_to_skip)
+        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=self._TAGS_TO_SKIP)
         if runner.max_epochs is not None:
             normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
         else:
             normalized_iter = self.get_iter(runner)
         for tag, value in tags.items():
+            tag = self._TAGS_TO_RENAME.get(tag, tag)
             curve = self.curves[tag]
             # Remove duplicates.
             if len(curve.x) > 0 and curve.x[-1] == normalized_iter:
