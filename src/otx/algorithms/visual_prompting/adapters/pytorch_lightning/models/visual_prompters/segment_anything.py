@@ -159,19 +159,16 @@ class SegmentAnything(LightningModule):
             # state_dict from args.load_from
             state_dict = replace_state_dict_keys(state_dict, revise_keys)
             self.load_state_dict(state_dict)
-        elif self.config.model.checkpoint == "pretrained":
-            # use pretrained weights
-            state_dict = torch.hub.load_state_dict_from_url(CKPT_PATHS[self.config.model.backbone])
-            state_dict = replace_state_dict_keys(state_dict, revise_keys)
-            self.load_state_dict(state_dict)
         elif self.config.model.checkpoint:
-            try:
-                # try to load lightning checkpoint
+            if str(self.config.model.checkpoint).endswith(".ckpt"):
+                # load lightning checkpoint
                 self.load_from_checkpoint(self.config.model.checkpoint)
-            except Exception:
+            else:
                 if str(self.config.model.checkpoint).startswith("http"):
+                    # get checkpoint from url
                     state_dict = torch.hub.load_state_dict_from_url(str(self.config.model.checkpoint))
                 else:
+                    # load checkpoint from local
                     with open(self.config.model.checkpoint, "rb") as f:
                         state_dict = torch.load(f)
                 state_dict = replace_state_dict_keys(state_dict, revise_keys)

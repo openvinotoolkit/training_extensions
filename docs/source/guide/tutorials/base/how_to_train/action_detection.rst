@@ -89,7 +89,7 @@ Let's prepare an OpenVINO™ Training Extensions action detection workspace runn
 
 .. code-block::
 
-  (otx) ...$ otx build --train-data-roots ./data/JHMDB_5%/train --val-data-roots ./data/JHMDB_5%/test --model X3D_FAST_RCNN
+  (otx) ...$ otx build x3d_fast_rcnn --train-data-roots ./data/JHMDB_5%/train --val-data-roots ./data/JHMDB_5%/test
 
   [*] Workspace Path: otx-workspace-ACTION_DETECTION
   [*] Load Model Template ID: Custom_Action_Detection_X3D_FAST_RCNN
@@ -146,9 +146,9 @@ We will get a similar to this validation output after some validation time (abou
   2023-02-21 22:42:14,749 - mmaction - INFO - Done.
   2023-02-21 22:44:24,345 - mmaction - INFO - Inference completed
   2023-02-21 22:44:24,347 - mmaction - INFO - called evaluate()
-  2023-02-21 22:44:26,349 - mmaction - INFO - Final model performance: Performance(score: 0.537625754527163, dashboard: (1 metric groups))
+  2023-02-21 22:44:26,349 - mmaction - INFO - Final model performance: Performance(score: 0.5086285195277019, dashboard: (1 metric groups))
   2023-02-21 22:44:26,349 - mmaction - INFO - Evaluation completed
-  Performance(score: 0.537625754527163, dashboard: (1 metric groups))
+  Performance(score: 0.5086285195277019, dashboard: (1 metric groups))
 
 .. note::
 
@@ -160,7 +160,7 @@ Export
 *********
 
 1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format.
-It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run POT optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
+It allows running the model on the Intel hardware much more efficiently, especially on the CPU. Also, the resulting IR model is required to run PTQ optimization. IR model consists of two files: ``openvino.xml`` for weights and ``openvino.bin`` for architecture.
 
 2. Run the command line below to export the trained model
 and save the exported model to the ``openvino`` folder.
@@ -192,12 +192,7 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
 
   ...
 
-  Performance(score: 0.0, dashboard: (3 metric groups))
-
-.. note::
-
-  Unfortunately, openvino has trouble in export from ONNX file, which comes from torch 1.13.
-  You can get proper openvino IR when you downgrade torch version to 1.12.1 when exporting.
+  Performance(score: 0.47351524879614754, dashboard: (3 metric groups))
 
 
 *************
@@ -205,11 +200,11 @@ Optimization
 *************
 
 1. You can further optimize the model with ``otx optimize``.
-Currently, only POT is supported for action detection. NNCF will be supported in near future.
+Currently, only PTQ is supported for action detection. NNCF will be supported in near future.
 Refer to :doc:`optimization explanation <../../../explanation/additional_features/models_optimization>` section for more details on model optimization.
 
 2. Example command for optimizing
-OpenVINO™ model (.xml) with OpenVINO™ POT.
+OpenVINO™ model (.xml) with OpenVINO™ PTQ.
 
 .. code-block::
 
@@ -218,9 +213,11 @@ OpenVINO™ model (.xml) with OpenVINO™ POT.
 
   ...
 
-  Performance(score: 0.0, dashboard: (3 metric groups))
+  [*] Update data configuration file to: data.yaml
+  Statistics collection: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 300/300 [04:16<00:00,  1.17it/s]Biases correction: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 168/168 [00:15<00:00, 10.63it/s][>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 1572/1572, 7.3 task/s, elapsed: 216s, ETA:     0s
+  Performance(score: 0.4621155288822204, dashboard: (1 metric groups))
 
-Keep in mind that POT will take some time (generally less than NNCF optimization) without logging to optimize the model.
+Keep in mind that PTQ will take some time (generally less than NNCF optimization) without logging to optimize the model.
 
 3. Now, you have fully trained, optimized and exported an
 efficient model representation ready-to-use action detection model.

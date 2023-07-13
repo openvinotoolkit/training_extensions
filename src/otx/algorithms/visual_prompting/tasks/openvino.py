@@ -14,19 +14,25 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import io
+import json
 import os
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
+from zipfile import ZipFile
 
 import attr
 import numpy as np
-from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.adapters import create_core
 from openvino.model_api.models import Model
 
-import otx.algorithms.visual_prompting.adapters.openvino.model_wrappers  # noqa: F401
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
+from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
+from otx.algorithms.visual_prompting.adapters.openvino.model_wrappers import (
+    VisualPromptingOpenvinoAdapter,
+)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
     get_transform,
@@ -45,7 +51,9 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.usecases.exportable_code import demo
 from otx.api.usecases.exportable_code.inference import BaseInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     VisualPromptingToAnnotationConverter,
@@ -91,33 +99,38 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         assert all(module in model_files for module in ["image_encoder", "decoder"])
 
         self.model = {}
-        for name in ["image_encoder", "decoder"]:
-            model_adapter = OpenvinoAdapter(
-                create_core(),
-                model_files.get(name),
-                weight_files.get(name, None),
-                device=device,
-                max_num_requests=num_requests,
-                plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
-            )
-            self.configuration = {
+        model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
+        self.configuration = {
+            "decoder": {
                 **attr.asdict(
                     hparams.postprocessing,
                     filter=lambda attr, value: attr.name
                     not in ["header", "description", "type", "visible_in_ui", "class_name"],
                 )
             }
-            self.model[name] = Model.create_model(name, model_adapter, self.configuration, preload=True)
+        }
+        for name in ["image_encoder", "decoder"]:
+            model_adapter = VisualPromptingOpenvinoAdapter(
+                core=create_core(),
+                model=model_files.get(name),
+                weights_path=weight_files.get(name, None),
+                model_parameters=model_parameters.get(name, {}),
+                device=device,
+                max_num_requests=num_requests,
+                plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
+            )
+            self.model[name] = Model.create_model(model_adapter, name, self.configuration.get(name, {}), preload=True)
         self.converter = VisualPromptingToAnnotationConverter()
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 
     def pre_process(self, dataset_item: DatasetItemEntity) -> Dict[str, Any]:  # type: ignore
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
-        # TODO (sungchul): change to modelapi.
-        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)
-        items = {"index": 0, "images": dataset_item.numpy, **prompts}
-        return self.transform(items)
+        images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy)
+        prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)  # to be replaced
+        prompts = self.model["decoder"].preprocess(prompts, meta)
+        items = {**images, **meta, "prompts": prompts}
+        return items
 
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
@@ -131,19 +144,18 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         """Perform a prediction for a given input image."""
         # forward image encoder
         items = self.pre_process(dataset_item)
-        image_embeddings = self.forward({"images": items["images"].unsqueeze(0).numpy()})
+        image_embeddings = self.forward({"images": items["images"]})
 
-        # TODO (sungchul): generate random points from gt_mask
         annotations: List[Annotation] = []
         hard_predictions: List[np.ndarray] = []
         soft_predictions: List[np.ndarray] = []
-        for idx, (bbox, label) in enumerate(zip(items["bboxes"], items["labels"])):
-            inputs_decoder = self.model["decoder"].preprocess(bbox, items["original_size"])
-            inputs_decoder.update(image_embeddings)
+        for prompt in items["prompts"]:
+            label = prompt.pop("label")
+            prompt.update(image_embeddings)
 
             # forward decoder to get predicted mask
-            prediction = self.forward_decoder(inputs_decoder)
-            metadata = {"label": label, "original_size": np.array(items["original_size"])}
+            prediction = self.forward_decoder(prompt)
+            metadata = {"label": label, "original_size": prompt["orig_size"]}
 
             # set annotation for eval
             annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
@@ -260,7 +272,60 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
 
     def deploy(self, output_model: ModelEntity) -> None:
         """Deploy function of OpenVINOVisualPromptingTask."""
-        raise NotImplementedError
+        logger.info("Deploying the model")
+        if self.model is None:
+            raise RuntimeError("deploy failed, model is None")
+
+        work_dir = os.path.dirname(demo.__file__)
+        parameters = {}
+        parameters["converter_type"] = f"{self.task_type}"
+        parameters["model_parameters"] = self.inferencer.configuration  # type: ignore
+        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)  # type: ignore # noqa: E501
+
+        zip_buffer = io.BytesIO()
+        with ZipFile(zip_buffer, "w") as arch:
+            # model files
+            arch.writestr(
+                os.path.join("model", "visual_prompting_image_encoder.xml"),
+                self.model.get_data("visual_prompting_image_encoder.xml"),
+            )
+            arch.writestr(
+                os.path.join("model", "visual_prompting_image_encoder.bin"),
+                self.model.get_data("visual_prompting_image_encoder.bin"),
+            )
+            arch.writestr(
+                os.path.join("model", "visual_prompting_decoder.xml"),
+                self.model.get_data("visual_prompting_decoder.xml"),
+            )
+            arch.writestr(
+                os.path.join("model", "visual_prompting_decoder.bin"),
+                self.model.get_data("visual_prompting_decoder.bin"),
+            )
+            arch.writestr(
+                os.path.join("model", "config.json"),
+                json.dumps(parameters, ensure_ascii=False, indent=4),
+            )
+            # model_wrappers files
+            for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
+                if "__pycache__" in root:
+                    continue
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arch.write(
+                        file_path,
+                        os.path.join(
+                            "python",
+                            "model_wrappers",
+                            file_path.split("model_wrappers/")[0],
+                        ),
+                    )
+            # other python files
+            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+            arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
+            arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+            arch.write(os.path.join(work_dir, "README.md"), os.path.join(".", "README.md"))
+        output_model.exportable_code = zip_buffer.getvalue()
+        logger.info("Deploying completed")
 
     def optimize(
         self,

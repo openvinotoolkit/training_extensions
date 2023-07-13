@@ -1,4 +1,4 @@
-"""Model Wrapper of OTX Visual Prompting."""
+"""Openvino Model Wrappers of OTX Visual Prompting."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,16 +14,15 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, Dict, Tuple
+from copy import deepcopy
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
-from openvino.model_api.models import ImageModel
-from openvino.model_api.models.types import NumericalValue
+from openvino.model_api.adapters.inference_adapter import InferenceAdapter
+from openvino.model_api.models import ImageModel, SegmentationModel
+from openvino.model_api.models.types import NumericalValue, StringValue
 
-from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
-    BlurSegmentation,
-)
 from otx.api.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
 
 
@@ -32,36 +31,39 @@ class ImageEncoder(ImageModel):
 
     __model__ = "image_encoder"
 
+    def __init__(self, inference_adapter, configuration=None, preload=False):
+        super().__init__(inference_adapter, configuration, preload)
+
     @classmethod
     def parameters(cls) -> Dict[str, Any]:  # noqa: D102
         parameters = super().parameters()
-        parameters["resize_type"].default_value = "fit_to_window"
-        parameters["mean_values"].default_value = [123.675, 116.28, 103.53]
-        parameters["scale_values"].default_value = [58.395, 57.12, 57.375]
+        parameters.update(
+            {
+                "resize_type": StringValue(default_value="fit_to_window"),
+            }
+        )
         return parameters
 
+    def preprocess(self, inputs: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+        """Update meta for image encoder."""
+        dict_inputs, meta = super().preprocess(inputs)
+        meta["resize_type"] = self.resize_type
+        return dict_inputs, meta
 
-class Decoder(BlurSegmentation):
-    """Decoder class for visual prompting of openvino model wrapper.
 
-    TODO (sungchul): change parent class
-    """
+class Decoder(SegmentationModel):
+    """Decoder class for visual prompting of openvino model wrapper."""
 
     __model__ = "decoder"
 
-    def preprocess(self, bbox: np.ndarray, original_size: Tuple[int]) -> Dict[str, Any]:
-        """Ready decoder inputs."""
-        point_coords = bbox.reshape((-1, 2, 2))
-        point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
-        inputs_decoder = {
-            "point_coords": point_coords,
-            "point_labels": point_labels,
-            # TODO (sungchul): how to generate mask_input and has_mask_input
-            "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
-            "has_mask_input": np.zeros((1, 1), dtype=np.float32),
-            "orig_size": np.array(original_size, dtype=np.float32).reshape((-1, 2)),
-        }
-        return inputs_decoder
+    def __init__(
+        self,
+        model_adapter: InferenceAdapter,
+        configuration: Optional[dict] = None,
+        preload: bool = False,
+    ):
+        super().__init__(model_adapter, configuration, preload)
+        self.output_blob_name = "low_res_masks"
 
     @classmethod
     def parameters(cls):  # noqa: D102
@@ -69,25 +71,52 @@ class Decoder(BlurSegmentation):
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         return parameters
 
+    def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]):
+        """Preprocess prompts."""
+        processed_prompts = []
+        # TODO (sungchul): process points
+        for bbox, label in zip(inputs["bboxes"], inputs["labels"]):
+            # TODO (sungchul): add condition to check whether using bbox or point
+            point_coords = self._apply_coords(bbox.reshape(-1, 2, 2), inputs["original_size"])
+            point_labels = np.array([2, 3], dtype=np.float32).reshape((-1, 2))
+            processed_prompts.append(
+                {
+                    "point_coords": point_coords,
+                    "point_labels": point_labels,
+                    # TODO (sungchul): how to generate mask_input and has_mask_input
+                    "mask_input": np.zeros((1, 1, 256, 256), dtype=np.float32),
+                    "has_mask_input": np.zeros((1, 1), dtype=np.float32),
+                    "orig_size": np.array(inputs["original_size"], dtype=np.float32).reshape((-1, 2)),
+                    "label": label,
+                }
+            )
+        return processed_prompts
+
+    def _apply_coords(self, coords: np.ndarray, original_size: Union[List[int], Tuple[int, int]]) -> np.ndarray:
+        """Process coords according to preprocessed image size using image meta."""
+        old_h, old_w = original_size
+        new_h, new_w = self._get_preprocess_shape(original_size[0], original_size[1], self.image_size)
+        coords = deepcopy(coords).astype(np.float32)
+        coords[..., 0] = coords[..., 0] * (new_w / old_w)
+        coords[..., 1] = coords[..., 1] * (new_h / old_h)
+        return coords
+
+    def _get_preprocess_shape(self, old_h: int, old_w: int, image_size: int) -> Tuple[int, int]:
+        """Compute the output size given input size and target image size."""
+        scale = image_size / max(old_h, old_w)
+        new_h, new_w = old_h * scale, old_w * scale
+        new_w = int(new_w + 0.5)
+        new_h = int(new_h + 0.5)
+        return (new_h, new_w)
+
+    def _check_io_number(self, number_of_inputs, number_of_outputs):
+        pass
+
     def _get_inputs(self):
         """Get input layer name and shape."""
         image_blob_names = [name for name in self.inputs.keys()]
         image_info_blob_names = []
         return image_blob_names, image_info_blob_names
-
-    def _get_outputs(self):
-        """Get output layer name and shape."""
-        layer_name = "low_res_masks"
-        layer_shape = self.outputs[layer_name].shape
-
-        if len(layer_shape) == 3:
-            self.out_channels = 0
-        elif len(layer_shape) == 4:
-            self.out_channels = layer_shape[1]
-        else:
-            raise Exception(f"Unexpected output layer shape {layer_shape}. Only 4D and 3D output layers are supported")
-
-        return layer_name
 
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]) -> Tuple[np.ndarray, np.ndarray]:
         """Postprocess to convert soft prediction to hard prediction.
@@ -102,10 +131,10 @@ class Decoder(BlurSegmentation):
         """
 
         def sigmoid(x):
-            return 1 / (1 + np.exp(-x))
+            return np.tanh(x * 0.5) * 0.5 + 0.5  # to avoid overflow
 
         soft_prediction = outputs[self.output_blob_name].squeeze()
-        soft_prediction = self.resize_and_crop(soft_prediction, meta["original_size"])
+        soft_prediction = self.resize_and_crop(soft_prediction, meta["original_size"][0])
         soft_prediction = sigmoid(soft_prediction)
         meta["soft_prediction"] = soft_prediction
 
@@ -134,18 +163,18 @@ class Decoder(BlurSegmentation):
             soft_prediction, (self.image_size, self.image_size), 0, 0, interpolation=cv2.INTER_LINEAR
         )
 
-        prepadded_size = self.resize_longest_image_size(original_size, self.image_size).astype(np.int64)
+        prepadded_size = self.get_padded_size(original_size, self.image_size).astype(np.int64)
         resized_cropped_soft_prediction = resized_soft_prediction[..., : prepadded_size[0], : prepadded_size[1]]
 
         original_size = original_size.astype(np.int64)
-        h, w = original_size[0], original_size[1]
+        h, w = original_size
         final_soft_prediction = cv2.resize(
             resized_cropped_soft_prediction, (w, h), 0, 0, interpolation=cv2.INTER_LINEAR
         )
         return final_soft_prediction
 
-    def resize_longest_image_size(self, original_size: np.ndarray, longest_side: int) -> np.ndarray:
-        """Resizes the longest side of the image to the given size.
+    def get_padded_size(self, original_size: np.ndarray, longest_side: int) -> np.ndarray:
+        """Get padded size from original size and longest side of the image.
 
         Args:
             original_size (np.ndarray): The original image size with shape Bx2.

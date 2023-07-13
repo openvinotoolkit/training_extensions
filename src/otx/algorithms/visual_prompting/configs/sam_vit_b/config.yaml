@@ -26,7 +26,7 @@ model:
   freeze_image_encoder: true
   freeze_prompt_encoder: true
   freeze_mask_decoder: false
-  checkpoint: pretrained
+  checkpoint: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
   # just for inference
   return_single_mask: true
   use_stability_score: false
