@@ -66,6 +66,7 @@ class OTXLoggerHook(LoggerHook):
             curve.y.append(value)
 
     def before_run(self, runner: BaseRunner):
+        """Called before_run in OTXLoggerHook."""
         super().before_run(runner)
         self.curves.clear()
 
