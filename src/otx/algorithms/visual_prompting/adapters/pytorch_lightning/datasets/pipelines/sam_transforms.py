@@ -43,8 +43,8 @@ class ResizeLongestSide:
             item["points"] = self.apply_coords(item["points"], item["original_size"])
         return item
 
-    @staticmethod
-    def apply_image(image: np.ndarray, target_length: int) -> np.ndarray:
+    @classmethod
+    def apply_image(cls, image: np.ndarray, target_length: int) -> np.ndarray:
         """Expects a numpy array with shape HxWxC in uint8 format.
 
         Args:
@@ -54,7 +54,7 @@ class ResizeLongestSide:
         Returns:
             np.ndarray: Resized image.
         """
-        target_size = ResizeLongestSide.get_preprocess_shape(image.shape[0], image.shape[1], target_length)
+        target_size = cls.get_preprocess_shape(image.shape[0], image.shape[1], target_length)
         return np.array(resize(to_pil_image(image), target_size))
 
     def apply_coords(self, coords: np.ndarray, original_size: Union[List[Any], Tensor]) -> np.ndarray:
