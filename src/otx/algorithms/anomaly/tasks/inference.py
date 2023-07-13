@@ -338,7 +338,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             model.set_rt_info(value, ["model_info", key])
         # Add transforms
         if "transform" in metadata:
-            for transform_dict in metadata["transform"]["transform"]["transforms"]:
+            for transform_dict in metadata["transform"]["transforms"]:
                 transform = transform_dict.pop("__class_fullname__")
                 if transform == "Normalize":
                     model.set_rt_info(self._serialize_list(transform_dict["mean"]), ["model_info", "mean_values"])
@@ -425,7 +425,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             else:
                 transform = self.trainer.datamodule.train_dataloader().dataset.transform
         metadata = {
-            "transform": transform.to_dict(),
+            "transform": transform._to_dict(),
             "image_threshold": image_threshold,
             "pixel_threshold": pixel_threshold,
             "image_shape": list(self.config.model.input_size),
