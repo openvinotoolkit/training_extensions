@@ -3,7 +3,7 @@
 """Modules for otx.core.ov.models.ov_model."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import math
 import os

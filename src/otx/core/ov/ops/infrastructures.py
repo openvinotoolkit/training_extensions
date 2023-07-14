@@ -1,7 +1,7 @@
 """Infrastructure-related modules for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from collections import OrderedDict
 from dataclasses import dataclass, field

@@ -1,7 +1,7 @@
 """Module for defining a semi-supervised multi-label classifier using mmcls."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from mmcls.models.builder import CLASSIFIERS
 
