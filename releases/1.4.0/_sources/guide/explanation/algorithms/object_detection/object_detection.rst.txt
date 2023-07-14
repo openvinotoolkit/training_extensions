@@ -71,20 +71,45 @@ Models
 
 We support the following ready-to-use model templates:
 
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
-| Template ID                                                                                                                                                                               | Name    | Complexity (GFLOPs) | Model size (MB) |
-+===========================================================================================================================================================================================+=========+=====================+=================+
-| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml>`_      | YOLOX   | 6.5                 | 20.4            |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_SSD <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml>`_    | SSD     | 9.4                 | 7.6             |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  | ATSS    | 20.6                | 9.1             |
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------+---------------------+-----------------+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| Template ID                                                                                                                                                                               | Name                | Complexity (GFLOPs) | Model size (MB) |
++===========================================================================================================================================================================================+=====================+=====================+=================+
+| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml>`_      |        YOLOX        | 6.5                 | 20.4            |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_SSD <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml>`_    |         SSD         | 9.4                 | 7.6             |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  |  MobileNetV2-ATSS   | 20.6                | 9.1             |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 
-`ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases.
+Above table can be found using the following command
+
+.. code-block::
+    $ otx find --task detection
+
+`MobileNetV2-ATSS <https://arxiv.org/abs/1912.02424>`_ is a good medium-range model that works well and fast in most cases.
 `SSD <https://arxiv.org/abs/1512.02325>`_ and `YOLOX <https://arxiv.org/abs/2107.08430>`_ are light models, that a perfect for the fastest inference on low-power hardware.
 YOLOX achieved the same accuracy as SSD, and even outperforms its inference on CPU 1.5 times, but requires 3 times more time for training due to `Mosaic augmentation <https://arxiv.org/pdf/2004.10934.pdf>`_, which is even more than for ATSS.
 So if you have resources for a long training, you can pick the YOLOX model.
+
+In addition to these models, we supports experimental models for object detection. These experimental models will be changed to official models within a few releases.
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| Template ID                                                                                                                                                                                                               | Name                | Complexity (GFLOPs) | Model size (MB) |
++===========================================================================================================================================================================================================================+=====================+=====================+=================+
+| `Custom_Object_Detection_Gen3_Deformable_DETR <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml>`_  |   Deformable_DETR   | 165                 | 157.0           |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_DINO <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml>`_                        |        DINO         | 235                 | 182.0           |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Custom_Object_Detection_Gen3_ResNeXt101_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml>`_           |   ResNeXt101-ATSS   | 434.75              | 344.0           |
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+
+`Deformable_DETR <https://arxiv.org/abs/2010.04159>`_ is `DETR <https://arxiv.org/abs/2005.12872>`_ based model, and it solves slow convergence problem of DETR. `DINO <https://arxiv.org/abs/2203.03605>`_ improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO. 
+Although transformer based models show notable performance on various object detection benchmark, CNN based model still show good performance with proper latency.
+Therefore, we added a new experimental CNN based method, ResNeXt101-ATSS. ATSS still shows good performance among `RetinaNet <https://arxiv.org/abs/1708.02002>`_ based models. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.
+
+.. note::
+
+    For using experimental templates, you should specify full path of experimental template. Ex) otx build src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml --task detection
 
 Besides this, we support public backbones from `torchvision <https://pytorch.org/vision/stable/index.html>`_, `pytorchcv <https://github.com/osmr/imgclsmob>`_, `mmcls <https://github.com/open-mmlab/mmclassification>`_ and `OpenVino Model Zoo <https://github.com/openvinotoolkit/open_model_zoo>`_.
 Please, refer to the :doc:`tutorial <../../../tutorials/advanced/backbones>` how to customize models and run public backbones.
@@ -92,30 +117,36 @@ Please, refer to the :doc:`tutorial <../../../tutorials/advanced/backbones>` how
 To see which public backbones are available for the task, the following command can be executed:
 
 .. code-block::
-
-        $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
+    $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
 In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
 
-For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights is shown. That means that weights are undertrained for COCO dataset and don't achieve the best result.
-That is because the purpose of pretrained models is to learn basic features from a such large and diverse dataset as COCO and to use these weights to get good results for other custom datasets right from the start.
+For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights is shown, and we report official COCO mAP with AP50. 
+Except for COCO, we report AP50 as performance metric.
 
-The results on `Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/voc2012/>`_,  `BCCD <https://public.roboflow.com/object-detection/bccd/3>`_, `MinneApple <https://rsn.umn.edu/projects/orchard-monitoring/minneapple>`_ and `WGISD <https://github.com/thsant/wgisd>`_  were obtained on our templates without any changes.
-BCCD is an easy dataset with focused large objects, while MinneApple and WGISD have small objects that are hard to distinguish from the background.
+5 datasets were selected as transfer learning datasets. 
+`BDD100K <https://www.bdd100k.com/>`_ is the largest dataset among we used. 70000 images are used as train images and 10000 images are used for validation.
+`Brackish <https://public.roboflow.com/object-detection/brackish-underwater>`_ and `Plantdoc <https://public.roboflow.com/object-detection/plantdoc>`_ are datasets of medium size. They have around 10000 images for train and 1500 images for validation.
+`BCCD <https://public.roboflow.com/object-detection/bccd>`_ and `Chess pieces <https://public.roboflow.com/object-detection/chess-full>`_ are datasets of small size. They have around 300 images for train and 100 images for validation.
+We used our own templates without any modification.
 For hyperparameters, please, refer to the related template.
 We trained each model with a single Nvidia GeForce RTX3090.
 
-+-----------+------------+-----------+-----------+-----------+-----------+
-| Model name| COCO       | PASCAL VOC| BCCD      | MinneApple| WGISD     |
-+===========+============+===========+===========+===========+===========+
-| YOLOX     | 32.0       | 66.6      | 60.3      | 24.5      | 44.1      |
-+-----------+------------+-----------+-----------+-----------+-----------+
-| SSD       | 13.5       | 50.0      | 54.2      | 31.2      | 45.9      |
-+-----------+------------+-----------+-----------+-----------+-----------+
-| ATSS      | 32.5       | 68.7      | 61.5      | 42.5      | 57.5      |
-+-----------+------------+-----------+-----------+-----------+-----------+
-
-
++----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
+| Model name                 | COCO(AP50)       | BDD100K   | Brackish  | Plantdoc  | BCCD      | Chess pieces |
++============================+==================+===========+===========+===========+===========+==============+
+| YOLOX                      | 31.0 (48.2)      | 24.8      | 96.3      | 51.5      | 88.5      | 99.2         |
++----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
+| SSD                        | 13.5             | 28.2      | 96.5      | 52.9      | 91.1      | 99.1         |
++----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
+| MobileNetV2-ATSS           | 32.5 (49.5)      | 40.2      | 99.1      | 63.4      | 93.4      | 99.1         |
++----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
+| ResNeXt101-ATSS            | 45.1 (63.8)      | 45.5      | 99.3      | 69.3      | 93.1      | 99.1         |
++----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
+| ResNet50-Deformable-DETR   | 44.3 (63.2)      | 44.8      | 97.7      | 60.7      | 93.4      | 99.2         |
++----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
+| ResNet50-DINO              | 49.0 (66.4)      | 47.2      | 99.5      | 62.9      | 93.5      | 99.1         |
++----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
 
 ************************
 Semi-supervised Learning
@@ -142,26 +173,26 @@ In the table below the mAP on toy data sample from `COCO <https://cocodataset.or
 
 We sample 400 images that contain one of [person, car, bus] for labeled train images. And 4000 images for unlabeled images. For validation 100 images are selected from val2017.
 
-+---------+--------------------------------------------+
-| Dataset |            Sampled COCO dataset            |
-+=========+=====================+======================+
-|         |          SL         |       Semi-SL        |
-+---------+---------------------+----------------------+
-|  ATSS   |  | Person: 69.70    | | Person: 69.44      |
-|         |  | Car:    65.00    | | Car:    65.84      |
-|         |  | Bus:    42.96    | | Bus:    50.7       |
-|         |  | Mean:   59.20    | | Mean:   61.98      |
-+---------+---------------------+----------------------+
-|   SSD   | | Person: 39.24     | | Person: 38.52      |
-|         | | Car:    19.24     | | Car:    28.02      |
-|         | | Bus:    21.34     | | Bus:    26.28      |
-|         | | Mean:   26.60     | | Mean:   30.96      |
-+---------+---------------------+----------------------+
-|  YOLOX  | | Person: 65.64     | | Person: 69.00      |
-|         | | Car:    64.44     | | Car:   65.66       |
-|         | | Bus:    60.68     | | Bus:   65.12       |
-|         | | Mean:   63.6      | | Mean:  66.58       |
-+---------+---------------------+----------------------+
++---------------------+--------------------------------------------+
+| Dataset             |            Sampled COCO dataset            |
++=====================+=====================+======================+
+|                     |          SL         |       Semi-SL        |
++---------------------+---------------------+----------------------+
+|  MobileNetV2-ATSS   |  | Person: 69.70    | | Person: 69.44      |
+|                     |  | Car:    65.00    | | Car:    65.84      |
+|                     |  | Bus:    42.96    | | Bus:    50.7       |
+|                     |  | Mean:   59.20    | | Mean:   61.98      |
++---------------------+---------------------+----------------------+
+|   SSD               | | Person: 39.24     | | Person: 38.52      |
+|                     | | Car:    19.24     | | Car:    28.02      |
+|                     | | Bus:    21.34     | | Bus:    26.28      |
+|                     | | Mean:   26.60     | | Mean:   30.96      |
++---------------------+---------------------+----------------------+
+|  YOLOX              | | Person: 65.64     | | Person: 69.00      |
+|                     | | Car:    64.44     | | Car:   65.66       |
+|                     | | Bus:    60.68     | | Bus:   65.12       |
+|                     | | Mean:   63.6      | | Mean:  66.58       |
++---------------------+---------------------+----------------------+
 
 .. ************************
 .. Self-supervised Learning
