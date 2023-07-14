@@ -150,7 +150,7 @@ EXTRAS_REQUIRE = {
         ]
     ),
     "visual_prompting": get_requirements(requirement_files=[
-            "base, openvino, visual_prompting",
+            "base", "openvino", "visual_prompting",
         ]
     ),
     "full": get_requirements(requirement_files=[
