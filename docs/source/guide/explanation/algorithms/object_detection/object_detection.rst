@@ -81,7 +81,7 @@ We support the following ready-to-use model templates:
 | `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  |  MobileNetV2-ATSS   | 20.6                | 9.1             |
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 
-Above table can be found by using command 
+Above table can be found using the following command
 
 .. code-block::
     $ otx find --task detection
