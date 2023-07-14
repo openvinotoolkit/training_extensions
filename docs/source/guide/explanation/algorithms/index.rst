@@ -31,3 +31,4 @@ Contents
    segmentation/index
    anomaly/index
    action/index
+   visual_prompting/index
