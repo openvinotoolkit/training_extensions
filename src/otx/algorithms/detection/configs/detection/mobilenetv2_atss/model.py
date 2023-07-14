@@ -68,12 +68,12 @@ model = dict(
             loss_weight=1.0,
         ),
         adaptive_params=dict(
-            enable=True, 
-            alpha_param=1.2, 
-            gamma=1.0, 
+            enable=True,
+            alpha_param=1.2,
+            gamma=1.0,
             pos_weight=3.0,
-            num_small_data_threshold=100, 
-            neg_ratio_threshold=0.999
+            num_small_data_threshold=100,
+            neg_ratio_threshold=0.999,
         ),
     ),
     train_cfg=dict(

@@ -391,7 +391,7 @@ class CustomATSSHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomATSSHe
             bbox_targets,
             valid_label_mask,
             num_pos_samples,
-            num_neg_samples
+            num_neg_samples,
         )
 
     def _get_loss_cls(self, cls_score, labels, label_weights, valid_label_mask, num_total_samples):
