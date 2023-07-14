@@ -174,9 +174,9 @@ class SegmentAnything(LightningModule):
                 state_dict = replace_state_dict_keys(state_dict, revise_keys)
                 self.load_state_dict(state_dict)
 
-    #################################################
-    #     forward for inference (export/deploy)     #
-    #################################################
+    ##########################################################
+    #     forward for inference (export/deploy/optimize)     #
+    ##########################################################
     @torch.no_grad()
     def forward(
         self,
@@ -185,7 +185,7 @@ class SegmentAnything(LightningModule):
         point_labels: Tensor,
         mask_input: Tensor,
         has_mask_input: Tensor,
-        orig_size: Tensor,
+        # orig_size: Tensor,
     ):
         """Forward method for SAM inference (export/deploy).
 
@@ -227,16 +227,18 @@ class SegmentAnything(LightningModule):
         if self.config.model.return_single_mask:
             masks, scores = self.select_masks(masks, scores, point_coords.shape[1])
 
-        upscaled_masks = self.mask_postprocessing(masks, orig_size[0])
+        return scores, masks
+        # TODO (sungchul): apply inner postprocessing
+        # upscaled_masks = self.mask_postprocessing(masks, orig_size[0])
 
-        if self.config.model.return_extra_metrics:
-            stability_scores = self.calculate_stability_score(
-                upscaled_masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
-            )
-            areas = (upscaled_masks > self.config.model.mask_threshold).sum(-1).sum(-1)
-            return upscaled_masks, scores, stability_scores, areas, masks
+        # if self.config.model.return_extra_metrics:
+        #     stability_scores = self.calculate_stability_score(
+        #         upscaled_masks, self.config.model.mask_threshold, self.config.model.stability_score_offset
+        #     )
+        #     areas = (upscaled_masks > self.config.model.mask_threshold).sum(-1).sum(-1)
+        #     return upscaled_masks, scores, stability_scores, areas, masks
 
-        return upscaled_masks, scores, masks
+        # return upscaled_masks, scores, masks
 
     def _embed_points(self, point_coords: Tensor, point_labels: Tensor) -> Tensor:
         """Embed sparse input prompts.
