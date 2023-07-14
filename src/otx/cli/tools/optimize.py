@@ -19,6 +19,7 @@ from pathlib import Path
 
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
+from otx.api.entities.model_template import TaskType
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
@@ -140,8 +141,11 @@ def main():
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
-        validation_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True),
+        # temp (sungchul): remain annotation for visual prompting
+        validation_dataset
+        if getattr(task, "task_type", None) == TaskType.VISUAL_PROMPTING
+        else validation_dataset.with_empty_annotations(),
+        InferenceParameters(is_evaluation=False),
     )
 
     resultset = ResultSetEntity(

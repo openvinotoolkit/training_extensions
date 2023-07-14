@@ -65,6 +65,13 @@ class TestDecoder:
         assert params.get("image_size").default_value == 1024
 
     @e2e_pytest_unit
+    def test_get_outputs(self):
+        """Test _get_outputs."""
+        results = self.decoder._get_outputs()
+
+        assert "low_res_masks" == results
+
+    @e2e_pytest_unit
     def test_preprocess(self):
         """Test preprocess"""
         prompts = {"bboxes": [np.array([[1, 1], [2, 2]])], "labels": [1], "original_size": (4, 4)}
