@@ -149,6 +149,10 @@ EXTRAS_REQUIRE = {
             "base", "openvino", "segmentation",
         ]
     ),
+    "visual_prompting": get_requirements(requirement_files=[
+            "base, openvino, visual_prompting",
+        ]
+    ),
     "full": get_requirements(requirement_files=[
             "base",
             "openvino",
@@ -156,6 +160,7 @@ EXTRAS_REQUIRE = {
             "classification",
             "detection",
             "segmentation",
+            "visual_prompting",
             "action",
         ]
     ),
