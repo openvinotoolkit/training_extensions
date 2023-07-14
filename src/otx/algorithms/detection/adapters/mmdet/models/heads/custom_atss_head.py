@@ -46,9 +46,7 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
                     loss_weight=1.0,
                 )
             )
-        self.use_adaptive_params = kwargs.pop("use_adaptive_params", False)
-        if self.use_adaptive_params:
-            self.adaptive_params = kwargs.pop("adaptive_params")
+        self.adaptive_params = kwargs.pop("adaptive_params", None)
         super().__init__(*args, **kwargs)
         self.bg_loss_weight = bg_loss_weight
         self.use_qfl = use_qfl
@@ -219,10 +217,10 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         # Reference: MMDetection
         # If number of positive anchors are too small than the negatives and user want to adaptive param,
         # OTX enhances the loss of positive samples by modifying alpha and weight of positive loss.
-        num_neg_ratio = num_neg_samples / (num_pos_samples + num_neg_samples)
         if self.adaptive_params:
+            num_neg_ratio = num_neg_samples / (num_pos_samples + num_neg_samples)
             use_pos_enhanced_focal_loss = num_neg_ratio > self.adaptive_params.neg_ratio_threshold
-            if use_pos_enhanced_focal_loss and self.adaptive_params.is_small_data and self.use_adaptive_params:
+            if use_pos_enhanced_focal_loss and self.adaptive_params.is_small_data and self.adaptive_params.enable:
                 pred = cls_score.contiguous().sigmoid()
                 target = torch.nn.functional.one_hot(labels.contiguous(), num_classes=self.num_classes + 1)
                 target = target[:, : self.num_classes]
@@ -353,7 +351,8 @@ class CustomATSSHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomATSSHe
         label_weights,
         bbox_targets,
         valid_label_mask,
-        num_total_samples,
+        num_pos_samples,
+        num_neg_samples,
     ):
         """Compute loss of a single scale level.
 
@@ -374,7 +373,9 @@ class CustomATSSHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomATSSHe
                 shape (N, num_total_anchors, 4).
             valid_label_mask (Tensor): Label mask for consideration of ignored
                 label with shape (N, num_total_anchors, 1).
-            num_total_samples (int): Number of positive samples that is
+            num_pos_samples (int): Number of positive samples that is
+                reduced over all GPUs.
+            num_neg_samples (int): Number of negative samples that is
                 reduced over all GPUs.
 
         Returns:
@@ -389,7 +390,8 @@ class CustomATSSHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomATSSHe
             label_weights,
             bbox_targets,
             valid_label_mask,
-            num_total_samples,
+            num_pos_samples,
+            num_neg_samples
         )
 
     def _get_loss_cls(self, cls_score, labels, label_weights, valid_label_mask, num_total_samples):
