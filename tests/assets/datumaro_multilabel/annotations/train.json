@@ -4,34 +4,34 @@
     "label": {
       "label_groups": [
         {
-          "name": "Classification labels___tom",
+          "name": "___rectangle",
           "group_type": "exclusive",
-          "labels": ["tom"]
+          "labels": ["rectangle"]
         },
         {
-          "name": "Classification labels___john",
+          "name": "___circle",
           "group_type": "exclusive",
-          "labels": ["john"]
+          "labels": ["circle"]
         },
         {
-          "name": "Classification labels___mary",
+          "name": "___triangle",
           "group_type": "exclusive",
-          "labels": ["mary"]
+          "labels": ["triangle"]
         }
       ],
       "labels": [
         {
-          "name": "tom",
+          "name": "rectangle",
           "parent": "",
           "attributes": []
         },
         {
-          "name": "john",
+          "name": "circle",
           "parent": "",
           "attributes": []
         },
         {
-          "name": "mary",
+          "name": "triangle",
           "parent": "",
           "attributes": []
         }
@@ -41,7 +41,7 @@
   },
   "items": [
     {
-      "id": "a",
+      "id": "00",
       "annotations": [
         {
           "id": 0,
@@ -54,24 +54,248 @@
           "type": "label",
           "group": 1,
           "label_id": 1
-        }
-      ],
-      "image": {
-        "path": "a.jpg"
-      }
-    },
-    {
-      "id": "b",
-      "annotations": [
+        },
         {
-          "id": 0,
+          "id": 2,
           "type": "label",
-          "group": 2,
+          "group": 0,
           "label_id": 2
         }
       ],
       "image": {
-        "path": "b.jpg"
+        "path": "00.jpg"
+      }
+    },
+    {
+      "id": "01",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "01.jpg"
+      }
+    },
+    {
+      "id": "02",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "02.jpg"
+      }
+    },
+    {
+      "id": "03",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        }
+      ],
+      "image": {
+        "path": "03.jpg"
+      }
+    },
+    {
+      "id": "04",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        }
+      ],
+      "image": {
+        "path": "04.jpg"
+      }
+    },
+    {
+      "id": "05",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        }
+      ],
+      "image": {
+        "path": "05.jpg"
+      }
+    },
+    {
+      "id": "06",
+      "annotations": [
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "06.jpg"
+      }
+    },
+    {
+      "id": "07",
+      "annotations": [
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "07.jpg"
+      }
+    },
+    {
+      "id": "08",
+      "annotations": [
+        {
+          "id": 1,
+          "type": "label",
+          "group": 0,
+          "label_id": 1
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "08.jpg"
+      }
+    },
+    {
+      "id": "09",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "09.jpg"
+      }
+    },
+    {
+      "id": "10",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "10.jpg"
+      }
+    },
+    {
+      "id": "11",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 0,
+          "label_id": 0
+        },
+        {
+          "id": 2,
+          "type": "label",
+          "group": 0,
+          "label_id": 2
+        }
+      ],
+      "image": {
+        "path": "11.jpg"
       }
     }
   ]
