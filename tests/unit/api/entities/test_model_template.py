@@ -101,6 +101,7 @@ class CommonMethods:
         assert model.size == expected_values.get("size", 0)
         assert model.model_category == expected_values.get("model_category", ModelCategory.OTHER)
         assert model.model_status == expected_values.get("model_status", ModelStatus.ACTIVE)
+        assert model.is_default_for_task == expected_values.get("is_default_for_task", False)
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -844,6 +845,7 @@ class TestModelTemplate:
         optional_parameters["size"] = 1024
         optional_parameters["model_category"] = ModelCategory.SPEED
         optional_parameters["model_status"] = ModelStatus.ACTIVE
+        optional_parameters["is_default_for_task"] = False
         return optional_parameters
 
     @pytest.mark.priority_medium

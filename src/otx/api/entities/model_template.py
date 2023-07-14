@@ -525,6 +525,7 @@ class ModelTemplate:
     size (float): how much disk space the model will approximately take.
     model_category (ModelCategory): Represents model category regarding accuracy & speed trade-off. Default to OTHER.
     model_status (ModelStatus): Represents model status regarding deprecation process. Default to ACTIVE.
+    is_default_for_task (bool): Whether this model is a default recommendation for the task
     """
 
     model_template_id: str
@@ -556,6 +557,7 @@ class ModelTemplate:
     hpo: Optional[Dict] = None
     model_category: ModelCategory = ModelCategory.OTHER
     model_status: ModelStatus = ModelStatus.ACTIVE
+    is_default_for_task: bool = False
 
     def __post_init__(self):
         """Do sanitation checks before loading the hyper-parameters."""
