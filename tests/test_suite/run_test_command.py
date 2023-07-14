@@ -525,21 +525,29 @@ def pot_optimize_testing(template, root, otx_dir, args, is_visual_prompting=Fals
         f"{template_work_dir}/pot_{template.model_template_id}",
     ]
     if is_visual_prompting:
-        command_line.extend([
-            "--load-weights",
-            f"{template_work_dir}/exported_{template.model_template_id}/visual_prompting_decoder.xml",
-        ])
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/exported_{template.model_template_id}/visual_prompting_decoder.xml",
+            ]
+        )
     else:
-        command_line.extend([
-            "--load-weights",
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-        ])
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
+            ]
+        )
 
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
     if is_visual_prompting:
-        assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_image_encoder.xml")
-        assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_image_encoder.bin")
+        assert os.path.exists(
+            f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_image_encoder.xml"
+        )
+        assert os.path.exists(
+            f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_image_encoder.bin"
+        )
         assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.xml")
         assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.bin")
     else:
@@ -587,15 +595,19 @@ def pot_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
         f"{template_work_dir}/pot_{template.model_template_id}",
     ]
     if is_visual_prompting:
-        command_line.extend([
-            "--load-weights",
-            f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.xml",
-        ])
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.xml",
+            ]
+        )
     else:
-        command_line.extend([
-            "--load-weights",
-            f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
-        ])
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
+            ]
+        )
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")

@@ -27,21 +27,20 @@ from zipfile import ZipFile
 import attr
 import nncf
 import numpy as np
-from addict import Dict as ADDict
 import openvino.runtime as ov
+from addict import Dict as ADDict
 from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
+from otx.algorithms.common.utils import get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.common.utils import get_default_async_reqs_num, read_py_config
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
     get_transform,
 )
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity

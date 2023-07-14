@@ -53,7 +53,7 @@ class TestVisualPromptingDatasetAdapter:
         )
 
         results = dataset_adapter.get_otx_dataset()
-        
+
         assert len(results) > 0
         for result in results:
             assert isinstance(result.media, Image)
