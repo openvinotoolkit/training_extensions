@@ -17,16 +17,22 @@
 import io
 import json
 import os
+import random
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import attr
+import nncf
 import numpy as np
+import openvino.runtime as ov
+from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import create_core
 from openvino.model_api.models import Model
 
+from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
@@ -46,12 +52,19 @@ from otx.api.entities.inference_parameters import (
     default_progress_callback,
 )
 from otx.api.entities.label_schema import LabelSchemaEntity
-from otx.api.entities.model import ModelEntity
+from otx.api.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    OptimizationMethod,
+)
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.serialization.label_mapper import LabelSchemaMapper
+from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
 from otx.api.usecases.exportable_code.inference import BaseInferencer
@@ -101,13 +114,16 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         self.model = {}
         model_parameters = {"decoder": {"input_layouts": "image_embeddings:NCHW"}}
         self.configuration = {
+            "image_encoder": {
+                **attr.asdict(hparams.postprocessing, filter=lambda attr, value: attr.name in ["image_size"])
+            },
             "decoder": {
                 **attr.asdict(
                     hparams.postprocessing,
                     filter=lambda attr, value: attr.name
                     not in ["header", "description", "type", "visible_in_ui", "class_name"],
                 )
-            }
+            },
         }
         for name in ["image_encoder", "decoder"]:
             model_adapter = VisualPromptingOpenvinoAdapter(
@@ -124,13 +140,14 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         self.labels = label_schema.get_labels(include_empty=False)
         self.transform = get_transform()  # TODO (sungchul): insert args
 
-    def pre_process(self, dataset_item: DatasetItemEntity) -> Dict[str, Any]:  # type: ignore
+    def pre_process(  # type: ignore
+        self, dataset_item: DatasetItemEntity, extra_processing: bool = False
+    ) -> Tuple[Dict[str, Any], Dict[str, Any], List[Dict[str, Any]]]:
         """Pre-process function of OpenVINO Visual Prompting Inferencer for image encoder."""
-        images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy)
+        images, meta = self.model["image_encoder"].preprocess(dataset_item.numpy, extra_processing)
         prompts = OTXVisualPromptingDataset.get_prompts(dataset_item, self.labels)  # to be replaced
         prompts = self.model["decoder"].preprocess(prompts, meta)
-        items = {**images, **meta, "prompts": prompts}
-        return items
+        return images, meta, prompts  # type: ignore
 
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
@@ -143,19 +160,20 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
     def predict(self, dataset_item: DatasetItemEntity) -> List[Annotation]:  # type: ignore
         """Perform a prediction for a given input image."""
         # forward image encoder
-        items = self.pre_process(dataset_item)
-        image_embeddings = self.forward({"images": items["images"]})
+        images, meta, prompts = self.pre_process(dataset_item)
+        image_embeddings = self.forward(images)
 
         annotations: List[Annotation] = []
         hard_predictions: List[np.ndarray] = []
         soft_predictions: List[np.ndarray] = []
-        for prompt in items["prompts"]:
+        for prompt in prompts:
             label = prompt.pop("label")
+            orig_size = prompt.pop("orig_size")
             prompt.update(image_embeddings)
 
             # forward decoder to get predicted mask
             prediction = self.forward_decoder(prompt)
-            metadata = {"label": label, "original_size": prompt["orig_size"]}
+            metadata = {"label": label, "original_size": orig_size}
 
             # set annotation for eval
             annotation, hard_prediction, soft_prediction = self.post_process(prediction, metadata)
@@ -176,6 +194,62 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
         """Await all running infer requests if any."""
         self.model["image_encoder"].await_all()
         self.model["decoder"].await_all()
+
+
+class OTXOpenVinoDataLoader:
+    """DataLoader implementation for VisualPromptingOpenVINOTask."""
+
+    def __init__(
+        self,
+        dataset: Any,
+        inferencer: OpenVINOVisualPromptingInferencer,
+        shuffle: bool = True,
+        is_encoder: bool = True,
+        output_model: Optional[ModelEntity] = None,
+    ):
+        self.dataset = dataset
+        self.inferencer = inferencer
+        self.shuffler = None
+        if shuffle:
+            self.shuffler = list(range(len(dataset)))
+            random.shuffle(self.shuffler)
+
+        self.is_encoder = is_encoder
+        self.target_length = self.inferencer.model["image_encoder"].orig_width
+        if not self.is_encoder:
+            core = ov.Core()
+            compressed_model = core.read_model(
+                output_model.get_data("visual_prompting_image_encoder.xml"),
+                output_model.get_data("visual_prompting_image_encoder.bin"),
+            )
+            self.compressed_model = core.compile_model(
+                model=compressed_model, device_name=inferencer.model["image_encoder"].inference_adapter.device
+            )
+
+    def __getitem__(self, index: int):
+        """Get item from dataset."""
+        if self.shuffler is not None:
+            index = self.shuffler[index]
+
+        items = self.dataset[index]
+        images, _, prompts = self.inferencer.pre_process(items, extra_processing=True)
+        _, _, h, w = images["images"].shape
+        pad_width = ((0, 0), (0, 0), (0, self.target_length - h), (0, self.target_length - w))
+        images["images"] = np.pad(images["images"], pad_width, mode="constant", constant_values=0)
+        if self.is_encoder:
+            return images
+        else:
+            image_embeddings = self.compressed_model(images["images"])
+            prompt = prompts[0]  # only use the first prompt
+            prompt.pop("label")
+            prompt.pop("orig_size")
+            prompt.update({"image_embeddings": image_embeddings["image_embeddings"]})
+            return prompt
+            # TODO (sungchul): change has_mask_input
+
+    def __len__(self):
+        """Get length of dataset."""
+        return len(self.dataset)
 
 
 class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
@@ -335,4 +409,80 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         """Optimize function of OpenVINOVisualPromptingTask."""
-        raise NotImplementedError
+        logger.info("Start PTQ optimization")
+        if self.model is None:
+            raise RuntimeError("PTQ optimize failed, model is None")
+
+        if optimization_type is not OptimizationType.POT:
+            raise ValueError("PTQ is the only supported optimization type for OpenVino models")
+
+        dataset = dataset.get_subset(Subset.TRAINING)
+
+        for i, (name, is_encoder) in enumerate(zip(["image_encoder", "decoder"], [True, False]), 1):
+            if name == "decoder":
+                # TODO (sungchul): quantize decoder, too
+                logger.info(f"{name} won't do PTQ.")
+                output_model.set_data(
+                    f"visual_prompting_{name}.xml", self.model.get_data(f"visual_prompting_{name}.xml")
+                )
+                output_model.set_data(
+                    f"visual_prompting_{name}.bin", self.model.get_data(f"visual_prompting_{name}.bin")
+                )
+                continue
+
+            data_loader = OTXOpenVinoDataLoader(
+                dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model
+            )
+            quantization_dataset = nncf.Dataset(data_loader, lambda data: data)
+
+            with tempfile.TemporaryDirectory() as tempdir:
+                xml_path = os.path.join(tempdir, f"visual_prompting_{name}.xml")
+                bin_path = os.path.join(tempdir, f"visual_prompting_{name}.bin")
+                with open(xml_path, "wb") as f:
+                    f.write(self.model.get_data(f"visual_prompting_{name}.xml"))
+                with open(bin_path, "wb") as f:
+                    f.write(self.model.get_data(f"visual_prompting_{name}.bin"))
+
+                ov_model = ov.Core().read_model(xml_path, bin_path)
+                if check_if_quantized(ov_model):
+                    raise RuntimeError("Model is already optimized by PTQ")
+
+            if optimization_parameters is not None:
+                optimization_parameters.update_progress(10 * i + 35 * (i - 1), None)
+
+            stat_subset_size = self.hparams.pot_parameters.stat_subset_size
+            preset = QuantizationPreset(self.hparams.pot_parameters.preset.name.lower())
+
+            compressed_model = nncf.quantize(
+                ov_model, quantization_dataset, subset_size=min(stat_subset_size, len(data_loader)), preset=preset
+            )
+
+            if optimization_parameters is not None:
+                optimization_parameters.update_progress(45 * i, None)
+
+            with tempfile.TemporaryDirectory() as tempdir:
+                xml_path = os.path.join(tempdir, f"visual_prompting_{name}.xml")
+                bin_path = os.path.join(tempdir, f"visual_prompting_{name}.bin")
+                ov.serialize(compressed_model, xml_path)
+                with open(xml_path, "rb") as f:
+                    output_model.set_data(f"visual_prompting_{name}.xml", f.read())
+                with open(bin_path, "rb") as f:
+                    output_model.set_data(f"visual_prompting_{name}.bin", f.read())
+
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self.task_environment.label_schema),
+        )
+
+        # set model attributes for quantized model
+        output_model.model_format = ModelFormat.OPENVINO
+        output_model.optimization_type = ModelOptimizationType.POT
+        output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
+        output_model.precision = [ModelPrecision.INT8]
+
+        self.model = output_model
+        self.inferencer = self.load_inferencer()
+
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(100, None)
+        logger.info("POT optimization completed")

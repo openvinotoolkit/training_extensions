@@ -281,9 +281,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
                     "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
                     "has_mask_input": torch.tensor([[1]], dtype=torch.float),
-                    "orig_size": torch.tensor([[height, width]], dtype=torch.float),
                 }
-                output_names = ["masks", "iou_predictions", "low_res_masks"]
+                output_names = ["iou_predictions", "low_res_masks"]
                 model_to_export = self.model
 
             with warnings.catch_warnings():

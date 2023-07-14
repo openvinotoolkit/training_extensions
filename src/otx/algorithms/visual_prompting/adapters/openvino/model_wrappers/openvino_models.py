@@ -23,6 +23,7 @@ from openvino.model_api.adapters.inference_adapter import InferenceAdapter
 from openvino.model_api.models import ImageModel, SegmentationModel
 from openvino.model_api.models.types import NumericalValue, StringValue
 
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
 from otx.api.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
 
 
@@ -40,13 +41,20 @@ class ImageEncoder(ImageModel):
         parameters.update(
             {
                 "resize_type": StringValue(default_value="fit_to_window"),
+                "image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048),
             }
         )
         return parameters
 
-    def preprocess(self, inputs: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+    def preprocess(
+        self, inputs: np.ndarray, extra_processing: bool = False
+    ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Update meta for image encoder."""
         dict_inputs, meta = super().preprocess(inputs)
+        if extra_processing:
+            dict_inputs["images"] = ResizeLongestSide.apply_image(dict_inputs["images"][0], self.image_size).transpose(
+                2, 0, 1
+            )[None]
         meta["resize_type"] = self.resize_type
         return dict_inputs, meta
 
@@ -63,13 +71,15 @@ class Decoder(SegmentationModel):
         preload: bool = False,
     ):
         super().__init__(model_adapter, configuration, preload)
-        self.output_blob_name = "low_res_masks"
 
     @classmethod
     def parameters(cls):  # noqa: D102
         parameters = super().parameters()
         parameters.update({"image_size": NumericalValue(value_type=int, default_value=1024, min=0, max=2048)})
         return parameters
+
+    def _get_outputs(self):
+        return "low_res_masks"
 
     def preprocess(self, inputs: Dict[str, Any], meta: Dict[str, Any]):
         """Preprocess prompts."""

@@ -121,7 +121,7 @@ class ModelContainer:
 
         # MaskRCNN returns tuple so no need to process
         if self._task_type == TaskType.DETECTION:
-            predictions = detection2array(predictions)
+            predictions = detection2array(predictions.objects)
         return predictions, frame_meta
 
     def infer_tile(self, frame):
