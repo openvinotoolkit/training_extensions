@@ -14,5 +14,4 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .openvino_adapters import VisualPromptingOpenvinoAdapter  # noqa: F401
 from .openvino_models import Decoder, ImageEncoder  # noqa: F401
