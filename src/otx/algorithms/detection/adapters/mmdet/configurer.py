@@ -373,12 +373,14 @@ class DetectionConfigurer:
                 gamma=gamma,
             )
         if bbox_head.get("adaptive_params") and bbox_head.adaptive_params.enable:
-            if cfg.data.train.get("otx_dataset"):
+            if cfg.data.train.get("otx_dataset") is not None:
                 n_train_data = len(cfg.data.train.otx_dataset)
                 if n_train_data < bbox_head.adaptive_params.num_small_data_threshold:
                     bbox_head.get("adaptive_params")["is_small_data"] = True
                 else:
                     bbox_head.get("adaptive_params")["is_small_data"] = False
+            else:
+                bbox_head.get("adaptive_params")["is_small_data"] = False
 
     @staticmethod
     def configure_ema(cfg):
