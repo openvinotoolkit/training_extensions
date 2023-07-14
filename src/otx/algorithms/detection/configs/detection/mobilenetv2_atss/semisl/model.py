@@ -1,4 +1,4 @@
-"""Model configuration of ATSS model for Detection Task."""
+"""Model configuration of MobileNetV2-ATSS model for Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
