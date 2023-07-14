@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Add new visual prompting task: export (https://github.com/openvinotoolkit/training_extensions/pull/2274)
 - Add new visual prompting task: deploy (https://github.com/openvinotoolkit/training_extensions/pull/2311)
 - Add new visual prompting task: documentation (https://github.com/openvinotoolkit/training_extensions/pull/2354)
+- Add new visual prompting task: optimize (PTQ) (https://github.com/openvinotoolkit/training_extensions/pull/2318)
 - Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
 
 ### Enhancements
