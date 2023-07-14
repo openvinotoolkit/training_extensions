@@ -10,12 +10,11 @@ import numpy as np
 import pytest
 from openvino.model_api.adapters.openvino_adapter import OpenvinoAdapter
 from openvino.model_api.models import ImageModel, SegmentationModel
-from openvino.model_api.models.types import BooleanValue, NumericalValue
+from openvino.model_api.models.types import NumericalValue
 
 from otx.algorithms.visual_prompting.adapters.openvino.model_wrappers import (
     Decoder,
     ImageEncoder,
-    VisualPromptingOpenvinoAdapter,
 )
 from otx.api.entities.label import LabelEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -52,7 +51,7 @@ class TestDecoder:
     @pytest.fixture(autouse=True)
     def setup(self, mocker):
         mocker.patch.object(SegmentationModel, "__init__")
-        mocker_model_adapter = mocker.Mock(spec=VisualPromptingOpenvinoAdapter)
+        mocker_model_adapter = mocker.Mock(spec=OpenvinoAdapter)
         self.decoder = Decoder(mocker_model_adapter)
         self.decoder.image_size = 6
 
