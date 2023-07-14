@@ -142,6 +142,7 @@ class Dataset(BaseDataset):
         dataset_config.pop("data_roots", None)
         dataset_config.pop("ann_files", None)
         dataset_config.pop("file_list", None)
+        dataset_config["_scope_"] = "mmpretrain"
         dataset = mmpretrain_build_dataset(dataset_config)
         dataset._build_config = init_config
         return dataset

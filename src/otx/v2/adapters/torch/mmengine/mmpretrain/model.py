@@ -81,6 +81,7 @@ def get_model(
     # Update num_classes
     model_config["head"]["num_classes"] = num_classes
     model_config.pop("task", None)
+    model_config["_scope_"] = "mmpretrain"
     model = build_classifier(model_config)
     device = config.get("device", "cpu")
     model = model.to(device)
