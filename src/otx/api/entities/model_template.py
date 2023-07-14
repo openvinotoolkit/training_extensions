@@ -459,6 +459,30 @@ class EntryPoints:
     nncf: Optional[str] = None
 
 
+class ModelCategory(Enum):
+    """Represents model category regarding accuracy & speed trade-off."""
+
+    SPEED = auto()
+    BALANCE = auto()
+    ACCURACY = auto()
+    OTHER = auto()
+
+    def __str__(self) -> str:
+        """Returns the name of the model category."""
+        return str(self.name)
+
+
+class ModelStatus(Enum):
+    """Represents model status regarding deprecation process."""
+
+    ACTIVE = auto()
+    DEPRECATED = auto()
+
+    def __str__(self) -> str:
+        """Returns the name of the model status."""
+        return str(self.name)
+
+
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class ModelTemplate:
@@ -499,6 +523,8 @@ class ModelTemplate:
         priority. mobilenet is less important, and has a higher value. Default is zero (the highest priority).
     gigaflops (float): how many billions of operations are required to do inference on a single data item.
     size (float): how much disk space the model will approximately take.
+    model_category (ModelCategory): Represents model category regarding accuracy & speed trade-off. Default to OTHER.
+    model_status (ModelStatus): Represents model status regarding deprecation process. Default to ACTIVE.
     """
 
     model_template_id: str
@@ -528,6 +554,8 @@ class ModelTemplate:
     gigaflops: float = 0
     size: float = 0
     hpo: Optional[Dict] = None
+    model_category: ModelCategory = ModelCategory.OTHER
+    model_status: ModelStatus = ModelStatus.ACTIVE
 
     def __post_init__(self):
         """Do sanitation checks before loading the hyper-parameters."""

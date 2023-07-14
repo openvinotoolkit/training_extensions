@@ -31,6 +31,8 @@ from otx.api.entities.model_template import (
     HyperParameterData,
     InstantiationType,
     ModelOptimizationMethod,
+    ModelCategory,
+    ModelStatus,
     ModelTemplate,
     NullModelTemplate,
     TargetDevice,
@@ -97,6 +99,8 @@ class CommonMethods:
         assert model.task_type_sort_priority == expected_values.get("task_type_sort_priority", -1)
         assert model.gigaflops == expected_values.get("gigaflops", 0)
         assert model.size == expected_values.get("size", 0)
+        assert model.model_category == expected_values.get("model_category", ModelCategory.OTHER)
+        assert model.model_status == expected_values.get("model_status", ModelStatus.ACTIVE)
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -727,6 +731,56 @@ class TestEntryPoints:
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
+class TestModelCategory:
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_model_category(self):
+        """
+        <b>Description:</b>
+        Check ModelCategory Enum class elements
+        <b>Expected results:</b>
+        Test passes if ModelCategory Enum class length, attributes and methods return expected values
+        <b>Steps</b>
+        1. Check ModelCategory length
+        2. Check ModelCategory elements value attribute
+        3. Check ModelCategory str method
+        """
+        assert len(ModelCategory) == 4
+        assert ModelCategory.SPEED.value == 1
+        assert ModelCategory.BALANCE.value == 2
+        assert ModelCategory.ACCURACY.value == 3
+        assert ModelCategory.OTHER.value == 4
+        assert str(ModelCategory.SPEED) == "SPEED"
+        assert str(ModelCategory.BALANCE) == "BALANCE"
+        assert str(ModelCategory.ACCURACY) == "ACCURACY"
+        assert str(ModelCategory.OTHER) == "OTHER"
+
+
+@pytest.mark.components(OtxSdkComponent.OTX_API)
+class TestModelStatus:
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_model_category(self):
+        """
+        <b>Description:</b>
+        Check ModelStatus Enum class elements
+        <b>Expected results:</b>
+        Test passes if ModelStatus Enum class length, attributes and methods return expected values
+        <b>Steps</b>
+        1. Check ModelStatus length
+        2. Check ModelStatus elements value attribute
+        3. Check ModelStatus str method
+        """
+        assert len(ModelStatus) == 2
+        assert ModelStatus.ACTIVE.value == 1
+        assert ModelStatus.DEPRECATED.value == 2
+        assert str(ModelStatus.ACTIVE) == "ACTIVE"
+        assert str(ModelStatus.DEPRECATED) == "DEPRECATED"
+
+
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelTemplate:
     @staticmethod
     def default_model_parameters() -> dict:
@@ -788,6 +842,8 @@ class TestModelTemplate:
         optional_parameters["task_type_sort_priority"] = 0
         optional_parameters["gigaflops"] = 1
         optional_parameters["size"] = 1024
+        optional_parameters["model_category"] = ModelCategory.SPEED
+        optional_parameters["model_status"] = ModelStatus.ACTIVE
         return optional_parameters
 
     @pytest.mark.priority_medium
