@@ -29,16 +29,13 @@ import nncf
 import numpy as np
 import openvino.runtime as ov
 from nncf.common.quantization.structs import QuantizationPreset
-from openvino.model_api.adapters import create_core
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
-from otx.algorithms.visual_prompting.adapters.openvino.model_wrappers import (
-    VisualPromptingOpenvinoAdapter,
-)
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
     get_transform,
@@ -126,7 +123,7 @@ class OpenVINOVisualPromptingInferencer(BaseInferencer):
             },
         }
         for name in ["image_encoder", "decoder"]:
-            model_adapter = VisualPromptingOpenvinoAdapter(
+            model_adapter = OpenvinoAdapter(
                 core=create_core(),
                 model=model_files.get(name),
                 weights_path=weight_files.get(name, None),

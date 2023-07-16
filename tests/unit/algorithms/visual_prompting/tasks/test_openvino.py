@@ -58,8 +58,7 @@ class TestOpenVINOVisualPromptingInferencer:
                 labels=[ScoredLabel(LabelEntity(name="fake", domain="VISUALPROMPTING"), probability=1.0)],
             )
         ]
-        # FIXME: change VisualPromptingOpenvinoAdapter to OpenvinoAdapter after model api version update
-        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.VisualPromptingOpenvinoAdapter")
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         mocker.patch.object(
             VisualPromptingToAnnotationConverter, "convert_to_annotation", return_value=self.fake_annotation
@@ -231,8 +230,7 @@ class TestOpenVINOVisualPromptingTask:
     @pytest.fixture(autouse=True)
     def setup(self, mocker, otx_model):
         """Load the OpenVINOVisualPromptingTask."""
-        # FIXME: change VisualPromptingOpenvinoAdapter to OpenvinoAdapter after model api version update
-        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.VisualPromptingOpenvinoAdapter")
+        mocker.patch("otx.algorithms.visual_prompting.tasks.openvino.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.task_environment = init_environment()
         visual_prompting_hparams = self.task_environment.get_hyper_parameters(VisualPromptingBaseConfig)
