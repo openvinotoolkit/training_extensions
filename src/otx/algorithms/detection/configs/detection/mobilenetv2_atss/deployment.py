@@ -1,4 +1,4 @@
-"""MMDeploy config of ATSS model for Detection Task."""
+"""MMDeploy config of MobileNetV2-ATSS model for Detection Task."""
 
 _base_ = ["../../base/deployments/base_detection_dynamic.py"]
 
