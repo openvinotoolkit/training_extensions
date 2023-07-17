@@ -80,7 +80,9 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
-        assert np.all(np.abs(saliency_maps[0][0][0] - self.ref_saliency_vals_det[template.name]) <= 1)
+        actual_sal_vals = saliency_maps[0][0][0].astype(np.int8)
+        ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.int8)
+        assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_det, ids=templates_det_ids)
