@@ -398,7 +398,7 @@ class BaseConfig(ConfigurableParameters):
             "to crash or result in out-of-memory errors. It is recommended to "
             "adjust the scale factor value carefully based on the available "
             "hardware resources and the needs of the application.",
-            default_value=2.0,
+            default_value=1.0,
             min_value=1.0,
             max_value=4.0,
             affects_outcome_of=ModelLifecycle.NONE,

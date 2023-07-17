@@ -6,6 +6,7 @@
 
 import numpy as np
 import torch
+from mmcls.models.necks.gap import GlobalAveragePooling
 from mmcv.cnn import ConvModule
 from mmcv.runner import auto_fp16
 from mmdet.models.builder import DETECTORS
@@ -30,10 +31,15 @@ class TileClassifier(torch.nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2),
             ConvModule(192, 256, 3, padding=1, act_cfg=dict(type="ReLU")),
             nn.MaxPool2d(kernel_size=3, stride=2),
+            ConvModule(256, 256, 3, padding=1, act_cfg=dict(type="ReLU")),
+            nn.MaxPool2d(kernel_size=3, stride=2),
         )
-        self.avgpool = torch.nn.AdaptiveAvgPool2d((6, 6))
+        # NOTE: Original Adaptive Avg Pooling is replaced with Global Avg Pooling
+        # due to ONNX tracing issues: https://github.com/openvinotoolkit/training_extensions/pull/2337
+
+        self.gap = GlobalAveragePooling()
         self.classifier = torch.nn.Sequential(
-            torch.nn.Linear(256 * 6 * 6, 256),
+            torch.nn.Linear(256, 256),
             torch.nn.ReLU(inplace=True),
             torch.nn.Linear(256, 256),
             torch.nn.ReLU(inplace=True),
@@ -54,8 +60,7 @@ class TileClassifier(torch.nn.Module):
             torch.Tensor: logits
         """
         x = self.features(img)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
+        x = self.gap(x)
         y = self.classifier(x)
         return y
 
