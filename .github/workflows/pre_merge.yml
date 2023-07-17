@@ -104,7 +104,7 @@ jobs:
             test_dir: "tests/integration/cli/action"
           - task: "ano"
             test_dir: "tests/integration/cli/anomaly"
-          - task: "vp"
+          - task: "visprompt"
             test_dir: "tests/integration/cli/visual_prompting"
     name: Integration-Test-py310-${{ matrix.task }}
     # This is what will cancel the job concurrency
