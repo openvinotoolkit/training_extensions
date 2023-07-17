@@ -25,6 +25,7 @@ import onnxruntime
 import pytest
 import yaml
 
+from otx.api.entities.model_template import ModelCategory, ModelStatus
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
@@ -1045,3 +1046,32 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str], use_output: 
     command_line.extend(["--workspace", f"{work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
+
+
+class BaseTestModelTemplates:
+    def check_model_category(self, templates):
+        stat = {
+            ModelCategory.SPEED: 0,
+            ModelCategory.BALANCE: 0,
+            ModelCategory.ACCURACY: 0,
+            ModelCategory.OTHER: 0,
+        }
+        for template in templates:
+            stat[template.model_category] += 1
+        assert stat[ModelCategory.SPEED] == 1
+        assert stat[ModelCategory.BALANCE] <= 1
+        assert stat[ModelCategory.ACCURACY] == 1
+
+    def check_model_status(self, templates):
+        for template in templates:
+            if template.model_status == ModelStatus.DEPRECATED:
+                assert template.model_category == ModelCategory.OTHER
+
+    def check_default_for_task(self, templates):
+        num_default_model = 0
+        for template in templates:
+            if template.is_default_for_task:
+                num_default_model += 1
+                assert template.model_category != ModelCategory.OTHER
+                assert template.model_status == ModelStatus.ACTIVE
+        assert num_default_model == 1
