@@ -79,7 +79,7 @@ templates = Registry("src/otx/algorithms/segmentation").filter(task_type="SEGMEN
 templates_ids = [template.model_template_id for template in templates]
 
 # add integration test for semi-sl with new SegNext model and prototype based approach
-# other tests will be updated accordingly after fully transfer to segnext default_templates
+# other tests will be updated accordingly after fully transfer to segnext templates
 segnext_experimental_template = parse_model_template(
     os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
 )

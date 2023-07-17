@@ -1,5 +1,5 @@
 """Tests for anomaly detection with OTX CLI."""
-# Copyright (C) 2022-2023 Intel Corporation
+# Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
