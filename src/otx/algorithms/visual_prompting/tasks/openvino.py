@@ -40,7 +40,6 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset
     OTXVisualPromptingDataset,
     get_transform,
 )
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import ResizeLongestSide
 from otx.algorithms.visual_prompting.configs.base import VisualPromptingBaseConfig
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity

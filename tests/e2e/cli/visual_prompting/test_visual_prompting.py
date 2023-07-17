@@ -61,7 +61,9 @@ if TT_STABILITY_TESTS:
 
 else:
     templates = (
-        Registry("src/otx/algorithms/visual_prompting", experimental=True).filter(task_type="VISUAL_PROMPTING").templates
+        Registry("src/otx/algorithms/visual_prompting", experimental=True)
+        .filter(task_type="VISUAL_PROMPTING")
+        .templates
     )
     templates_ids = [template.model_template_id for template in templates]
 
