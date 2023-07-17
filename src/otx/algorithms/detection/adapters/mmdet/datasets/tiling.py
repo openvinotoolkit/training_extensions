@@ -512,8 +512,8 @@ class Tile:
             for cl_map in map:
                 # find first class map which is not None
                 if cl_map is not None and dtype is None:
-                    dtype = map[0].dtype
-                    feat_h, feat_w = map[0].shape
+                    dtype = cl_map.dtype
+                    feat_h, feat_w = cl_map.shape
                     break
             if dtype is not None:
                 break
