@@ -22,7 +22,7 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
-    BaseTestModelTemplates,
+    generate_model_template_testing,
 )
 
 args = {
@@ -88,18 +88,7 @@ templates_inc_segnext = [segnext_experimental_template, default_template]
 templates_ids_inc_segnext = [segnext_experimental_template.model_template_id, default_template.model_template_id]
 
 
-class TestSemanticSegmentationModelTemplates(BaseTestModelTemplates):
-    @e2e_pytest_component
-    def test_model_category(self):
-        self.check_model_category(templates)
-
-    @e2e_pytest_component
-    def test_model_status(self):
-        self.check_model_status(templates)
-
-    @e2e_pytest_component
-    def test_default_for_task(self):
-        self.check_default_for_task(templates)
+TestSemanticSegmentationModelTemplates = generate_model_template_testing(templates)
 
 
 class TestSegmentationCLI:

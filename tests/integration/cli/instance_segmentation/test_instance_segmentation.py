@@ -24,7 +24,7 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
-    BaseTestModelTemplates,
+    generate_model_template_testing,
 )
 
 args = {
@@ -68,18 +68,7 @@ templates_inc_convnext.extend([template_experimental])
 templates_ids_inc_convnext.extend([template_experimental.model_template_id])
 
 
-class TestInstanceSegmentationModelTemplates(BaseTestModelTemplates):
-    @e2e_pytest_component
-    def test_model_category(self):
-        self.check_model_category(templates)
-
-    @e2e_pytest_component
-    def test_model_status(self):
-        self.check_model_status(templates)
-
-    @e2e_pytest_component
-    def test_default_for_task(self):
-        self.check_default_for_task(templates)
+TestInstanceSegmentationModelTemplates = generate_model_template_testing(templates)
 
 
 class TestInstanceSegmentationCLI:

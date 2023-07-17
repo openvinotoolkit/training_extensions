@@ -18,7 +18,7 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
-    BaseTestModelTemplates,
+    generate_model_template_testing,
 )
 
 args = {
@@ -35,18 +35,7 @@ templates = Registry("src/otx/algorithms").filter(task_type="ANOMALY_SEGMENTATIO
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestAnomalySegmentationModelTemplates(BaseTestModelTemplates):
-    @e2e_pytest_component
-    def test_model_category(self):
-        self.check_model_category(templates)
-
-    @e2e_pytest_component
-    def test_model_status(self):
-        self.check_model_status(templates)
-
-    @e2e_pytest_component
-    def test_default_for_task(self):
-        self.check_default_for_task(templates)
+TestAnomalySegmentationModelTemplates = generate_model_template_testing(templates)
 
 
 class TestToolsAnomalySegmentation:
