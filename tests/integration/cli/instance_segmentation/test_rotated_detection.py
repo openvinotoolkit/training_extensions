@@ -1,4 +1,4 @@
-"""Tests for Class-Incremental Learning for object detection with OTX CLI"""
+"""Tests for rotated object detection with OTX CLI"""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #

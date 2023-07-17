@@ -1,6 +1,6 @@
 """This file defines the ModelConfiguration, ModelEntity and Model classes."""
 
-# Copyright (C) 2021-2022 Intel Corporation
+# Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
