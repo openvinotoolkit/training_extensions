@@ -24,6 +24,9 @@ on:
       runs-on:
         type: string
         default: "['self-hosted', 'Linux', 'X64', 'dev']"
+      task:
+        type: string
+        default: "undefined"
 jobs:
   run_tests_in_tox:
     # tricky workaround to pass list from the string input type
@@ -46,6 +49,8 @@ jobs:
         with:
           name: test-results-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}
           path: |
-            .tox/tests-*.csv
+            .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.csv
+            .tox/tests-reg_${{ inputs.task }}_*.csv
+            .tox/tests-reg_tiling_${{ inputs.task }}_*.csv
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ inputs.upload-artifact && always() }}

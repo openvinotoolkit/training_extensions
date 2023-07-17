@@ -211,34 +211,6 @@ def save_file(result_data: dict, output_path: str, file_name: str):
     df.to_csv(os.path.join(output_path, file_name))
 
 
-# def parse_args():
-#     parser = argparse.ArgumentParser(add_help=False)
-#     parser.add_argument("--input_path", default="/tmp/regression_test_results", type=str)
-#     parser.add_argument("--output_path", default="/tmp", type=str)
-#     return parser.parse_args()
-
-
-# def summarize_data(args):
-#     input_path = args.input_path
-
-#     for root, _, files in os.walk(input_path):
-#         for result_file in files:
-#             task_dict = filter_task(root)
-#             task_key, task = task_dict["task_key"], task_dict["task"]
-
-#             json_file_path = os.path.join(root, result_file)
-#             with open(json_file_path, "r") as f:
-#                 json_data = json.load(f)
-
-#             if is_anomaly_task(task) is True:
-#                 summarize_anomaly_data(task, task_key, json_data, ANOMALY_DATA)
-#             else:
-#                 summarize_non_anomaly_data(task, task_key, json_data, NON_ANOMALY_DATA)
-
-#     save_file(ANOMALY_DATA, f"{args.output_path}/anomaly_results.csv")
-#     save_file(NON_ANOMALY_DATA, f"{args.output_path}/non_anomaly_results.csv")
-
-
 def summarize_results_data(input_path: str, output_path: str):
     """summarize regression test result data."""
     input_path = input_path
@@ -258,8 +230,3 @@ def summarize_results_data(input_path: str, output_path: str):
             else:
                 summarize_non_anomaly_data(task, task_key, json_data, NON_ANOMALY_DATA)
                 save_file(NON_ANOMALY_DATA, output_path, f"tests-reg_{task}_{task_key}.csv")
-
-
-# if __name__ == "__main__":
-#     args = parse_args()
-#     summarize_data(args)
