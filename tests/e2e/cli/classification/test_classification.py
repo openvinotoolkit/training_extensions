@@ -180,7 +180,7 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        # FIXME[Vlad] Check performance degradation in some ci machines.
+        # FIXME [Jaeguk] Revert threshold to 0.2 when model api supports resize and centercrop.
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.5, half_precision=half_precision)
 
     @e2e_pytest_component
