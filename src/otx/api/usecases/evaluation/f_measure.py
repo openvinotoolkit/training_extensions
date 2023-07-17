@@ -1,9 +1,7 @@
 """This module contains the f-measure performance provider class."""
-
-# Copyright (C) 2021-2022 Intel Corporation
+# Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
 
 import logging
 from typing import Dict, List, Optional, Tuple
