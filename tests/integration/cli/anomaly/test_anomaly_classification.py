@@ -1,23 +1,14 @@
 """Tests for anomaly classification with OTX CLI"""
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
-# Copyright (C) 2021 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
 
 import os
 
 import pytest
 
+from otx.api.entities.model_template import parse_model_template, ModelCategory, ModelStatus
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -42,6 +33,38 @@ otx_dir = os.getcwd()
 
 templates = Registry("src/otx/algorithms").filter(task_type="ANOMALY_CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
+
+
+class TestAnomalyClassificationModelTemplates:
+    @e2e_pytest_component
+    def test_model_category(self):
+        stat = {
+            ModelCategory.SPEED: 0,
+            ModelCategory.BALANCE: 0,
+            ModelCategory.ACCURACY: 0,
+            ModelCategory.OTHER: 0,
+        }
+        for template in templates:
+            stat[template.model_category] += 1
+        assert stat[ModelCategory.SPEED] == 1
+        assert stat[ModelCategory.BALANCE] <= 1
+        assert stat[ModelCategory.ACCURACY] == 1
+
+    @e2e_pytest_component
+    def test_model_status(self):
+        for template in templates:
+            if template.model_status == ModelStatus.DEPRECATED:
+                assert template.model_category == ModelCategory.OTHER
+
+    @e2e_pytest_component
+    def test_default_for_task(self):
+        num_default_model = 0
+        for template in templates:
+            if template.is_default_for_task:
+                num_default_model += 1
+                assert template.model_category != ModelCategory.OTHER
+                assert template.model_status == ModelStatus.ACTIVE
+        assert num_default_model == 1
 
 
 class TestToolsAnomalyClassification:
