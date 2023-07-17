@@ -76,8 +76,8 @@ def set_adapters_from_string(framework: str):
     dataset_builder = get_impl_class(f"{adapter}.Dataset")
     if dataset_builder is None:
         raise NotImplementedError(f"{adapter}.Dataset")
-    model_build_function = get_impl_class(f"{adapter}.get_model")
-    return sub_engine, dataset_builder, model_build_function
+    get_model = get_impl_class(f"{adapter}.get_model")
+    return sub_engine, dataset_builder, get_model
 
 
 class Engine:
@@ -176,7 +176,7 @@ class AutoEngine(Engine):
         # Auto-Configuration
         self.auto_configuration(framework, task, train_type)
 
-        engine_module, self.dataset, self.model_build_function = set_adapters_from_string(self.framework)
+        self.framework_engine, self.dataset, self.get_model = set_adapters_from_string(self.framework)
 
         # Create Dataset Builder
         dataset_params = get_dataset_paths(self.config)
@@ -186,7 +186,10 @@ class AutoEngine(Engine):
             data_format=data_format,
             **dataset_params,
         )
-        self.engine = engine_module(work_dir=self.work_dir, config=self.config)
+        # self.model = None
+        # if self.get_model is not None and self.config.get("model", None) is not None:
+        #     self.model = self.get_model(config=self.config, num_classes=self.dataset_obj.num_classes)
+        self.engine = None
         # TODO: Check config: if self.config["model"] is empty -> model + data pipeline + recipes selection
 
     def auto_configuration(self, framework, task, train_type):
@@ -206,7 +209,7 @@ class AutoEngine(Engine):
 
         train_config = self.config["data"].get("train", {})
         if self.task is None:
-            self.task: str = configure_task_type(train_config.get("data_roots", None), self.data_format)
+            self.task, self.data_format = configure_task_type(train_config.get("data_roots", None), self.data_format)
         if self.train_type is None:
             unlabeled_config = self.config["data"].get("unlabeled", {})
             self.train_type: str = configure_train_type(
@@ -218,6 +221,9 @@ class AutoEngine(Engine):
             self.train_type: TrainType = str_to_train_type(self.train_type)
         if self.framework is None:
             self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]
+
+    def build_framework_engine(self) -> Engine:
+        return self.framework_engine(work_dir=self.work_dir, config=self.config)
 
     def train(
         self,
@@ -236,6 +242,7 @@ class AutoEngine(Engine):
         # TODO: self.config update with new input
 
         # Build DataLoader
+        # TODO: Need to add more arguments
         train_dataloader = self.dataset_obj.train_dataloader(
             pipeline=train_data_pipeline,
             config=self.config,
@@ -248,11 +255,13 @@ class AutoEngine(Engine):
         )
 
         # Build Model
-        if model is None and self.model_build_function is not None:
+        if model is None and self.get_model is not None:
             # Model Setting
-            model = self.model_build_function(config=self.config, num_classes=self.dataset_obj.num_classes)
+            model = self.get_model(config=self.config, num_classes=self.dataset_obj.num_classes)
 
         # Training
+        if self.engine is None:
+            self.engine = self.build_framework_engine()
         # TODO: config + args merge for sub-engine
         return self.engine.train(
             model=model,

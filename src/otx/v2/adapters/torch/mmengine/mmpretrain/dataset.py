@@ -234,6 +234,8 @@ class Dataset(BaseDataset):
         if num_workers is None:
             num_workers = config.get("num_workers", 0)
 
+        # kwargs conflict
+        unlabeled_batch_size = kwargs.pop("unlabeled_batch_size", config.get("unlabeled_batch_size", batch_size))
         subset_dataloader = self.build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
@@ -251,7 +253,6 @@ class Dataset(BaseDataset):
             if pipeline is not None:
                 unlabeled_pipeline = pipeline["unlabeled"]
             unlabeled_dataset = self.build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=config)
-            unlabeled_batch_size = kwargs.get("unlabeled_batch_size", config.get("unlabeled_batch_size", batch_size))
             unlabeled_dataloader = self.build_dataloader(
                 dataset=unlabeled_dataset,
                 batch_size=unlabeled_batch_size,
@@ -269,6 +270,8 @@ class Dataset(BaseDataset):
 
     @property
     def num_classes(self):
+        if not self.initialize:
+            self._initialize()
         return len(self.label_schema.get_labels(include_empty=False))
 
 

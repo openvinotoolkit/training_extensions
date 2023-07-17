@@ -39,44 +39,36 @@ data_preprocessor:
 train_dataloader:
   batch_size: 32
   num_workers: 2
-  dataset:
-    type: OTXClsDataset
-    pipeline:
-      - scale: 224
-        type: Resize
-      - direction: horizontal
-        prob: 0.5
-        type: RandomFlip
-      - config_str: augmix-m5-w3-d1
-        type: AugMixAugment
-      - angle: !!python/tuple
-          - -10
-          - 10
-        p: 0.35
-        type: RandomRotate
-      - type: PackInputs
+  pipeline:
+    - scale: 224
+      type: Resize
+    - direction: horizontal
+      prob: 0.5
+      type: RandomFlip
+    - config_str: augmix-m5-w3-d1
+      type: AugMixAugment
+    - angle: !!python/tuple
+        - -10
+        - 10
+      p: 0.35
+      type: RandomRotate
+    - type: PackInputs
 
 val_dataloader:
   batch_size: 32
   num_workers: 2
-  dataset:
-    type: OTXClsDataset
-    pipeline:
-      - scale: 224
-        type: Resize
-      - type: PackInputs
-    test_mode: true
+  pipeline:
+    - scale: 224
+      type: Resize
+    - type: PackInputs
 
 test_dataloader:
   batch_size: 32
   num_workers: 2
-  dataset:
-    type: OTXClsDataset
-    pipeline:
-      - scale: 224
-        type: Resize
-      - type: PackInputs
-    test_mode: true
+  pipeline:
+    - scale: 224
+      type: Resize
+    - type: PackInputs
 
 # Hooks
 default_hooks:

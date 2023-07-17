@@ -1,0 +1,17 @@
+# Basic Information for Config
+framework: null
+task: null
+train_type: null
+
+# OTX Training Configs
+max_epochs: 10
+max_iters: null
+seed: 1234
+deterministic: false
+precision: null
+
+# Model Configuration
+model: null
+
+# Dataset Configuration
+data: null
