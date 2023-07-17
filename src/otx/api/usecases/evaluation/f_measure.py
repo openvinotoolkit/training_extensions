@@ -363,7 +363,7 @@ class _FMeasureCalculator:
                 result.f_measure_curve[class_name].append(result_point[class_name].f_measure)
                 result.precision_curve[class_name].append(result_point[class_name].precision)
                 result.recall_curve[class_name].append(result_point[class_name].recall)
-            if all_classes_f_measure > result.best_f_measure:
+            if all_classes_f_measure > 0.0 and all_classes_f_measure >= result.best_f_measure:
                 result.best_f_measure = all_classes_f_measure
                 result.best_threshold = confidence_threshold
         return result
@@ -417,7 +417,7 @@ class _FMeasureCalculator:
                 result.precision_curve[class_name].append(result_point[class_name].precision)
                 result.recall_curve[class_name].append(result_point[class_name].recall)
 
-            if all_classes_f_measure >= result.best_f_measure:
+            if all_classes_f_measure > 0.0 and all_classes_f_measure >= result.best_f_measure:
                 result.best_f_measure = all_classes_f_measure
                 result.best_threshold = nms_threshold
         return result
