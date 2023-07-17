@@ -38,3 +38,8 @@ def get_non_default_args(func):
             non_default_args.append((name, parameter.default))
 
     return non_default_args
+
+
+def get_all_args(func):
+    signature = inspect.signature(func)
+    return signature.parameters.keys()

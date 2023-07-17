@@ -9,7 +9,7 @@ from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.api.core.engine import Engine
-from otx.v2.api.utils.importing import get_non_default_args
+from otx.v2.api.utils.importing import get_non_default_args, get_all_args
 from otx.v2.api.utils.logger import get_logger
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
@@ -27,13 +27,13 @@ class MMXEngine(Engine):
         work_dir: Optional[str] = None,
         config: Optional[Union[Dict, Config, str]] = None,
     ) -> None:
-        super().__init__()
-        self.work_dir = work_dir
+        super().__init__(work_dir=work_dir)
         self.runner = None
         self.latest_model = {"model": None, "checkpoint": None}
         self.registry = MMEngineRegistry()
         # self.base_runner = self.registry.get("RUNNER")
         self.initial_config(config)
+        self.dumped_config = Config({})
 
     def initial_config(self, config: Optional[Union[Dict, Config, str]]):
         if config is not None:
@@ -78,14 +78,17 @@ class MMXEngine(Engine):
 
         # Update train_cfg
         max_iters = func_args.get("max_iters", None)
+        max_iters = self.config.get("max_iters", None) if max_iters is None else max_iters
         max_epochs = func_args.get("max_epochs", None)
+        max_epochs = self.config.get("max_epochs", None) if max_epochs is None else max_epochs
         precision = func_args.get("precision", None)
+        precision = self.config.get("precision", None) if precision is None else precision
         eval_interval = func_args.get("eval_interval", 1)
         if max_iters is not None and max_epochs is not None:
             raise ValueError("Only one of `max_epochs` or `max_iters` can be set.")
         if "train_cfg" not in kwargs or kwargs["train_cfg"] is None:
             eval_interval = eval_interval if eval_interval is not None else 1
-            kwargs["train_cfg"] = dict(val_interval=eval_interval)
+            kwargs["train_cfg"] = dict(val_interval=eval_interval, by_epoch=True)
         if max_epochs is not None:
             kwargs["train_cfg"]["by_epoch"] = True
             kwargs["train_cfg"]["max_epochs"] = max_epochs
@@ -112,6 +115,12 @@ class MMXEngine(Engine):
             if "val_evaluator" not in kwargs or kwargs["val_evaluator"] is None:
                 # TODO: Need to set val_evaluator as task-agnostic way
                 kwargs["val_evaluator"] = dict(type="mmpretrain.Accuracy")
+        elif isinstance(self.config.get("val_dataloader", None), dict):
+            # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
+            logger.warning("Currently, OTX does not accept val_dataloader as a dict configuration.")
+            self.config["val_dataloader"] = None
+            self.config["val_cfg"] = None
+            self.config["val_evaluator"] = None
 
         # Update test_cfg (TestLoop)
         if test_dataloader is not None:
@@ -124,10 +133,16 @@ class MMXEngine(Engine):
             if "test_evaluator" not in kwargs or kwargs["test_evaluator"] is None:
                 # TODO: Need to set test_evaluator as task-agnostic way
                 kwargs["test_evaluator"] = self.config.get("val_evaluator", dict(type="mmpretrain.Accuracy"))
+        elif isinstance(self.config.get("test_dataloader", None), dict):
+            # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
+            logger.warning("Currently, OTX does not accept test_dataloader as a dict configuration.")
+            self.config["test_dataloader"] = None
+            self.config["test_cfg"] = None
+            self.config["test_evaluator"] = None
 
         # Update randomness
-        seed = func_args.get("seed", None)
-        deterministic = func_args.get("deterministic", False)
+        seed = func_args.get("seed", self.config.pop("seed", None))
+        deterministic = func_args.get("deterministic", self.config.pop("deterministic", None))
         if func_args.get("seed", None) is not None:
             kwargs["randomness"] = dict(seed=seed, deterministic=deterministic)
 
@@ -154,6 +169,8 @@ class MMXEngine(Engine):
                 # set sampler seed in distributed evrionment.
                 sampler_seed=dict(type="DistSamplerSeedHook") if distributed else None,
             )
+        if self.config.get("visualizer", None) is not None:
+            self.config["visualizer"]["_scope_"] = self.registry.name
 
         # kwargs -> Update config
         for kwarg_key, kwarg_value in kwargs.items():
@@ -166,6 +183,17 @@ class MMXEngine(Engine):
         for not_none_arg, default_value in runner_default_args:
             if self.config.get(not_none_arg) is None:
                 self.config[not_none_arg] = default_value
+
+        # Last Check for Runner.__init__
+        runner_arg_list = get_all_args(Runner.__init__)
+        removed_key = []
+        for config_key in self.config.keys():
+            if config_key not in runner_arg_list:
+                removed_key.append(config_key)
+        if removed_key:
+            logger.warning(f"In Engine.config, remove {removed_key} " "that are unavailable to the Runner.")
+            for config_key in removed_key:
+                self.config.pop(config_key)
 
         return update_check
 
@@ -206,7 +234,7 @@ class MMXEngine(Engine):
             self.runner = base_runner(**self.config)
         # TODO: Need to align outputs
         config_path = Path(self.work_dir) / f"{self.runner.timestamp}" / "configs.py"
-        self.config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
+        self.dumped_config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
 
         output_model = self.runner.train()
 
@@ -243,7 +271,7 @@ class MMXEngine(Engine):
             self.runner._val_evaluator = self.config["val_evaluator"]
 
         Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
-        self.config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
+        self.dumped_config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
 
         return self.runner.val()
 
@@ -271,7 +299,7 @@ class MMXEngine(Engine):
             self.runner._test_evaluator = self.config["test_evaluator"]
 
         config_path = Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
-        self.config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
+        self.dumped_config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
 
         return self.runner.test()
 
@@ -319,16 +347,16 @@ class MMXEngine(Engine):
                 model_cfg = Config(model._build_config)
             else:
                 raise NotImplementedError()
-        elif self.config.get("model", None) and self.config["model"] is not None:
-            if isinstance(self.config["model"], dict):
-                model_cfg = Config(self.config["model"])
+        elif self.dumped_config.get("model", None) and self.dumped_config["model"] is not None:
+            if isinstance(self.dumped_config["model"], dict):
+                model_cfg = Config(self.dumped_config["model"])
             else:
-                model_cfg = self.config["model"]
+                model_cfg = self.dumped_config["model"]
         else:
             raise ValueError("Not fount target model.")
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
-        self.config["model"] = model_cfg
+        self.dumped_config["model"] = model_cfg
 
         # Configure deploy_cfg
         codebase_config = None
@@ -370,7 +398,7 @@ class MMXEngine(Engine):
         # Patch input's configuration
         if isinstance(deploy_config, dict):
             deploy_config = Config(deploy_config)
-        data_preprocessor = self.config.get("data_preprocessor", None)
+        data_preprocessor = self.dumped_config.get("data_preprocessor", None)
         mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
         std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
         to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
@@ -382,7 +410,7 @@ class MMXEngine(Engine):
             patch_input_shape(deploy_config, input_shape=input_shape)
 
         exporter = Exporter(
-            config=self.config,
+            config=self.dumped_config,
             checkpoint=checkpoint,
             deploy_config=deploy_config,
             work_dir=f"{self.work_dir}/openvino",

@@ -16,15 +16,14 @@ from torch.utils.data import DataLoader
 class AnomalibEngine(Engine):
     def __init__(
         self,
+        work_dir: Optional[str],
     ) -> None:
-        super().__init__()
+        super().__init__(work_dir=work_dir)
 
-    @set_default_argument(Trainer.__init__)
     def train(
         self,
         model: pl.LightningModule,
         train_dataloader: Union[DataLoader, LightningDataModule],
-        work_dir: str,
         val_dataloader: Optional[DataLoader] = None,
         optimizers: Optional[List[torch.optim.Optimizer]] = None,
         max_iters: Optional[int] = None,
@@ -40,7 +39,7 @@ class AnomalibEngine(Engine):
         configs = DictConfig(kwargs)
 
         # Set Configuration
-        configs.default_root_dir = work_dir
+        configs.default_root_dir = self.work_dir
         # configs.distributed = distributed
         configs.precision = precision
         if max_epochs is not None:
@@ -72,8 +71,3 @@ class AnomalibEngine(Engine):
             datamodule=datamodule,
             ckpt_path=ckpt_path,
         )
-
-
-if __name__ == "__main__":
-    engine = AnomalibEngine()
-    engine.train(model=None, train_dataloader=None, work_dir=None, logger=False)

@@ -61,7 +61,7 @@ def get_dataset_paths(config: Dict[str, Any]):
         "test_data_roots": test_config.get("data_roots", None),
         "test_ann_files": test_config.get("ann_files", None),
         "unlabeled_data_roots": unlabeled_config.get("data_roots", None),
-        "unlabeled_file_list": unlabeled_config.get("file_list", None),
+        "unlabeled_file_list": unlabeled_config.get("file_lists", None),
     }
 
 
@@ -81,26 +81,51 @@ def set_adapters_from_string(framework: str):
 
 
 class Engine:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, work_dir: str) -> None:
+        self.work_dir = work_dir
 
     def train(self, *args, **kwargs):
+        """Provide a function responsible for OTX's train
+
+        Raises:
+            NotImplementedError: _description_
+        """
         raise NotImplementedError()
 
     def validate(self, *args, **kwargs):
+        """Provide a function responsible for OTX's validate
+
+        Raises:
+            NotImplementedError: _description_
+        """
         raise NotImplementedError()
 
     def test(self, *args, **kwargs):
+        """Provide a function responsible for OTX's test
+
+        Raises:
+            NotImplementedError: _description_
+        """
         raise NotImplementedError()
 
     def predict(self, *args, **kwargs):
+        """Provide a function responsible for OTX's predict
+
+        Raises:
+            NotImplementedError: _description_
+        """
         raise NotImplementedError()
 
     def export(self, *args, **kwargs):
+        """Provide a function responsible for OTX's export
+
+        Raises:
+            NotImplementedError: _description_
+        """
         raise NotImplementedError()
 
 
-class AutoEngine:
+class AutoEngine(Engine):
     def __init__(
         self,
         *,
@@ -124,7 +149,7 @@ class AutoEngine:
         if config is not None:
             if isinstance(config, str):
                 config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
-            if not isinstance(config, dict):
+            elif not isinstance(config, dict):
                 raise TypeError("Config sould file path of yaml or dictionary")
         else:
             # Set
@@ -161,7 +186,7 @@ class AutoEngine:
             data_format=data_format,
             **dataset_params,
         )
-        self.engine = engine_module(work_dir=self.work_dir)
+        self.engine = engine_module(work_dir=self.work_dir, config=self.config)
         # TODO: Check config: if self.config["model"] is empty -> model + data pipeline + recipes selection
 
     def auto_configuration(self, framework, task, train_type):
@@ -198,12 +223,18 @@ class AutoEngine:
         self,
         # Training
         model=None,
-        max_epochs: Optional[int] = None,
         train_data_pipeline=None,
         val_data_pipeline=None,
+        max_epochs: Optional[int] = None,
+        max_iters: Optional[int] = None,
         batch_size: Optional[int] = None,
+        seed: Optional[int] = None,
+        deterministic: Optional[bool] = None,
+        precision: Optional[str] = None,
         **kwargs,
     ):
+        # TODO: self.config update with new input
+
         # Build DataLoader
         train_dataloader = self.dataset_obj.train_dataloader(
             pipeline=train_data_pipeline,
@@ -227,7 +258,10 @@ class AutoEngine:
             model=model,
             train_dataloader=train_dataloader,
             val_dataloader=val_dataloader,
-            work_dir=self.work_dir,
             max_epochs=max_epochs,
+            max_iters=max_iters,
+            seed=seed,
+            deterministic=deterministic,
+            precision=precision,
             **kwargs,
         )

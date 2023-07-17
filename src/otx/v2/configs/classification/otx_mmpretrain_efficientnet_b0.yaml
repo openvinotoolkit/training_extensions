@@ -107,7 +107,6 @@ env_cfg:
   dist_cfg:
     backend: nccl
     linear_scale_lr: true
-deterministic: false
 
 # Evaluation
 val_evaluator:
@@ -131,3 +130,10 @@ optim_wrapper:
     lr: 0.01
     momentum: 0.9
     weight_decay: 0.0005
+
+# OTX Training Configs
+max_epochs: 10
+max_iters: null
+seed: 1234
+deterministic: false
+precision: float32
