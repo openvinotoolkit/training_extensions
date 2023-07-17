@@ -472,12 +472,16 @@
 <section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this heading">#</a></h2>
 <p>As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection format: <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>.
-Specifically, this format should be converted in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/data/datumaro_multilabel">internal representation</a> first. We provided a <cite>script &lt;https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/utils/convert_coco_to_multilabel.py&gt;</cite> to help with conversion.
+Specifically, this format should be converted in our <a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/develop/tests/assets/datumaro_multilabel">internal representation</a> first. We provided a <cite>script &lt;https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/utils/convert_coco_to_multilabel.py&gt;</cite> to help with conversion.
 To convert the COCO data format to our internal one, run this script in similar way:</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Names of the annotations files and overall dataset structure should be the same as the original <a class="reference external" href="https://cocodataset.org/#format-data">COCO</a>. You need to convert train and validation sets separately.</p>
 <p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classification models.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For now, “___” is a symbol to distinguish the multi-label format. So, it must be included at the front of the label name.</p>
 </div>
 </section>
 <section id="models">
