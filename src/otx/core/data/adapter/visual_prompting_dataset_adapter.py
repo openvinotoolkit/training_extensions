@@ -60,7 +60,7 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                             if self.use_mask:
                                 # use masks loaded in datumaro as-is
                                 if self.data_type == "common_semantic_segmentation":
-                                    if new_label := self.updated_label_id.get(ann.label, None):
+                                    if (new_label := self.updated_label_id.get(ann.label, None)) is not None:
                                         ann.label = new_label
                                     else:
                                         continue
@@ -70,7 +70,7 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                                 # convert masks to polygons, they will be converted to masks again
                                 datumaro_polygons = MasksToPolygons.convert_mask(ann)
                                 for d_polygon in datumaro_polygons:
-                                    if new_label := self.updated_label_id.get(d_polygon.label, None):
+                                    if (new_label := self.updated_label_id.get(d_polygon.label, None)) is not None:
                                         d_polygon.label = new_label
                                     else:
                                         continue

@@ -28,13 +28,14 @@ import attr
 import nncf
 import numpy as np
 import openvino.runtime as ov
+from addict import Dict as ADDict
 from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
 
+from otx.algorithms.common.utils import get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
@@ -447,12 +448,16 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
             if optimization_parameters is not None:
                 optimization_parameters.update_progress(10 * i + 35 * (i - 1), None)
 
-            stat_subset_size = self.hparams.pot_parameters.stat_subset_size
-            preset = QuantizationPreset(self.hparams.pot_parameters.preset.name.lower())
-
-            compressed_model = nncf.quantize(
-                ov_model, quantization_dataset, subset_size=min(stat_subset_size, len(data_loader)), preset=preset
+            optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
+            ptq_config = ADDict()
+            if os.path.exists(optimization_config_path):
+                ptq_config = read_py_config(optimization_config_path)
+            ptq_config.update(
+                subset_size=min(self.hparams.pot_parameters.stat_subset_size, len(data_loader)),
+                preset=QuantizationPreset(self.hparams.pot_parameters.preset.name.lower()),
             )
+
+            compressed_model = nncf.quantize(ov_model, quantization_dataset, **ptq_config)
 
             if optimization_parameters is not None:
                 optimization_parameters.update_progress(45 * i, None)
