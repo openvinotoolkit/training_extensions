@@ -8,15 +8,15 @@ All notable changes to this project will be documented in this file.
 
 - Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
 - Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
-- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (https://github.com/openvinotoolkit/training_extensions/pull/2195)
-- Add per-class XAI saliency maps for Mask R-CNN model (https://github.com/openvinotoolkit/training_extensions/pull/2227)
+- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (<https://github.com/openvinotoolkit/training_extensions/pull/2195>)
+- Add per-class XAI saliency maps for Mask R-CNN model (<https://github.com/openvinotoolkit/training_extensions/pull/2227>)
 - Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
 - Add new object detector DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
-- Add new visual prompting task: train/eval (https://github.com/openvinotoolkit/training_extensions/pull/2203)
-- Add new visual prompting task: export (https://github.com/openvinotoolkit/training_extensions/pull/2274)
-- Add new visual prompting task: deploy (https://github.com/openvinotoolkit/training_extensions/pull/2311)
-- Add new visual prompting task: documentation (https://github.com/openvinotoolkit/training_extensions/pull/2354)
-- Add new visual prompting task: optimize (PTQ) (https://github.com/openvinotoolkit/training_extensions/pull/2318)
+- Add new visual prompting task: train/eval (<https://github.com/openvinotoolkit/training_extensions/pull/2203>)
+- Add new visual prompting task: export (<https://github.com/openvinotoolkit/training_extensions/pull/2274>)
+- Add new visual prompting task: deploy (<https://github.com/openvinotoolkit/training_extensions/pull/2311>)
+- Add new visual prompting task: documentation (<https://github.com/openvinotoolkit/training_extensions/pull/2354>)
+- Add new visual prompting task: optimize (PTQ) (<https://github.com/openvinotoolkit/training_extensions/pull/2318>)
 - Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
 
 ### Enhancements
@@ -24,15 +24,16 @@ All notable changes to this project will be documented in this file.
 - Introduce channel_last parameter to improve the performance (<https://github.com/openvinotoolkit/training_extensions/pull/2205>)
 - Decrease a time for making a workspace (<https://github.com/openvinotoolkit/training_extensions/pull/2223>)
 - Set persistent_workers and pin_memory as True in detection task (<https://github.com/openvinotoolkit/training_extensions/pull/2224>)
-- New algorithm for Semi-SL semantic segmentation based on metric lerning via class prototypes (https://github.com/openvinotoolkit/training_extensions/pull/2156)
-- Self-SL for classification now can recieve just folder with any images to start contrastive pretraining (https://github.com/openvinotoolkit/training_extensions/pull/2219)
+- New algorithm for Semi-SL semantic segmentation based on metric lerning via class prototypes (<https://github.com/openvinotoolkit/training_extensions/pull/2156>)
+- Self-SL for classification now can recieve just folder with any images to start contrastive pretraining (<https://github.com/openvinotoolkit/training_extensions/pull/2219>)
 - Update OpenVINO version to 2023.0, and NNCF verion to 2.5 (<https://github.com/openvinotoolkit/training_extensions/pull/2090>)
-- Improve XAI saliency map generation for tiling detection and tiling instance segmentation (https://github.com/openvinotoolkit/training_extensions/pull/2240)
+- Improve XAI saliency map generation for tiling detection and tiling instance segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2240>)
 
 ### Bug fixes
 
 - Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
 - Fix the bug that learning rate isn't scaled when multi-GPU trianing is enabled(<https://github.com/openvinotoolkit/training_extensions/pull/2254>)
+- Fix F1 auto-threshold to choose best largest confidence (<https://github.com/openvinotoolkit/training_extensions/pull/2367>)
 
 ### Known issues
 
