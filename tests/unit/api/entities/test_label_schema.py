@@ -5,7 +5,7 @@
 #
 
 import pytest
-from networkx.classes.reportviews import EdgeDataView, NodeView, OutMultiEdgeDataView
+from networkx.classes.reportviews import NodeView, OutMultiEdgeDataView
 
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
@@ -19,9 +19,33 @@ from otx.api.entities.label_schema import (
     LabelSchemaEntity,
     LabelTree,
     ScoredLabel,
+    natural_sort_label_id,
 )
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
+
+
+
+def get_label_entity(id_val: str):
+    return LabelEntity(name=id_val, domain=Domain.DETECTION, id=ID(id_val))
+
+
+def get_scored_label(id_val: str):
+    return ScoredLabel(label=get_label_entity(id_val))
+
+
+@pytest.mark.priority_medium
+@pytest.mark.unit
+@pytest.mark.reqids(Requirements.REQ_1)
+@pytest.mark.parametrize("id_val", ["3", "fake1name2"])
+@pytest.mark.parametrize("target_class", [ID, get_label_entity, get_scored_label])
+def test_natural_sort_label_id(id_val: str, target_class):
+    target = target_class(id_val)
+
+    if id_val.isdecimal():
+        assert natural_sort_label_id(target) == [int(id_val)]
+    else:
+        assert natural_sort_label_id(target) == [id_val]
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

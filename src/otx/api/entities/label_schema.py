@@ -41,9 +41,9 @@ def natural_sort_label_id(target: Union[ID, LabelEntity, ScoredLabel]) -> List:
 
     if isinstance(target, (LabelEntity, ScoredLabel)):
         target = target.id_
-    if isinstance(target, int):
-        return [target]
-    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", target)]
+    if target.isdecimal():
+        return [int(target)]
+    return [target]
 
 
 class LabelGroupExistsException(ValueError):
