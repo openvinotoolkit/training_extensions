@@ -41,8 +41,8 @@ def natural_sort_label_id(target: Union[ID, LabelEntity, ScoredLabel]) -> List:
 
     if isinstance(target, (LabelEntity, ScoredLabel)):
         target = target.id_
-    if target.isdecimal():
-        return [int(target)]
+    if isinstance(target, str) and target.isdecimal():
+        return ["", int(target)]  # "" is added for the case where id of some lables is None
     return [target]
 
 

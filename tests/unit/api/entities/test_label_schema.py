@@ -42,7 +42,7 @@ def test_natural_sort_label_id(id_val: str, target_class):
     target = target_class(id_val)
 
     if id_val.isdecimal():
-        assert natural_sort_label_id(target) == [int(id_val)]
+        assert natural_sort_label_id(target) == ["", int(id_val)]
     else:
         assert natural_sort_label_id(target) == [id_val]
 
