@@ -9,7 +9,7 @@ from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.api.core.engine import Engine
-from otx.v2.api.utils.importing import get_non_default_args, get_all_args
+from otx.v2.api.utils.importing import get_all_args, get_non_default_args
 from otx.v2.api.utils.logger import get_logger
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
@@ -213,6 +213,25 @@ class MMXEngine(Engine):
         custom_hooks: Optional[Union[List, Dict, Hook]] = None,
         **kwargs,
     ):
+        r"""Training Functions with the MMEngine Framework.
+
+        Args:
+            model (Optional[Union[torch.nn.Module, Dict]], optional): The models available in Engine. Defaults to None.
+            train_dataloader (Optional[Union[DataLoader, Dict]], optional): Training Dataset's pipeline. Defaults to None.
+            val_dataloader (Optional[Union[DataLoader, Dict]], optional): Validation Dataset's pipeline. Defaults to None.
+            optimizer (Optional[Union[dict, Optimizer]], optional): _description_. Defaults to None.
+            max_iters (Optional[int], optional): Specifies the maximum iters of training. Defaults to None.
+            max_epochs (Optional[int], optional): Specifies the maximum epoch of training. Defaults to None.
+            distributed (Optional[bool], optional): Whether to use the distributed setting. Defaults to None.
+            seed (Optional[int], optional): The seed to use for training. Defaults to None.
+            deterministic (Optional[bool], optional): The deterministic to use for training. Defaults to None.
+            precision (Optional[str], optional): The precision to use for training. Defaults to None.
+            eval_interval (Optional[int], optional): Specifies the validation Interval. Defaults to None.
+            custom_hooks (Optional[Union[List, Dict, Hook]], optional): Custom Hooks for mmengine.Runner. Defaults to None.
+
+        Returns:
+            _type_: Output of training.
+        """
         train_args = {
             "model": model,
             "train_dataloader": train_dataloader,

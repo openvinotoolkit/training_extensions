@@ -20,10 +20,13 @@ from typing import List, Optional, Sequence, Union
 
 import numpy as np
 import torch
-from otx.v2.adapters.torch.mmengine.mmpretrain import MMPRETRAIN_AVAILABLE
 
-if MMPRETRAIN_AVAILABLE:
+try:
     from mmpretrain.models.necks.gap import GlobalAveragePooling
+
+    MMPRETRAIN_AVAILABLE = True
+except:
+    MMPRETRAIN_AVAILABLE = False
 
 
 class BaseRecordingForwardHook(ABC):

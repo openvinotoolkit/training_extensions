@@ -167,16 +167,16 @@ class BaseDataset:
         unlabeled_file_list: Optional[str] = None,
         data_format: Optional[str] = None,
     ) -> None:
-        """Classes for loading a Dataset from dataset paths.
+        """BaseDataset, Classes that provide the underlying Dataset API for each framework.
 
         Args:
             task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load. Defaults to None.
             train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load. Defaults to None.
             train_data_roots (Optional[str], optional): The root address of the dataset to be used for training. Defaults to None.
             train_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for training. Defaults to None.
-            val_data_roots (Optional[str], optional): _description_. Defaults to None.
+            val_data_roots (Optional[str], optional): The root address of the dataset to be used for validation. Defaults to None.
             val_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for validation. Defaults to None.
-            test_data_roots (Optional[str], optional): _description_. Defaults to None.
+            test_data_roots (Optional[str], optional): The root address of the dataset to be used for testing. Defaults to None.
             test_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for testing. Defaults to None.
             unlabeled_data_roots (Optional[str], optional): The root address of the unlabeled dataset to be used for training. Defaults to None.
             unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared. Defaults to None.
@@ -240,7 +240,21 @@ class BaseDataset:
         self.dataset_entity: DatasetEntity = self.dataset_adapter.get_otx_dataset()
         self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
 
-    def subset_dataloader(self, subset: str, *args, **kwargs):
+    def subset_dataloader(
+        self,
+        subset: str,
+        pipeline: Optional[Union[List, Dict]] = None,
+        config: Optional[Union[str, Dict]] = None,
+        batch_size: Optional[int] = None,
+        num_workers: Optional[int] = None,
+        shuffle: bool = True,
+        pin_memory: bool = False,
+        drop_last: bool = False,
+        sampler=None,
+        persistent_workers: bool = False,
+        distributed: bool = False,
+        **kwargs,
+    ):
         """BaseDataset's subset_dataloader function.
 
         Functions for calling dataloader for each subset of the dataset class.

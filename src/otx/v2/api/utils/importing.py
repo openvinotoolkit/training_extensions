@@ -17,6 +17,7 @@
 
 import importlib
 import inspect
+import os
 
 
 def get_impl_class(impl_path):
@@ -43,3 +44,11 @@ def get_non_default_args(func):
 def get_all_args(func):
     signature = inspect.signature(func)
     return signature.parameters.keys()
+
+
+def get_otx_root_path():
+    """Get otx root path from importing otx."""
+    otx_module = importlib.import_module("otx")
+    if otx_module:
+        return os.path.dirname(inspect.getfile(otx_module))
+    return None

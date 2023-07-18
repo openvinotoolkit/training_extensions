@@ -64,6 +64,21 @@ class Dataset(BaseDataset):
         unlabeled_file_list: Optional[str] = None,
         data_format: Optional[str] = None,
     ) -> None:
+        r"""MMPretrain's Dataset class.
+
+        Args:
+            task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load. Defaults to None.
+            train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load. Defaults to None.
+            train_data_roots (Optional[str], optional): The root address of the dataset to be used for training. Defaults to None.
+            train_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for training. Defaults to None.
+            val_data_roots (Optional[str], optional): The root address of the dataset to be used for validation. Defaults to None.
+            val_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for validation. Defaults to None.
+            test_data_roots (Optional[str], optional): The root address of the dataset to be used for testing. Defaults to None.
+            test_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for testing. Defaults to None.
+            unlabeled_data_roots (Optional[str], optional): The root address of the unlabeled dataset to be used for training. Defaults to None.
+            unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared. Defaults to None.
+            data_format (Optional[str], optional): The format of the dataset. Defaults to None.
+        """
         super().__init__(
             task,
             train_type,
@@ -215,7 +230,33 @@ class Dataset(BaseDataset):
         persistent_workers: bool = False,
         distributed: bool = False,
         **kwargs,
-    ):
+    ) -> TorchDataLoader:
+        r"""MMPretrain's Dataset.subset_dataloader.
+
+        Args:
+            subset (str): Enter an available subset of that dataset.
+            pipeline (Optional[Union[List[Union[Dict, Any]], Dict[str, List[Union[Dict, Any]]]]], optional): Dataset Pipeline. Defaults to None.
+            config (Optional[Union[str, Dict[str, Any]]], optional): Path to configuration file or Config. Defaults to None.
+            batch_size (Optional[int], optional): How many samples per batch to load. Defaults to None.
+            num_workers (Optional[int], optional): How many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process. Defaults to None.
+            shuffle (bool, optional): Set to ``True`` to have the data reshuffled at every epoch. Defaults to True.
+            pin_memory (bool, optional): If ``True``, the data loader will copy Tensors
+                into device/CUDA pinned memory before returning them.  If your data elements
+                are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type,
+                see the example below. Defaults to False.
+            drop_last (bool, optional): _description_. Defaults to False.
+            sampler (Optional[Union[Sampler, Iterable, Dict]], optional): Defines the strategy to draw
+                samples from the dataset. Can be any ``Iterable`` with ``__len__``
+                implemented. If specified, :attr:`shuffle` must not be specified.. Defaults to None.
+            persistent_workers (bool, optional): If ``True``, the data loader will not shutdown
+                the worker processes after a dataset has been consumed once. This allows to
+                maintain the workers `Dataset` instances alive. Defaults to False.
+            distributed (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            torch.utils.data.DataLoader: Returns a subset of dataLoader.
+        """
         # Config Setting
         if isinstance(config, str):
             config = Config.fromfile(filename=config)
