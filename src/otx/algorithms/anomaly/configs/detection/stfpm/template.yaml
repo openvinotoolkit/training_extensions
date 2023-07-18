@@ -35,3 +35,6 @@ training_targets:
 # Computational Complexity
 gigaflops: 5.6
 size: 21.1
+
+# Model spec
+model_category: ACCURACY

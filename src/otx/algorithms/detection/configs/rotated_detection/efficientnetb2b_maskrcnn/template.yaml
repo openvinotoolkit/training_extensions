@@ -60,3 +60,6 @@ training_targets:
 # Stats.
 gigaflops: 68.48
 size: 13.27
+
+# Model spec
+model_category: SPEED
