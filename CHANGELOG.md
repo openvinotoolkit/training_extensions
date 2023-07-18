@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.5.0\]
+
+### New features
+
+-
+
+### Enhancements
+
+-
+
+### Bug fixes
+
+- Fix F1 auto-threshold to choose best largest confidence (<https://github.com/openvinotoolkit/training_extensions/pull/2371>)
+
+### Known issues
+
+- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+
 ## \[v1.4.0\]
 
 ### New features
