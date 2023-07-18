@@ -25,7 +25,6 @@ from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
 
 
-
 def get_label_entity(id_val: str):
     return LabelEntity(name=id_val, domain=Domain.DETECTION, id=ID(id_val))
 
