@@ -8,7 +8,7 @@
 # This is from otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
 __img_scale = (992, 736)
-__img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
+__img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], to_rgb=False)
 
 common_pipeline = [
     dict(

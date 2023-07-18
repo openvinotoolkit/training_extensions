@@ -6,6 +6,7 @@
 # pylint: disable=invalid-name
 
 __img_size = (640, 640)
+__img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], to_rgb=False)
 
 train_pipeline = [
     dict(type="Mosaic", img_scale=__img_size, pad_val=114.0),
@@ -19,6 +20,7 @@ train_pipeline = [
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Resize", img_scale=__img_size, keep_ratio=True),
     dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
+    dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
 ]
@@ -33,6 +35,7 @@ test_pipeline = [
             dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
             dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
+            dict(type="Normalize", **__img_norm_cfg),
             dict(type="DefaultFormatBundle"),
             dict(type="Collect", keys=["img"]),
         ],
