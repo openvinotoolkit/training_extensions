@@ -1,5 +1,5 @@
 """Tests for Classification with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -30,6 +30,7 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
@@ -80,6 +81,9 @@ default_templates_ids = [default_template.model_template_id]
 
 templates = Registry("src/otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
+
+
+TestClassificationModelTemplates = generate_model_template_testing(templates)
 
 
 class TestMultiClassClassificationCLI:

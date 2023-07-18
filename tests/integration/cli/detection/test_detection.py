@@ -1,5 +1,5 @@
 """Tests for Class-Incremental Learning for object detection with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
@@ -28,6 +28,7 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 args = {
@@ -79,6 +80,9 @@ experimental_template_ids = [template.model_template_id for template in experime
 
 templates_w_experimental = templates + experimental_templates
 templates_ids_w_experimental = templates_ids + experimental_template_ids
+
+
+TestDetectionModelTemplates = generate_model_template_testing(templates)
 
 
 class TestDetectionCLI:

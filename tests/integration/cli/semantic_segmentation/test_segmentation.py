@@ -1,5 +1,5 @@
 """Tests for Semantic segmentation with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
@@ -9,6 +9,7 @@ import pytest
 import torch
 
 from otx.api.entities.model_template import parse_model_template
+from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
     get_template_dir,
@@ -21,6 +22,7 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 args = {
@@ -71,8 +73,11 @@ MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
     os.path.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "template.yaml")
 )
-templates = [default_template]
-templates_ids = [default_template.model_template_id]
+default_templates = [default_template]
+default_templates_ids = [default_template.model_template_id]
+
+templates = Registry("src/otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
+templates_ids = [template.model_template_id for template in templates]
 
 # add integration test for semi-sl with new SegNext model and prototype based approach
 # other tests will be updated accordingly after fully transfer to segnext templates
@@ -83,22 +88,25 @@ templates_inc_segnext = [segnext_experimental_template, default_template]
 templates_ids_inc_segnext = [segnext_experimental_template.model_template_id, default_template.model_template_id]
 
 
+TestSemanticSegmentationModelTemplates = generate_model_template_testing(templates)
+
+
 class TestSegmentationCLI:
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_supcon(self, template, tmp_dir_path):
         args1 = copy.deepcopy(args)
         args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
@@ -111,57 +119,57 @@ class TestSegmentationCLI:
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_export_testing(template, tmp_dir_path, dump_features, check_ir_meta=True)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_export_onnx(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0, half_precision=half_precision)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_hpo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_hpo"
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
         if template.entrypoints.nncf is None:
@@ -171,7 +179,7 @@ class TestSegmentationCLI:
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu"
         args1 = copy.deepcopy(args)
@@ -200,14 +208,14 @@ class TestSegmentationCLI:
         assert os.path.exists(f"{template_dir}/semisl")
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
@@ -215,7 +223,7 @@ class TestSegmentationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     @pytest.mark.parametrize("bs_adapt_type", ["Safe", "Full"])
     def test_otx_train_auto_adapt_batch_size(self, template, tmp_dir_path, bs_adapt_type):
         adapting_bs_args = copy.deepcopy(args)
@@ -224,7 +232,7 @@ class TestSegmentationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, adapting_bs_args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
         adapting_num_workers_args = copy.deepcopy(args)
         adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])

@@ -1,16 +1,7 @@
-# Copyright (C) 2021 Intel Corporation
+"""Common test case and helpersi for OTX"""
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
 
 import asyncio
 import json
@@ -25,9 +16,11 @@ import onnxruntime
 import pytest
 import yaml
 
+from otx.api.entities.model_template import ModelCategory, ModelStatus
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 
 def get_template_rel_dir(template):
@@ -1045,3 +1038,38 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str], use_output: 
     command_line.extend(["--workspace", f"{work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
+
+
+def generate_model_template_testing(templates):
+    class _TestModelTemplates:
+        @e2e_pytest_component
+        def test_model_category(self):
+            stat = {
+                ModelCategory.SPEED: 0,
+                ModelCategory.BALANCE: 0,
+                ModelCategory.ACCURACY: 0,
+                ModelCategory.OTHER: 0,
+            }
+            for template in templates:
+                stat[template.model_category] += 1
+            assert stat[ModelCategory.SPEED] == 1
+            assert stat[ModelCategory.BALANCE] <= 1
+            assert stat[ModelCategory.ACCURACY] == 1
+
+        @e2e_pytest_component
+        def test_model_status(self):
+            for template in templates:
+                if template.model_status == ModelStatus.DEPRECATED:
+                    assert template.model_category == ModelCategory.OTHER
+
+        @e2e_pytest_component
+        def test_default_for_task(self):
+            num_default_model = 0
+            for template in templates:
+                if template.is_default_for_task:
+                    num_default_model += 1
+                    assert template.model_category != ModelCategory.OTHER
+                    assert template.model_status == ModelStatus.ACTIVE
+            assert num_default_model == 1
+
+    return _TestModelTemplates
