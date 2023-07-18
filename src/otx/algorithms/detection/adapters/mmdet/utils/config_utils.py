@@ -245,18 +245,21 @@ def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
     """
+    normalize_cfg: Optional[dict] = None
+    options: Optional[dict] = None
     normalize_cfgs = get_configs_by_pairs(cfg.data.test.pipeline, dict(type="Normalize"))
-    assert len(normalize_cfgs) == 1
-    normalize_cfg: dict = normalize_cfgs[0]
+    if len(normalize_cfgs) > 0:
+        assert len(normalize_cfgs) == 1
+        normalize_cfg = normalize_cfgs[0]
 
-    # Set options based on Normalize config
-    options = {
-        "flags": ["--reverse_input_channels"] if normalize_cfg.get("to_rgb", False) else [],
-        "args": {
-            "--mean_values": list(normalize_cfg.get("mean", [])),
-            "--scale_values": list(normalize_cfg.get("std", [])),
-        },
-    }
+        # Set options based on Normalize config
+        options = {
+            "flags": ["--reverse_input_channels"] if normalize_cfg.get("to_rgb", False) else [],
+            "args": {
+                "--mean_values": list(normalize_cfg.get("mean", [])),
+                "--scale_values": list(normalize_cfg.get("std", [])),
+            },
+        }
 
     # Set default backend configuration
     mo_options = deploy_cfg.backend_config.get("mo_options", ConfigDict())
@@ -265,8 +268,9 @@ def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
     mo_options.flags = mo_options.get("flags", [])
 
     # Override backend configuration with options from Normalize config
-    mo_options.args.update(options["args"])
-    mo_options.flags = list(set(mo_options.flags + options["flags"]))
+    if options is not None:
+        mo_options.args.update(options["args"])
+        mo_options.flags = list(set(mo_options.flags + options["flags"]))
 
     deploy_cfg.backend_config.mo_options = mo_options
 
