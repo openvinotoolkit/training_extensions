@@ -92,13 +92,14 @@ class CustomSOLOV2Head(SOLOV2Head):
         #     mask_feats, kernel_preds, stride=1).squeeze(0).sigmoid()
 
         # NOTE: rewrite it with:
-        assert self.dynamic_conv_size == 1, "ONNX does not support dynamic convolution"
-        mask_feats = mask_feats.view(mask_feats.size(0), mask_feats.size(1), mask_feats.size(2) * mask_feats.size(3))
-        mask_feats = mask_feats.permute(0, 2, 1)
-        kernel_preds = kernel_preds.permute(1, 0)
-        mask_preds = torch.matmul(mask_feats, kernel_preds)
-        mask_preds = mask_preds.permute(0, 2, 1)
-        mask_preds = mask_preds.view(mask_preds.size(0), mask_preds.size(1), featmap_size[0], featmap_size[1])
+        kernel_preds = kernel_preds.view(kernel_preds.size(0), -1, self.dynamic_conv_size, self.dynamic_conv_size)
+        unfolded_mask_feats = torch.nn.functional.unfold(mask_feats, (self.dynamic_conv_size, self.dynamic_conv_size))
+        unfolded_mask_preds = (
+            unfolded_mask_feats.transpose(1, 2).matmul(kernel_preds.view(kernel_preds.size(0), -1).t()).transpose(1, 2)
+        )
+        mask_preds = unfolded_mask_preds.view(
+            unfolded_mask_preds.size(0), unfolded_mask_preds.size(1), featmap_size[0], featmap_size[1]
+        )
         mask_preds = mask_preds.squeeze(0).sigmoid()
 
         # mask.
