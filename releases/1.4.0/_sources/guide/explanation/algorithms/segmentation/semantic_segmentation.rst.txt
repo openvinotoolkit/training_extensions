@@ -42,7 +42,7 @@ Dataset Format
 
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
 
-At this end we support `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data format.
+At this end we support `Common Semantic Segmentation <https://github.com/openvinotoolkit/datumaro/blob/develop/docs/source/docs/data-formats/formats/common_semantic_segmentation.md>`_ data format.
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
 
 .. code-block::
