@@ -133,7 +133,7 @@ class ClassificationConfigurer:
             cfg.model.type = super_type
 
         # Hierarchical
-        if cfg.model.hierarchical:
+        if cfg.model.get("hierarchical"):
             assert cfg.data.train.hierarchical_info == cfg.data.val.hierarchical_info == cfg.data.test.hierarchical_info
             cfg.model.head.hierarchical_info = cfg.data.train.hierarchical_info
 

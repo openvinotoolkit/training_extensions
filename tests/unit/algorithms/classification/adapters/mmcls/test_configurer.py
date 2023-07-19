@@ -22,6 +22,9 @@ class TestClassificationConfigurer:
         self.configurer = ClassificationConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        
+        self.multilabel_model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_multilabel.py"))
+        self.hierarchical_model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_hierarchical.py"))
 
     @e2e_pytest_unit
     def test_configure(self, mocker):
@@ -118,6 +121,13 @@ class TestClassificationConfigurer:
         self.configurer.configure_model(self.model_cfg, ir_options)
         assert self.model_cfg.model_task
         assert self.model_cfg.model.head.in_channels == 960
+        
+        multilabel_model_cfg = self.multilabel_model_cfg
+        self.configurer.configure_model(multilabel_model_cfg, ir_options)
+        
+        h_label_model_cfg = self.hierarchical_model_cfg
+        self.configurer.configure_model(h_label_model_cfg, ir_options)
+        
 
     @e2e_pytest_unit
     def test_configure_model_not_classification_task(self):
