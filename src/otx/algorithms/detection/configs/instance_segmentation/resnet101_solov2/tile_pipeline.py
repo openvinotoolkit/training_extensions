@@ -1,4 +1,4 @@
-"""Tiling Pipeline of SOLOv2_ResNeXt101 model for Instance-Seg Task."""
+"""Tiling Pipeline of SOLOv2_ResNet101 model for Instance-Seg Task."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

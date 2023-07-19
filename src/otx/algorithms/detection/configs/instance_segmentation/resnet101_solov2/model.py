@@ -14,22 +14,23 @@ task = "instance-segmentation"
 
 
 model = dict(
-    type="CustomSOLOv2",
+    type='CustomSOLOv2',
     backbone=dict(
-        type="ResNeXt",
+        type='ResNet',
         depth=101,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
-        style="pytorch",
-        groups=64,
-        base_width=4,
-        dcn=dict(type="DCNv2", deformable_groups=1, fallback_on_stride=False),
-        stage_with_dcn=(False, True, True, True),
-    ),
-    neck=dict(type="FPN", in_channels=[256, 512, 1024, 2048], out_channels=256, start_level=0, num_outs=5),
+        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet101'),
+        style='pytorch'),
+    neck=dict(
+        type='FPN',
+        in_channels=[256, 512, 1024, 2048],
+        out_channels=256,
+        start_level=0,
+        num_outs=5),
     mask_head=dict(
-        type="CustomSOLOV2Head",
+        type='CustomSOLOV2Head',
         num_classes=80,
         in_channels=256,
         feat_channels=512,
@@ -45,23 +46,27 @@ model = dict(
             end_level=3,
             out_channels=256,
             mask_stride=4,
-            norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
-            conv_cfg=dict(type="DCNv2"),
-        ),
-        loss_mask=dict(type="DiceLoss", use_sigmoid=True, loss_weight=3.0),
-        loss_cls=dict(type="FocalLoss", use_sigmoid=True, gamma=2.0, alpha=0.25, loss_weight=1.0),
-        dcn_cfg=dict(type="DCNv2"),
-        dcn_apply_to_all_conv=True,
-    ),
+            norm_cfg=dict(type='GN', num_groups=32, requires_grad=True)),
+        loss_mask=dict(type='DiceLoss', use_sigmoid=True, loss_weight=3.0),
+        loss_cls=dict(
+            type='FocalLoss',
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0)),
     test_cfg=dict(
-        nms_pre=500, score_thr=0.1, mask_thr=0.5, filter_thr=0.05, kernel="gaussian", sigma=2.0, max_per_img=100
-    ),
-)
+        nms_pre=500,
+        score_thr=0.1,
+        mask_thr=0.5,
+        filter_thr=0.05,
+        kernel='gaussian',
+        sigma=2.0,
+        max_per_img=100))
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0001)
 
-load_from = "https://download.openmmlab.com/mmdetection/v2.0/solov2/solov2_x101_dcn_fpn_3x_coco/solov2_x101_dcn_fpn_3x_coco_20220513_214337-aef41095.pth"
+load_from = "https://download.openmmlab.com/mmdetection/v2.0/solov2/solov2_r101_fpn_3x_coco/solov2_r101_fpn_3x_coco_20220511_095119-c559a076.pth"
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 
 # NOTE: Disable incremental learning for the time being

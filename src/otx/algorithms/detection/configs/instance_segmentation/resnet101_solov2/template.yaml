@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Counting_Instance_Segmentation_SOLOv2_ResNeXt101
-name: SOLOv2_ResNeXt101
+model_template_id: Custom_Counting_Instance_Segmentation_SOLOv2_ResNet101
+name: SOLOv2_ResNet101
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for SOLOv2_ResNeXt101
+summary: Class-Incremental Instance Segmentation for SOLOv2_ResNet101
 application: ~
 
 # Algo backend.

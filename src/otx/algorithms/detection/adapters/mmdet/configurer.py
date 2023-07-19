@@ -348,8 +348,12 @@ class DetectionConfigurer:
         """
         if cfg.get("task", "detection") == "detection":
             bbox_head = cfg.model.bbox_head
-        else:
-            bbox_head = cfg.model.roi_head.bbox_head
+        elif cfg.get("task") == "instance-segmentation":
+            if cfg.model.get("roi_head"):
+                bbox_head = cfg.model.roi_head.bbox_head
+            else:
+                # NOTE: This is for SOLOv2 as it does not have bbox_head
+                return
 
         alpha, gamma = 0.25, 2.0
         if bbox_head.type in ["ATSSHead"]:
