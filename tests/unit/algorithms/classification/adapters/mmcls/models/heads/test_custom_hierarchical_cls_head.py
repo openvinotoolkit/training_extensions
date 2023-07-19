@@ -31,6 +31,7 @@ class TestCustomHierarchicalLinearClsHead:
             "num_multilabel_classes": 1,
             "head_idx_to_logits_range": {"0": (0, 2)},
             "num_single_label_classes": 2,
+            "empty_multiclass_head_indices": []
         }
         self.loss = dict(type="CrossEntropyLoss", use_sigmoid=False, reduction="mean", loss_weight=1.0)
         self.multilabel_loss = dict(type=AsymmetricLossWithIgnore.__name__, reduction="sum")
