@@ -18,7 +18,6 @@ advanced_parameters = AdvancedQuantizationParameters(
             statistics_type=StatisticsType.QUANTILE, aggregator_type=AggregatorType.MAX, quantile_outlier_prob=1e-4
         ),
     ),
-    backend_params={"use_pot": True},
 )
 
 preset = QuantizationPreset.MIXED
