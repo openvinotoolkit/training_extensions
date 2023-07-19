@@ -637,6 +637,12 @@ def patch_from_hyperparams(config: Config, hyperparams):
         config.update(unlabeled_config)
 
     if hyperparams.learning_parameters.input_size != 0:
+        input_size = hyperparams.learning_parameters.input_size
+        modle_cfg = config.get("model")
+        if modle_cfg is not None:
+            if "YOLOX" in modle_cfg.get("type", ""):  # YOLOX needs to get input_size argument also.
+                config.model.input_size = (input_size, input_size)
+
         for data_type in ["train", "val", "test"]:
             if data_type in config.data:
                 if "pipeline" in config.data[data_type]:
@@ -646,7 +652,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
                 else:
                     raise RuntimeError("Can not find pipeline.")
 
-                set_input_size(pipeline, hyperparams.learning_parameters.input_size)
+                set_input_size(pipeline, input_size)
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
