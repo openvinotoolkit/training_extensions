@@ -9,6 +9,7 @@ from .custom_dino_detector import CustomDINO
 from .custom_maskrcnn_detector import CustomMaskRCNN
 from .custom_maskrcnn_tile_optimized import CustomMaskRCNNTileOptimized
 from .custom_single_stage_detector import CustomSingleStageDetector
+from .custom_solov2 import CustomSOLOv2
 from .custom_two_stage_detector import CustomTwoStageDetector
 from .custom_vfnet_detector import CustomVFNet
 from .custom_yolox_detector import CustomYOLOX
@@ -29,4 +30,5 @@ __all__ = [
     "SAMDetectorMixin",
     "UnbiasedTeacher",
     "CustomMaskRCNNTileOptimized",
+    "CustomSOLOv2",
 ]

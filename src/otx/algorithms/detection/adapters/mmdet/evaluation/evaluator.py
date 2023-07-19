@@ -154,9 +154,14 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
         min_y1 = min(det_bbox[1], gt_bbox[1])
         max_x2 = max(det_bbox[2], gt_bbox[2])
         max_y2 = max(det_bbox[3], gt_bbox[3])
-        det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
-        det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
-        det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
+
+        if det_mask.height == gt_mask.height and det_mask.width == gt_mask.width:
+            # NOTE: SOLOv2 returns full size masks
+            det_mask = det_mask.crop(np.array([min_x1, min_y1, max_x2, max_y2]))
+        else:
+            det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
+            det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
+            det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
         gt_mask = gt_mask.crop(gt_bbox)
         gt_mask = gt_mask.to_bitmap()
         gt_mask = gt_mask.expand(max_y2 - min_y1, max_x2 - min_x1, gt_bbox[1] - min_y1, gt_bbox[0] - min_x1)
@@ -283,6 +288,13 @@ class Evaluator:
                 # Convert 28x28 encoded RLE mask detection to 28x28 BitmapMasks.
                 det_masks = mask_util.decode(det_masks)
                 det_masks = det_masks.transpose(2, 0, 1)
+
+                # SOLOv2 does not output any bboxes
+                if sum(det_bboxes[0]) == 0:
+                    for i, det_mask in enumerate(det_masks):
+                        y_s, x_s = np.where(det_mask == 1)
+                        det_bboxes[i] = np.array([x_s.min(), y_s.min(), x_s.max(), y_s.max()])
+
                 det_masks = BitmapMasks(det_masks, *det_masks.shape[1:])
                 cls_dets.append((det_bboxes, det_masks))
         return cls_dets, cls_scores

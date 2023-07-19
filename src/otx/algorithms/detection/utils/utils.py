@@ -277,7 +277,8 @@ def create_mask_shapes(
             if not use_ellipse_shapes:
                 if isinstance(mask, dict):
                     mask = mask_util.decode(mask)
-                mask = mask_resize(coords, mask)
+                if mask.shape[0] != height or mask.shape[1] != width:
+                    mask = mask_resize(coords, mask)
 
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 if hierarchies is None:
