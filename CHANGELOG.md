@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 
 - Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
 - Fix the bug that learning rate isn't scaled when multi-GPU trianing is enabled(<https://github.com/openvinotoolkit/training_extensions/pull/2254>)
+- Fix the bug that label order is misaligned when model is deployed from Geti (<https://github.com/openvinotoolkit/training_extensions/pull/2369>)
 
 ### Known issues
 
