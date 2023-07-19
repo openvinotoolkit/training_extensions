@@ -55,7 +55,9 @@ model = dict(
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0001)
 
-load_from = "https://download.openmmlab.com/mmdetection/v2.0/solov2/solov2_r101_fpn_3x_coco/solov2_r101_fpn_3x_coco_20220511_095119-c559a076.pth"
+load_from = "https://download.openmmlab.com/mmdetection/v2.0/solov2/\
+solov2_r101_fpn_3x_coco/solov2_r101_fpn_3x_coco_20220511_095119-c559a076.pth"
+
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 
 # NOTE: Disable incremental learning for the time being
