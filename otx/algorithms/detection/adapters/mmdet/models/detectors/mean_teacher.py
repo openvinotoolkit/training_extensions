@@ -27,7 +27,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
     """General mean teacher framework for instance segmentation."""
     def __init__(
         self,
-        unlabeled_loss_weight=1.0,
+        unlabeled_cls_loss_weight=1.0,
+        unlabeled_reg_loss_weight=1.0,
         pseudo_conf_thresh=0.7,
         enable_unlabeled_loss=False,
         bg_loss_weight=-1.0,
@@ -37,7 +38,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         **kwargs
     ):
         super().__init__()
-        self.unlabeled_loss_weight = unlabeled_loss_weight
+        self.unlabeled_cls_loss_weight = unlabeled_cls_loss_weight
+        self.unlabeled_reg_loss_weight = unlabeled_reg_loss_weight
         self.unlabeled_loss_enabled = enable_unlabeled_loss
         self.unlabeled_memory_bank = unlabeled_memory_bank
         self.bg_loss_weight = bg_loss_weight
@@ -89,7 +91,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         max_num_pbj = np.max(per_cat_num_obj)
         range_of_variation = (max_num_pbj - 0.01) / 2 # 1%
         # quadratic approximation. 0.01 -> 0.25, med -> 0.5, max -> 0.75
-        koeffs = np.polyfit([0.01, range_of_variation, max_num_pbj], [0.2, 0.5, 0.75], 2)
+        koeffs = np.polyfit([0.01, range_of_variation, max_num_pbj], [0.3, 0.5, 0.7], 2)
         thrsh = [koeffs[0]*(x**2) + koeffs[1]*x + koeffs[2] for x in per_cat_num_obj]
         print(f"[*] Computed per class thresholds: {thrsh} with given distribution: {per_cat_num_obj}")
         return thrsh
@@ -153,12 +155,20 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 self.model_s.bbox_head.bg_loss_weight = -1.0
 
             for ul_loss_name in ul_losses.keys():
-                if ul_loss_name.startswith("loss_"):
+                if ul_loss_name.startswith("loss_") and not ul_loss_name == "loss_rpn_bbox":
+                    # skip regression rpn loss
                     ul_loss = ul_losses[ul_loss_name]
-                    if isinstance(ul_loss, list):
-                        losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_loss_weight for loss in ul_loss]
+                    if "_bbox" in ul_loss_name:
+                        if isinstance(ul_loss, list):
+                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_reg_loss_weight for loss in ul_loss]
+                        else:
+                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_reg_loss_weight
                     else:
-                        losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_loss_weight
+                        # cls and mask loss
+                        if isinstance(ul_loss, list):
+                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_cls_loss_weight for loss in ul_loss]
+                        else:
+                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_cls_loss_weight
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):

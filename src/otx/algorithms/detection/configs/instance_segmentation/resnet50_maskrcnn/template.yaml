@@ -34,7 +34,11 @@ hyper_parameters:
       learning_rate_warmup_iters:
         default_value: 300
       num_iters:
-        default_value: 100
+        default_value: 30
+      early_stop_start:
+        default_value: 7
+      early_stop_patience:
+        default_value: 3
     pot_parameters:
       stat_requests_number:
         default_value: 1

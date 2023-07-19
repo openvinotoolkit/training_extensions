@@ -4,7 +4,7 @@
 #
 
 from mmcv.runner import HOOKS
-
+import torch
 from otx.algorithms.common.adapters.mmcv.hooks.dual_model_ema_hook import (
     DualModelEMAHook,
 )
@@ -59,3 +59,16 @@ class UnbiasedTeacherHook(DualModelEMAHook):
         runner.log_buffer.output = output_backup
         runner.ready = was_ready
         return average_pseudo_label_ratio
+
+    # @staticmethod
+    # def ema(w_ts, w_s, alpha):
+    #     return (alpha ** 2) * w_ts + (1 - alpha ** 2) * w_s
+
+    # def _ema_model(self):
+    #     momentum = self.momentum
+    #     with torch.no_grad():
+    #         for name, src_param in self.src_params.items():
+    #             if not name.startswith("ema_"):
+    #                 dst_param = self.dst_params[name]
+    #                 dst_param.data.copy_(2 * self.ema(dst_param.data, src_param.data, momentum)
+    #                                      - self.ema(self.ema(dst_param.data, src_param.data, momentum), src_param.data, momentum))
