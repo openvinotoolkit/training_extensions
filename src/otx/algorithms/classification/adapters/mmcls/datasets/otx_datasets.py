@@ -327,17 +327,14 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
             self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
-        self._update_heads_information(num_cls_heads)
+        self._update_heads_information()
 
-    def _update_heads_information(self, num_cls_heads: int):
+    def _update_heads_information(self):
         """Update heads information to find the empty heads.
 
         If there are no annotations at a specific head, this should be filtered out to calculate loss correctly.
-
-        Args:
-            num_cls_heads (int): the number of multi-class heads.
-
         """
+        num_cls_heads = self.hierarchical_info["num_multiclass_heads"]
         for head_idx in range(num_cls_heads):
             labels_in_head = self.gt_labels[:, head_idx]  # type: ignore[call-overload]
             if max(labels_in_head) < 0:

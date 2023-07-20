@@ -169,5 +169,5 @@ class TestOTXClsDataset:
 
         pseudo_dataset = deepcopy(dataset)
         pseudo_dataset.gt_labels = pseudo_gt_labels
-        pseudo_dataset._update_heads_information(dataset.hierarchical_info["num_multiclass_heads"])
+        pseudo_dataset._update_heads_information()
         assert pseudo_dataset.hierarchical_info["empty_multiclass_head_indices"][pseudo_head_idx] == 0
