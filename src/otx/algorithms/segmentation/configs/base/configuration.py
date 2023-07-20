@@ -52,15 +52,6 @@ class SegmentationConfig(BaseConfig):
         header = string_attribute("Learning Parameters")
         description = header
 
-        learning_rate_fixed_iters = configurable_integer(
-            default_value=100,
-            min_value=0,
-            max_value=5000,
-            header="Number of iterations for fixed learning rate",
-            description="",
-            affects_outcome_of=ModelLifecycle.TRAINING,
-        )
-
         learning_rate_schedule = selectable(
             default_value=LearningRateSchedule.COSINE,
             header="Learning rate schedule",
