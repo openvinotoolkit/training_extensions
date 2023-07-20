@@ -18,7 +18,7 @@ model = dict(
     test_cfg=dict(score_thr=0.01, nms=dict(type="nms", iou_threshold=0.65), max_per_img=100),
 )
 load_from = "https://download.openmmlab.com/mmdetection/v2.0/yolox/\
-yolox_s_8x8_300e_coco/yolox_s_8x8_300e_coco_20211121_095711-4592a793.pthh"
+yolox_s_8x8_300e_coco/yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth"
 
 fp16 = dict(loss_scale=512.0)
 ignore = False
