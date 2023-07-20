@@ -10,9 +10,11 @@ class Meta:
         self.key = None
         self.value = None
 
+
 class MockModel:
     def __init__(self):
         self.metadata_props = self
+
     def add(self):
         return Meta()
 
@@ -21,6 +23,6 @@ class MockModel:
 def test_embed_onnx_model_data(mocker):
     mocker.patch.object(onnx, "load", return_value=MockModel())
     mocker.patch.object(onnx, "save")
-    data = {(str("model_info"),) : "info"}
+    data = {(str("model_info"),): "info"}
 
     embed_onnx_model_data("", data)
