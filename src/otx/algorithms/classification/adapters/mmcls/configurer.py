@@ -132,6 +132,11 @@ class ClassificationConfigurer:
             cfg.model.arch_type = cfg.model.type
             cfg.model.type = super_type
 
+        # Hierarchical
+        if cfg.model.get("hierarchical"):
+            assert cfg.data.train.hierarchical_info == cfg.data.val.hierarchical_info == cfg.data.test.hierarchical_info
+            cfg.model.head.hierarchical_info = cfg.data.train.hierarchical_info
+
         # OV-plugin
         ir_model_path = ir_options.get("ir_model_path")
         if ir_model_path:
