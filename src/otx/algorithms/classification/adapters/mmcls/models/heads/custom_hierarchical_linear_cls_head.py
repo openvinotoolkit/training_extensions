@@ -87,7 +87,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         cls_score = self.fc(cls_score)
 
         losses = dict(loss=0.0)
-        num_empty_heads = len(self.hierarchical_info["empty_multiclass_head_indices"])
+        num_effective_heads_in_batch = 0
         for i in range(self.hierarchical_info["num_multiclass_heads"]):
             if i not in self.hierarchical_info["empty_multiclass_head_indices"]:
                 head_gt = gt_label[:, i]
@@ -99,12 +99,14 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
                 ]
                 valid_mask = head_gt >= 0
                 head_gt = head_gt[valid_mask].long()
-                head_logits = head_logits[valid_mask, :]
-                multiclass_loss = self.loss(head_logits, head_gt)
-                losses["loss"] += multiclass_loss
+                if len(head_gt) > 0:
+                    head_logits = head_logits[valid_mask, :]
+                    multiclass_loss = self.loss(head_logits, head_gt)
+                    losses["loss"] += multiclass_loss
+                    num_effective_heads_in_batch += 1
 
         if self.hierarchical_info["num_multiclass_heads"] > 1:
-            losses["loss"] /= self.hierarchical_info["num_multiclass_heads"] - num_empty_heads
+            losses["loss"] /= num_effective_heads_in_batch
 
         if self.compute_multilabel_loss:
             head_gt = gt_label[:, self.hierarchical_info["num_multiclass_heads"] :]
