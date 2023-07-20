@@ -41,6 +41,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     EigenCamHook,
     FeatureVectorHook,
     ReciproCAMHook,
+    ViTReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
@@ -475,7 +476,7 @@ class MMClassificationTask(OTXClassificationTask):
         explainer_hook_selector = {
             "eigencam": EigenCamHook,
             "activationmap": ActivationMapHook,
-            "classwisesaliencymap": ReciproCAMHook,
+            "classwisesaliencymap": ViTReciproCAMHook,
         }
 
         self._data_cfg = ConfigDict(
