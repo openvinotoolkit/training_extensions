@@ -24,12 +24,15 @@ All notable changes to this project will be documented in this file.
 - Self-SL for classification now can recieve just folder with any images to start contrastive pretraining (<https://github.com/openvinotoolkit/training_extensions/pull/2219>)
 - Update OpenVINO version to 2023.0, and NNCF verion to 2.5 (<https://github.com/openvinotoolkit/training_extensions/pull/2090>)
 - Improve XAI saliency map generation for tiling detection and tiling instance segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2240>)
+- Remove CenterCrop from Classification test pipeline and editing missing docs link(<https://github.com/openvinotoolkit/training_extensions/pull/2375>)
 
 ### Bug fixes
 
 - Fix the bug that auto adapt batch size is unavailable with IterBasedRunner (<https://github.com/openvinotoolkit/training_extensions/pull/2182>)
 - Fix the bug that learning rate isn't scaled when multi-GPU trianing is enabled(<https://github.com/openvinotoolkit/training_extensions/pull/2254>)
 - Fix the bug that label order is misaligned when model is deployed from Geti (<https://github.com/openvinotoolkit/training_extensions/pull/2369>)
+- Fix NNCF training on CPU (<https://github.com/openvinotoolkit/training_extensions/pull/2373>)
+- Fix H-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2377>)
 
 ### Known issues
 
