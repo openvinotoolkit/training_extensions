@@ -2,7 +2,7 @@ Releases
 ========
 
 ***************
-[v1.40] (3Q23)
+[v1.4.0] (3Q23)
 ***************
 
 - Support encrypted dataset training
