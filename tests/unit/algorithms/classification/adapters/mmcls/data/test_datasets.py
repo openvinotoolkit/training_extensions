@@ -142,9 +142,32 @@ class TestOTXClsDataset:
         dataset = OTXHierarchicalClsDataset(
             otx_dataset=self.dataset, labels=self.dataset.get_labels(), hierarchical_info=class_info
         )
-
         results = np.zeros((len(dataset), dataset.num_classes))
         metrics = dataset.evaluate(results)
 
         assert len(metrics) > 0
         assert metrics["accuracy"] > 0
+
+    @e2e_pytest_unit
+    def test_hierarchical_with_empty_heads(self):
+        self.task_environment, self.dataset = init_environment(
+            self.hyper_parameters, self.model_template, False, True, self.dataset_len
+        )
+        class_info = get_multihead_class_info(self.task_environment.label_schema)
+        dataset = OTXHierarchicalClsDataset(
+            otx_dataset=self.dataset, labels=self.dataset.get_labels(), hierarchical_info=class_info
+        )
+        pseudo_gt_labels = []
+        pseudo_head_idx = 0
+        for label in dataset.gt_labels:
+            pseudo_gt_label = label
+            pseudo_gt_label[pseudo_head_idx] = -1
+            pseudo_gt_labels.append(pseudo_gt_label)
+        pseudo_gt_labels = np.array(pseudo_gt_labels)
+
+        from copy import deepcopy
+
+        pseudo_dataset = deepcopy(dataset)
+        pseudo_dataset.gt_labels = pseudo_gt_labels
+        pseudo_dataset._update_heads_information()
+        assert pseudo_dataset.hierarchical_info["empty_multiclass_head_indices"][pseudo_head_idx] == 0
