@@ -8,7 +8,7 @@ from mmcls.models.builder import CLASSIFIERS
 
 from otx.algorithms.common.utils.logger import get_logger
 
-from .sam_classifier import CustomImageClassifier
+from .custom_image_classifier import CustomImageClassifier
 
 logger = get_logger()
 

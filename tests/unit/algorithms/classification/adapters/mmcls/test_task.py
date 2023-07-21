@@ -19,7 +19,7 @@ from torch import nn
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
-from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import CustomImageClassifier
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import CustomImageClassifier
 from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create

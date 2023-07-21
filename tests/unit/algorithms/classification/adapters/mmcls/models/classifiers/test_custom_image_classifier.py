@@ -11,7 +11,7 @@ import pytest
 import torch
 import datumaro as dm
 
-from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import (
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import (
     ImageClassifier,
     CustomImageClassifier,
 )
