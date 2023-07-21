@@ -26,7 +26,7 @@ model = dict(
     ),
     neck=dict(type="FPN", in_channels=[256, 512, 1024, 2048], out_channels=256, start_level=0, num_outs=5),
     mask_head=dict(
-        type="CustomSOLOV2Head",
+        type="SOLOV2Head",
         num_classes=80,
         in_channels=256,
         feat_channels=512,
