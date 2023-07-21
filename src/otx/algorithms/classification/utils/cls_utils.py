@@ -86,7 +86,7 @@ def get_cls_inferencer_configuration(label_schema: LabelSchemaEntity):
 def get_cls_deploy_config(label_schema: LabelSchemaEntity, inference_config: Dict[str, Any]):
     """Get classification deploy config."""
     parameters = {}  # type: Dict[Any, Any]
-    parameters["type_of_model"] = "otx_classification"
+    parameters["type_of_model"] = "Classification"
     parameters["converter_type"] = "CLASSIFICATION"
     parameters["model_parameters"] = inference_config
     parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(label_schema)

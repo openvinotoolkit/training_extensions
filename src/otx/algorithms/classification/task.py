@@ -403,7 +403,7 @@ class OTXClassificationTask(OTXTask, ABC):
                         label_str = self._hierarchical_info["all_groups"][label_str_idx][0]
                         otx_label = next(x for x in self._labels if x.name == label_str)
                         item_labels.append(ScoredLabel(label=otx_label, probability=float(logit)))
-            item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
+            item_labels = self._task_environment.label_schema.resolve_labels_greedily(item_labels)
             if not item_labels:
                 logger.info("item_labels is empty.")
                 item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
