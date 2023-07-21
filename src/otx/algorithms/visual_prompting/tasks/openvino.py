@@ -46,7 +46,7 @@ from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     VisualPromptingToAnnotationConverter,
 )
@@ -61,7 +61,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 logger = get_logger()
 
 
-class OpenVINOVisualPromptingInferencer(BaseInferencer):
+class OpenVINOVisualPromptingInferencer(IInferencer):
     """Inferencer implementation for Visual Prompting using OpenVINO backend.
 
     This inferencer has two models, image encoder and decoder.

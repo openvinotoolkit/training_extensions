@@ -64,6 +64,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
+from otx.api.usecases.exportable_code.inference.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     ClassificationToAnnotationConverter,
 )
@@ -81,7 +82,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: refactoring to Sphinx style.
-class ClassificationOpenVINOInferencer:
+class ClassificationOpenVINOInferencer(IInferencer):
     """ClassificationOpenVINOInferencer class in OpenVINO task."""
 
     def __init__(
