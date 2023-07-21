@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Update OpenVINO version to 2023.0, and NNCF verion to 2.5 (<https://github.com/openvinotoolkit/training_extensions/pull/2090>)
 - Improve XAI saliency map generation for tiling detection and tiling instance segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/2240>)
 - Remove CenterCrop from Classification test pipeline and editing missing docs link(<https://github.com/openvinotoolkit/training_extensions/pull/2375>)
+- Switch to PTQ for sseg (<https://github.com/openvinotoolkit/training_extensions/pull/2374>)
 
 ### Bug fixes
 
@@ -33,6 +34,7 @@ All notable changes to this project will be documented in this file.
 - Fix the bug that label order is misaligned when model is deployed from Geti (<https://github.com/openvinotoolkit/training_extensions/pull/2369>)
 - Fix NNCF training on CPU (<https://github.com/openvinotoolkit/training_extensions/pull/2373>)
 - Fix H-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2377>)
+- Fix invalid import structures in otx.api (<https://github.com/openvinotoolkit/training_extensions/pull/2383>)
 
 ### Known issues
 
