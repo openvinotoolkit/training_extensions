@@ -6,7 +6,7 @@ import pytest
 import torch
 
 from otx.algorithms.classification.adapters.mmcls.models.classifiers.semisl_multilabel_classifier import (
-    SAMImageClassifier,
+    CustomImageClassifier,
     SemiSLMultilabelClassifier,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -15,7 +15,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 class TestSemiSLMultilabelClassifier:
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
-        mocker.patch.object(SAMImageClassifier, "__init__", return_value=None)
+        mocker.patch.object(CustomImageClassifier, "__init__", return_value=None)
         self.semisl_classifier = SemiSLMultilabelClassifier()
         self.kwargs = dict()
 
