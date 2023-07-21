@@ -434,10 +434,12 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
         _hparams = copy.deepcopy(self.hparams)
-        self.confidence_threshold = float(
-            np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
-        )
-        _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        if _hparams.postprocessing.result_based_confidence_threshold:
+            self.confidence_threshold = float(
+                np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
+            )
+            _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        logger.info(f"Confidence Threshold: {_hparams.postprocessing.confidence_threshold}")
         _hparams.postprocessing.use_ellipse_shapes = self.config.postprocessing.use_ellipse_shapes
         async_requests_num = get_default_async_reqs_num()
         args = [

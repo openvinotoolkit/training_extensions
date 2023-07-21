@@ -83,11 +83,13 @@ class OTXDetectionTask(OTXTask, ABC):
         )
         self._anchors: Dict[str, int] = {}
 
-        if hasattr(self._hyperparams, "postprocessing"):
+        if self._hyperparams.postprocessing.result_based_confidence_threshold:
+            self.confidence_threshold = 0.0  # Use all predictions to compute best threshold
+        elif hasattr(self._hyperparams, "postprocessing"):
             if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
                 self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        else:
-            self.confidence_threshold = 0.0
+            else:
+                self.confidence_threshold = 0.0
 
         if task_environment.model is not None:
             self._load_model()
@@ -104,7 +106,6 @@ class OTXDetectionTask(OTXTask, ABC):
 
         Args:
             model_data: The model data.
-
         """
         loaded_postprocessing = model_data.get("config", {}).get("postprocessing", {})
         hparams = self._hyperparams.postprocessing
@@ -112,6 +113,13 @@ class OTXDetectionTask(OTXTask, ABC):
             hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
         else:
             hparams.use_ellipse_shapes = False
+        # If confidence threshold is adaptive then up-to-date value should be stored in the model
+        # and should not be changed during inference. Otherwise user-specified value should be taken.
+        if hparams.result_based_confidence_threshold:
+            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
+        else:
+            self.confidence_threshold = hparams.confidence_threshold
+        logger.info(f"Confidence threshold {self.confidence_threshold}")
 
     def _load_tiling_parameters(self, model_data):
         """Load tiling parameters from PyTorch model.
@@ -158,8 +166,6 @@ class OTXDetectionTask(OTXTask, ABC):
             buffer = io.BytesIO(model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
-            # set confidence_threshold as well
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
             self._load_postprocessing(model_data)
@@ -287,11 +293,6 @@ class OTXDetectionTask(OTXTask, ABC):
             explain_predicted_classes = inference_parameters.explain_predicted_classes
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
-        if not self._hyperparams.postprocessing.result_based_confidence_threshold:
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        logger.info(f"Confidence threshold {self.confidence_threshold}")
 
         dataset.purpose = DatasetPurpose.INFERENCE
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
