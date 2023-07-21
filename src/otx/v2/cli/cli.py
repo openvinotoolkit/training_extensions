@@ -328,6 +328,13 @@ class OTXCLIv2:
 
     def get_auto_engine(self):
         pre_args = pre_parse_arguments()
+        # If the user puts --checkpoint in the command and doesn't put --config,
+        # will use those configs as the default if they exist in the checkpoint folder location.
+        if "checkpoint" in pre_args and pre_args.get("config", None) is None:
+            checkpoint_path = Path(pre_args["checkpoint"])
+            config_candidate = checkpoint_path.parent / "configs.yaml"
+            if config_candidate.exists():
+                pre_args["config"] = str(config_candidate)
         try:
             temp_engine = self.auto_engine_class(
                 framework=pre_args.get("framework", None),
@@ -387,6 +394,9 @@ class OTXCLIv2:
         # Build Dataset
         self.data = self.data_class(**data_cfg)
         self.model = self.auto_engine.get_model(model={**model_cfg}, num_classes=self.data.num_classes)
+        # For prediction class
+        if hasattr(model_cfg["head"], "num_classes"):
+            model_cfg["head"]["num_classes"] = self.data.num_classes
 
         config = self._pop(self.config_init, "config")
         if config is not None and len(config) > 0:

@@ -66,6 +66,7 @@ class MMXEngine(Engine):
 
         # Update Model & Dataloaders & Custom hooks
         model = func_args.get("model", None)
+        num_classes = -1
         train_dataloader = func_args.get("train_dataloader", None)
         val_dataloader = func_args.get("val_dataloader", None)
         test_dataloader = func_args.get("test_dataloader", None)
@@ -73,6 +74,10 @@ class MMXEngine(Engine):
         custom_hooks = func_args.get("custom_hooks", self.config.get("custom_hooks", None))
         if model is not None:
             kwargs["model"] = model
+            if isinstance(model, torch.nn.Module):
+                num_classes = model.head.num_classes
+            else:
+                num_classes = model["head"].get("num_classes", -1)
         if train_dataloader is not None:
             kwargs["train_dataloader"] = train_dataloader
         if val_dataloader is not None:
@@ -133,8 +138,12 @@ class MMXEngine(Engine):
                 for metric in val_evaluator:
                     if isinstance(metric, dict):
                         metric["_scope_"] = self.registry.name
+                        if "topk" in metric:
+                            metric["topk"] = [1] if num_classes < 5 else [1, 5]
             elif isinstance(val_evaluator, dict):
                 val_evaluator["_scope_"] = self.registry.name
+                if "topk" in val_evaluator:
+                    val_evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
             kwargs["val_evaluator"] = val_evaluator
         elif isinstance(self.config.get("val_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
@@ -159,8 +168,12 @@ class MMXEngine(Engine):
                 for metric in test_evaluator:
                     if isinstance(metric, dict):
                         metric["_scope_"] = self.registry.name
+                        if "topk" in metric:
+                            metric["topk"] = [1] if num_classes < 5 else [1, 5]
             elif isinstance(test_evaluator, dict):
                 test_evaluator["_scope_"] = self.registry.name
+                if "topk" in test_evaluator:
+                    test_evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
             kwargs["test_evaluator"] = test_evaluator
         elif isinstance(self.config.get("test_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
@@ -446,6 +459,8 @@ class MMXEngine(Engine):
                 model_cfg = self.dumped_config["model"]
         else:
             raise ValueError("Not fount target model.")
+        # model_cfg.head.in_channels = -1
+        # model_cfg.head.num_classes = 1000
 
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)

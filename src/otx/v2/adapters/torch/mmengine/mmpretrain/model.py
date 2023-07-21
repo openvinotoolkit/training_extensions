@@ -74,6 +74,7 @@ def get_model(
     pretrained: Union[str, bool] = False,
     num_classes: int = 1000,
     channel_last: bool = False,
+    return_config: bool = False,
     **kwargs,
 ):
     if isinstance(model, dict):
@@ -85,10 +86,12 @@ def get_model(
     if not hasattr(model, "model"):
         model = Config(cfg_dict={"model": model})
     model["model"]["_scope_"] = "mmpretrain"
-    model = get_mmpretrain_model(model, pretrained, **kwargs)
     if num_classes is not None:
-        model.head.num_classes = num_classes
+        model["model"]["head"]["num_classes"] = num_classes
+    model = get_mmpretrain_model(model, pretrained, **kwargs)
 
     if channel_last:
         model = model.to(memory_format=torch.channels_last)
+    if return_config:
+        return model, model._config.model
     return model
