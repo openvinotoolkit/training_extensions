@@ -8,7 +8,6 @@ from typing import Dict, List
 import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.solov2 import SOLOv2
-from mmdet.core.post_processing.matrix_nms import mask_matrix_nms
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
@@ -83,17 +82,9 @@ if is_mmdeploy_enabled():
 
         return __forward_impl(ctx, self, img, img_metas=img_metas, **kwargs)
 
-    @FUNCTION_REWRITER.register_rewriter(func_name='mmdet.core.post_processing.matrix_nms.mask_matrix_nms')
-    def mask_matrix_nms__default(ctx,
-                                 masks,
-                                 labels,
-                                 scores,
-                                 filter_thr=-1,
-                                 nms_pre=-1,
-                                 max_num=-1,
-                                 kernel='gaussian',
-                                 sigma=2.0,
-                                 mask_area=None):
+    def mask_matrix_nms_onnx(
+        masks, labels, scores, filter_thr=-1, nms_pre=-1, max_num=-1, kernel="gaussian", sigma=2.0, mask_area=None
+    ):
         """Matrix NMS for multi-class masks.
 
         Args:
@@ -139,33 +130,36 @@ if is_mmdeploy_enabled():
         flatten_masks = masks.reshape(num_masks, -1).float()
         # inter.
         inter_matrix = torch.mm(flatten_masks, flatten_masks.transpose(1, 0))
-        expanded_mask_area = mask_area.unsqueeze(1)
-        total_area = expanded_mask_area + expanded_mask_area.transpose(
-            1, 0) - inter_matrix
-        total_mask = total_area > 0
-        total_area = total_area.where(total_mask, total_area.new_ones(1))
+        expanded_mask_area = mask_area.expand(num_masks, num_masks)
+
+        total_area = expanded_mask_area + expanded_mask_area.transpose(1, 0) - inter_matrix
+        # Upper triangle iou matrix.
+        total_area_mask = total_area > 0
+        total_area = total_area.where(total_area_mask, total_area.new_ones(1))
+
         iou_matrix = (inter_matrix / total_area).triu(diagonal=1)
-        expanded_labels = labels.unsqueeze(1)
-        label_matrix = expanded_labels == expanded_labels.transpose(1, 0)
+        # label_specific matrix.
+        expanded_labels = labels.expand(num_masks, num_masks)
+        # Upper triangle label matrix.
+        label_matrix = (expanded_labels == expanded_labels.transpose(1, 0)).triu(diagonal=1)
 
-        # iou decay
-        decay_iou = iou_matrix.where(label_matrix, iou_matrix.new_zeros(1))
-
-        # iou compensation
-        compensate_iou, _ = decay_iou.max(0)
+        # IoU compensation
+        compensate_iou, _ = (iou_matrix * label_matrix).max(0)
         compensate_iou = compensate_iou.expand(num_masks, num_masks).transpose(1, 0)
 
+        # IoU decay
+        decay_iou = iou_matrix * label_matrix
+
         # calculate the decay_coefficient
-        if kernel == 'gaussian':
+        if kernel == "gaussian":
             decay_matrix = torch.exp(-1 * sigma * (decay_iou**2))
             compensate_matrix = torch.exp(-1 * sigma * (compensate_iou**2))
             decay_coefficient, _ = (decay_matrix / compensate_matrix).min(0)
-        elif kernel == 'linear':
+        elif kernel == "linear":
             decay_matrix = (1 - decay_iou) / (1 - compensate_iou)
             decay_coefficient, _ = decay_matrix.min(0)
         else:
-            raise NotImplementedError(
-                f'{kernel} kernel is not supported in matrix nms!')
+            raise NotImplementedError(f"{kernel} kernel is not supported in matrix nms!")
         # update the score.
         scores = scores * decay_coefficient
 
@@ -180,8 +174,6 @@ if is_mmdeploy_enabled():
 
         return scores, labels, masks, keep_inds
 
-
-
     @FUNCTION_REWRITER.register_rewriter(func_name="mmdet.models.dense_heads.solov2_head.SOLOV2Head.get_results")
     def solov2_head__get_results(
         ctx,
@@ -190,7 +182,7 @@ if is_mmdeploy_enabled():
         mlvl_cls_scores: List[Tensor],
         mask_feats: Tensor,
         batch_img_metas: List[Dict],
-        **kwargs
+        **kwargs,
     ):
         """Rewrite `get_results` of `SOLOV2Head` for default backend.
 
@@ -292,7 +284,7 @@ if is_mmdeploy_enabled():
         cls_scores *= mask_scores
         sum_masks = sum_masks.where(keep, sum_masks.new_zeros(1))
 
-        scores, labels, _, keep_inds = mask_matrix_nms(
+        scores, labels, _, keep_inds = mask_matrix_nms_onnx(
             masks,
             cls_labels,
             cls_scores,
@@ -323,5 +315,3 @@ if is_mmdeploy_enabled():
         dets = torch.cat([bboxes, scores.reshape(batch_size, -1, 1)], dim=-1)
 
         return dets, labels, mask_preds
-
-    

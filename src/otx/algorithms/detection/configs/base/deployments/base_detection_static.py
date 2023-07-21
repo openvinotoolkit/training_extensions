@@ -6,7 +6,7 @@ ir_config = dict(
     keep_initializers_as_inputs=False,
     opset_version=11,
     save_file="end2end.onnx",
-    input_names=["image"],
+    input_names=["input"],
     output_names=["boxes", "labels"],
     input_shape=None,
     # TODO
