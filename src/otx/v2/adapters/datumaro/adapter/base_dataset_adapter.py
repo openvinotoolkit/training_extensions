@@ -147,14 +147,14 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             DatumDataset: Datumaro Dataset
         """
         dataset = {}
-        if train_data_roots is None and test_data_roots is None:
+        if train_data_roots is None and val_data_roots is None and test_data_roots is None:
             raise ValueError("At least 1 data_root is needed to train/test.")
 
         # Construct dataset for training, validation, testing, unlabeled
         if train_data_roots is not None:
             train_dataset = self._import_dataset(train_data_roots, train_ann_files, encryption_key, Subset.TRAINING)
             dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
-            self.is_train_phase = True
+            # self.is_train_phase = True
 
             # If validation is manually defined --> set the validation data according to user's input
             if val_data_roots:
@@ -259,8 +259,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         datumaro_dataset: Dict[Subset, DatumDataset],
     ) -> Dict[str, Any]:
         # Get datumaro category information
-        if self.is_train_phase and Subset.TRAINING in datumaro_dataset:
+        # FIXME
+        if Subset.TRAINING in datumaro_dataset:
             label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumAnnotationType.label, None)
+        elif Subset.VALIDATION in datumaro_dataset:
+            label_categories_list = (
+                datumaro_dataset[Subset.VALIDATION].categories().get(DatumAnnotationType.label, None)
+            )
         else:
             label_categories_list = datumaro_dataset[Subset.TESTING].categories().get(DatumAnnotationType.label, None)
         category_items = label_categories_list.items

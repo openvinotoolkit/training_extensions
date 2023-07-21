@@ -146,9 +146,7 @@ class Dataset(BaseDataset):
             return dataset
 
         # Case with Config
-        dataset_config = config.get("dataset", None)
-        if dataset_config is None:
-            raise ValueError("The config used does not have a dataset.")
+        dataset_config = config.get("dataset", config)
         init_config = dataset_config.copy()
         dataset_config["otx_dataset"] = otx_dataset
         dataset_config["labels"] = labels

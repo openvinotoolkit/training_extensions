@@ -1,23 +1,20 @@
-import importlib
 import sys
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 import docstring_parser
-import torch
+import yaml
 from jsonargparse import (
     ActionConfigFile,
     ArgumentParser,
     Namespace,
     class_from_function,
-    register_unresolvable_import_paths,
+    namespace_to_dict,
 )
-
-register_unresolvable_import_paths(torch)
-
-import yaml
-from jsonargparse._loaders_dumpers import DefaultLoader
+from omegaconf import OmegaConf
 
 from otx.v2.api.core import AutoEngine, BaseDataset, Engine
+from otx.v2.api.utils.importing import get_otx_root_path
 from otx.v2.cli import cli_otx_logo
 
 
@@ -32,6 +29,8 @@ def tuple_constructor(loader, node):
 
 
 # Add the constructor to the YAML loader
+from jsonargparse._loaders_dumpers import DefaultLoader
+
 DefaultLoader.add_constructor("tag:yaml.org,2002:python/tuple", tuple_constructor)
 
 
@@ -74,9 +73,17 @@ class OTXArgumentParser(ArgumentParser):
         description: str = "OpenVINO Training-Extension command line tool",
         env_prefix: str = "otx",
         default_env: bool = False,
+        default_config_files: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(*args, description=description, env_prefix=env_prefix, default_env=default_env, **kwargs)
+        super().__init__(
+            *args,
+            description=description,
+            env_prefix=env_prefix,
+            default_env=default_env,
+            default_config_files=default_config_files,
+            **kwargs,
+        )
 
     def add_core_class_args(
         self,
@@ -126,6 +133,54 @@ class OTXArgumentParser(ArgumentParser):
 ArgsType = Optional[Union[List[str], Dict[str, Any], Namespace]]
 
 
+def set_workspace(root: str = None, name: str = "otx-workspace"):
+    """Set workspace path according to arguments."""
+    path = f"{root}/{name}" if root else f"./{name}"
+    return path
+
+
+class OTXWorkspace:
+    def __init__(self, work_dir: Optional[str] = None) -> None:
+        self.otx_root = get_otx_root_path()
+        self.work_dir = Path(work_dir) if work_dir is not None else None
+        self.mkdir_or_exist()
+        self._config = {}
+        self._config_path = self.work_dir / "configs.yaml"
+
+    @property
+    def config_path(self):
+        return self._config_path
+
+    def check_workspace(self) -> bool:
+        """Check that the class's work_dir is an actual workspace folder.
+
+        Returns:
+            bool: true for workspace else false
+        """
+        return (self.work_dir / "configs.yaml").exists()
+
+    def mkdir_or_exist(self):
+        if self.work_dir is None:
+            self.work_dir = Path(set_workspace()).resolve()
+        self.work_dir.mkdir(exist_ok=True, parents=True)
+        print(f"[*] Workspace Path: {self.work_dir}")
+
+    def dump_config(self, config: Optional[Union[str, Path, Dict]] = None, filename: Optional[Union[str, Path]] = None):
+        if config is None:
+            config = self._config
+        if isinstance(config, (str, Path)):
+            if not Path(config).is_file():
+                raise FileNotFoundError(config)
+            config = OmegaConf.load(str(config))
+        if filename is None:
+            (self.work_dir / "configs.yaml").write_text(OmegaConf.to_yaml(config))
+        else:
+            Path(filename).write_text(OmegaConf.to_yaml(config))
+
+    def add_config(self, config: Dict):
+        self._config.update(config)
+
+
 class OTXCLIv2:
     """The main parser for the demo project."""
 
@@ -145,10 +200,12 @@ class OTXCLIv2:
             self.framework_engine = self.auto_engine.framework_engine
             self.data_class = self.auto_engine.dataset
             self.model_class = self.get_model_class()
+            self.default_config_files = [self.auto_engine.config_path]
         else:
             self.framework_engine = Engine
             self.data_class = BaseDataset
             self.model_class = None
+            self.default_config_files = None
 
         main_kwargs, subparser_kwargs = self._setup_parser_kwargs(parser_kwargs)
         self.setup_parser(True, main_kwargs, subparser_kwargs)
@@ -157,7 +214,6 @@ class OTXCLIv2:
         self.parse_arguments(self.parser, args)
 
         self.subcommand = self.config["subcommand"]
-        self.instantiate_classes()
 
         if self.subcommand is not None:
             self.run(self.subcommand)
@@ -168,9 +224,9 @@ class OTXCLIv2:
         subparser_kwargs = {k: v for k, v in parser_kwargs.items() if k in subcommand_names}
         return main_kwargs, subparser_kwargs
 
-    def init_parser(self, **kwargs: Any) -> OTXArgumentParser:
+    def init_parser(self, default_config_files: Optional[List[str]] = None, **kwargs: Any) -> OTXArgumentParser:
         """Method that instantiates the argument parser."""
-        parser = OTXArgumentParser(**kwargs)
+        parser = OTXArgumentParser(default_config_files=default_config_files, **kwargs)
         # Same with Engine's __init__ argument
         parser.add_argument(
             "-c", "--config", action=ActionConfigFile, help="Path to a configuration file in yaml format."
@@ -181,10 +237,18 @@ class OTXCLIv2:
             help="Path to store logs and outputs related to the command.",
             type=str,
         )
+        parser.add_argument(
+            "--framework",
+            help="Select Framework: {mmpretrain, anomalib}.",
+            type=str,
+        )
         return parser
 
     def setup_parser(
-        self, add_subcommands: bool, main_kwargs: Dict[str, Any], subparser_kwargs: Dict[str, Any]
+        self,
+        add_subcommands: bool,
+        main_kwargs: Dict[str, Any],
+        subparser_kwargs: Dict[str, Any],
     ) -> None:
         """Initialize and setup the parser, subcommands, and arguments."""
         self.parser = self.init_parser(**main_kwargs)
@@ -196,27 +260,23 @@ class OTXCLIv2:
 
     def add_core_arguments_to_parser(self, parser: OTXArgumentParser, subcommand: str) -> None:
         """Adds arguments from the core classes to the parser."""
-        engine_defaults = {"engine." + k: v for k, v in self.engine_defaults.items()}
-        parser.set_defaults(engine_defaults)
 
         if self.model_class is not None:
             parser.add_core_class_args(self.model_class, "model", subclass_mode=False)
+        default_model = str(self.model_class.__name__) if self.model_class is not None else None
         parser.add_argument(
             "--model.type",
             help="Enter the class name of model.",
-            default=self.pre_args.get("model.type", str(self.model_class)),
+            default=self.pre_args.get("model.type", default_model),
         )
-
-        parser.add_core_class_args(self.data_class, "data", subclass_mode=False)
+        if subcommand not in ("predict", "export"):
+            parser.add_core_class_args(self.data_class, "data", subclass_mode=False)
 
         for sub_command_arg in self.subcommands()[subcommand]:
             if "_dataloader" in sub_command_arg:
                 subset = sub_command_arg.split("_")[0]
                 parser.add_core_class_args(self.data_class.subset_dataloader, sub_command_arg, subclass_mode=False)
                 parser.set_defaults({f"{sub_command_arg}.subset": subset})
-            elif sub_command_arg == "dataloader":
-                # TODO: engine.predict()
-                pass
 
     def _add_arguments(self, parser: OTXArgumentParser, subcommand: str) -> None:
         # default + core + custom arguments
@@ -229,8 +289,8 @@ class OTXCLIv2:
             "train": {"model", "train_dataloader", "val_dataloader"},
             "validate": {"model", "val_dataloader"},
             "test": {"model", "test_dataloader"},
-            "predict": {"model", "dataloader", "checkpoint"},
-            "export": {"model", "checkpoint"},
+            "predict": {"model"},
+            "export": {"model"},
         }
 
     def _add_subcommands(self, parser: OTXArgumentParser, **kwargs: Any) -> None:
@@ -257,7 +317,7 @@ class OTXCLIv2:
             parser_subcommands.add_subcommand(subcommand, subcommand_parser, help=description)
 
     def _prepare_subcommand_parser(self, klass: Type, subcommand: str, **kwargs: Any) -> OTXArgumentParser:
-        parser = self.init_parser(**kwargs)
+        parser = self.init_parser(default_config_files=self.default_config_files, **kwargs)
         self._add_arguments(parser, subcommand)
         # subcommand arguments
         skip: Set[Union[str, int]] = set(self.subcommands()[subcommand])
@@ -271,9 +331,9 @@ class OTXCLIv2:
         try:
             temp_engine = self.auto_engine_class(
                 framework=pre_args.get("framework", None),
-                task=pre_args.get("data.task", pre_args.get("task", None)),
+                task=pre_args.get("data.task", None),
                 train_type=pre_args.get("data.train_type", None),
-                work_dir=pre_args.get("data.work_dir", None),  # FIXME
+                work_dir=pre_args.get("work_dir", None),  # FIXME
                 train_data_roots=pre_args.get("data.train_data_roots", None),
                 train_ann_files=pre_args.get("data.train_ann_files", None),
                 val_data_roots=pre_args.get("data.val_data_roots", None),
@@ -321,46 +381,80 @@ class OTXCLIv2:
     def instantiate_classes(self) -> None:
         """Instantiates the classes and sets their attributes."""
         self.config_init = self.parser.instantiate_classes(self.config)
-        data_cfg = self._get(self.config_init, "data")
-        model_cfg = self._get(self.config_init, "model")
+        data_cfg = self._pop(self.config_init, "data")
+        model_cfg = self._pop(self.config_init, "model")
 
         # Build Dataset
         self.data = self.data_class(**data_cfg)
-
-        # Build Model
         self.model = self.auto_engine.get_model(model={**model_cfg}, num_classes=self.data.num_classes)
 
-        config = self._get(self.config_init, "config")
-        config = config[0] if len(config) > 0 else None
-        work_dir = self._get(self.config_init, "work_dir")
+        config = self._pop(self.config_init, "config")
+        if config is not None and len(config) > 0:
+            config = str(config[0])
+        work_dir = self._pop(self.config_init, "work_dir")
+
+        # Workspace
+        self.workspace = OTXWorkspace(work_dir=work_dir)
         self.engine = self.framework_engine(
-            work_dir=work_dir,
-            config=str(config),
+            work_dir=str(self.workspace.work_dir),
+            config=config,
         )
+        self.workspace.add_config({"data": {**data_cfg}, "model": {**model_cfg}})
 
     def _get(self, config: Namespace, key: str, default: Optional[Any] = None) -> Any:
         """Utility to get a config value which might be inside a subcommand."""
         return config.get(str(self.subcommand), config).get(key, default)
 
+    def _pop(self, config: Namespace, key: str, default: Optional[Any] = None) -> Any:
+        """Utility to get a config value which might be inside a subcommand."""
+        return config.get(str(self.subcommand), config).pop(key, default)
+
     def run(self, subcommand: str):
         """Runs the subcommand."""
-        subcommand_kwargs = self._prepare_subcommand_kwargs(subcommand)
+
         if subcommand == "install":
             pass
         elif subcommand == "train":
+            self.instantiate_classes()
+            # Prepare Dataloader kwargs
             train_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "train")
             val_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "val")
-            self.engine.train(
+            # Prepare subcommand kwargs
+            subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
+            results = self.engine.train(
                 self.model,
                 train_dataloader=self.data.train_dataloader(**train_dl_kwargs),
                 val_dataloader=self.data.val_dataloader(**val_dl_kwargs),
                 **subcommand_kwargs,
             )
-        elif subcommand == "test":
-            self._prepare_dataloader_kwargs(subcommand, "test")
-            self.engine.test(
-                self.model, test_dataloader=self.data.test_dataloader(**train_dl_kwargs), **subcommand_kwargs
+            self.workspace.add_config(
+                {
+                    "train_dataloader": {**train_dl_kwargs},
+                    "val_dataloader": {**val_dl_kwargs},
+                    **subcommand_kwargs,
+                    **left_kwargs,
+                }
             )
+            self.workspace.dump_config()
+            print(results["checkpoint"])
+        elif subcommand == "test":
+            self.instantiate_classes()
+            test_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "test")
+            subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
+            results = self.engine.test(
+                self.model, test_dataloader=self.data.test_dataloader(**test_dl_kwargs), **subcommand_kwargs
+            )
+            print(results)
+        elif subcommand == "predict":
+            self.instantiate_classes()
+            subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
+            results = self.engine.predict(model=self.model, **subcommand_kwargs)
+            print(results)
+        elif subcommand == "export":
+            self.instantiate_classes()
+            subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
+            results = self.engine.export(model=self.model, **subcommand_kwargs)
+            print(results)
         elif subcommand == "list":
             pass
         else:
@@ -369,13 +463,22 @@ class OTXCLIv2:
 
     def _prepare_subcommand_kwargs(self, subcommand: str) -> Dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
-        subcommand_kwargs = {
-            k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
-        }
-        return subcommand_kwargs
+        # subcommand_kwargs = {
+        #     k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
+        # }
+        config = namespace_to_dict(self.config_init[subcommand])
+        subcommand_kwargs = {}
+        left_kwargs = {}
+        for k, v in config.items():
+            if k in self._subcommand_method_arguments[subcommand]:
+                subcommand_kwargs[k] = v
+            else:
+                left_kwargs[k] = v
+
+        return subcommand_kwargs, left_kwargs
 
     def _prepare_dataloader_kwargs(self, subcommand: str, subset: str) -> Dict[str, Any]:
-        dl_kwargs = self.config_init[subcommand].get(f"{subset}_dataloader", None)
+        dl_kwargs = self.config_init[subcommand].pop(f"{subset}_dataloader", None)
         dl_kwargs.pop("self", None)
         dl_kwargs.pop("subset", None)
         dl_kwargs.pop("dataset", None)

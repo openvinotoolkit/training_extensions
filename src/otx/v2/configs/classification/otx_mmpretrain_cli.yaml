@@ -1,7 +1,9 @@
 # Basic Information for Config
 framework: mmpretrain
-task: Classification
-train_type: Incremental
+data:
+  task: Classification
+
+  train_type: Incremental
 
 # Model Configuration
 model:
@@ -23,52 +25,56 @@ model:
   neck:
     type: GlobalAveragePooling
   pretrained: null
-
-# Data Configuration
-data_preprocessor:
-  mean:
-    - 123.675
-    - 116.28
-    - 103.53
-  std:
-    - 58.395
-    - 57.12
-    - 57.375
-  to_rgb: true
+  data_preprocessor:
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375
+    to_rgb: true
 
 train_dataloader:
   batch_size: 32
   num_workers: 2
-  pipeline:
-    - scale: 224
-      type: Resize
-    - direction: horizontal
-      prob: 0.5
-      type: RandomFlip
-    - config_str: augmix-m5-w3-d1
-      type: AugMixAugment
-    - angle: !!python/tuple
-        - -10
-        - 10
-      p: 0.35
-      type: RandomRotate
-    - type: PackInputs
+  dataset:
+    type: OTXClsDataset
+    pipeline:
+      - scale: 224
+        type: Resize
+      - direction: horizontal
+        prob: 0.5
+        type: RandomFlip
+      - config_str: augmix-m5-w3-d1
+        type: AugMixAugment
+      - angle: !!python/tuple
+          - -10
+          - 10
+        p: 0.35
+        type: RandomRotate
+      - type: PackInputs
 
 val_dataloader:
   batch_size: 32
   num_workers: 2
-  pipeline:
-    - scale: 224
-      type: Resize
-    - type: PackInputs
+  dataset:
+    type: OTXClsDataset
+    pipeline:
+      - scale: 224
+        type: Resize
+      - type: PackInputs
 
 test_dataloader:
   batch_size: 32
   num_workers: 2
-  pipeline:
-    - scale: 224
-      type: Resize
-    - type: PackInputs
+  dataset:
+    type: OTXClsDataset
+    pipeline:
+      - scale: 224
+        type: Resize
+      - type: PackInputs
 
 # Hooks
 default_hooks:
@@ -77,16 +83,15 @@ default_hooks:
     interval: 100
   timer:
     type: IterTimerHook
-  param_scheduler:
-    type: CosineAnnealingLR
   checkpoint:
     interval: 1
     max_keep_ckpts: 1
     save_best: auto
     type: CheckpointHook
-  visualization:
-    type: VisualizationHook
-    enable: false
+custom_hooks: null
+
+param_scheduler:
+  type: CosineAnnealingLR
 
 # Visualizer
 visualizer:
@@ -94,11 +99,6 @@ visualizer:
   vis_backends:
     - type: LocalVisBackend
     - type: TensorboardVisBackend
-env_cfg:
-  cudnn_benchmark: true
-  dist_cfg:
-    backend: nccl
-    linear_scale_lr: true
 
 # Evaluation
 val_evaluator:
@@ -106,6 +106,7 @@ val_evaluator:
     topk: !!python/tuple
       - 1
       - 5
+
 test_evaluator:
   - type: Accuracy
     topk: !!python/tuple
@@ -113,19 +114,16 @@ test_evaluator:
       - 5
 
 # Optimizer
-optim_wrapper:
-  type: AmpOptimWrapper # Automatic-Mixed Precision
-  dtype: float16 # FP16
-  loss_scale: 512.0
-  optimizer:
-    type: SGD
-    lr: 0.01
-    momentum: 0.9
-    weight_decay: 0.0005
+optimizer:
+  type: SGD
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.0005
 
 # OTX Training Configs
 max_epochs: 10
 max_iters: null
+val_interval: 1
 seed: 1234
 deterministic: false
 precision: float32

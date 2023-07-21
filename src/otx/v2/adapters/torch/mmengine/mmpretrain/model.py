@@ -3,11 +3,9 @@ from typing import Any, Dict, Optional, Union
 
 import torch
 from mmpretrain import get_model as get_mmpretrain_model
-from mmpretrain.models import build_backbone, build_classifier, build_neck
+from mmpretrain.models import build_backbone, build_neck
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 from otx.v2.api.utils.logger import get_logger
-
-from mmengine.runner import load_checkpoint
 
 logger = get_logger()
 
@@ -86,6 +84,7 @@ def get_model(
         model = configure_in_channels(model)
     if not hasattr(model, "model"):
         model = Config(cfg_dict={"model": model})
+    model["model"]["_scope_"] = "mmpretrain"
     model = get_mmpretrain_model(model, pretrained, **kwargs)
     if num_classes is not None:
         model.head.num_classes = num_classes

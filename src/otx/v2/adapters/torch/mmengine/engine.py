@@ -1,8 +1,9 @@
 import copy
 import glob
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from otx.v2.adapters.torch.mmengine.mmdeploy import is_mmdeploy_enabled
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
@@ -14,8 +15,12 @@ from otx.v2.api.utils.logger import get_logger
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
+from mmengine.evaluator import Evaluator
 from mmengine.hooks import Hook
+from mmengine.optim import _ParamScheduler
+from mmengine.registry import DefaultScope
 from mmengine.runner import Runner
+from mmengine.visualization import Visualizer
 
 logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
@@ -64,7 +69,8 @@ class MMXEngine(Engine):
         train_dataloader = func_args.get("train_dataloader", None)
         val_dataloader = func_args.get("val_dataloader", None)
         test_dataloader = func_args.get("test_dataloader", None)
-        custom_hooks = func_args.get("custom_hooks", None)
+        param_scheduler = func_args.get("param_scheduler", self.config.get("param_scheduler", None))
+        custom_hooks = func_args.get("custom_hooks", self.config.get("custom_hooks", None))
         if model is not None:
             kwargs["model"] = model
         if train_dataloader is not None:
@@ -75,6 +81,8 @@ class MMXEngine(Engine):
             kwargs["test_dataloader"] = test_dataloader
         if custom_hooks is not None:
             kwargs["custom_hooks"] = custom_hooks
+        if param_scheduler is not None:
+            kwargs["param_scheduler"] = param_scheduler
 
         # Update train_cfg
         max_iters = func_args.get("max_iters", None)
@@ -83,26 +91,31 @@ class MMXEngine(Engine):
         max_epochs = self.config.get("max_epochs", None) if max_epochs is None else max_epochs
         precision = func_args.get("precision", None)
         precision = self.config.get("precision", None) if precision is None else precision
-        eval_interval = func_args.get("eval_interval", 1)
-        if max_iters is not None and max_epochs is not None:
-            raise ValueError("Only one of `max_epochs` or `max_iters` can be set.")
-        if "train_cfg" not in kwargs or kwargs["train_cfg"] is None:
-            eval_interval = eval_interval if eval_interval is not None else 1
-            kwargs["train_cfg"] = dict(val_interval=eval_interval, by_epoch=True)
-        if max_epochs is not None:
-            kwargs["train_cfg"]["by_epoch"] = True
-            kwargs["train_cfg"]["max_epochs"] = max_epochs
-        elif max_iters is not None:
-            kwargs["train_cfg"]["by_epoch"] = False
-            kwargs["train_cfg"]["max_iters"] = max_iters
-
-        # Update Optimizer
-        if "optim_wrapper" not in kwargs or kwargs["optim_wrapper"] is None:
-            optimizer = func_args.get("optimizer", None)
-            if optimizer is None:
-                # FIXME: Remove default setting here
-                optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0005)
-            kwargs["optim_wrapper"] = dict(type="AmpOptimWrapper", dtype=precision, optimizer=optimizer)
+        val_interval = func_args.get("val_interval", 1)
+        if train_dataloader is not None:
+            if max_iters is not None and max_epochs is not None:
+                raise ValueError("Only one of `max_epochs` or `max_iters` can be set.")
+            if "train_cfg" not in kwargs or kwargs["train_cfg"] is None:
+                val_interval = val_interval if val_interval is not None else 1
+                kwargs["train_cfg"] = dict(val_interval=val_interval, by_epoch=True)
+            if max_epochs is not None:
+                kwargs["train_cfg"]["by_epoch"] = True
+                kwargs["train_cfg"]["max_epochs"] = max_epochs
+            elif max_iters is not None:
+                kwargs["train_cfg"]["by_epoch"] = False
+                kwargs["train_cfg"]["max_iters"] = max_iters
+            # Update Optimizer
+            if "optim_wrapper" not in kwargs or kwargs["optim_wrapper"] is None:
+                optimizer = func_args.get("optimizer", None)
+                if optimizer is None:
+                    # FIXME: Remove default setting here
+                    optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0005)
+                kwargs["optim_wrapper"] = dict(type="AmpOptimWrapper", dtype=precision, optimizer=optimizer)
+        elif isinstance(self.config.get("train_dataloader", None), dict):
+            # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
+            self.config["train_dataloader"] = None
+            self.config["train_cfg"] = None
+            self.config["optim_wrapper"] = None
 
         # Update val_cfg (ValLoop)
         if val_dataloader is not None:
@@ -112,9 +125,17 @@ class MMXEngine(Engine):
                 kwargs["val_cfg"]["fp16"] = True
 
             # Update val_evaluator
-            if "val_evaluator" not in kwargs or kwargs["val_evaluator"] is None:
-                # TODO: Need to set val_evaluator as task-agnostic way
-                kwargs["val_evaluator"] = dict(type="mmpretrain.Accuracy")
+            val_evaluator = func_args.get("val_evaluator", self.config.get("val_evaluator", None))
+            if val_evaluator is None:
+                # FIXME: Need to set val_evaluator as task-agnostic way
+                val_evaluator = [dict(type="Accuracy")]
+            if isinstance(val_evaluator, list):
+                for metric in val_evaluator:
+                    if isinstance(metric, dict):
+                        metric["_scope_"] = self.registry.name
+            elif isinstance(val_evaluator, dict):
+                val_evaluator["_scope_"] = self.registry.name
+            kwargs["val_evaluator"] = val_evaluator
         elif isinstance(self.config.get("val_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
             logger.warning("Currently, OTX does not accept val_dataloader as a dict configuration.")
@@ -130,9 +151,17 @@ class MMXEngine(Engine):
                 kwargs["test_cfg"]["fp16"] = True
 
             # Update test_evaluator
-            if "test_evaluator" not in kwargs or kwargs["test_evaluator"] is None:
-                # TODO: Need to set test_evaluator as task-agnostic way
-                kwargs["test_evaluator"] = self.config.get("val_evaluator", dict(type="mmpretrain.Accuracy"))
+            test_evaluator = func_args.get("test_evaluator", self.config.get("test_evaluator", None))
+            if test_evaluator is None:
+                # FIXME: Need to set test_evaluator as task-agnostic way
+                test_evaluator = self.config.get("val_evaluator", [dict(type="Accuracy")])
+            if isinstance(test_evaluator, list):
+                for metric in test_evaluator:
+                    if isinstance(metric, dict):
+                        metric["_scope_"] = self.registry.name
+            elif isinstance(test_evaluator, dict):
+                test_evaluator["_scope_"] = self.registry.name
+            kwargs["test_evaluator"] = test_evaluator
         elif isinstance(self.config.get("test_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
             logger.warning("Currently, OTX does not accept test_dataloader as a dict configuration.")
@@ -147,9 +176,10 @@ class MMXEngine(Engine):
             kwargs["randomness"] = dict(seed=seed, deterministic=deterministic)
 
         distributed = func_args.get("distributed", False)
-        if "default_hooks" not in kwargs or kwargs["default_hooks"] is None:
+        default_hooks = func_args.get("default_hooks", self.config.get("default_hooks", None))
+        if default_hooks is None:
             # FIXME: Default hooks need to align
-            kwargs["default_hooks"] = dict(
+            default_hooks = dict(
                 # record the time of every iterations.
                 timer=dict(type="IterTimerHook"),
                 # print log every 100 iterations.
@@ -159,18 +189,22 @@ class MMXEngine(Engine):
                 param_scheduler=dict(type="ParamSchedulerHook"),
                 # save checkpoint per epoch, and automatically save the best checkpoint.
                 checkpoint=dict(
-                    # type='CheckpointHookWithValResults',
                     type="CheckpointHook",
                     interval=1,
-                    # out_dir=,
                     max_keep_ckpts=1,
                     save_best="auto",
                 ),
                 # set sampler seed in distributed evrionment.
                 sampler_seed=dict(type="DistSamplerSeedHook") if distributed else None,
             )
-        if self.config.get("visualizer", None) is not None:
-            self.config["visualizer"]["_scope_"] = self.registry.name
+        kwargs["default_hooks"] = default_hooks
+        visualizer = func_args.get("visualizer")
+        if visualizer is None:
+            visualizer = self.config.get("visualizer", None)
+        if visualizer is not None:
+            self.config["visualizer"] = visualizer
+            if isinstance(visualizer, dict):
+                self.config["visualizer"]["_scope_"] = self.registry.name
 
         # kwargs -> Update config
         for kwarg_key, kwarg_value in kwargs.items():
@@ -200,6 +234,7 @@ class MMXEngine(Engine):
     def train(
         self,
         model: Optional[Union[torch.nn.Module, Dict]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         train_dataloader: Optional[Union[DataLoader, Dict]] = None,
         val_dataloader: Optional[Union[DataLoader, Dict]] = None,
         optimizer: Optional[Union[dict, Optimizer]] = None,
@@ -209,8 +244,12 @@ class MMXEngine(Engine):
         seed: Optional[int] = None,
         deterministic: Optional[bool] = None,
         precision: Optional[str] = None,
-        eval_interval: Optional[int] = None,
+        val_interval: Optional[int] = None,
+        val_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
+        param_scheduler: Optional[Union[_ParamScheduler, Dict, List]] = None,
+        default_hooks: Optional[Dict[str, Union[Hook, Dict[str, Any]]]] = None,
         custom_hooks: Optional[Union[List, Dict, Hook]] = None,
+        visualizer: Optional[Union[Visualizer, Dict]] = None,
         **kwargs,
     ):
         r"""Training Functions with the MMEngine Framework.
@@ -226,8 +265,24 @@ class MMXEngine(Engine):
             seed (Optional[int], optional): The seed to use for training. Defaults to None.
             deterministic (Optional[bool], optional): The deterministic to use for training. Defaults to None.
             precision (Optional[str], optional): The precision to use for training. Defaults to None.
-            eval_interval (Optional[int], optional): Specifies the validation Interval. Defaults to None.
-            custom_hooks (Optional[Union[List, Dict, Hook]], optional): Custom Hooks for mmengine.Runner. Defaults to None.
+            val_interval (Optional[int], optional): Specifies the validation Interval. Defaults to None.
+            val_evaluator (Optional[Union[Evaluator, Dict, List]], optional): A evaluator object
+                used for computing metrics for validation. It can be a dict or a
+                list of dict to build a evaluator. If specified,
+                :attr:`val_dataloader` should also be specified. Defaults to None.
+            default_hooks (dict[str, dict] or dict[str, Hook], optional): Hooks to
+                execute default actions like updating model parameters and saving
+                checkpoints. Default hooks are ``OptimizerHook``,
+                ``IterTimerHook``, ``LoggerHook``, ``ParamSchedulerHook`` and
+                ``CheckpointHook``. Defaults to None.
+                See :meth:`register_default_hooks` for more details.
+            custom_hooks (list[dict] or list[Hook], optional): Hooks to execute
+                custom actions like visualizing images processed by pipeline.
+                Defaults to None.
+            visualizer (Visualizer or dict, optional): A Visualizer object or a
+                dict build Visualizer object. Defaults to None. If not
+                specified, default config will be used.
+
 
         Returns:
             _type_: Output of training.
@@ -243,18 +298,22 @@ class MMXEngine(Engine):
             "seed": seed,
             "deterministic": deterministic,
             "precision": precision,
-            "eval_interval": eval_interval,
+            "val_interval": val_interval,
+            "val_evaluator": val_evaluator,
+            "param_scheduler": param_scheduler,
+            "default_hooks": default_hooks,
             "custom_hooks": custom_hooks,
+            "visualizer": visualizer,
         }
-
         update_check = self.update_config(func_args=train_args, **kwargs)
         if self.runner is None or update_check:
             base_runner = self.registry.get("Runner")
-            self.runner = base_runner(**self.config)
+            self.runner = base_runner(experiment_name="otx_train", **self.config)
         # TODO: Need to align outputs
-        config_path = Path(self.work_dir) / f"{self.runner.timestamp}" / "configs.py"
-        self.dumped_config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
-
+        if checkpoint is not None:
+            self.runner.load_checkpoint(checkpoint)
+        # config_path = Path(self.work_dir) / f"{self.runner.timestamp}" / "configs.py"
+        self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
         output_model = self.runner.train()
 
         # Get CKPT path
@@ -265,31 +324,38 @@ class MMXEngine(Engine):
         best_ckpt_path = glob.glob(str(Path(self.work_dir) / "best_*.pth"))
         if len(best_ckpt_path) >= 1:
             ckpt_path = best_ckpt_path[0]
-        self.latest_model = {"model": output_model, "checkpoint": ckpt_path}
-        return output_model, ckpt_path
+        results = {"model": output_model, "checkpoint": ckpt_path}
+        self.latest_model = results
+        return results
 
     def validate(
         self,
         model: Optional[Union[torch.nn.Module, Dict]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         val_dataloader: Optional[Union[DataLoader, Dict]] = None,
+        val_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
         precision: Optional[str] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
         val_args = {
             "model": model,
             "val_dataloader": val_dataloader,
+            "val_evaluator": val_evaluator,
             "precision": precision,
         }
         update_check = self.update_config(func_args=val_args, **kwargs)
         if self.runner is None:
             base_runner = self.registry.get("Runner")
-            self.runner = base_runner(**self.config)
+            self.runner = base_runner(experiment_name="otx_validate", **self.config)
         elif update_check:
             self.runner._val_dataloader = self.config["val_dataloader"]
             self.runner._val_loop = self.config["val_cfg"]
             self.runner._val_evaluator = self.config["val_evaluator"]
+            self.runner._experiment_name = f"otx_validate_{self.runner.timestamp}"
+        if checkpoint is not None:
+            self.runner.load_checkpoint(checkpoint)
 
-        Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
+        # Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
         self.dumped_config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
 
         return self.runner.val()
@@ -297,13 +363,16 @@ class MMXEngine(Engine):
     def test(
         self,
         model: Optional[Union[torch.nn.Module, Dict]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         test_dataloader: Optional[DataLoader] = None,
+        test_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
         precision: Optional[str] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
         test_args = {
             "model": model,
             "test_dataloader": test_dataloader,
+            "test_evaluator": test_evaluator,
             "precision": precision,
         }
         update_check = self.update_config(func_args=test_args, **kwargs)
@@ -311,30 +380,34 @@ class MMXEngine(Engine):
         if self.runner is None:
             base_runner = self.registry.get("Runner")
             # self.runner = base_runner.from_cfg(self.config)
-            self.runner = base_runner(**self.config)
+            self.runner = base_runner(experiment_name="otx_test", **self.config)
         elif update_check:
             self.runner._test_dataloader = self.config["test_dataloader"]
             self.runner._test_loop = self.config["test_cfg"]
             self.runner._test_evaluator = self.config["test_evaluator"]
+            self.runner._experiment_name = f"otx_test_{self.runner.timestamp}"
+        if checkpoint is not None:
+            self.runner.load_checkpoint(checkpoint)
 
-        config_path = Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
-        self.dumped_config = dump_lazy_config(config=self.config, file=config_path, scope=self.registry.name)
+        # config_path = Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
+        self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
 
         return self.runner.test()
 
     def predict(
         self,
-        model: Optional[Union[torch.nn.Module, Dict]] = None,
-        dataloader: Optional[Union[DataLoader, Dict]] = None,
-        checkpoint: Optional[str] = None,
-    ):
+        model: Optional[Union[torch.nn.Module, Dict, str]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        img: Optional[Union[str, np.ndarray, list]] = None,
+        pipeline: Optional[List[Dict]] = None,
+    ) -> List[Dict]:
         raise NotImplementedError()
 
     def export(
         self,
         model: Optional[
             Union[torch.nn.Module, str, Config]
-        ] = None,  # Module with _build_config OR Model Config OR config-file
+        ] = None,  # Module with _config OR Model Config OR config-file
         checkpoint: Optional[str] = None,
         task: Optional[str] = None,
         codebase: Optional[str] = None,
@@ -362,8 +435,8 @@ class MMXEngine(Engine):
                 model_cfg = Config.fromfile(model)
             elif isinstance(model, Config):
                 model_cfg = copy.deepcopy(model)
-            elif isinstance(model, torch.nn.Module) and hasattr(model, "_build_config"):
-                model_cfg = Config(model._build_config)
+            elif isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
+                model_cfg = model._config.get("model", model._config)
             else:
                 raise NotImplementedError()
         elif self.dumped_config.get("model", None) and self.dumped_config["model"] is not None:
@@ -373,9 +446,11 @@ class MMXEngine(Engine):
                 model_cfg = self.dumped_config["model"]
         else:
             raise ValueError("Not fount target model.")
+
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
         self.dumped_config["model"] = model_cfg
+        self.dumped_config["default_scope"] = "mmengine"
 
         # Configure deploy_cfg
         codebase_config = None
@@ -451,9 +526,3 @@ class MMXEngine(Engine):
             results["outputs"]["xml"] = str(Path(self.work_dir) / xml_file)
 
         return results
-
-
-### DONE ### CLI -> Geti~
-"""
-
-"""

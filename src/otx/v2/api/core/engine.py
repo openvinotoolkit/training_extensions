@@ -3,7 +3,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict, Optional, Union
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -14,21 +15,42 @@ from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
 
 # TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"
-CONFIG_ROOT = get_otx_root_path() + "/configs"
+CONFIG_ROOT = get_otx_root_path() + "/v2/configs"
 DEFAULT_FRAMEWORK_PER_TASK_TYPE = {
     TaskType.CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmpretrain",
         "default_config": f"{CONFIG_ROOT}/classification/otx_mmpretrain_cli.yaml",
     },
-    TaskType.DETECTION: f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
-    TaskType.INSTANCE_SEGMENTATION: f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
-    TaskType.ROTATED_DETECTION: f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
-    TaskType.SEGMENTATION: f"{ADAPTERS_ROOT}.torch.mmengine.mmseg",
+    TaskType.DETECTION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
+        "default_config": f"{CONFIG_ROOT}/detection/",
+    },
+    TaskType.INSTANCE_SEGMENTATION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
+        "default_config": f"{CONFIG_ROOT}/instance_segmentation/",
+    },
+    TaskType.ROTATED_DETECTION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
+        "default_config": f"{CONFIG_ROOT}/rotated_detection/",
+    },
+    TaskType.SEGMENTATION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmseg",
+        "default_config": f"{CONFIG_ROOT}/semantic_segmentation/",
+    },
     # TaskType.ACTION_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
-    TaskType.ANOMALY_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.anomalib",
-    TaskType.ANOMALY_DETECTION: f"{ADAPTERS_ROOT}.torch.anomalib",
-    TaskType.ANOMALY_SEGMENTATION: f"{ADAPTERS_ROOT}.torch.anomalib",
+    TaskType.ANOMALY_CLASSIFICATION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
+        "default_config": f"{CONFIG_ROOT}/anomaly_classification/",
+    },
+    TaskType.ANOMALY_DETECTION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
+        "default_config": f"{CONFIG_ROOT}/anomaly_detection/",
+    },
+    TaskType.ANOMALY_SEGMENTATION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
+        "default_config": f"{CONFIG_ROOT}/anomaly_segmentation/",
+    },
 }
 
 
@@ -44,29 +66,8 @@ def set_dataset_paths(config: Dict[str, Any], args: Dict[str, str]):
     for key, value in args.items():
         if value is None:
             continue
-        subset = key.split("_")[0]
-        target = "_".join(key.split("_")[1:])
-        if subset not in config["data"]:
-            config["data"][subset] = {}
-        config["data"][subset][target] = value
+        config["data"][key] = value
     return config
-
-
-def get_dataset_paths(config: Dict[str, Any]):
-    train_config = config["data"].get("train", {})
-    val_config = config["data"].get("val", {})
-    test_config = config["data"].get("test", {})
-    unlabeled_config = config["data"].get("unlabeled", {})
-    return {
-        "train_data_roots": train_config.get("data_roots", None),
-        "train_ann_files": train_config.get("ann_files", None),
-        "val_data_roots": val_config.get("data_roots", None),
-        "val_ann_files": val_config.get("ann_files", None),
-        "test_data_roots": test_config.get("data_roots", None),
-        "test_ann_files": test_config.get("ann_files", None),
-        "unlabeled_data_roots": unlabeled_config.get("data_roots", None),
-        "unlabeled_file_list": unlabeled_config.get("file_lists", None),
-    }
 
 
 def set_adapters_from_string(framework: str):
@@ -88,7 +89,21 @@ class Engine:
     def __init__(self, work_dir: str) -> None:
         self.work_dir = work_dir
 
-    def train(self, *args, **kwargs):
+    def train(
+        self,
+        model=None,
+        train_dataloader=None,
+        val_dataloader=None,
+        optimizer=None,
+        max_iters: Optional[int] = None,
+        max_epochs: Optional[int] = None,
+        distributed: Optional[bool] = None,
+        seed: Optional[int] = None,
+        deterministic: Optional[bool] = None,
+        precision: Optional[str] = None,
+        val_interval: Optional[int] = None,
+        **kwargs,
+    ):
         """Provide a function responsible for OTX's train.
 
         Raises:
@@ -96,7 +111,13 @@ class Engine:
         """
         raise NotImplementedError()
 
-    def validate(self, *args, **kwargs):
+    def validate(
+        self,
+        model=None,
+        val_dataloader=None,
+        precision: Optional[str] = None,
+        **kwargs,
+    ):
         """Provide a function responsible for OTX's validate.
 
         Raises:
@@ -104,7 +125,13 @@ class Engine:
         """
         raise NotImplementedError()
 
-    def test(self, *args, **kwargs):
+    def test(
+        self,
+        model=None,
+        test_dataloader=None,
+        precision: Optional[str] = None,
+        **kwargs,
+    ):
         """Provide a function responsible for OTX's test.
 
         Raises:
@@ -112,7 +139,14 @@ class Engine:
         """
         raise NotImplementedError()
 
-    def predict(self, *args, **kwargs):
+    def predict(
+        self,
+        model=None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        img=None,
+        pipeline: Optional[List[Dict]] = None,
+    ) -> List[Dict]:
+        raise NotImplementedError()
         """Provide a function responsible for OTX's predict.
 
         Raises:
@@ -148,7 +182,7 @@ class AutoEngine(Engine):
         data_format: Optional[str] = None,
         config: Optional[Union[Dict, str]] = None,
     ):
-        """AutoEngine, which is responsible for OTX's automated training APIs.
+        r"""AutoEngine, which is responsible for OTX's automated training APIs.
 
         This helps to select the most appropriate type of configuration through auto-detection based on framework, task, train_type, and data_roots.
 
@@ -173,18 +207,8 @@ class AutoEngine(Engine):
         """
         self.framework, self.task, self.train_type = None, None, None
         self.work_dir = work_dir
-        if config is not None:
-            if isinstance(config, str):
-                config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
-            elif not isinstance(config, dict):
-                raise TypeError("Config sould file path of yaml or dictionary")
-        else:
-            # Set
-            config = {}
-        if "data" not in config:
-            config["data"] = {}
-        if "model" not in config:
-            config["model"] = {}
+        self.config_path = None
+        config = self.initial_config(config)
         self.config = set_dataset_paths(
             config,
             {
@@ -201,23 +225,32 @@ class AutoEngine(Engine):
         self.data_format = data_format
 
         # Auto-Configuration
+        dataset_kwargs = self.config.get("data", None)
         self.auto_configuration(framework, task, train_type)
 
         self.framework_engine, self.dataset, self.get_model = set_adapters_from_string(self.framework)
 
         # Create Dataset Builder
-        dataset_params = get_dataset_paths(self.config)
-        self.dataset_obj = self.dataset(
-            task=self.task,
-            train_type=self.train_type,
-            data_format=data_format,
-            **dataset_params,
-        )
-        # self.model = None
-        # if self.get_model is not None and self.config.get("model", None) is not None:
-        #     self.model = self.get_model(config=self.config, num_classes=self.dataset_obj.num_classes)
+        dataset_kwargs["task"] = self.task
+        dataset_kwargs["train_type"] = self.task
+        dataset_kwargs["data_format"] = data_format
+        self.dataset_obj = self.dataset(**dataset_kwargs)
         self.engine = None
-        # TODO: Check config: if self.config["model"] is empty -> model + data pipeline + recipes selection
+
+    def initial_config(self, config: Optional[Union[Dict, str]]):
+        if config is not None:
+            if isinstance(config, str):
+                self.config_path = config
+                config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
+            elif not isinstance(config, dict):
+                raise TypeError("Config sould file path of yaml or dictionary")
+        else:
+            config = {}
+        if "data" not in config:
+            config["data"] = {}
+        if "model" not in config:
+            config["model"] = {}
+        return config
 
     def auto_configuration(
         self,
@@ -246,21 +279,21 @@ class AutoEngine(Engine):
         elif "train_type" in self.config:
             self.train_type = self.config["train_type"]
 
-        train_config = self.config["data"].get("train", {})
+        data_config = self.config.get("data", {})
+        data_roots = data_config.get("train_data_roots", data_config.get("test_data_roots", None))
         if self.task is None:
-            self.task, self.data_format = configure_task_type(train_config.get("data_roots", None), self.data_format)
+            self.task, self.data_format = configure_task_type(data_roots, self.data_format)
         if self.train_type is None:
-            unlabeled_config = self.config["data"].get("unlabeled", {})
-            self.train_type: str = configure_train_type(
-                train_config.get("data_roots", None), unlabeled_config.get("data_roots", None)
-            )
+            self.train_type: str = configure_train_type(data_roots, data_config.get("unlabeled_data_roots", None))
         if isinstance(self.task, str):
             self.task: TaskType = str_to_task_type(self.task)
         if isinstance(self.train_type, str):
             self.train_type: TrainType = str_to_train_type(self.train_type)
         if self.framework is None:
             self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["adapter"]
-        # self.default_config = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["default_config"]
+        if self.config_path is None:
+            self.config_path = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["default_config"]
+            self.config = self.initial_config(self.config_path)
 
     def build_framework_engine(self) -> Engine:
         """Create the selected framework.
@@ -321,7 +354,7 @@ class AutoEngine(Engine):
         # Build Model
         if model is None and self.get_model is not None:
             # Model Setting
-            model = self.get_model(config=self.config, num_classes=self.dataset_obj.num_classes)
+            model = self.get_model(model=self.config, num_classes=self.dataset_obj.num_classes)
 
         # Training
         if self.engine is None:

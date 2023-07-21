@@ -253,6 +253,34 @@ class CustomConfig(Config):
 
         return text
 
+    def dump(self, file: Optional[Union[str, Path]] = None):
+        """Dump config to file or return config text.
+
+        Args:
+            file (str or Path, optional): If not specified, then the object
+            is dumped to a str, otherwise to a file specified by the filename.
+            Defaults to None.
+
+        Returns:
+            str or None: Config text.
+        """
+        # FIXME: OTX yaml
+        pass
+        # file = str(file) if isinstance(file, Path) else file
+        # cfg_dict = super().__getattribute__('_cfg_dict').to_dict()
+        # if file is None:
+        #     if self.filename is None or self.filename.endswith('.py'):
+        #         return self.pretty_text
+        #     else:
+        #         file_format = self.filename.split('.')[-1]
+        #         return dump(cfg_dict, file_format=file_format)
+        # elif file.endswith('.py'):
+        #     with open(file, 'w', encoding='utf-8') as f:
+        #         f.write(self.pretty_text)
+        # else:
+        #     file_format = file.split('.')[-1]
+        #     return dump(cfg_dict, file=file, file_format=file_format)
+
 
 def copy_config(cfg):
     """A function that creates a deep copy of the input configuration object.
@@ -693,7 +721,7 @@ WARN_MSG = (
 )
 
 
-def dump_lazy_config(config: Config, file: Optional[Union[str, Path]], scope: str = "mmengine") -> Config:
+def dump_lazy_config(config: Config, file: Optional[Union[str, Path]] = None, scope: str = "mmengine") -> Config:
     # Dump Model(torch.nn.Module) Object to Dict
     output_config = copy.deepcopy(config)
     model = output_config.get("model", None)

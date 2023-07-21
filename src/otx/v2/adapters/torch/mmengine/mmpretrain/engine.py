@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -25,8 +26,10 @@ class MMPTEngine(MMXEngine):
     def predict(
         self,
         model: Optional[Union[torch.nn.Module, Dict, str]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         img: Optional[Union[str, np.ndarray, list]] = None,
         pipeline: Optional[List[Dict]] = None,
+        device: Union[str, torch.device, None] = None,
     ) -> List[Dict]:
         # Update pipelines
         if pipeline is None:
@@ -34,13 +37,22 @@ class MMPTEngine(MMXEngine):
 
             pipeline = get_default_pipeline()
 
-        if not hasattr(model, "_config"):
-            temp_config = {"test_dataloader": {"dataset": {"pipeline": pipeline}}}
-            if isinstance(model, dict):
-                model.setdefault("_config", Config(temp_config))
-            elif isinstance(model, torch.nn.Module):
-                model._config = Config(temp_config)
-        inferencer = ImageClassificationInferencer(model=model)
+        # Model config need data_pipeline of test_dataloader
+        config = Config({})
+        if hasattr(model, "_config"):
+            config = model._config
+        elif "_config" in model:
+            config = model["_config"]
+        config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}
+        if isinstance(model, dict):
+            model.setdefault("_config", config)
+        elif isinstance(model, torch.nn.Module):
+            model._config = config
+        inferencer = ImageClassificationInferencer(
+            model=model,
+            pretrained=str(checkpoint) if checkpoint is not None else None,
+            device=device,
+        )
 
         return inferencer(img)
 
