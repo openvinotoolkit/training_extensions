@@ -47,31 +47,15 @@ learning_parameters:
     visible_in_ui: true
     warning: null
     auto_hpo_state: NOT_POSSIBLE
-  learning_rate_fixed_iters:
-    affects_outcome_of: TRAINING
-    auto_hpo_state: not_possible
-    auto_hpo_value: null
-    default_value: 100
-    description: ""
-    editable: true
-    header: Number of iterations for fixed learning rate
-    max_value: 5000
-    min_value: 0
-    type: INTEGER
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 100
-    visible_in_ui: true
-    warning: null
   learning_rate_warmup_iters:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 100
-    description: ""
+    description:
+      In this periods of initial training iterations, the model will be trained in low learning rate,
+      which will be increased incrementally up to the expected learning rate setting.
+      This warm-up phase is known to be helpful to stabilize training, thus result in better performance.
     editable: true
     header: Number of iterations for learning rate warmup
     max_value: 10000
@@ -83,25 +67,6 @@ learning_parameters:
       rules: []
       type: UI_RULES
     value: 100
-    visible_in_ui: true
-    warning: null
-  num_checkpoints:
-    affects_outcome_of: NONE
-    auto_hpo_state: not_possible
-    auto_hpo_value: null
-    default_value: 5
-    description: ""
-    editable: true
-    header: Number of checkpoints that is done during the single training round
-    max_value: 100
-    min_value: 1
-    type: INTEGER
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 5
     visible_in_ui: true
     warning: null
   num_iters:
