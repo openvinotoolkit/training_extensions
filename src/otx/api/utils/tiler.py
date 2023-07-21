@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import copy
 import cv2
 from itertools import product
 from typing import Dict, List, Optional, Tuple, Union
@@ -12,13 +11,12 @@ from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 from openvino.model_api.models import Model, ImageModel
 
-from otx.algorithms.common.utils.logger import get_logger
+from openvino.model_api.models.utils import DetectionResult
+
 from otx.api.utils.async_pipeline import OTXDetectionAsyncPipeline
 from otx.api.utils.detection_utils import detection2array
 from otx.api.utils.nms import multiclass_nms
 from otx.api.utils.dataset_utils import non_linear_normalization
-
-logger = get_logger()
 
 
 class Tiler:
@@ -77,8 +75,6 @@ class Tiler:
             x2 = min(loc_j + self.tile_size, width)
             y2 = min(loc_i + self.tile_size, height)
             coords.append([loc_j, loc_i, x2, y2])
-        logger.debug(f"------------------------> Num tiles: {len(coords)}")
-        logger.debug(f"------------------------> {height}x{width} ~ {self.tile_size}")
         return coords
 
     def filter_tiles_by_objectness(
@@ -196,7 +192,7 @@ class Tiler:
         merged_features = self.merge_features(features, merged_results)
         return merged_results, merged_features
 
-    def postprocess_tile(self, predictions: Union[List, Tuple], offset_x: int, offset_y: int) -> Dict[str, List]:
+    def postprocess_tile(self, predictions: DetectionResult, offset_x: int, offset_y: int) -> Dict[str, List]:
         """Postprocess single tile prediction.
 
         Args:
@@ -221,8 +217,8 @@ class Tiler:
             )
             output_dict["masks"] = tile_masks
         else:
-            assert isinstance(predictions, list)
-            out = detection2array(predictions)
+            assert isinstance(predictions.objects, list)
+            out = detection2array(predictions.objects)
             out[:, 2:] += np.tile([offset_x, offset_y], 2)
         output_dict["bboxes"] = out
         return output_dict

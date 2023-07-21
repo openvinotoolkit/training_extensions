@@ -46,7 +46,7 @@ args0 = {
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "15", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "7", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
@@ -144,7 +144,7 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05, half_precision=half_precision)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

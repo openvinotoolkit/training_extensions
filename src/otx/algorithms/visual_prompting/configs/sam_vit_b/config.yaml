@@ -1,6 +1,6 @@
 dataset:
   task: visual_prompting
-  train_batch_size: 2
+  train_batch_size: 4
   val_batch_size: 1
   test_batch_size: 1
   num_workers: 4
@@ -26,7 +26,7 @@ model:
   freeze_image_encoder: true
   freeze_prompt_encoder: true
   freeze_mask_decoder: false
-  checkpoint: pretrained
+  checkpoint: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
   # just for inference
   return_single_mask: true
   use_stability_score: false
@@ -35,7 +35,7 @@ model:
 
 optimizer:
   name: Adam
-  lr: 0.0001
+  lr: 0.000001
 
 callback:
   checkpoint: # arguments for ModelCheckpoint

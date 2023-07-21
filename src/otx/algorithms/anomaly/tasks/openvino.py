@@ -333,7 +333,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
-        logger.info("POT optimization completed")
+        logger.info("PTQ optimization completed")
 
     def load_inferencer(self) -> OpenVINOInferencer:
         """Create the OpenVINO inferencer object.

@@ -97,8 +97,8 @@ def update_visual_prompting_config(
     if groups:
         for group in groups:
             if group in ["learning_parameters", "nncf_optimization", "pot_parameters", "postprocessing"]:
-                if group in ["nncf_optimization", "pot_parameters"]:
-                    # TODO (sungchul): Consider pot_parameters, nncf_optimization, and postprocessing
+                if group in ["nncf_optimization"]:
+                    # TODO (sungchul): Consider nncf_optimization
                     logger.warning(f"{group} will be implemented.")
                     continue
                 update_visual_prompting_config(visual_prompting_config, getattr(otx_config, group))

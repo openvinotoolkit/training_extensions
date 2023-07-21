@@ -2,6 +2,19 @@ Releases
 ========
 
 ***************
+[v1.4.0] (3Q23)
+***************
+
+- Support encrypted dataset training
+- Add custom max iou assigner to prevent CPU OOM when large annotations are used
+- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional
+- Add per-class XAI saliency maps for Mask R-CNN model
+- Add new object detector Deformable DETR
+- Add new object detector DINO
+- Add new visual prompting task
+- Add new object detector ResNeXt101-ATSS
+
+***************
 [v1.3.0] (2Q23)
 ***************
 

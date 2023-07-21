@@ -17,11 +17,15 @@
 
 from attr import attrs
 
-from otx.algorithms.common.configs import BaseConfig
+from otx.algorithms.common.configs import BaseConfig, POTQuantizationPreset
 from otx.api.configuration.elements import (
+    ParameterGroup,
     add_parameter_group,
+    boolean_attribute,
+    configurable_boolean,
     configurable_float,
     configurable_integer,
+    selectable,
     string_attribute,
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
@@ -40,9 +44,18 @@ class VisualPromptingBaseConfig(BaseConfig):
         description = header
 
     @attrs
-    class __Postprocessing(BaseConfig.BasePostprocessing):
+    class __Postprocessing(ParameterGroup):
         header = string_attribute("Postprocessing")
         description = header
+
+        image_size = configurable_integer(
+            header="Image size",
+            description="The size of the input image to the model.",
+            default_value=1024,
+            min_value=0,
+            max_value=2048,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
 
         blur_strength = configurable_integer(
             header="Blur strength",
@@ -52,6 +65,7 @@ class VisualPromptingBaseConfig(BaseConfig):
             max_value=25,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
+
         soft_threshold = configurable_float(
             default_value=0.5,
             header="Soft threshold",
@@ -62,5 +76,41 @@ class VisualPromptingBaseConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
+        embedded_processing = configurable_boolean(
+            default_value=True,
+            header="Embedded processing",
+            description="Flag that pre/postprocessing embedded.",
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+        orig_width = configurable_float(
+            header="Original width",
+            description="Model input width before embedding processing.",
+            default_value=64.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+        orig_height = configurable_float(
+            header="Original height",
+            description="Model input height before embedding processing.",
+            default_value=64.0,
+            affects_outcome_of=ModelLifecycle.INFERENCE,
+        )
+
+    @attrs
+    class __POTParameter(BaseConfig.BasePOTParameter):
+        header = string_attribute("POT Parameters")
+        description = header
+        visible_in_ui = boolean_attribute(False)
+
+        preset = selectable(
+            default_value=POTQuantizationPreset.MIXED,
+            header="Preset",
+            description="Quantization preset that defines quantization scheme",
+            editable=True,
+            visible_in_ui=True,
+        )
+
     learning_parameters = add_parameter_group(__LearningParameters)
     postprocessing = add_parameter_group(__Postprocessing)
+    pot_parameters = add_parameter_group(__POTParameter)
