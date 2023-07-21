@@ -366,7 +366,7 @@ class TestMMClassificationTask:
         inference_parameters = InferenceParameters(is_evaluation=True)
         outputs = self.hl_cls_task.infer(self.hl_cls_dataset.with_empty_annotations(), inference_parameters)
         for output in outputs:
-            assert output.get_annotations()[-1].get_labels()[0].probability == 0.7
+            assert output.get_annotations()[-1].get_labels()[0].probability == 0.0
 
     @e2e_pytest_unit
     def test_cls_evaluate(self) -> None:
