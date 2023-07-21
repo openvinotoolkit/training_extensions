@@ -32,8 +32,6 @@ args = {
     "--input": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "train_params": [
         "params",
-        "--learning_parameters.learning_rate_fixed_iters",
-        "0",
         "--learning_parameters.learning_rate_warmup_iters",
         "1",
         "--learning_parameters.num_iters",

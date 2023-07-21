@@ -126,7 +126,10 @@ learning_parameters:
   learning_rate_warmup_iters:
     affects_outcome_of: TRAINING
     default_value: 100
-    description: ""
+    description:
+      In this periods of initial training iterations, the model will be trained in low learning rate,
+      which will be increased incrementally up to the expected learning rate setting.
+      This warm-up phase is known to be helpful to stabilize training, thus result in better performance.
     editable: true
     header: Number of iterations for learning rate warmup
     max_value: 10000

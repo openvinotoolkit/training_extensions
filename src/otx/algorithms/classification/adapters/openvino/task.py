@@ -27,6 +27,7 @@ from zipfile import ZipFile
 import nncf
 import numpy as np
 import openvino.runtime as ov
+from addict import Dict as ADDict
 from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
@@ -39,7 +40,7 @@ from otx.algorithms.classification.utils import (
 )
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.algorithms.common.utils.utils import get_default_async_reqs_num
+from otx.algorithms.common.utils.utils import get_default_async_reqs_num, read_py_config
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -179,6 +180,8 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         self.hparams = self.task_environment.get_hyper_parameters(ClassificationConfig)
         self.model = self.task_environment.model
         self.inferencer = self.load_inferencer()
+        template_file_path = self.task_environment.model_template.model_template_path
+        self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
     def load_inferencer(self) -> ClassificationOpenVINOInferencer:
         """load_inferencer function of ClassificationOpenVINOTask."""
@@ -384,11 +387,22 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
 
-        stat_subset_size = self.hparams.pot_parameters.stat_subset_size
-        preset = QuantizationPreset(self.hparams.pot_parameters.preset.name.lower())
+        optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
+        ptq_config = ADDict()
+        if os.path.exists(optimization_config_path):
+            ptq_config = read_py_config(optimization_config_path)
+        else:
+            logger.info("PTQ config is not loaded")
+
+        ptq_config.update(
+            subset_size=min(self.hparams.pot_parameters.stat_subset_size, len(data_loader)),
+            preset=QuantizationPreset(self.hparams.pot_parameters.preset.name.lower()),
+        )
 
         compressed_model = nncf.quantize(
-            ov_model, quantization_dataset, subset_size=min(stat_subset_size, len(data_loader)), preset=preset
+            ov_model,
+            quantization_dataset,
+            **ptq_config,
         )
 
         if optimization_parameters is not None:

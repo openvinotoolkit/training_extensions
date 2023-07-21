@@ -21,9 +21,10 @@ import random
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
+import onnx
 import yaml
 from addict import Dict as adict
 
@@ -153,3 +154,16 @@ def read_py_config(filename: str) -> adict:
     )
 
     return cfg_dict
+
+
+def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str], Any]) -> None:
+    """Embeds model api config to onnx file."""
+    model = onnx.load(onnx_file)
+
+    for item in extra_model_data:
+        meta = model.metadata_props.add()
+        attr_path = " ".join(map(str, item))
+        meta.key = attr_path.strip()
+        meta.value = extra_model_data[item]
+
+    onnx.save(model, onnx_file)

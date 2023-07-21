@@ -174,15 +174,6 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
-        num_checkpoints = configurable_integer(
-            default_value=5,
-            min_value=1,
-            max_value=100,
-            header="Number of checkpoints that is done during the single training round",
-            description="",
-            affects_outcome_of=ModelLifecycle.NONE,
-        )
-
         enable_supcon = configurable_boolean(
             default_value=False,
             header="Enable Supervised Contrastive helper loss",
