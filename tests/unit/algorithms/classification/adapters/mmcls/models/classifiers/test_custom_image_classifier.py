@@ -1,3 +1,8 @@
+""" Tests for CustomImageClassifier."""
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import os.path as osp
 from copy import deepcopy
 from typing import Any, Dict
@@ -6,9 +11,9 @@ import pytest
 import torch
 import datumaro as dm
 
-from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import (
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import (
     ImageClassifier,
-    SAMImageClassifier,
+    CustomImageClassifier,
 )
 from otx.api.entities.datasets import DatasetEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -58,13 +63,13 @@ class MockModule:
         return self._state_dict
 
 
-class TestSAMImageClassifier:
+class TestCustomImageClassifier:
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
         mocker.patch.object(ImageClassifier, "__init__", return_value=None)
-        SAMImageClassifier._register_state_dict_hook = mocker.MagicMock()
-        SAMImageClassifier._register_load_state_dict_pre_hook = mocker.MagicMock()
-        self.classifier = SAMImageClassifier()
+        CustomImageClassifier._register_state_dict_hook = mocker.MagicMock()
+        CustomImageClassifier._register_load_state_dict_pre_hook = mocker.MagicMock()
+        self.classifier = CustomImageClassifier()
 
     @e2e_pytest_unit
     def test_forward_train(self, mocker):
@@ -139,7 +144,7 @@ class TestLossDynamicsTrackingMixin:
     ]
 
     @pytest.fixture()
-    def classifier(self, request, mocker, fxt_multi_class_cls_dataset_entity: DatasetEntity) -> SAMImageClassifier:
+    def classifier(self, request, mocker, fxt_multi_class_cls_dataset_entity: DatasetEntity) -> CustomImageClassifier:
         head_type, loss_type = request.param
         n_data = len(fxt_multi_class_cls_dataset_entity)
         labels = fxt_multi_class_cls_dataset_entity.get_labels()
@@ -166,7 +171,7 @@ class TestLossDynamicsTrackingMixin:
                 return torch.randn([n_data, 10])
 
         mocker.patch("mmcls.models.classifiers.image.build_backbone", return_value=MockBackbone())
-        classifier = SAMImageClassifier(track_loss_dynamics=True, **cfg)
+        classifier = CustomImageClassifier(track_loss_dynamics=True, **cfg)
         classifier.loss_dyns_tracker.init_with_otx_dataset(fxt_multi_class_cls_dataset_entity)
         return classifier
 
@@ -196,7 +201,7 @@ class TestLossDynamicsTrackingMixin:
 
     @torch.no_grad()
     @pytest.mark.parametrize("classifier", TESTCASE, indirect=True, ids=lambda x: "-".join(x))
-    def test_train_step(self, classifier: SAMImageClassifier, data: Dict[str, Any], tmp_dir_path: str):
+    def test_train_step(self, classifier: CustomImageClassifier, data: Dict[str, Any], tmp_dir_path: str):
         outputs = classifier.train_step(data)
 
         assert "loss_dyns" in outputs

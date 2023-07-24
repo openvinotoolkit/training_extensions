@@ -1,4 +1,7 @@
 """deit-tiny for multi-label config."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
 # pylint: disable=invalid-name
 
@@ -6,7 +9,7 @@ _base_ = ["../../../../recipes/stages/classification/multilabel/incremental.yaml
 ckpt_url = "https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny_pt-4xb256_in1k_20220218-13b382a0.pth"
 
 model = dict(
-    type="SAMImageClassifier",
+    type="CustomImageClassifier",
     task="classification",
     backbone=dict(arch="deit-tiny", init_cfg=dict(type="Pretrained", checkpoint=ckpt_url, prefix="backbone")),
     head=dict(
