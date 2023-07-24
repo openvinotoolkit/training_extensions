@@ -19,7 +19,9 @@ from torch import nn
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
-from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import SAMImageClassifier
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import (
+    CustomImageClassifier,
+)
 from otx.algorithms.classification.configs.base import ClassificationConfig
 from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create
@@ -161,7 +163,7 @@ class TestMMClassificationTask:
         _mock_recipe_cfg.model.pop("task")
         _mock_recipe_cfg["channel_last"] = False
         model = self.mc_cls_task.build_model(_mock_recipe_cfg, True)
-        assert isinstance(model, SAMImageClassifier)
+        assert isinstance(model, CustomImageClassifier)
 
         _mock_recipe_cfg["channel_last"] = True
         new_model = self.mc_cls_task.build_model(_mock_recipe_cfg, True)
@@ -339,7 +341,7 @@ class TestMMClassificationTask:
         inference_parameters = InferenceParameters(is_evaluation=True)
         outputs = self.ml_cls_task.infer(self.ml_cls_dataset.with_empty_annotations(), inference_parameters)
         for output in outputs:
-            assert output.get_annotations()[-1].get_labels()[0].probability == 0.7
+            assert output.get_annotations()[-1].get_labels()[0].probability == 0.0
 
     @e2e_pytest_unit
     def test_infer_hierarchicallabel(self, mocker) -> None:

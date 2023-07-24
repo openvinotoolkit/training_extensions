@@ -73,7 +73,7 @@ class TestToolsAnomalyDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

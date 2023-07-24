@@ -235,7 +235,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Detection specific post-process."""
         detections = self.model.postprocess(prediction, metadata)
-        detections = detection2array(detections)
+        detections = detection2array(detections.objects)
         return self.converter.convert_to_annotation(detections, metadata)
 
 

@@ -144,7 +144,7 @@ class TestOTXSSDModel:
         }
         sample_meta = {"original_shape": (10, 10, 3), "resized_shape": (5, 5, 3)}
         out = self.model.postprocess(sample_output, meta=sample_meta)
-        assert len(out) <= 3
+        assert len(out.objects) <= 3
 
 
 class TestBatchBoxesLabelsParser:

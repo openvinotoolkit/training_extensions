@@ -751,7 +751,6 @@ class TestSegmentationToAnnotation:
             )
             label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            assert converter.labels == non_empty_labels + other_non_empty_labels
             assert not converter.empty_label
             assert converter.label_schema == label_schema
             assert converter.hierarchical

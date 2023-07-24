@@ -62,6 +62,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disabl
         "class_to_group_idx": class_to_idx,
         "all_groups": exclusive_groups + single_label_groups,
         "label_to_idx": label_to_idx,
+        "empty_multiclass_head_indices": [],
     }
     return mixed_cls_heads_info
 

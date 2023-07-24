@@ -215,7 +215,7 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
             scored_label = ScoredLabel(self.labels[int(box.id)], float(box.score))
-            coords = np.array(box.get_coords(), dtype=float)
+            coords = np.array([box.xmin, box.ymin, box.xmax, box.ymax], dtype=float)
             if (coords[2] - coords[0]) * (coords[3] - coords[1]) < 1.0:
                 continue
             coords /= np.tile(image_size, 2)

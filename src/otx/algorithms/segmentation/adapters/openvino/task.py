@@ -240,6 +240,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     if process_soft_prediction:
                         current_label_soft_prediction = get_activation_map(current_label_soft_prediction)
+                    else:
+                        current_label_soft_prediction = (current_label_soft_prediction * 255).astype(np.uint8)
                     result_media = ResultMediaEntity(
                         name=label.name,
                         type="soft_prediction",
@@ -401,4 +403,4 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
-        logger.info("POT optimization completed")
+        logger.info("PTQ optimization completed")

@@ -334,4 +334,4 @@ class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOpti
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
-        logger.info("POT optimization completed")
+        logger.info("PTQ optimization completed")
