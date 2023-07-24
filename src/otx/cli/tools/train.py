@@ -18,10 +18,6 @@
 
 import datetime
 import time
-import multiprocessing as mp
-import pynvml
-import psutil
-from multiprocessing import Process
 from contextlib import ExitStack
 from pathlib import Path
 from typing import Optional
@@ -188,10 +184,6 @@ def main():
 
 
 def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-branches, too-many-statements
-    queue = mp.Queue()
-    mem_check_p = Process(target=check_resource, args=(queue,))
-    mem_check_p.start()
-
     """Function that is used for model training."""
     start_time = time.time()
     mode = "train"
@@ -316,53 +308,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     if not is_multigpu_child_process():
         task.cleanup()
 
-    queue.put(config_manager.workspace_root / "resource.txt")
-    mem_check_p.join(10)
-    if mem_check_p.exitcode is None:
-        mem_check_p.terminate()
-    mem_check_p.close()
-
     return dict(retcode=0, template=template.name)
-
-
-def check_resource(queue: mp.Queue):
-    pynvml.nvmlInit()
-    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-    max_gpu_mem = 0
-    avg_gpu_util = 0
-    max_cpu_mem = 0
-    gib = 1024**3
-
-    num_counts = 0
-    while True:
-        # gpu util
-        gpu_info = pynvml.nvmlDeviceGetUtilizationRates(handle)
-        avg_gpu_util += gpu_info.gpu
-        num_counts += 1
-
-        # gpu mem
-        gpu_mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
-        mem_used = gpu_mem.used / gib
-        if max_gpu_mem < mem_used:
-            max_gpu_mem = mem_used
-
-        # cpu mem
-        cpu_mem = psutil.virtual_memory()[3] / gib
-        if max_cpu_mem < cpu_mem:
-            max_cpu_mem = cpu_mem
-
-        if not queue.empty():
-            break
-
-    pynvml.nvmlShutdown()
-    output_path = queue.get()
-
-    with open(output_path, "w") as f:
-        f.write(
-            f"max_cpu_mem\t{max_cpu_mem} GiB\n"
-            f"max_gpu_mem\t{max_gpu_mem} GiB\n"
-            f"avg_gpu_util\t{avg_gpu_util / num_counts} %\n"
-        )
 
 
 if __name__ == "__main__":
