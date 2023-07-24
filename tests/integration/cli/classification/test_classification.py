@@ -1,5 +1,5 @@
 """Tests for Classification with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -30,6 +30,7 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
@@ -82,6 +83,9 @@ templates = Registry("src/otx/algorithms/classification").filter(task_type="CLAS
 templates_ids = [template.model_template_id for template in templates]
 
 
+TestClassificationModelTemplates = generate_model_template_testing(templates)
+
+
 class TestMultiClassClassificationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -129,7 +133,7 @@ class TestMultiClassClassificationCLI:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_onnx(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
-        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+        otx_export_testing(template, tmp_dir_path, half_precision=False, check_ir_meta=True, is_onnx=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -325,6 +329,18 @@ class TestMultilabelClassificationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_cls_decr(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls/test_cls_decr"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_m)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args_m)
+        args1["--train-data-roots"] = "tests/assets/datumaro_multilabel_class_decremental"
+        args1["--val-data-roots"] = "tests/assets/datumaro_multilabel_class_decremental"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
@@ -451,6 +467,18 @@ class TestHierarchicalClassificationCLI:
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_cls_decr(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls/test_cls_decr"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args_h)
+        args1["--train-data-roots"] = "tests/assets/datumaro_h-label_class_decremental"
+        args1["--val-data-roots"] = "tests/assets/datumaro_h-label_class_decremental"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

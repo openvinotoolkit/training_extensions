@@ -1,10 +1,10 @@
 # Description.
 model_template_id: Custom_Object_Detection_Gen3_ATSS
-name: ATSS
+name: MobileNetV2-ATSS
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for ATSS
+summary: Class-Incremental Object Detection for MobileNetV2-ATSS
 application: ~
 
 # Algo backend.
@@ -57,8 +57,7 @@ training_targets:
 # Stats.
 gigaflops: 20.6
 size: 9.1
-# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-# inference_targets:
-#   - CPU
-#   - GPU
-#   - VPU
+
+# Model spec
+model_category: ACCURACY
+is_default_for_task: true

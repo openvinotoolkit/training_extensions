@@ -61,13 +61,20 @@ def test_update_visual_prompting_config():
     """Test update_visual_prompting_config."""
     otx_config = OmegaConf.create(
         {
-            "groups": ["learning_parameters"],
+            "groups": ["learning_parameters", "pot_parameters", "postprocessing"],
             "learning_parameters": {"parameters": ["param1"], "param1": "updated_value1"},
+            "pot_parameters": {"parameters": ["param2"], "param2": "updated_value2"},
+            "postprocessing": {"parameters": ["param3"], "param3": "updated_value3"},
             "parameters": [],
         }
     )
-    visual_prompting_config = OmegaConf.create({"param1": "value1", "param2": "value2"})
+    visual_prompting_config = OmegaConf.create(
+        {"param1": "value1", "param2": "value2", "param3": "value3", "param4": "value4"}
+    )
 
     update_visual_prompting_config(visual_prompting_config, otx_config)
 
     assert visual_prompting_config["param1"] == "updated_value1"
+    assert visual_prompting_config["param2"] == "updated_value2"
+    assert visual_prompting_config["param3"] == "updated_value3"
+    assert visual_prompting_config["param4"] == "value4"

@@ -237,67 +237,71 @@ class TestSegmentAnything:
             assert v == sam_state_dict[k]
 
     @e2e_pytest_unit
-    def test_load_checkpoint_pretrained_weights(self, mocker, monkeypatch):
-        """Test load_checkpoint with pretrained weights."""
+    def test_load_checkpoint_without_checkpoint(self, mocker):
+        """Test load_checkpoint without checkpoint."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
         )
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
         )
-        mocker_CKPT_PATHS = mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.CKPT_PATHS",
-        )
-        monkeypatch.setattr("torch.hub.load_state_dict_from_url", lambda *args, **kwargs: OrderedDict())
+        config = self.base_config.copy()
+        config.model.update(dict(checkpoint=None))
+
+        sam = SegmentAnything(config, state_dict=None)
+
+        assert True
+
+    @e2e_pytest_unit
+    def test_load_checkpoint_with_url(self, mocker):
+        """Test load_checkpoint with url."""
         mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
+        )
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
+        )
+        mocker_load_state_dict_from_url = mocker.patch("torch.hub.load_state_dict_from_url", return_value=OrderedDict())
+        mocker_load_state_dict = mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
         )
 
         config = self.base_config.copy()
-        config.model.checkpoint = "pretrained"
+        config.model.update(dict(checkpoint="http://checkpoint"))
 
         sam = SegmentAnything(config, state_dict=None)
 
-        mocker_CKPT_PATHS.__getitem__.assert_called_once()
+        mocker_load_state_dict_from_url.assert_called_once()
+        mocker_load_state_dict.assert_called_once()
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("checkpoint", [None, "checkpoint", "http://checkpoint"])
-    def test_load_checkpoint(self, mocker, monkeypatch, checkpoint: str):
-        """Test load_checkpoint."""
+    @pytest.mark.parametrize("checkpoint", ["checkpoint.pth", "checkpoint.ckpt"])
+    def test_load_checkpoint_from_local_checkpoint(self, mocker, monkeypatch, checkpoint: str):
+        """Test load_checkpoint from local checkpoint."""
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.freeze_networks"
         )
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.set_metrics"
         )
-        if checkpoint is not None:
-            monkeypatch.setattr("torch.hub.load_state_dict_from_url", lambda *args, **kwargs: OrderedDict())
-            monkeypatch.setattr("torch.load", lambda *args, **kwargs: None)
-
-            mocker_load_state_dict = mocker.patch(
-                "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
-            )
-            if checkpoint.startswith("http"):
-                mocker_load_from_checkpoint = mocker.patch(
-                    "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint",
-                    side_effect=ValueError(),
-                )
-            else:
-                mocker_load_from_checkpoint = mocker.patch(
-                    "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
-                )
+        mocker.patch("builtins.open").__enter__.return_value = True
+        mocker.patch("torch.load", return_value=OrderedDict())
+        mocker_load_from_checkpoint = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_from_checkpoint"
+        )
+        mocker_load_state_dict = mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_state_dict"
+        )
 
         config = self.base_config.copy()
         config.model.update(dict(checkpoint=checkpoint))
 
         sam = SegmentAnything(config, state_dict=None)
 
-        if checkpoint is None:
-            assert True
-        elif checkpoint.startswith("http"):
-            mocker_load_state_dict.assert_called_once()
-        else:
+        if checkpoint.endswith(".ckpt"):
             mocker_load_from_checkpoint.assert_called_once()
+        else:
+            mocker_load_state_dict.assert_called_once()
 
     @e2e_pytest_unit
     @pytest.mark.parametrize(

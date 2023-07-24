@@ -1,4 +1,4 @@
-"""Initialization of ATSS model for Semi-SL Detection Task."""
+"""Initialization of MobileNetV2-ATSS model for Semi-SL Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

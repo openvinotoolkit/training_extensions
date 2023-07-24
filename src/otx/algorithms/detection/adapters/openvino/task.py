@@ -164,7 +164,7 @@ class BaseInferencerWithConverter(BaseInferencer):
             else:
                 features = (
                     copy.deepcopy(prediction["feature_vector"].reshape(-1)),
-                    copy.deepcopy(prediction["saliency_map"][0]),
+                    self.get_saliency_map(prediction, preprocessing_meta),
                 )
 
             result_handler(id, processed_prediciton, features)
@@ -235,7 +235,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Detection specific post-process."""
         detections = self.model.postprocess(prediction, metadata)
-        detections = detection2array(detections)
+        detections = detection2array(detections.objects)
         return self.converter.convert_to_annotation(detections, metadata)
 
 

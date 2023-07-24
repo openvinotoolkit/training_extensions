@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Tuple, Union
 import numpy as np
 import torch
 from torch import Tensor
-from torch.nn import functional as F
 from torchvision.transforms.functional import resize, to_pil_image  # type: ignore
 
 
@@ -36,7 +35,7 @@ class ResizeLongestSide:
         Dict[str, Union[List, Tensor]]: Dictionary of batch data.
         """
         item["images"] = torch.as_tensor(
-            self.apply_image(item["images"]).transpose((2, 0, 1)), dtype=torch.get_default_dtype()
+            self.apply_image(item["images"], self.target_length).transpose((2, 0, 1)), dtype=torch.get_default_dtype()
         )
         item["gt_masks"] = [torch.as_tensor(gt_mask) for gt_mask in item["gt_masks"]]
         item["bboxes"] = self.apply_boxes(item["bboxes"], item["original_size"])
@@ -44,16 +43,18 @@ class ResizeLongestSide:
             item["points"] = self.apply_coords(item["points"], item["original_size"])
         return item
 
-    def apply_image(self, image: np.ndarray) -> np.ndarray:
+    @classmethod
+    def apply_image(cls, image: np.ndarray, target_length: int) -> np.ndarray:
         """Expects a numpy array with shape HxWxC in uint8 format.
 
         Args:
             image (np.ndarray): Image array.
+            target_length (int): The length of the longest side of the image.
 
         Returns:
             np.ndarray: Resized image.
         """
-        target_size = self.get_preprocess_shape(image.shape[0], image.shape[1], self.target_length)
+        target_size = cls.get_preprocess_shape(image.shape[0], image.shape[1], target_length)
         return np.array(resize(to_pil_image(image), target_size))
 
     def apply_coords(self, coords: np.ndarray, original_size: Union[List[Any], Tensor]) -> np.ndarray:
@@ -86,56 +87,6 @@ class ResizeLongestSide:
             np.ndarray: Resized boxes.
         """
         boxes = self.apply_coords(boxes.reshape(-1, 2, 2), original_size)
-        return boxes.reshape(-1, 4)
-
-    def apply_image_torch(self, image: torch.Tensor) -> torch.Tensor:
-        """Expects batched images with shape BxCxHxW and float format.
-
-        This transformation may not exactly match apply_image.
-        apply_image is the transformation expected by the model.
-
-        Args:
-            image (torch.Tensor): Image tensor.
-
-        Returns:
-            torch.Tensor: Resized image.
-        """
-        # Expects an image in BCHW format. May not exactly match apply_image.
-        target_size = self.get_preprocess_shape(image.shape[2], image.shape[3], self.target_length)
-        return F.interpolate(image, target_size, mode="bilinear", align_corners=False, antialias=True)
-
-    def apply_coords_torch(self, coords: torch.Tensor, original_size: Tuple[int, ...]) -> torch.Tensor:
-        """Expects a torch tensor with length 2 in the last dimension.
-
-        Requires the original image size in (H, W) format.
-
-        Args:
-            coords (torch.Tensor): Coordinates tensor.
-            original_size (Tuple[int, ...]): Original size of image.
-
-        Returns:
-            torch.Tensor: Resized coordinates.
-        """
-        old_h, old_w = original_size
-        new_h, new_w = self.get_preprocess_shape(original_size[0], original_size[1], self.target_length)
-        coords = deepcopy(coords).to(torch.float)
-        coords[..., 0] = coords[..., 0] * (new_w / old_w)
-        coords[..., 1] = coords[..., 1] * (new_h / old_h)
-        return coords
-
-    def apply_boxes_torch(self, boxes: torch.Tensor, original_size: Tuple[int, ...]) -> torch.Tensor:
-        """Expects a torch tensor with shape Bx4.
-
-        Requires the original image size in (H, W) format.
-
-        Args:
-            boxes (torch.Tensor): Boxes tensor.
-            original_size (Tuple[int, ...]): Original size of image.
-
-        Returns:
-            torch.Tensor: Resized boxes.
-        """
-        boxes = self.apply_coords_torch(boxes.reshape(-1, 2, 2), original_size)
         return boxes.reshape(-1, 4)
 
     @staticmethod
