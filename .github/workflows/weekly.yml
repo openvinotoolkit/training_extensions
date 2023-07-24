@@ -49,5 +49,5 @@ jobs:
       tests-dir: ${{ matrix.test_dir }}
       runs-on: ${{ matrix.runs_on }}
       task: ${{ matrix.task }}
-      timeout-minutes: 2880
+      timeout-minutes: 4320
       upload-artifact: true
