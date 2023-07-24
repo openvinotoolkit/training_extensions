@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
--
+- Enable configurable confidence threshold for otx eval and export(<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
 
 ### Enhancements
 
