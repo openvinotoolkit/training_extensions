@@ -15,6 +15,8 @@ tile_cfg = dict(
     tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
 )
 
+img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], to_rgb=False)
+
 train_pipeline = [
     dict(type="Mosaic", img_scale=img_scale, pad_val=114.0),
     dict(
@@ -27,6 +29,7 @@ train_pipeline = [
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Resize", img_scale=img_scale, keep_ratio=True),
     dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
+    dict(type="Normalize", **img_norm_cfg),
     dict(type="DefaultFormatBundle"),
     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
 ]
@@ -41,6 +44,7 @@ test_pipeline = [
             dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
             dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
+            dict(type="Normalize", **img_norm_cfg),
             dict(type="DefaultFormatBundle"),
             dict(type="Collect", keys=["img"]),
         ],
