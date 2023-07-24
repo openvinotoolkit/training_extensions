@@ -249,11 +249,14 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
         super().__init__(module)
         self._layer_index = layer_index
         self._target_layernorm = self._get_target_layernorm()
+        self._final_norm = module.backbone.norm1 if module.backbone.final_norm else None
+        self._neck = module.neck if module.with_neck else None
+        self._num_classes = module.head.num_classes
         self._use_gaussian = use_gaussian
         self._cls_token = cls_token
 
-    def _get_target_layernorm(self):
-        """Return the first (out of two) layernorm layer from the layer_index backbone layer."""
+    def _get_target_layernorm(self) -> torch.nn.Module:
+        """Returns the first (out of two) layernorm layer from the layer_index backbone layer."""
         assert self._layer_index < 0, "negative index expected, e.g. -1 for the last layer."
         layernorm_layers = []
         for module in self._module.backbone.modules():
@@ -263,79 +266,71 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
         target_layernorm_index = self._layer_index * 2 - int(self._module.backbone.final_norm)
         return layernorm_layers[target_layernorm_index]
 
-    def func(self, feature_map: torch.Tensor, _: int = -1):
-        # TODO: support batch operation
+    def func(self, feature_map: torch.Tensor, _: int = -1) -> torch.Tensor:
+        """Generate the class-wise saliency maps using ViTRecipro-CAM and then normalizing to (0, 255).
+
+        Args:
+            feature_map (torch.Tensor): feature maps from target layernorm layer.
+
+        Returns:
+            torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+        """
         batch_size, token_number, _ = feature_map.size()
         h = w = int((token_number - 1) ** 0.5)
-        mosaic_feature_map = self._get_mosaic_feature_map(feature_map)
-
-        logit = self._predict_from_feature_map(mosaic_feature_map)
-        saliency_maps = logit.reshape((h, w, 5)).transpose(2, 0, 1)
+        saliency_maps = torch.empty(batch_size, self._num_classes, h, w)
+        for i in range(batch_size):
+            mosaic_feature_map = self._get_mosaic_feature_map(feature_map[i])
+            mosaic_prediction = self._predict_from_feature_map(mosaic_feature_map)
+            saliency_maps[i] = mosaic_prediction.transpose(1, 0).reshape((self._num_classes, h, w))
 
         if self._norm_saliency_maps:
-            saliency_maps = saliency_maps.reshape((batch_size, 5, h * w))
+            saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
             saliency_maps = self._normalize_map(torch.tensor(saliency_maps))
-        saliency_maps = saliency_maps.reshape((batch_size, 5, h, w))
 
-        saliency_maps_np = saliency_maps.cpu().numpy()
-        ref = np.array([243, 211, 151,  69,  42,  58,  75, 100, 112, 114,  73,  59,  38, 94], dtype=np.uint8)
+        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
+        # saliency_maps_np = saliency_maps.cpu().numpy()
+        # ref = np.array([243, 211, 151,  69,  42,  58,  75, 100, 112, 114,  73,  59,  38, 94], dtype=np.uint8)
         # assert np.all(saliency_maps_np[0, 0, :, 0] == ref)
         return saliency_maps
 
-    def _get_mosaic_feature_map(self, feature_map):
-        _, token_number, dim = feature_map.size()
-        new_outputs = torch.zeros(token_number - 1, token_number, dim).to(feature_map.device)
-        if self._use_gaussian == False:
-            for i in range(token_number - 1):
-                if self._cls_token == True:
-                    new_outputs[i, 0, :] = feature_map[0, 0, :]
-                new_outputs[i, i + 1, :] = feature_map[0, i + 1, :]
-        else:
-            h = w = int((token_number - 1) ** 0.5)
-            spatial_feature = feature_map[0, 1:, :]
-            spatial_feature = spatial_feature.reshape(1, h, w, dim)
-            if self._cls_token == True:
-                new_outputs[:, 0, :] = feature_map[0, 0, :]
-            new_outputs_r = new_outputs[:, 1:, :]
-            new_outputs_r = new_outputs_r.reshape(token_number - 1, h, w, dim)
+    def _get_mosaic_feature_map(self, feature_map: torch.Tensor) -> torch.Tensor:
+        token_number, dim = feature_map.size()
+        mosaic_feature_map = torch.zeros(token_number - 1, token_number, dim).to(feature_map.device)
+        h = w = int((token_number - 1) ** 0.5)
 
-            filter = [[1 / 16.0, 1 / 8.0, 1 / 16.0],
-                      [1 / 8.0, 1 / 4.0, 1 / 8.0],
-                      [1 / 16.0, 1 / 8.0, 1 / 16.0]]
-            gaussian = torch.tensor(filter).to(spatial_feature.device)
+        if self._use_gaussian:
+            if self._cls_token:
+                mosaic_feature_map[:, 0, :] = feature_map[0, :]
+            feature_map_spacial = feature_map[1:, :].reshape(1, h, w, dim)
+            feature_map_spacial_repeated = feature_map_spacial.repeat(h * w, 1, 1, 1)  # 196, 14, 14, 192
 
-            score_map = gaussian.reshape(3, 3, 1).repeat(1, 1, dim)
+            spacial_order = torch.arange(h * w).reshape(h, w)
+            gaussian = torch.tensor([[1 / 16.0, 1 / 8.0, 1 / 16.0],
+                                     [1 / 8.0, 1 / 4.0, 1 / 8.0],
+                                     [1 / 16.0, 1 / 8.0, 1 / 16.0]]).to(feature_map.device)
+            gaussian = gaussian.reshape(3, 3, 1).repeat(1, 1, dim)
+            mosaic_feature_map_mask = torch.zeros(h * w, h, w, dim).to(feature_map.device)
+            mosaic_feature_map_mask_padded = torch.nn.functional.pad(input=mosaic_feature_map_mask,
+                                                                     pad=(0, 0, 1, 1, 1, 1), mode='constant', value=0)
             for i in range(h):
-                ky_s = max(i - 1, 0)
-                ky_e = min(i + 1, h - 1)
-                if i == 0:
-                    sy_s = 1
-                else:
-                    sy_s = 0
-                if i == h - 1:
-                    sy_e = 1
-                else:
-                    sy_e = 2
-                for j in range(h):
-                    kx_s = max(j - 1, 0)
-                    kx_e = min(j + 1, h - 1)
-                    if j == 0:
-                        sx_s = 1
-                    else:
-                        sx_s = 0
-                    if j == h - 1:
-                        sx_e = 1
-                    else:
-                        sx_e = 2
-                    new_outputs_r[i * h + j, ky_s:ky_e + 1, kx_s:kx_e + 1, :] \
-                        = spatial_feature[0, ky_s:ky_e + 1, kx_s:kx_e + 1, :] \
-                          * score_map[sy_s:sy_e + 1, sx_s:sx_e + 1, :]
-            new_outputs_r = new_outputs_r.reshape(token_number - 1, token_number - 1, dim)
-        return new_outputs
+                for j in range(w):
+                    k = spacial_order[i, j]
+                    i_pad = i + 1
+                    j_pad = j + 1
+                    mosaic_feature_map_mask_padded[k, i_pad - 1 : i_pad + 2, j_pad - 1 : j_pad + 2, :] = gaussian
+            mosaic_feature_map_mask = mosaic_feature_map_mask_padded[:, 1:-1, 1:-1, :]
+            mosaic_fm_wo_cls_token = feature_map_spacial_repeated * mosaic_feature_map_mask
+            mosaic_feature_map[:, 1:, :] = mosaic_fm_wo_cls_token.reshape(h * w, h * w, dim)
+        else:
+            for i in range(h * w):
+                if self._cls_token:
+                    mosaic_feature_map[i, 0, :] = feature_map[0, :]
+                mosaic_feature_map[i, i + 1, :] = feature_map[i + 1, :]
+        return mosaic_feature_map
 
-    def _predict_from_feature_map(self, x: torch.Tensor) -> np.ndarray:
+    def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
-            # Part of the target transformer layer (except first layernorm)
+            # Part of the target transformer layer (except first LayerNorm)
             target_layer = self._module.backbone.layers[self._layer_index]
             x = x + target_layer.attn(x)
             x = target_layer.ffn(target_layer.norm2(x), identity=x)
@@ -345,15 +340,15 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
                 for layer in self._module.backbone.layers[(self._layer_index + 1):]:
                     x = layer(x)
 
-            if self._module.backbone.final_norm:
-                x = self._module.backbone.norm1(x)
-            if self._module.with_neck:
-                x = self._module.neck(x)
+            if self._final_norm:
+                x = self._final_norm(x)
+            if self._neck:
+                x = self._neck(x)
 
             cls_token = x[:, 0]
             layer_output = [None, cls_token]
             logit = self._module.head.simple_test(layer_output)
-        return np.array(logit)
+        return torch.tensor(np.array(logit))
 
     def __enter__(self) -> BaseRecordingForwardHook:
         """Enter."""
