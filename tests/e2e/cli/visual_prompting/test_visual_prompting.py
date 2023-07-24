@@ -19,9 +19,6 @@ from tests.test_suite.run_test_command import (
     otx_export_testing,
     otx_resume_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
-    pot_validate_fq_testing,
 )
 
 args = {
