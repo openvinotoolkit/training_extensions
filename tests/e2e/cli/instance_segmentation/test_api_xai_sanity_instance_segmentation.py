@@ -104,17 +104,20 @@ class TestOVISegmXAIAPI:
             load_weights_ov = osp.join(temp_dir, "openvino.xml")
             task_env.model = read_model(task_env.get_model_configuration(), load_weights_ov, None)
             task = OpenVINODetectionTask(task_environment=task_env)
-            inference_parameters.enable_async_inference = False
-            predicted_dataset_ov = task.infer(val_dataset_copy.with_empty_annotations(), inference_parameters)
+            for enable_async_inference in [True, False]:
+                inference_parameters.enable_async_inference = enable_async_inference
+                iseg_dataset, iseg_labels = generate_det_dataset(TaskType.INSTANCE_SEGMENTATION, 30)
+                val_dataset = iseg_dataset.get_subset(Subset.VALIDATION)
+                predicted_dataset_ov = task.infer(val_dataset.with_empty_annotations(), inference_parameters)
 
-            # Check saliency maps OV task
-            saliency_maps_check(
-                predicted_dataset_ov,
-                task_labels,
-                (480, 640),
-                processed_saliency_maps=processed_saliency_maps,
-                only_predicted=only_predicted,
-            )
+                # Check saliency maps OV task
+                saliency_maps_check(
+                    predicted_dataset_ov,
+                    task_labels,
+                    (480, 640),
+                    processed_saliency_maps=processed_saliency_maps,
+                    only_predicted=only_predicted,
+                )
 
 
 class TestOVISegmTilXAIAPI:
@@ -184,14 +187,17 @@ class TestOVISegmTilXAIAPI:
             load_weights_ov = osp.join(temp_dir, "openvino.xml")
             task_env.model = read_model(task_env.get_model_configuration(), load_weights_ov, None)
             task = OpenVINODetectionTask(task_environment=task_env)
-            inference_parameters.enable_async_inference = False
-            predicted_dataset_ov = task.infer(val_dataset_copy.with_empty_annotations(), inference_parameters)
+            for enable_async_inference in [True, False]:
+                inference_parameters.enable_async_inference = enable_async_inference
+                iseg_dataset, iseg_labels = generate_det_dataset(TaskType.INSTANCE_SEGMENTATION, 30)
+                val_dataset = iseg_dataset.get_subset(Subset.VALIDATION)
+                predicted_dataset_ov = task.infer(val_dataset.with_empty_annotations(), inference_parameters)
 
-            # Check saliency maps OV task
-            saliency_maps_check(
-                predicted_dataset_ov,
-                task_labels,
-                (480, 640),
-                processed_saliency_maps=processed_saliency_maps,
-                only_predicted=only_predicted,
-            )
+                # Check saliency maps OV task
+                saliency_maps_check(
+                    predicted_dataset_ov,
+                    task_labels,
+                    (480, 640),
+                    processed_saliency_maps=processed_saliency_maps,
+                    only_predicted=only_predicted,
+                )
