@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Multi-class Classification &#8212; OpenVINO™ Training Extensions 1.4.0 documentation</title>
+    <title>Visual Prompting &#8212; OpenVINO™ Training Extensions 1.4.0 documentation</title>
   
   
   
@@ -42,11 +42,11 @@
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/clipboard.min.js"></script>
     <script src="../../../../_static/copybutton.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/algorithms/classification/multi_class_classification';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/algorithms/visual_prompting/index';</script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Multi-label Classification" href="multi_label_classification.html" />
-    <link rel="prev" title="Classification" href="index.html" />
+    <link rel="next" title="Additional Features" href="../../additional_features/index.html" />
+    <link rel="prev" title="Action Detection" href="../action/action_detection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -255,10 +255,10 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Explanation</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Algorithms</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Classification</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">Multi-class Classification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="multi_label_classification.html">Multi-label Classification</a></li>
-<li class="toctree-l3"><a class="reference internal" href="hierarhical_classification.html">Hierarchical Classification</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../classification/index.html">Classification</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../classification/multi_class_classification.html">Multi-class Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../classification/multi_label_classification.html">Multi-label Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../classification/hierarhical_classification.html">Hierarchical Classification</a></li>
 </ul>
 </li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../object_detection/index.html">Object Detection</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -276,7 +276,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../action/action_detection.html">Action Detection</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../visual_prompting/index.html">Visual Prompting</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Visual Prompting</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -456,65 +456,61 @@
             
             <article class="bd-article" role="main">
               
-  <section id="multi-class-classification">
-<h1>Multi-class Classification<a class="headerlink" href="#multi-class-classification" title="Permalink to this heading">#</a></h1>
-<p>Multi-class classification is the problem of classifying instances into one of two or more classes. We solve this problem in a common fashion, based on the feature extractor backbone and classifier head that predicts the distribution probability of the categories from the given corpus.
-For the supervised training we use the following algorithms components:</p>
-<ul id="mcl-cls-supervised-pipeline">
-<li><p><code class="docutils literal notranslate"><span class="pre">Augmentations</span></code>: Besides basic augmentations like random flip and random rotate, we use <a class="reference external" href="https://arxiv.org/abs/1912.02781">Augmix</a>. This advanced type of augmentations helps to significantly expand the training distribution.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: <a class="reference external" href="https://arxiv.org/abs/2209.06585">Sharpness Aware Minimization (SAM)</a>. Wrapper upon the <a class="reference external" href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">SGD</a> optimizer that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Learning</span> <span class="pre">rate</span> <span class="pre">schedule</span></code>: <a class="reference external" href="https://arxiv.org/abs/1608.03983v5">Cosine Annealing</a>. It is a common learning rate scheduler that tends to work well on average for this task on a variety of different datasets.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use standard <a class="reference external" href="https://en.wikipedia.org/wiki/Cross_entropy">Cross Entropy Loss</a>  to train a model. However, for the class-incremental scenario we use <a class="reference external" href="https://arxiv.org/abs/2110.02444">Influence-Balanced Loss</a>. IB loss is a solution for the class imbalance, which avoids overfitting to the majority classes re-weighting the influential samples.</p></li>
-<li><dl>
+  <section id="visual-prompting">
+<h1>Visual Prompting<a class="headerlink" href="#visual-prompting" title="Permalink to this heading">#</a></h1>
+<p>Visual prompting is a computer vision task that uses a combination of an image and prompts, such as texts, bounding boxes, points, and so on to troubleshoot problems.
+Using these useful prompts, the main purpose of this task is to obtain labels from unlabeled datasets, and to use generated label information on particular domains or to develop a new model with the generated information.</p>
+<p>This section examines the solutions for visual prompting offered by the OpenVINO Training Extensions library.
+<a class="reference external" href="https://arxiv.org/abs/2304.02643">Segment Anything (SAM)</a>, is one of the most famous visual prompting methods and this model will be used to adapt a new dataset domain.
+Because <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a> was trained by using web-scale dataset and has huge backbone network, fine-tuning the whole network is difficult and lots of resources are required.
+Therefore, in this section, we try to fine-tune only mask decoder only for several epochs to increase performance on the new dataset domain.
+For fine-tuning <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a>, we use following algorithms components:</p>
+<ul class="simple" id="visual-prompting-finetuning-pipeline">
+<li><p><code class="docutils literal notranslate"><span class="pre">Pre-processing</span></code>: Resize an image according to the longest axis and pad the rest with zero.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code>: We use <a class="reference external" href="https://arxiv.org/abs/1412.6980">Adam</a> optimizer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Loss</span> <span class="pre">function</span></code>: We use standard loss combination, 20 * focal loss + dice loss + iou loss, used in <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a> as it is.</p></li>
+<li><dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">training</span> <span class="pre">techniques</span></code></dt><dd><ul>
-<li><p><a class="reference external" href="https://arxiv.org/abs/1812.01187">No Bias Decay (NBD)</a>: To add adaptability to the training pipeline and prevent overfitting.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Early</span> <span class="pre">stopping</span></code>: To add adaptability to the training pipeline and prevent overfitting. You can use early stopping like the below command.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train {TEMPLATE} ... \
-    params \
-    --learning_parameters.enable_early_stopping=True
-</pre></div>
-</div>
-</li>
-<li><p><a class="reference external" href="https://github.dev/openvinotoolkit/training_extensions/blob/develop/src/otx/mpa/modules/datasets/samplers/balanced_sampler.py#L11">Balanced Sampler</a>: To create an efficient batch that consists of balanced samples over classes, reducing the iteration size as well.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Early</span> <span class="pre">stopping</span></code>: To add adaptability to the training pipeline and prevent overfitting. Early stopping will be automatically applied.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, fine-tuning <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a> with bounding boxes in the OpenVINO Training Extensions is only supported.
+We will support fine-tuning with other prompts (points and texts) and continuous fine-tuning with predicted mask information in the near future.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently, Post-Training Quantization (PTQ) for <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a> is only supported, not Quantization Aware Training (QAT).</p>
+</div>
 <section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this heading">#</a></h2>
-<p>We support a commonly used format for multi-class image classification task: <a class="reference external" href="https://www.image-net.org/">ImageNet</a> class folder format.
-This format has the following structure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data
-├── train
-    ├── class 0
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-    ├── class 1
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-    ...
-    └── class N
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
-└── val
-    ...
+<p id="visual-prompting-dataset">For the dataset handling inside OpenVINO™ Training Extensions, we use <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Dataset Management Framework (Datumaro)</a>.</p>
+<p>We support three dataset formats for visual prompting:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/common_semantic_segmentation.html">Common Semantic Segmentation</a> for semantic segmentation</p></li>
+<li><p><a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/coco.html">COCO</a> for instance segmentation</p></li>
+<li><p><a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html">Pascal VOC</a> for instance segmentation and semantic segmentation</p></li>
+</ul>
+<p>If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train &lt;model_template&gt; \
+    --train-data-roots &lt;path_to_data_root&gt; \
+    --val-data-roots &lt;path_to_data_root&gt;
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Please, refer to our <a class="reference internal" href="../../../tutorials/base/how_to_train/classification.html"><span class="doc">dedicated tutorial</span></a> for more information how to train, validate and optimize classification models.</p>
+<p>During training, mDice for binary mask without label information is used for train/validation metric.
+After training, if using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code> to evaluate performance, mDice for binary or multi-class masks with label information will be used.
+As you can expect, performance will be different between <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">train</span></code> and <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">eval</span></code>, but if unlabeled mask performance is high, labeld mask performance is high as well.</p>
 </div>
 </section>
 <section id="models">
 <h2>Models<a class="headerlink" href="#models" title="Permalink to this heading">#</a></h2>
-<p id="classification-models">We support the following ready-to-use model templates:</p>
+<p id="visual-prompting-model">We support the following model templates in experimental phase:</p>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Template ID</p></th>
@@ -524,291 +520,49 @@ This format has the following structure:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml">Custom_Image_Classification_MobileNet-V3-large-1x</a></p></td>
-<td><p>MobileNet-V3-large-1x</p></td>
-<td><p>0.44</p></td>
-<td><p>4.29</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml">Custom_Image_Classification_EfficinetNet-B0</a></p></td>
-<td><p>EfficientNet-B0</p></td>
-<td><p>0.81</p></td>
-<td><p>4.09</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/classification/configs/efficientnet_v2_s_cls_incr/template.yaml">Custom_Image_Classification_EfficientNet-V2-S</a></p></td>
-<td><p>EfficientNet-V2-S</p></td>
-<td><p>5.76</p></td>
-<td><p>20.23</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/sam_vit_b/template_experimental.yaml">Visual_Prompting_SAM_ViT_B</a></p></td>
+<td><p>SAM_ViT_B</p></td>
+<td><p>487</p></td>
+<td><p>374</p></td>
 </tr>
 </tbody>
 </table>
-<p><a class="reference external" href="https://arxiv.org/abs/2104.00298">EfficientNet-V2-S</a> has more parameters and Flops and needs more time to train, meanwhile providing superior classification performance. <a class="reference external" href="https://arxiv.org/abs/1905.02244">MobileNet-V3-large-1x</a> is the best choice when training time and computational cost are in priority, nevertheless, this template provides competitive accuracy as well.
-<a class="reference external" href="https://arxiv.org/abs/1905.11946">EfficientNet-B0</a> consumes more Flops compared to MobileNet, providing better performance on large datasets, but may be not so stable in case of a small amount of training data.</p>
-<p>Besides this, we support public backbones from <a class="reference external" href="https://pytorch.org/vision/stable/index.html">torchvision</a>, <a class="reference external" href="https://github.com/osmr/imgclsmob">pytorchcv</a>, <a class="reference external" href="https://github.com/open-mmlab/mmclassification">mmcls</a> and <a class="reference external" href="https://github.com/openvinotoolkit/open_model_zoo">OpenVino Model Zoo</a>.
-Please, refer to the <a class="reference internal" href="../../../tutorials/advanced/backbones.html"><span class="doc">tutorial</span></a> how to customize models and run public backbones.</p>
-<p>To see which public backbones are available for the task, the following command can be executed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
-</pre></div>
-</div>
-<p>In the table below the top-1 accuracy on some academic datasets using our <a class="reference internal" href="#mcl-cls-supervised-pipeline"><span class="std std-ref">supervised pipeline</span></a> is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We trained each model with single Nvidia GeForce RTX3090.</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Model name</p></th>
-<th class="head"><p>CIFAR10</p></th>
-<th class="head"><p>CIFAR100</p></th>
-<th class="head"><p>flowers*</p></th>
-<th class="head"><p>cars*</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>MobileNet-V3-large-1x</p></td>
-<td><p>93.36</p></td>
-<td><p>83.01</p></td>
-<td><p>96.45</p></td>
-<td><p>83.24</p></td>
-</tr>
-<tr class="row-odd"><td><p>EfficientNet-B0</p></td>
-<td><p>94.86</p></td>
-<td><p>84.73</p></td>
-<td><p>96.86</p></td>
-<td><p>85.70</p></td>
-</tr>
-<tr class="row-even"><td><p>EfficientNet-V2-S</p></td>
-<td><p>96.13</p></td>
-<td><p>90.36</p></td>
-<td><p>97.68</p></td>
-<td><p>86.74</p></td>
-</tr>
-</tbody>
-</table>
-<p><a href="#id1"><span class="problematic" id="id2">*</span></a>These datasets were splitted with auto-split (80% train, 20% test).</p>
-</section>
-<section id="semi-supervised-learning">
-<h2>Semi-supervised Learning<a class="headerlink" href="#semi-supervised-learning" title="Permalink to this heading">#</a></h2>
-<p>Semi-SL (Semi-supervised Learning) is a type of machine learning algorithm that uses both labeled and unlabeled data to improve the performance of the model. This is particularly useful when labeled data is limited, expensive or time-consuming to obtain.</p>
-<p>We use <a class="reference external" href="https://arxiv.org/abs/2001.07685">FixMatch</a> as a core algorithm for Semi-SL task solving. It is a specific implementation of Semi-SL that has been shown to be effective in various applications. FixMatch introduces pseudo-labeling, which is the process of generating labels for the unlabeled data and treating them as if they were labeled data. Pseudo-labeling is based on the idea that the model’s prediction for the unlabeled data is likely to be correct, which can improve the model’s accuracy and reduce the need for labeled data.</p>
-<p>In Semi-SL, the pseudo-labeling process is combined with a consistency loss that ensures that the predictions of the model are consistent across augmented versions of the same data. This helps to reduce the impact of noisy or incorrect labels that may arise from the pseudo-labeling process. Additionally, our algorithm uses a combination of strong data augmentations and a specific optimizer called Sharpness-Aware Minimization (SAM) to further improve the accuracy of the model.</p>
-<p>Overall, OpenVINO™ Training Extensions utilizes powerful techniques for improving the performance of Semi-SL algorithm with limited labeled data. They can be particularly useful in domains where labeled data is expensive or difficult to obtain, and can help to reduce the time and cost associated with collecting labeled data.</p>
-<ul class="simple" id="mcl-cls-semi-supervised-pipeline">
-<li><p><code class="docutils literal notranslate"><span class="pre">Pseudo-labeling</span> <span class="pre">(FixMatch)</span></code>: A specific implementation of Semi-SL that combines the use of pseudo-labeling with a consistency loss, strong data augmentations, and a specific optimizer called Sharpness-Aware Minimization (SAM) to improve the performance of the model.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Adaptable</span> <span class="pre">Threshold</span></code>: A novel addition to our solution that calculates a class-wise threshold for pseudo-labeling, which can solve the issue of imbalanced data and produce high-quality pseudo-labels that improve the overall score.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Unlabeled</span> <span class="pre">Warm-Up</span> <span class="pre">Loss</span></code>: A technique for preventing the initial unstable learning of pseudo-labeling by increasing the coefficient of the unlabeled loss from 0 to 1.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Exponential</span> <span class="pre">Moving</span> <span class="pre">Average</span> <span class="pre">(EMA)</span></code>: A technique for maintaining a moving average of the model’s parameters, which can improve the generalization performance of the model.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Additional</span> <span class="pre">techniques</span></code>: Other than that, we use several solutions that apply to supervised learning (No bias Decay, Augmentations, Early-Stopping, etc.)</p></li>
-</ul>
-<p>Please, refer to the <a class="reference internal" href="../../../tutorials/advanced/semi_sl.html"><span class="doc">tutorial</span></a> on how to train semi-supervised learning.
-Training time depends on the number of images and can be up to several times longer than conventional supervised learning.</p>
-<p>In the table below the top-1 accuracy on some academic datasets using our pipeline is presented. Same as the supervised setting except for an image for unlabeled and additional batch size.</p>
-<ul class="simple">
-<li><p>4 labeled images per class including unlabeled dataset for Semi-SL</p></li>
-</ul>
+<p>To check feasibility of <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a>, we did experiments using three public datasets with each other domains: <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a>, <a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a>, and <a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a>, and checked <a class="reference external" href="https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient">Dice score</a>.
+We used sampled training data from <a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a> and <a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a>, and full training data (=110) from <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a>. The below table shows performance improvement after fine-tuning.</p>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Dataset</p></th>
-<th class="head"><p>CIFAR10</p></th>
-<th class="head"></th>
-<th class="head"><p>SVHN</p></th>
-<th class="head"></th>
-<th class="head"><p>FMNIST</p></th>
-<th class="head"></th>
+<th class="head"><p>#samples</p></th>
+<th class="head"><p>Before</p></th>
+<th class="head"><p>After fine-tuning</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td></td>
-<td><p>SL</p></td>
-<td><p>Semi-SL</p></td>
-<td><p>SL</p></td>
-<td><p>Semi-SL</p></td>
-<td><p>SL</p></td>
-<td><p>Semi-SL</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a></p></td>
+<td><p>110</p></td>
+<td><p>92.32</p></td>
+<td><p>92.46 (+0.14)</p></td>
 </tr>
-<tr class="row-odd"><td><p>MobileNet-V3-large-1x</p></td>
-<td><p>40.75</p></td>
-<td><p>43.13</p></td>
-<td><p>23.32</p></td>
-<td><p>27.85</p></td>
-<td><p>68.2</p></td>
-<td><p>71.84</p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a></p></td>
+<td><p>100</p></td>
+<td><p>79.61</p></td>
+<td><p>83.92 (+4.31)</p></td>
 </tr>
-<tr class="row-even"><td><p>EfficientNet-B0</p></td>
-<td><p>42.24</p></td>
-<td><p>44.23</p></td>
-<td><p>28.09</p></td>
-<td><p>32.96</p></td>
-<td><p>68.58</p></td>
-<td><p>70.79</p></td>
-</tr>
-<tr class="row-odd"><td><p>EfficientNet-V2-S</p></td>
-<td><p>36.03</p></td>
-<td><p>39.66</p></td>
-<td><p>16.81</p></td>
-<td><p>20.28</p></td>
-<td><p>65.99</p></td>
-<td><p>69.61</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a></p></td>
+<td><p>1 CT (=100 slices)</p></td>
+<td><p>91.48</p></td>
+<td><p>91.68 (+0.20)</p></td>
 </tr>
 </tbody>
 </table>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<ul class="simple">
-<li><p>10 labeled images per class including unlabeled dataset for Semi-SL</p></li>
-</ul>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Dataset</p></th>
-<th class="head"><p>CIFAR10</p></th>
-<th class="head"></th>
-<th class="head"><p>SVHN</p></th>
-<th class="head"></th>
-<th class="head"><p>FMNIST</p></th>
-<th class="head"></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td></td>
-<td><p>SL</p></td>
-<td><p>Semi-SL</p></td>
-<td><p>SL</p></td>
-<td><p>Semi-SL</p></td>
-<td><p>SL</p></td>
-<td><p>Semi-SL</p></td>
-</tr>
-<tr class="row-odd"><td><p>MobileNet-V3-large-1x</p></td>
-<td><p>50.77</p></td>
-<td><p>52.16</p></td>
-<td><p>38.73</p></td>
-<td><p>48.36</p></td>
-<td><p>73.33</p></td>
-<td><p>77.04</p></td>
-</tr>
-<tr class="row-even"><td><p>EfficientNet-B0</p></td>
-<td><p>52.69</p></td>
-<td><p>58.35</p></td>
-<td><p>46.04</p></td>
-<td><p>61.79</p></td>
-<td><p>74.56</p></td>
-<td><p>80.14</p></td>
-</tr>
-<tr class="row-odd"><td><p>EfficientNet-V2-S</p></td>
-<td><p>48.84</p></td>
-<td><p>55</p></td>
-<td><p>26.16</p></td>
-<td><p>47.99</p></td>
-<td><p>74.6</p></td>
-<td><p>80.92</p></td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This result can vary greatly depending on the image selected for each class. Also, since there are few labeled settings for the Semi-SL algorithm. Some models may require larger datasets for better results.</p>
-</div>
-</section>
-<section id="self-supervised-learning">
-<h2>Self-supervised Learning<a class="headerlink" href="#self-supervised-learning" title="Permalink to this heading">#</a></h2>
-<p id="selfsl-multi-class-classification">Self-supervised learning can be one of the solutions if the user has a small data set, but label information is not yet available.
-General self-supervised Learning in academia is commonly used to obtain well-pretrained weights from a source dataset without label information.
-However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.</p>
-<p>For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
-We adapted <a class="reference external" href="https://arxiv.org/abs/2006.07733">BYOL</a> as our self-supervised method.
-This algorithm will require some additional training time, meanwhile, improved performance is expected, especially in low-data regimes.
-OpenVINO™ Training Extensions allows to perform a pre-training phase on any images to further use obtained weights on the target dataset.</p>
-<p>Below is graphs of performance improvement for three baseline datasets: CIFAR10, CIFAR100, and Food-101.
-The graphs below show how much performance improvement over baseline was achieved using our self-supervised learning recipes.
-We created subset datasets by sampling images to check performance from small to large datasets.
-In particular, the smaller the data, the greater the performance improvement can be expected.
-To get the below performance, we had two steps:</p>
-<ul class="simple">
-<li><p>Train the models using only images without label information to get pretrained weights for a few epochs.</p></li>
-<li><p>Fine-tune the models with pretrained weights using subset datasets and get performance.</p></li>
-</ul>
-<p>We additionally obtained baseline performance from supervised learning using subset datasets for comparison.
-Each subset dataset has 500, 1000, 5000, 10000, and the whole images, respectively.</p>
-<a class="reference internal image-reference" href="../../../../_images/multi_cls_selfsl_performance_CIFAR10.png"><img alt="../../../../_images/multi_cls_selfsl_performance_CIFAR10.png" src="../../../../_images/multi_cls_selfsl_performance_CIFAR10.png" style="width: 600px;" /></a>
-<a class="reference internal image-reference" href="../../../../_images/multi_cls_selfsl_performance_CIFAR100.png"><img alt="../../../../_images/multi_cls_selfsl_performance_CIFAR100.png" src="../../../../_images/multi_cls_selfsl_performance_CIFAR100.png" style="width: 600px;" /></a>
-<a class="reference internal image-reference" href="../../../../_images/multi_cls_selfsl_performance_Food-101.png"><img alt="../../../../_images/multi_cls_selfsl_performance_Food-101.png" src="../../../../_images/multi_cls_selfsl_performance_Food-101.png" style="width: 600px;" /></a>
-<p>To enable self-supervised training, the command below can be executed. The folder with images for pre-training is needed to be passed in <code class="docutils literal notranslate"><span class="pre">--train-data-root</span></code> folder.
-Unlike other tasks, <code class="docutils literal notranslate"><span class="pre">--val-data-root</span></code> is not needed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train EfficientNet-V2-S \
-            --train-data-root path/to/folder/with/images
+<p>According to datasets, <code class="docutils literal notranslate"><span class="pre">learning</span> <span class="pre">rate</span></code> and <code class="docutils literal notranslate"><span class="pre">batch</span> <span class="pre">size</span></code> can be adjusted like below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train &lt;model_template&gt; \
+    --train-data-roots &lt;path_to_data_root&gt; \
+    --val-data-roots &lt;path_to_data_root&gt; \
+    params \
+    --learning_parameters.dataset.train_batch_size &lt;batch_size_to_be_updated&gt; \
+    --learning_parameters.optimizer.lr &lt;learning_rate_to_be_updated&gt;
 </pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>It is also possible to pass a full imagenet dataset format to <code class="docutils literal notranslate"><span class="pre">--train-data-root</span></code> instead of just a folder with images.
-However, it will be required to add <code class="docutils literal notranslate"><span class="pre">--train-type</span> <span class="pre">Selfsupervised</span></code> option into the command line. Otherwise, ordinary supervised training will be started with auto-split functionality.</p>
-</div>
-<p>After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train EfficientNet-V2-S \
-            --train-data-roots path/to/train/subset \
-            --val-data-roots path/to/val/subset \
-            --load-weights={PATH/PRETRAINED/WEIGHTS}
-</pre></div>
-</div>
-</section>
-<section id="supervised-contrastive-learning">
-<h2>Supervised Contrastive Learning<a class="headerlink" href="#supervised-contrastive-learning" title="Permalink to this heading">#</a></h2>
-<p>To enhance the performance of the algorithm in the case when we have a small number of data, <a class="reference external" href="https://arxiv.org/abs/2004.11362">Supervised Contrastive Learning (SupCon)</a> can be used.
-More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and contrastive head with <a class="reference external" href="https://arxiv.org/abs/2103.03230">Barlow Twins loss</a>.
-The below table shows how much performance SupCon improved compared with baseline performance on three baseline datasets with 10 samples per class: CIFAR10, Eurosat-10, and Food-101.</p>
-<table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Model name</p></th>
-<th class="head"><p>CIFAR10</p></th>
-<th class="head"></th>
-<th class="head"><p>Eurosat-10</p></th>
-<th class="head"></th>
-<th class="head"><p>Food-101</p></th>
-<th class="head"></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-<td><p>SL</p></td>
-<td><p>SupCon</p></td>
-</tr>
-<tr class="row-odd"><td><p>MobileNet-V3-large-1x</p></td>
-<td><p>55.06</p></td>
-<td><p>58.88</p></td>
-<td><p>77.60</p></td>
-<td><p>78.70</p></td>
-<td><p>34.83</p></td>
-<td><p>34.38</p></td>
-</tr>
-<tr class="row-even"><td><p>EfficientNet-B0</p></td>
-<td><p>42.81</p></td>
-<td><p>46.35</p></td>
-<td><p>66.87</p></td>
-<td><p>70.23</p></td>
-<td><p>37.26</p></td>
-<td><p>39.17</p></td>
-</tr>
-<tr class="row-odd"><td><p>EfficientNet-V2-S</p></td>
-<td><p>59.78</p></td>
-<td><p>63.13</p></td>
-<td><p>81.84</p></td>
-<td><p>83.12</p></td>
-<td><p>51.32</p></td>
-<td><p>54.84</p></td>
-</tr>
-</tbody>
-</table>
-<p>The SupCon training can be launched by adding additional option to template parameters like the below.
-It can be launched only with supervised (incremental) training type.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/template.yaml \
-            --train-data-roots=tests/assets/imagenet_dataset_class_incremental \
-            --val-data-roots=tests/assets/imagenet_dataset_class_incremental \
-            params \
-            --learning_parameters.enable_supcon=True
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>SL stands for Supervised Learning.</p>
 </div>
 </section>
 </section>
@@ -821,17 +575,17 @@ It can be launched only with supervised (incremental) training type.</p>
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="index.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="../action/action_detection.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Classification</p>
+          <p class="prev-next-title">Action Detection</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="multi_label_classification.html" title="next page">
+  <a class='right-next' id="next-link" href="../../additional_features/index.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Multi-label Classification</p>
+      <p class="prev-next-title">Additional Features</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -861,21 +615,6 @@ It can be launched only with supervised (incremental) training type.</p>
    Models
   </a>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#semi-supervised-learning">
-   Semi-supervised Learning
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#self-supervised-learning">
-   Self-supervised Learning
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#supervised-contrastive-learning">
-   Supervised Contrastive Learning
-  </a>
- </li>
 </ul>
 
 </nav>
@@ -893,7 +632,7 @@ It can be launched only with supervised (incremental) training type.</p>
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../../_sources/guide/explanation/algorithms/classification/multi_class_classification.rst.txt">
+    <a href="../../../../_sources/guide/explanation/algorithms/visual_prompting/index.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>

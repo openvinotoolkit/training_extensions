@@ -134,13 +134,13 @@ The list of supported templates for object detection is available with the comma
 .. code-block::
 
   (otx) ...$ otx find --template --task DETECTION
-  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
-  |    TASK   |                 ID                |  NAME |                                      PATH                                     |
-  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
-  | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-  | DETECTION |  Custom_Object_Detection_Gen3_SSD |  SSD  |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
-  | DETECTION | Custom_Object_Detection_Gen3_ATSS |  ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
-  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
+  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
+  |    TASK   |                       ID                      |       NAME       |                                   BASE PATH                                   |
+  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
+  | DETECTION |        Custom_Object_Detection_Gen3_SSD       |       SSD        |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
+  | DETECTION |         Custom_Object_Detection_YOLOX         |      YOLOX       | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
+  | DETECTION |        Custom_Object_Detection_Gen3_ATSS      | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
+  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+v
 
 .. _detection_workspace:
 
@@ -165,7 +165,7 @@ Let's prepare the object detection workspace running the following command:
   (otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --train-data-roots data/wgisd
 
   # or its name
-  (otx) ...$ otx build ATSS --train-data-roots data/wgisd
+  (otx) ...$ otx build MobileNetV2-ATSS --train-data-roots data/wgisd
 
   # or its path
   (otx) ...$ otx build otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --train-data-roots data/wgisd
@@ -173,7 +173,7 @@ Let's prepare the object detection workspace running the following command:
   ...
   [*] Workspace Path: otx-workspace-DETECTION
   [*] Load Model Template ID: Custom_Object_Detection_Gen3_ATSS
-  [*] Load Model Name: ATSS
+  [*] Load Model Name: MobileNetV2-ATSS
   [*]     - Updated: otx-workspace-DETECTION/model.py
   [*]     - Updated: otx-workspace-DETECTION/data_pipeline.py
   [*]     - Updated: otx-workspace-DETECTION/tile_pipeline.py

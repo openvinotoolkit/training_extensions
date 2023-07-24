@@ -276,6 +276,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../action/action_detection.html">Action Detection</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../visual_prompting/index.html">Visual Prompting</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../additional_features/index.html">Additional Features</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-9"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -488,7 +489,7 @@ For the supervised training we use the following algorithms components:</p>
 <section id="dataset-format">
 <h2>Dataset Format<a class="headerlink" href="#dataset-format" title="Permalink to this heading">#</a></h2>
 <p>For the dataset handling inside OpenVINO™ Training Extensions, we use <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Dataset Management Framework (Datumaro)</a>.</p>
-<p>At this end we support <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/">Common Semantic Segmentation</a> data format.
+<p>At this end we support <a class="reference external" href="https://github.com/openvinotoolkit/datumaro/blob/develop/docs/source/docs/data-formats/formats/common_semantic_segmentation.md">Common Semantic Segmentation</a> data format.
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train  &lt;model_template&gt; --train-data-roots &lt;path_to_data_root&gt; \
                                         --val-data-roots &lt;path_to_data_root&gt;
