@@ -251,6 +251,16 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         else:
             path_to_onnx = os.path.join(save_path, "model.onnx")
             assert os.path.exists(path_to_onnx)
+
+            if check_ir_meta:
+                onnx_model = onnx.load(path_to_onnx)
+                is_model_type_presented = False
+                for prop in onnx_model.metadata_props:
+                    assert "model_info" in prop.key
+                    if "model_type" in prop.key:
+                        is_model_type_presented = True
+                assert is_model_type_presented
+
             # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
             if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
                 onnx.checker.check_model(path_to_onnx)

@@ -577,7 +577,7 @@ CLASS_INC_DATASET = [
     "MPAHierarchicalClsDataset",
     "ClsTVDataset",
 ]
-WEIGHT_MIX_CLASSIFIER = ["SAMImageClassifier"]
+WEIGHT_MIX_CLASSIFIER = ["CustomImageClassifier"]
 
 
 class IncrClassificationConfigurer(ClassificationConfigurer):

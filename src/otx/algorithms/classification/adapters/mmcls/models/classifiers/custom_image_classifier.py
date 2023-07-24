@@ -1,5 +1,5 @@
 """Module for defining SAMClassifier for classification task."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 from functools import partial
@@ -25,7 +25,7 @@ def is_hierarchical_chkpt(chkpt: dict):
 
 
 @CLASSIFIERS.register_module()
-class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
+class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
     """SAM-enabled ImageClassifier."""
 
     def __init__(self, task_adapt=None, **kwargs):
@@ -301,7 +301,7 @@ if is_mmdeploy_enabled():
     )
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.extract_feat"
+        "otx.algorithms.classification.adapters.mmcls.models.classifiers.CustomImageClassifier.extract_feat"
     )
     def sam_image_classifier__extract_feat(ctx, self, img):  # pylint: disable=unused-argument
         """Feature extraction function for SAMClassifier with mmdeploy."""
@@ -316,7 +316,7 @@ if is_mmdeploy_enabled():
         return feat, backbone_feat
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.algorithms.classification.adapters.mmcls.models.classifiers.SAMImageClassifier.simple_test"
+        "otx.algorithms.classification.adapters.mmcls.models.classifiers.CustomImageClassifier.simple_test"
     )
     def sam_image_classifier__simple_test(ctx, self, img, img_metas):  # pylint: disable=unused-argument
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
