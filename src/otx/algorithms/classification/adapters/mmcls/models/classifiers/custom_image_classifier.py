@@ -16,6 +16,14 @@ from .mixin import ClsLossDynamicsTrackingMixin, SAMClassifierMixin
 logger = get_logger()
 
 
+def is_hierarchical_chkpt(chkpt: dict):
+    """Detect whether previous checkpoint is hierarchical or not."""
+    for k, v in chkpt.items():
+        if "fc" in k:
+            return True
+    return False
+
+
 @CLASSIFIERS.register_module()
 class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
     """SAM-enabled ImageClassifier."""
@@ -193,9 +201,17 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
     def load_state_dict_mixing_hook(
         model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs
     ):  # pylint: disable=unused-argument, too-many-branches, too-many-locals
-        """Modify input state_dict according to class name matching before weight loading."""
+        """Modify input state_dict according to class name matching before weight loading.
+
+        If previous training is hierarchical training,
+        then the current training should be hierarchical training. vice versa.
+
+        """
         backbone_type = type(model.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
+            return
+
+        if model.hierarchical != is_hierarchical_chkpt(chkpt_dict):
             return
 
         # Dst to src mapping index
@@ -249,13 +265,15 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
                 continue
 
             # Mix weights
-            chkpt_param = chkpt_dict[chkpt_name]
-            for module, c in enumerate(model2chkpt):
-                if c >= 0:
-                    model_param[module].copy_(chkpt_param[c])
+            # NOTE: Label mix is not supported for H-label classification.
+            if not model.hierarchical:
+                chkpt_param = chkpt_dict[chkpt_name]
+                for module, c in enumerate(model2chkpt):
+                    if c >= 0:
+                        model_param[module].copy_(chkpt_param[c])
 
-            # Replace checkpoint weight by mixed weights
-            chkpt_dict[chkpt_name] = model_param
+                # Replace checkpoint weight by mixed weights
+                chkpt_dict[chkpt_name] = model_param
 
     def extract_feat(self, img):
         """Directly extract features from the backbone + neck.

@@ -1,4 +1,4 @@
-"""Tiling Pipeline of ATSS model for Detection Task."""
+"""Tiling Pipeline of MobileNetV2-ATSS model for Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

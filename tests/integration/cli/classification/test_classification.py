@@ -329,6 +329,18 @@ class TestMultilabelClassificationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_cls_decr(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "multi_label_cls/test_cls_decr"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_m)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args_m)
+        args1["--train-data-roots"] = "tests/assets/datumaro_multilabel_class_decremental"
+        args1["--val-data-roots"] = "tests/assets/datumaro_multilabel_class_decremental"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
@@ -455,6 +467,18 @@ class TestHierarchicalClassificationCLI:
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train_cls_decr(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "h_label_cls/test_cls_decr"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_h)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = copy.deepcopy(args_h)
+        args1["--train-data-roots"] = "tests/assets/datumaro_h-label_class_decremental"
+        args1["--val-data-roots"] = "tests/assets/datumaro_h-label_class_decremental"
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

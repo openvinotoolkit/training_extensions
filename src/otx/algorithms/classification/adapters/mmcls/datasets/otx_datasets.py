@@ -309,9 +309,7 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
             if item_labels:
                 num_cls_heads = self.hierarchical_info["num_multiclass_heads"]
 
-                class_indices = [0] * (
-                    self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"]
-                )
+                class_indices = [0] * (num_cls_heads + self.hierarchical_info["num_multilabel_classes"])
                 for j in range(num_cls_heads):
                     class_indices[j] = -1
                 for otx_lbl in item_labels:
@@ -328,6 +326,19 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
                 )
             self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
+
+        self._update_heads_information()
+
+    def _update_heads_information(self):
+        """Update heads information to find the empty heads.
+
+        If there are no annotations at a specific head, this should be filtered out to calculate loss correctly.
+        """
+        num_cls_heads = self.hierarchical_info["num_multiclass_heads"]
+        for head_idx in range(num_cls_heads):
+            labels_in_head = self.gt_labels[:, head_idx]  # type: ignore[call-overload]
+            if max(labels_in_head) < 0:
+                self.hierarchical_info["empty_multiclass_head_indices"].append(head_idx)
 
     @staticmethod
     def mean_top_k_accuracy(scores, labels, k=1):
@@ -416,7 +427,10 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         )
 
         eval_results["MHAcc"] = total_acc
-        eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
+        if self.hierarchical_info["num_multiclass_heads"] > 0:
+            eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
+        else:
+            eval_results["avgClsAcc"] = total_acc_sl
         eval_results["mAP"] = mAP_value
         eval_results["accuracy"] = total_acc
 

@@ -24,13 +24,14 @@ class TestCustomHierarchicalLinearClsHead:
 
     @pytest.fixture(autouse=True)
     def setup(self, head_type) -> None:
-        self.num_classes = 3
-        self.head_dim = 5
+        self.num_classes = 6
+        self.head_dim = 10
         self.cls_heads_info = {
-            "num_multiclass_heads": 1,
-            "num_multilabel_classes": 1,
-            "head_idx_to_logits_range": {"0": (0, 2)},
-            "num_single_label_classes": 2,
+            "num_multiclass_heads": 3,
+            "num_multilabel_classes": 0,
+            "head_idx_to_logits_range": {"0": (0, 2), "1": (2, 4), "2": (4, 6)},
+            "num_single_label_classes": 6,
+            "empty_multiclass_head_indices": [],
         }
         self.loss = dict(type="CrossEntropyLoss", use_sigmoid=False, reduction="mean", loss_weight=1.0)
         self.multilabel_loss = dict(type=AsymmetricLossWithIgnore.__name__, reduction="sum")
@@ -43,13 +44,23 @@ class TestCustomHierarchicalLinearClsHead:
         )
         self.default_head.init_weights()
         self.default_input = torch.ones((2, self.head_dim))
-        self.default_gt = torch.zeros((2, 2))
+        self.default_gt = torch.zeros((2, 3))
 
     @e2e_pytest_unit
     def test_forward(self) -> None:
         result = self.default_head.forward_train(self.default_input, self.default_gt)
         assert "loss" in result
-        assert result["loss"] >= 0
+        assert result["loss"] >= 0 and not torch.isnan(result["loss"])
+
+        empty_head_gt_full = torch.tensor([[-1.0, 0.0, 0.0], [-1.0, 0.0, 0.0]])
+        result_include_empty_full = self.default_head.forward_train(self.default_input, empty_head_gt_full)
+        assert "loss" in result_include_empty_full
+        assert result_include_empty_full["loss"] >= 0 and not torch.isnan(result_include_empty_full["loss"])
+
+        empty_head_gt_partial = torch.tensor([[0.0, 0.0, 0.0], [-1.0, 0.0, 0.0]])
+        result_include_empty_partial = self.default_head.forward_train(self.default_input, empty_head_gt_partial)
+        assert "loss" in result_include_empty_partial
+        assert result_include_empty_partial["loss"] >= 0 and not torch.isnan(result_include_empty_partial["loss"])
 
     @e2e_pytest_unit
     def test_simple_test(self) -> None:

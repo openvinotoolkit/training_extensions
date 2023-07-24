@@ -425,7 +425,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             else:
                 transform = self.trainer.datamodule.train_dataloader().dataset.transform
         metadata = {
-            "transform": transform.to_dict(),
+            # TODO: Replace with transform.to_dict() when OTX supports albumentations 1.3.0
+            "transform": {"transform": transform._to_dict()},
             "image_threshold": image_threshold,
             "pixel_threshold": pixel_threshold,
             "image_shape": list(self.config.model.input_size),
