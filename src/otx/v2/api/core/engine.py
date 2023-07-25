@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
+from otx.v2.api.core.registry import BaseRegistry
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.auto_utils import configure_task_type, configure_train_type
 from otx.v2.api.utils.importing import get_impl_class, get_otx_root_path
@@ -41,7 +42,7 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE = {
     # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     TaskType.ANOMALY_CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
-        "default_config": f"{CONFIG_ROOT}/anomaly_classification/",
+        "default_config": f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_padim.yaml",
     },
     TaskType.ANOMALY_DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
@@ -82,12 +83,15 @@ def set_adapters_from_string(framework: str):
     if dataset_builder is None:
         raise NotImplementedError(f"{adapter}.Dataset")
     get_model = get_impl_class(f"{adapter}.get_model")
-    return sub_engine, dataset_builder, get_model
+    model_configs = get_impl_class(f"{adapter}.model.MODEL_CONFIGS")
+    list_models = get_impl_class(f"{adapter}.model.list_models")
+    return sub_engine, dataset_builder, get_model, model_configs, list_models
 
 
 class Engine:
     def __init__(self, work_dir: str) -> None:
         self.work_dir = work_dir
+        self.registry = BaseRegistry(name="base")
 
     def train(
         self,
@@ -228,7 +232,13 @@ class AutoEngine(Engine):
         dataset_kwargs = self.config.get("data", None)
         self.auto_configuration(framework, task, train_type)
 
-        self.framework_engine, self.dataset, self.get_model = set_adapters_from_string(self.framework)
+        (
+            self.framework_engine,
+            self.dataset,
+            self.get_model,
+            self.config_list,
+            self.list_models,
+        ) = set_adapters_from_string(self.framework)
 
         # Create Dataset Builder
         dataset_kwargs["task"] = self.task

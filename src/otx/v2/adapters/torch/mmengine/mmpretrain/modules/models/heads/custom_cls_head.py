@@ -21,11 +21,14 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
-    def loss(self, feats, gt_label, feature=None):
-        """Calculate loss for given cls_score/gt_label."""
-        cls_score = self.classifier(feats)
+    def _get_loss(self, cls_score: torch.Tensor, data_samples, feature=None, **kwargs):
         num_samples = len(cls_score)
         losses = dict()
+        if "gt_score" in data_samples[0]:
+            # Batch augmentation may convert labels to one-hot format scores.
+            gt_label = torch.stack([i.gt_score for i in data_samples])
+        else:
+            gt_label = torch.cat([i.gt_label for i in data_samples])
         # compute loss
         if self.loss_type == "IBLoss":
             loss = self.loss_module(cls_score, gt_label, feature=feature)
@@ -39,9 +42,15 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         losses["loss"] = loss
         return losses
 
-    def forward(self, x):
-        """Forward fuction of CustomNonLinearHead class."""
-        return self.simple_test(x)
+    def loss(self, feats, data_samples, feature=None, **kwargs):
+        """Calculate loss for given cls_score/gt_label."""
+        cls_score = self.classifier(feats)
+        losses = self._get_loss(cls_score, data_samples, feature, **kwargs)
+        return losses
+
+    def forward(self, feats):
+        """Forward fuction of CustomNonLinearClsHead class."""
+        return self.predict(feats)
 
 
 @HEADS.register_module()

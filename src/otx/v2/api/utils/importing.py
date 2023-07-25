@@ -15,6 +15,8 @@
 # and limitations under the License.
 
 
+from typing import Dict
+from pathlib import Path
 import importlib
 import inspect
 import os
@@ -52,3 +54,18 @@ def get_otx_root_path():
     if otx_module:
         return os.path.dirname(inspect.getfile(otx_module))
     return None
+
+
+def get_files_dict(folder_path) -> Dict[str, str]:
+    file_path_dict = {}
+
+    folder_path = Path(folder_path)
+    if not folder_path.exists():
+        raise ValueError("The specified folder path does not exist.")
+
+    for file_path in folder_path.iterdir():
+        if file_path.is_file():
+            file_name = file_path.stem
+            file_path_dict[file_name] = str(file_path)
+
+    return file_path_dict

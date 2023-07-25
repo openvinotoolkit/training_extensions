@@ -7,9 +7,9 @@ from anomalib.models import get_model as anomalib_get_model
 
 
 def get_model(
-    config: Optional[Union[Dict[str, Any], DictConfig, str]] = None,
+    model: Optional[Union[Dict[str, Any], DictConfig, str]] = None,
     checkpoint: Optional[str] = None,
-    num_classes: Optional[int] = None,
+    **kwargs,
 ) -> torch.nn.Module:
     """_summary_.
 
@@ -21,13 +21,15 @@ def get_model(
     Returns:
         AnomalyModule: _description_
     """
-    if isinstance(config, str):
+    if isinstance(model, str):
         pass
+    if not hasattr(model, "model"):
+        model = DictConfig(content={"model": model})
     if checkpoint is not None:
-        config["init_weights"] = checkpoint
-    if isinstance(config, dict):
-        config = OmegaConf.create(config)
-    return anomalib_get_model(config=config)
+        model["init_weights"] = checkpoint
+    if isinstance(model, dict):
+        model = OmegaConf.create(model)
+    return anomalib_get_model(config=model)
 
 
 if __name__ == "__main__":

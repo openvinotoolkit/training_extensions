@@ -7,6 +7,6 @@ except ImportError:
 
 from .dataset import Dataset
 from .engine import MMPTEngine as Engine
-from .model import get_model
+from .model import get_model, list_models
 
-__all__ = ["get_model", "Dataset", "Engine"]
+__all__ = ["get_model", "Dataset", "Engine", "list_models"]

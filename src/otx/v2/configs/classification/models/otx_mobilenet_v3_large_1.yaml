@@ -1,0 +1,34 @@
+# Model Configuration
+model:
+  type: SAMImageClassifier
+  backbone:
+    pretrained: true
+    type: OTXMobileNetV3
+    mode: large
+    width_mult: 1.0
+  head:
+    in_channels: 960
+    hid_channels: 1280
+    loss:
+      loss_weight: 1.0
+      type: CrossEntropyLoss
+    num_classes: 1000
+    topk: !!python/tuple
+      - 1
+      - 5
+    type: CustomNonLinearClsHead
+    act_cfg:
+      type: HSwish
+  neck:
+    type: GlobalAveragePooling
+  pretrained: null
+  data_preprocessor:
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375
+    to_rgb: true

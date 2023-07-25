@@ -83,6 +83,6 @@ if __name__ == "__main__":
         def forward(self, x):
             return self.l1(x)
 
-    registry.register_module(name="A", module=NewEncoder)
+    registry.register_module(type="model", name="A", module=NewEncoder)
     result_module = registry.get("A")
-    print(result_module)
+    print(registry)

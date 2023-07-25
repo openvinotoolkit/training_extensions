@@ -253,6 +253,14 @@ class CustomConfig(Config):
 
         return text
 
+    @staticmethod
+    def merge_cfg_dict(base_dict: Union[Config, Dict], cfg_dict: Union[Config, Dict]) -> dict:
+        if isinstance(base_dict, Config):
+            base_dict = base_dict._cfg_dict.to_dict()
+        if isinstance(cfg_dict, Config):
+            cfg_dict = cfg_dict._cfg_dict.to_dict()
+        return CustomConfig._merge_a_into_b(cfg_dict, base_dict)
+
     def dump(self, file: Optional[Union[str, Path]] = None):
         """Dump config to file or return config text.
 

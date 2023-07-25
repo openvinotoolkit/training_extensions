@@ -153,6 +153,8 @@ class Dataset(BaseDataset):
 
     @property
     def num_classes(self):
+        if not self.initialize:
+            self._initialize()
         return len(self.label_schema.get_labels(include_empty=False))
 
 

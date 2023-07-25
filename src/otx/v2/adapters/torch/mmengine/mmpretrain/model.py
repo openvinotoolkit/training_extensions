@@ -1,22 +1,27 @@
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 
 import torch
-from mmpretrain import get_model as get_mmpretrain_model
+import fnmatch
+from mmpretrain import get_model as get_mmpretrain_model, list_models as list_mmpretrain_model
 from mmpretrain.models import build_backbone, build_neck
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.api.utils.logger import get_logger
+from otx.v2.api.utils.importing import get_otx_root_path, get_files_dict
 
 logger = get_logger()
 
 TRANSFORMER_BACKBONES = ["VisionTransformer", "T2T_ViT", "Conformer"]
+MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/classification/models"
+MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
 def configure_in_channels(config, input_shape=[3, 224, 224]):
     # COPY from otx.algorithms.classification.adapters.mmpretrain.configurer.ClassificationConfigurer::configure_in_channel
     configure_required = False
     wrap_model = hasattr(config, "model")
-    model_config = config.pop("model") if wrap_model else config
+    model_config = config.get("model") if wrap_model else config
     if model_config.get("neck") is not None:
         if model_config["neck"].get("in_channels") is not None and model_config["neck"]["in_channels"] <= 0:
             configure_required = True
@@ -72,26 +77,65 @@ def configure_in_channels(config, input_shape=[3, 224, 224]):
 def get_model(
     model: Union[str, Config, Dict],
     pretrained: Union[str, bool] = False,
-    num_classes: int = 1000,
+    num_classes: Optional[int] = None,
     channel_last: bool = False,
-    return_config: bool = False,
+    return_dict: bool = False,
+    return_config_path: bool = False,
     **kwargs,
 ):
+    model_name = None
     if isinstance(model, dict):
         model = Config(cfg_dict=model)
-    elif isinstance(model, str) and Path(model).is_file():
-        model = Config.fromfile(filename=model)
+    elif isinstance(model, str):
+        if Path(model).is_file():
+            model = Config.fromfile(filename=model)
+        else:
+            model_name = model
+    if hasattr(model, "model"):
+        model = Config(model["model"])
+    if hasattr(model, "name"):
+        model_name = model.pop("name")
+    if isinstance(model_name, str) and model_name in MODEL_CONFIGS:
+        base_model = Config.fromfile(filename=MODEL_CONFIGS[model_name])
+        base_model = base_model.get("model", base_model)
+        if isinstance(model, str):
+            model = {}
+        model = Config(cfg_dict=Config.merge_cfg_dict(base_model, model))
+
     if isinstance(model, Config):
         model = configure_in_channels(model)
-    if not hasattr(model, "model"):
-        model = Config(cfg_dict={"model": model})
-    model["model"]["_scope_"] = "mmpretrain"
-    if num_classes is not None:
-        model["model"]["head"]["num_classes"] = num_classes
+        if not hasattr(model, "model"):
+            model["_scope_"] = "mmpretrain"
+            model = Config(cfg_dict={"model": model})
+        else:
+            model["model"]["_scope_"] = "mmpretrain"
+        if num_classes is not None:
+            head = model["model"].get("head", {})
+            if head and hasattr(head, "num_classes"):
+                model["model"]["head"]["num_classes"] = num_classes
+        if return_dict:
+            return model.model._cfg_dict.to_dict()
+
     model = get_mmpretrain_model(model, pretrained, **kwargs)
 
     if channel_last:
         model = model.to(memory_format=torch.channels_last)
-    if return_config:
-        return model, model._config.model
     return model
+
+
+def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
+    # First, make sure it's a model from mmpretrain.
+    model_list = list_mmpretrain_model(pattern=pattern, **kwargs)
+    # Add OTX Custom models
+    model_list.extend(list(MODEL_CONFIGS.keys()))
+
+    if pattern is not None:
+        # Always match keys with any postfix.
+        model_list = set(fnmatch.filter(model_list, pattern + "*"))
+
+    return sorted(list(model_list))
+
+
+if __name__ == "__main__":
+    model_list = list_models("otx*")
+    model = get_model(model_list[0])
