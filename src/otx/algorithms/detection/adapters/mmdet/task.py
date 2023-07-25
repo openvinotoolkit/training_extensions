@@ -410,11 +410,12 @@ class MMDetectionTask(OTXDetectionTask):
             elif isinstance(raw_model, DETR):
                 saliency_hook = ActivationMapHook(feature_model)
             else:
-                saliency_hook = DetClassProbabilityMapHook(
-                    feature_model,
-                    use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
-                    normalize=not isinstance(mm_dataset, ImageTilingDataset),
-                )
+                # saliency_hook = DetClassProbabilityMapHook(
+                #     feature_model,
+                #     use_cls_softmax=not isinstance(mm_dataset, ImageTilingDataset),
+                #     normalize=not isinstance(mm_dataset, ImageTilingDataset),
+                # )
+                saliency_hook = ActivationMapHook(feature_model)
 
         if not dump_features:
             feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
