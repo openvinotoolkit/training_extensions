@@ -289,6 +289,8 @@ class Evaluator:
                 det_masks = mask_util.decode(det_masks)
                 det_masks = det_masks.transpose(2, 0, 1)
 
+                # TODO: mask2box
+                # mask2bbox() from mmdet
                 # SOLOv2 does not output any bboxes
                 if sum(det_bboxes[0]) == 0:
                     for i, det_mask in enumerate(det_masks):

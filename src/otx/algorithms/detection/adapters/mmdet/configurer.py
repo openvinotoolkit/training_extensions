@@ -295,6 +295,11 @@ class DetectionConfigurer:
                             head.num_classes = num_classes
                     else:
                         cfg.model.roi_head[head_name].num_classes = num_classes
+        elif "panoptic_head" in cfg.model:
+            # For Mask2Former
+            cfg.model.panoptic_head.num_things_classes = num_classes
+            cfg.model.panoptic_head.loss_cls.class_weight = [1.0] * num_classes + [0.1]
+            cfg.model.panoptic_fusion_head.num_things_classes = num_classes
         else:
             # For other architectures (including SSD)
             for head_name in head_names:

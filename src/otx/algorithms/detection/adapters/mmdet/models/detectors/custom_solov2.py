@@ -1,4 +1,4 @@
-"""OTX MaskRCNN Class for mmdetection detectors."""
+"""OTX SOLOv2 Class for mmdetection detectors."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #

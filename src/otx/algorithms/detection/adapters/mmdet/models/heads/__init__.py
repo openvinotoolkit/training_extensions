@@ -8,6 +8,7 @@ from .custom_anchor_generator import SSDAnchorGeneratorClustered
 from .custom_atss_head import CustomATSSHead, CustomATSSHeadTrackingLossDynamics
 from .custom_dino_head import CustomDINOHead
 from .custom_fcn_mask_head import CustomFCNMaskHead
+from .custom_maskformer_fusion_head import CustomMaskFormerFusionHead
 from .custom_retina_head import CustomRetinaHead
 from .custom_roi_head import CustomRoIHead
 from .custom_ssd_head import CustomSSDHead
@@ -21,6 +22,7 @@ __all__ = [
     "CustomATSSHead",
     "CustomDINOHead",
     "CustomFCNMaskHead",
+    "CustomMaskFormerFusionHead",
     "CustomRetinaHead",
     "CustomSSDHead",
     "CustomRoIHead",
