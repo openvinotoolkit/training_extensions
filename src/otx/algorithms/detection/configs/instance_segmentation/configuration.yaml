@@ -49,7 +49,10 @@ learning_parameters:
   learning_rate_warmup_iters:
     affects_outcome_of: TRAINING
     default_value: 100
-    description: ""
+    description:
+      In this periods of initial training iterations, the model will be trained in low learning rate,
+      which will be increased incrementally up to the expected learning rate setting.
+      This warm-up phase is known to be helpful to stabilize training, thus result in better performance.
     editable: true
     header: Number of iterations for learning rate warmup
     max_value: 10000
@@ -61,23 +64,6 @@ learning_parameters:
       rules: []
       type: UI_RULES
     value: 100
-    visible_in_ui: true
-    warning: null
-  num_checkpoints:
-    affects_outcome_of: NONE
-    default_value: 5
-    description: ""
-    editable: true
-    header: Number of checkpoints that is done during the single training round
-    max_value: 100
-    min_value: 1
-    type: INTEGER
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 5
     visible_in_ui: true
     warning: null
   num_iters:
@@ -592,7 +578,7 @@ tiling_parameters:
     header: OpenVINO IR Scale Factor
     description: The purpose of the scale parameter is to optimize the performance and efficiency of tiling in OpenVINO IR during inference. By controlling the increase in tile size and input size, the scale parameter allows for more efficient parallelization of the workload and improve the overall performance and efficiency of the inference process on OpenVINO.
     affects_outcome_of: TRAINING
-    default_value: 2.0
+    default_value: 1.0
     min_value: 1.0
     max_value: 4.0
     type: FLOAT
@@ -602,7 +588,7 @@ tiling_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 2.0
+    value: 1.0
     visible_in_ui: true
     warning: null
 

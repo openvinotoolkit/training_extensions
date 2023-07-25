@@ -18,15 +18,9 @@ from typing import Dict
 
 import cv2
 import numpy as np
-
-try:
-    from openvino.model_zoo.model_api.models.instance_segmentation import MaskRCNNModel
-    from openvino.model_zoo.model_api.models.ssd import SSD, find_layer_by_name
-    from openvino.model_zoo.model_api.models.utils import Detection
-except ImportError as e:
-    import warnings
-
-    warnings.warn(f"{e}: ModelAPI was not found.")
+from openvino.model_api.models.instance_segmentation import MaskRCNNModel, _expand_box, _segm_postprocess
+from openvino.model_api.models.ssd import SSD, find_layer_by_name
+from openvino.model_api.models.utils import Detection
 
 
 class OTXMaskRCNNModel(MaskRCNNModel):
@@ -93,16 +87,36 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         masks = masks[detections_filter]
         classes = classes[detections_filter]
 
-        scale_x = meta["resized_shape"][1] / meta["original_shape"][1]
-        scale_y = meta["resized_shape"][0] / meta["original_shape"][0]
-        boxes[:, 0::2] /= scale_x
-        boxes[:, 1::2] /= scale_y
+        inputImgWidth, inputImgHeight = (
+            meta["original_shape"][1],
+            meta["original_shape"][0],
+        )
+        invertedScaleX, invertedScaleY = (
+            inputImgWidth / self.orig_width,
+            inputImgHeight / self.orig_height,
+        )
+        padLeft, padTop = 0, 0
+        if "fit_to_window" == self.resize_type or "fit_to_window_letterbox" == self.resize_type:
+            invertedScaleX = invertedScaleY = max(invertedScaleX, invertedScaleY)
+            if "fit_to_window_letterbox" == self.resize_type:
+                padLeft = (self.orig_width - round(inputImgWidth / invertedScaleX)) // 2
+                padTop = (self.orig_height - round(inputImgHeight / invertedScaleY)) // 2
+
+        boxes -= (padLeft, padTop, padLeft, padTop)
+        boxes *= (invertedScaleX, invertedScaleY, invertedScaleX, invertedScaleY)
+        np.around(boxes, out=boxes)
+        np.clip(
+            boxes,
+            0.0,
+            [inputImgWidth, inputImgHeight, inputImgWidth, inputImgHeight],
+            out=boxes,
+        )
 
         resized_masks = []
         for box, cls, raw_mask in zip(boxes, classes, masks):
             raw_cls_mask = raw_mask[cls, ...] if self.is_segmentoly else raw_mask
             if self.resize_mask:
-                resized_masks.append(self._segm_postprocess(box, raw_cls_mask, *meta["original_shape"][:-1]))
+                resized_masks.append(_segm_postprocess(box, raw_cls_mask, *meta["original_shape"][:-1]))
             else:
                 resized_masks.append(raw_cls_mask)
 
@@ -141,7 +155,7 @@ class OTXMaskRCNNModel(MaskRCNNModel):
     def _resize_mask(self, box, raw_cls_mask, im_h, im_w):
         # Add zero border to prevent upsampling artifacts on segment borders.
         raw_cls_mask = np.pad(raw_cls_mask, ((1, 1), (1, 1)), "constant", constant_values=0)
-        extended_box = self._expand_box(box, raw_cls_mask.shape[0] / (raw_cls_mask.shape[0] - 2.0)).astype(int)
+        extended_box = _expand_box(box, raw_cls_mask.shape[0] / (raw_cls_mask.shape[0] - 2.0)).astype(int)
         w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
         x0, y0 = np.clip(extended_box[:2], a_min=0, a_max=[im_w, im_h])
         x1, y1 = np.clip(extended_box[2:] + 1, a_min=0, a_max=[im_w, im_h])
@@ -171,7 +185,7 @@ class OTXMaskRCNNModel(MaskRCNNModel):
 
     def segm_postprocess(self, *args, **kwargs):
         """Post-process for segmentation masks."""
-        return self._segm_postprocess(*args, **kwargs)
+        return _segm_postprocess(*args, **kwargs)
 
     def disable_mask_resizing(self):
         """Disable mask resizing.

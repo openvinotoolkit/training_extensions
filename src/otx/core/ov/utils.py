@@ -3,14 +3,13 @@
 """Utils for otx.core.ov."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import errno
 import os
 from typing import Optional
 
-from openvino.pyopenvino import Model, Node  # pylint: disable=no-name-in-module
-from openvino.runtime import Core
+from openvino.runtime import Core, Model, Node
 
 from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
 

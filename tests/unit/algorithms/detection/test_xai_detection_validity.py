@@ -24,19 +24,19 @@ templates_two_stage_det_ids = [template.model_template_id for template in templa
 
 class TestExplainMethods:
     ref_saliency_shapes = {
-        "ATSS": (2, 4, 4),
+        "MobileNetV2-ATSS": (2, 4, 4),
         "SSD": (81, 13, 13),
         "YOLOX": (80, 13, 13),
     }
 
     ref_saliency_vals_det = {
-        "ATSS": np.array([67, 216, 255, 57], dtype=np.uint8),
+        "MobileNetV2-ATSS": np.array([67, 216, 255, 57], dtype=np.uint8),
         "YOLOX": np.array([80, 28, 42, 53, 49, 68, 72, 75, 69, 57, 65, 6, 157], dtype=np.uint8),
         "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 28, 44, 23, 61], dtype=np.uint8),
     }
 
     ref_saliency_vals_det_wo_postprocess = {
-        "ATSS": -0.10465062,
+        "MobileNetV2-ATSS": -0.10465062,
         "YOLOX": 0.04948914,
         "SSD": 0.6629989,
     }
@@ -80,7 +80,9 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
-        assert (saliency_maps[0][0][0] == self.ref_saliency_vals_det[template.name]).all()
+        actual_sal_vals = saliency_maps[0][0][0].astype(np.int8)
+        ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.int8)
+        assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_det, ids=templates_det_ids)

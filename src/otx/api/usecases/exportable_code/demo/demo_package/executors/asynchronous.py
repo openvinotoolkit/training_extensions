@@ -7,7 +7,7 @@ import time
 from typing import Any, Tuple, Union
 
 import numpy as np
-from openvino.model_zoo.model_api.pipelines import AsyncPipeline
+from openvino.model_api.pipelines import AsyncPipeline
 
 from otx.api.usecases.exportable_code.demo.demo_package.model_container import (
     ModelContainer,
@@ -78,7 +78,9 @@ class AsyncExecutor:
         predictions, frame_meta = results
         if isinstance(self.converter, DetectionToAnnotationConverter):
             # Predictions for the detection task
-            predictions = np.array([[pred.id, pred.score, *pred.get_coords()] for pred in predictions])
+            predictions = np.array(
+                [[pred.id, pred.score, *[pred.xmin, pred.ymin, pred.xmax, pred.ymax]] for pred in predictions.objects]
+            )
             predictions.shape = len(predictions), 6
         annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
         current_frame = frame_meta["frame"]

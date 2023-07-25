@@ -1,7 +1,7 @@
 """MatMul-related modules for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
 
@@ -24,7 +24,7 @@ class MatMulV0(Operation[MatMulV0Attribute]):
     """MatMulV0 class."""
 
     TYPE = "MatMul"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = MatMulV0Attribute
 
     def forward(self, input_a, input_b):
@@ -48,7 +48,7 @@ class EinsumV7(Operation[EinsumV7Attribute]):
     """EinsumV7 class."""
 
     TYPE = "Einsum"
-    VERSION = 7
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = EinsumV7Attribute
 
     def forward(self, *inputs):

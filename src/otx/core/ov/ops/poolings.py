@@ -1,7 +1,7 @@
 """Pooling-related modules for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
 from typing import Callable, List
@@ -59,7 +59,7 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
     """MaxPoolV0 class."""
 
     TYPE = "MaxPool"
-    VERSION = 0
+    VERSION = "opset8"
     ATTRIBUTE_FACTORY = MaxPoolV0Attribute
 
     def forward(self, inputs):
@@ -126,7 +126,7 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
     """AvgPoolV1 class."""
 
     TYPE = "AvgPool"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = AvgPoolV1Attribute
 
     def __init__(self, *args, **kwargs):

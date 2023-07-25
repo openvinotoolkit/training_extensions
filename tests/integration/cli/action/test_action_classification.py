@@ -108,6 +108,8 @@ class TestToolsOTXActionClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
+        if template.model_template_id == "Custom_Action_Classification_MoViNet":
+            pytest.xfail("Issue#2058: MoViNet inference fails in OV 2023.0")
         tmp_dir_path = tmp_dir_path / "action_cls"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=1.0)
 

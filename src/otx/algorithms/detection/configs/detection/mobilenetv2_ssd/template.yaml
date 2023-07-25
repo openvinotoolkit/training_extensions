@@ -57,8 +57,6 @@ training_targets:
 # Stats.
 gigaflops: 9.4
 size: 7.6
-# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-# inference_targets:
-#   - CPU
-#   - GPU
-#   - VPU
+
+# Model spec
+model_category: BALANCE

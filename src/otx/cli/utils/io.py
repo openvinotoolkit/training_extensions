@@ -47,6 +47,10 @@ model_adapter_keys = (
     "config.json",
     "tile_classifier.xml",
     "tile_classifier.bin",
+    "visual_prompting_image_encoder.xml",
+    "visual_prompting_image_encoder.bin",
+    "visual_prompting_decoder.xml",
+    "visual_prompting_decoder.bin",
 )
 
 

@@ -433,7 +433,7 @@ class TestConfigManager:
         assert not config_manager._check_rebuild()
 
         config_manager.args.model = "SSD"
-        config_manager.template.name = "ATSS"
+        config_manager.template.name = "MobileNetV2-ATSS"
         config_manager.args.train_type = "Semisupervised"
         assert config_manager._check_rebuild()
 

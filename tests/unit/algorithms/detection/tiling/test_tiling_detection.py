@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import os
 from typing import List
@@ -11,7 +11,7 @@ import torch
 from mmcv import Config, ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import DETECTORS
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
@@ -35,6 +35,7 @@ from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_ISEG_TEMPLATE_DIR,
     init_environment,
 )
+from otx.algorithms.detection.utils.data import adaptive_tile_params
 
 
 @DETECTORS.register_module(force=True)
@@ -374,7 +375,6 @@ class TestTilingDetection:
         assert ir_width == original_width * scale_factor
 
     @e2e_pytest_unit
-    @pytest.mark.skip(reason="Issue#2245: Sporadic failure of tiling max ann.")
     def test_max_annotation(self, max_annotation=200):
         otx_dataset, labels = create_otx_dataset(
             self.height, self.width, self.label_names, Domain.INSTANCE_SEGMENTATION
@@ -388,6 +388,7 @@ class TestTilingDetection:
             overlap_ratio=np.random.uniform(low=0.0, high=0.5),
             max_per_img=np.random.randint(low=1, high=10000),
             max_annotation=max_annotation,
+            include_full_img=True,
         )
         train_data_cfg = ConfigDict(
             dict(
@@ -428,3 +429,23 @@ class TestTilingDetection:
             assert len(data["gt_bboxes"].data[0][0]) <= max_annotation
             assert len(data["gt_labels"].data[0][0]) <= max_annotation
             assert len(data["gt_masks"].data[0][0]) <= max_annotation
+
+    @e2e_pytest_unit
+    def test_adaptive_tile_parameters(self):
+        model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
+        hp = create(model_template.hyper_parameters.data)
+
+        default_tile_size = hp.tiling_parameters.tile_size
+        default_tile_overlap = hp.tiling_parameters.tile_overlap
+        default_tile_max_number = hp.tiling_parameters.tile_max_number
+
+        adaptive_tile_params(hp.tiling_parameters, self.otx_dataset)
+
+        # check tile size is changed
+        assert hp.tiling_parameters.tile_size != default_tile_size
+
+        # check tile overlap is changed
+        assert hp.tiling_parameters.tile_overlap != default_tile_overlap
+
+        # check max output prediction size is changed
+        assert hp.tiling_parameters.tile_max_number != default_tile_max_number

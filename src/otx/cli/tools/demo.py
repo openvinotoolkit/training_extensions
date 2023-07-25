@@ -20,6 +20,8 @@ from collections import deque
 import cv2
 import numpy as np
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.image import Image
@@ -64,7 +66,12 @@ def get_args():
         "This options applies to result visualisation only.",
     )
     parser.add_argument("--loop", action="store_true", help="Enable reading the input in a loop.")
-    parser.add_argument("--delay", type=int, default=3, help="Frame visualization time in ms.")
+    parser.add_argument(
+        "--delay",
+        type=int,
+        default=3,
+        help="Frame visualization time in ms. Negative delay value disables visualization",
+    )
     parser.add_argument(
         "--display-perf",
         action="store_true",

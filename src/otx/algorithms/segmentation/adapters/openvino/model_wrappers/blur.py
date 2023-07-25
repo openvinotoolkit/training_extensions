@@ -19,9 +19,9 @@ from typing import Any, Dict, Iterable, Optional, Union
 
 import cv2
 import numpy as np
-from openvino.model_zoo.model_api.adapters.model_adapter import ModelAdapter
-from openvino.model_zoo.model_api.models import SegmentationModel
-from openvino.model_zoo.model_api.models.types import NumericalValue
+from openvino.model_api.adapters.inference_adapter import InferenceAdapter
+from openvino.model_api.models import SegmentationModel
+from openvino.model_api.models.types import NumericalValue
 
 from otx.api.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
 
@@ -46,7 +46,7 @@ class BlurSegmentation(SegmentationModel):
 
     def __init__(
         self,
-        model_adapter: ModelAdapter,
+        model_adapter: InferenceAdapter,
         configuration: Optional[dict] = None,
         preload: bool = False,
     ):

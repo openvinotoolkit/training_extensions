@@ -29,11 +29,10 @@ logger = get_logger()
 def get_visual_promtping_config(
     task_name: str,
     otx_config: ConfigurableParameters,
-    output_path: Path,
+    config_dir: str,
+    mode: str = "train",
     model_checkpoint: Optional[str] = None,
     resume_from_checkpoint: Optional[str] = None,
-    config_filename: str = "config",
-    config_file_extension: str = "yaml",
 ) -> Union[DictConfig, ListConfig]:
     """Get visual prompting configuration.
 
@@ -41,23 +40,23 @@ def get_visual_promtping_config(
     OTX config.
 
     Args:
-        task_name (str): Task name to load configuration from Visual Prompting.
-        otx_config (ConfigurableParameters): OTX config object parsed from configuration.yaml file.
-        output_path (Path): Path to save the configuration file.
+        task_name (str): Task name to load configuration from visual prompting.
+        otx_config (ConfigurableParameters): OTX config object parsed from `configuration.yaml` file.
+        config_dir (str): Path to load raw `config.yaml` or save updated `config.yaml`.
+        mode (str): Mode to run visual prompting task. Default: "train".
         model_checkpoint (Optional[str]): Path to the checkpoint to load the model weights.
         resume_from_checkpoint (Optional[str]): Path to the checkpoint to resume training.
-        config_filename (str): Name of the configuration file, defaults to "config".
-        config_file_extension (str): Extension of the configuration file, defaults to "yaml".
 
     Returns:
         Union[DictConfig, ListConfig]: Visual prompting config object for the specified model type
             with overwritten default values.
     """
-    if os.path.isfile(os.path.join(output_path, "config.yaml")):
+    if os.path.isfile(os.path.join(config_dir, "config.yaml")):
         # If there is already a config.yaml file in the output path, load it
-        config_path = os.path.join(output_path, "config.yaml")
+        config_path = os.path.join(config_dir, "config.yaml")
     else:
         # Load the default config.yaml file
+        logger.info("[*] Load default config.yaml.")
         config_path = f"src/otx/algorithms/visual_prompting/configs/{task_name.lower()}/config.yaml"
 
     config = OmegaConf.load(config_path)
@@ -65,16 +64,18 @@ def get_visual_promtping_config(
 
     update_visual_prompting_config(config, otx_config)
 
-    # update model_checkpoint
-    if model_checkpoint:
-        config.model.checkpoint = model_checkpoint
+    if mode == "train":
+        # update model_checkpoint
+        if model_checkpoint:
+            config.model.checkpoint = model_checkpoint
 
-    # update resume_from_checkpoint
-    config.trainer.resume_from_checkpoint = resume_from_checkpoint
+        # update resume_from_checkpoint
+        config.trainer.resume_from_checkpoint = resume_from_checkpoint
 
-    save_path = Path(os.path.join(output_path, f"{config_filename}.{config_file_extension}"))
-    save_path.write_text(OmegaConf.to_yaml(config))
-    logger.info(f"[*] Save configuration file at {str(save_path)}")
+        save_path = Path(os.path.join(config_dir, "config.yaml"))
+        save_path.write_text(OmegaConf.to_yaml(config))
+        logger.info(f"[*] Save updated configuration file at {str(save_path)}")
+
     return config
 
 
@@ -95,9 +96,9 @@ def update_visual_prompting_config(
     groups = getattr(otx_config, "groups", None)
     if groups:
         for group in groups:
-            if group in ["learning_parameters", "nncf_optimization", "pot_parameters"]:
-                if group in ["nncf_optimization", "pot_parameters"]:
-                    # TODO (sungchul): Consider pot_parameters and nncf_optimization
+            if group in ["learning_parameters", "nncf_optimization", "pot_parameters", "postprocessing"]:
+                if group in ["nncf_optimization"]:
+                    # TODO (sungchul): Consider nncf_optimization
                     logger.warning(f"{group} will be implemented.")
                     continue
                 update_visual_prompting_config(visual_prompting_config, getattr(otx_config, group))

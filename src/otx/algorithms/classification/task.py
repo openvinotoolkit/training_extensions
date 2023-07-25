@@ -37,6 +37,7 @@ from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -47,6 +48,8 @@ from otx.api.entities.inference_parameters import (
 from otx.api.entities.inference_parameters import (
     default_progress_callback as default_infer_progress_callback,
 )
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelGroup
 from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.metrics import (
     CurveMetric,
@@ -125,16 +128,22 @@ class OTXClassificationTask(OTXTask, ABC):
         if self._task_environment.model is not None:
             self._load_model()
 
+    def _is_multi_label(self, label_groups: List[LabelGroup], all_labels: List[LabelEntity]):
+        """Check whether the current training mode is multi-label or not."""
+        # NOTE: In the current Geti, multi-label should have `___` symbol for all group names.
+        find_multilabel_symbol = ["___" in getattr(i, "name", "") for i in label_groups]
+        return (
+            (len(label_groups) > 1) and (len(label_groups) == len(all_labels)) and (False not in find_multilabel_symbol)
+        )
+
     def _set_train_mode(self):
-        self._multilabel = len(self._task_environment.label_schema.get_groups(False)) > 1 and len(
-            self._task_environment.label_schema.get_groups(False)
-        ) == len(
-            self._task_environment.get_labels(include_empty=False)
-        )  # noqa:E127
+        label_groups = self._task_environment.label_schema.get_groups(include_empty=False)
+        all_labels = self._task_environment.label_schema.get_labels(include_empty=False)
+
+        self._multilabel = self._is_multi_label(label_groups, all_labels)
         if self._multilabel:
             logger.info("Classification mode: multilabel")
-
-        if not self._multilabel and len(self._task_environment.label_schema.get_groups(False)) > 1:
+        elif len(label_groups) > 1:
             logger.info("Classification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(self._task_environment.label_schema)
@@ -251,19 +260,23 @@ class OTXClassificationTask(OTXTask, ABC):
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
+        inference_config = get_cls_inferencer_configuration(self._task_environment.label_schema)
+        extra_model_data = get_cls_model_api_configuration(self._task_environment.label_schema, inference_config)
         if export_type == ExportType.ONNX:
+            extra_model_data[("model_info", "mean_values")] = results.get("inference_parameters").get("mean_values")
+            extra_model_data[("model_info", "scale_values")] = results.get("inference_parameters").get("scale_values")
+
             onnx_file = outputs.get("onnx")
+            embed_onnx_model_data(onnx_file, extra_model_data)
             with open(onnx_file, "rb") as f:
                 output_model.set_data("model.onnx", f.read())
         else:
             bin_file = outputs.get("bin")
             xml_file = outputs.get("xml")
 
-            inference_config = get_cls_inferencer_configuration(self._task_environment.label_schema)
             deploy_cfg = get_cls_deploy_config(self._task_environment.label_schema, inference_config)
-            ir_extra_data = get_cls_model_api_configuration(self._task_environment.label_schema, inference_config)
-            ir_extra_data[("otx_config",)] = json.dumps(deploy_cfg, ensure_ascii=False)
-            embed_ir_model_data(xml_file, ir_extra_data)
+            extra_model_data[("otx_config",)] = json.dumps(deploy_cfg, ensure_ascii=False)
+            embed_ir_model_data(xml_file, extra_model_data)
 
             with open(bin_file, "rb") as f:
                 output_model.set_data("openvino.bin", f.read())

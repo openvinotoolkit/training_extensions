@@ -23,6 +23,11 @@ class TestClassificationConfigurer:
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
 
+        self.multilabel_model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_multilabel.py"))
+        self.hierarchical_model_cfg = MPAConfig.fromfile(
+            os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_hierarchical.py")
+        )
+
     @e2e_pytest_unit
     def test_configure(self, mocker):
         mock_cfg_base = mocker.patch.object(ClassificationConfigurer, "configure_base")
@@ -118,6 +123,12 @@ class TestClassificationConfigurer:
         self.configurer.configure_model(self.model_cfg, ir_options)
         assert self.model_cfg.model_task
         assert self.model_cfg.model.head.in_channels == 960
+
+        multilabel_model_cfg = self.multilabel_model_cfg
+        self.configurer.configure_model(multilabel_model_cfg, ir_options)
+
+        h_label_model_cfg = self.hierarchical_model_cfg
+        self.configurer.configure_model(h_label_model_cfg, ir_options)
 
     @e2e_pytest_unit
     def test_configure_model_not_classification_task(self):
@@ -241,8 +252,7 @@ class TestIncrClassificationConfigurer:
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
         self.configurer.configure_task(self.model_cfg, True)
-        assert self.model_cfg.custom_hooks[0].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[0].sampler_flag is False
+        assert "TaskAdaptHook" in [i.type for i in self.model_cfg.custom_hooks]
 
 
 class TestSemiSLClassificationConfigurer:

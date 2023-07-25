@@ -1,23 +1,13 @@
 """Tests for anomaly detection with OTX CLI."""
-
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
 
 import os
 
 import pytest
 
+from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
@@ -28,6 +18,7 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 args = {
@@ -42,6 +33,9 @@ otx_dir = os.getcwd()
 
 templates = Registry("src/otx/algorithms").filter(task_type="ANOMALY_DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
+
+
+TestAnomalyDetectionModelTemplates = generate_model_template_testing(templates)
 
 
 class TestToolsAnomalyDetection:

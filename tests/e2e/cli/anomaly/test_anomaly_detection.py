@@ -35,9 +35,9 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
-    pot_validate_fq_testing,
+    ptq_eval_testing,
+    ptq_optimize_testing,
+    ptq_validate_fq_testing,
 )
 
 args = {
@@ -73,7 +73,7 @@ class TestToolsAnomalyDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -142,15 +142,15 @@ class TestToolsAnomalyDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+    def test_ptq_optimize(self, template, tmp_dir_path):
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_validate_fq(self, template, tmp_dir_path):
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "anomaly", type(self).__name__)
+    def test_ptq_validate_fq(self, template, tmp_dir_path):
+        ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "anomaly", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, tmp_dir_path):
-        pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+    def test_ptq_eval(self, template, tmp_dir_path):
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)

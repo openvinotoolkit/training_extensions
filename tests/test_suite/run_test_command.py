@@ -1,16 +1,7 @@
-# Copyright (C) 2021 Intel Corporation
+"""Common test case and helpersi for OTX"""
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
 
 import asyncio
 import json
@@ -25,9 +16,11 @@ import onnxruntime
 import pytest
 import yaml
 
+from otx.api.entities.model_template import ModelCategory, ModelStatus
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 from otx.cli.utils.nncf import get_number_of_fakequantizers_in_xml
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 
 def get_template_rel_dir(template):
@@ -242,16 +235,37 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
     path_to_xml = os.path.join(save_path, "openvino.xml")
     assert os.path.exists(os.path.join(save_path, "label_schema.json"))
     if not is_onnx:
-        assert os.path.exists(path_to_xml)
-        assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+        if "Visual_Prompting" in template.model_template_id:
+            path_to_xml = os.path.join(save_path, "visual_prompting_decoder.xml")
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.xml"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.bin"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.xml"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.bin"))
+        else:
+            assert os.path.exists(path_to_xml)
+            assert os.path.exists(os.path.join(save_path, "openvino.bin"))
     else:
-        path_to_onnx = os.path.join(save_path, "model.onnx")
-        assert os.path.exists(path_to_onnx)
-        # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
-        if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
-            onnx.checker.check_model(path_to_onnx)
-            onnxruntime.InferenceSession(path_to_onnx)
-        return
+        if "Visual_Prompting" in template.model_template_id:
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
+            assert os.path.exists(os.path.join(save_path, "visual_prompting_decoder.onnx"))
+        else:
+            path_to_onnx = os.path.join(save_path, "model.onnx")
+            assert os.path.exists(path_to_onnx)
+
+            if check_ir_meta:
+                onnx_model = onnx.load(path_to_onnx)
+                is_model_type_presented = False
+                for prop in onnx_model.metadata_props:
+                    assert "model_info" in prop.key
+                    if "model_type" in prop.key:
+                        is_model_type_presented = True
+                assert is_model_type_presented
+
+            # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
+            if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
+                onnx.checker.check_model(path_to_onnx)
+                onnxruntime.InferenceSession(path_to_onnx)
+            return
 
     if dump_features:
         with open(path_to_xml, encoding="utf-8") as stream:
@@ -500,7 +514,7 @@ def otx_demo_deployment_testing(template, root, otx_dir, args):
     assert os.path.exists(os.path.join(deployment_dir, "output"))
 
 
-def pot_optimize_testing(template, root, otx_dir, args):
+def ptq_optimize_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -510,38 +524,69 @@ def pot_optimize_testing(template, root, otx_dir, args):
         f'{os.path.join(otx_dir, args["--train-data-roots"])}',
         "--val-data-roots",
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
-        "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--output",
-        f"{template_work_dir}/pot_{template.model_template_id}",
+        f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
+    if is_visual_prompting:
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/exported_{template.model_template_id}/visual_prompting_decoder.xml",
+            ]
+        )
+    else:
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
+            ]
+        )
+
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin")
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
+    if is_visual_prompting:
+        assert os.path.exists(
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
+        )
+        assert os.path.exists(
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.bin"
+        )
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml")
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.bin")
+    else:
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml")
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/label_schema.json")
 
 
-def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name):
+def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name, update=False):
     num_fq = get_number_of_fakequantizers_in_xml(xml_path)
     assert os.path.exists(path_to_ref_data), f"Reference file does not exist: {path_to_ref_data} [num_fq = {num_fq}]"
 
     with open(path_to_ref_data, encoding="utf-8") as stream:
         ref_data = yaml.safe_load(stream)
     ref_num_fq = ref_data.get(test_name, {}).get(compression_type, {}).get("number_of_fakequantizers", -1)
+    if update:
+        print(f"Updating FQ refs: {ref_num_fq}->{num_fq} for {compression_type}")
+        ref_data[test_name][compression_type]["number_of_fakequantizers"] = num_fq
+        with open(path_to_ref_data, encoding="utf-8", mode="w") as stream:
+            stream.write(yaml.safe_dump(ref_data))
     assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
 
 
-def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
-    xml_path = f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
+    if task_type == "visual_prompting":
+        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
+    else:
+        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
     path_to_ref_data = os.path.join(
         otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
     )
-    _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
+    _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
 
 
-def pot_eval_testing(template, root, otx_dir, args):
+def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -550,16 +595,30 @@ def pot_eval_testing(template, root, otx_dir, args):
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
+        f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml",
         "--output",
-        f"{template_work_dir}/pot_{template.model_template_id}",
+        f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
+    if is_visual_prompting:
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.xml",
+            ]
+        )
+    else:
+        command_line.extend(
+            [
+                "--load-weights",
+                f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
+            ]
+        )
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json")
 
-    with open(f"{template_work_dir}/pot_{template.model_template_id}/performance.json") as read_file:
-        pot_performance = json.load(read_file)
+    with open(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json") as read_file:
+        ptq_performance = json.load(read_file)
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
@@ -1029,3 +1088,38 @@ def otx_train_auto_config(root, otx_dir: str, args: Dict[str, str], use_output: 
     command_line.extend(["--workspace", f"{work_dir}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
+
+
+def generate_model_template_testing(templates):
+    class _TestModelTemplates:
+        @e2e_pytest_component
+        def test_model_category(self):
+            stat = {
+                ModelCategory.SPEED: 0,
+                ModelCategory.BALANCE: 0,
+                ModelCategory.ACCURACY: 0,
+                ModelCategory.OTHER: 0,
+            }
+            for template in templates:
+                stat[template.model_category] += 1
+            assert stat[ModelCategory.SPEED] == 1
+            assert stat[ModelCategory.BALANCE] <= 1
+            assert stat[ModelCategory.ACCURACY] == 1
+
+        @e2e_pytest_component
+        def test_model_status(self):
+            for template in templates:
+                if template.model_status == ModelStatus.DEPRECATED:
+                    assert template.model_category == ModelCategory.OTHER
+
+        @e2e_pytest_component
+        def test_default_for_task(self):
+            num_default_model = 0
+            for template in templates:
+                if template.is_default_for_task:
+                    num_default_model += 1
+                    assert template.model_category != ModelCategory.OTHER
+                    assert template.model_status == ModelStatus.ACTIVE
+            assert num_default_model == 1
+
+    return _TestModelTemplates

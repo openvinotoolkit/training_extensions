@@ -33,13 +33,13 @@ def collate_fn(batch: List[Any]) -> Dict:
             List: List of batch data.
         """
         func = torch.stack if x == "gt_masks" else torch.tensor
-        items = [func(item[x]) for item in batch if item[x]]
+        items = [func(item[x]) for item in batch if item[x] is not None]
         return None if len(items) == 0 else items
 
     index = [item["index"] for item in batch]
     images = torch.stack([item["images"] for item in batch])
     bboxes = _convert_empty_to_none("bboxes")
-    points = _convert_empty_to_none("points")
+    points = None  # TBD
     gt_masks = _convert_empty_to_none("gt_masks")
     original_size = [item["original_size"] for item in batch]
     padding = [item["padding"] for item in batch]
@@ -84,20 +84,13 @@ class Pad:
         """
         _, h, w = item["images"].shape  # type: ignore
         max_dim = max(w, h)
-        pad_w = (max_dim - w) // 2
-        pad_h = (max_dim - h) // 2
-        padding = (pad_w, pad_h, max_dim - w - pad_w, max_dim - h - pad_h)
+        pad_w = max_dim - w
+        pad_h = max_dim - h
+        padding = (0, 0, pad_w, pad_h)
 
         item["padding"] = padding
         item["images"] = pad(item["images"], padding, fill=0, padding_mode="constant")
-        item["gt_masks"] = [pad(gt_mask, padding, fill=0, padding_mode="constant") for gt_mask in item["gt_masks"]]
-        item["bboxes"] = [
-            [bbox[0] + pad_w, bbox[1] + pad_h, bbox[2] + pad_w, bbox[3] + pad_h] for bbox in item["bboxes"]
-        ]
-        if item["points"]:
-            item["points"] = [
-                [point[0] + pad_w, point[1] + pad_h, point[2] + pad_w, point[3] + pad_h] for point in item["points"]
-            ]
+
         return item
 
 

@@ -25,15 +25,21 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
         (None, "resume_from_checkpoint.ckpt"),
     ],
 )
+@pytest.mark.parametrize("mode", ["train", "inference"])
 def test_get_visual_promtping_config(
-    tmpdir, mocker, model_checkpoint: Optional[str], resume_from_checkpoint: Optional[str]
+    tmpdir, mocker, mode: str, model_checkpoint: Optional[str], resume_from_checkpoint: Optional[str]
 ):
     """Test get_visual_promtping_config."""
     task_name = "sam_vit_b"
     mocker_otx_config = mocker.patch("otx.api.configuration.configurable_parameters.ConfigurableParameters")
-    output_path = str(tmpdir.mkdir("visual_prompting_training_test"))
+    config_dir = str(tmpdir.mkdir("visual_prompting_training_test"))
     config = get_visual_promtping_config(
-        task_name, mocker_otx_config, output_path, model_checkpoint, resume_from_checkpoint
+        task_name=task_name,
+        otx_config=mocker_otx_config,
+        config_dir=config_dir,
+        mode=mode,
+        model_checkpoint=model_checkpoint,
+        resume_from_checkpoint=resume_from_checkpoint,
     )
 
     assert isinstance(config, DictConfig)
@@ -42,9 +48,12 @@ def test_get_visual_promtping_config(
     assert config.get("optimizer", False)
     assert config.get("callback", False)
     assert config.get("trainer", False)
-    assert config.get("trainer").get("resume_from_checkpoint", None) == resume_from_checkpoint
     if model_checkpoint is not None:
-        assert config.get("model").get("checkpoint") == model_checkpoint
+        if mode == "train":
+            assert config.get("model").get("checkpoint") == model_checkpoint
+        else:
+            assert config.get("model").get("checkpoint") != model_checkpoint
+            assert config.get("trainer").get("resume_from_checkpoint", None) == resume_from_checkpoint
 
 
 @e2e_pytest_unit
@@ -52,13 +61,20 @@ def test_update_visual_prompting_config():
     """Test update_visual_prompting_config."""
     otx_config = OmegaConf.create(
         {
-            "groups": ["learning_parameters"],
+            "groups": ["learning_parameters", "pot_parameters", "postprocessing"],
             "learning_parameters": {"parameters": ["param1"], "param1": "updated_value1"},
+            "pot_parameters": {"parameters": ["param2"], "param2": "updated_value2"},
+            "postprocessing": {"parameters": ["param3"], "param3": "updated_value3"},
             "parameters": [],
         }
     )
-    visual_prompting_config = OmegaConf.create({"param1": "value1", "param2": "value2"})
+    visual_prompting_config = OmegaConf.create(
+        {"param1": "value1", "param2": "value2", "param3": "value3", "param4": "value4"}
+    )
 
     update_visual_prompting_config(visual_prompting_config, otx_config)
 
     assert visual_prompting_config["param1"] == "updated_value1"
+    assert visual_prompting_config["param2"] == "updated_value2"
+    assert visual_prompting_config["param3"] == "updated_value3"
+    assert visual_prompting_config["param4"] == "value4"

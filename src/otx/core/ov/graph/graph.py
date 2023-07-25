@@ -3,7 +3,7 @@
 """Modules for otx.core.ov.graph."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import inspect
 from collections import OrderedDict
@@ -13,7 +13,7 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import _collections_abc
 import networkx as nx
-from openvino.pyopenvino import Model  # pylint: disable=no-name-in-module
+from openvino.runtime import Model
 
 from otx.algorithms.common.utils.logger import get_logger
 

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -31,8 +31,10 @@ from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelin
     ResizeLongestSide,
     collate_fn,
 )
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
+from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.subset import Subset
@@ -41,21 +43,110 @@ from otx.api.utils.shape_factory import ShapeFactory
 logger = get_logger()
 
 
+def get_transform(
+    image_size: int = 1024, mean: List[float] = [123.675, 116.28, 103.53], std: List[float] = [58.395, 57.12, 57.375]
+) -> MultipleInputsCompose:
+    """Get transform pipeline.
+
+    Args:
+        image_size (int): Size of image. Defaults to 1024.
+        mean (List[float]): Mean for normalization. Defaults to [123.675, 116.28, 103.53].
+        std (List[float]): Standard deviation for normalization. Defaults to [58.395, 57.12, 57.375].
+
+    Returns:
+        MultipleInputsCompose: Transform pipeline.
+    """
+    return MultipleInputsCompose(
+        [
+            ResizeLongestSide(target_length=image_size),
+            Pad(),
+            transforms.Normalize(mean=mean, std=std),
+        ]
+    )
+
+
+def convert_polygon_to_mask(shape: Polygon, width: int, height: int) -> np.ndarray:
+    """Convert polygon to mask.
+
+    Args:
+        shape (Polygon): Polygon to convert.
+        width (int): Width of image.
+        height (int): Height of image.
+
+    Returns:
+        np.ndarray: Generated mask from given polygon.
+    """
+    polygon = ShapeFactory.shape_as_polygon(shape)
+    contour = [[int(point.x * width), int(point.y * height)] for point in polygon.points]
+    gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
+    gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
+    return gt_mask
+
+
+def generate_bbox(  # noqa: D417
+    x1: int, y1: int, x2: int, y2: int, width: int, height: int, offset_bbox: int = 0
+) -> List[int]:
+    """Generate bounding box.
+
+    Args:
+        x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
+        width (int): Width of image.
+        height (int): Height of image.
+        offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
+
+    Returns:
+        List[int]: Generated bounding box.
+    """
+
+    def get_randomness(length: int) -> int:
+        if offset_bbox == 0:
+            return 0
+        return np.random.normal(0, min(length * 0.1, offset_bbox))
+
+    bbox = [
+        max(0, x1 + get_randomness(width)),
+        max(0, y1 + get_randomness(height)),
+        min(width, x2 + get_randomness(width)),
+        min(height, y2 + get_randomness(height)),
+    ]
+    return bbox
+
+
+def generate_bbox_from_mask(gt_mask: np.ndarray, width: int, height: int) -> List[int]:
+    """Generate bounding box from given mask.
+
+    Args:
+        gt_mask (np.ndarry): Mask to generate bounding box.
+        width (int): Width of image.
+        height (int): Height of image.
+
+    Returns:
+        List[int]: Generated bounding box from given mask.
+    """
+    y_indices, x_indices = np.where(gt_mask == 1)
+    x_min, x_max = np.min(x_indices), np.max(x_indices)
+    y_min, y_max = np.min(y_indices), np.max(y_indices)
+    return generate_bbox(x_min, y_min, x_max, y_max, width, height)
+
+
 class OTXVisualPromptingDataset(Dataset):
     """Visual Prompting Dataset Adaptor.
 
     Args:
         dataset (DatasetEntity): Dataset entity.
-        transform (MultipleInputsCompose): Transformations to apply to the dataset.
+        image_size (int): Target size to resize image.
+        mean (List[float]): Mean for normalization.
+        std (List[float]): Standard deviation for normalization.
         offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
     """
 
-    def __init__(self, dataset: DatasetEntity, transform: MultipleInputsCompose, offset_bbox: int = 0) -> None:
+    def __init__(
+        self, dataset: DatasetEntity, image_size: int, mean: List[float], std: List[float], offset_bbox: int = 0
+    ) -> None:
 
         self.dataset = dataset
-        self.transform = transform
+        self.transform = get_transform(image_size, mean, std)
         self.offset_bbox = offset_bbox
-
         self.labels = dataset.get_labels()
 
     def __len__(self) -> int:
@@ -65,6 +156,55 @@ class OTXVisualPromptingDataset(Dataset):
             int: Size of the dataset.
         """
         return len(self.dataset)
+
+    @staticmethod
+    def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity]) -> Dict[str, Any]:
+        """Get propmts from dataset_item.
+
+        Args:
+            dataset_item (DatasetItemEntity): Dataset item entity.
+            dataset_labels (List[LabelEntity]): Label information.
+
+        Returns:
+            Dict[str, Any]: Processed prompts with ground truths.
+        """
+        width, height = dataset_item.width, dataset_item.height
+        bboxes: List[List[int]] = []
+        points: List = []  # TBD
+        gt_masks: List[np.ndarray] = []
+        labels: List[ScoredLabel] = []
+        for annotation in dataset_item.get_annotations(labels=dataset_labels, include_empty=False, preserve_id=True):
+            if isinstance(annotation.shape, Image):
+                # use mask as-is
+                gt_mask = annotation.shape.numpy.astype(np.uint8)
+            elif isinstance(annotation.shape, Polygon):
+                # convert polygon to mask
+                gt_mask = convert_polygon_to_mask(annotation.shape, width, height)
+            else:
+                continue
+
+            if gt_mask.sum() == 0:
+                # pass no gt
+                continue
+            gt_masks.append(gt_mask)
+
+            # generate bbox based on gt_mask
+            bbox = generate_bbox_from_mask(gt_mask, width, height)
+            bboxes.append(bbox)
+
+            # TODO (sungchul): generate random points from gt_mask
+
+            # add labels
+            labels.extend(annotation.get_labels(include_empty=False))
+
+        bboxes = np.array(bboxes)
+        return dict(
+            original_size=(height, width),
+            gt_masks=gt_masks,
+            bboxes=bboxes,
+            points=points,  # TODO (sungchul): update point information
+            labels=labels,
+        )
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
         """Get dataset item.
@@ -76,38 +216,10 @@ class OTXVisualPromptingDataset(Dataset):
             Dict[str, Union[int, List, Tensor]]: Dataset item.
         """
         dataset_item = self.dataset[index]
-        item: Dict[str, Union[int, Tensor]] = {"index": index}
+        item: Dict[str, Union[int, Tensor]] = {"index": index, "images": dataset_item.numpy}
 
-        width, height = dataset_item.width, dataset_item.height
-        bboxes: List[List[int]] = []
-        points: List = []  # TBD
-        gt_masks: List[np.ndarray] = []
-        labels: List[ScoredLabel] = []
-        for annotation in dataset_item.get_annotations(labels=self.labels, include_empty=False, preserve_id=True):
-            if isinstance(annotation.shape, Image):
-                # use mask as-is
-                gt_mask = annotation.shape.numpy.astype(np.uint8)
-            elif isinstance(annotation.shape, Polygon):
-                # convert polygon to mask
-                gt_mask = self.convert_polygon_to_mask(annotation.shape, width, height)
-            else:
-                continue
-
-            if gt_mask.sum() == 0:
-                # pass no gt
-                continue
-            gt_masks.append(gt_mask)
-
-            # generate bbox based on gt_mask
-            bbox = self.generate_bbox_from_mask(gt_mask, width, height)
-            bboxes.append(bbox)
-
-            # TODO (sungchul): generate random points from gt_mask
-
-            # add labels
-            labels.extend(annotation.get_labels(include_empty=False))
-
-        if len(gt_masks) == 0:
+        prompts = self.get_prompts(dataset_item, self.labels)
+        if len(prompts["gt_masks"]) == 0:
             return {
                 "images": [],
                 "bboxes": [],
@@ -118,78 +230,10 @@ class OTXVisualPromptingDataset(Dataset):
                 "labels": [],
             }
 
-        bboxes = np.array(bboxes)
-        item.update(
-            dict(
-                original_size=(height, width),
-                images=dataset_item.numpy,
-                path=dataset_item.media.path,
-                gt_masks=gt_masks,
-                bboxes=bboxes,
-                points=points,  # TODO (sungchul): update point information
-                labels=labels,
-            )
-        )
+        prompts["bboxes"] = np.array(prompts["bboxes"])
+        item.update({**prompts, "path": dataset_item.media.path})
         item = self.transform(item)
         return item
-
-    def convert_polygon_to_mask(self, shape: Polygon, width: int, height: int) -> np.ndarray:
-        """Convert polygon to mask.
-
-        Args:
-            shape (Polygon): Polygon to convert.
-            width (int): Width of image.
-            height (int): Height of image.
-
-        Returns:
-            np.ndarray: Generated mask from given polygon.
-        """
-        polygon = ShapeFactory.shape_as_polygon(shape)
-        contour = [[int(point.x * width), int(point.y * height)] for point in polygon.points]
-        gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
-        gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
-        return gt_mask
-
-    def generate_bbox(self, x1: int, y1: int, x2: int, y2: int, width: int, height: int) -> List[int]:  # noqa: D417
-        """Generate bounding box.
-
-        Args:
-            x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
-            width (int): Width of image.
-            height (int): Height of image.
-
-        Returns:
-            List[int]: Generated bounding box.
-        """
-
-        def get_randomness(length: int) -> int:
-            if self.offset_bbox == 0:
-                return 0
-            return np.random.normal(0, min(length * 0.1, self.offset_bbox))
-
-        bbox = [
-            max(0, x1 + get_randomness(width)),
-            max(0, y1 + get_randomness(height)),
-            min(width, x2 + get_randomness(width)),
-            min(height, y2 + get_randomness(height)),
-        ]
-        return bbox
-
-    def generate_bbox_from_mask(self, gt_mask: np.ndarray, width: int, height: int) -> List[int]:
-        """Generate bounding box from given mask.
-
-        Args:
-            gt_mask (np.ndarry): Mask to generate bounding box.
-            width (int): Width of image.
-            height (int): Height of image.
-
-        Returns:
-            List[int]: Generated bounding box from given mask.
-        """
-        y_indices, x_indices = np.where(gt_mask == 1)
-        x_min, x_max = np.min(x_indices), np.max(x_indices)
-        y_min, y_max = np.min(y_indices), np.max(y_indices)
-        return self.generate_bbox(x_min, y_min, x_max, y_max, width, height)
 
 
 class OTXVisualPromptingDataModule(LightningDataModule):
@@ -220,48 +264,24 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             self.summary()
 
         image_size = self.config.image_size
-        if isinstance(image_size, int):
-            image_size = [image_size]
-
+        mean = self.config.normalize.mean
+        std = self.config.normalize.std
         if stage == "fit" or stage is None:
             train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
             val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
 
-            # TODO (sungchul): distinguish between train and val config here
-            train_transform = val_transform = MultipleInputsCompose(
-                [
-                    ResizeLongestSide(target_length=max(image_size)),
-                    Pad(),
-                    transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
-                ]
-            )
-
             self.train_dataset = OTXVisualPromptingDataset(
-                train_otx_dataset, train_transform, offset_bbox=self.config.offset_bbox
+                train_otx_dataset, image_size, mean, std, offset_bbox=self.config.offset_bbox
             )
-            self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, val_transform)
+            self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, image_size, mean, std)
 
         if stage == "test":
             test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
-            test_transform = MultipleInputsCompose(
-                [
-                    ResizeLongestSide(target_length=max(image_size)),
-                    Pad(),
-                    transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
-                ]
-            )
-            self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, test_transform)
+            self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, image_size, mean, std)
 
         if stage == "predict":
             predict_otx_dataset = self.dataset
-            predict_transform = MultipleInputsCompose(
-                [
-                    ResizeLongestSide(target_length=max(image_size)),
-                    Pad(),
-                    transforms.Normalize(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375]),
-                ]
-            )
-            self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, predict_transform)
+            self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, image_size, mean, std)
 
     def summary(self):
         """Print size of the dataset, number of images."""

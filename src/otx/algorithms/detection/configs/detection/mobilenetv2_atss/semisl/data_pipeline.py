@@ -1,4 +1,4 @@
-"""Data Pipeline of ATSS model for Semi-Supervised Learning Detection Task."""
+"""Data Pipeline of MobileNetV2-ATSS model for Semi-Supervised Learning Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

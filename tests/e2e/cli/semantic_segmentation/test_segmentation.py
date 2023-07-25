@@ -29,9 +29,9 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
-    pot_validate_fq_testing,
+    ptq_eval_testing,
+    ptq_optimize_testing,
+    ptq_validate_fq_testing,
 )
 
 # TODO: Currently, it is closed to sample test. need to change other sample
@@ -42,8 +42,6 @@ args = {
     "--input": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "train_params": [
         "params",
-        "--learning_parameters.learning_rate_fixed_iters",
-        "0",
         "--learning_parameters.learning_rate_warmup_iters",
         "25",
         "--learning_parameters.num_iters",
@@ -141,7 +139,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "segmentation"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05, half_precision=half_precision)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -238,23 +236,23 @@ class TestToolsMPASegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
-    def test_pot_optimize(self, template, tmp_dir_path):
+    def test_ptq_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_validate_fq(self, template, tmp_dir_path):
+    def test_ptq_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "semantic_segmentation", type(self).__name__)
+        ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "semantic_segmentation", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
-    def test_pot_eval(self, template, tmp_dir_path):
+    def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
-        pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

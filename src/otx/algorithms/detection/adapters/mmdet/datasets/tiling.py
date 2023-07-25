@@ -132,6 +132,22 @@ class Tile:
             pbar.update(1)
         return tiles, cache_result
 
+    def random_select_gt(self, result: Dict, num: int):
+        """Randomly select ground truth masks for each image.
+
+        Limit the number of ground truth masks by randomly select `num` due to RAM OOM for Instance Segmentation task.
+
+        Args:
+            result (Dict): the original image-level result (i.e. the original image annotation)
+            num (int): the number of ground truth masks to be selected
+        """
+
+        if "gt_masks" in result and len(result["gt_masks"]) > num:
+            indices = np.random.choice(len(result["gt_bboxes"]), size=num, replace=False)
+            result["gt_bboxes"] = result["gt_bboxes"][indices]
+            result["gt_labels"] = result["gt_labels"][indices]
+            result["gt_masks"] = result["gt_masks"][indices]
+
     def gen_single_img(self, result: Dict, dataset_idx: int) -> Dict:
         """Add full-size image for inference or training.
 
@@ -142,21 +158,15 @@ class Tile:
         Returns:
             Dict: annotation with some other useful information for data pipeline.
         """
+        self.random_select_gt(result, self.max_annotation)
         result["full_res_image"] = True
         result["tile_box"] = (0, 0, result["img_shape"][1], result["img_shape"][0])
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
-        result["gt_bboxes"] = np.zeros((0, 4), dtype=np.float32)
-        result["gt_labels"] = np.array([], dtype=int)
-        result["gt_masks"] = []
-
-        # Limit the number of ground truth by randomly select 5000 get due to RAM OOM
-        if "gt_masks" in result and len(result["gt_masks"]) > self.max_annotation:
-            indices = np.random.choice(len(result["gt_bboxes"]), size=self.max_annotation, replace=False)
-            result["gt_bboxes"] = result["gt_bboxes"][indices]
-            result["gt_labels"] = result["gt_labels"][indices]
-            result["gt_masks"] = result["gt_masks"][indices]
+        result["gt_bboxes"] = result["gt_bboxes"] if "gt_bboxes" in result else np.zeros((0, 4), dtype=np.float32)
+        result["gt_labels"] = result["gt_labels"] if "gt_labels" in result else np.array([], dtype=int)
+        result["gt_masks"] = result["gt_masks"] if "gt_masks" in result else []
         return result
 
     # pylint: disable=too-many-locals
@@ -171,6 +181,7 @@ class Tile:
             List[Dict]: a list of tile annotation with some other useful information for data pipeline.
         """
         tile_list = []
+        self.random_select_gt(result, self.max_annotation)
         gt_bboxes = result.get("gt_bboxes", np.zeros((0, 4), dtype=np.float32))
         gt_masks = result.get("gt_masks", None)
         gt_bboxes_ignore = result.get("gt_bboxes_ignore", np.zeros((0, 4), dtype=np.float32))
@@ -485,12 +496,16 @@ class Tile:
             merged_vectors (List[np.ndarray]): Merged vectors for each image.
         """
 
-        vect_per_image = len(feature_vectors) // self.num_images
-        # split vectors on chunks of vectors related to the same image
-        image_vectors = [
-            feature_vectors[x : x + vect_per_image] for x in range(0, len(feature_vectors), vect_per_image)
-        ]
-        return np.average(image_vectors, axis=1)
+        image_vectors: dict = {}
+        for vector, tile in zip(feature_vectors, self.tiles):
+            data_idx = tile.get("index", None) if "index" in tile else tile.get("dataset_idx", None)
+            if data_idx in image_vectors:
+                # tile vectors
+                image_vectors[data_idx].append(vector)
+            else:
+                # whole image vector
+                image_vectors[data_idx] = [vector]
+        return [np.average(image, axis=0) for idx, image in image_vectors.items()]
 
     def merge_maps(self, saliency_maps: Union[List[List[np.ndarray]], List[np.ndarray]]) -> List:
         """Merge tile-level saliency maps to image-level saliency map.
@@ -502,11 +517,24 @@ class Tile:
         Returns:
             merged_maps (List[list | np.ndarray | None]): Merged saliency maps for each image.
         """
+
+        dtype = None
+        for map in saliency_maps:
+            for cl_map in map:
+                # find first class map which is not None
+                if cl_map is not None and dtype is None:
+                    dtype = cl_map.dtype
+                    feat_h, feat_w = cl_map.shape
+                    break
+            if dtype is not None:
+                break
+        else:
+            # if None for each class for each image
+            return saliency_maps[: self.num_images]
+
         merged_maps = []
         ratios = {}
         num_classes = len(saliency_maps[0])
-        feat_h, feat_w = saliency_maps[0][0].shape
-        dtype = saliency_maps[0][0][0].dtype
 
         for orig_image in self.cached_results:
             img_idx = orig_image["index"]

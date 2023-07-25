@@ -31,9 +31,9 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
-    pot_validate_fq_testing,
+    ptq_eval_testing,
+    ptq_optimize_testing,
+    ptq_validate_fq_testing,
 )
 
 # Pre-train w/ 'car & tree' class
@@ -78,11 +78,24 @@ if TT_STABILITY_TESTS:
 else:
     templates = Registry("src/otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
+    # add one experimental template for new inst-seg model. In the future we will update them as main templates
+    # but we need to start to test them now.
+    template_experimental = parse_model_template(
+        os.path.join(
+            "src/otx/algorithms/detection/configs",
+            "instance_segmentation/convnext_maskrcnn",
+            "template_experiment.yaml",
+        )
+    )
+    templates_inc_convnext = copy.deepcopy(templates)
+    templates_ids_inc_convnext = copy.deepcopy(templates_ids)
+    templates_inc_convnext.extend([template_experimental])
+    templates_ids_inc_convnext.extend([template_experimental.model_template_id])
 
 
 class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
@@ -93,7 +106,7 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
@@ -107,7 +120,7 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "ins_seg"
@@ -115,77 +128,77 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
     def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "ins_seg"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05, half_precision=half_precision)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
     def test_otx_explain(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
     def test_otx_demo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_demo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2059: Two stage detector shows 0.0 mAP when OpenVINO exported in torch 1.13")
+    @pytest.mark.parametrize("template", templates_inc_convnext, ids=templates_ids_inc_convnext)
+    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args)
@@ -256,23 +269,23 @@ class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
+    def test_ptq_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_validate_fq(self, template, tmp_dir_path):
+    def test_ptq_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "instance_segmentation", type(self).__name__)
+        ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "instance_segmentation", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, tmp_dir_path):
+    def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
-        pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

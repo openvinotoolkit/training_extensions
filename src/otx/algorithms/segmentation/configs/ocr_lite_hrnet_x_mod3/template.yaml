@@ -31,8 +31,6 @@ hyper_parameters:
       learning_rate:
         default_value: 0.001
         auto_hpo_state: POSSIBLE
-      learning_rate_fixed_iters:
-        default_value: 0
       learning_rate_warmup_iters:
         default_value: 100
       num_iters:
@@ -59,3 +57,6 @@ training_targets:
 # Stats.
 gigaflops: 13.97
 size: 6.4
+
+# Model spec
+model_category: ACCURACY

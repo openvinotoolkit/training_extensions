@@ -1,7 +1,7 @@
 """Image Processings-related code for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
 from typing import List
@@ -69,7 +69,7 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
     """InterpolateV4 class."""
 
     TYPE = "Interpolate"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = InterpolateV4Attribute
 
     def __init__(self, *args, **kwargs):

@@ -18,11 +18,15 @@ import importlib
 import inspect
 import os
 import random
+import sys
 from collections import defaultdict
-from typing import Callable, Optional, Tuple
+from pathlib import Path
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
+import onnx
 import yaml
+from addict import Dict as adict
 
 
 class UncopiableDefaultDict(defaultdict):
@@ -126,3 +130,40 @@ def get_default_async_reqs_num() -> int:
         return reqs_num
     else:
         return 1
+
+
+def read_py_config(filename: str) -> adict:
+    """Reads py config to a dict."""
+    filename = str(Path(filename).resolve())
+    if not Path(filename).is_file:
+        raise RuntimeError("config not found")
+    assert filename.endswith(".py")
+    module_name = Path(filename).stem
+    if "." in module_name:
+        raise ValueError("Dots are not allowed in config file path.")
+    config_dir = Path(filename).parent
+    sys.path.insert(0, str(config_dir))
+    mod = importlib.import_module(module_name)
+    sys.path.pop(0)
+    cfg_dict = adict(
+        {
+            name: value
+            for name, value in mod.__dict__.items()
+            if not name.startswith("__") and not inspect.isclass(value) and not inspect.ismodule(value)
+        }
+    )
+
+    return cfg_dict
+
+
+def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str], Any]) -> None:
+    """Embeds model api config to onnx file."""
+    model = onnx.load(onnx_file)
+
+    for item in extra_model_data:
+        meta = model.metadata_props.add()
+        attr_path = " ".join(map(str, item))
+        meta.key = attr_path.strip()
+        meta.value = extra_model_data[item]
+
+    onnx.save(model, onnx_file)

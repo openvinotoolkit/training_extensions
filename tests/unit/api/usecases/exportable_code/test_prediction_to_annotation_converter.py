@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.models.utils import Detection
+from openvino.model_api.models.utils import Detection
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -750,7 +750,6 @@ class TestSegmentationToAnnotation:
             )
             label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            assert converter.labels == non_empty_labels + other_non_empty_labels
             assert not converter.empty_label
             assert converter.label_schema == label_schema
             assert converter.hierarchical

@@ -4,21 +4,19 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import copy
 import cv2
 from itertools import product
-from typing import Any, Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.models import Model, ImageModel
 
-from otx.algorithms.common.utils.logger import get_logger
+from openvino.model_api.models.utils import DetectionResult
+
 from otx.api.utils.async_pipeline import OTXDetectionAsyncPipeline
 from otx.api.utils.detection_utils import detection2array
 from otx.api.utils.nms import multiclass_nms
 from otx.api.utils.dataset_utils import non_linear_normalization
-
-logger = get_logger()
 
 
 class Tiler:
@@ -39,8 +37,8 @@ class Tiler:
         tile_size: int,
         overlap: float,
         max_number: int,
-        detector: Any,
-        classifier: Model,
+        detector: Model,
+        classifier: Optional[ImageModel] = None,
         segm: bool = False,
         mode: str = "async",
         num_classes: int = 0,
@@ -77,8 +75,6 @@ class Tiler:
             x2 = min(loc_j + self.tile_size, width)
             y2 = min(loc_i + self.tile_size, height)
             coords.append([loc_j, loc_i, x2, y2])
-        logger.debug(f"------------------------> Num tiles: {len(coords)}")
-        logger.debug(f"------------------------> {height}x{width} ~ {self.tile_size}")
         return coords
 
     def filter_tiles_by_objectness(
@@ -113,7 +109,7 @@ class Tiler:
             features: saliency map and feature vector
         """
         tile_coords = self.tile(image)
-        if isinstance(self.classifier, Model):
+        if self.classifier is not None:
             tile_coords = self.filter_tiles_by_objectness(image, tile_coords)
 
         if mode == "sync":
@@ -196,7 +192,7 @@ class Tiler:
         merged_features = self.merge_features(features, merged_results)
         return merged_results, merged_features
 
-    def postprocess_tile(self, predictions: Union[List, Tuple], offset_x: int, offset_y: int) -> Dict[str, List]:
+    def postprocess_tile(self, predictions: DetectionResult, offset_x: int, offset_y: int) -> Dict[str, List]:
         """Postprocess single tile prediction.
 
         Args:
@@ -221,8 +217,8 @@ class Tiler:
             )
             output_dict["masks"] = tile_masks
         else:
-            assert isinstance(predictions, list)
-            out = detection2array(predictions)
+            assert isinstance(predictions.objects, list)
+            out = detection2array(predictions.objects)
             out[:, 2:] += np.tile([offset_x, offset_y], 2)
         output_dict["bboxes"] = out
         return output_dict
@@ -340,6 +336,9 @@ class Tiler:
 
         image_map_h = int(image_h * ratio[0])
         image_map_w = int(image_w * ratio[1])
+        # happens because of the bug then tile_size for IR in a few times more than original image
+        if image_map_h == 0 or image_map_w == 0:
+            return [None] * num_classes
         merged_map = [np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)]
 
         for (_, saliency_map), meta in features[1:]:

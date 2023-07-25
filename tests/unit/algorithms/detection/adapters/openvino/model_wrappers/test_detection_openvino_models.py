@@ -9,7 +9,7 @@ from typing import Dict
 import numpy as np
 import pytest
 from mmcv.utils import Config
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
+from openvino.model_api.adapters import OpenvinoAdapter
 
 from otx.algorithms.detection.adapters.openvino.model_wrappers.openvino_models import (
     BatchBoxesLabelsParser,
@@ -53,6 +53,9 @@ class MockOTXMaskRCNNModel(OTXMaskRCNNModel):
         self.is_segmentoly = len(self.inputs) == 2
         self.output_blob_name = self._get_outputs()
         self.confidence_threshold = 0.5
+        self.orig_width = 100
+        self.orig_height = 100
+        self.resize_type = ""
         super().__init__(MockOpenvinoAdapter, {})
 
 
@@ -74,6 +77,9 @@ class MockOTXSSDModel(OTXSSDModel):
         self.confidence_threshold = 0.375
         self.resize_type = "standard"
         self.output_parser = MockBatchBoxesLabelsParser()
+        self.labels = []
+        self.w = 10
+        self.h = 10
         super().__init__(MockOpenvinoAdapter)
 
 
@@ -89,7 +95,7 @@ class TestOTXMaskRCNNModel:
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
         mocker.patch(
-            "openvino.model_zoo.model_api.models.MaskRCNNModel.__init__",
+            "openvino.model_api.models.MaskRCNNModel.__init__",
             return_value=True,
         )
         self.model = MockOTXMaskRCNNModel()
@@ -138,7 +144,7 @@ class TestOTXSSDModel:
         }
         sample_meta = {"original_shape": (10, 10, 3), "resized_shape": (5, 5, 3)}
         out = self.model.postprocess(sample_output, meta=sample_meta)
-        assert len(out) <= 1
+        assert len(out.objects) <= 1
 
 
 class TestBatchBoxesLabelsParser:

@@ -114,7 +114,8 @@ class MockExporter:
     def __init__(self, task):
         self._output_path = task._output_path
 
-    def run(self, *args, **kwargs):
+    def run(self, cfg, *args, **kwargs):
+        cfg.model.bbox_head.num_classes == 3
         with open(os.path.join(self._output_path, "openvino.bin"), "wb") as f:
             f.write(np.ndarray([0]))
         with open(os.path.join(self._output_path, "openvino.xml"), "wb") as f:
@@ -446,3 +447,101 @@ class TestMMDetectionTask:
         inference_parameters = InferenceParameters(is_evaluation=True)
         det_task._infer_model(self.det_dataset, inference_parameters)
         assert ssd_cfg.model.bbox_head.anchor_generator != det_task.config.model.bbox_head.anchor_generator
+
+    @e2e_pytest_unit
+    def test_geti_scenario(self, mocker):
+        """Test Geti scenario.
+
+        Train -> Eval -> Export
+        """
+
+        # TRAIN
+        def _mock_train_detector_det(*args, **kwargs):
+            with open(os.path.join(self.det_task._output_path, "latest.pth"), "wb") as f:
+                torch.save({"dummy": torch.randn(1, 3, 3, 3)}, f)
+
+        def _mock_train_detector_iseg(*args, **kwargs):
+            with open(os.path.join(self.iseg_task._output_path, "latest.pth"), "wb") as f:
+                torch.save({"dummy": torch.randn(1, 3, 3, 3)}, f)
+
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.build_dataset",
+            return_value=MockDataset(self.det_dataset, "det"),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.build_dataloader",
+            return_value=MockDataLoader(self.det_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
+            return_value=True,
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.train_detector",
+            side_effect=_mock_train_detector_det,
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
+            return_value=[
+                np.array([np.array([[0, 0, 1, 1, 0.1]]), np.array([[0, 0, 1, 1, 0.2]]), np.array([[0, 0, 1, 1, 0.7]])])
+            ]
+            * 100,
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+
+        # mock for testing num_workers
+        num_cpu = 20
+        mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
+        mock_multiprocessing.cpu_count.return_value = num_cpu
+        num_gpu = 5
+        mock_torch = mocker.patch.object(config_utils, "torch")
+        mock_torch.cuda.device_count.return_value = num_gpu
+
+        _config = ModelConfiguration(DetectionConfig(), self.det_label_schema)
+        output_model = ModelEntity(self.det_dataset, _config)
+        self.det_task.train(self.det_dataset, output_model)
+
+        # INFER
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.build_dataset",
+            return_value=MockDataset(self.det_dataset, "det"),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.build_dataloader",
+            return_value=MockDataLoader(self.det_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
+            return_value=True,
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
+            return_value=[
+                np.array([np.array([[0, 0, 1, 1, 0.1]]), np.array([[0, 0, 1, 1, 0.2]]), np.array([[0, 0, 1, 1, 0.7]])])
+            ]
+            * 100,
+        )
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+
+        inference_parameters = InferenceParameters(is_evaluation=True)
+        outputs = self.det_task.infer(self.det_dataset, inference_parameters)
+
+        # EXPORT
+        mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.task.DetectionExporter",
+            return_value=MockExporter(self.det_task),
+        )
+        mocker.patch(
+            "otx.algorithms.detection.task.embed_ir_model_data",
+            return_value=True,
+        )
+
+        export_type = ExportType.OPENVINO
+        precision = ModelPrecision.FP32
+        self.det_task.export(export_type, output_model, precision, False)

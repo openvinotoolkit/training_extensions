@@ -467,6 +467,7 @@ class MMActionTask(OTXActionTask):
 
     def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
         """Main export function."""
+        self._data_cfg = None
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)

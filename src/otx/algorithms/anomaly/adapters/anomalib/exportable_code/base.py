@@ -7,8 +7,8 @@
 from typing import Union
 
 import numpy as np
-from openvino.model_zoo.model_api.models import SegmentationModel
-from openvino.model_zoo.model_api.models.types import DictValue, NumericalValue
+from openvino.model_api.models import SegmentationModel
+from openvino.model_api.models.types import DictValue, NumericalValue
 
 
 class AnomalyBase(SegmentationModel):

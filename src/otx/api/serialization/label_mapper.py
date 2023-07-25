@@ -139,9 +139,13 @@ class LabelTreeMapper:
 
         label_map = {label_id: all_labels.get(IDMapper().backward(label_id)) for label_id in instance["nodes"]}
         for label in label_map.values():
-            output.add_node(label)
+            if label:
+                output.add_node(label)
         for edge in instance["edges"]:
-            output.add_edge(label_map[edge[0]], label_map[edge[1]])
+            node1 = label_map.get(edge[0])
+            node2 = label_map.get(edge[1])
+            if node1 and node2:
+                output.add_edge(node1, node2)
 
         return output
 

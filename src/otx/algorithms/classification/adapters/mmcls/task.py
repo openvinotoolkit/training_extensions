@@ -47,6 +47,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
     get_configs_by_pairs,
     patch_data_pipeline,
+    patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
@@ -54,7 +55,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
-    get_adaptive_num_workers,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -117,7 +117,7 @@ class MMClassificationTask(OTXClassificationTask):
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
 
         if not export:
-            self._recipe_cfg.merge_from_dict(self._init_hparam())
+            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
 
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
@@ -549,6 +549,18 @@ class MMClassificationTask(OTXClassificationTask):
         return eval_predictions, saliency_maps
 
     def _export_model(self, precision: ModelPrecision, export_format: ExportType, dump_features: bool):
+        self._data_cfg = ConfigDict(
+            data=ConfigDict(
+                train=ConfigDict(
+                    otx_dataset=None,
+                    labels=self._labels,
+                ),
+                test=ConfigDict(
+                    otx_dataset=None,
+                    labels=self._labels,
+                ),
+            )
+        )
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)
@@ -560,6 +572,11 @@ class MMClassificationTask(OTXClassificationTask):
 
         export_options["precision"] = str(precision)
         export_options["type"] = str(export_format)
+
+        # [TODO] Enable dump_features for ViT backbones
+        model_type = cfg.model.backbone.type.split(".")[-1]  # mmcls.VisionTransformer => VisionTransformer
+        if model_type in TRANSFORMER_BACKBONES:
+            dump_features = False
 
         export_options["deploy_cfg"]["dump_features"] = dump_features
         if dump_features:
@@ -574,14 +591,27 @@ class MMClassificationTask(OTXClassificationTask):
         if precision == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
+        backend_cfg_backup = {}
         if export_format == ExportType.ONNX:
+            backend_cfg_backup = export_options["deploy_cfg"]["backend_config"]
             export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
+            export_options["deploy_cfg"]["ir_config"]["dynamic_axes"]["data"] = {0: "batch"}
 
         exporter = ClassificationExporter()
         results = exporter.run(
             cfg,
             **export_options,
         )
+
+        if export_format == ExportType.ONNX:
+            results["inference_parameters"] = {}
+            results["inference_parameters"]["mean_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--mean_values"])
+            )
+            results["inference_parameters"]["scale_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--scale_values"])
+            )
+
         return results
 
     def _init_deploy_cfg(self, cfg: Config) -> Union[Config, None]:
@@ -654,59 +684,6 @@ class MMClassificationTask(OTXClassificationTask):
                 patch_input_shape(deploy_cfg)
 
         return deploy_cfg
-
-    def _init_hparam(self) -> dict:
-        params = self._hyperparams.learning_parameters
-        warmup_iters = int(params.learning_rate_warmup_iters)
-        if self._multilabel:
-            # hack to use 1cycle policy
-            lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-        else:
-            lr_config = (
-                ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
-            )
-
-        early_stop = False
-        if self._recipe_cfg is not None:
-            if params.enable_early_stopping and self._recipe_cfg.get("evaluation", None):
-                early_stop = ConfigDict(
-                    start=int(params.early_stop_start),
-                    patience=int(params.early_stop_patience),
-                    iteration_patience=int(params.early_stop_iteration_patience),
-                )
-
-        if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
-            runner = ConfigDict(max_iters=int(params.num_iters))
-        else:
-            runner = ConfigDict(max_epochs=int(params.num_iters))
-
-        config = ConfigDict(
-            optimizer=ConfigDict(lr=params.learning_rate),
-            lr_config=lr_config,
-            early_stop=early_stop,
-            data=ConfigDict(
-                samples_per_gpu=int(params.batch_size),
-                workers_per_gpu=int(params.num_workers),
-            ),
-            runner=runner,
-        )
-
-        if self._hyperparams.learning_parameters.auto_num_workers:
-            adapted_num_worker = get_adaptive_num_workers()
-            if adapted_num_worker is not None:
-                config.data.workers_per_gpu = adapted_num_worker
-
-        if self._train_type.value == "Semisupervised":
-            unlabeled_config = ConfigDict(
-                data=ConfigDict(
-                    unlabeled_dataloader=ConfigDict(
-                        samples_per_gpu=int(params.unlabeled_batch_size),
-                        workers_per_gpu=int(params.num_workers),
-                    )
-                )
-            )
-            config.update(unlabeled_config)
-        return config
 
     # This should be removed
     def update_override_configurations(self, config):

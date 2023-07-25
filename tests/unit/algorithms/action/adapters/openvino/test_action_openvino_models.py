@@ -9,7 +9,7 @@ from typing import Dict
 import numpy as np
 import pytest
 from mmcv.utils import Config
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
+from openvino.model_api.adapters import OpenvinoAdapter
 
 from otx.algorithms.action.adapters.openvino.model_wrappers.openvino_models import (
     OTXOVActionCls,
@@ -221,4 +221,4 @@ class TestOTXOVActionDet:
         # argmax index is 2 because first index is for background
         assert out[0].id == 2
         assert out[0].score == 0.7
-        assert out[0].get_coords() == (0, 0, 256, 256)
+        assert (out[0].xmin, out[0].ymin, out[0].xmax, out[0].ymax) == (0, 0, 256, 256)

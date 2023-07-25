@@ -6,11 +6,9 @@
 from .task import (
     OpenVINOSegmentationInferencer,
     OpenVINOSegmentationTask,
-    OTXOpenVinoDataLoader,
 )
 
 __all__ = [
     "OpenVINOSegmentationTask",
     "OpenVINOSegmentationInferencer",
-    "OTXOpenVinoDataLoader",
 ]

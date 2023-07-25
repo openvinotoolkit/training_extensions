@@ -1,12 +1,12 @@
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import pytest
 import torch
 
 from otx.algorithms.classification.adapters.mmcls.models.classifiers.semisl_classifier import (
-    SAMImageClassifier,
+    CustomImageClassifier,
     SemiSLClassifier,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -15,7 +15,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 class TestSemiSLClassifier:
     @pytest.fixture(autouse=True)
     def setup(self, mocker) -> None:
-        mocker.patch.object(SAMImageClassifier, "__init__", return_value=None)
+        mocker.patch.object(CustomImageClassifier, "__init__", return_value=None)
         self.semisl_classifier = SemiSLClassifier()
         self.kwargs = dict()
 

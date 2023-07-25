@@ -1,7 +1,7 @@
 """Redunction-related modules for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
 
@@ -23,7 +23,7 @@ class ReduceMeanV1(Operation[ReduceMeanV1Attribute]):
     """ReduceMeanV1 class."""
 
     TYPE = "ReduceMean"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceMeanV1Attribute
 
     def forward(self, inputs, axes):
@@ -51,7 +51,7 @@ class ReduceProdV1(Operation[ReduceProdV1Attribute]):
     """ReduceMeanV1Attribute class."""
 
     TYPE = "ReduceProd"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceProdV1Attribute
 
     def forward(self, inputs, axes):
@@ -85,7 +85,7 @@ class ReduceMinV1(Operation[ReduceMinV1Attribute]):
     """ReduceMinV1 class."""
 
     TYPE = "ReduceMin"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceMinV1Attribute
 
     def forward(self, inputs, axes):
@@ -119,7 +119,7 @@ class ReduceSumV1(Operation[ReduceSumV1Attribute]):
     """ReduceSumV1 class."""
 
     TYPE = "ReduceSum"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceSumV1Attribute
 
     def forward(self, inputs, axes):

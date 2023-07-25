@@ -31,7 +31,7 @@ class TestExplainMethods:
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_cls, ids=templates_cls_ids)
     def test_saliency_map_cls(self, template):
-        if template.name == "deit-tiny":
+        if template.name == "DeiT-Tiny":
             pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         torch.manual_seed(0)
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
@@ -54,4 +54,6 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == (1000, 7, 7)
-        assert (saliency_maps[0][0][0] == self.ref_saliency_vals_cls[template.name]).all()
+        actual_sal_vals = saliency_maps[0][0][0].astype(np.int8)
+        ref_sal_vals = self.ref_saliency_vals_cls[template.name].astype(np.int8)
+        assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)

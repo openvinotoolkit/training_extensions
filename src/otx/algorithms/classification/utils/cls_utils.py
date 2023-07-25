@@ -62,6 +62,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disabl
         "class_to_group_idx": class_to_idx,
         "all_groups": exclusive_groups + single_label_groups,
         "label_to_idx": label_to_idx,
+        "empty_multiclass_head_indices": [],
     }
     return mixed_cls_heads_info
 
@@ -100,6 +101,7 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
     mapi_config[("model_info", "confidence_threshold")] = str(inference_config["confidence_threshold"])
     mapi_config[("model_info", "multilabel")] = str(inference_config["multilabel"])
     mapi_config[("model_info", "hierarchical")] = str(inference_config["hierarchical"])
+    mapi_config[("model_info", "output_raw_scores")] = str(True)
 
     all_labels = ""
     for lbl in label_schema.get_labels(include_empty=False):
