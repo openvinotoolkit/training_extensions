@@ -333,7 +333,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         core = Core()
         model = core.read_model(xml_file)
         for key, value in metadata.items():
-            if key == "transform":
+            if key in ("transform", "min", "max"):
                 continue
             model.set_rt_info(value, ["model_info", key])
         # Add transforms
@@ -341,13 +341,21 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             for transform_dict in metadata["transform"]["transform"]["transforms"]:
                 transform = transform_dict.pop("__class_fullname__")
                 if transform == "Normalize":
-                    model.set_rt_info(self._serialize_list(transform_dict["mean"]), ["model_info", "mean_values"])
-                    model.set_rt_info(self._serialize_list(transform_dict["std"]), ["model_info", "scale_values"])
+                    model.set_rt_info(
+                        self._serialize_list([x * 255.0 for x in transform_dict["mean"]]), ["model_info", "mean_values"]
+                    )
+                    model.set_rt_info(
+                        self._serialize_list([x * 255.0 for x in transform_dict["std"]]), ["model_info", "scale_values"]
+                    )
                 elif transform == "Resize":
                     model.set_rt_info(transform_dict["height"], ["model_info", "orig_height"])
                     model.set_rt_info(transform_dict["width"], ["model_info", "orig_width"])
                 else:
                     warn(f"Transform {transform} is not supported currently")
+        # Since we only need the diff of max and min, we fuse the min and max into one op
+        if "min" in metadata and "max" in metadata:
+            model.set_rt_info(metadata["max"] - metadata["min"], ["model_info", "normalization_scale"])
+        model.set_rt_info(True, ["model_info", "reverse_input_channels"])
         model.set_rt_info("AnomalyDetection", ["model_info", "model_type"])
         tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
         serialize(model, str(tmp_xml_path))
