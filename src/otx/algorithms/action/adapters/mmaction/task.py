@@ -31,7 +31,6 @@ from mmcv.runner import CheckpointLoader, load_checkpoint, wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, ProgressBar, get_git_hash
 from torch import distributed as dist
 
-from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.action.adapters.mmaction import (
     Exporter,
 )
@@ -50,6 +49,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.data import get_dataset

@@ -32,7 +32,6 @@ from mmseg.apis import train_segmentor
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import collect_env
 
-from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     BaseRecordingForwardHook,
     FeatureVectorHook,
@@ -48,6 +47,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask

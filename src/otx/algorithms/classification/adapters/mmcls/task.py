@@ -29,7 +29,6 @@ from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
-from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms import TRANSFORMER_BACKBONES
 from otx.algorithms.classification.adapters.mmcls.utils.exporter import (
     ClassificationExporter,
@@ -58,6 +57,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask

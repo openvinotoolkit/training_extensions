@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-from torch.nn import Module
 from timm.models.layers import convert_sync_batchnorm as timm_cvt_sycnbn
+from torch.nn import Module
 
 
 def model_from_timm(model: Module) -> bool:
@@ -17,7 +17,7 @@ def model_from_timm(model: Module) -> bool:
     Returns:
         bool : whether model comes from timm or not.
     """
-    if "timm" in model.__module__.split('.'):
+    if "timm" in model.__module__.split("."):
         return True
 
     is_fisrt = True
@@ -34,7 +34,7 @@ def model_from_timm(model: Module) -> bool:
 
 def convert_sync_batchnorm(model: Module):
     """Convert BatchNorm layers to SyncBatchNorm layers.
-    
+
     Args:
         model (Module): model containing batchnorm layers.
     """
