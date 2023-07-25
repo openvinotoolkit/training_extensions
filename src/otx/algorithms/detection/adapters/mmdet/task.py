@@ -32,6 +32,7 @@ from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTenso
 from mmdet.models.detectors import DETR, TwoStageDetector
 from mmdet.utils import collect_env
 
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.adapters.mmcv.hooks import LossDynamicsTrackingHook
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ActivationMapHook,
@@ -278,7 +279,7 @@ class MMDetectionTask(OTXDetectionTask):
         model.CLASSES = target_classes
 
         if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
 

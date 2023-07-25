@@ -31,6 +31,7 @@ from mmcv.runner import CheckpointLoader, load_checkpoint, wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, ProgressBar, get_git_hash
 from torch import distributed as dist
 
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.action.adapters.mmaction import (
     Exporter,
 )
@@ -310,7 +311,7 @@ class MMActionTask(OTXActionTask):
         model.CLASSES = target_classes
 
         if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
 
