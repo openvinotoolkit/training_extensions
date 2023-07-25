@@ -2,13 +2,18 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
+import torch
 import torch.nn.functional as F
+from mmdet.core import mask2bbox
 from mmdet.models.builder import HEADS
 from mmdet.models.seg_heads import MaskFormerFusionHead
 
 
 @HEADS.register_module()
 class CustomMaskFormerFusionHead(MaskFormerFusionHead):
+    """MaskFormerFusionHead for Mask2Former Class for mmdetection detectors."""
+
     def simple_test(self, mask_cls_results, mask_pred_results, img_metas, rescale=False):
         """Test segment without test-time aumengtation.
 
@@ -52,29 +57,86 @@ class CustomMaskFormerFusionHead(MaskFormerFusionHead):
             img_height, img_width = meta["img_shape"][:2]
             mask_pred_result = mask_pred_result[:, :img_height, :img_width]
 
-            if rescale:
-                # return result in original resolution
-                ori_height, ori_width = meta["ori_shape"][:2]
-                mask_pred_result = F.interpolate(
-                    mask_pred_result[:, None], size=(ori_height, ori_width), mode="bilinear", align_corners=False
-                )[:, 0]
-                # NOTE: detach to avoid gpu overflow
-                mask_pred_result = mask_pred_result.detach().cpu()
-                mask_cls_result = mask_cls_result.detach().cpu()
-
             result = dict()
             if panoptic_on:
-                pan_results = self.panoptic_postprocess(mask_cls_result, mask_pred_result)
-                result["pan_results"] = pan_results
+                raise NotImplementedError
 
             if instance_on:
-                ins_results = self.instance_postprocess(mask_cls_result, mask_pred_result)
+                ins_results = self.instance_postprocess(mask_cls_result, mask_pred_result, meta, rescale)
                 result["ins_results"] = ins_results
 
             if semantic_on:
-                sem_results = self.semantic_postprocess(mask_cls_result, mask_pred_result)
-                result["sem_results"] = sem_results
+                raise NotImplementedError
 
             results.append(result)
 
         return results
+
+    def instance_postprocess(self, mask_cls, mask_pred, meta, rescale=False):
+        """Instance Segmentation postprocess.
+
+        Args:
+            mask_cls (_type_): _description_
+            mask_pred (_type_): _description_
+            meta (_type_): _description_
+            rescale (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            _type_: _description_
+        """
+        max_per_image = self.test_cfg.get("max_per_image", 100)
+        num_queries = mask_cls.shape[0]
+        # shape (num_queries, num_class)
+        scores = F.softmax(mask_cls, dim=-1)[:, :-1]
+        # shape (num_queries * num_class, )
+        labels = (
+            torch.arange(self.num_classes, device=mask_cls.device).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
+        )
+        scores_per_image, top_indices = scores.flatten(0, 1).topk(max_per_image, sorted=False)
+        labels_per_image = labels[top_indices]
+
+        query_indices = top_indices // self.num_classes
+
+        mask_pred = mask_pred[query_indices]
+
+        # extract things
+        is_thing = labels_per_image < self.num_things_classes
+        scores_per_image = scores_per_image[is_thing]
+        labels_per_image = labels_per_image[is_thing]
+        mask_pred = mask_pred[is_thing]
+
+        mask_pred_binary = (mask_pred > 0).float()
+        mask_scores_per_image = (mask_pred.sigmoid() * mask_pred_binary).flatten(1).sum(1) / (
+            mask_pred_binary.flatten(1).sum(1) + 1e-6
+        )
+        det_scores = scores_per_image * mask_scores_per_image
+        mask_pred_binary = mask_pred_binary.bool()
+
+        # filter by score
+        keep = det_scores > self.test_cfg.score_threshold
+        det_scores = det_scores[keep]
+        mask_pred_binary = mask_pred_binary[keep]
+        labels_per_image = labels_per_image[keep]
+
+        # filter by mask area
+        mask_area = mask_pred_binary.sum((1, 2))
+        keep = mask_area > 0
+        det_scores = det_scores[keep]
+        mask_pred_binary = mask_pred_binary[keep]
+        labels_per_image = labels_per_image[keep]
+
+        if rescale:
+            # NOTE: could switch to cpu if GPU OOM
+            # mask_pred_binary = mask_pred_binary.detach().cpu()
+            # det_scores = det_scores.detach().cpu()
+
+            # return result in original resolution
+            ori_height, ori_width = meta["ori_shape"][:2]
+            mask_pred_binary = F.interpolate(
+                (mask_pred_binary[:, None]).float(), size=(ori_height, ori_width), mode="bilinear", align_corners=False
+            )[:, 0]
+            mask_pred_binary = mask_pred_binary > 0
+
+        bboxes = mask2bbox(mask_pred_binary)
+        bboxes = torch.cat([bboxes, det_scores[:, None]], dim=-1)
+        return labels_per_image, bboxes, mask_pred_binary

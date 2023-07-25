@@ -152,7 +152,12 @@ model = dict(
         sampler=dict(type="MaskPseudoSampler"),
     ),
     test_cfg=dict(
-        panoptic_on=False, semantic_on=False, instance_on=True, max_per_image=100, iou_thr=0.6, filter_low_score=True
+        panoptic_on=False,
+        semantic_on=False,
+        instance_on=True,
+        max_per_image=100,
+        filter_low_score=True,
+        score_threshold=0.1,
     ),
     init_cfg=None,
 )
@@ -209,7 +214,8 @@ optimizer = dict(
 )
 optimizer_config = dict(_delete_=True, grad_clip=dict(max_norm=0.01, norm_type=2))
 
-load_from = "https://download.openmmlab.com/mmdetection/v2.0/mask2former/mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco/mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco_20220504_001756-743b7d99.pth"
+load_from = "https://download.openmmlab.com/mmdetection/v2.0/mask2former/\
+mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco/mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco_20220504_001756-743b7d99.pth"
 
 # NOTE: Disable incremental learning for the time being
 ignore = False

@@ -36,7 +36,7 @@ train_pipeline = [
             [
                 dict(
                     type="Resize",
-                    # The radio of all image in train dataset < 7
+                    # The ratio of all image in train dataset < 7
                     # follow the original impl
                     img_scale=[(400, 4200), (500, 4200), (600, 4200)],
                     multiscale_mode="value",

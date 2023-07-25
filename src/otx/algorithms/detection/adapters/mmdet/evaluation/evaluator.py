@@ -145,7 +145,8 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
     ious = bbox_overlaps(det_bboxes, gt_bboxes, mode="iou")
     if not ious.any():
         return ious
-    for coord in np.argwhere(ious > 0):
+    # NOTE: further speed optimization (vectorization) could be done here
+    for coord in np.argwhere(ious > 1e-2):
         m, n = coord
         det_bbox, det_mask = sanitize_coordinates(det_bboxes[m], img_h, img_w), det_masks[m]
         gt_bbox, gt_mask = sanitize_coordinates(gt_bboxes[n], img_h, img_w), gt_masks[n]
