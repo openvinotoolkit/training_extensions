@@ -35,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - Fix NNCF training on CPU (<https://github.com/openvinotoolkit/training_extensions/pull/2373>)
 - Fix H-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2377>)
 - Fix invalid import structures in otx.api (<https://github.com/openvinotoolkit/training_extensions/pull/2383>)
+- Add for async inference calculating saliency maps from predictions (Mask RCNN IR) (<https://github.com/openvinotoolkit/training_extensions/pull/2395>)
 
 ### Known issues
 
