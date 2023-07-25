@@ -4,8 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-from timm.models.layers import convert_sync_batchnorm as timm_cvt_sycnbn
 from torch.nn import Module
+
+try:
+    from timm.models.layers import convert_sync_batchnorm as timm_cvt_sycnbn
+except ImportError:
+    timm_cvt_sycnbn = None
 
 
 def model_from_timm(model: Module) -> bool:
@@ -38,7 +42,7 @@ def convert_sync_batchnorm(model: Module):
     Args:
         model (Module): model containing batchnorm layers.
     """
-    if model_from_timm(model):
+    if timm_cvt_sycnbn is not None and model_from_timm(model):
         timm_cvt_sycnbn(model)
     else:
         torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
