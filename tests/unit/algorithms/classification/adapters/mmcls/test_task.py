@@ -143,7 +143,7 @@ class TestMMClassificationTask:
 
         ml_task_env, self.ml_cls_dataset = init_environment(hyper_parameters, model_template, True, False, 100)
         self.ml_cls_task = MMClassificationTask(ml_task_env)
-        self.ml_cls_label_schema = generate_label_schema(self.ml_cls_dataset.get_labels(), False, False)
+        self.ml_cls_label_schema = generate_label_schema(self.ml_cls_dataset.get_labels(), True, False)
 
         hl_task_env, self.hl_cls_dataset = init_environment(hyper_parameters, model_template, False, True, 100)
         self.hl_cls_task = MMClassificationTask(hl_task_env)

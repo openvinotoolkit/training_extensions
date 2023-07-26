@@ -43,7 +43,7 @@ def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False
         for label in not_empty_labels:
             label_schema.add_group(
                 LabelGroup(
-                    name=label.name,
+                    name="___" + label.name,
                     labels=[label],
                     group_type=LabelGroupType.EXCLUSIVE,
                 )
