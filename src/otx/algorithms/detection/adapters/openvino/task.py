@@ -223,11 +223,11 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         configuration = {
             **attr.asdict(
                 hparams.postprocessing,
-                filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
+                filter=lambda attr, _: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
         configuration.update(model_configuration)
-        model = Model.create_model(model_adapter, "OTX_SSD", configuration, preload=True)
+        model = Model.create_model(model_adapter, "SSD", configuration, preload=True)
         converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
