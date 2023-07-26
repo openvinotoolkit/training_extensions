@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
--
+- Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
 
 ### Enhancements
 
