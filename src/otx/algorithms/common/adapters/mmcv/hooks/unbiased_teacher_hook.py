@@ -23,10 +23,10 @@ class UnbiasedTeacherHook(DualModelEMAHook):
 
     def before_train_epoch(self, runner):
         """Enable unlabeled loss if over start epoch."""
-        if runner.epoch > 1:
-            self._get_model(runner).turnoff_memory_bank()
         if runner.epoch + 1 < self.start_epoch:
             return
+        if runner.epoch > self.start_epoch:
+            self._get_model(runner).turnoff_memory_bank()
         if self.unlabeled_loss_enabled:
             return
 

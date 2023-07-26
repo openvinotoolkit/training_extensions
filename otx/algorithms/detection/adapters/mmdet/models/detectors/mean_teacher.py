@@ -29,12 +29,14 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         self,
         unlabeled_cls_loss_weight=1.0,
         unlabeled_reg_loss_weight=1.0,
+        use_rpn_loss=True,
         pseudo_conf_thresh=0.7,
         enable_unlabeled_loss=False,
         bg_loss_weight=-1.0,
         min_pseudo_label_ratio=0.0,
         arch_type="CustomMaskRCNN",
         unlabeled_memory_bank=False,
+        percentile=70,
         **kwargs
     ):
         super().__init__()
@@ -44,14 +46,15 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         self.unlabeled_memory_bank = unlabeled_memory_bank
         self.bg_loss_weight = bg_loss_weight
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
-
+        self.use_rpn_loss=use_rpn_loss
+        self.percentile = percentile
         cfg = kwargs.copy()
         cfg["type"] = arch_type
         self.model_s = build_detector(cfg)
         self.model_t = copy.deepcopy(self.model_s)
         self.num_classes = cfg["roi_head"]["bbox_head"]["num_classes"]
         if self.unlabeled_memory_bank:
-            self.memory_cat_bank = [0 for i in range(self.num_classes)]
+            self.memory_cat_bank = [[] for i in range(self.num_classes)]
             self.all_num_cat = 0
             self.pseudo_conf_thresh = None
         else:
@@ -87,20 +90,47 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
 
     def compute_dynamic_thrsh(self):
         """Enable function for UnbiasedTeacher unlabeled loss."""
-        per_cat_num_obj = np.array(self.memory_cat_bank) / self.all_num_cat
-        max_num_pbj = np.max(per_cat_num_obj)
-        range_of_variation = (max_num_pbj - 0.01) / 2 # 1%
-        # quadratic approximation. 0.01 -> 0.25, med -> 0.5, max -> 0.75
-        koeffs = np.polyfit([0.01, range_of_variation, max_num_pbj], [0.3, 0.5, 0.7], 2)
-        thrsh = [koeffs[0]*(x**2) + koeffs[1]*x + koeffs[2] for x in per_cat_num_obj]
-        print(f"[*] Computed per class thresholds: {thrsh} with given distribution: {per_cat_num_obj}")
-        return thrsh
+        self.pseudo_conf_thresh = [0] * self.num_classes
+        mediana = np.median([x for y in self.memory_cat_bank for x in y])
+        for i, cat_scores in enumerate(self.memory_cat_bank):
+            if len(cat_scores):
+                coeff = np.percentile(np.array(cat_scores), self.percentile)
+            else:
+                coeff = mediana
 
-    def update_memory_bank(self, gt_labels):
-        for bbox in gt_labels:
-            for l in bbox:
-                self.memory_cat_bank[l] += 1
-                self.all_num_cat += 1
+            self.pseudo_conf_thresh[i] = coeff
+
+        self.memory_cat_bank = None
+        # per_cat_num_obj = np.array(self.memory_cat_bank) / self.all_num_cat
+        # max_num_pbj = np.max(per_cat_num_obj)
+        # range_of_variation = (max_num_pbj - 0.01) / 2 # 1%
+        # # quadratic approximation. 0.01 -> 0.25, med -> 0.5, max -> 0.75
+        # koeffs = np.polyfit([0.01, range_of_variation, max_num_pbj], [0.3, 0.5, 0.7], 2)
+        # thrsh = [koeffs[0]*(x**2) + koeffs[1]*x + koeffs[2] for x in per_cat_num_obj]
+        print(f"[*] Computed per class thresholds: {self.pseudo_conf_thresh}")
+
+    def update_memory_bank(self, teacher_outputs, labeled_imgs, labeled_imgs_metas):
+
+        with torch.no_grad():
+            teacher_outputs_labeled = self.model_t.forward_test(
+                [labeled_imgs],
+                [labeled_imgs_metas],
+                rescale=False,  # easy augmentation
+            )
+
+        for teacher_bboxes_labels in teacher_outputs_labeled:
+            bboxes_l = teacher_bboxes_labels[0]
+            for l, bb in enumerate(bboxes_l):
+                confidences = bb[:, -1]
+                if len(confidences):
+                    self.memory_cat_bank[l].extend(confidences)
+
+        for teacher_bboxes_labels in teacher_outputs:
+            bboxes = teacher_bboxes_labels[0]
+            for l, bb in enumerate(bboxes):
+                confidences = bb[:, -1]
+                if len(confidences):
+                    self.memory_cat_bank[l].extend(confidences)
 
     def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_masks, gt_bboxes_ignore=None, **kwargs):
         """Forward function for UnbiasedTeacher."""
@@ -116,8 +146,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             gt_masks=gt_masks
         )
         losses.update(sl_losses)
-        if self.unlabeled_memory_bank:
-            self.update_memory_bank(gt_labels)
+
         if not self.unlabeled_loss_enabled:
             return losses
 
@@ -135,40 +164,54 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 rescale=False,  # easy augmentation
             )
 
-        if not isinstance(self.pseudo_conf_thresh, list):
-            self.pseudo_conf_thresh = self.compute_dynamic_thrsh()
-        current_device = ul_img0[0].device
-        pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
-            teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
-        )
-        ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
-        losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
-        losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
+        if self.unlabeled_memory_bank:
+            self.update_memory_bank(teacher_outputs, img, img_metas)
 
-        # Unsupervised loss
-        # Compute only if min_pseudo_label_ratio is reached
-        if pseudo_ratio >= self.min_pseudo_label_ratio:
-            if self.bg_loss_weight >= 0.0:
-                self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
-            ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
-            if self.bg_loss_weight >= 0.0:
-                self.model_s.bbox_head.bg_loss_weight = -1.0
+        if not isinstance(self.pseudo_conf_thresh, list) and not self.unlabeled_memory_bank:
+            self.compute_dynamic_thrsh()
 
-            for ul_loss_name in ul_losses.keys():
-                if ul_loss_name.startswith("loss_") and not ul_loss_name == "loss_rpn_bbox":
-                    # skip regression rpn loss
-                    ul_loss = ul_losses[ul_loss_name]
-                    if "_bbox" in ul_loss_name:
-                        if isinstance(ul_loss, list):
-                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_reg_loss_weight for loss in ul_loss]
+        if not self.unlabeled_memory_bank:
+            current_device = ul_img0[0].device
+            pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
+                teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
+            )
+            ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
+            losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
+            losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
+
+            # Unsupervised loss
+            # Compute only if min_pseudo_label_ratio is reached
+            if pseudo_ratio >= self.min_pseudo_label_ratio:
+                if self.bg_loss_weight >= 0.0:
+                    self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
+                ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
+                if self.bg_loss_weight >= 0.0:
+                    self.model_s.bbox_head.bg_loss_weight = -1.0
+
+                for ul_loss_name in ul_losses.keys():
+                    if ul_loss_name.startswith("loss_"):
+                        # skip regression rpn loss
+                        if not self.use_rpn_loss and ul_loss_name == "loss_rpn_bbox":
+                            # skip regression rpn loss
+                            continue
+                        ul_loss = ul_losses[ul_loss_name]
+                        if "_bbox" in ul_loss_name:
+                            if isinstance(ul_loss, list):
+                                losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_reg_loss_weight for loss in ul_loss]
+                            else:
+                                losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_reg_loss_weight
+                        elif "_cls" in ul_loss_name:
+                            # cls loss
+                            if isinstance(ul_loss, list):
+                                losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_cls_loss_weight for loss in ul_loss]
+                            else:
+                                losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_cls_loss_weight
                         else:
-                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_reg_loss_weight
-                    else:
-                        # cls and mask loss
-                        if isinstance(ul_loss, list):
-                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_cls_loss_weight for loss in ul_loss]
-                        else:
-                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_cls_loss_weight
+                            # mask loss
+                            if isinstance(ul_loss, list):
+                                losses[ul_loss_name + "_ul"] = [loss * 1.0 for loss in ul_loss]
+                            else:
+                                losses[ul_loss_name + "_ul"] = ul_loss * 1.0
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
