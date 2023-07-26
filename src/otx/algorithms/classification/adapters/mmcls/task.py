@@ -26,6 +26,7 @@ import torch
 from mmcls.apis import train_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import collect_env
+from mmcls.models.backbones.vision_transformer import VisionTransformer
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
 
@@ -473,12 +474,6 @@ class MMClassificationTask(OTXClassificationTask):
 
     def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
         """Explain function in MMClassificationTask."""
-        explainer_hook_selector = {
-            "eigencam": EigenCamHook,
-            "activationmap": ActivationMapHook,
-            "classwisesaliencymap": ViTReciproCAMHook,
-        }
-
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -525,9 +520,18 @@ class MMClassificationTask(OTXClassificationTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
+        if isinstance(model.module.backbone, VisionTransformer):
+            per_class_xai_algorithm = ViTReciproCAMHook
+        else:
+            per_class_xai_algorithm = ReciproCAMHook
+        explainer_hook_selector = {
+            "eigencam": EigenCamHook,
+            "activationmap": ActivationMapHook,
+            "classwisesaliencymap": per_class_xai_algorithm,
+        }
         explainer = explain_parameters.explainer if explain_parameters else None
         if explainer is not None:
-            explainer_hook = explainer_hook_selector.get(explainer.lower(), None)
+            explainer_hook = explainer_hook_selector.get(explainer.lower())
         else:
             explainer_hook = None
         if explainer_hook is None:

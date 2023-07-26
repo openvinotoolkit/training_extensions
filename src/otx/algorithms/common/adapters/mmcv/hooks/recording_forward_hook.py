@@ -288,9 +288,6 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
             saliency_maps = self._normalize_map(torch.tensor(saliency_maps))
 
         saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
-        # saliency_maps_np = saliency_maps.cpu().numpy()
-        # ref = np.array([243, 211, 151,  69,  42,  58,  75, 100, 112, 114,  73,  59,  38, 94], dtype=np.uint8)
-        # assert np.all(saliency_maps_np[0, 0, :, 0] == ref)
         return saliency_maps
 
     def _get_mosaic_feature_map(self, feature_map: torch.Tensor) -> torch.Tensor:
@@ -308,34 +305,38 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
             gaussian = torch.tensor([[1 / 16.0, 1 / 8.0, 1 / 16.0],
                                      [1 / 8.0, 1 / 4.0, 1 / 8.0],
                                      [1 / 16.0, 1 / 8.0, 1 / 16.0]]).to(feature_map.device)
-            gaussian = gaussian.reshape(3, 3, 1).repeat(1, 1, dim)
-            mosaic_feature_map_mask = torch.zeros(h * w, h, w, dim).to(feature_map.device)
-            mosaic_feature_map_mask_padded = torch.nn.functional.pad(input=mosaic_feature_map_mask,
-                                                                     pad=(0, 0, 1, 1, 1, 1), mode='constant', value=0)
+            mosaic_feature_map_mask_padded = torch.zeros(h * w, h + 2, w + 2).to(feature_map.device)
             for i in range(h):
                 for j in range(w):
                     k = spacial_order[i, j]
                     i_pad = i + 1
                     j_pad = j + 1
-                    mosaic_feature_map_mask_padded[k, i_pad - 1 : i_pad + 2, j_pad - 1 : j_pad + 2, :] = gaussian
-            mosaic_feature_map_mask = mosaic_feature_map_mask_padded[:, 1:-1, 1:-1, :]
+                    mosaic_feature_map_mask_padded[k, i_pad - 1 : i_pad + 2, j_pad - 1 : j_pad + 2] = gaussian
+            mosaic_feature_map_mask = mosaic_feature_map_mask_padded[:, 1:-1, 1:-1]
+            mosaic_feature_map_mask = torch.tensor(mosaic_feature_map_mask.unsqueeze(3).repeat(1, 1, 1, dim))
+
             mosaic_fm_wo_cls_token = feature_map_spacial_repeated * mosaic_feature_map_mask
             mosaic_feature_map[:, 1:, :] = mosaic_fm_wo_cls_token.reshape(h * w, h * w, dim)
         else:
+            feature_map_repeated = feature_map.unsqueeze(0).repeat(h * w, 1, 1)
+            mosaic_feature_map_mask = torch.zeros(h * w, token_number).to(feature_map.device)
             for i in range(h * w):
-                if self._cls_token:
-                    mosaic_feature_map[i, 0, :] = feature_map[0, :]
-                mosaic_feature_map[i, i + 1, :] = feature_map[i + 1, :]
+                mosaic_feature_map_mask[i, i + 1] = torch.ones(1).to(feature_map.device)
+            if self._cls_token:
+                mosaic_feature_map_mask[:, 0] = torch.ones(1).to(feature_map.device)
+            mosaic_feature_map_mask = torch.tensor(mosaic_feature_map_mask.unsqueeze(2).repeat(1, 1, dim))
+            mosaic_feature_map = feature_map_repeated * mosaic_feature_map_mask
+
         return mosaic_feature_map
 
     def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
-            # Part of the target transformer layer (except first LayerNorm)
+            # Part of the target transformer_encoder layer (except first LayerNorm)
             target_layer = self._module.backbone.layers[self._layer_index]
             x = x + target_layer.attn(x)
             x = target_layer.ffn(target_layer.norm2(x), identity=x)
 
-            # Rest transformer layers, if not the last one picked as a target
+            # Rest transformer_encoder layers, if not the last one picked as a target
             if self._layer_index < -1:
                 for layer in self._module.backbone.layers[(self._layer_index + 1):]:
                     x = layer(x)
@@ -348,7 +349,9 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
             cls_token = x[:, 0]
             layer_output = [None, cls_token]
             logit = self._module.head.simple_test(layer_output)
-        return torch.tensor(np.array(logit))
+            if isinstance(logit, list):
+                logit = torch.from_numpy(np.array(logit))
+        return logit
 
     def __enter__(self) -> BaseRecordingForwardHook:
         """Enter."""
