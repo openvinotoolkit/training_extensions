@@ -9,5 +9,5 @@ ir_config = dict(
 )
 
 backend_config = dict(
-    model_inputs=[dict(opt_shapes=dict(input=[-1, 3, 416, 416]))],
+    model_inputs=[dict(opt_shapes=dict(input=[-1, 3, 640, 640]))],
 )
