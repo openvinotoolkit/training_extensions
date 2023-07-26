@@ -5,15 +5,15 @@
 from functools import partial
 
 import torch
+from mmcls.models.backbones.vision_transformer import VisionTransformer
 from mmcls.models.builder import CLASSIFIERS
 from mmcls.models.classifiers.image import ImageClassifier
-from mmcls.models.backbones.vision_transformer import VisionTransformer
 from mmcls.models.utils import resize_pos_embed
 
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import ViTReciproCAMHook
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import ViTReciproCAMHook
 
 from .mixin import ClsLossDynamicsTrackingMixin, SAMClassifierMixin
 
@@ -317,7 +317,8 @@ if is_mmdeploy_enabled():
             model.backbone.patch_resolution,
             patch_resolution,
             mode=model.backbone.interpolate_mode,
-            num_extra_tokens=model.backbone.num_extra_tokens)
+            num_extra_tokens=model.backbone.num_extra_tokens,
+        )
         x = model.backbone.drop_after_pos(x)
 
         if not model.backbone.with_cls_token:

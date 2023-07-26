@@ -244,8 +244,9 @@ class ReciproCAMHook(BaseRecordingForwardHook):
 class ViTReciproCAMHook(BaseRecordingForwardHook):
     """Implementation of ViTRecipro-CAM for class-wise saliency map for transformer-based classifiers."""
 
-    def __init__(self, module: torch.nn.Module, layer_index: int = -1, use_gaussian: bool = True,
-                 cls_token: bool = True):
+    def __init__(
+        self, module: torch.nn.Module, layer_index: int = -1, use_gaussian: bool = True, cls_token: bool = True
+    ):
         super().__init__(module)
         self._layer_index = layer_index
         self._target_layernorm = self._get_target_layernorm()
@@ -285,7 +286,7 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
 
         if self._norm_saliency_maps:
             saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
-            saliency_maps = self._normalize_map(torch.tensor(saliency_maps))
+            saliency_maps = self._normalize_map(saliency_maps)
 
         saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
         return saliency_maps
@@ -302,9 +303,9 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
             feature_map_spacial_repeated = feature_map_spacial.repeat(h * w, 1, 1, 1)  # 196, 14, 14, 192
 
             spacial_order = torch.arange(h * w).reshape(h, w)
-            gaussian = torch.tensor([[1 / 16.0, 1 / 8.0, 1 / 16.0],
-                                     [1 / 8.0, 1 / 4.0, 1 / 8.0],
-                                     [1 / 16.0, 1 / 8.0, 1 / 16.0]]).to(feature_map.device)
+            gaussian = torch.tensor(
+                [[1 / 16.0, 1 / 8.0, 1 / 16.0], [1 / 8.0, 1 / 4.0, 1 / 8.0], [1 / 16.0, 1 / 8.0, 1 / 16.0]]
+            ).to(feature_map.device)
             mosaic_feature_map_mask_padded = torch.zeros(h * w, h + 2, w + 2).to(feature_map.device)
             for i in range(h):
                 for j in range(w):
@@ -338,7 +339,7 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
 
             # Rest transformer_encoder layers, if not the last one picked as a target
             if self._layer_index < -1:
-                for layer in self._module.backbone.layers[(self._layer_index + 1):]:
+                for layer in self._module.backbone.layers[(self._layer_index + 1) :]:
                     x = layer(x)
 
             if self._final_norm:
