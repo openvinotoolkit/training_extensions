@@ -84,8 +84,8 @@ class OTXDetectionTask(OTXTask, ABC):
         self._anchors: Dict[str, int] = {}
 
         if (
-            not self._hyperparams.postprocessing.result_based_confidence_threshold
-            and hasattr(self._hyperparams, "postprocessing")
+            hasattr(self._hyperparams, "postprocessing")
+            and not getattr(self._hyperparams.postprocessing, "result_based_confidence_threshold", False)
             and hasattr(self._hyperparams.postprocessing, "confidence_threshold")
         ):
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold

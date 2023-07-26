@@ -369,7 +369,7 @@ Please note, by default, the optimal confidence threshold is detected based on v
 .. code-block::
 
   (otx) ...$ otx export --load-weights ../outputs/weights.pth \
-                      --output ../outputs
+                      --output ../outputs \
                       params \
                       --postprocessing.confidence_threshold 0.5 \
                       --postprocessing.result_based_confidence_threshold false
