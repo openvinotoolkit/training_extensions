@@ -22,42 +22,33 @@ __img_size = (1024, 1024)
 __img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=True)
 
 train_pipeline = [
-    dict(type='LoadImageFromFile', to_float32=True),
-    dict(type='LoadAnnotations', with_bbox=True, with_mask=True),
-    dict(type='RandomFlip', flip_ratio=0.5),
-    dict(
-        type='Resize',
-        img_scale=__img_size,
-        ratio_range=(0.1, 2.0),
-        multiscale_mode='range',
-        keep_ratio=True),
-    dict(
-        type='RandomCrop',
-        crop_size=__img_size,
-        crop_type='absolute',
-        recompute_bbox=True,
-        allow_negative_crop=True),
-    dict(type='FilterAnnotations', min_gt_bbox_wh=(1e-05, 1e-05), by_mask=True),
-    dict(type='Pad', size=__img_size, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
-    dict(type='Normalize', **__img_norm_cfg),
-    dict(type='DefaultFormatBundle', img_to_float=True),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels', 'gt_masks'])
+    dict(type="LoadImageFromFile", to_float32=True),
+    dict(type="LoadAnnotations", with_bbox=True, with_mask=True),
+    dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type="Resize", img_scale=__img_size, ratio_range=(0.1, 2.0), multiscale_mode="range", keep_ratio=True),
+    dict(type="RandomCrop", crop_size=__img_size, crop_type="absolute", recompute_bbox=True, allow_negative_crop=True),
+    dict(type="FilterAnnotations", min_gt_bbox_wh=(1e-05, 1e-05), by_mask=True),
+    dict(type="Pad", size=__img_size, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
+    dict(type="Normalize", **__img_norm_cfg),
+    dict(type="DefaultFormatBundle", img_to_float=True),
+    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"]),
 ]
 
 test_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(type="LoadImageFromFile"),
     dict(
-        type='MultiScaleFlipAug',
+        type="MultiScaleFlipAug",
         img_scale=__img_size,
         flip=False,
         transforms=[
-            dict(type='Resize', keep_ratio=True),
-            dict(type='RandomFlip'),
-            dict(type='Pad', size_divisor=32, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
-            dict(type='Normalize', **__img_norm_cfg),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img'])
-        ])
+            dict(type="Resize", keep_ratio=True),
+            dict(type="RandomFlip"),
+            dict(type="Pad", size_divisor=32, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(type="Collect", keys=["img"]),
+        ],
+    ),
 ]
 
 __dataset_type = "CocoDataset"

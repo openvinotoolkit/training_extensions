@@ -8,14 +8,17 @@ import torch.nn.functional as F
 from mmdet.core import mask2bbox
 from mmdet.models.builder import HEADS
 from mmdet.models.seg_heads import MaskFormerFusionHead
+from mmdet.utils import AvoidCUDAOOM
 
 
 @HEADS.register_module()
 class CustomMaskFormerFusionHead(MaskFormerFusionHead):
     """MaskFormerFusionHead for Mask2Former Class for mmdetection detectors."""
 
+    @AvoidCUDAOOM.retry_if_cuda_oom
     def instance_postprocess(self, mask_cls, mask_pred):
-        max_per_image = self.test_cfg.get('max_per_image', 100)
+        """Instance segmentation inference."""
+        max_per_image = self.test_cfg.get("max_per_image", 100)
         num_queries = mask_cls.shape[0]
         # shape (num_queries, num_class)
         scores = F.softmax(mask_cls, dim=-1)[:, :-1]
