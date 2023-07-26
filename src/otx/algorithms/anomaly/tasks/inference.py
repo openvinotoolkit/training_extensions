@@ -356,6 +356,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         extra_model_data[("model_info", "reverse_input_channels")] = True
         extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
+        extra_model_data[("model_info", "labels")] = ["Normal", "Anomaly"]
         embed_ir_model_data(xml_file, extra_model_data)
 
     def _serialize_list(self, arr: Union[Tuple, List]) -> str:

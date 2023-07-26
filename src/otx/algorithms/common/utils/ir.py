@@ -19,7 +19,7 @@ def check_if_quantized(model: Any) -> bool:
     return False
 
 
-def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str], Any]) -> None:
+def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str, str], Any]) -> None:
     """Embeds serialized data to IR xml file.
 
     Args:
