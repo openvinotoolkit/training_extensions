@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Object_Detection_YOLOX_X
+model_template_id: YOLOX_X
 name: YOLOX_X
 task_type: DETECTION
 task_family: VISION
