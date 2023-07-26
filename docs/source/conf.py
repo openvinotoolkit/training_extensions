@@ -18,7 +18,7 @@
 project = 'OpenVINO™ Training Extensions'
 copyright = '2023, OpenVINO™ Training Extensions Contributors'
 author = 'OpenVINO™ Training Extensions Contributors'
-release = '1.4.0'
+release = '1.5.0'
 
 # -- General configuration --------------------------------------------------- #
 

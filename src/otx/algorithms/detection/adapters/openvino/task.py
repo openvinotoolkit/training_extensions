@@ -164,7 +164,7 @@ class BaseInferencerWithConverter(BaseInferencer):
             else:
                 features = (
                     copy.deepcopy(prediction["feature_vector"].reshape(-1)),
-                    copy.deepcopy(prediction["saliency_map"][0]),
+                    self.get_saliency_map(prediction, preprocessing_meta),
                 )
 
             result_handler(id, processed_prediciton, features)
