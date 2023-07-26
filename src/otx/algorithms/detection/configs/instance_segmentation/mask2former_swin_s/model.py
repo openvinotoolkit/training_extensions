@@ -155,7 +155,8 @@ model = dict(
         panoptic_on=False,
         semantic_on=False,
         instance_on=True,
-        max_per_image=100,
+        # NOTE: The default is 100, however, it OOMED on 4k images. Find a workaround.
+        max_per_image=50,
         filter_low_score=True,
         score_threshold=0.1,
     ),

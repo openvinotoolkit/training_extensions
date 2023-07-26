@@ -157,19 +157,21 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
         max_y2 = max(det_bbox[3], gt_bbox[3])
 
         if det_mask.height == gt_mask.height and det_mask.width == gt_mask.width:
-            # NOTE: SOLOv2 returns full size masks
-            det_mask = det_mask.crop(np.array([min_x1, min_y1, max_x2, max_y2]))
+            # NOTE: both SOLOv2 and MaskFormer output full size masks
+            det_mask = det_mask.to_ndarray()[0]
+            gt_mask = gt_mask.to_ndarray()[0]
         else:
+            # NOTE: MaskRCNN output 28 x 28 masks
             det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
             det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
             det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
-        gt_mask = gt_mask.crop(gt_bbox)
-        gt_mask = gt_mask.to_bitmap()
-        gt_mask = gt_mask.expand(max_y2 - min_y1, max_x2 - min_x1, gt_bbox[1] - min_y1, gt_bbox[0] - min_x1)
-        # compute iou between det_mask and gt_mask
-        det_mask = det_mask.to_ndarray()
-        gt_mask = gt_mask.to_ndarray()
-        assert det_mask.shape == gt_mask.shape, f"det_mask.shape={det_mask.shape} != gt_mask.shape={gt_mask.shape}"
+            gt_mask = gt_mask.crop(gt_bbox)
+            gt_mask = gt_mask.to_bitmap()
+            gt_mask = gt_mask.expand(max_y2 - min_y1, max_x2 - min_x1, gt_bbox[1] - min_y1, gt_bbox[0] - min_x1)
+            # compute iou between det_mask and gt_mask
+            det_mask = det_mask.to_ndarray()
+            gt_mask = gt_mask.to_ndarray()
+            assert det_mask.shape == gt_mask.shape, f"det_mask.shape={det_mask.shape} != gt_mask.shape={gt_mask.shape}"
         ious[m, n] = np.sum(det_mask & gt_mask) / np.sum(det_mask | gt_mask)
     return ious
 
