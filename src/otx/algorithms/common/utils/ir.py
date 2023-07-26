@@ -34,6 +34,6 @@ def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str], Any]) -> Non
 
     # workaround for CVS-110054
     tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
-    serialize(model, tmp_xml_path)
+    serialize(model, str(tmp_xml_path))
     tmp_xml_path.rename(xml_file)
     Path(str(tmp_xml_path.parent / tmp_xml_path.stem) + ".bin").unlink()
