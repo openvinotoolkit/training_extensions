@@ -594,8 +594,6 @@ def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
         template.model_template_path,
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
-        "--load-weights",
-        f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml",
         "--output",
         f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
@@ -603,14 +601,14 @@ def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
         command_line.extend(
             [
                 "--load-weights",
-                f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.xml",
+                f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
             ]
         )
     else:
         command_line.extend(
             [
                 "--load-weights",
-                f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
+                f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml",
             ]
         )
     command_line.extend(["--workspace", f"{template_work_dir}"])

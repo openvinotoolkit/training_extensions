@@ -179,6 +179,27 @@ class TestMMDetectionTask:
         assert isinstance(model, CustomATSS)
 
     @e2e_pytest_unit
+    def test_load_postprocessing(self):
+        """Test _load_postprocessing function."""
+        mock_model_data = {
+            "config": {"postprocessing": {"use_ellipse_shapes": {"value": True}}},
+            "confidence_threshold": 0.75,
+        }
+        self.det_task._load_postprocessing(mock_model_data)
+        assert self.det_task._hyperparams.postprocessing.use_ellipse_shapes == True
+        assert self.det_task.confidence_threshold == 0.75
+
+        mock_model_data = {
+            "config": {"postprocessing": {"use_ellipse_shapes": {"value": False}}},
+            "confidence_threshold": 0.75,
+        }
+        self.det_task._hyperparams.postprocessing.result_based_confidence_threshold = False
+        self.det_task._hyperparams.postprocessing.confidence_threshold = 0.45
+        self.det_task._load_postprocessing(mock_model_data)
+        assert self.det_task._hyperparams.postprocessing.use_ellipse_shapes == False
+        assert self.det_task.confidence_threshold == 0.45
+
+    @e2e_pytest_unit
     def test_train(self, mocker) -> None:
         """Test train function."""
 
