@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### New features
 
+- Enable configurable confidence threshold for otx eval and export(<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
 - Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
 
 ### Enhancements

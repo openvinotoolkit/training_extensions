@@ -19,9 +19,6 @@ from tests.test_suite.run_test_command import (
     otx_export_testing,
     otx_resume_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
-    pot_validate_fq_testing,
 )
 
 args = {
@@ -73,11 +70,11 @@ class TestToolsVisualPrompting:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=False)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=True)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args1, deterministic=False)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1, deterministic=True)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
