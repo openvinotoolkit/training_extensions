@@ -41,11 +41,11 @@ For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset
 
 We support three dataset formats for visual prompting:
 
-- `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/common_semantic_segmentation.html>`_ for semantic segmentation
+- `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/v1.4.1/docs/data-formats/formats/common_semantic_segmentation.html>`_ for semantic segmentation
 
-- `COCO <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/coco.html>`_ for instance segmentation
+- `COCO <https://openvinotoolkit.github.io/datumaro/v1.4.1/docs/data-formats/formats/coco.html>`_ for instance segmentation
 
-- `Pascal VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_ for instance segmentation and semantic segmentation
+- `Pascal VOC <https://openvinotoolkit.github.io/datumaro/v1.4.1/docs/data-formats/formats/pascal_voc.html>`_ for instance segmentation and semantic segmentation
 
 
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
