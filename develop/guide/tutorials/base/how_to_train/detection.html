@@ -742,6 +742,17 @@ using <code class="docutils literal notranslate"><span class="pre">otx</span> <s
 Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 </pre></div>
 </div>
+<p>4. <code class="docutils literal notranslate"><span class="pre">Optional</span></code> Additionally, we can tune confidence threshold via the command line.
+Learn more about template-specific parameters using <code class="docutils literal notranslate"><span class="pre">otx</span> <span class="pre">export</span> <span class="pre">params</span> <span class="pre">--help</span></code>.</p>
+<p>For example, if there are too many False-Positive predictions (there we have a prediction, but don’t have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.</p>
+<p>Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable <code class="docutils literal notranslate"><span class="pre">result_based_confidence_threshold</span></code> option.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ otx export --load-weights ../outputs/weights.pth \
+                    --output ../outputs \
+                    params \
+                    --postprocessing.confidence_threshold 0.5 \
+                    --postprocessing.result_based_confidence_threshold false
+</pre></div>
+</div>
 </section>
 <section id="optimization">
 <h2>Optimization<a class="headerlink" href="#optimization" title="Permalink to this heading">#</a></h2>
