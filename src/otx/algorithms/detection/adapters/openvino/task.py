@@ -452,7 +452,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         ]
         if self.task_type == TaskType.DETECTION:
             if (
-                self.task_environment.model_template.model_template_id == "Custom_Object_Detection_YOLOX"
+                "YOLOX" in self.task_environment.model_template.model_template_id
                 and not self.config.tiling_parameters.enable_tiling
             ):
                 args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
