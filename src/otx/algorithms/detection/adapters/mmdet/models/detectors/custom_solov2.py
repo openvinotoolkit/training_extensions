@@ -304,7 +304,6 @@ if is_mmdeploy_enabled():
             mask_preds = F.interpolate(mask_preds, size=upsampled_size, mode="bilinear")
             bboxes = scores.new_zeros(batch_size, scores.shape[-1], 4)
         else:
-
             bboxes = scores.new_zeros(batch_size, scores.shape[-1], 2)
             # full screen box so we can postprocess mask outside the model
             bboxes = torch.cat(

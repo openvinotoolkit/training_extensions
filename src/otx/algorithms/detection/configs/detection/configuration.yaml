@@ -27,8 +27,7 @@ learning_parameters:
   inference_batch_size:
     affects_outcome_of: TRAINING
     default_value: 1
-    description:
-      The number of samples seen in each iteration of inference.
+    description: The number of samples seen in each iteration of inference.
       Increasing this value improves inference time and may make the inference more
       stable. A larger batch size has higher memory requirements.
     editable: true
