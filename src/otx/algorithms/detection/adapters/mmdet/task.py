@@ -69,6 +69,7 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_input_shape,
     patch_ir_scale_factor,
     patch_tiling,
+    patch_samples_per_gpu
 )
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -292,6 +293,7 @@ class MMDetectionTask(OTXDetectionTask):
                 not_increase=(self._hyperparams.learning_parameters.auto_adapt_batch_size == BatchSizeAdaptType.SAFE),
             )
 
+        patch_samples_per_gpu(cfg.data.get('val_dataloader', {}), self._hyperparams)
         train_detector(
             model,
             datasets,
@@ -343,6 +345,8 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
+        patch_samples_per_gpu(cfg.data.get('test_dataloader', {}), self._hyperparams)
+
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
         # If the batch size and the number of data are not divisible, the metric may score differently.
         # To avoid this, use 1 if they are not divisible.

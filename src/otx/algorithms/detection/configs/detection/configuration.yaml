@@ -24,6 +24,29 @@ learning_parameters:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
     auto_hpo_state: NOT_POSSIBLE
+  inference_batch_size:
+    affects_outcome_of: TRAINING
+    default_value: 1
+    description:
+      The number of samples seen in each iteration of inference.
+      Increasing this value improves inference time and may make the inference more
+      stable. A larger batch size has higher memory requirements.
+    editable: true
+    header: Inference batch size
+    max_value: 512
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1
+    visible_in_ui: true
+    warning:
+      Increasing this value may cause the system to use more memory than available,
+      potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:

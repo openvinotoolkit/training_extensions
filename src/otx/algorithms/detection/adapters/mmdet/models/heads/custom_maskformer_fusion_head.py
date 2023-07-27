@@ -9,6 +9,7 @@ from mmdet.core import mask2bbox
 from mmdet.models.builder import HEADS
 from mmdet.models.seg_heads import MaskFormerFusionHead
 from mmdet.utils import AvoidCUDAOOM
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 
 
 @HEADS.register_module()
@@ -61,4 +62,46 @@ class CustomMaskFormerFusionHead(MaskFormerFusionHead):
         bboxes = bboxes[keep]
 
         bboxes = torch.cat([bboxes, det_scores[:, None]], dim=-1)
+        return labels_per_image, bboxes, mask_pred_binary
+
+
+if is_mmdeploy_enabled():
+    import torch
+    from mmdeploy.core import FUNCTION_REWRITER
+
+    @FUNCTION_REWRITER.register_rewriter(
+        "otx.algorithms.detection.adapters.mmdet.models.heads.custom_maskformer_fusion_head.CustomMaskFormerFusionHead.instance_postprocess"
+    )
+    def custom_maskformer_fusion_head__instance_postprocess(ctx, self, mask_cls, mask_pred):
+        max_per_image = self.test_cfg.get('max_per_image', 100)
+        num_queries = mask_cls.size(0)
+        # shape (num_queries, num_class)
+        scores = F.softmax(mask_cls, dim=-1)[:, :-1]
+        # shape (num_queries * num_class, )
+        labels = torch.arange(self.num_classes).unsqueeze(0).repeat(num_queries, 1).flatten(0, 1)
+        scores_per_image, top_indices = scores.flatten(0, 1).topk(
+            max_per_image, sorted=False)
+        labels_per_image = labels[top_indices]
+
+        query_indices = top_indices // self.num_classes
+        mask_pred = mask_pred[query_indices]
+
+        mask_pred_binary = (mask_pred > 0).float()
+        mask_scores_per_image = (mask_pred.sigmoid() *
+                                 mask_pred_binary).flatten(1).sum(1) / (
+                                     mask_pred_binary.flatten(1).sum(1) + 1e-6)
+        det_scores = scores_per_image * mask_scores_per_image
+        mask_pred_binary = mask_pred_binary.bool()
+
+        # filter by score
+        keep = det_scores > self.test_cfg.score_threshold
+        det_scores = det_scores[keep]
+        mask_pred_binary = mask_pred_binary[keep]
+        labels_per_image = labels_per_image[keep]
+
+        N = mask_pred_binary.size(0)
+
+        bboxes = mask_pred_binary.new_zeros((N, 4), dtype=torch.float32)
+        bboxes = torch.cat([bboxes, det_scores[:, None]], dim=-1)
+
         return labels_per_image, bboxes, mask_pred_binary

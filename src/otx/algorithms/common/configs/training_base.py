@@ -69,9 +69,21 @@ class BaseConfig(ConfigurableParameters):
             min_value=1,
             max_value=2048,
             header="Batch size",
-            description="The number of training samples seen in each iteration of training. Increasing thisvalue "
+            description="The number of training samples seen in each iteration of training. Increasing this value "
             "improves training time and may make the training more stable. A larger batch size has higher "
             "memory requirements.",
+            warning="Increasing this value may cause the system to use more memory than available, "
+            "potentially causing out of memory errors, please update with caution.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        inference_batch_size = configurable_integer(
+            default_value=1,
+            min_value=1,
+            max_value=512,
+            header="Inference batch size",
+            description="The number of samples seen in each iteration of inference. Increasing this value "
+            "improves inference time. A larger batch size has higher memory requirements.",
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
