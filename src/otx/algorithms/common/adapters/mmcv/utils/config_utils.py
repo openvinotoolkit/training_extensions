@@ -26,7 +26,7 @@ import tempfile
 import warnings
 from collections.abc import Mapping
 from importlib import import_module
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union, Optional
 
 import torch
 from mmcv import Config, ConfigDict
@@ -636,122 +636,8 @@ def patch_from_hyperparams(config: Config, hyperparams):
         )
         config.update(unlabeled_config)
 
-    if hyperparams.learning_parameters.input_size != 0:
-        input_size = hyperparams.learning_parameters.input_size
-        modle_cfg = config.get("model")
-        if modle_cfg is not None:
-            if "YOLOX" in modle_cfg.get("type", ""):  # YOLOX needs to get input_size argument also.
-                config.model.input_size = (input_size, input_size)
-
-        set_input_size(config.data, input_size)
-
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
-
-
-def set_input_size(data_config: Dict, input_size: int):
-    """Modify data pipelines to provide dataset with configured input size."""
-
-    # find a minimum value among piplines above
-    # based on that value, scale down all values
-    # For AutoAugment and MultiScaleFlipAug, get minimum value same as above and scale down
-
-    size_reference: Dict[str, List[str]] = {
-        "resize" : ["size", "img_scale"],
-        "pad" : ["size"],
-        "crop" : ["crop_size"],
-        "mosaic" : ["img_scale"]
-    }
-
-    def get_size_value(size_val: Union[int, List[Tuple[int]], Tuple[int]]):
-        if isinstance(size_val, int):
-            size_val = (size_val, size_val)
-        elif isinstance(size_val, list) and isinstance(size_val[0], tuple):
-            size_val = size_val[0]
-        return size_val
-
-    def get_pipeline_size_vlaue(pipeline: Dict) -> Tuple[int]:
-        for pipeline_name, pipeline_attr in size_reference.items():
-            if pipeline_name in pipeline["type"].lower():
-                for attr in pipeline_attr:
-                    if attr in pipeline:
-                        return get_size_value(pipeline[attr])
-
-        if pipeline["type"] == "MultiScaleFlipAug":
-            for sub_pipeline in reversed(pipeline["transforms"]):
-                size =  get_pipeline_size_vlaue(sub_pipeline)
-                if size is not None:
-                    return size
-            size = pipeline.get("img_scale")
-            if size is not None:
-                return get_size_value(size)
-        if pipeline["type"] == "AutoAugment":
-            for sub_pipeline in reversed(pipeline["policies"]):
-                size =  get_pipeline_size_vlaue(sub_pipeline)
-                if size is not None:
-                    return size
-
-        return None
-
-    def set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float]]):
-        if isinstance(pipeline[attr], int):
-            pipeline[attr] = round(pipeline[attr] * scale[0])
-        elif isinstance(pipeline[attr], list) and isinstance(pipeline[attr], tuple):
-            for idx in range(len(pipeline[attr])):
-                pipeline[attr][idx] = (round(pipeline[attr][idx][0] * scale[0]),
-                                       round(pipeline[attr][idx][1] * scale[1]))
-        else:
-            pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
-
-
-    pipeline_to_change = copy.deepcopy(size_reference)
-    pipeline_to_change["randomaffine"] = ["border"]
-    def set_pipeline_size_vlaue(pipeline: Dict, scale: Tuple[Union[int, float]]):
-        for pipeline_name, pipeline_attr in pipeline_to_change.items():
-            if pipeline_name in pipeline["type"].lower():
-                for attr in pipeline_attr:
-                    if attr in pipeline:
-                        set_size_value(pipeline, attr, scale)
-                if pipeline_name == "pad" and "size_divisor" in pipeline:
-                    size = get_pipeline_size_vlaue(pipeline)
-                    if size % pipeline["size_divisor"] != 0:
-                        pipeline["size_divisor"] = 1
-        if pipeline["type"] == "MultiScaleFlipAug":
-            for sub_pipeline in reversed(pipeline["transforms"]):
-                set_pipeline_size_vlaue(sub_pipeline, scale)
-            if "img_scale" in pipeline:
-                set_size_value(pipeline, "img_scale", scale)
-        if pipeline["type"] == "AutoAugment":
-            for sub_pipeline in reversed(pipeline["policies"]):
-                set_pipeline_size_vlaue(sub_pipeline, scale)
-
-    def get_pipelines(data_config: Dict, data_type: str):
-        if "pipeline" in data_config[data_type]:
-            return data_config[data_type]['pipeline']
-        if "dataset" in data_config[data_type]:
-            return data_config[data_type]['dataset']['pipeline']
-        raise RuntimeError("Can not find pipeline.")
-
-    # get base image size from validation and test pipeline
-    base_value = None
-    for data_type in ["val", "test"]:
-        if data_type in data_config:
-            pipelines = get_pipelines(data_config, data_type)
-            for pipeline in reversed(pipelines):
-                base_value = get_pipeline_size_vlaue(pipeline)
-                if base_value is not None:
-                    break
-        if base_value is not None:
-            break
-
-    resize_ratio = (input_size / base_value[0], input_size / base_value[1])
-
-    # scale size values    
-    for data_type in ["train", "val", "test"]:
-        if data_type in data_config:
-            pipelines = get_pipelines(data_config, data_type)
-            for pipeline in pipelines:
-                set_pipeline_size_vlaue(pipeline, resize_ratio)
 
 
 def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
@@ -812,3 +698,148 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
     while "dataset" in data_cfg:
         data_cfg = data_cfg.dataset
     return data_cfg
+
+
+class InputSizeScaler:
+    PIPELINE_TO_CHANGE: Dict[str, List[str]] = {
+        "resize" : ["size", "img_scale"],
+        "pad" : ["size"],
+        "crop" : ["crop_size"],
+        "mosaic" : ["img_scale"],
+        "randomaffine" : ["border"],
+        "multiscaleflipaug" : ["img_scale"],
+    }
+
+    def __init__(
+        self,
+        data_config: Dict,
+        base_input_size: Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]] = None,
+    ):
+        self.data_config = data_config
+        if isinstance(base_input_size, int):
+            base_input_size = [base_input_size, base_input_size]
+        elif isinstance(base_input_size, dict):
+            for task in base_input_size.keys():
+                if isinstance(base_input_size[task], int):
+                    base_input_size[task] = [base_input_size[task], base_input_size[task]]
+
+        self._base_input_size = base_input_size
+
+    def set_input_size(self, input_size: int):
+        """Modify data pipelines to provide dataset with configured input size."""
+
+        # find a minimum value among piplines above
+        # based on that value, scale down all values
+        # For AutoAugment and MultiScaleFlipAug, get minimum value same as above and scale down
+
+        # get base image size from validation and test pipeline
+        if not isinstance(self.base_input_size, dict):
+            resize_ratio = (input_size / self.base_input_size[0], input_size / self.base_input_size[1])
+
+        # scale size values    
+        for data_type in ["train", "val", "test"]:
+            if data_type in self.data_config:
+                if isinstance(self.base_input_size, dict):
+                    resize_ratio = (input_size / self.base_input_size[data_type][0],
+                                    input_size / self.base_input_size[data_type][1])
+                pipelines = self._get_pipelines(data_type)
+                for pipeline in pipelines:
+                    self._set_pipeline_size_vlaue(pipeline, resize_ratio)
+
+    @property
+    def base_input_size(self) -> Union[List[int], Dict[str, List[int]]] :
+        if self._base_input_size is not None:
+            return self._base_input_size
+        
+        for task in ["test", "val", "train"]:
+            if task in self.data_config:
+                self._base_input_size = self._estimate_post_img_size(self.data_config[task]["pipeline"])
+                return self._base_input_size
+
+        raise RuntimeError("There isn't any pipeline in the data configurations.")
+
+    def _estimate_post_img_size(self, pipelines: Dict, default_size: Optional[List[int]] = None) -> List[int]:
+        post_img_size = default_size
+        for pipeline in pipelines:
+            if "resize" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "resize")
+                if img_size is not None:
+                    post_img_size = img_size
+            elif "pad" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "pad")
+                if img_size is not None:
+                    if post_img_size is None:
+                        post_img_size = img_size
+                    else:
+                        for i in range(2):
+                            if post_img_size[i] < img_size[i]:
+                                post_img_size[i] = img_size[i] 
+            elif "crop" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "crop")
+                if img_size is not None:
+                    if post_img_size is None:
+                        post_img_size = img_size
+                    else:
+                        for i in range(2):
+                            if post_img_size[i] > img_size[i]:
+                                post_img_size[i] = img_size[i] 
+            elif pipeline["type"] == "MultiScaleFlipAug":
+                img_size = self._get_size_value(pipeline, "multiscaleflipaug")
+                if img_size is not None:
+                    post_img_size = img_size
+                post_img_size = self._estimate_post_img_size(pipeline["transforms"], post_img_size)
+            elif pipeline["type"] == "AutoAugment":
+                post_img_size = self._estimate_post_img_size(pipeline["policies"], post_img_size)
+
+        return post_img_size
+
+    def _get_size_value(self, pipeline: Dict, attr: str):
+        for pipeline_attr in self.PIPELINE_TO_CHANGE[attr]:
+            if pipeline_attr not in pipeline:
+                continue
+            size_val = pipeline[pipeline_attr]
+            if isinstance(size_val, int):
+                return [size_val, size_val]
+            elif isinstance(size_val, tuple):
+                return list(size_val)
+            elif isinstance(size_val, list):
+                return list(size_val[0])
+
+        return None
+
+    def _get_pipelines(self, data_type: str):
+        if "pipeline" in self.data_config[data_type]:
+            return self.data_config[data_type]['pipeline']
+        if "dataset" in self.data_config[data_type]:
+            return self.data_config[data_type]['dataset']['pipeline']
+        raise RuntimeError("Failed to find pipeline.")
+
+    def _set_pipeline_size_vlaue(self, pipeline: Dict, scale: Tuple[Union[int, float]]):
+        for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
+            if pipeline_name in pipeline["type"].lower():
+                for pipeline_attr in pipeline_attrs:
+                    if pipeline_attr in pipeline:
+                        self._set_size_value(pipeline, pipeline_attr, scale)
+                if pipeline_name == "pad" and "size_divisor" in pipeline:
+                    size = pipeline[self.PIPELINE_TO_CHANGE[pipeline_name][0]]
+                    if size % pipeline["size_divisor"] != 0:
+                        pipeline["size_divisor"] = 1
+
+        if pipeline["type"] == "MultiScaleFlipAug":
+            for sub_pipeline in reversed(pipeline["transforms"]):
+                self._set_pipeline_size_vlaue(sub_pipeline, scale)
+
+        if pipeline["type"] == "AutoAugment":
+            for sub_pipeline in reversed(pipeline["policies"]):
+                self._set_pipeline_size_vlaue(sub_pipeline, scale)
+
+    @staticmethod
+    def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float]]):
+        if isinstance(pipeline[attr], int):
+            pipeline[attr] = round(pipeline[attr] * scale[0])
+        elif isinstance(pipeline[attr], list) and isinstance(pipeline[attr][0], tuple):
+            for idx in range(len(pipeline[attr])):
+                pipeline[attr][idx] = (round(pipeline[attr][idx][0] * scale[0]),
+                                    round(pipeline[attr][idx][1] * scale[1]))
+        else:
+            pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
