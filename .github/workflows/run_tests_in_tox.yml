@@ -23,7 +23,7 @@ on:
         default: false
       runs-on:
         type: string
-        default: "['self-hosted', 'Linux', 'X64', 'dev']"
+        default: "['self-hosted', 'Linux', 'X64', 'debug_t4']"
 jobs:
   run_tests_in_tox:
     # tricky workaround to pass list from the string input type
