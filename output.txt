@@ -1,0 +1,353 @@
+WARNING:root:Category id of '0' is reserved for no class (background) but category named 'cells' with id of '0' is found in /home/jaeguk/workspace/otx-dev/../data/ote_val/bccd-small/annotations/instances_test.json. Please be warned that annotations with category id of '0' would have `None` as label. (https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/coco.html#import-coco-dataset)
+WARNING:root:Category id of '0' is reserved for no class (background) but category named 'cells' with id of '0' is found in /home/jaeguk/workspace/otx-dev/../data/ote_val/bccd-small/annotations/instances_val.json. Please be warned that annotations with category id of '0' would have `None` as label. (https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/coco.html#import-coco-dataset)
+WARNING:root:Category id of '0' is reserved for no class (background) but category named 'cells' with id of '0' is found in /home/jaeguk/workspace/otx-dev/../data/ote_val/bccd-small/annotations/instances_train.json. Please be warned that annotations with category id of '0' would have `None` as label. (https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/coco.html#import-coco-dataset)
+WARNING:root:Category id of '0' is reserved for no class (background) but category named 'cells' with id of '0' is found in /home/jaeguk/workspace/otx-dev/../data/ote_val/bccd-small/annotations/instances_test.json. Please be warned that annotations with category id of '0' would have `None` as label. (https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/coco.html#import-coco-dataset)
+WARNING:root:Category id of '0' is reserved for no class (background) but category named 'cells' with id of '0' is found in /home/jaeguk/workspace/otx-dev/../data/ote_val/bccd-small/annotations/instances_val.json. Please be warned that annotations with category id of '0' would have `None` as label. (https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/coco.html#import-coco-dataset)
+WARNING:root:Category id of '0' is reserved for no class (background) but category named 'cells' with id of '0' is found in /home/jaeguk/workspace/otx-dev/../data/ote_val/bccd-small/annotations/instances_train.json. Please be warned that annotations with category id of '0' would have `None` as label. (https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/coco.html#import-coco-dataset)
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/mmcv/__init__.py:20: UserWarning: On January 1, 2023, MMCV will release v2.0.0, in which it will remove components related to the training process and add a data transformation module. In addition, it will rename the package names mmcv to mmcv-lite and mmcv-full to mmcv. See https://github.com/open-mmlab/mmcv/blob/master/docs/en/compatibility.md for more details.
+  warnings.warn(
+[*] Update data configuration file to: otx-workspace/lite-dino/bccd-small/data.yaml
+2023-07-28 12:15:04,082 | INFO : train()
+2023-07-28 12:15:04,082 | INFO : ------> system virtual mem: svmem(total=67292848128, available=65121730560, percent=3.2, used=1431908352, free=49136128000, active=5809901568, inactive=6294097920, buffers=464703488, cached=16260108288, shared=2924544, slab=5657939968)
+2023-07-28 12:15:04,082 | INFO : init data cfg.
+2023-07-28 12:15:04,087 | INFO : Training seed was set to 5 w/ deterministic=False.
+2023-07-28 12:15:04,089 | INFO : Try to create a 0 size memory pool.
+2023-07-28 12:15:04,089 | INFO : initialized.
+2023-07-28 12:15:04,090 | INFO : configure!: training=True
+2023-07-28 12:15:04,092 | INFO : configure_data()
+2023-07-28 12:15:04,095 | INFO : task config!!!!: training=True
+2023-07-28 12:15:04,095 | INFO : train!
+2023-07-28 12:15:04,095 | INFO : cfg.gpu_ids = range(0, 1), distributed = False
+2023-07-28 12:15:04,134 | INFO : Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.10.10 (main, Mar 21 2023, 18:45:11) [GCC 11.2.0]
+CUDA available: True
+GPU 0,1: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda-11.7
+NVCC: Cuda compilation tools, release 11.7, V11.7.64
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+PyTorch: 1.13.1+cu117
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.6.0 (Git Hash 52b5f107dd9cf10910aaa19cb47f3abf9b349815)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.7
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.1  (built against CUDA 11.2)
+    - Built with CuDNN 8.5
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.7, CUDNN_VERSION=8.5.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -fabi-version=11 -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wunused-local-typedefs -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.13.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.14.1+cu117
+OpenCV: 4.8.0
+MMCV: 1.7.0
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 11.7
+MMDetection: 2.28.1+05b8af3
+------------------------------------------------------------
+
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/mmcv/cnn/bricks/transformer.py:690: DeprecationWarning: The arguments `feedforward_channels` in BaseTransformerLayer has been deprecated, now you should set `feedforward_channels` and other FFN related arguments to a dict named `ffn_cfgs`. 
+  warnings.warn(
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/mmcv/cnn/bricks/transformer.py:690: DeprecationWarning: The arguments `ffn_dropout` in BaseTransformerLayer has been deprecated, now you should set `ffn_drop` and other FFN related arguments to a dict named `ffn_cfgs`. 
+  warnings.warn(
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/mmcv/cnn/bricks/transformer.py:690: DeprecationWarning: The arguments `ffn_num_fcs` in BaseTransformerLayer has been deprecated, now you should set `num_fcs` and other FFN related arguments to a dict named `ffn_cfgs`. 
+  warnings.warn(
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/mmcv/cnn/bricks/transformer.py:440: DeprecationWarning: The arguments `dropout` in MultiheadAttention has been deprecated, now you can separately set `attn_drop`(float), proj_drop(float), and `dropout_layer`(dict) 
+  warnings.warn(
+2023-07-28 12:15:04,499 - mmcv - INFO - load model from: torchvision://resnet50
+2023-07-28 12:15:04,499 - mmcv - INFO - load checkpoint from torchvision path: torchvision://resnet50
+2023-07-28 12:15:04,552 - mmcv - WARNING - The model and loaded state dict do not match exactly
+
+unexpected key in source state_dict: fc.weight, fc.bias
+
+2023-07-28 12:15:05,471 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2023-07-28 12:15:05,473 | INFO : Task Adaptation: [] => ['Platelets', 'RBC', 'WBC']
+2023-07-28 12:15:05,473 | INFO : - Efficient Mode: False
+2023-07-28 12:15:05,473 | INFO : - Sampler type: cls_incr
+2023-07-28 12:15:05,473 | INFO : - Sampler flag: False
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/mmdet/datasets/utils.py:66: UserWarning: "ImageToTensor" pipeline is replaced by "DefaultFormatBundle" for batch inference. It is recommended to manually replace it in the test data pipeline in your config file.
+  warnings.warn(
+2023-07-28 12:15:05,477 - mmdet - INFO - Start running, host: jaeguk@jaeguk-desktop, work_dir: /home/jaeguk/workspace/otx-dev/otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:05,477 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) ReduceLROnPlateauLrUpdaterHook     
+(ABOVE_NORMAL) EMAHook                            
+(NORMAL      ) CheckpointHook                     
+(NORMAL      ) CancelInterfaceHook                
+(NORMAL      ) AdaptiveTrainSchedulingHook        
+(NORMAL      ) LoggerReplaceHook                  
+(LOW         ) EvalHook                           
+(71          ) OTXProgressHook                    
+(75          ) LazyEarlyStoppingHook              
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+(VERY_LOW    ) OTXLoggerHook                      
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) ReduceLROnPlateauLrUpdaterHook     
+(ABOVE_NORMAL) EMAHook                            
+(NORMAL      ) TaskAdaptHook                      
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(71          ) OTXProgressHook                    
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+(VERY_LOW    ) OTXLoggerHook                      
+(VERY_LOW    ) MemCacheHook                       
+(LOWEST      ) ForceTrainModeHook                 
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) ReduceLROnPlateauLrUpdaterHook     
+(NORMAL      ) AdaptiveTrainSchedulingHook        
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(71          ) OTXProgressHook                    
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(ABOVE_NORMAL) EMAHook                            
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(71          ) OTXProgressHook                    
+(75          ) LazyEarlyStoppingHook              
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+(VERY_LOW    ) OTXLoggerHook                      
+ -------------------- 
+after_train_epoch:
+(ABOVE_NORMAL) EMAHook                            
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(71          ) OTXProgressHook                    
+(75          ) LazyEarlyStoppingHook              
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+(VERY_LOW    ) OTXLoggerHook                      
+(VERY_LOW    ) MemCacheHook                       
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) TaskAdaptHook                      
+(LOW         ) IterTimerHook                      
+(71          ) OTXProgressHook                    
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+(VERY_LOW    ) OTXLoggerHook                      
+(VERY_LOW    ) MemCacheHook                       
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+(71          ) OTXProgressHook                    
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+(71          ) OTXProgressHook                    
+ -------------------- 
+after_val_epoch:
+(71          ) OTXProgressHook                    
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+(VERY_LOW    ) OTXLoggerHook                      
+(VERY_LOW    ) MemCacheHook                       
+ -------------------- 
+after_run:
+(NORMAL      ) CancelInterfaceHook                
+(71          ) OTXProgressHook                    
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) TensorboardLoggerHook              
+ -------------------- 
+2023-07-28 12:15:05,477 - mmdet - INFO - workflow: [('train', 1)], max: 200 epochs
+2023-07-28 12:15:05,486 - mmdet - INFO - Checkpoints will be saved to /home/jaeguk/workspace/otx-dev/otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs by HardDiskBackend.
+2023-07-28 12:15:05,486 | INFO : cancel hook is initialized
+2023-07-28 12:15:05,486 | INFO : logger in the runner is replaced to the MPA logger
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/torch/utils/tensorboard/__init__.py:4: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  if not hasattr(tensorboard, "__version__") or LooseVersion(
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/torch/utils/tensorboard/__init__.py:6: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  ) < LooseVersion("1.15"):
+[                                                  ] 0/6, elapsed: 0s, ETA:/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3190.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+[>>>>>                              ] 1/6, 0.7 task/s, elapsed: 1s, ETA:     7s[>>>>>>>>>>>                        ] 2/6, 1.3 task/s, elapsed: 1s, ETA:     3s[>>>>>>>>>>>>>>>>>                  ] 3/6, 1.9 task/s, elapsed: 2s, ETA:     2s[>>>>>>>>>>>>>>>>>>>>>>>            ] 4/6, 2.5 task/s, elapsed: 2s, ETA:     1s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 5/6, 3.0 task/s, elapsed: 2s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 6/6, 3.6 task/s, elapsed: 2s, ETA:     0s
+---------------iou_thr: 0.5---------------
+2023-07-28 12:15:07,325 | INFO : 
++-----------+-----+------+--------+-------+
+| class     | gts | dets | recall | ap    |
++-----------+-----+------+--------+-------+
+| Platelets | 13  | 1246 | 0.077  | 0.011 |
+| RBC       | 67  | 127  | 0.015  | 0.000 |
+| WBC       | 6   | 427  | 0.000  | 0.000 |
++-----------+-----+------+--------+-------+
+| mAP       |     |      |        | 0.004 |
++-----------+-----+------+--------+-------+
+2023-07-28 12:15:07,866 | INFO : Now best checkpoint is saved as best_mAP_epoch_1.pth.
+2023-07-28 12:15:07,866 | INFO : Best mAP is 0.0038 at 1 epoch.
+2023-07-28 12:15:08,010 | INFO : Update LrUpdaterHook interval: 4 -> 4
+2023-07-28 12:15:08,010 | INFO : Update CheckpointHook interval: 1 -> 4
+2023-07-28 12:15:08,010 | INFO : Update EvalHook interval: 1 -> 4
+2023-07-28 12:15:08,010 | INFO : Update EarlyStoppingHook interval: 1 -> 4
+/home/jaeguk/workspace/otx-dev/venv/otx-dev/lib/python3.10/site-packages/mmcv/runner/hooks/ema.py:73: UserWarning: This overload of add_ is deprecated:
+	add_(Number alpha, Tensor other)
+Consider using one of the following signatures instead:
+	add_(Tensor other, *, Number alpha) (Triggered internally at ../torch/csrc/utils/python_arg_parser.cpp:1420.)
+  buffer_parameter.mul_(1 - momentum).add_(momentum, parameter.data)
+2023-07-28 12:15:10,221 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:10,221 | INFO : Epoch [1][8/8]	lr: 1.000e-04, eta: 3:14:34, time: 0.587, data_time: 0.312, memory: 5682, current_iters: 7, loss_cls: 0.8355, loss_bbox: 0.5812, loss_iou: 0.9306, d0.loss_cls: 0.7987, d0.loss_bbox: 0.6085, d0.loss_iou: 0.9479, d1.loss_cls: 0.7892, d1.loss_bbox: 0.5996, d1.loss_iou: 0.9404, d2.loss_cls: 0.8064, d2.loss_bbox: 0.5906, d2.loss_iou: 0.9342, d3.loss_cls: 0.7695, d3.loss_bbox: 0.5873, d3.loss_iou: 0.9318, d4.loss_cls: 0.8844, d4.loss_bbox: 0.5844, d4.loss_iou: 0.9304, enc_loss_cls: 0.8208, enc_loss_bbox: 0.5992, enc_loss_iou: 0.9456, dn_loss_cls: 0.5816, dn_loss_bbox: 0.9346, dn_loss_iou: 1.3283, d0.dn_loss_cls: 0.6866, d0.dn_loss_bbox: 0.9308, d0.dn_loss_iou: 1.3270, d1.dn_loss_cls: 0.5925, d1.dn_loss_bbox: 0.9313, d1.dn_loss_iou: 1.3270, d2.dn_loss_cls: 0.5234, d2.dn_loss_bbox: 0.9321, d2.dn_loss_iou: 1.3274, d3.dn_loss_cls: 0.5060, d3.dn_loss_bbox: 0.9328, d3.dn_loss_iou: 1.3277, d4.dn_loss_cls: 0.5601, d4.dn_loss_bbox: 0.9337, d4.dn_loss_iou: 1.3280, loss: 33.4270, grad_norm: 59.2812
+2023-07-28 12:15:10,233 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:12,395 | WARNING : training progress 1%
+2023-07-28 12:15:12,396 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:12,396 | INFO : Epoch [2][8/8]	lr: 1.000e-04, eta: 2:21:07, time: 0.269, data_time: 0.004, memory: 6121, current_iters: 15, loss_cls: 0.5987, loss_bbox: 0.5384, loss_iou: 0.7932, d0.loss_cls: 0.6031, d0.loss_bbox: 0.5609, d0.loss_iou: 0.8062, d1.loss_cls: 0.5892, d1.loss_bbox: 0.5489, d1.loss_iou: 0.7995, d2.loss_cls: 0.5930, d2.loss_bbox: 0.5404, d2.loss_iou: 0.7946, d3.loss_cls: 0.5862, d3.loss_bbox: 0.5380, d3.loss_iou: 0.7930, d4.loss_cls: 0.5893, d4.loss_bbox: 0.5374, d4.loss_iou: 0.7929, enc_loss_cls: 0.5636, enc_loss_bbox: 0.5653, enc_loss_iou: 0.8132, dn_loss_cls: 0.4076, dn_loss_bbox: 0.9898, dn_loss_iou: 1.3661, d0.dn_loss_cls: 0.2697, d0.dn_loss_bbox: 0.9802, d0.dn_loss_iou: 1.3459, d1.dn_loss_cls: 0.2623, d1.dn_loss_bbox: 0.9816, d1.dn_loss_iou: 1.3497, d2.dn_loss_cls: 0.2649, d2.dn_loss_bbox: 0.9840, d2.dn_loss_iou: 1.3548, d3.dn_loss_cls: 0.3345, d3.dn_loss_bbox: 0.9858, d3.dn_loss_iou: 1.3587, d4.dn_loss_cls: 0.3786, d4.dn_loss_bbox: 0.9877, d4.dn_loss_iou: 1.3623, loss: 29.5092, grad_norm: 20.8972
+2023-07-28 12:15:12,407 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:14,511 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:14,511 | INFO : Epoch [3][8/8]	lr: 1.000e-04, eta: 2:02:13, time: 0.261, data_time: 0.005, memory: 6121, current_iters: 23, loss_cls: 0.5911, loss_bbox: 0.4348, loss_iou: 0.6921, d0.loss_cls: 0.5804, d0.loss_bbox: 0.4382, d0.loss_iou: 0.6927, d1.loss_cls: 0.5614, d1.loss_bbox: 0.4373, d1.loss_iou: 0.6893, d2.loss_cls: 0.5549, d2.loss_bbox: 0.4342, d2.loss_iou: 0.6929, d3.loss_cls: 0.5790, d3.loss_bbox: 0.4351, d3.loss_iou: 0.6916, d4.loss_cls: 0.5830, d4.loss_bbox: 0.4352, d4.loss_iou: 0.6913, enc_loss_cls: 0.5187, enc_loss_bbox: 0.4387, enc_loss_iou: 0.6945, dn_loss_cls: 0.3575, dn_loss_bbox: 0.9525, dn_loss_iou: 1.3758, d0.dn_loss_cls: 0.2051, d0.dn_loss_bbox: 0.9510, d0.dn_loss_iou: 1.3524, d1.dn_loss_cls: 0.2181, d1.dn_loss_bbox: 0.9529, d1.dn_loss_iou: 1.3603, d2.dn_loss_cls: 0.2243, d2.dn_loss_bbox: 0.9539, d2.dn_loss_iou: 1.3667, d3.dn_loss_cls: 0.2600, d3.dn_loss_bbox: 0.9539, d3.dn_loss_iou: 1.3707, d4.dn_loss_cls: 0.3155, d4.dn_loss_bbox: 0.9532, d4.dn_loss_iou: 1.3734, loss: 27.3633, grad_norm: 24.3311
+2023-07-28 12:15:14,523 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:16,696 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:16,696 | INFO : Epoch [4][8/8]	lr: 1.000e-04, eta: 1:53:15, time: 0.270, data_time: 0.006, memory: 6121, current_iters: 31, loss_cls: 0.5688, loss_bbox: 0.5035, loss_iou: 0.7591, d0.loss_cls: 0.5473, d0.loss_bbox: 0.5214, d0.loss_iou: 0.7533, d1.loss_cls: 0.5432, d1.loss_bbox: 0.5151, d1.loss_iou: 0.7585, d2.loss_cls: 0.5528, d2.loss_bbox: 0.5130, d2.loss_iou: 0.7619, d3.loss_cls: 0.5543, d3.loss_bbox: 0.5088, d3.loss_iou: 0.7624, d4.loss_cls: 0.5693, d4.loss_bbox: 0.5050, d4.loss_iou: 0.7603, enc_loss_cls: 0.5032, enc_loss_bbox: 0.5028, enc_loss_iou: 0.7359, dn_loss_cls: 0.3124, dn_loss_bbox: 0.9561, dn_loss_iou: 1.3465, d0.dn_loss_cls: 0.1892, d0.dn_loss_bbox: 0.9625, d0.dn_loss_iou: 1.3312, d1.dn_loss_cls: 0.1849, d1.dn_loss_bbox: 0.9607, d1.dn_loss_iou: 1.3343, d2.dn_loss_cls: 0.2001, d2.dn_loss_bbox: 0.9588, d2.dn_loss_iou: 1.3377, d3.dn_loss_cls: 0.2163, d3.dn_loss_bbox: 0.9576, d3.dn_loss_iou: 1.3403, d4.dn_loss_cls: 0.2507, d4.dn_loss_bbox: 0.9567, d4.dn_loss_iou: 1.3433, loss: 27.8392, grad_norm: 23.2808
+2023-07-28 12:15:16,707 | INFO : Saving checkpoint at 4 epochs
+[                                                  ] 0/6, elapsed: 0s, ETA:[>>>>>                              ] 1/6, 8.4 task/s, elapsed: 0s, ETA:     1s[>>>>>>>>>>>                       ] 2/6, 16.7 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>                 ] 3/6, 14.9 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>            ] 4/6, 19.9 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 5/6, 17.7 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 6/6, 21.2 task/s, elapsed: 0s, ETA:     0s
+---------------iou_thr: 0.5---------------
+2023-07-28 12:15:18,042 | INFO : 
++-----------+-----+------+--------+-------+
+| class     | gts | dets | recall | ap    |
++-----------+-----+------+--------+-------+
+| Platelets | 13  | 0    | 0.000  | 0.000 |
+| RBC       | 67  | 1800 | 0.896  | 0.076 |
+| WBC       | 6   | 0    | 0.000  | 0.000 |
++-----------+-----+------+--------+-------+
+| mAP       |     |      |        | 0.025 |
++-----------+-----+------+--------+-------+
+2023-07-28 12:15:18,126 | INFO : The previous best checkpoint /home/jaeguk/workspace/otx-dev/otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs/best_mAP_epoch_1.pth was removed
+2023-07-28 12:15:18,968 | INFO : Now best checkpoint is saved as best_mAP_epoch_4.pth.
+2023-07-28 12:15:18,968 | INFO : Best mAP is 0.0252 at 4 epoch.
+2023-07-28 12:15:18,968 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:18,968 | INFO : Epoch(val) [4][3]	AP50: 0.0250, mAP: 0.0252, current_iters: 32
+2023-07-28 12:15:18,968 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:18,971 | INFO : 
+Best Score: 0.025214843451976776, Current Score: 0.025214843451976776, Patience: 5 Count: 0
+2023-07-28 12:15:21,131 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:21,131 | INFO : Epoch [5][8/8]	lr: 1.000e-04, eta: 1:47:36, time: 0.269, data_time: 0.005, memory: 6121, current_iters: 39, loss_cls: 0.5098, loss_bbox: 0.4600, loss_iou: 0.7122, d0.loss_cls: 0.5287, d0.loss_bbox: 0.4673, d0.loss_iou: 0.7234, d1.loss_cls: 0.5010, d1.loss_bbox: 0.4668, d1.loss_iou: 0.7174, d2.loss_cls: 0.5055, d2.loss_bbox: 0.4665, d2.loss_iou: 0.7163, d3.loss_cls: 0.5120, d3.loss_bbox: 0.4655, d3.loss_iou: 0.7148, d4.loss_cls: 0.5079, d4.loss_bbox: 0.4630, d4.loss_iou: 0.7129, enc_loss_cls: 0.4485, enc_loss_bbox: 0.4604, enc_loss_iou: 0.7089, dn_loss_cls: 0.2467, dn_loss_bbox: 0.9384, dn_loss_iou: 1.3606, d0.dn_loss_cls: 0.1770, d0.dn_loss_bbox: 0.9449, d0.dn_loss_iou: 1.3511, d1.dn_loss_cls: 0.1823, d1.dn_loss_bbox: 0.9422, d1.dn_loss_iou: 1.3529, d2.dn_loss_cls: 0.1783, d2.dn_loss_bbox: 0.9401, d2.dn_loss_iou: 1.3553, d3.dn_loss_cls: 0.1873, d3.dn_loss_bbox: 0.9391, d3.dn_loss_iou: 1.3568, d4.dn_loss_cls: 0.1961, d4.dn_loss_bbox: 0.9384, d4.dn_loss_iou: 1.3585, loss: 26.7150, grad_norm: 24.3303
+2023-07-28 12:15:21,143 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:23,390 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:23,390 | INFO : Epoch [6][8/8]	lr: 1.000e-04, eta: 1:44:15, time: 0.279, data_time: 0.006, memory: 6207, current_iters: 47, loss_cls: 0.4587, loss_bbox: 0.5605, loss_iou: 0.8056, d0.loss_cls: 0.4611, d0.loss_bbox: 0.5569, d0.loss_iou: 0.7952, d1.loss_cls: 0.4377, d1.loss_bbox: 0.5551, d1.loss_iou: 0.8022, d2.loss_cls: 0.4354, d2.loss_bbox: 0.5562, d2.loss_iou: 0.8058, d3.loss_cls: 0.4391, d3.loss_bbox: 0.5597, d3.loss_iou: 0.8063, d4.loss_cls: 0.4470, d4.loss_bbox: 0.5598, d4.loss_iou: 0.8058, enc_loss_cls: 0.4204, enc_loss_bbox: 0.5457, enc_loss_iou: 0.7909, dn_loss_cls: 0.1891, dn_loss_bbox: 1.0014, dn_loss_iou: 1.3264, d0.dn_loss_cls: 0.1620, d0.dn_loss_bbox: 1.0022, d0.dn_loss_iou: 1.3221, d1.dn_loss_cls: 0.1564, d1.dn_loss_bbox: 1.0006, d1.dn_loss_iou: 1.3233, d2.dn_loss_cls: 0.1544, d2.dn_loss_bbox: 0.9996, d2.dn_loss_iou: 1.3247, d3.dn_loss_cls: 0.1589, d3.dn_loss_bbox: 0.9998, d3.dn_loss_iou: 1.3250, d4.dn_loss_cls: 0.1686, d4.dn_loss_bbox: 1.0005, d4.dn_loss_iou: 1.3254, loss: 27.5457, grad_norm: 20.6260
+2023-07-28 12:15:23,401 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:25,726 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:25,726 | INFO : Epoch [7][8/8]	lr: 1.000e-04, eta: 1:42:11, time: 0.289, data_time: 0.005, memory: 6207, current_iters: 55, loss_cls: 0.4217, loss_bbox: 0.4761, loss_iou: 0.7269, d0.loss_cls: 0.4333, d0.loss_bbox: 0.4798, d0.loss_iou: 0.7271, d1.loss_cls: 0.3928, d1.loss_bbox: 0.4824, d1.loss_iou: 0.7266, d2.loss_cls: 0.3875, d2.loss_bbox: 0.4793, d2.loss_iou: 0.7297, d3.loss_cls: 0.4040, d3.loss_bbox: 0.4785, d3.loss_iou: 0.7286, d4.loss_cls: 0.4226, d4.loss_bbox: 0.4772, d4.loss_iou: 0.7292, enc_loss_cls: 0.3710, enc_loss_bbox: 0.4759, enc_loss_iou: 0.7204, dn_loss_cls: 0.1727, dn_loss_bbox: 0.9494, dn_loss_iou: 1.3286, d0.dn_loss_cls: 0.1481, d0.dn_loss_bbox: 0.9470, d0.dn_loss_iou: 1.3317, d1.dn_loss_cls: 0.1456, d1.dn_loss_bbox: 0.9464, d1.dn_loss_iou: 1.3320, d2.dn_loss_cls: 0.1444, d2.dn_loss_bbox: 0.9461, d2.dn_loss_iou: 1.3323, d3.dn_loss_cls: 0.1446, d3.dn_loss_bbox: 0.9474, d3.dn_loss_iou: 1.3313, d4.dn_loss_cls: 0.1587, d4.dn_loss_bbox: 0.9484, d4.dn_loss_iou: 1.3298, loss: 25.8550, grad_norm: 21.5258
+2023-07-28 12:15:25,737 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:27,898 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:27,898 | INFO : Epoch [8][8/8]	lr: 1.000e-04, eta: 1:39:41, time: 0.269, data_time: 0.005, memory: 6324, current_iters: 63, loss_cls: 0.3383, loss_bbox: 0.5814, loss_iou: 0.7886, d0.loss_cls: 0.3708, d0.loss_bbox: 0.5859, d0.loss_iou: 0.7905, d1.loss_cls: 0.3417, d1.loss_bbox: 0.5853, d1.loss_iou: 0.7902, d2.loss_cls: 0.3361, d2.loss_bbox: 0.5863, d2.loss_iou: 0.7901, d3.loss_cls: 0.3346, d3.loss_bbox: 0.5844, d3.loss_iou: 0.7876, d4.loss_cls: 0.3294, d4.loss_bbox: 0.5818, d4.loss_iou: 0.7879, enc_loss_cls: 0.3461, enc_loss_bbox: 0.5822, enc_loss_iou: 0.7909, dn_loss_cls: 0.1520, dn_loss_bbox: 1.0310, dn_loss_iou: 1.3081, d0.dn_loss_cls: 0.1409, d0.dn_loss_bbox: 1.0287, d0.dn_loss_iou: 1.3152, d1.dn_loss_cls: 0.1376, d1.dn_loss_bbox: 1.0284, d1.dn_loss_iou: 1.3151, d2.dn_loss_cls: 0.1414, d2.dn_loss_bbox: 1.0280, d2.dn_loss_iou: 1.3141, d3.dn_loss_cls: 0.1423, d3.dn_loss_bbox: 1.0294, d3.dn_loss_iou: 1.3117, d4.dn_loss_cls: 0.1509, d4.dn_loss_bbox: 1.0298, d4.dn_loss_iou: 1.3092, loss: 26.9239, grad_norm: 16.6350
+2023-07-28 12:15:27,910 | INFO : Saving checkpoint at 8 epochs
+[                                                  ] 0/6, elapsed: 0s, ETA:[>>>>>                              ] 1/6, 8.7 task/s, elapsed: 0s, ETA:     1s[>>>>>>>>>>>                       ] 2/6, 17.5 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>                 ] 3/6, 15.3 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>            ] 4/6, 20.4 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 5/6, 18.1 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 6/6, 21.7 task/s, elapsed: 0s, ETA:     0s
+---------------iou_thr: 0.5---------------
+2023-07-28 12:15:29,199 | INFO : 
++-----------+-----+------+--------+-------+
+| class     | gts | dets | recall | ap    |
++-----------+-----+------+--------+-------+
+| Platelets | 13  | 102  | 0.231  | 0.085 |
+| RBC       | 67  | 1512 | 1.000  | 0.511 |
+| WBC       | 6   | 186  | 1.000  | 0.253 |
++-----------+-----+------+--------+-------+
+| mAP       |     |      |        | 0.283 |
++-----------+-----+------+--------+-------+
+2023-07-28 12:15:29,314 | INFO : The previous best checkpoint /home/jaeguk/workspace/otx-dev/otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs/best_mAP_epoch_4.pth was removed
+2023-07-28 12:15:30,164 | INFO : Now best checkpoint is saved as best_mAP_epoch_8.pth.
+2023-07-28 12:15:30,165 | INFO : Best mAP is 0.2830 at 8 epoch.
+2023-07-28 12:15:30,165 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:30,165 | INFO : Epoch(val) [8][3]	AP50: 0.2830, mAP: 0.2830, current_iters: 64
+2023-07-28 12:15:30,165 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:30,169 | INFO : 
+Best Score: 0.2829870283603668, Current Score: 0.2829870283603668, Patience: 5 Count: 0
+2023-07-28 12:15:32,231 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:32,231 | INFO : Epoch [9][8/8]	lr: 1.000e-04, eta: 1:37:13, time: 0.257, data_time: 0.005, memory: 6324, current_iters: 71, loss_cls: 0.2890, loss_bbox: 0.3892, loss_iou: 0.6453, d0.loss_cls: 0.3283, d0.loss_bbox: 0.3901, d0.loss_iou: 0.6528, d1.loss_cls: 0.2985, d1.loss_bbox: 0.3893, d1.loss_iou: 0.6480, d2.loss_cls: 0.2854, d2.loss_bbox: 0.3872, d2.loss_iou: 0.6476, d3.loss_cls: 0.2679, d3.loss_bbox: 0.3896, d3.loss_iou: 0.6468, d4.loss_cls: 0.2743, d4.loss_bbox: 0.3888, d4.loss_iou: 0.6452, enc_loss_cls: 0.3334, enc_loss_bbox: 0.3880, enc_loss_iou: 0.6450, dn_loss_cls: 0.1378, dn_loss_bbox: 0.9353, dn_loss_iou: 1.3197, d0.dn_loss_cls: 0.1325, d0.dn_loss_bbox: 0.9383, d0.dn_loss_iou: 1.3321, d1.dn_loss_cls: 0.1312, d1.dn_loss_bbox: 0.9376, d1.dn_loss_iou: 1.3307, d2.dn_loss_cls: 0.1298, d2.dn_loss_bbox: 0.9361, d2.dn_loss_iou: 1.3278, d3.dn_loss_cls: 0.1339, d3.dn_loss_bbox: 0.9368, d3.dn_loss_iou: 1.3250, d4.dn_loss_cls: 0.1365, d4.dn_loss_bbox: 0.9354, d4.dn_loss_iou: 1.3214, loss: 23.7073, grad_norm: 18.2336
+2023-07-28 12:15:32,243 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:34,196 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:34,196 | INFO : Epoch [10][8/8]	lr: 1.000e-04, eta: 1:34:43, time: 0.243, data_time: 0.004, memory: 6324, current_iters: 79, loss_cls: 0.2887, loss_bbox: 0.4693, loss_iou: 0.7077, d0.loss_cls: 0.2998, d0.loss_bbox: 0.4823, d0.loss_iou: 0.7237, d1.loss_cls: 0.2716, d1.loss_bbox: 0.4829, d1.loss_iou: 0.7232, d2.loss_cls: 0.2724, d2.loss_bbox: 0.4780, d2.loss_iou: 0.7187, d3.loss_cls: 0.2810, d3.loss_bbox: 0.4754, d3.loss_iou: 0.7156, d4.loss_cls: 0.2859, d4.loss_bbox: 0.4726, d4.loss_iou: 0.7107, enc_loss_cls: 0.2868, enc_loss_bbox: 0.4765, enc_loss_iou: 0.7210, dn_loss_cls: 0.1487, dn_loss_bbox: 0.9398, dn_loss_iou: 1.3154, d0.dn_loss_cls: 0.1340, d0.dn_loss_bbox: 0.9572, d0.dn_loss_iou: 1.3346, d1.dn_loss_cls: 0.1327, d1.dn_loss_bbox: 0.9553, d1.dn_loss_iou: 1.3325, d2.dn_loss_cls: 0.1365, d2.dn_loss_bbox: 0.9513, d2.dn_loss_iou: 1.3278, d3.dn_loss_cls: 0.1473, d3.dn_loss_bbox: 0.9488, d3.dn_loss_iou: 1.3233, d4.dn_loss_cls: 0.1465, d4.dn_loss_bbox: 0.9429, d4.dn_loss_iou: 1.3174, loss: 24.8358, grad_norm: 20.1394
+2023-07-28 12:15:34,207 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:36,371 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:36,371 | INFO : Epoch [11][8/8]	lr: 1.000e-04, eta: 1:33:21, time: 0.269, data_time: 0.004, memory: 6324, current_iters: 87, loss_cls: 0.2808, loss_bbox: 0.4531, loss_iou: 0.6790, d0.loss_cls: 0.2946, d0.loss_bbox: 0.4771, d0.loss_iou: 0.7110, d1.loss_cls: 0.2570, d1.loss_bbox: 0.4766, d1.loss_iou: 0.7104, d2.loss_cls: 0.2544, d2.loss_bbox: 0.4719, d2.loss_iou: 0.7022, d3.loss_cls: 0.2499, d3.loss_bbox: 0.4688, d3.loss_iou: 0.6984, d4.loss_cls: 0.2606, d4.loss_bbox: 0.4596, d4.loss_iou: 0.6849, enc_loss_cls: 0.2779, enc_loss_bbox: 0.4785, enc_loss_iou: 0.7114, dn_loss_cls: 0.1430, dn_loss_bbox: 0.9230, dn_loss_iou: 1.2904, d0.dn_loss_cls: 0.1245, d0.dn_loss_bbox: 0.9613, d0.dn_loss_iou: 1.3321, d1.dn_loss_cls: 0.1202, d1.dn_loss_bbox: 0.9572, d1.dn_loss_iou: 1.3275, d2.dn_loss_cls: 0.1219, d2.dn_loss_bbox: 0.9481, d2.dn_loss_iou: 1.3171, d3.dn_loss_cls: 0.1283, d3.dn_loss_bbox: 0.9409, d3.dn_loss_iou: 1.3073, d4.dn_loss_cls: 0.1348, d4.dn_loss_bbox: 0.9288, d4.dn_loss_iou: 1.2944, loss: 24.3589, grad_norm: 18.2308
+2023-07-28 12:15:36,383 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:38,467 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:38,468 | INFO : Epoch [12][8/8]	lr: 1.000e-04, eta: 1:31:53, time: 0.259, data_time: 0.006, memory: 6324, current_iters: 95, loss_cls: 0.2312, loss_bbox: 0.3679, loss_iou: 0.5814, d0.loss_cls: 0.2600, d0.loss_bbox: 0.3989, d0.loss_iou: 0.6395, d1.loss_cls: 0.2363, d1.loss_bbox: 0.3940, d1.loss_iou: 0.6290, d2.loss_cls: 0.2282, d2.loss_bbox: 0.3833, d2.loss_iou: 0.6096, d3.loss_cls: 0.2237, d3.loss_bbox: 0.3780, d3.loss_iou: 0.5977, d4.loss_cls: 0.2230, d4.loss_bbox: 0.3725, d4.loss_iou: 0.5913, enc_loss_cls: 0.2456, enc_loss_bbox: 0.4034, enc_loss_iou: 0.6391, dn_loss_cls: 0.1281, dn_loss_bbox: 0.8802, dn_loss_iou: 1.2593, d0.dn_loss_cls: 0.1220, d0.dn_loss_bbox: 0.9579, d0.dn_loss_iou: 1.3283, d1.dn_loss_cls: 0.1208, d1.dn_loss_bbox: 0.9478, d1.dn_loss_iou: 1.3177, d2.dn_loss_cls: 0.1233, d2.dn_loss_bbox: 0.9277, d2.dn_loss_iou: 1.2986, d3.dn_loss_cls: 0.1264, d3.dn_loss_bbox: 0.9120, d3.dn_loss_iou: 1.2835, d4.dn_loss_cls: 0.1265, d4.dn_loss_bbox: 0.8888, d4.dn_loss_iou: 1.2629, loss: 22.6454, grad_norm: 18.7042
+2023-07-28 12:15:38,479 | INFO : Saving checkpoint at 12 epochs
+[                                                  ] 0/6, elapsed: 0s, ETA:[>>>>>                              ] 1/6, 8.7 task/s, elapsed: 0s, ETA:     1s[>>>>>>>>>>>                       ] 2/6, 17.5 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>                 ] 3/6, 15.3 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>            ] 4/6, 20.4 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 5/6, 18.0 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 6/6, 21.6 task/s, elapsed: 0s, ETA:     0s
+---------------iou_thr: 0.5---------------
+2023-07-28 12:15:39,782 | INFO : 
++-----------+-----+------+--------+-------+
+| class     | gts | dets | recall | ap    |
++-----------+-----+------+--------+-------+
+| Platelets | 13  | 137  | 0.692  | 0.435 |
+| RBC       | 67  | 1521 | 0.985  | 0.614 |
+| WBC       | 6   | 142  | 1.000  | 0.730 |
++-----------+-----+------+--------+-------+
+| mAP       |     |      |        | 0.593 |
++-----------+-----+------+--------+-------+
+2023-07-28 12:15:39,900 | INFO : The previous best checkpoint /home/jaeguk/workspace/otx-dev/otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs/best_mAP_epoch_8.pth was removed
+2023-07-28 12:15:40,752 | INFO : Now best checkpoint is saved as best_mAP_epoch_12.pth.
+2023-07-28 12:15:40,752 | INFO : Best mAP is 0.5931 at 12 epoch.
+2023-07-28 12:15:40,752 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:40,752 | INFO : Epoch(val) [12][3]	AP50: 0.5930, mAP: 0.5931, current_iters: 96
+2023-07-28 12:15:40,753 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:40,756 | INFO : 
+Best Score: 0.5930852890014648, Current Score: 0.5930852890014648, Patience: 5 Count: 0
+2023-07-28 12:15:42,910 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:42,910 | INFO : Epoch [13][8/8]	lr: 1.000e-04, eta: 1:30:48, time: 0.268, data_time: 0.005, memory: 6562, current_iters: 103, loss_cls: 0.3033, loss_bbox: 0.4787, loss_iou: 0.6743, d0.loss_cls: 0.3038, d0.loss_bbox: 0.5228, d0.loss_iou: 0.7222, d1.loss_cls: 0.2831, d1.loss_bbox: 0.5161, d1.loss_iou: 0.7137, d2.loss_cls: 0.2808, d2.loss_bbox: 0.5008, d2.loss_iou: 0.6915, d3.loss_cls: 0.2843, d3.loss_bbox: 0.4917, d3.loss_iou: 0.6834, d4.loss_cls: 0.2766, d4.loss_bbox: 0.4940, d4.loss_iou: 0.6833, enc_loss_cls: 0.2976, enc_loss_bbox: 0.5267, enc_loss_iou: 0.7335, dn_loss_cls: 0.1275, dn_loss_bbox: 0.8796, dn_loss_iou: 1.1996, d0.dn_loss_cls: 0.1246, d0.dn_loss_bbox: 0.9918, d0.dn_loss_iou: 1.3147, d1.dn_loss_cls: 0.1279, d1.dn_loss_bbox: 0.9680, d1.dn_loss_iou: 1.2918, d2.dn_loss_cls: 0.1283, d2.dn_loss_bbox: 0.9303, d2.dn_loss_iou: 1.2535, d3.dn_loss_cls: 0.1287, d3.dn_loss_bbox: 0.9059, d3.dn_loss_iou: 1.2260, d4.dn_loss_cls: 0.1260, d4.dn_loss_bbox: 0.8874, d4.dn_loss_iou: 1.2062, loss: 24.2800, grad_norm: 28.1101
+2023-07-28 12:15:42,921 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:45,030 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:45,030 | INFO : Epoch [14][8/8]	lr: 1.000e-04, eta: 1:29:40, time: 0.262, data_time: 0.005, memory: 6562, current_iters: 111, loss_cls: 0.3120, loss_bbox: 0.3983, loss_iou: 0.6038, d0.loss_cls: 0.2577, d0.loss_bbox: 0.4613, d0.loss_iou: 0.6915, d1.loss_cls: 0.2455, d1.loss_bbox: 0.4522, d1.loss_iou: 0.6685, d2.loss_cls: 0.2619, d2.loss_bbox: 0.4319, d2.loss_iou: 0.6394, d3.loss_cls: 0.2774, d3.loss_bbox: 0.4247, d3.loss_iou: 0.6285, d4.loss_cls: 0.2978, d4.loss_bbox: 0.4107, d4.loss_iou: 0.6182, enc_loss_cls: 0.2417, enc_loss_bbox: 0.4689, enc_loss_iou: 0.6937, dn_loss_cls: 0.1077, dn_loss_bbox: 0.8049, dn_loss_iou: 1.1278, d0.dn_loss_cls: 0.1140, d0.dn_loss_bbox: 0.9495, d0.dn_loss_iou: 1.2897, d1.dn_loss_cls: 0.1159, d1.dn_loss_bbox: 0.9073, d1.dn_loss_iou: 1.2414, d2.dn_loss_cls: 0.1145, d2.dn_loss_bbox: 0.8536, d2.dn_loss_iou: 1.1813, d3.dn_loss_cls: 0.1103, d3.dn_loss_bbox: 0.8289, d3.dn_loss_iou: 1.1529, d4.dn_loss_cls: 0.1116, d4.dn_loss_bbox: 0.8131, d4.dn_loss_iou: 1.1355, loss: 22.4455, grad_norm: 31.4925
+2023-07-28 12:15:45,055 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:47,159 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:47,159 | INFO : Epoch [15][8/8]	lr: 1.000e-04, eta: 1:28:36, time: 0.261, data_time: 0.004, memory: 6562, current_iters: 119, loss_cls: 0.2962, loss_bbox: 0.3050, loss_iou: 0.5000, d0.loss_cls: 0.2572, d0.loss_bbox: 0.3677, d0.loss_iou: 0.5874, d1.loss_cls: 0.2474, d1.loss_bbox: 0.3506, d1.loss_iou: 0.5614, d2.loss_cls: 0.2615, d2.loss_bbox: 0.3300, d2.loss_iou: 0.5299, d3.loss_cls: 0.2692, d3.loss_bbox: 0.3148, d3.loss_iou: 0.5100, d4.loss_cls: 0.2872, d4.loss_bbox: 0.3077, d4.loss_iou: 0.5018, enc_loss_cls: 0.2550, enc_loss_bbox: 0.3876, enc_loss_iou: 0.6139, dn_loss_cls: 0.1179, dn_loss_bbox: 0.7030, dn_loss_iou: 1.0656, d0.dn_loss_cls: 0.1211, d0.dn_loss_bbox: 0.8863, d0.dn_loss_iou: 1.2743, d1.dn_loss_cls: 0.1180, d1.dn_loss_bbox: 0.8275, d1.dn_loss_iou: 1.2001, d2.dn_loss_cls: 0.1151, d2.dn_loss_bbox: 0.7699, d2.dn_loss_iou: 1.1352, d3.dn_loss_cls: 0.1134, d3.dn_loss_bbox: 0.7409, d3.dn_loss_iou: 1.1028, d4.dn_loss_cls: 0.1133, d4.dn_loss_bbox: 0.7160, d4.dn_loss_iou: 1.0775, loss: 20.2391, grad_norm: 34.0923
+2023-07-28 12:15:47,171 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:49,386 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:49,387 | INFO : Epoch [16][8/8]	lr: 1.000e-04, eta: 1:27:54, time: 0.275, data_time: 0.006, memory: 6562, current_iters: 127, loss_cls: 0.2909, loss_bbox: 0.3145, loss_iou: 0.5193, d0.loss_cls: 0.2480, d0.loss_bbox: 0.3780, d0.loss_iou: 0.6049, d1.loss_cls: 0.2311, d1.loss_bbox: 0.3652, d1.loss_iou: 0.5824, d2.loss_cls: 0.2337, d2.loss_bbox: 0.3466, d2.loss_iou: 0.5608, d3.loss_cls: 0.2445, d3.loss_bbox: 0.3304, d3.loss_iou: 0.5433, d4.loss_cls: 0.2708, d4.loss_bbox: 0.3155, d4.loss_iou: 0.5211, enc_loss_cls: 0.2279, enc_loss_bbox: 0.4065, enc_loss_iou: 0.6439, dn_loss_cls: 0.1006, dn_loss_bbox: 0.6621, dn_loss_iou: 1.0288, d0.dn_loss_cls: 0.1222, d0.dn_loss_bbox: 0.8755, d0.dn_loss_iou: 1.2540, d1.dn_loss_cls: 0.1138, d1.dn_loss_bbox: 0.8068, d1.dn_loss_iou: 1.1709, d2.dn_loss_cls: 0.1079, d2.dn_loss_bbox: 0.7516, d2.dn_loss_iou: 1.1163, d3.dn_loss_cls: 0.1049, d3.dn_loss_bbox: 0.7134, d3.dn_loss_iou: 1.0796, d4.dn_loss_cls: 0.0999, d4.dn_loss_bbox: 0.6781, d4.dn_loss_iou: 1.0444, loss: 20.0101, grad_norm: 37.5238
+2023-07-28 12:15:49,398 | INFO : Saving checkpoint at 16 epochs
+[                                                  ] 0/6, elapsed: 0s, ETA:[>>>>>                              ] 1/6, 8.6 task/s, elapsed: 0s, ETA:     1s[>>>>>>>>>>>                       ] 2/6, 17.2 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>                 ] 3/6, 15.2 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>            ] 4/6, 20.2 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 5/6, 17.9 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 6/6, 21.5 task/s, elapsed: 0s, ETA:     0s
+---------------iou_thr: 0.5---------------
+2023-07-28 12:15:50,701 | INFO : 
++-----------+-----+------+--------+-------+
+| class     | gts | dets | recall | ap    |
++-----------+-----+------+--------+-------+
+| Platelets | 13  | 152  | 1.000  | 0.597 |
+| RBC       | 67  | 1499 | 0.985  | 0.496 |
+| WBC       | 6   | 149  | 1.000  | 0.423 |
++-----------+-----+------+--------+-------+
+| mAP       |     |      |        | 0.505 |
++-----------+-----+------+--------+-------+
+2023-07-28 12:15:50,759 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:50,759 | INFO : Epoch(val) [16][3]	AP50: 0.5050, mAP: 0.5053, current_iters: 128
+2023-07-28 12:15:50,760 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:50,763 | INFO : 
+Best Score: 0.5930852890014648, Current Score: 0.5052983164787292, Patience: 5 Count: 1
+2023-07-28 12:15:52,923 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:52,923 | INFO : Epoch [17][8/8]	lr: 1.000e-04, eta: 1:27:06, time: 0.269, data_time: 0.005, memory: 6562, current_iters: 135, loss_cls: 0.2870, loss_bbox: 0.2559, loss_iou: 0.4503, d0.loss_cls: 0.2359, d0.loss_bbox: 0.3339, d0.loss_iou: 0.5468, d1.loss_cls: 0.2213, d1.loss_bbox: 0.3180, d1.loss_iou: 0.5280, d2.loss_cls: 0.2370, d2.loss_bbox: 0.2904, d2.loss_iou: 0.4976, d3.loss_cls: 0.2525, d3.loss_bbox: 0.2664, d3.loss_iou: 0.4622, d4.loss_cls: 0.2762, d4.loss_bbox: 0.2566, d4.loss_iou: 0.4513, enc_loss_cls: 0.2117, enc_loss_bbox: 0.3598, enc_loss_iou: 0.5785, dn_loss_cls: 0.1059, dn_loss_bbox: 0.6033, dn_loss_iou: 0.9547, d0.dn_loss_cls: 0.1229, d0.dn_loss_bbox: 0.8469, d0.dn_loss_iou: 1.2357, d1.dn_loss_cls: 0.1114, d1.dn_loss_bbox: 0.7864, d1.dn_loss_iou: 1.1681, d2.dn_loss_cls: 0.1105, d2.dn_loss_bbox: 0.7345, d2.dn_loss_iou: 1.1138, d3.dn_loss_cls: 0.1104, d3.dn_loss_bbox: 0.6701, d3.dn_loss_iou: 1.0381, d4.dn_loss_cls: 0.1050, d4.dn_loss_bbox: 0.6274, d4.dn_loss_iou: 0.9851, loss: 18.7479, grad_norm: 43.9244
+2023-07-28 12:15:52,935 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:55,182 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:55,182 | INFO : Epoch [18][8/8]	lr: 1.000e-04, eta: 1:26:31, time: 0.279, data_time: 0.005, memory: 6562, current_iters: 143, loss_cls: 0.3433, loss_bbox: 0.2814, loss_iou: 0.4835, d0.loss_cls: 0.2472, d0.loss_bbox: 0.3685, d0.loss_iou: 0.5848, d1.loss_cls: 0.2480, d1.loss_bbox: 0.3494, d1.loss_iou: 0.5609, d2.loss_cls: 0.2631, d2.loss_bbox: 0.3245, d2.loss_iou: 0.5393, d3.loss_cls: 0.2867, d3.loss_bbox: 0.3102, d3.loss_iou: 0.5170, d4.loss_cls: 0.3296, d4.loss_bbox: 0.2888, d4.loss_iou: 0.4917, enc_loss_cls: 0.2435, enc_loss_bbox: 0.3957, enc_loss_iou: 0.6132, dn_loss_cls: 0.1001, dn_loss_bbox: 0.5688, dn_loss_iou: 0.8775, d0.dn_loss_cls: 0.1179, d0.dn_loss_bbox: 0.8275, d0.dn_loss_iou: 1.1928, d1.dn_loss_cls: 0.1074, d1.dn_loss_bbox: 0.7689, d1.dn_loss_iou: 1.1301, d2.dn_loss_cls: 0.1019, d2.dn_loss_bbox: 0.6996, d2.dn_loss_iou: 1.0480, d3.dn_loss_cls: 0.1050, d3.dn_loss_bbox: 0.6218, d3.dn_loss_iou: 0.9487, d4.dn_loss_cls: 0.1013, d4.dn_loss_bbox: 0.5854, d4.dn_loss_iou: 0.9001, loss: 18.8732, grad_norm: 37.0281
+2023-07-28 12:15:55,208 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:57,435 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:57,435 | INFO : Epoch [19][8/8]	lr: 1.000e-04, eta: 1:25:54, time: 0.277, data_time: 0.005, memory: 6562, current_iters: 151, loss_cls: 0.3517, loss_bbox: 0.2960, loss_iou: 0.5107, d0.loss_cls: 0.2723, d0.loss_bbox: 0.4108, d0.loss_iou: 0.6313, d1.loss_cls: 0.2761, d1.loss_bbox: 0.3809, d1.loss_iou: 0.5969, d2.loss_cls: 0.2901, d2.loss_bbox: 0.3526, d2.loss_iou: 0.5620, d3.loss_cls: 0.3123, d3.loss_bbox: 0.3188, d3.loss_iou: 0.5261, d4.loss_cls: 0.3368, d4.loss_bbox: 0.3057, d4.loss_iou: 0.5167, enc_loss_cls: 0.2845, enc_loss_bbox: 0.4440, enc_loss_iou: 0.6689, dn_loss_cls: 0.1047, dn_loss_bbox: 0.5852, dn_loss_iou: 0.8333, d0.dn_loss_cls: 0.1226, d0.dn_loss_bbox: 0.8481, d0.dn_loss_iou: 1.1793, d1.dn_loss_cls: 0.1119, d1.dn_loss_bbox: 0.7878, d1.dn_loss_iou: 1.1064, d2.dn_loss_cls: 0.1074, d2.dn_loss_bbox: 0.7085, d2.dn_loss_iou: 1.0079, d3.dn_loss_cls: 0.1094, d3.dn_loss_bbox: 0.6187, d3.dn_loss_iou: 0.8900, d4.dn_loss_cls: 0.1065, d4.dn_loss_bbox: 0.5926, d4.dn_loss_iou: 0.8497, loss: 19.3154, grad_norm: 58.8678
+2023-07-28 12:15:57,447 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:15:59,622 | WARNING : training progress 10%
+2023-07-28 12:15:59,623 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:15:59,623 | INFO : Epoch [20][8/8]	lr: 1.000e-04, eta: 1:25:13, time: 0.270, data_time: 0.004, memory: 6562, current_iters: 159, loss_cls: 0.3930, loss_bbox: 0.2799, loss_iou: 0.5094, d0.loss_cls: 0.2895, d0.loss_bbox: 0.4769, d0.loss_iou: 0.6940, d1.loss_cls: 0.2999, d1.loss_bbox: 0.4231, d1.loss_iou: 0.6387, d2.loss_cls: 0.3050, d2.loss_bbox: 0.3653, d2.loss_iou: 0.5894, d3.loss_cls: 0.3289, d3.loss_bbox: 0.3221, d3.loss_iou: 0.5411, d4.loss_cls: 0.3611, d4.loss_bbox: 0.2942, d4.loss_iou: 0.5209, enc_loss_cls: 0.2679, enc_loss_bbox: 0.5182, enc_loss_iou: 0.7404, dn_loss_cls: 0.1126, dn_loss_bbox: 0.5539, dn_loss_iou: 0.8068, d0.dn_loss_cls: 0.1234, d0.dn_loss_bbox: 0.8512, d0.dn_loss_iou: 1.1609, d1.dn_loss_cls: 0.1122, d1.dn_loss_bbox: 0.7726, d1.dn_loss_iou: 1.0891, d2.dn_loss_cls: 0.1118, d2.dn_loss_bbox: 0.6721, d2.dn_loss_iou: 0.9764, d3.dn_loss_cls: 0.1141, d3.dn_loss_bbox: 0.5819, d3.dn_loss_iou: 0.8620, d4.dn_loss_cls: 0.1111, d4.dn_loss_bbox: 0.5615, d4.dn_loss_iou: 0.8222, loss: 19.5547, grad_norm: 44.0447
+2023-07-28 12:15:59,635 | INFO : Saving checkpoint at 20 epochs
+[                                                  ] 0/6, elapsed: 0s, ETA:[>>>>>                              ] 1/6, 8.5 task/s, elapsed: 0s, ETA:     1s[>>>>>>>>>>>                       ] 2/6, 17.1 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>                 ] 3/6, 15.0 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>            ] 4/6, 19.9 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>      ] 5/6, 17.6 task/s, elapsed: 0s, ETA:     0s[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 6/6, 21.1 task/s, elapsed: 0s, ETA:     0s
+---------------iou_thr: 0.5---------------
+2023-07-28 12:16:01,088 | INFO : 
++-----------+-----+------+--------+-------+
+| class     | gts | dets | recall | ap    |
++-----------+-----+------+--------+-------+
+| Platelets | 13  | 174  | 1.000  | 0.554 |
+| RBC       | 67  | 1538 | 0.955  | 0.463 |
+| WBC       | 6   | 88   | 1.000  | 0.636 |
++-----------+-----+------+--------+-------+
+| mAP       |     |      |        | 0.551 |
++-----------+-----+------+--------+-------+
+2023-07-28 12:16:01,140 | INFO : Exp name: otx-workspace/lite-dino/bccd-small/outputs/20230728_121502_train/logs
+2023-07-28 12:16:01,140 | INFO : Epoch(val) [20][3]	AP50: 0.5510, mAP: 0.5512, current_iters: 160
+2023-07-28 12:16:01,141 | INFO : MemCacheHandlerBase uses 0 / 0 (0.0%) memory pool and store 0 items.
+2023-07-28 12:16:01,144 | INFO : 
+Best Score: 0.5930852890014648, Current Score: 0.5511546730995178, Patience: 5 Count: 2
