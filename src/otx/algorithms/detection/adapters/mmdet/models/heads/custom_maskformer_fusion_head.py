@@ -4,7 +4,6 @@
 #
 
 import torch
-import torch.nn.functional as F
 from mmdet.core import mask2bbox
 from mmdet.models.builder import HEADS
 from mmdet.models.seg_heads import MaskFormerFusionHead
@@ -74,6 +73,7 @@ if is_mmdeploy_enabled():
         "otx.algorithms.detection.adapters.mmdet.models.heads.custom_maskformer_fusion_head.CustomMaskFormerFusionHead.instance_postprocess"
     )
     def custom_maskformer_fusion_head__instance_postprocess(ctx, self, mask_cls, mask_pred):
+        """Custom instance_postprocess for MaskFormerFusionHead."""
         max_per_image = self.test_cfg.get("max_per_image", 100)
         num_queries = mask_cls.size(0)
         # shape (num_queries, num_class)

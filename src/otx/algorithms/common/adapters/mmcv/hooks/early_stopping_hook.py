@@ -321,7 +321,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         if self.current_lr < 0:
             self.current_lr = base_lr
 
-        if not self._is_check_timing(runner):
+        # NOTE: get_lr could be called multiple times in a list comprehensive fashion in LrUpdateHook
+        if not self._is_check_timing(runner) or self.current_lr == self.min_lr or self.last_iter == runner.iter:
             return self.current_lr
 
         if hasattr(runner, "all_metrics"):

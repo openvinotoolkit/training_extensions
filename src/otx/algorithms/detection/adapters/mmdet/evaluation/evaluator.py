@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 import multiprocessing as mp
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -28,6 +28,7 @@ from mmdet.core.evaluation.mean_ap import average_precision
 from terminaltables import AsciiTable
 
 from otx.api.entities.label import Domain
+from otx.api.utils.time_utils import timeit
 
 
 def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
@@ -156,28 +157,22 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
         max_x2 = max(det_bbox[2], gt_bbox[2])
         max_y2 = max(det_bbox[3], gt_bbox[3])
 
-        if det_mask.height == gt_mask.height and det_mask.width == gt_mask.width:
-            # NOTE: both SOLOv2 and MaskFormer output full size masks
-            det_mask = det_mask.to_ndarray()[0]
-            gt_mask = gt_mask.to_ndarray()[0]
-        else:
-            # NOTE: MaskRCNN output 28 x 28 masks
-            det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
-            det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
-            det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
-            gt_mask = gt_mask.crop(gt_bbox)
-            gt_mask = gt_mask.to_bitmap()
-            gt_mask = gt_mask.expand(max_y2 - min_y1, max_x2 - min_x1, gt_bbox[1] - min_y1, gt_bbox[0] - min_x1)
-            # compute iou between det_mask and gt_mask
-            det_mask = det_mask.to_ndarray()
-            gt_mask = gt_mask.to_ndarray()
-            assert det_mask.shape == gt_mask.shape, f"det_mask.shape={det_mask.shape} != gt_mask.shape={gt_mask.shape}"
+        det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
+        det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
+        det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)
+        gt_mask = gt_mask.crop(gt_bbox)
+        gt_mask = gt_mask.to_bitmap()
+        gt_mask = gt_mask.expand(max_y2 - min_y1, max_x2 - min_x1, gt_bbox[1] - min_y1, gt_bbox[0] - min_x1)
+        # compute iou between det_mask and gt_mask
+        det_mask = det_mask.to_ndarray()
+        gt_mask = gt_mask.to_ndarray()
+        assert det_mask.shape == gt_mask.shape, f"det_mask.shape={det_mask.shape} != gt_mask.shape={gt_mask.shape}"
         ious[m, n] = np.sum(det_mask & gt_mask) / np.sum(det_mask | gt_mask)
     return ious
 
 
 def tpfpmiou_func(  # pylint: disable=too-many-locals
-    det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, cls_scores, iou_thr=0.5
+    det: Tuple[np.ndarray, Union[BitmapMasks, List]], gt_masks: PolygonMasks, cls_scores, iou_thr=0.5
 ):
     """Compute tp, fp, miou for each image.
 
@@ -245,9 +240,24 @@ class Evaluator:
         self.num_classes = len(classes)
         if domain != Domain.DETECTION:
             self.annotation = self.get_gt_instance_masks(annotation)
+            self.img_sizes = self.get_image_sizes(annotation)
         else:
             self.annotation = annotation
         self.nproc = nproc
+
+    def get_image_sizes(self, annotation: List[Dict]):
+        """Get image sizes.
+
+        Args:
+            annotation (List[Dict]): per-image ground truth annotation
+
+        Returns:
+            img_sizes: per-image image sizes
+        """
+        img_sizes = []
+        for ann in annotation:
+            img_sizes.append((ann["masks"].height, ann["masks"].width))
+        return img_sizes
 
     def get_gt_instance_masks(self, annotation: List[Dict]):
         """Format ground truth instance mask annotation.
@@ -282,7 +292,7 @@ class Evaluator:
         """
         cls_scores = [img_res[0][class_id][..., -1] for img_res in det_results]
         cls_dets: List[Tuple] = []
-        for det in det_results:
+        for img_idx, det in enumerate(det_results):
             det_bboxes = det[0][class_id][:, :4]
             det_masks = det[1][class_id]
             if len(det_masks) == 0:
@@ -292,16 +302,18 @@ class Evaluator:
                 det_masks = mask_util.decode(det_masks)
                 det_masks = det_masks.transpose(2, 0, 1)
 
-                # TODO: mask2box
-                # mask2bbox() from mmdet
-                # SOLOv2 does not output any bboxes
-                if sum(det_bboxes[0]) == 0:
-                    for i, det_mask in enumerate(det_masks):
-                        y_s, x_s = np.where(det_mask == 1)
-                        det_bboxes[i] = np.array([x_s.min(), y_s.min(), x_s.max(), y_s.max()])
-
-                det_masks = BitmapMasks(det_masks, *det_masks.shape[1:])
-                cls_dets.append((det_bboxes, det_masks))
+                if det_masks.shape[-2:] == self.img_sizes[img_idx]:
+                    # NOTE: MaskFormer/SOLOv2 output full size masks -  crop them for postprocessing
+                    masks_list = []
+                    for det_bbox, det_mask in zip(det_bboxes, det_masks):
+                        x1, y1, x2, y2 = det_bbox.astype(np.int)
+                        cropped_mask = det_mask[y1:y2, x1:x2][np.newaxis]
+                        bitmask = BitmapMasks(cropped_mask, *cropped_mask.shape[1:])
+                        masks_list.append(bitmask)
+                    cls_dets.append((det_bboxes, masks_list))
+                else:
+                    det_masks = BitmapMasks(det_masks, *det_masks.shape[1:])
+                    cls_dets.append((det_bboxes, det_masks))
         return cls_dets, cls_scores
 
     def evaluate_mask(self, results, logger, iou_thr):
@@ -374,6 +386,7 @@ class Evaluator:
 
         return metrics["mAP"], eval_results
 
+    @timeit
     def evaluate(self, results, logger, iou_thr, scale_ranges):
         """Evaluate detection results.
 
