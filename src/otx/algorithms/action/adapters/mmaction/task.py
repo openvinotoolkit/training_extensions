@@ -17,6 +17,7 @@
 import glob
 import os
 import time
+from contextlib import nullcontext
 from copy import deepcopy
 from functools import partial
 from typing import Dict, Optional, Union
@@ -35,6 +36,7 @@ from otx.algorithms.action.adapters.mmaction import (
     Exporter,
 )
 from otx.algorithms.action.task import OTXActionTask
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import FeatureVectorHook
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
@@ -363,8 +365,7 @@ class MMActionTask(OTXActionTask):
             )
         )
 
-        dump_features = False
-        dump_saliency_map = False
+        dump_features = True
 
         self._init_task()
 
@@ -400,6 +401,7 @@ class MMActionTask(OTXActionTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
+        feature_model = model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -423,32 +425,26 @@ class MMActionTask(OTXActionTask):
         feature_vectors = []
         saliency_maps = []
 
-        def dump_features_hook():
-            raise NotImplementedError("get_feature_vector function for mmaction is not implemented")
-
-        # pylint: disable=unused-argument
-        def dummy_dump_features_hook(model, inp, out):
-            feature_vectors.append(None)
-
-        def dump_saliency_hook():
-            raise NotImplementedError("get_saliency_map for mmaction is not implemented")
-
-        # pylint: disable=unused-argument
-        def dummy_dump_saliency_hook(model, inp, out):
-            saliency_maps.append(None)
-
-        feature_vector_hook = dump_features_hook if dump_features else dummy_dump_features_hook
-        saliency_map_hook = dump_saliency_hook if dump_saliency_map else dummy_dump_saliency_hook
+        feature_vector_hook = FeatureVectorHook(feature_model) if dump_features else nullcontext()
+        saliency_hook = nullcontext()
 
         prog_bar = ProgressBar(len(dataloader))
-        with model.module.backbone.register_forward_hook(feature_vector_hook):
-            with model.module.backbone.register_forward_hook(saliency_map_hook):
+        with feature_vector_hook:
+            with saliency_hook:
                 for data in dataloader:
                     with torch.no_grad():
                         result = model(return_loss=False, **data)
                     eval_predictions.extend(result)
                     for _ in range(videos_per_gpu):
                         prog_bar.update()
+                if isinstance(feature_vector_hook, nullcontext):
+                    feature_vectors = [None] * len(mm_dataset)
+                else:
+                    feature_vectors = feature_vector_hook.records
+                if isinstance(saliency_hook, nullcontext):
+                    saliency_maps = [None] * len(mm_dataset)
+                else:
+                    saliency_maps = saliency_hook.records
         prog_bar.file.write("\n")
 
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
