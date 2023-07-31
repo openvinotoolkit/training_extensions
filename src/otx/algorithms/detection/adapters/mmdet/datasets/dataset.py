@@ -191,7 +191,7 @@ class OTXDetDataset(CustomDataset):
 
         self.pipeline = Compose(pipeline)
         annotation = [self.get_ann_info(i) for i in range(len(self))]
-        self.evaluator = Evaluator(annotation, self.domain, self.CLASSES)
+        self.evaluator = Evaluator(annotation, self.domain, self.CLASSES, self.otx_dataset)
 
     def _set_group_flag(self):
         """Set flag for grouping images.

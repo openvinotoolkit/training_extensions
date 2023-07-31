@@ -27,6 +27,7 @@ from mmdet.core.evaluation.class_names import get_classes
 from mmdet.core.evaluation.mean_ap import average_precision
 from terminaltables import AsciiTable
 
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 from otx.api.utils.time_utils import timeit
 
@@ -234,29 +235,29 @@ class Evaluator:
             nproc (int, optional): number of processes. Defaults to 4.
     """
 
-    def __init__(self, annotation: List[Dict], domain: Domain, classes: List[str], nproc=4):
+    def __init__(self, annotation: List[Dict], domain: Domain, classes: List[str], otx_dataset: DatasetEntity, nproc=4):
         self.domain = domain
         self.classes = classes
         self.num_classes = len(classes)
         if domain != Domain.DETECTION:
             self.annotation = self.get_gt_instance_masks(annotation)
-            self.img_sizes = self.get_image_sizes(annotation)
+            self.img_sizes = self.get_image_sizes(otx_dataset)
         else:
             self.annotation = annotation
         self.nproc = nproc
 
-    def get_image_sizes(self, annotation: List[Dict]):
+    def get_image_sizes(self, dataset: DatasetEntity):
         """Get image sizes.
 
         Args:
-            annotation (List[Dict]): per-image ground truth annotation
+            dataset (DatasetEntity): OTX dataset
 
         Returns:
             img_sizes: per-image image sizes
         """
         img_sizes = []
-        for ann in annotation:
-            img_sizes.append((ann["masks"].height, ann["masks"].width))
+        for dataset_item in dataset:
+            img_sizes.append((dataset_item.height, dataset_item.width))
         return img_sizes
 
     def get_gt_instance_masks(self, annotation: List[Dict]):
