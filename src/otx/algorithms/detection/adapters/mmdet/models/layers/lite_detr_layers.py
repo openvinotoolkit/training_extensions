@@ -346,9 +346,9 @@ class EfficientTransformerEncoder(BaseModule):
         Returns:
             Tensor:  results with shape [num_queries, bs, embed_dims].
         """
-        query_tgt = query[level_start_index[4 - self.enc_scale] :]
         value = query
-        query = query_tgt
+        value_tgt = value[level_start_index[4 - self.enc_scale] :]
+        query = value_tgt
         reference_points_tgt = reference_points[:, level_start_index[4 - self.enc_scale] :]
         query_pos_tgt = query_pos[level_start_index[4 - self.enc_scale] :]
         for layer_id, layer in enumerate(self.layers):

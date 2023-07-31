@@ -3,7 +3,7 @@ _base_ = [
     "../../../../../recipes/stages/detection/incremental.py",
 ]
 model = dict(
-    type="CustomDINO",
+    type="CustomLiteDINO",
     backbone=dict(
         type="ResNet",
         depth=50,
@@ -36,13 +36,13 @@ model = dict(
             type="CustomDINOTransformer",
             encoder=dict(
                 type="EfficientTransformerEncoder",
+                num_expansion=3,
+                enc_scale=1,
                 num_layers=6,
                 transformerlayers=[
                     dict(
                         type="EfficientTransformerLayer",
-                        attn_cfgs=dict(
-                            type="KeyAwareMultiScaleDeformableAttention", embed_dims=256, dropout=0.0, proj_key=False
-                        ),
+                        attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
                         feedforward_channels=2048,
                         ffn_dropout=0.0,
                         operation_order=("self_attn", "norm", "ffn", "norm"),
@@ -50,9 +50,7 @@ model = dict(
                     dict(
                         type="EfficientTransformerLayer",
                         small_expand=True,
-                        attn_cfgs=dict(
-                            type="KeyAwareMultiScaleDeformableAttention", embed_dims=256, dropout=0.0, proj_key=False
-                        ),
+                        attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
                         ffn_cfgs=dict(
                             type="SmallExpandFFN",
                             embed_dims=256,
@@ -75,7 +73,7 @@ model = dict(
                     type="DetrTransformerDecoderLayer",
                     attn_cfgs=[
                         dict(type="MultiheadAttention", embed_dims=256, num_heads=8, dropout=0.0),
-                        dict(type="KeyAwareMultiScaleDeformableAttention", embed_dims=256, dropout=0.0, proj_key=False),
+                        dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
                     ],
                     feedforward_channels=2048,
                     ffn_dropout=0.0,
