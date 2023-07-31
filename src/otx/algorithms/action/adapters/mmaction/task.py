@@ -36,7 +36,10 @@ from otx.algorithms.action.adapters.mmaction import (
     Exporter,
 )
 from otx.algorithms.action.task import OTXActionTask
-from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import FeatureVectorHook
+from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
+    BaseRecordingForwardHook,
+    FeatureVectorHook,
+)
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
@@ -425,7 +428,10 @@ class MMActionTask(OTXActionTask):
         feature_vectors = []
         saliency_maps = []
 
-        feature_vector_hook = FeatureVectorHook(feature_model) if dump_features else nullcontext()
+        if not dump_features:
+            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
+        else:
+            feature_vector_hook = FeatureVectorHook(feature_model)
         saliency_hook = nullcontext()
 
         prog_bar = ProgressBar(len(dataloader))
