@@ -48,6 +48,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
+    InputSizeScaler,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -214,6 +215,22 @@ class MMDetectionTask(OTXDetectionTask):
             elif self._anchors is not None:
                 self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
+
+        if self._hyperparams.learning_parameters.input_size != 0:
+            base_input_size = None
+            input_size = self._hyperparams.learning_parameters.input_size
+            modle_cfg = self._recipe_cfg.get("model")
+            if modle_cfg is not None:
+                if "YOLOX" in modle_cfg.get("type", ""):  # YOLOX needs to get input_size argument also.
+                    self._recipe_cfg.model.input_size = (input_size, input_size)
+                    base_input_size = {
+                        "train" : 640,
+                        "val" : 416,
+                        "test" : 416,
+                    }
+
+            InputSizeScaler(cfg.data, base_input_size).set_input_size(input_size)
+
         return cfg
 
     # pylint: disable=too-many-branches, too-many-statements

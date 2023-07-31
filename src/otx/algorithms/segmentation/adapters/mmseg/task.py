@@ -46,6 +46,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
+    InputSizeScaler,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -178,6 +179,10 @@ class MMSegmentationTask(OTXSegmentationTask):
             model_classes,
         )
         self._config = cfg
+
+        if self._hyperparams.learning_parameters.input_size != 0:
+            InputSizeScaler(cfg.data).set_input_size(self._hyperparams.learning_parameters.input_size)
+
         return cfg
 
     def build_model(
