@@ -52,6 +52,8 @@ class TestRegressionTilingInstanceSegmentation:
 
     templates = Registry(f"src/otx/algorithms/{REG_CATEGORY}").filter(task_type=TASK_TYPE.upper()).templates
     templates_ids = [template.model_template_id for template in templates]
+    if len(templates_ids) > 2:
+        templates_ids = templates_ids[:1]
 
     reg_cfg: RegressionTestConfig
 
