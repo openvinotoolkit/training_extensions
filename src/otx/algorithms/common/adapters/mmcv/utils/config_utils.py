@@ -759,6 +759,7 @@ class InputSizeScaler:
         raise RuntimeError("There isn't any pipeline in the data configurations.")
 
     def _estimate_post_img_size(self, pipelines: Dict, default_size: Optional[List[int]] = None) -> List[int]:
+        # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
         for pipeline in pipelines:
             if "resize" in pipeline["type"].lower():
@@ -793,7 +794,7 @@ class InputSizeScaler:
 
         return post_img_size
 
-    def _get_size_value(self, pipeline: Dict, attr: str):
+    def _get_size_value(self, pipeline: Dict, attr: str) -> Union[List[int], None]:
         for pipeline_attr in self.PIPELINE_TO_CHANGE[attr]:
             if pipeline_attr not in pipeline:
                 continue
@@ -820,10 +821,6 @@ class InputSizeScaler:
                 for pipeline_attr in pipeline_attrs:
                     if pipeline_attr in pipeline:
                         self._set_size_value(pipeline, pipeline_attr, scale)
-                if pipeline_name == "pad" and "size_divisor" in pipeline:
-                    size = pipeline[self.PIPELINE_TO_CHANGE[pipeline_name][0]]
-                    if size % pipeline["size_divisor"] != 0:
-                        pipeline["size_divisor"] = 1
 
         if pipeline["type"] == "MultiScaleFlipAug":
             for sub_pipeline in reversed(pipeline["transforms"]):

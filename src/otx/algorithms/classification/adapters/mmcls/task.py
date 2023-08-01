@@ -214,7 +214,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         if self._hyperparams.learning_parameters.input_size != 0:
             logger.warning("Classification models don't support to change input size."
-                           "Original input size will'be used.")
+                           "Original input size will be used.")
 
         return cfg
 
