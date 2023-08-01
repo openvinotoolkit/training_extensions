@@ -42,13 +42,13 @@ def get_default_pipeline(semisl=False):
                 dict(type="OTXRandAugment", num_aug=8, magnitude=10),
             ]
             return {
-            "train": default_pipeline,
-            "unlabeled": [
-                dict(type="Resize", scale=[224, 224]),
-                dict(type="PostAug", keys=dict(img_strong=strong_pipeline)),
-                dict(type="mmpretrain.PackMultiKeyInputs", input_key="img", multi_key=["img_strong"]),
-            ]
-        }
+                "train": default_pipeline,
+                "unlabeled": [
+                    dict(type="Resize", scale=[224, 224]),
+                    dict(type="PostAug", keys=dict(img_strong=strong_pipeline)),
+                    dict(type="mmpretrain.PackMultiKeyInputs", input_key="img", multi_key=["img_strong"]),
+                ],
+            }
 
         return [
             dict(type="Resize", scale=[224, 224]),

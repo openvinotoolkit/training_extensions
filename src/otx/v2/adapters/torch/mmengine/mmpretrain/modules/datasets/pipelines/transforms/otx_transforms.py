@@ -98,6 +98,6 @@ class PackMultiKeyInputs(PackInputs):
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f"(input_key='{self.multi_key}', "
-        repr_str += f'algorithm_keys={self.algorithm_keys}, '
-        repr_str += f'meta_keys={self.meta_keys})'
+        repr_str += f"algorithm_keys={self.algorithm_keys}, "
+        repr_str += f"meta_keys={self.meta_keys})"
         return repr_str

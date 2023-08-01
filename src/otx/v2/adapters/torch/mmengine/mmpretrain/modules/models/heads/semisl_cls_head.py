@@ -4,12 +4,13 @@
 #
 
 import torch
+from mmpretrain.evaluation.metrics import Accuracy
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads.linear_head import LinearClsHead
 from otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.heads.non_linear_cls_head import (
     NonLinearClsHead,
 )
-from mmpretrain.evaluation.metrics import Accuracy
+
 from .mixin import OTXHeadMixin
 
 

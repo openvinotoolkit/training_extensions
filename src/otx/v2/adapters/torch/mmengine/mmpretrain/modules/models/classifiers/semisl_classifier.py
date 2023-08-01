@@ -4,8 +4,8 @@
 #
 
 import torch
-from mmpretrain.registry import MODELS
 from mmpretrain.models import ClsDataPreprocessor
+from mmpretrain.registry import MODELS
 from otx.v2.api.utils.logger import get_logger
 
 from .sam_classifier import SAMImageClassifier
@@ -36,14 +36,15 @@ class SemiSLClassifier(SAMImageClassifier):
 
     This classifier supports unlabeled data by overriding forward_train
     """
+
     def __init__(self, **kwargs):
         data_preprocessor = kwargs.pop("data_preprocessor", {})
         train_cfg = kwargs.get("train_cfg", None)
         if data_preprocessor is None:
             data_preprocessor = {}
         if isinstance(data_preprocessor, dict):
-            data_preprocessor.setdefault('type', 'SemiSLClsDataPreprocessor')
-            data_preprocessor.setdefault('batch_augments', train_cfg)
+            data_preprocessor.setdefault("type", "SemiSLClsDataPreprocessor")
+            data_preprocessor.setdefault("batch_augments", train_cfg)
             data_preprocessor = MODELS.build(data_preprocessor)
         super().__init__(data_preprocessor=data_preprocessor, **kwargs)
 
@@ -85,24 +86,15 @@ class SemiSLClassifier(SAMImageClassifier):
             gt_label = torch.stack([i.gt_score for i in data_samples])
         else:
             gt_label = torch.cat([i.gt_label for i in data_samples])
-        return self.forward_train(
-            imgs=inputs,
-            gt_label=gt_label,
-            **kwargs
-        )
+        return self.forward_train(imgs=inputs, gt_label=gt_label, **kwargs)
 
-    def forward(self,
-        inputs,
-        data_samples = None,
-        extra_0 = None,
-        mode: str = 'tensor'
-    ):
-        if mode == 'tensor':
+    def forward(self, inputs, data_samples=None, extra_0=None, mode: str = "tensor"):
+        if mode == "tensor":
             feats = self.extract_feat(inputs)
             return self.head(feats) if self.with_head else feats
-        elif mode == 'loss':
+        elif mode == "loss":
             return self.loss(inputs, data_samples, extra_0=extra_0)
-        elif mode == 'predict':
+        elif mode == "predict":
             return self.predict(inputs, data_samples)
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
