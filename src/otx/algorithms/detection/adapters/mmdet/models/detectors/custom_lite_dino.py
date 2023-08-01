@@ -186,5 +186,4 @@ class CustomLiteDINO(CustomDINO):
                 ckpt_dict[new] = ckpt_dict.pop(origin)
             for param in unused_params:
                 ckpt_dict.pop(param)
-            breakpoint()
         super(CustomDINO, self).load_state_dict_pre_hook(model_classes, ckpt_classes, ckpt_dict, *args, *kwargs)
