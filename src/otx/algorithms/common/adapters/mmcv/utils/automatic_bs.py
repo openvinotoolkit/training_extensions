@@ -8,6 +8,7 @@ from math import sqrt
 from typing import Callable, Dict, List
 
 import numpy as np
+from torch.cuda import is_available as cuda_available
 
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.utils.logger import get_logger
@@ -52,6 +53,10 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         validate (bool): Whether do vlidation or not.
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
+
+    if not cuda_available():
+        logger.warning("Skip Auto-adaptive batch size: CUDA should be available, but it isn't.")
+        return
 
     def train_func_single_iter(batch_size):
         copied_cfg = deepcopy(cfg)
