@@ -55,7 +55,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
     """
 
     if not cuda_available():
-        logger.warning("Auto-adaptive batch size feature can't works without a CUDA device. It is skipped.")
+        logger.warning("Skip Auto-adaptive batch size: CUDA should be available, but it ins't.")
         return
 
     def train_func_single_iter(batch_size):
