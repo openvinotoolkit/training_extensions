@@ -26,7 +26,7 @@ from otx.v2.adapters.torch.anomalib import Dataset, get_model
 from otx.v2.api.core import AutoEngine
 
 # Pseudo GetiTask
-from .geti_task import GetiTask
+from .pseudo_geti_task import GetiTask
 
 
 class GetiAnomalibTask(GetiTask):
