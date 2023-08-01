@@ -317,7 +317,9 @@ class AutoEngine(Engine):
         self,
         # Training
         model=None,
+        train_dataloader=None,
         train_data_pipeline=None,
+        val_dataloader=None,
         val_data_pipeline=None,
         max_epochs: Optional[int] = None,
         max_iters: Optional[int] = None,
@@ -350,16 +352,18 @@ class AutoEngine(Engine):
 
         # Build DataLoader
         # TODO: Need to add more arguments
-        train_dataloader = self.dataset_obj.train_dataloader(
-            pipeline=train_data_pipeline,
-            config=self.config,
-            batch_size=batch_size,
-        )
-        val_dataloader = self.dataset_obj.val_dataloader(
-            pipeline=val_data_pipeline,
-            config=self.config,
-            batch_size=batch_size,
-        )
+        if train_dataloader is None:
+            train_dataloader = self.dataset_obj.train_dataloader(
+                pipeline=train_data_pipeline,
+                config=self.config,
+                batch_size=batch_size,
+            )
+        if val_dataloader is None:
+            val_dataloader = self.dataset_obj.val_dataloader(
+                pipeline=val_data_pipeline,
+                config=self.config,
+                batch_size=batch_size,
+            )
 
         # Build Model
         if model is None and self.get_model is not None:
