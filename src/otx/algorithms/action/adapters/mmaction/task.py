@@ -368,8 +368,6 @@ class MMActionTask(OTXActionTask):
             )
         )
 
-        dump_features = True
-
         self._init_task()
 
         cfg = self.configure(False, "test", None)
@@ -428,10 +426,7 @@ class MMActionTask(OTXActionTask):
         feature_vectors = []
         saliency_maps = []
 
-        if not dump_features:
-            feature_vector_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
-        else:
-            feature_vector_hook = FeatureVectorHook(feature_model)
+        feature_vector_hook: BaseRecordingForwardHook = FeatureVectorHook(feature_model)
         saliency_hook = nullcontext()
 
         prog_bar = ProgressBar(len(dataloader))
@@ -443,14 +438,8 @@ class MMActionTask(OTXActionTask):
                     eval_predictions.extend(result)
                     for _ in range(videos_per_gpu):
                         prog_bar.update()
-                if isinstance(feature_vector_hook, nullcontext):
-                    feature_vectors = [None] * len(mm_dataset)
-                else:
-                    feature_vectors = feature_vector_hook.records
-                if isinstance(saliency_hook, nullcontext):
-                    saliency_maps = [None] * len(mm_dataset)
-                else:
-                    saliency_maps = saliency_hook.records
+                feature_vectors = feature_vector_hook.records
+                saliency_maps = [None] * len(mm_dataset)
         prog_bar.file.write("\n")
 
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
