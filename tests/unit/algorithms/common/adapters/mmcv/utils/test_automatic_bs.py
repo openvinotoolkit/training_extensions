@@ -109,6 +109,19 @@ def test_adapt_batch_size(
     assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 1
 
 
+def test_adapt_batch_size_no_gpu(mocker, common_cfg, mock_dataset):
+    # prepare
+    mock_train_func = mocker.MagicMock()
+    mock_config = set_mock_cfg_not_action(common_cfg)
+    mocker.patch.object(automatic_bs, "cuda_available", return_value=False)
+
+    # execute
+    adapt_batch_size(mock_train_func, mock_config, mock_dataset, False, True)
+
+    # check train function ins't called.
+    mock_train_func.assert_not_called()
+
+
 class TestSubDataset:
     @pytest.fixture(autouse=True)
     def set_up(self, mocker):
