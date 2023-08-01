@@ -23,6 +23,7 @@ from openvino.model_api.adapters import OpenvinoAdapter
 from openvino.model_api.models.model import Model
 from openvino.model_api.models.utils import (
     RESIZE_TYPES,
+    ClassificationResult,
     Detection,
     InputTransform,
 )
@@ -42,7 +43,8 @@ def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
     index = np.argmax(logits)
     if activate:
         logits = softmax_numpy(logits)
-    return [(index, logits[index])]
+
+    return ClassificationResult([(index, logits[index])], np.ndarray(0), np.ndarray(0))
 
 
 # pylint: disable=too-many-instance-attributes
