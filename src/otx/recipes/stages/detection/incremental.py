@@ -1,4 +1,4 @@
-_base_ = ["./train.py", "../_base_/data/coco_otx.py", "../_base_/models/detectors/detector.py"]
+_base_ = ["./train.py", "../_base_/models/detectors/detector.py"]
 
 task_adapt = dict(
     type="mpa",
