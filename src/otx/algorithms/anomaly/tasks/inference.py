@@ -22,7 +22,6 @@ import shutil
 import subprocess  # nosec B404
 import tempfile
 from glob import glob
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 from warnings import warn
 
@@ -36,7 +35,6 @@ from anomalib.utils.callbacks import (
     PostProcessingConfigurationCallback,
 )
 from omegaconf import DictConfig, ListConfig
-from openvino.runtime import Core, serialize
 from pytorch_lightning import Trainer
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
@@ -47,6 +45,7 @@ from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.algorithms.common.utils import embed_ir_model_data
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
@@ -330,29 +329,35 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         # TODO: Step 3. Update modelAPI to remove pre/post-processing steps when Anomalib version is upgraded.
         """
         metadata = self._get_metadata_dict()
-        core = Core()
-        model = core.read_model(xml_file)
+        extra_model_data: Dict[Tuple[str, str], Any] = {}
         for key, value in metadata.items():
-            if key == "transform":
+            if key in ("transform", "min", "max"):
                 continue
-            model.set_rt_info(value, ["model_info", key])
+            extra_model_data[("model_info", key)] = value
         # Add transforms
         if "transform" in metadata:
             for transform_dict in metadata["transform"]["transform"]["transforms"]:
                 transform = transform_dict.pop("__class_fullname__")
                 if transform == "Normalize":
-                    model.set_rt_info(self._serialize_list(transform_dict["mean"]), ["model_info", "mean_values"])
-                    model.set_rt_info(self._serialize_list(transform_dict["std"]), ["model_info", "scale_values"])
+                    extra_model_data[("model_info", "mean_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["mean"]]
+                    )
+                    extra_model_data[("model_info", "scale_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["std"]]
+                    )
                 elif transform == "Resize":
-                    model.set_rt_info(transform_dict["height"], ["model_info", "orig_height"])
-                    model.set_rt_info(transform_dict["width"], ["model_info", "orig_width"])
+                    extra_model_data[("model_info", "orig_height")] = transform_dict["height"]
+                    extra_model_data[("model_info", "orig_width")] = transform_dict["width"]
                 else:
                     warn(f"Transform {transform} is not supported currently")
-        model.set_rt_info("AnomalyDetection", ["model_info", "model_type"])
-        tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
-        serialize(model, str(tmp_xml_path))
-        tmp_xml_path.rename(xml_file)
-        Path(str(tmp_xml_path.parent / tmp_xml_path.stem) + ".bin").unlink()
+        # Since we only need the diff of max and min, we fuse the min and max into one op
+        if "min" in metadata and "max" in metadata:
+            extra_model_data[("model_info", "normalization_scale")] = metadata["max"] - metadata["min"]
+
+        extra_model_data[("model_info", "reverse_input_channels")] = True
+        extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
+        extra_model_data[("model_info", "labels")] = ["Normal", "Anomaly"]
+        embed_ir_model_data(xml_file, extra_model_data)
 
     def _serialize_list(self, arr: Union[Tuple, List]) -> str:
         """Converts a list to space separated string."""
