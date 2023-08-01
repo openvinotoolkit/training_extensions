@@ -1,9 +1,15 @@
-from typing import Any, Dict, Optional, Union
+import fnmatch
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import torch
 from omegaconf import DictConfig, OmegaConf
+from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 
 from anomalib.models import get_model as anomalib_get_model
+
+MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/anomaly_classification/models"
+MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
 def get_model(
@@ -23,13 +29,23 @@ def get_model(
     """
     if isinstance(model, str):
         pass
-    if not hasattr(model, "model"):
+    if not model.get("model", False):
         model = DictConfig(content={"model": model})
     if checkpoint is not None:
         model["init_weights"] = checkpoint
     if isinstance(model, dict):
         model = OmegaConf.create(model)
     return anomalib_get_model(config=model)
+
+
+def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
+    model_list = list(MODEL_CONFIGS.keys())
+
+    if pattern is not None:
+        # Always match keys with any postfix.
+        model_list = set(fnmatch.filter(model_list, pattern + "*"))
+
+    return sorted(list(model_list))
 
 
 if __name__ == "__main__":

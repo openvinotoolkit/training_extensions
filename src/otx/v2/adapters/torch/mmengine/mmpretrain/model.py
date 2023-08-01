@@ -1,14 +1,15 @@
+import fnmatch
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, List
+from typing import Any, Dict, List, Optional, Union
 
 import torch
-import fnmatch
-from mmpretrain import get_model as get_mmpretrain_model, list_models as list_mmpretrain_model
+from mmpretrain import get_model as get_mmpretrain_model
+from mmpretrain import list_models as list_mmpretrain_model
 from mmpretrain.models import build_backbone, build_neck
-from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
+from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 from otx.v2.api.utils.logger import get_logger
-from otx.v2.api.utils.importing import get_otx_root_path, get_files_dict
 
 logger = get_logger()
 

@@ -18,7 +18,6 @@ from torch.utils.data import DataLoader
 from mmengine.evaluator import Evaluator
 from mmengine.hooks import Hook
 from mmengine.optim import _ParamScheduler
-from mmengine.registry import DefaultScope
 from mmengine.runner import Runner
 from mmengine.visualization import Visualizer
 
@@ -37,10 +36,10 @@ class MMXEngine(Engine):
         self.latest_model = {"model": None, "checkpoint": None}
         self.registry = MMEngineRegistry()
         # self.base_runner = self.registry.get("RUNNER")
-        self.initial_config(config)
+        self._initial_config(config)
         self.dumped_config = Config({})
 
-    def initial_config(self, config: Optional[Union[Dict, Config, str]]):
+    def _initial_config(self, config: Optional[Union[Dict, Config, str]]):
         if config is not None:
             if isinstance(config, str):
                 self.config = Config.fromfile(config)
@@ -51,7 +50,7 @@ class MMXEngine(Engine):
         else:
             self.config = Config(dict())
 
-    def update_config(
+    def _update_config(
         self,
         func_args: Dict,
         **kwargs,
@@ -318,7 +317,7 @@ class MMXEngine(Engine):
             "custom_hooks": custom_hooks,
             "visualizer": visualizer,
         }
-        update_check = self.update_config(func_args=train_args, **kwargs)
+        update_check = self._update_config(func_args=train_args, **kwargs)
         if self.runner is None or update_check:
             base_runner = self.registry.get("Runner")
             self.runner = base_runner(experiment_name="otx_train", **self.config)
@@ -356,7 +355,7 @@ class MMXEngine(Engine):
             "val_evaluator": val_evaluator,
             "precision": precision,
         }
-        update_check = self.update_config(func_args=val_args, **kwargs)
+        update_check = self._update_config(func_args=val_args, **kwargs)
         if self.runner is None:
             base_runner = self.registry.get("Runner")
             self.runner = base_runner(experiment_name="otx_validate", **self.config)
@@ -388,7 +387,7 @@ class MMXEngine(Engine):
             "test_evaluator": test_evaluator,
             "precision": precision,
         }
-        update_check = self.update_config(func_args=test_args, **kwargs)
+        update_check = self._update_config(func_args=test_args, **kwargs)
         # self.config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
         if self.runner is None:
             base_runner = self.registry.get("Runner")

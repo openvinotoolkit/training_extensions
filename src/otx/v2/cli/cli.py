@@ -68,8 +68,7 @@ import dataclasses
 
 
 def create_dynamic_data_class_from_dict(class_name: str, input_dict: Dict):
-    """
-    Creates a dynamic data class with attributes based on the input dictionary.
+    """Creates a dynamic data class with attributes based on the input dictionary.
 
     Args:
         class_name (str): The name of the class for the dynamically created data class

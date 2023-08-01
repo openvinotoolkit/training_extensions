@@ -59,7 +59,7 @@ REGISTRY_LIST = [
 class MMPretrainRegistry(MMEngineRegistry):
     def __init__(self, name="mmpretrain"):
         super().__init__(name)
-        self.registry_dict = {registry.name: registry for registry in REGISTRY_LIST}
+        self._registry_dict = {registry.name: registry for registry in REGISTRY_LIST}
 
 
 if __name__ == "__main__":

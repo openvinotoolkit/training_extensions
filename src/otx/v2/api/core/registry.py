@@ -1,24 +1,25 @@
-from typing import Optional
 import inspect
+from typing import Any, Dict, Optional
+
 from rich.console import Console
 from rich.table import Table
 
 
 class BaseRegistry:
-    def __init__(self, name):
+    def __init__(self, name: str):
         self._name = name
         self._module_dict = dict()
-        self.registry_dict = dict()
+        self._registry_dict = dict()
 
     def get(self, module_type: str):
         # Return Registry
-        if module_type in self.registry_dict:
-            return self.registry_dict[module_type]
+        if module_type in self._registry_dict:
+            return self._registry_dict[module_type]
         # The module_dict is the highest priority.
-        if module_type in self.module_dict:
-            return self.module_dict[module_type]
+        if module_type in self._module_dict:
+            return self._module_dict[module_type]
         # Search all registry
-        for module in self.registry_dict.values():
+        for module in self._registry_dict.values():
             if module_type in module:
                 return module.get(module_type)
         return None
@@ -41,9 +42,9 @@ class BaseRegistry:
         for name, obj in sorted(self._module_dict.items()):
             table.add_row("Custom", name, str(obj))
 
-        if hasattr(self, "registry_dict"):
-            for registry_key in self.registry_dict.keys():
-                registry = self.registry_dict[registry_key]
+        if hasattr(self, "_registry_dict"):
+            for registry_key in self._registry_dict.keys():
+                registry = self._registry_dict[registry_key]
                 for name, obj in sorted(registry._module_dict.items()):
                     table.add_row(registry_key, name, str(obj))
 
@@ -54,13 +55,18 @@ class BaseRegistry:
         return capture.get()
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @property
-    def module_dict(self):
-        # Copy from mmcv.utils.registry.Registry
+    def module_dict(self) -> Dict[Any, Any]:
+        """Dictionary of registered module."""
         return self._module_dict
+
+    @property
+    def registry_dict(self) -> Dict[Any, Any]:
+        """Dictionary of registries."""
+        return self._registry_dict
 
     def register_module(self, type: Optional[str] = None, name: Optional[str] = None, module=None, force=False):
         # Copy from mmcv.utils.registry.Registry
@@ -68,9 +74,9 @@ class BaseRegistry:
             raise TypeError("module must be a class or a function, " f"but got {type(module)}")
 
         if type is not None:
-            if type not in self.registry_dict:
-                self.registry_dict[type] = BaseRegistry(name=type)
-            self.registry_dict[type].register_module(name=name, module=module)
+            if type not in self._registry_dict:
+                self._registry_dict[type] = BaseRegistry(name=type)
+            self._registry_dict[type].register_module(name=name, module=module)
         else:
             if name is None:
                 name = module.__name__

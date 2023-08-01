@@ -1,10 +1,10 @@
-from typing import List, Optional, Union, Dict, Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import pytorch_lightning as pl
 import torch
 import yaml
-import numpy as np
-from pathlib import Path
 from omegaconf import DictConfig
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils.decorators import set_default_argument
@@ -14,12 +14,14 @@ from pytorch_lightning.trainer.connectors.accelerator_connector import (
     _PRECISION_INPUT,
 )
 from torch.utils.data import DataLoader
+
 from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
     PostProcessingConfigurationCallback,
 )
+
 from .registry import AnomalibRegistry
 
 
@@ -63,7 +65,7 @@ class AnomalibEngine(Engine):
     ):
         # FIXME: Modify to work with the config file fill + kwargs
         trainer_config = self.config.get("trainer", {})
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             trainer_config[key] = value
 
         # configs.distributed = distributed

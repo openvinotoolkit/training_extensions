@@ -212,7 +212,7 @@ class AutoEngine(Engine):
         self.framework, self.task, self.train_type = None, None, None
         self.work_dir = work_dir
         self.config_path = None
-        config = self.initial_config(config)
+        config = self._initial_config(config)
         self.config = set_dataset_paths(
             config,
             {
@@ -247,7 +247,7 @@ class AutoEngine(Engine):
         self.dataset_obj = self.dataset(**dataset_kwargs)
         self.engine = None
 
-    def initial_config(self, config: Optional[Union[Dict, str]]):
+    def _initial_config(self, config: Optional[Union[Dict, str]]):
         if config is not None:
             if isinstance(config, str):
                 self.config_path = config
@@ -303,7 +303,7 @@ class AutoEngine(Engine):
             self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["adapter"]
         if self.config_path is None:
             self.config_path = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["default_config"]
-            self.config = self.initial_config(self.config_path)
+            self.config = self._initial_config(self.config_path)
 
     def build_framework_engine(self) -> Engine:
         """Create the selected framework.

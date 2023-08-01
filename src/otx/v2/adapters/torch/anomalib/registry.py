@@ -1,7 +1,8 @@
 # Regist OTX custom mmengine modules
+from importlib import import_module
+
 from otx.v2.api.core.registry import BaseRegistry
 
-from importlib import import_module
 from anomalib.models import _snake_to_pascal_case
 
 # COPY from anomalib.models.__init__.py
@@ -26,9 +27,9 @@ model_list = [
 class AnomalibRegistry(BaseRegistry):
     def __init__(self, name="anomalib"):
         super().__init__(name)
-        self.initialize()
+        self._initialize()
 
-    def initialize(self):
+    def _initialize(self):
         for model_name in model_list:
             module = import_module(f"anomalib.models.{model_name}")
             model = getattr(module, f"{_snake_to_pascal_case(model_name)}Lightning")
