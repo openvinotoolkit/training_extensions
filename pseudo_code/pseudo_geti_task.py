@@ -18,31 +18,6 @@ from otx.v2.api.core import BaseDataset
 
 
 class GetiTask:
-    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None) -> None:
-        self.task_environment = task_environment
-        self.task_type = task_environment.model_template.task_type
-        self.model_name = task_environment.model_template.name
-        self.labels = task_environment.get_labels()
-
-        template_file_path = task_environment.model_template.model_template_path
-        self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
-
-        # Hyperparameters.
-        self._work_dir_is_temp = False
-        if output_path is None:
-            output_path = tempfile.mkdtemp(prefix="otx-anomalib")
-            self._work_dir_is_temp = True
-        self.project_path: str = output_path
-        self.config = self.get_config()
-
-        # Set default model attributes.
-        self.optimization_methods: List[OptimizationMethod] = []
-        self.precision = [ModelPrecision.FP32]
-        self.optimization_type = ModelOptimizationType.MO
-
-        self.model = self.load_model(model=task_environment.model)
-
-
     def load_model(self, model: ModelEntity):
         raise NotImplementedError()
 
