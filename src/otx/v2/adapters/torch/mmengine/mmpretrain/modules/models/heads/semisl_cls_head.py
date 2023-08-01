@@ -9,7 +9,7 @@ from mmpretrain.models.heads.linear_head import LinearClsHead
 from otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.heads.non_linear_cls_head import (
     NonLinearClsHead,
 )
-
+from mmpretrain.evaluation.metrics import Accuracy
 from .mixin import OTXHeadMixin
 
 
@@ -31,7 +31,7 @@ class SemiClsHead(OTXHeadMixin):
         self.num_pseudo_label = 0
         self.classwise_acc = torch.ones((self.num_classes,)) * self.min_threshold
 
-    def loss(self, logits, gt_label, pseudo_label=None, mask=None):
+    def _get_loss(self, logits, gt_label, pseudo_label=None, mask=None):
         """Loss function in which unlabeled data is considered.
 
         Args:
@@ -58,8 +58,9 @@ class SemiClsHead(OTXHeadMixin):
         losses["unlabeled_loss"] = self.unlabeled_coef * unlabeled_loss
 
         # compute accuracy
-        acc = self.compute_accuracy(logits_x, gt_label)
-        losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
+        if self.cal_acc:
+            acc = Accuracy.calculate(logits_x, gt_label, topk=self.topk)
+            losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         return losses
 
     def forward_train(self, x, gt_label, final_layer=None):  # pylint: disable=too-many-locals
@@ -116,8 +117,16 @@ class SemiClsHead(OTXHeadMixin):
         logits_u = outputs[batch_size:]
         del outputs
         logits = (logits_x, logits_u)
-        losses = self.loss(logits, gt_label, label_u, mask)
+        losses = self._get_loss(logits, gt_label, label_u, mask)
         return losses
+
+    def loss(self, feats, data_samples, **kwargs):
+        if "gt_score" in data_samples[0]:
+            # Batch augmentation may convert labels to one-hot format scores.
+            gt_label = torch.stack([i.gt_score for i in data_samples])
+        else:
+            gt_label = torch.cat([i.gt_label for i in data_samples])
+        return self.forward_train(feats, gt_label)
 
 
 @HEADS.register_module()

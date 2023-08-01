@@ -69,3 +69,8 @@ class ComposedDL:
     def sampler(self):
         """Return sampler."""
         return self._sampler
+
+    @property
+    def dataset(self):
+        # FIXME: Workarounds
+        return self.loaders[0].dataset

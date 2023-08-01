@@ -28,10 +28,27 @@ from mmengine.utils import digit_version
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_default_pipeline():
+def get_default_pipeline(semisl=False):
     # TODO: This is function for experiment // Need to remove this function
     try:
         import mmpretrain
+
+        default_pipeline = [
+            dict(type="Resize", scale=[224, 224]),
+            dict(type="mmpretrain.PackInputs"),
+        ]
+        if semisl:
+            strong_pipeline = [
+                dict(type="OTXRandAugment", num_aug=8, magnitude=10),
+            ]
+            return {
+            "train": default_pipeline,
+            "unlabeled": [
+                dict(type="Resize", scale=[224, 224]),
+                dict(type="PostAug", keys=dict(img_strong=strong_pipeline)),
+                dict(type="mmpretrain.PackMultiKeyInputs", input_key="img", multi_key=["img_strong"]),
+            ]
+        }
 
         return [
             dict(type="Resize", scale=[224, 224]),
@@ -156,6 +173,11 @@ class Dataset(BaseDataset):
         dataset_config.pop("ann_files", None)
         dataset_config.pop("file_list", None)
         dataset_config["_scope_"] = "mmpretrain"
+        # Valid inputs
+        if not dataset_config.get("type", False):
+            dataset_config["type"] = self.base_dataset.__name__
+        if not dataset_config.get("pipeline", False):
+            dataset_config["pipeline"] = get_default_pipeline()
         dataset = mmpretrain_build_dataset(dataset_config)
         dataset._build_config = init_config
         return dataset
@@ -266,7 +288,7 @@ class Dataset(BaseDataset):
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self.build_dataset(subset=subset, pipeline=pipeline, config=dataloader_config)
+        subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
         # TODO: argument update with configuration (config is not None case)
         if batch_size is None:
             batch_size = config.get("batch_size", 1)
@@ -290,7 +312,7 @@ class Dataset(BaseDataset):
         if subset == "train" and self.train_type == TrainType.Semisupervised:
             unlabeled_pipeline = None
             if pipeline is not None:
-                unlabeled_pipeline = pipeline["unlabeled"]
+                unlabeled_pipeline = pipeline.get("unlabeled", get_default_pipeline(semisl=True)["unlabeled"])
             unlabeled_dataset = self.build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=config)
             unlabeled_dataloader = self.build_dataloader(
                 dataset=unlabeled_dataset,

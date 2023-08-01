@@ -5,7 +5,7 @@
 
 import random
 
-from mmpretrain.datasets.transforms import TRANSFORMS
+from mmpretrain.datasets.transforms import TRANSFORMS, PackInputs
 from PIL import Image
 from torchvision.transforms import functional as F
 
@@ -77,3 +77,27 @@ class RandomRotate:
             results[key] = img
 
         return results
+
+
+@TRANSFORMS.register_module()
+class PackMultiKeyInputs(PackInputs):
+    def __init__(self, multi_key=[], **kwargs):
+        super().__init__(**kwargs)
+        self.multi_key = multi_key
+
+    def transform(self, results: dict) -> dict:
+        """Method to pack the input data."""
+
+        packed_results = super().transform(results=results)
+        for key in self.multi_key:
+            if key in results:
+                input_ = results[key]
+                packed_results[key] = self.format_input(input_)
+        return packed_results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f"(input_key='{self.multi_key}', "
+        repr_str += f'algorithm_keys={self.algorithm_keys}, '
+        repr_str += f'meta_keys={self.meta_keys})'
+        return repr_str
