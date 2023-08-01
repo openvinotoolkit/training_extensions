@@ -809,7 +809,7 @@ class TestSegmentationToAnnotation:
             label_schema.add_child(parent=label_0, child=label_0_2)
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = ClassificationResult([(0, 0.9), (1, 0.8), (2, 0.94), (3, 0.86)], None, None)
+            predictions = ClassificationResult([(0, 0.9), (1, 0.8), (2, 0.94), (3, 0.86)], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
@@ -824,7 +824,7 @@ class TestSegmentationToAnnotation:
             # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" method with
             # "predictions" equal to empty list
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = ClassificationResult([], None, None)
+            predictions = ClassificationResult([], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
@@ -842,7 +842,7 @@ class TestSegmentationToAnnotation:
 
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = ClassificationResult([(2, 0.9), (1, 0.8)], None, None)
+            predictions = ClassificationResult([(2, 0.9), (1, 0.8)], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(

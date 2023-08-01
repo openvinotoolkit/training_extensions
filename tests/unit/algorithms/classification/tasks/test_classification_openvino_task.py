@@ -62,7 +62,7 @@ class TestOpenVINOClassificationInferencer:
         self.cls_ov_inferencer = ClassificationOpenVINOInferencer(cls_params, self.label_schema, "")
         model_path = "openvino.model_api.models.classification.ClassificationModel"
         self.cls_ov_inferencer.model = mocker.patch(
-            model_path, autospec=True, return_value=ClassificationResult([], np.array(0), np.array(0))
+            model_path, autospec=True, return_value=ClassificationResult([], np.array(0), np.array(0), np.array(0))
         )
         self.fake_input = np.random.rand(3, 224, 224)
 
@@ -71,7 +71,7 @@ class TestOpenVINOClassificationInferencer:
         fake_output = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=[])
         returned_value = self.cls_ov_inferencer.predict(self.fake_input)
 
-        assert returned_value[0] == ClassificationResult([], np.array(0), np.array(0))
+        assert returned_value[0] == ClassificationResult([], np.array(0), np.array(0), np.array(0))
 
 
 class TestOpenVINOClassificationTask:
@@ -103,7 +103,7 @@ class TestOpenVINOClassificationTask:
         mock_predict = mocker.patch.object(
             ClassificationOpenVINOInferencer,
             "predict",
-            return_value=(ClassificationResult([], np.array(0), np.array(0)), self.fake_ann_scene),
+            return_value=(ClassificationResult([], np.array(0), np.array(0), np.array(0)), self.fake_ann_scene),
         )
         mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
         updated_dataset = self.cls_ov_task.infer(
@@ -139,7 +139,7 @@ class TestOpenVINOClassificationTask:
             ClassificationOpenVINOInferencer,
             "predict",
             return_value=(
-                ClassificationResult([], self.fake_silency_map, np.array([0, 1])),
+                ClassificationResult([], self.fake_silency_map, np.array([0, 1]), np.array([0, 1])),
                 self.fake_ann_scene,
             ),
         )
