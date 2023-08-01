@@ -83,14 +83,11 @@ class TestExtractViTFeatures:
         model = model.eval()
 
         img = torch.ones(2, 3, 224, 224) - 0.5
-        feat, backbone_feat, layernorm_feat = _extract_vit_feat(model, img)
+        feat, layernorm_feat = _extract_vit_feat(model, img)
 
         assert len(feat) == 2
         assert feat[0].shape == torch.Size([2, 192, 14, 14])
         assert feat[1].shape == torch.Size([2, 192])
         assert abs(feat[0][0][0][0][0].detach().cpu().item() - 0.4621) < 0.05
-        assert len(backbone_feat) == 2
-        assert backbone_feat[0].shape == torch.Size([2, 192, 14, 14])
-        assert backbone_feat[1].shape == torch.Size([2, 192])
         assert layernorm_feat.shape == torch.Size([2, 197, 192])
         assert abs(layernorm_feat[0][0][0].detach().cpu().item() - 0.7244) < 0.05

@@ -350,10 +350,9 @@ if is_mmdeploy_enabled():
                     feat = [patch_token, cls_token]
                 else:
                     feat = patch_token
-        backbone_feat = feat
         if model.with_neck:
             feat = model.neck(feat)
-        return feat, backbone_feat, layernorm_feat
+        return feat, layernorm_feat
 
     @FUNCTION_REWRITER.register_rewriter(
         "otx.algorithms.classification.adapters.mmcls.models.classifiers.CustomImageClassifier.extract_feat"
@@ -377,7 +376,7 @@ if is_mmdeploy_enabled():
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
         vit_backbone = isinstance(self.backbone, VisionTransformer)
         if vit_backbone:
-            feat, backbone_feat, layernorm_feat = _extract_vit_feat(self, img)
+            feat, layernorm_feat = _extract_vit_feat(self, img)
         else:
             feat, backbone_feat = self.extract_feat(img)
         logit = self.head.simple_test(feat)
