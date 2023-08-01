@@ -131,9 +131,14 @@ class CustomLiteDINO(CustomDINO):
                     else:
                         new_param = new_param.replace("self_attn", "attentions.0.attn")
                     new_param = new_param.replace("cross_attn", "attentions.1")
-                    new_param = new_param.replace("norm22", "norms.0")
                     new_param = new_param.replace("norm1", "norms.0")
-                    new_param = new_param.replace("norm2", "norms.1")
+                    if "norm22" in new_param:
+                        new_param = new_param.replace("norm22", "ffns.0.norm2")
+                    elif "norm2" in new_param:
+                        if param.replace("norm2", "norm22") in ckpt_dict:
+                            new_param = new_param.replace("norm2", "ffns.0.norm1")
+                        else:
+                            new_param = new_param.replace("norm2", "norms.1")
                     new_param = new_param.replace("norm3", "norms.2")
                     new_param = new_param.replace("transformer.decoder.class_embed", "cls_branches")
                     new_param = new_param.replace("transformer.decoder.bbox_embed", "reg_branches")
@@ -181,4 +186,5 @@ class CustomLiteDINO(CustomDINO):
                 ckpt_dict[new] = ckpt_dict.pop(origin)
             for param in unused_params:
                 ckpt_dict.pop(param)
+            breakpoint()
         super(CustomDINO, self).load_state_dict_pre_hook(model_classes, ckpt_classes, ckpt_dict, *args, *kwargs)

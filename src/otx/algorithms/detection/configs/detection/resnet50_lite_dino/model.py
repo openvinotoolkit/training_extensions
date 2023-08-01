@@ -58,7 +58,7 @@ model = dict(
                         ),
                         feedforward_channels=2048,
                         ffn_dropout=0.0,
-                        operation_order=("self_attn", "norm", "ffn", "norm"),
+                        operation_order=("self_attn", "norm", "ffn"),
                     ),
                 ],
             ),

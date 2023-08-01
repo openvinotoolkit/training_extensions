@@ -68,24 +68,27 @@ class SmallExpandFFN(FFN):
         layers.append(nn.Dropout(ffn_drop))
         self.small_expand_layers = Sequential(*layers)
 
+        self.norm1 = nn.LayerNorm(embed_dims)
+        self.norm2 = nn.LayerNorm(embed_dims)
+
     def forward(self, x, level_start_index, enc_scale, identity=None):
         """Forward function for FFN."""
         x_3s = x[level_start_index[4 - enc_scale] :]
         x_4s = x[: level_start_index[4 - enc_scale]]
-        x_4s = self.forward_ffn(self.small_expand_layers, x_4s)
-        x_3s = self.forward_ffn(self.layers, x_3s)
+        x_4s = self.forward_ffn(self.small_expand_layers, self.norm1, x_4s, identity)
+        x_3s = self.forward_ffn(self.layers, self.norm2, x_3s, identity)
         x = torch.cat([x_4s, x_3s], 0)
 
         return x
 
-    def forward_ffn(self, layers, x, identity=None):
+    def forward_ffn(self, layers, norm, x, identity=None):
         """Forward Feed Forward Network given layers."""
         out = layers(x)
         if not self.add_identity:
             return self.dropout_layer(out)
         if identity is None:
             identity = x
-        return identity + self.dropout_layer(out)
+        return norm(identity + self.dropout_layer(out))
 
 
 @TRANSFORMER_LAYER.register_module()
