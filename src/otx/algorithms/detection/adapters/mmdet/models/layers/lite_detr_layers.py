@@ -252,9 +252,9 @@ class EfficientTransformerLayer(BaseTransformerLayer):
                     query = self.ffns[ffn_index](
                         query, level_start_index, self.enc_scale, identity if self.pre_norm else None
                     )
-                    ffn_index += 1
                 else:
                     query = self.ffns[ffn_index](query, identity if self.pre_norm else None)
+                ffn_index += 1
 
         return query
 
