@@ -64,8 +64,8 @@ TIME_LOG = {
     "deploy_eval_time": "Deploy eval time (sec.)",
     "nncf_time": "NNCF time (sec.)",
     "nncf_eval_time": "NNCF eval time (sec.)",
-    "ptq_time": "POT time (sec.)",
-    "ptq_eval_time": "POT eval time (sec.)",
+    "ptq_time": "PTQ time (sec.)",
+    "ptq_eval_time": "PTQ eval time (sec.)",
 }
 
 

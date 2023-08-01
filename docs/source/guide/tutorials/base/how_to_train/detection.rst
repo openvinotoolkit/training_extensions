@@ -359,6 +359,22 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
   Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
 
 
+4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
+Learn more about template-specific parameters using ``otx export params --help``.
+
+For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.
+
+Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
+
+.. code-block::
+
+  (otx) ...$ otx export --load-weights ../outputs/weights.pth \
+                      --output ../outputs \
+                      params \
+                      --postprocessing.confidence_threshold 0.5 \
+                      --postprocessing.result_based_confidence_threshold false
+
+
 *************
 Optimization
 *************
