@@ -324,14 +324,13 @@ class OTXDetectionTask(OTXTask, ABC):
         output_model: ModelEntity,
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = True,
-        input_size: Optional[int] = None,
     ):
         """Export function of OTX Detection Task."""
         logger.info("Exporting the model")
 
         self._update_model_export_metadata(output_model, export_type, precision, dump_features)
 
-        results = self._export_model(precision, export_type, dump_features, input_size)
+        results = self._export_model(precision, export_type, dump_features)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:

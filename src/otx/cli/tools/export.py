@@ -62,11 +62,6 @@ def get_args():
         help="Type of the resulting model (OpenVINO or ONNX).",
         default="openvino",
     )
-    parser.add_argument(
-        "--input-size",
-        help="Set input size of model to export.",
-        type=int,
-    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
     override_param = get_override_param(params)
@@ -124,7 +119,7 @@ def main():
     if args.export_type.lower() not in ["openvino", "onnx"]:
         raise ValueError("Unsupported export type")
     export_type = ExportType.OPENVINO if "openvino" == args.export_type.lower() else ExportType.ONNX
-    task.export(export_type, exported_model, export_precision, args.dump_features, args.input_size)
+    task.export(export_type, exported_model, export_precision, args.dump_features)
 
     if not args.output:
         output_path = config_manager.output_path
