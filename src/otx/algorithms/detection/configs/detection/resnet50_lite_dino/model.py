@@ -1,7 +1,4 @@
 """Model config for DINO."""
-_base_ = [
-    "../../../../../recipes/stages/detection/incremental.py",
-]
 model = dict(
     type="CustomLiteDINO",
     backbone=dict(
@@ -106,12 +103,34 @@ model = dict(
 )
 # optimizer
 optimizer = dict(
-    _delete_=True,
     type="AdamW",
-    lr=1e-4,
+    lr=0.0001,
     weight_decay=0.0001,
+    paramwise_cfg=dict(
+        custom_keys={
+            "backbone": dict(lr_mult=0.1),
+            "sampling_offsets": dict(lr_mult=0.1),
+            "reference_points": dict(lr_mult=0.1),
+        }
+    ),
 )
 optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
+# learning policy
+lr_config = dict(policy="step", step=[30])
+runner = dict(type="EpochRunnerWithCancel", max_epochs=30)
+
+checkpoint_config = dict(interval=1)
+log_config = dict(
+    interval=100,
+    hooks=[
+        dict(type="TextLoggerHook"),
+    ],
+)
+custom_hooks = [dict(type="NumClassCheckHook")]
+dist_params = dict(backend="nccl")
 load_from = None
 resume_from = None
-ignore = False
+log_level = "info"
+workflow = [("train", 1)]
+
+task_adapt = dict(op="REPLACE", type="temp", efficient_mode=False, use_mpa_anchor=False)

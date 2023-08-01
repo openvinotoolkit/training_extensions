@@ -32,9 +32,9 @@ hyper_parameters:
         default_value: 0.0001
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 3
+        default_value: 0
       num_iters:
-        default_value: 200
+        default_value: 36
     nncf_optimization:
       enable_quantization:
         default_value: true
