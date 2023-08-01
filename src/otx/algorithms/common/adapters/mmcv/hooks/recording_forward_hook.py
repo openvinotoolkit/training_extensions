@@ -242,7 +242,15 @@ class ReciproCAMHook(BaseRecordingForwardHook):
 
 
 class ViTReciproCAMHook(BaseRecordingForwardHook):
-    """Implementation of ViTRecipro-CAM for class-wise saliency map for transformer-based classifiers."""
+    """Implementation of ViTRecipro-CAM for class-wise saliency map for transformer-based classifiers.
+
+    Args:
+    module (torch.nn.Module): The PyTorch module.
+    layer_index (int): Index of the target transformer_encoder layer.
+    use_gaussian (bool): Defines kernel type for mosaic feature map generation.
+    If True, use gaussian 3x3 kernel. If False, use 1x1 kernel.
+    cls_token (bool): If True, includes classification token into the mosaic feature map.
+    """
 
     def __init__(
         self, module: torch.nn.Module, layer_index: int = -1, use_gaussian: bool = True, cls_token: bool = True

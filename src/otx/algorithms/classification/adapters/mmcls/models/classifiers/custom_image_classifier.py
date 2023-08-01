@@ -384,10 +384,13 @@ if is_mmdeploy_enabled():
 
         if ctx.cfg["dump_features"]:
             if vit_backbone:
+                assert self.backbone.with_cls_token
+                _, cls_token = feat
+                feature_vector = cls_token
                 saliency_map = ViTReciproCAMHook(self).func(layernorm_feat)
             else:
                 saliency_map = ReciproCAMHook(self).func(backbone_feat)
-            feature_vector = FeatureVectorHook.func(backbone_feat)
+                feature_vector = FeatureVectorHook.func(backbone_feat)
             return logit, feature_vector, saliency_map
 
         return logit

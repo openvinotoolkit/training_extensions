@@ -16,6 +16,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.cli.registry import Registry
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import _extract_vit_feat
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 templates_cls = Registry("src/otx/algorithms").filter(task_type="CLASSIFICATION").templates
@@ -64,3 +65,32 @@ class TestExplainMethods:
         actual_sal_vals = saliency_maps[0][0][0].astype(np.int8)
         ref_sal_vals = self.ref_saliency_vals_cls[template.name].astype(np.int8)
         assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
+
+
+class TestExtractViTFeatures:
+    DEIT_TEMPLATE_DIR = os.path.join("src/otx/algorithms/classification/configs", "deit_tiny")
+
+    @e2e_pytest_unit
+    def test_extract_vit_feat(self):
+        torch.manual_seed(0)
+        base_dir = os.path.abspath(self.DEIT_TEMPLATE_DIR)
+        cfg_path = os.path.join(base_dir, "model.py")
+        cfg = MPAConfig.fromfile(cfg_path)
+
+        cfg.model.pop("task")
+        ClassificationConfigurer.configure_in_channel(cfg)
+        model = build_classifier(cfg.model)
+        model = model.eval()
+
+        img = torch.ones(2, 3, 224, 224) - 0.5
+        feat, backbone_feat, layernorm_feat = _extract_vit_feat(model, img)
+
+        assert len(feat) == 2
+        assert feat[0].shape == torch.Size([2, 192, 14, 14])
+        assert feat[1].shape == torch.Size([2, 192])
+        assert abs(feat[0][0][0][0][0].detach().cpu().item() - 0.4621) < 0.05
+        assert len(backbone_feat) == 2
+        assert backbone_feat[0].shape == torch.Size([2, 192, 14, 14])
+        assert backbone_feat[1].shape == torch.Size([2, 192])
+        assert layernorm_feat.shape == torch.Size([2, 197, 192])
+        assert abs(layernorm_feat[0][0][0].detach().cpu().item() - 0.7244) < 0.05
