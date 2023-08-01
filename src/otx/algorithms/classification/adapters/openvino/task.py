@@ -124,7 +124,11 @@ class ClassificationOpenVINOInferencer(IInferencer):
             raw_prediction = self.model.inference_adapter.copy_raw_result(request)
             processed_prediciton = self.model.postprocess(raw_prediction, preprocessing_meta)
             annotation = self.converter.convert_to_annotation(processed_prediciton, preprocessing_meta)
-            aux_data = None, processed_prediciton.saliency_map, processed_prediciton.feature_vector
+            aux_data = (
+                processed_prediciton.raw_scores,
+                processed_prediciton.saliency_map,
+                processed_prediciton.feature_vector,
+            )
             result_handler(id, annotation, aux_data)
 
         except Exception as e:

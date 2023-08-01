@@ -44,7 +44,7 @@ def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
     if activate:
         logits = softmax_numpy(logits)
 
-    return ClassificationResult([(index, logits[index])], np.ndarray(0), np.ndarray(0))
+    return ClassificationResult([(index, logits[index])], np.ndarray(0), np.ndarray(0), np.ndarray(0))
 
 
 # pylint: disable=too-many-instance-attributes
