@@ -12,6 +12,7 @@ from typing import Callable, Dict, List, Tuple, Union
 
 import cv2
 import numpy as np
+import pycocotools.mask as mask_util
 from mmcv.ops import nms
 from mmdet.core import BitmapMasks, bbox2result
 from tqdm import tqdm
@@ -80,6 +81,7 @@ class Tile:
         nproc: int = 2,
         sampling_ratio: float = 1.0,
         include_full_img: bool = False,
+        postprocess_mask: bool = False,
     ):
         self.min_area_ratio = min_area_ratio
         self.filter_empty_gt = filter_empty_gt
@@ -94,6 +96,8 @@ class Tile:
         self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
         self.nproc = nproc
         self.img2fp32 = False
+        self.include_full_img = include_full_img
+        self.postprocess_mask = postprocess_mask
         for p in pipeline:
             if p.type == "PhotoMetricDistortion":
                 self.img2fp32 = True
@@ -335,6 +339,16 @@ class Tile:
             keep = keep[:max_num]
         return dets, keep
 
+    def postprocess(self, boxes, masks) -> List[BitmapMasks]:
+        """Postprocess mask for Mask2Former/SOLOv2 detectors inplace."""
+        for i, (box, mask) in enumerate(zip(boxes, masks)):
+            x_1, y_1, x_2, y_2 = box.astype(np.int32)
+            shift_x, shift_y, _, _ = mask.pop("tile_box")
+            x_1, y_1, x_2, y_2 = x_1 - shift_x, y_1 - shift_y, x_2 - shift_x, y_2 - shift_y
+            mask = mask_util.decode(mask)
+            mask = mask[y_1:y_2, x_1:x_2][np.newaxis]
+            masks[i] = BitmapMasks(mask, *mask.shape[1:])
+
     def tile_nms(
         self,
         bbox_results: List[np.ndarray],
@@ -347,9 +361,9 @@ class Tile:
         """NMS after aggregation suppressing duplicate boxes in tile-overlap areas.
 
         Args:
-            bbox_results (List[List]): image-level box prediction
-            mask_results (List[np.ndarray]): image-level mask prediction
-            label_results (List[List]): image-level label prediction
+            bbox_results (List[np.ndarray]): image-level box prediction
+            mask_results (List[List]): image-level mask prediction
+            label_results (List[np.ndarray]): image-level label prediction
             iou_threshold (float): IoU threshold to be used to suppress boxes in tiles' overlap areas.
             max_per_img (int): if there are more than max_per_img bboxes after NMS, only top max_per_img will be kept.
             detection (bool): whether it is a detection task
@@ -362,15 +376,25 @@ class Tile:
             _, keep_indices = self.multiclass_nms(
                 bboxes, scores, labels, iou_threshold=iou_threshold, max_num=max_per_img
             )
-
             bboxes = bboxes[keep_indices]
             labels = labels[keep_indices]
             scores = scores[keep_indices]
             bbox_results[i] = bbox2result(np.concatenate([bboxes, scores[:, None]], -1), labels, self.num_classes)
 
             if not detection:
-                masks = np.array([masks[keep_idx] for keep_idx in keep_indices])
-                mask_results[i] = [list(masks[labels == i]) for i in range(self.num_classes)]
+                masks = [masks[keep_idx] for keep_idx in keep_indices]
+                # NOTE: Mask2Former/SOLOv2 detectors output full-size masks which need post-processing
+                if self.postprocess_mask:
+                    self.postprocess(bboxes, masks)
+                    mask_result = [[] for _ in range(self.num_classes)]
+                    for idx in range(len(masks)):
+                        mask = masks[idx]
+                        label = int(labels[idx])
+                        mask_result[label].append(mask)
+                    mask_results[i] = mask_result
+                else:
+                    masks = np.array(masks)
+                    mask_results[i] = [list(masks[labels == cls]) for cls in range(self.num_classes)]
 
     def __len__(self):
         """Total number of tiles."""
@@ -484,6 +508,8 @@ class Tile:
             ann["masks"] = self.tiles[idx]["gt_masks"]
         if "gt_labels" in self.tiles[idx]:
             ann["labels"] = self.tiles[idx]["gt_labels"]
+        ann["height"] = self.tiles[idx]["img_shape"][0]
+        ann["width"] = self.tiles[idx]["img_shape"][1]
         return ann
 
     def merge_vectors(self, feature_vectors: List[np.ndarray]) -> np.ndarray:

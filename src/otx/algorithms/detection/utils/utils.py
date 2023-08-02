@@ -20,6 +20,7 @@ from typing import Any, List, Optional, Sequence, Tuple
 import cv2
 import numpy as np
 import pycocotools.mask as mask_util
+from mmdet.core import BitmapMasks
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.color import Color
@@ -275,6 +276,8 @@ def create_mask_shapes(
             if not use_ellipse_shapes:
                 if isinstance(mask, dict):
                     mask = mask_util.decode(mask)
+                elif isinstance(mask, BitmapMasks):
+                    mask = mask.to_ndarray()[0]
                 if mask.shape[0] != height or mask.shape[1] != width:
                     # resize mask to the size of the bounding box
                     coords = box[:4].astype(float).copy()

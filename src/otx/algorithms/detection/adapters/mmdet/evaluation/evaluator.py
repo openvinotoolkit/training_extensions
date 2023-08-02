@@ -302,13 +302,17 @@ class Evaluator:
             det_masks = det[1][class_id]
             if len(det_masks) == 0:
                 cls_dets.append(([], []))
+            elif isinstance(det_masks[0], BitmapMasks):
+                cls_dets.append((det_bboxes, det_masks))
             else:
-                # Convert 28x28 encoded RLE mask detection to 28x28 BitmapMasks.
                 det_masks = mask_util.decode(det_masks)
                 det_masks = det_masks.transpose(2, 0, 1)
 
+                # NOTE: 2 conditions for mask detection output:
+                # 1. MaskFormer/SOLOv2 output full size masks
+                # 2. MaskRCNN outputs 28x28 encoded RLE masks
                 if det_masks.shape[-2:] == self.img_sizes[img_idx]:
-                    # NOTE: MaskFormer/SOLOv2 output full size masks -  crop them for postprocessing
+                    # faster when masks are cropped for postprocessing
                     masks_list = []
                     for det_bbox, det_mask in zip(det_bboxes, det_masks):
                         x1, y1, x2, y2 = det_bbox.astype(np.int)
@@ -317,6 +321,7 @@ class Evaluator:
                         masks_list.append(bitmask)
                     cls_dets.append((det_bboxes, masks_list))
                 else:
+                    # Convert 28x28 encoded RLE mask detection to 28x28 BitmapMasks.
                     det_masks = BitmapMasks(det_masks, *det_masks.shape[1:])
                     cls_dets.append((det_bboxes, det_masks))
         return cls_dets, cls_scores

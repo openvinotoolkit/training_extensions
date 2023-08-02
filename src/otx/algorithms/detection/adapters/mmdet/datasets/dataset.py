@@ -333,6 +333,7 @@ class ImageTilingDataset(OTXDetDataset):
         test_mode=False,
         sampling_ratio=1.0,
         include_full_img=False,
+        postprocess_mask=False,
     ):
         self.dataset = build_dataset(dataset)
         self.CLASSES = self.dataset.CLASSES
@@ -349,6 +350,7 @@ class ImageTilingDataset(OTXDetDataset):
             filter_empty_gt=filter_empty_gt if data_subset != Subset.TESTING else False,
             sampling_ratio=sampling_ratio if data_subset != Subset.TESTING else 1.0,
             include_full_img=include_full_img if data_subset != Subset.TESTING else True,
+            postprocess_mask=postprocess_mask,
         )
         self.flag = np.zeros(len(self), dtype=np.uint8)
         self.pipeline = Compose(pipeline)
