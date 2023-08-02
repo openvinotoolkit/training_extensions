@@ -27,7 +27,6 @@ from mmdet.core.evaluation.class_names import get_classes
 from mmdet.core.evaluation.mean_ap import average_precision
 from terminaltables import AsciiTable
 
-from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 from otx.api.utils.time_utils import timeit
 
@@ -124,12 +123,13 @@ def sanitize_coordinates(bbox: np.ndarray, height: int, width: int, padding=1) -
     return np.array([x1, y1, x2, y2])
 
 
-def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.ndarray:
+def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, iou_thr: float) -> np.ndarray:
     """Compute the intersection over union between the detected masks and ground truth masks.
 
     Args:
         det (Tuple[np.ndarray, BitmapMasks]): detected bboxes and masks
         gt_masks (PolygonMasks): ground truth masks
+        iou_thr (float): IoU threshold
 
     Note:
         It first compute IoU between bounding boxes, then compute IoU between masks
@@ -145,10 +145,11 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks) -> np.
     gt_bboxes = gt_masks.get_bboxes()
     img_h, img_w = gt_masks.height, gt_masks.width
     ious = bbox_overlaps(det_bboxes, gt_bboxes, mode="iou")
+    ious[ious < iou_thr] = 0.0
     if not ious.any():
         return ious
     # NOTE: further speed optimization (vectorization) could be done here
-    for coord in np.argwhere(ious > 1e-2):
+    for coord in np.argwhere(ious):
         m, n = coord
         det_bbox, det_mask = sanitize_coordinates(det_bboxes[m], img_h, img_w), det_masks[m]
         gt_bbox, gt_mask = sanitize_coordinates(gt_bboxes[n], img_h, img_w), gt_masks[n]
@@ -199,7 +200,7 @@ def tpfpmiou_func(  # pylint: disable=too-many-locals
     if num_dets == 0:
         return tp, fp, 0.0
 
-    ious = mask_iou(det, gt_masks)  # (M, N)
+    ious = mask_iou(det, gt_masks, iou_thr)  # (M, N)
 
     # for each det, the max iou with all gts
     ious_max = ious.max(axis=1)
@@ -235,29 +236,32 @@ class Evaluator:
             nproc (int, optional): number of processes. Defaults to 4.
     """
 
-    def __init__(self, annotation: List[Dict], domain: Domain, classes: List[str], otx_dataset: DatasetEntity, nproc=4):
+    def __init__(self, annotation: List[Dict], domain: Domain, classes: List[str], nproc=4):
         self.domain = domain
         self.classes = classes
         self.num_classes = len(classes)
         if domain != Domain.DETECTION:
             self.annotation = self.get_gt_instance_masks(annotation)
-            self.img_sizes = self.get_image_sizes(otx_dataset)
+            self.img_sizes = self.get_image_sizes(annotation)
         else:
             self.annotation = annotation
         self.nproc = nproc
 
-    def get_image_sizes(self, dataset: DatasetEntity):
+    def get_image_sizes(self, annotation: List):
         """Get image sizes.
 
         Args:
-            dataset (DatasetEntity): OTX dataset
+            annotation (List): List of annotation
 
         Returns:
             img_sizes: per-image image sizes
         """
         img_sizes = []
-        for dataset_item in dataset:
-            img_sizes.append((dataset_item.height, dataset_item.width))
+        for anno in annotation:
+            if "height" in anno and "width" in anno:
+                img_sizes.append((anno["height"], anno["width"]))
+            else:
+                img_sizes.append((0, 0))
         return img_sizes
 
     def get_gt_instance_masks(self, annotation: List[Dict]):

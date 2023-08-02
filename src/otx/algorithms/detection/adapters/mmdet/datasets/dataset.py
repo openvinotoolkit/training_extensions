@@ -89,6 +89,8 @@ def get_annotation_mmdet_format(
             labels=np.array(gt_labels, dtype=int),
             masks=PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
             ann_ids=gt_ann_ids,
+            height=height,
+            width=width,
         )
     else:
         ann_info = dict(
@@ -96,6 +98,8 @@ def get_annotation_mmdet_format(
             labels=np.array([], dtype=int),
             masks=[],
             ann_ids=[],
+            height=height,
+            width=width,
         )
     return ann_info
 
@@ -191,7 +195,7 @@ class OTXDetDataset(CustomDataset):
 
         self.pipeline = Compose(pipeline)
         annotation = [self.get_ann_info(i) for i in range(len(self))]
-        self.evaluator = Evaluator(annotation, self.domain, self.CLASSES, self.otx_dataset)
+        self.evaluator = Evaluator(annotation, self.domain, self.CLASSES)
 
     def _set_group_flag(self):
         """Set flag for grouping images.
