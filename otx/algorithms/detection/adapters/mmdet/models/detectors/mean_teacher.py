@@ -164,54 +164,47 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 rescale=False,  # easy augmentation
             )
 
-        if self.unlabeled_memory_bank:
-            self.update_memory_bank(teacher_outputs, img, img_metas)
+        current_device = ul_img0[0].device
+        pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
+            teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
+        )
+        ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
+        losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
+        losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
-        if not isinstance(self.pseudo_conf_thresh, list) and not self.unlabeled_memory_bank:
-            self.compute_dynamic_thrsh()
+        # Unsupervised loss
+        # Compute only if min_pseudo_label_ratio is reached
+        if pseudo_ratio >= self.min_pseudo_label_ratio:
+            if self.bg_loss_weight >= 0.0:
+                self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
+            ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
+            if self.bg_loss_weight >= 0.0:
+                self.model_s.bbox_head.bg_loss_weight = -1.0
 
-        if not self.unlabeled_memory_bank:
-            current_device = ul_img0[0].device
-            pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
-                teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
-            )
-            ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
-            losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
-            losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
-
-            # Unsupervised loss
-            # Compute only if min_pseudo_label_ratio is reached
-            if pseudo_ratio >= self.min_pseudo_label_ratio:
-                if self.bg_loss_weight >= 0.0:
-                    self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
-                ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
-                if self.bg_loss_weight >= 0.0:
-                    self.model_s.bbox_head.bg_loss_weight = -1.0
-
-                for ul_loss_name in ul_losses.keys():
-                    if ul_loss_name.startswith("loss_"):
+            for ul_loss_name in ul_losses.keys():
+                if ul_loss_name.startswith("loss_"):
+                    # skip regression rpn loss
+                    if not self.use_rpn_loss and ul_loss_name == "loss_rpn_bbox":
                         # skip regression rpn loss
-                        if not self.use_rpn_loss and ul_loss_name == "loss_rpn_bbox":
-                            # skip regression rpn loss
-                            continue
-                        ul_loss = ul_losses[ul_loss_name]
-                        if "_bbox" in ul_loss_name:
-                            if isinstance(ul_loss, list):
-                                losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_reg_loss_weight for loss in ul_loss]
-                            else:
-                                losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_reg_loss_weight
-                        elif "_cls" in ul_loss_name:
-                            # cls loss
-                            if isinstance(ul_loss, list):
-                                losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_cls_loss_weight for loss in ul_loss]
-                            else:
-                                losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_cls_loss_weight
+                        continue
+                    ul_loss = ul_losses[ul_loss_name]
+                    if "_bbox" in ul_loss_name:
+                        if isinstance(ul_loss, list):
+                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_reg_loss_weight for loss in ul_loss]
                         else:
-                            # mask loss
-                            if isinstance(ul_loss, list):
-                                losses[ul_loss_name + "_ul"] = [loss * 1.0 for loss in ul_loss]
-                            else:
-                                losses[ul_loss_name + "_ul"] = ul_loss * 1.0
+                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_reg_loss_weight
+                    elif "_cls" in ul_loss_name:
+                        # cls loss
+                        if isinstance(ul_loss, list):
+                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_cls_loss_weight for loss in ul_loss]
+                        else:
+                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_cls_loss_weight
+                    else:
+                        # mask loss
+                        if isinstance(ul_loss, list):
+                            losses[ul_loss_name + "_ul"] = [loss * 1.0 for loss in ul_loss]
+                        else:
+                            losses[ul_loss_name + "_ul"] = ul_loss * 1.0
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
