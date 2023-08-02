@@ -220,10 +220,6 @@ class TestMMDetectionTask:
             return_value=MockDataLoader(self.det_dataset),
         )
         mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
-            return_value=True,
-        )
-        mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.train_detector",
             side_effect=_mock_train_detector_det,
         )
@@ -294,10 +290,6 @@ class TestMMDetectionTask:
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.build_dataloader",
             return_value=MockDataLoader(self.det_dataset),
-        )
-        mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
-            return_value=True,
         )
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
@@ -403,10 +395,6 @@ class TestMMDetectionTask:
             return_value=MockDataLoader(self.det_dataset),
         )
         mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
-            return_value=True,
-        )
-        mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.build_data_parallel",
             return_value=MockModel(TaskType.DETECTION),
         )
@@ -441,10 +429,6 @@ class TestMMDetectionTask:
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.build_dataloader",
             return_value=MockDataLoader(self.det_dataset),
-        )
-        mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
-            return_value=True,
         )
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.train_detector",
@@ -494,10 +478,6 @@ class TestMMDetectionTask:
             return_value=MockDataLoader(self.det_dataset),
         )
         mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
-            return_value=True,
-        )
-        mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.train_detector",
             side_effect=_mock_train_detector_det,
         )
@@ -533,10 +513,6 @@ class TestMMDetectionTask:
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.build_dataloader",
             return_value=MockDataLoader(self.det_dataset),
-        )
-        mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.task.patch_data_pipeline",
-            return_value=True,
         )
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
