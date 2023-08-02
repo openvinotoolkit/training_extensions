@@ -4,8 +4,7 @@
 
 import os
 import os.path as osp
-import tempfile
-from copy import deepcopy
+import pytest
 
 import torch
 
@@ -38,160 +37,100 @@ assert_text_explain_all = "The number of saliency maps should be equal to the nu
 assert_text_explain_predicted = "The number of saliency maps should be equal to the number of predicted classes."
 
 
-class TestOVISegmXAIAPI:
-    @e2e_pytest_api
-    def test_inference_xai(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
-            model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
-            hyper_parameters = create(model_template.hyper_parameters.data)
-            hyper_parameters.learning_parameters.num_iters = 3
-            task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.INSTANCE_SEGMENTATION)
-
-            train_task = MMDetectionTask(task_env)
-
-            iseg_dataset, iseg_labels = generate_det_dataset(TaskType.INSTANCE_SEGMENTATION, 100)
-            iseg_label_schema = LabelSchemaEntity()
-            iseg_label_group = LabelGroup(
-                name="labels",
-                labels=iseg_labels,
-                group_type=LabelGroupType.EXCLUSIVE,
-            )
-            iseg_label_schema.add_group(iseg_label_group)
-
-            _config = ModelConfiguration(DetectionConfig(), iseg_label_schema)
-            trained_model = ModelEntity(
-                iseg_dataset,
-                _config,
-            )
-
-            train_task.train(iseg_dataset, trained_model, TrainParameters())
-
-            save_model_data(trained_model, temp_dir)
-
-            processed_saliency_maps, only_predicted = False, True
-            task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.INSTANCE_SEGMENTATION)
-            inference_parameters = InferenceParameters(
-                is_evaluation=False,
-                process_saliency_maps=processed_saliency_maps,
-                explain_predicted_classes=only_predicted,
-            )
-
-            # Infer torch model
-            task_env.model = trained_model
-            inference_task = MMDetectionTask(task_environment=task_env)
-            val_dataset = iseg_dataset.get_subset(Subset.VALIDATION)
-            val_dataset_copy = deepcopy(val_dataset)
-            predicted_dataset = inference_task.infer(val_dataset.with_empty_annotations(), inference_parameters)
-
-            # Check saliency maps torch task
-            task_labels = trained_model.configuration.get_label_schema().get_labels(include_empty=False)
-            saliency_maps_check(
-                predicted_dataset,
-                task_labels,
-                (28, 28),
-                processed_saliency_maps=processed_saliency_maps,
-                only_predicted=only_predicted,
-            )
-
-            # Save OV IR model
-            inference_task._model_ckpt = osp.join(temp_dir, "weights.pth")
-            exported_model = ModelEntity(None, task_env.get_model_configuration())
-            inference_task.export(ExportType.OPENVINO, exported_model, dump_features=True)
-            os.makedirs(temp_dir, exist_ok=True)
-            save_model_data(exported_model, temp_dir)
-
-            # Infer OV IR model
-            load_weights_ov = osp.join(temp_dir, "openvino.xml")
-            task_env.model = read_model(task_env.get_model_configuration(), load_weights_ov, None)
-            task = OpenVINODetectionTask(task_environment=task_env)
-            inference_parameters.enable_async_inference = False
-            predicted_dataset_ov = task.infer(val_dataset_copy.with_empty_annotations(), inference_parameters)
-
-            # Check saliency maps OV task
-            saliency_maps_check(
-                predicted_dataset_ov,
-                task_labels,
-                (480, 640),
-                processed_saliency_maps=processed_saliency_maps,
-                only_predicted=only_predicted,
-            )
-
-
-class TestOVISegmTilXAIAPI:
-    @e2e_pytest_api
-    def test_inference_xai(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
-            model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
-            hyper_parameters = create(model_template.hyper_parameters.data)
-            hyper_parameters.learning_parameters.num_iters = 5
+class TestISegmXAIAPI:
+    def _prepare_task_env(self, temp_dir, train=True, tile=False):
+        model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
+        hyper_parameters = create(model_template.hyper_parameters.data)
+        hyper_parameters.learning_parameters.num_iters = 5
+        if tile:
             hyper_parameters.tiling_parameters.enable_tiling = True
-            task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.INSTANCE_SEGMENTATION)
+        task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.INSTANCE_SEGMENTATION)
 
+        iseg_dataset, iseg_labels = generate_det_dataset(TaskType.INSTANCE_SEGMENTATION, 100)
+        iseg_label_schema = LabelSchemaEntity()
+        iseg_label_group = LabelGroup(
+            name="labels",
+            labels=iseg_labels,
+            group_type=LabelGroupType.EXCLUSIVE,
+        )
+        iseg_label_schema.add_group(iseg_label_group)
+
+        _config = ModelConfiguration(DetectionConfig(), iseg_label_schema)
+        trained_model = ModelEntity(
+            iseg_dataset,
+            _config,
+        )
+
+        if train:
             train_task = MMDetectionTask(task_env)
-
-            iseg_dataset, iseg_labels = generate_det_dataset(TaskType.INSTANCE_SEGMENTATION, 100)
-            iseg_label_schema = LabelSchemaEntity()
-            iseg_label_group = LabelGroup(
-                name="labels",
-                labels=iseg_labels,
-                group_type=LabelGroupType.EXCLUSIVE,
-            )
-            iseg_label_schema.add_group(iseg_label_group)
-
-            _config = ModelConfiguration(DetectionConfig(), iseg_label_schema)
-            trained_model = ModelEntity(
-                iseg_dataset,
-                _config,
-            )
-
             train_task.train(iseg_dataset, trained_model, TrainParameters())
 
-            save_model_data(trained_model, temp_dir)
+        save_model_data(trained_model, temp_dir)
+        task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.INSTANCE_SEGMENTATION)
+        task_env.model = trained_model
 
-            processed_saliency_maps, only_predicted = False, True
-            task_env = init_environment(hyper_parameters, model_template, task_type=TaskType.INSTANCE_SEGMENTATION)
-            inference_parameters = InferenceParameters(
-                is_evaluation=False,
-                process_saliency_maps=processed_saliency_maps,
-                explain_predicted_classes=only_predicted,
-            )
+        return task_env, iseg_dataset
 
-            # Infer torch model
-            task_env.model = trained_model
-            inference_task = MMDetectionTask(task_environment=task_env)
-            val_dataset = iseg_dataset.get_subset(Subset.VALIDATION)
-            val_dataset_copy = deepcopy(val_dataset)
-            predicted_dataset = inference_task.infer(val_dataset.with_empty_annotations(), inference_parameters)
+    def _export_and_save_ov_ir_model(self, temp_dir, task_env, inference_task):
+        inference_task._model_ckpt = osp.join(temp_dir, "weights.pth")
+        exported_model = ModelEntity(None, task_env.get_model_configuration())
+        inference_task.export(ExportType.OPENVINO, exported_model, dump_features=True)
+        os.makedirs(temp_dir, exist_ok=True)
+        save_model_data(exported_model, temp_dir)
 
-            # Check saliency maps torch task
-            task_labels = trained_model.configuration.get_label_schema().get_labels(include_empty=False)
-            saliency_maps_check(
-                predicted_dataset,
-                task_labels,
-                None,
-                processed_saliency_maps=processed_saliency_maps,
-                only_predicted=only_predicted,
-            )
+    @e2e_pytest_api
+    @pytest.mark.parametrize("tile", [True, False])
+    def test_torch_xai_inference(self, tile, tmp_dir_path):
+        if tile:
+            tmp_dir_path = tmp_dir_path / "tile"
+        else:
+            tmp_dir_path = tmp_dir_path / "no_tile"
+        task_env, iseg_dataset = self._prepare_task_env(tmp_dir_path, tile=tile)
+        inference_task = MMDetectionTask(task_environment=task_env)
+        val_dataset = iseg_dataset.get_subset(Subset.VALIDATION)
+        inference_parameters = InferenceParameters(
+            is_evaluation=False,
+        )
+        predicted_dataset = inference_task.infer(val_dataset.with_empty_annotations(), inference_parameters)
+        task_labels = task_env.model.configuration.get_label_schema().get_labels(include_empty=False)
 
-            # Save OV IR model
-            inference_task._model_ckpt = osp.join(temp_dir, "weights.pth")
-            exported_model = ModelEntity(None, task_env.get_model_configuration())
-            inference_task.export(ExportType.OPENVINO, exported_model, dump_features=True)
-            os.makedirs(temp_dir, exist_ok=True)
-            save_model_data(exported_model, temp_dir)
+        if tile:
+            ref_shape = None
+        else:
+            ref_shape = (28, 28)
+        saliency_maps_check(
+            predicted_dataset,
+            task_labels,
+            ref_shape,
+            processed_saliency_maps=False,
+            only_predicted=True,
+        )
+        self._export_and_save_ov_ir_model(tmp_dir_path, task_env, inference_task)
 
-            # Infer OV IR model
-            load_weights_ov = osp.join(temp_dir, "openvino.xml")
-            task_env.model = read_model(task_env.get_model_configuration(), load_weights_ov, None)
-            task = OpenVINODetectionTask(task_environment=task_env)
-            inference_parameters.enable_async_inference = False
-            predicted_dataset_ov = task.infer(val_dataset_copy.with_empty_annotations(), inference_parameters)
+    @pytest.mark.parametrize(
+        "tile, enable_async_inference", [[True, True], [True, False], [False, False], [False, True]]
+    )
+    def test_ov_xai_inference(self, tile, enable_async_inference, tmp_dir_path):
+        if tile:
+            tmp_dir_path = tmp_dir_path / "tile"
+        else:
+            tmp_dir_path = tmp_dir_path / "no_tile"
+        task_env, iseg_dataset = self._prepare_task_env(tmp_dir_path, train=False, tile=tile)
+        load_weights_ov = osp.join(tmp_dir_path, "openvino.xml")
+        task_env.model = read_model(task_env.get_model_configuration(), load_weights_ov, None)
+        task = OpenVINODetectionTask(task_environment=task_env)
+        inference_parameters = InferenceParameters(
+            is_evaluation=False,
+        )
+        inference_parameters.enable_async_inference = enable_async_inference
+        val_dataset = iseg_dataset.get_subset(Subset.VALIDATION)
+        predicted_dataset_ov = task.infer(val_dataset.with_empty_annotations(), inference_parameters)
+        task_labels = task_env.model.configuration.get_label_schema().get_labels(include_empty=False)
 
-            # Check saliency maps OV task
-            saliency_maps_check(
-                predicted_dataset_ov,
-                task_labels,
-                (480, 640),
-                processed_saliency_maps=processed_saliency_maps,
-                only_predicted=only_predicted,
-            )
+        saliency_maps_check(
+            predicted_dataset_ov,
+            task_labels,
+            (480, 640),
+            processed_saliency_maps=False,
+            only_predicted=True,
+        )
