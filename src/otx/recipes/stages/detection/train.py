@@ -1,6 +1,5 @@
 _base_ = [
     "../_base_/default.py",
-    "../_base_/data/data.py",
     "../_base_/logs/tensorboard_logger.py",
     "../_base_/optimizers/sgd.py",
     "../_base_/runners/epoch_runner_cancel.py",

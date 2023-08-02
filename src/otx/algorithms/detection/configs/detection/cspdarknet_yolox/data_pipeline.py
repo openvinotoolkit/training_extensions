@@ -66,8 +66,6 @@ data = dict(
     samples_per_gpu=__samples_per_gpu,
     workers_per_gpu=4,
     train=dict(
-        # make sure to clean up recipe dataset
-        _delete_=True,
         type="MultiImageMixDataset",
         dataset=dict(
             type=__dataset_type,
