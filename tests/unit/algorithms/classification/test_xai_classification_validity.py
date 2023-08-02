@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pytest
 import torch
+from torch.nn import LayerNorm
 from mmcls.models import build_classifier
 
 from otx.algorithms.classification.adapters.mmcls.configurer import ClassificationConfigurer
@@ -67,11 +68,10 @@ class TestExplainMethods:
         assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
 
 
-class TestExtractViTFeatures:
+class TestViTExplain:
     DEIT_TEMPLATE_DIR = os.path.join("src/otx/algorithms/classification/configs", "deit_tiny")
 
-    @e2e_pytest_unit
-    def test_extract_vit_feat(self):
+    def _create_model(self):
         torch.manual_seed(0)
         base_dir = os.path.abspath(self.DEIT_TEMPLATE_DIR)
         cfg_path = os.path.join(base_dir, "model.py")
@@ -81,6 +81,11 @@ class TestExtractViTFeatures:
         ClassificationConfigurer.configure_in_channel(cfg)
         model = build_classifier(cfg.model)
         model = model.eval()
+        return model
+
+    @e2e_pytest_unit
+    def test_extract_vit_feat(self):
+        model = self._create_model()
 
         img = torch.ones(2, 3, 224, 224) - 0.5
         feat, layernorm_feat = _extract_vit_feat(model, img)
@@ -91,3 +96,34 @@ class TestExtractViTFeatures:
         assert abs(feat[0][0][0][0][0].detach().cpu().item() - 0.4621) < 0.05
         assert layernorm_feat.shape == torch.Size([2, 197, 192])
         assert abs(layernorm_feat[0][0][0].detach().cpu().item() - 0.7244) < 0.05
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("layer_index", [-1, -2])
+    @pytest.mark.parametrize("use_gaussian", [True, False])
+    @pytest.mark.parametrize("cls_token", [True, False])
+    def test_vit_reciprocam_hook_initiate(self, layer_index, use_gaussian, cls_token):
+        model = self._create_model()
+
+        explainer_hook = ViTReciproCAMHook(model, layer_index, use_gaussian, cls_token)
+        assert explainer_hook.records == []
+        assert isinstance(explainer_hook._target_layernorm, LayerNorm)
+
+        mosaic_feature_map = explainer_hook._get_mosaic_feature_map(torch.ones(197, 192))
+        logit = explainer_hook._predict_from_feature_map(torch.ones(2, 197, 192))
+        assert mosaic_feature_map is not None
+        assert logit is not None
+        assert mosaic_feature_map.shape == torch.Size([196, 197, 192])
+        assert logit.shape == torch.Size([2, 1000])
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("layer_index", [-1, -2])
+    @pytest.mark.parametrize("use_gaussian", [True, False])
+    @pytest.mark.parametrize("cls_token", [True, False])
+    def test_vit_reciprocam_hook_func(self, layer_index, use_gaussian, cls_token):
+        model = self._create_model()
+
+        explainer_hook = ViTReciproCAMHook(model, layer_index, use_gaussian, cls_token)
+        img = torch.ones(2, 3, 224, 224) - 0.5
+        _, layernorm_feat = _extract_vit_feat(model, img)
+        saliency_map = explainer_hook.func(layernorm_feat)
+        assert saliency_map is not None
