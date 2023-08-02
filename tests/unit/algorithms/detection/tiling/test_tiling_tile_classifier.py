@@ -14,7 +14,7 @@ from openvino.model_api.models import ImageModel, Model
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
-from otx.algorithms.detection.adapters.openvino.model_wrappers import OTXMaskRCNNModel
+from openvino.model_api.models import MaskRCNNModel
 from otx.algorithms.detection.adapters.openvino.task import (
     OpenVINODetectionTask,
     OpenVINOMaskInferencer,
@@ -75,7 +75,7 @@ class TestTilingTileClassifier:
         adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
         mocker.patch.object(ImageModel, "__init__", return_value=None)
         mocker.patch.object(Model, "__init__", return_value=None)
-        mocked_model.return_value = mocker.MagicMock(spec=OTXMaskRCNNModel, model_adapter=adapter_mock)
+        mocked_model.return_value = mocker.MagicMock(spec=MaskRCNNModel, model_adapter=adapter_mock)
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
         ov_mask_inferencer.model.resize_mask = False

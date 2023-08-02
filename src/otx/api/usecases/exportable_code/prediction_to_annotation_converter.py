@@ -73,12 +73,18 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                 self.confidence_threshold = configuration["confidence_threshold"]
 
     def convert_to_annotation(
-        self, predictions: DetectionResult, metadata: Optional[Dict[str, np.ndarray]] = None
+        self, predictions: Union[DetectionResult, np.ndarray], metadata: Optional[Dict[str, np.ndarray]] = None
     ) -> AnnotationSceneEntity:
         """Convert predictions to annotation format.
 
         Args:
-            predictions (DetectionResult):
+            predictions (DetectionResult|np.ndarray): detection represented in ModelAPI format or
+            array with shape [num_predictions, 6] or
+                            [num_predictions, 7]
+                Supported detection formats are
+
+                * [label, confidence, x1, y1, x2, y2]
+                * [_, label, confidence, x1, y1, x2, y2]
                 .. note::
                 `label` can be any integer that can be mapped to `self.labels`
                 `confidence` should be a value between 0 and 1
@@ -88,7 +94,10 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         Returns:
             AnnotationScene: AnnotationScene Object containing the boxes obtained from the prediction.
         """
-        detections = detection2array(predictions.objects)
+        if isinstance(predictions, DetectionResult):
+            detections = detection2array(predictions.objects)
+        else:
+            detections = predictions
         if metadata:
             detections[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
         annotations = self.__convert_to_annotations(detections)
