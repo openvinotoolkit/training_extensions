@@ -47,9 +47,9 @@ class ModelContainer:
             self._task_type is TaskType.ROTATED_DETECTION or self._task_type is TaskType.INSTANCE_SEGMENTATION
         )
 
-        # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
-        self.model_parameters["labels"] = []
+        # model already contains correct labels
+        self.model_parameters.pop("labels")
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
@@ -104,7 +104,7 @@ class ModelContainer:
         try:
             importlib.import_module("model_wrappers")
         except ModuleNotFoundError:
-            print("Using model wrapper from Open Model Zoo ModelAPI")
+            print("Using model wrapper from ModelAPI")
 
     def infer(self, frame):
         """Infer with original image.
