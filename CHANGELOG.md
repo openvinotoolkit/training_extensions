@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## \[v1.4.1\]
 
+### Enhancements
+
+- Update the README file in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2411>)
+
 ### Bug fixes
 
 - Fix broken links in documentation (<https://github.com/openvinotoolkit/training_extensions/pull/2405>)
