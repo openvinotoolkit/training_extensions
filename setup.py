@@ -208,7 +208,7 @@ setup(
     extras_require=EXTRAS_REQUIRE,
     entry_points={
         "console_scripts": [
-            "otx=otx.v2.cli.tools.cli:main",
+            "otx=otx.v2.cli.tools:main",
             "otx_demo=otx.v2.tools.demo:main",
             "otx_eval=otx.v2.tools.eval:main",
             "otx_export=otx.v2.tools.export:main",
