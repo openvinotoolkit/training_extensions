@@ -31,7 +31,7 @@ jobs:
       - name: Code quality checks
         run: tox -vv -e pre-commit-all-py310
   Unit-Test:
-    runs-on: [self-hosted, linux, x64, debug_t4]
+    runs-on: [self-hosted, linux, x64, new-ci]
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
@@ -119,3 +119,4 @@ jobs:
       tests-dir: ${{ matrix.test_dir }}
       timeout-minutes: 120
       upload-artifact: true
+      runs-on: "['self-hosted', 'linux', 'x64', 'new-ci']"
