@@ -29,7 +29,10 @@ def fxt_data_list():
         key = "".join(
             [string.ascii_lowercase[i] for i in np.random.randint(0, len(string.ascii_lowercase), size=[key_len])]
         )
-        data_list += [(key, data)]
+        meta = {
+            "key": key,
+        }
+        data_list += [(key, data, meta)]
 
     return data_list
 
@@ -44,7 +47,7 @@ def fxt_caching_dataset_cls(fxt_data_list: list):
                     media=Image(data=data),
                     annotation_scene=AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.ANNOTATION),
                 )
-                for _, data in fxt_data_list
+                for _, data, _ in fxt_data_list
             ]
             self.load = LoadImageFromOTXDataset()
 
@@ -69,7 +72,7 @@ def fxt_caching_dataset_cls(fxt_data_list: list):
 
 def get_data_list_size(data_list):
     size = 0
-    for _, data in data_list:
+    for _, data, _ in data_list:
         size += data.size
     return size
 
@@ -81,13 +84,14 @@ class TestMemCacheHandler:
         MemCacheHandlerSingleton.create(mode, mem_size)
         handler = MemCacheHandlerSingleton.get()
 
-        for key, data in fxt_data_list:
-            assert handler.put(key, data) > 0
+        for key, data, meta in fxt_data_list:
+            assert handler.put(key, data, meta) > 0
 
-        for key, data in fxt_data_list:
-            get_data = handler.get(key)
+        for key, data, meta in fxt_data_list:
+            get_data, get_meta = handler.get(key)
 
             assert np.array_equal(get_data, data)
+            assert get_meta == meta
 
         # Fully cached
         assert len(handler) == len(fxt_data_list)
@@ -98,17 +102,18 @@ class TestMemCacheHandler:
         MemCacheHandlerSingleton.create(mode, mem_size)
         handler = MemCacheHandlerSingleton.get()
 
-        for idx, (key, data) in enumerate(fxt_data_list):
+        for idx, (key, data, meta) in enumerate(fxt_data_list):
             if idx < len(fxt_data_list) // 2:
-                assert handler.put(key, data) > 0
+                assert handler.put(key, data, meta) > 0
             else:
-                assert handler.put(key, data) is None
+                assert handler.put(key, data, meta) is None
 
-        for idx, (key, data) in enumerate(fxt_data_list):
-            get_data = handler.get(key)
+        for idx, (key, data, meta) in enumerate(fxt_data_list):
+            get_data, get_meta = handler.get(key)
 
             if idx < len(fxt_data_list) // 2:
                 assert np.array_equal(get_data, data)
+                assert get_meta == meta
             else:
                 assert get_data is None
 
@@ -126,7 +131,7 @@ class TestLoadImageFromFileWithCache:
 
         with patch(
             "otx.core.data.pipelines.load_image_from_otx_dataset.get_image",
-            side_effect=[data for _, data in fxt_data_list],
+            side_effect=[data for _, data, _ in fxt_data_list],
         ) as mock:
             for _ in DataLoader(dataset):
                 continue
@@ -136,7 +141,7 @@ class TestLoadImageFromFileWithCache:
 
         with patch(
             "otx.core.data.pipelines.load_image_from_otx_dataset.get_image",
-            side_effect=[data for _, data in fxt_data_list],
+            side_effect=[data for _, data, _ in fxt_data_list],
         ) as mock:
             for _ in DataLoader(dataset):
                 continue

@@ -6,7 +6,7 @@
 import ctypes as ct
 import multiprocessing as mp
 from multiprocessing.managers import DictProxy
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
 from multiprocess.synchronize import Lock
@@ -49,31 +49,32 @@ class MemCacheHandlerBase:
         """Get the reserved memory pool size (bytes)."""
         return len(self._arr)
 
-    def get(self, key: Any) -> Optional[np.ndarray]:
+    def get(self, key: Any) -> Tuple[Optional[np.ndarray], Optional[Any]]:
         """Try to look up the cached item with the given key.
 
         Args:
             key (Any): A key for looking up the cached item
 
         Returns:
-            If succeed return np.ndarray, otherwise return None
+            If succeed return (np.ndarray, dict), otherwise return (None, None)
         """
         if self.mem_size == 0 or key not in self._cache_addr:
-            return None
+            return None, None
 
         addr = self._cache_addr[key]
 
-        offset, count, shape, strides = addr
+        offset, count, shape, strides, meta = addr
 
         data = np.frombuffer(self._arr, dtype=np.uint8, count=count, offset=offset)
-        return np.lib.stride_tricks.as_strided(data, shape, strides)
+        return np.lib.stride_tricks.as_strided(data, shape, strides), meta
 
-    def put(self, key: Any, data: np.ndarray) -> Optional[int]:
+    def put(self, key: Any, data: np.ndarray, meta: Optional[Any] = None) -> Optional[int]:
         """Try to store np.ndarray with a key to the reserved memory pool.
 
         Args:
             key (Any): A key to store the cached item
             data (np.ndarray): A data sample to store
+            meta (Optional[Dict]): A meta data of the data sample
 
         Returns:
             Optional[int]: If succeed return the address of cached item in memory pool
@@ -97,6 +98,7 @@ class MemCacheHandlerBase:
                 data.size,
                 data.shape,
                 data.strides,
+                meta,
             )
             self._cur_page.value = new_page
             return new_page

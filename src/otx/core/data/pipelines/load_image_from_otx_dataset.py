@@ -50,7 +50,7 @@ class LoadImageFromOTXDataset:
         """Callback function of LoadImageFromOTXDataset."""
         key = self._get_unique_key(results)
 
-        img = self.mem_cache_handler.get(key)
+        img, meta = self.mem_cache_handler.get(key)
 
         if img is None:
             # Get image (possibly from cache)
