@@ -39,7 +39,7 @@ Dataset Format
 **************
 
 At the current point we support `COCO <https://cocodataset.org/#format-data>`_ and
-`Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_ dataset formats.
+`Pascal-VOC <https://openvinotoolkit.github.io/datumaro/v1.4.1/docs/data-formats/formats/pascal_voc.html>`_ dataset formats.
 Learn more about the formats by following the links above. Here is an example of expected format for COCO dataset:
 
 .. code::
@@ -128,10 +128,10 @@ To see which public backbones are available for the task, the following command 
 
 In the table below the test mAP on some academic datasets using our :ref:`supervised pipeline <od_supervised_pipeline>` is presented.
 
-For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights is shown, and we report official COCO mAP with AP50. 
+For `COCO <https://cocodataset.org/#home>`__ dataset the accuracy of pretrained weights is shown, and we report official COCO mAP with AP50.
 Except for COCO, we report AP50 as performance metric.
 
-5 datasets were selected as transfer learning datasets. 
+5 datasets were selected as transfer learning datasets.
 `BDD100K <https://www.bdd100k.com/>`_ is the largest dataset among we used. 70000 images are used as train images and 10000 images are used for validation.
 `Brackish <https://public.roboflow.com/object-detection/brackish-underwater>`_ and `Plantdoc <https://public.roboflow.com/object-detection/plantdoc>`_ are datasets of medium size. They have around 10000 images for train and 1500 images for validation.
 `BCCD <https://public.roboflow.com/object-detection/bccd>`_ and `Chess pieces <https://public.roboflow.com/object-detection/chess-full>`_ are datasets of small size. They have around 300 images for train and 100 images for validation.
