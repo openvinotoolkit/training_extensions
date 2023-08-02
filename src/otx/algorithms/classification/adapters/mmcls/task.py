@@ -58,6 +58,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
+    InputSizeManager,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -675,23 +676,15 @@ class MMClassificationTask(OTXClassificationTask):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_pairs(
-                    cfg.data.test.pipeline,
-                    dict(type="Resize"),
-                )
-                assert len(resize_cfg) == 1
-                resize_cfg = resize_cfg[0]
-                size = resize_cfg.size
-                if isinstance(size, int):
-                    size = (size, size)
+                input_size_manager = InputSizeManager(cfg.data)
+                size = input_size_manager.get_input_size_from_cfg("test")
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error
                 # when converting to OpenVINO IR
                 deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
             patch_input_preprocessing(deploy_cfg)
-            if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(deploy_cfg)
+            patch_input_shape(deploy_cfg)
 
         return deploy_cfg
 

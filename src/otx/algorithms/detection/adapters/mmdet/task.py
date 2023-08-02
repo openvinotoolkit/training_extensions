@@ -48,7 +48,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
-    InputSizeScaler,
+    InputSizeManager,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -238,7 +238,7 @@ class MMDetectionTask(OTXDetectionTask):
                         "test" : 416,
                     }
 
-            InputSizeScaler(cfg.data, base_input_size).set_input_size(input_size)
+            InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
 
         return cfg
 

@@ -700,7 +700,7 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
     return data_cfg
 
 
-class InputSizeScaler:
+class InputSizeManager:
     PIPELINE_TO_CHANGE: Dict[str, List[str]] = {
         "resize" : ["size", "img_scale"],
         "pad" : ["size"],
@@ -750,15 +750,36 @@ class InputSizeScaler:
     def base_input_size(self) -> Union[List[int], Dict[str, List[int]]] :
         if self._base_input_size is not None:
             return self._base_input_size
+
+        input_size = self.get_input_size_from_cfg()
+        if input_size is None:
+            raise RuntimeError("There isn't any pipeline in the data configurations.")
+
+        self._base_input_size = input_size
+        return input_size
         
-        for task in ["test", "val", "train"]:
-            if task in self.data_config:
-                self._base_input_size = self._estimate_post_img_size(self.data_config[task]["pipeline"])
-                return self._base_input_size
 
-        raise RuntimeError("There isn't any pipeline in the data configurations.")
+    def get_input_size_from_cfg(
+        self,
+        task: Union[str, List[str]] = ["test", "val", "train"]
+    ) -> Union[None, List[int]]:
+        if isinstance(task, str):
+            task = [task]
 
-    def _estimate_post_img_size(self, pipelines: Dict, default_size: Optional[List[int]] = None) -> List[int]:
+        for target_task in task:
+            if target_task in self.data_config:
+                input_size = self._estimate_post_img_size(self.data_config[target_task]["pipeline"])
+                if input_size is not None:
+                    return input_size
+
+        return None
+
+
+    def _estimate_post_img_size(
+        self,
+        pipelines: Dict,
+        default_size: Optional[List[int]] = None
+    ) -> Union[List[int], None]:
         # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
         for pipeline in pipelines:

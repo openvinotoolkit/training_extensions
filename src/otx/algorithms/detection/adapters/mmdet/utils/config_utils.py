@@ -24,6 +24,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_meta_keys,
     patch_color_conversion,
     remove_from_config,
+    InputSizeManager,
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -274,8 +275,8 @@ def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
 def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     """Update backend configuration with input shape information.
 
-    This function retrieves the Resize config from `cfg.data.test.pipeline`, checks
-    that only one Resize then sets the input shape for the backend model in `deploy_cfg`
+    This function retrieves the input size from `cfg.data.test.pipeline`,
+    then sets the input shape for the backend model in `deploy_cfg`
 
     ```
     {
@@ -292,15 +293,9 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
     """
-    resize_cfgs = get_configs_by_pairs(
-        cfg.data.test.pipeline,
-        dict(type="MultiScaleFlipAug"),
-    )
-    assert len(resize_cfgs) == 1
-    resize_cfg: ConfigDict = resize_cfgs[0]
-    size = resize_cfg.img_scale
-    if isinstance(size, int):
-        size = (size, size)
+    input_size_manager = InputSizeManager(cfg.data)
+    size = input_size_manager.get_input_size_from_cfg("test")
+
     assert all(isinstance(i, int) and i > 0 for i in size)
     # default is static shape to prevent an unexpected error
     # when converting to OpenVINO IR
