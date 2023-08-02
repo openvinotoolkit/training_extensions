@@ -32,6 +32,7 @@ from addict import Dict as ADDict
 from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import ImageModel, Model
+from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
@@ -85,7 +86,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
-from otx.api.utils.tiler import Tiler
 
 logger = get_logger()
 
@@ -134,7 +134,7 @@ class BaseInferencerWithConverter(IInferencer):
             features = (None, None)
         else:
             features = (
-                raw_predictions["feature_vector"].reshape(-1),
+                detections.feature_vector.reshape(-1),
                 self.get_saliency_map(detections),
             )
         return predictions, features
@@ -159,7 +159,7 @@ class BaseInferencerWithConverter(IInferencer):
                 features = (None, None)
             else:
                 features = (
-                    copy.deepcopy(prediction["feature_vector"].reshape(-1)),
+                    copy.deepcopy(detections.feature_vector.reshape(-1)),
                     self.get_saliency_map(detections),
                 )
 
@@ -340,35 +340,40 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
             )
             classifier = ImageModel(inference_adapter=adapter, configuration={}, preload=True)
 
-        self.tiler = Tiler(
-            tile_size=int(tile_size * tile_ir_scale_factor),
-            overlap=overlap / tile_ir_scale_factor,
-            max_number=max_number,
-            detector=inferencer.model,
-            classifier=classifier,
-            mode=mode,
-            segm=bool(isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))),
-            num_classes=len(inferencer.converter.labels),  # type: ignore
-        )
+        tiler_config = {
+            "tile_size": int(tile_size * tile_ir_scale_factor),
+            "tiles_overlap": overlap / tile_ir_scale_factor,
+            "max_pred_number": max_number,
+        }
+
+        is_segm = isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
+        if is_segm:
+            self.tiler = InstanceSegmentationTiler(
+                inferencer.model, tiler_config, execution_mode=mode, tile_classifier_model=classifier
+            )
+        else:
+            self.tiler = DetectionTiler(inferencer.model, tiler_config, execution_mode=mode)
 
         super().__init__(inferencer.configuration, inferencer.model, inferencer.converter)
 
-    def predict(
-        self, image: np.ndarray, mode: str = "async"
-    ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
+    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
         """Run prediction by tiling image to small patches.
 
         Args:
             image (np.ndarray): input image
-            mode (str, optional): run inference in sync or async mode. Defaults to 'async'.
 
         Returns:
             detections: AnnotationSceneEntity
             features: list including feature vector and saliency map
         """
-        detections, features = self.tiler.predict(image, mode)
-        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
-        return detections, features
+        detections = self.tiler(image)
+        annotations = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
+        features = (
+            detections.feature_vector.reshape(-1),
+            self.get_saliency_map(detections),
+        )
+
+        return annotations, features
 
 
 class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
