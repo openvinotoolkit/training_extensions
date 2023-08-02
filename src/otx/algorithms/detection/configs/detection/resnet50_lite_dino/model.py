@@ -39,6 +39,7 @@ model = dict(
                 transformerlayers=[
                     dict(
                         type="EfficientTransformerLayer",
+                        enc_scale=1,
                         attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
                         feedforward_channels=2048,
                         ffn_dropout=0.0,
@@ -46,6 +47,7 @@ model = dict(
                     ),
                     dict(
                         type="EfficientTransformerLayer",
+                        enc_scale=1,
                         small_expand=True,
                         attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
                         ffn_cfgs=dict(

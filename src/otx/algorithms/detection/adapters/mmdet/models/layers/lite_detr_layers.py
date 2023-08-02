@@ -75,8 +75,8 @@ class SmallExpandFFN(FFN):
         """Forward function for FFN."""
         x_3s = x[level_start_index[4 - enc_scale] :]
         x_4s = x[: level_start_index[4 - enc_scale]]
-        x_4s = self.forward_ffn(self.small_expand_layers, self.norm1, x_4s, identity)
-        x_3s = self.forward_ffn(self.layers, self.norm2, x_3s, identity)
+        x_4s = self.forward_ffn(self.small_expand_layers, self.norm2, x_4s, identity)
+        x_3s = self.forward_ffn(self.layers, self.norm1, x_3s, identity)
         x = torch.cat([x_4s, x_3s], 0)
 
         return x
@@ -295,7 +295,9 @@ class EfficientTransformerEncoder(BaseModule):
         self.num_layers = num_layers
         self.layers = nn.ModuleList()
         for layer in _transformerlayers:
-            self.layers.append(build_transformer_layer(layer))
+            layer = build_transformer_layer(layer)
+            assert layer.enc_scale == enc_scale
+            self.layers.append(layer)
         self.embed_dims = self.layers[0].embed_dims
         self.pre_norm = self.layers[0].pre_norm
         self.num_expansion = num_expansion
