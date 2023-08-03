@@ -275,7 +275,7 @@ All notable changes to this project will be documented in this file.
 - Enhance `find` command to find configurations of supported tasks / algorithms / models / backbones
 - Introduce `build` command to customize task or model configurations in isolated workspace
 - Auto-config feature to automatically select the right algorithm and default model for the `train` & `build` command by detecting the task type of given input dataset
-- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/1.4.1/guide/get_started/introduction.html)
+- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/introduction.html)
 - Improve training performance by introducing enhanced loss for the few-shot transfer
 
 ### Bug fixes
