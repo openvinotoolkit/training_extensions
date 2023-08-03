@@ -517,7 +517,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
-            if add_saliency_map and saliency_map is not None:
+            if add_saliency_map and saliency_map is not None and len(saliency_map) > 0:
                 labels = self.task_environment.get_labels().copy()
                 if len(saliency_map) == len(labels) + 1:
                     # Include the background as the last category
