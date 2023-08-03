@@ -6,11 +6,12 @@
 import importlib
 import json
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
 
 import numpy as np
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import ImageModel, Model
+from openvino.model_api.tilers import DetectionTiler, InstanceSegmentationTiler
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
@@ -60,7 +61,7 @@ class ModelContainer:
 
         self.tiler = self.setup_tiler(model_dir, device)
 
-    def setup_tiler(self, model_dir, device) -> Optional[Tiler]:
+    def setup_tiler(self, model_dir, device) -> Optional[Union[DetectionTiler, InstanceSegmentationTiler]]:
         """Setup tiler for model.
 
         Args:
@@ -72,20 +73,25 @@ class ModelContainer:
         if not self.parameters.get("tiling_parameters") or not self.parameters["tiling_parameters"]["enable_tiling"]:
             return None
 
-        tile_size = self.parameters["tiling_parameters"]["tile_size"]
-        tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]
-        max_number = self.parameters["tiling_parameters"]["tile_max_number"]
-
         classifier = None
         if self.parameters["tiling_parameters"].get("enable_tile_classifier", False):
             adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "tile_classifier.xml"), device=device)
             classifier = ImageModel(inference_adapter=adapter, configuration={}, preload=True)
 
-        if self.parameters["tiling_parameters"].get("tile_ir_scale_factor", False):
-            tile_size = int(tile_size * self.parameters["tiling_parameters"]["tile_ir_scale_factor"])
+        tiler_config = {
+            "tile_size": int(
+                self.parameters["tiling_parameters"]["tile_size"]
+                * self.parameters["tiling_parameters"]["tile_ir_scale_factor"]
+            ),
+            "tiles_overlap": self.parameters["tiling_parameters"]["tile_overlap"]
+            / self.parameters["tiling_parameters"]["tile_ir_scale_factor"],
+            "max_pred_number": self.parameters["tiling_parameters"]["tile_max_number"],
+        }
 
-        tiler = Tiler(tile_size, tile_overlap, max_number, self.core_model, classifier, self.segm)
-        return tiler
+        if self.segm:
+            return InstanceSegmentationTiler(self.core_model, tiler_config, tile_classifier_model=classifier)
+        else:
+            return DetectionTiler(self.core_model, tiler_config)
 
     @property
     def task_type(self) -> TaskType:
@@ -133,7 +139,7 @@ class ModelContainer:
             frame_meta (Dict): dict with original shape
         """
 
-        detections, _ = self.tiler.predict(frame)
+        detections = self.tiler(frame)
         return detections, {"original_shape": frame.shape}
 
     def __call__(self, input_data: np.ndarray) -> Tuple[Any, dict]:
