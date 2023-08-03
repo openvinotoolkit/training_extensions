@@ -62,7 +62,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     SegmentationToAnnotationConverter,
 )
@@ -78,7 +78,7 @@ logger = get_logger()
 
 
 # pylint: disable=too-many-locals, too-many-statements, unused-argument
-class OpenVINOSegmentationInferencer(BaseInferencer):
+class OpenVINOSegmentationInferencer(IInferencer):
     """Inferencer implementation for Segmentation using OpenVINO backend."""
 
     def __init__(

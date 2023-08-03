@@ -71,7 +71,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     DetectionToAnnotationConverter,
     IPredictionToAnnotationConverter,
@@ -93,7 +93,7 @@ logger = get_logger()
 
 
 # pylint: disable=too-many-locals
-class BaseInferencerWithConverter(BaseInferencer):
+class BaseInferencerWithConverter(IInferencer):
     """BaseInferencerWithConverter class in OpenVINO task."""
 
     def __init__(
@@ -223,11 +223,11 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         configuration = {
             **attr.asdict(
                 hparams.postprocessing,
-                filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
+                filter=lambda attr, _: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
         configuration.update(model_configuration)
-        model = Model.create_model(model_adapter, "OTX_SSD", configuration, preload=True)
+        model = Model.create_model(model_adapter, "SSD", configuration, preload=True)
         converter = DetectionToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)

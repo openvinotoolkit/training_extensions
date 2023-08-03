@@ -5,11 +5,12 @@
 #
 
 import abc
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
 from openvino.model_api.models import utils
+from openvino.model_api.models.utils import ClassificationResult
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -285,7 +286,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         self.label_schema = label_schema
 
     def convert_to_annotation(
-        self, predictions: List[Tuple[int, float]], metadata: Optional[Dict] = None
+        self, predictions: ClassificationResult, metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
@@ -297,10 +298,8 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         labels = []
-        for index, score in predictions:
-            labels.append(ScoredLabel(self.labels[index], float(score)))
-        if self.hierarchical:
-            labels = self.label_schema.resolve_labels_probabilistic(labels)
+        for label in predictions.top_labels:
+            labels.append(ScoredLabel(self.labels[label[0]], float(label[-1])))
 
         if not labels and self.empty_label:
             labels = [ScoredLabel(self.empty_label, probability=1.0)]
