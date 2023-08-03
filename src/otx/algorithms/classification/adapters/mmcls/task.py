@@ -20,11 +20,12 @@ import time
 from contextlib import nullcontext
 from copy import deepcopy
 from functools import partial
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Type, Union
 
 import torch
 from mmcls.apis import train_model
 from mmcls.datasets import build_dataloader, build_dataset
+from mmcls.models.backbones.vision_transformer import VisionTransformer
 from mmcls.utils import collect_env
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict
@@ -41,6 +42,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     EigenCamHook,
     FeatureVectorHook,
     ReciproCAMHook,
+    ViTReciproCAMHook,
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
@@ -290,10 +292,13 @@ class MMClassificationTask(OTXClassificationTask):
             model.register_forward_hook(hook)
 
         model_type = cfg.model.backbone.type.split(".")[-1]  # mmcls.VisionTransformer => VisionTransformer
-        if (
+        forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook]
+        if model_type == "VisionTransformer":
+            forward_explainer_hook = ViTReciproCAMHook(feature_model)
+        elif (
             not dump_saliency_map or model_type in TRANSFORMER_BACKBONES
         ):  # TODO: remove latter "or" condition after resolving Issue#2098
-            forward_explainer_hook: Union[nullcontext, BaseRecordingForwardHook] = nullcontext()
+            forward_explainer_hook = nullcontext()
         else:
             forward_explainer_hook = ReciproCAMHook(feature_model)
         if (
@@ -473,12 +478,6 @@ class MMClassificationTask(OTXClassificationTask):
 
     def _explain_model(self, dataset: DatasetEntity, explain_parameters: Optional[ExplainParameters]):
         """Explain function in MMClassificationTask."""
-        explainer_hook_selector = {
-            "eigencam": EigenCamHook,
-            "activationmap": ActivationMapHook,
-            "classwisesaliencymap": ReciproCAMHook,
-        }
-
         self._data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -525,9 +524,19 @@ class MMClassificationTask(OTXClassificationTask):
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
 
+        per_class_xai_algorithm: Union[Type[ViTReciproCAMHook], Type[ReciproCAMHook]]
+        if isinstance(model.module.backbone, VisionTransformer):
+            per_class_xai_algorithm = ViTReciproCAMHook
+        else:
+            per_class_xai_algorithm = ReciproCAMHook
+        explainer_hook_selector = {
+            "eigencam": EigenCamHook,
+            "activationmap": ActivationMapHook,
+            "classwisesaliencymap": per_class_xai_algorithm,
+        }
         explainer = explain_parameters.explainer if explain_parameters else None
         if explainer is not None:
-            explainer_hook = explainer_hook_selector.get(explainer.lower(), None)
+            explainer_hook = explainer_hook_selector.get(explainer.lower())
         else:
             explainer_hook = None
         if explainer_hook is None:

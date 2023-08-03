@@ -20,6 +20,12 @@ import inspect
 import json
 import os
 
+# TODO: To avoid error during importing yapf dynamically. After the bug is fixed, code should be removed.
+try:
+    import yapf  # noqa: F401
+except ImportError:
+    pass
+
 # pylint: disable=protected-access
 
 SUPPORTED_BACKBONE_BACKENDS = {
