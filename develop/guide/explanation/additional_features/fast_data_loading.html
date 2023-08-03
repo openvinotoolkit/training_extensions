@@ -488,7 +488,7 @@ training time in those cases.</p>
 <h3>Storage Caching<a class="headerlink" href="#storage-caching" title="Permalink to this heading">#</a></h3>
 <p>OpenVINO™ Training Extensions uses <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>
 under the hood for dataset managements.
-Since Datumaro <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/arrow.html">supports</a>
+Since Datumaro <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html">supports</a>
 <a class="reference external" href="https://arrow.apache.org/overview/">Apache Arrow</a>, OpenVINO™ Training Extensions
 can exploit fast data loading using memory-mapped arrow file at the expanse of storage consumtion.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train .. params --algo_backend.storage_cache_scheme JPEG/75
@@ -499,7 +499,7 @@ One could change it by modifying <code class="docutils literal notranslate"><spa
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ OTX_CACHE=/path/to/cache otx train .. params --algo_backend.storage_cache_scheme JPEG/75
 </pre></div>
 </div>
-<p>Please refere <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/arrow.html#export-to-arrow">Datumaro document</a>
+<p>Please refere <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html#export-to-arrow">Datumaro document</a>
 for available schemes to choose but we recommend <code class="docutils literal notranslate"><span class="pre">JPEG/75</span></code> for fast data loaidng.</p>
 <aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id2" role="note">
