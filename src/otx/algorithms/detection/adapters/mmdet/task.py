@@ -448,7 +448,9 @@ class MMDetectionTask(OTXDetectionTask):
             eval_predictions = mm_dataset.merge(eval_predictions)
             # average tile feature vertors for each image
             feature_vectors = mm_dataset.merge_vectors(feature_vectors, dump_features)
-            saliency_maps = mm_dataset.merge_maps(saliency_maps, dump_saliency_map)
+            # TODO[EUGENE]: take care of this for mask2former and solov2 usecases
+            import numpy as np
+            saliency_maps = np.zeros((len(feature_vectors), 16, 16))
 
         metric = None
         if inference_parameters and inference_parameters.is_evaluation:
