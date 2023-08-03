@@ -30,6 +30,8 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
     remove_custom_hook,
     update_or_add_custom_hook,
+    InputSizeManager,
+    get_configurable_input_size,
 )
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
@@ -38,6 +40,7 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
     patch_datasets,
     patch_evaluation,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 logger = get_logger()
 
@@ -64,6 +67,7 @@ class SegmentationConfigurer:
         ir_options: Optional[Config] = None,
         data_classes: Optional[List[str]] = None,
         model_classes: Optional[List[str]] = None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
     ) -> Config:
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={training}")
@@ -78,6 +82,7 @@ class SegmentationConfigurer:
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16_optimizer(cfg)
         self.configure_compat_cfg(cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_base(
@@ -533,6 +538,25 @@ class SegmentationConfigurer:
                 cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
         _configure_dataloader(cfg)
+
+    @staticmethod
+    def configure_input_size(
+        cfg,
+        input_size_config: InputSizePreset = InputSizePreset.DEFAULT,
+        model_ckpt: Optional[str] = None
+    ):
+        input_size = get_configurable_input_size(input_size_config, model_ckpt)
+        if input_size is None:
+            return
+
+        base_input_size = {
+            "train" : 512,
+            "val" : 544,
+            "test" : 544,
+        }
+
+        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        logger.info("Input size is changed to {}".format(input_size))
 
 
 class IncrSegmentationConfigurer(SegmentationConfigurer):

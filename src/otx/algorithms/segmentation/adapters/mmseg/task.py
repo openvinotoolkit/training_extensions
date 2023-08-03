@@ -177,20 +177,9 @@ class MMSegmentationTask(OTXSegmentationTask):
             ir_options,
             data_classes,
             model_classes,
+            self._hyperparams.learning_parameters.input_size,
         )
         self._config = cfg
-
-        # change input size
-        if self._hyperparams.learning_parameters.input_size != 0:
-            input_size = self._hyperparams.learning_parameters.input_size
-        elif self._model_ckpt is not None:
-            model_info = torch.load(self._model_ckpt, map_location="cpu")
-            input_size = model_info['config']['learning_parameters']['input_size']['value']
-        else:
-            input_size = 0
-
-        if input_size != 0:
-            InputSizeManager(cfg.data).set_input_size(input_size)
 
         return cfg
 

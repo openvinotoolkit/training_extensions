@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme
+from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme, InputSizePreset
 
 # pylint: disable=invalid-name
 
@@ -198,13 +198,13 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
-        input_size = configurable_integer(
-            default_value=0,
-            min_value=0,
-            max_value=1000000,
-            header="Resize input image to the value",
-            description="",
-            affects_outcome_of=ModelLifecycle.TRAINING,
+        input_size = selectable(
+            default_value=InputSizePreset.DEFAULT,
+            header="Change input image size.",
+            description="You can reduce training and inference time by using small input size.",
+            warning="Small input size may decrease model performance.",
+            affects_outcome_of=ModelLifecycle.NONE,
+            visible_in_ui=False,
         )
 
     @attrs

@@ -46,3 +46,14 @@ class BatchSizeAdaptType(ConfigurableEnum):
     NONE = "None"
     SAFE = "Safe"
     FULL = "Full"
+
+
+class InputSizePreset(ConfigurableEnum):
+    """Configurable input size preset."""
+
+    DEFAULT = "Default"
+    _256x256 = "256x256"
+    _384x384 = "384x384"
+    _512x512 = "512x512"
+    _768x768 = "768x768"
+    _1024x1024 = "1024x1024"

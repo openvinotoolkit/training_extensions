@@ -20,6 +20,7 @@ import multiprocessing
 import os
 import os.path as osp
 import platform
+import re
 import shutil
 import sys
 import tempfile
@@ -36,6 +37,7 @@ from mmcv.utils.path import check_file_exist
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
@@ -701,6 +703,21 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
 
 
 class InputSizeManager:
+    """Class for changing input size and getting input size value by checking data pipeline.
+
+    NOTE: "resize", "pad", "crop", "mosaic", "randomaffine", "multiscaleflipaug" and "AutoAugment"
+    are considered at now. If other data pipelines exist, it can work differently than expected.
+
+    Args:
+        data_config (Dict): Data configuration expected to have "train", "val" or "test" data pipeline.
+        base_input_size (Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]], optional):
+            Default input size. If it's a None, it's estimated based on data pipeline. If it's an integer,
+            it's expected that all data pipeline have (base_input_size x base_input_size) input size.
+            If it's an integer list, all data pipeline have same (base_input_size[0] x base_input_size[1]) input size.
+            If it's dictionary, each data pipeline has specified input size. It should have format as below:
+                {"train" : [w, h], "val" : [w, h], "test" : [w, h]}
+    """
+
     PIPELINE_TO_CHANGE: Dict[str, List[str]] = {
         "resize" : ["size", "img_scale"],
         "pad" : ["size"],
@@ -715,7 +732,7 @@ class InputSizeManager:
         data_config: Dict,
         base_input_size: Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]] = None,
     ):
-        self.data_config = data_config
+        self._data_config = data_config
         if isinstance(base_input_size, int):
             base_input_size = [base_input_size, base_input_size]
         elif isinstance(base_input_size, dict):
@@ -725,29 +742,42 @@ class InputSizeManager:
 
         self._base_input_size = base_input_size
 
-    def set_input_size(self, input_size: int):
-        """Modify data pipelines to provide dataset with configured input size."""
+    def set_input_size(self, input_size: Union[int, List[int]]):
+        """Set input size in data pipe line.
 
-        # find a minimum value among piplines above
-        # based on that value, scale down all values
-        # For AutoAugment and MultiScaleFlipAug, get minimum value same as above and scale down
-
-        # get base image size from validation and test pipeline
+        Args:
+            input_size (Union[int, List[int]]):
+                input size to set. If it's an integer, (input_size x input_size) will be set.
+                If input_size is an integer list, (input_size[0] x input_size[1]) will be set.
+        """
+        if isinstance(input_size, int):
+            input_size = [input_size, input_size]
         if not isinstance(self.base_input_size, dict):
-            resize_ratio = (input_size / self.base_input_size[0], input_size / self.base_input_size[1])
+            resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
 
         # scale size values    
         for data_type in ["train", "val", "test"]:
-            if data_type in self.data_config:
+            if data_type in self._data_config:
                 if isinstance(self.base_input_size, dict):
-                    resize_ratio = (input_size / self.base_input_size[data_type][0],
-                                    input_size / self.base_input_size[data_type][1])
+                    resize_ratio = (input_size[0] / self.base_input_size[data_type][0],
+                                    input_size[1] / self.base_input_size[data_type][1])
                 pipelines = self._get_pipelines(data_type)
                 for pipeline in pipelines:
                     self._set_pipeline_size_vlaue(pipeline, resize_ratio)
 
     @property
     def base_input_size(self) -> Union[List[int], Dict[str, List[int]]] :
+        """Getter function of `base_input_size` attirbute.
+        
+        If it isn't set when intializing class, it's estimated by checking data pipeline.
+        Same value is returned after estimation.
+
+        Raises:
+            RuntimeError: If failed to estimate base input size from data pipeline, raise an error.
+
+        Returns:
+            Union[List[int], Dict[str, List[int]]]: Base input size.
+        """
         if self._base_input_size is not None:
             return self._base_input_size
 
@@ -763,12 +793,20 @@ class InputSizeManager:
         self,
         task: Union[str, List[str]] = ["test", "val", "train"]
     ) -> Union[None, List[int]]:
+        """Estimate image size using data pipeline.
+
+        Args:
+            task (Union[str, List[str]], optional): Which pipelines to check. Defaults to ["test", "val", "train"].
+
+        Returns:
+            Union[None, List[int]]: Return estimiated input size. If failed to estimate, return None.
+        """
         if isinstance(task, str):
             task = [task]
 
         for target_task in task:
-            if target_task in self.data_config:
-                input_size = self._estimate_post_img_size(self.data_config[target_task]["pipeline"])
+            if target_task in self._data_config:
+                input_size = self._estimate_post_img_size(self._data_config[target_task]["pipeline"])
                 if input_size is not None:
                     return input_size
 
@@ -830,10 +868,10 @@ class InputSizeManager:
         return None
 
     def _get_pipelines(self, data_type: str):
-        if "pipeline" in self.data_config[data_type]:
-            return self.data_config[data_type]['pipeline']
-        if "dataset" in self.data_config[data_type]:
-            return self.data_config[data_type]['dataset']['pipeline']
+        if "pipeline" in self._data_config[data_type]:
+            return self._data_config[data_type]['pipeline']
+        if "dataset" in self._data_config[data_type]:
+            return self._data_config[data_type]['dataset']['pipeline']
         raise RuntimeError("Failed to find pipeline.")
 
     def _set_pipeline_size_vlaue(self, pipeline: Dict, scale: Tuple[Union[int, float]]):
@@ -861,3 +899,39 @@ class InputSizeManager:
                                     round(pipeline[attr][idx][1] * scale[1]))
         else:
             pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
+
+
+def get_configurable_input_size(
+    input_size_config: InputSizePreset = InputSizePreset.DEFAULT,
+    model_ckpt: Optional[str] = None
+) -> Union[None, List[int]]:
+    """Get configurable input size configuration. If it doesn't exists, return None.
+
+    Args:
+        input_size_config (InputSizePreset, optional): Input size configuration. Defaults to InputSizePreset.DEFAULT.
+        model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
+
+    Returns:
+        Union[None, List[int]]: Pair of width and height. If there is no input size configuration, return None.
+    """
+    input_size = None
+    if input_size_config == InputSizePreset.DEFAULT:
+        if model_ckpt is None:
+            return None
+
+        model_info = torch.load(model_ckpt, map_location="cpu")
+        for key in ['config', 'learning_parameters', 'input_size', 'value']:
+            if key not in model_info:
+                return None
+            model_info = model_info[key]
+        input_size = model_info
+
+        if input_size == InputSizePreset.DEFAULT.value:
+            return None
+
+        logger.info("Given model weight was trained with {} input size.".format(input_size))
+    else:
+        input_size = input_size_config.value
+
+    parsed_tocken = re.match("(\d+)x(\d+)", input_size)
+    return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))
