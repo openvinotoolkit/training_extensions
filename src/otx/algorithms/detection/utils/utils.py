@@ -178,7 +178,7 @@ def mask_resize(box: np.ndarray, mask: np.ndarray, img_height: int, img_width: i
         mask (np.ndarray): mask to be resize
 
     Returns:
-        mask (np.ndarray): full size mask
+        bit_mask (np.ndarray): full size mask
     """
     # scaling bbox to prevent up-sampling artifacts on segment borders.
     mask = np.pad(mask, ((1, 1), (1, 1)), "constant", constant_values=0)
@@ -285,10 +285,14 @@ def create_mask_shapes(
                     mask = mask_util.decode(mask)
                 elif isinstance(mask, BitmapMasks):
                     mask = mask.to_ndarray()[0]
+
                 if mask.shape[0] != height or mask.shape[1] != width:
                     # resize mask to the size of the bounding box
                     coords = box[:4].astype(float).copy()
                     mask = mask_resize(coords, mask, height, width)
+
+                if mask.sum() == 0:
+                    continue
 
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 if hierarchies is None:
