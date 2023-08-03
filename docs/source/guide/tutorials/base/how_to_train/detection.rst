@@ -52,8 +52,8 @@ Dataset preparation
   Currently, we support the following object detection dataset formats:
 
   - `COCO <https://cocodataset.org/#format-data>`_
-  - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/v1.4.1/docs/data-formats/formats/pascal_voc.html>`_
-  - `YOLO <https://openvinotoolkit.github.io/datumaro/v1.4.1/docs/data-formats/formats/yolo.html>`_
+  - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_
+  - `YOLO <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/yolo.html>`_
 
 1. Clone a repository with
 `WGISD dataset <https://github.com/thsant/wgisd>`_.

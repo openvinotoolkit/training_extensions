@@ -39,7 +39,7 @@ Dataset Format
 **************
 
 At the current point we support `COCO <https://cocodataset.org/#format-data>`_ and
-`Pascal-VOC <https://openvinotoolkit.github.io/datumaro/v1.4.1/docs/data-formats/formats/pascal_voc.html>`_ dataset formats.
+`Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_ dataset formats.
 Learn more about the formats by following the links above. Here is an example of expected format for COCO dataset:
 
 .. code::
@@ -109,7 +109,7 @@ In addition to these models, we supports experimental models for object detectio
 | `Object_Detection_YOLOX_X <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template_experimental.yaml>`_                            |       YOLOX_X       | 352.42              | 378.0           |
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 
-`Deformable_DETR <https://arxiv.org/abs/2010.04159>`_ is `DETR <https://arxiv.org/abs/2005.12872>`_ based model, and it solves slow convergence problem of DETR. `DINO <https://arxiv.org/abs/2203.03605>`_ improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO. 
+`Deformable_DETR <https://arxiv.org/abs/2010.04159>`_ is `DETR <https://arxiv.org/abs/2005.12872>`_ based model, and it solves slow convergence problem of DETR. `DINO <https://arxiv.org/abs/2203.03605>`_ improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO.
 Although transformer based models show notable performance on various object detection benchmark, CNN based model still show good performance with proper latency.
 Therefore, we added a new experimental CNN based method, ResNeXt101-ATSS. ATSS still shows good performance among `RetinaNet <https://arxiv.org/abs/1708.02002>`_ based models. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.
 In addition, we added a YOLOX variants to support users' diverse situations.
