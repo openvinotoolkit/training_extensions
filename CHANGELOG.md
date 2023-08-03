@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Enhancements
 
--
+- Refine input data in-memory caching (<https://github.com/openvinotoolkit/training_extensions/pull/2416>)
 
 ### Bug fixes
 
