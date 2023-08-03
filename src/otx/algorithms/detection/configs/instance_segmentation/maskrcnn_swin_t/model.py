@@ -136,9 +136,9 @@ model = dict(
             nms=dict(type='nms', iou_threshold=0.7),
             min_bbox_size=0),
         rcnn=dict(
-            score_thr=0.05,
+            score_thr=0.1,
             nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=100,
+            max_per_img=200,
             mask_thr_binary=0.5)
     )
 )
@@ -156,17 +156,7 @@ optimizer = dict(
             relative_position_bias_table=dict(decay_mult=0.0),
             norm=dict(decay_mult=0.0))))
 
-lr_config = dict(
-    policy="ReduceLROnPlateau",
-    metric="mAP",
-    patience=5,
-    iteration_patience=0,
-    interval=1,
-    min_lr=1e-08,
-    warmup="linear",
-    warmup_iters=200,
-    warmup_ratio=0.3333333333333333,
-)
+lr_config = dict(min_lr=1e-08)
 
 optimizer_config = dict(_delete_=True, grad_clip=None)
 

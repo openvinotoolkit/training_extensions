@@ -87,7 +87,7 @@ test_pipeline = [
 __dataset_type = "CocoDataset"
 __data_root = "data/coco/"
 
-__samples_per_gpu = 8
+__samples_per_gpu = 4
 
 data = dict(
     samples_per_gpu=__samples_per_gpu,

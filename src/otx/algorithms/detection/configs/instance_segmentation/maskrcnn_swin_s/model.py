@@ -138,14 +138,14 @@ model = dict(
         rcnn=dict(
             score_thr=0.1,
             nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=500,
+            max_per_img=200,
             mask_thr_binary=0.5)))
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 optimizer = dict(
     _delete_=True,
     type='AdamW',
-    lr=0.0004,
+    lr=0.0001,
     betas=(0.9, 0.999),
     weight_decay=0.05,
     paramwise_cfg=dict(
