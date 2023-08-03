@@ -1,4 +1,4 @@
-"""Model configuration of MaskRCNN-SwinT-FP16 model for Instance-Seg Task."""
+"""Model configuration of MaskRCNN-SwinS-FP16 model for Instance-Seg Task."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -17,7 +17,7 @@ model = dict(
     backbone=dict(
         type='SwinTransformer',
         embed_dims=96,
-        depths=[2, 2, 6, 2],
+        depths=[2, 2, 18, 2],
         num_heads=[3, 6, 12, 24],
         window_size=7,
         mlp_ratio=4,
@@ -52,7 +52,7 @@ model = dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
         loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
     roi_head=dict(
-        type='CustomRoIHead',
+        type='StandardRoIHead',
         bbox_roi_extractor=dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
@@ -136,18 +136,16 @@ model = dict(
             nms=dict(type='nms', iou_threshold=0.7),
             min_bbox_size=0),
         rcnn=dict(
-            score_thr=0.05,
+            score_thr=0.1,
             nms=dict(type='nms', iou_threshold=0.5),
-            max_per_img=100,
-            mask_thr_binary=0.5)
-    )
-)
+            max_per_img=500,
+            mask_thr_binary=0.5)))
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 optimizer = dict(
     _delete_=True,
     type='AdamW',
-    lr=0.0001,
+    lr=0.0004,
     betas=(0.9, 0.999),
     weight_decay=0.05,
     paramwise_cfg=dict(
@@ -156,26 +154,16 @@ optimizer = dict(
             relative_position_bias_table=dict(decay_mult=0.0),
             norm=dict(decay_mult=0.0))))
 
-lr_config = dict(
-    policy="ReduceLROnPlateau",
-    metric="mAP",
-    patience=5,
-    iteration_patience=0,
-    interval=1,
-    min_lr=1e-08,
-    warmup="linear",
-    warmup_iters=200,
-    warmup_ratio=0.3333333333333333,
-)
+lr_config = dict(min_lr=1e-08)
 
 optimizer_config = dict(_delete_=True, grad_clip=None)
 
 fp16 = dict(loss_scale=dict(init_scale=512))
 
 load_from = (
-    "https://download.openmmlab.com/mmdetection/v2.0/swin/"
-    "mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco/"
-    "mask_rcnn_swin-t-p4-w7_fpn_fp16_ms-crop-3x_coco_20210908_165006-90a4008c.pth"
+    "https://download.openmmlab.com/mmdetection/v2.0/"
+    "swin/mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco/"
+    "mask_rcnn_swin-s-p4-w7_fpn_fp16_ms-crop-3x_coco_20210903_104808-b92c91f1.pth"
 )
 
 ignore = True

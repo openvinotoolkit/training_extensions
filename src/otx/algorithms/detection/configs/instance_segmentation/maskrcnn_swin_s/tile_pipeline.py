@@ -1,4 +1,4 @@
-"""Tiling Pipeline of Mask2Former model for Instance-Seg Task."""
+"""Tiling Pipeline of MaskRCNN-SwinS-FP16 model for Instance-Seg Task."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -13,8 +13,7 @@ tile_cfg = dict(
     overlap_ratio=0.2,
     iou_threshold=0.45,
     max_per_img=1500,
-    filter_empty_gt=True,
-    postprocess_mask=True,
+    filter_empty_gt=True
 )
 
 img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -47,7 +46,7 @@ test_pipeline = [
 __dataset_type = "CocoDataset"
 __data_root = "data/coco/"
 
-__samples_per_gpu = 4
+__samples_per_gpu = 8
 
 train_dataset = dict(
     type="ImageTilingDataset",

@@ -1,4 +1,4 @@
-"""MMDployment config of Mask2Former model for Instance-Seg Task."""
+"""MMDployment config of MaskRCNN-SwinS-FP16 model for Instance-Seg Task."""
 
 _base_ = ["../../base/deployments/base_instance_segmentation_dynamic.py"]
 
