@@ -505,7 +505,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             process_saliency_maps = False
             explain_predicted_classes = True
             enable_async_inference = True
-        enable_async_inference = False
 
         if self.config.tiling_parameters.enable_tiling:
             enable_async_inference = False
