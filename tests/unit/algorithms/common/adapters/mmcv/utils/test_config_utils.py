@@ -282,7 +282,7 @@ class TestInputSizeManager:
         input_size_manager = InputSizeManager(mock_data_config)
 
         # check input size is estimated as expected
-        assert input_size_manager.get_input_size_from_cfg("train") == list(input_size)
+        assert input_size_manager.get_input_size_from_cfg("train") == input_size
 
 
 def get_mock_model_ckpt(case):

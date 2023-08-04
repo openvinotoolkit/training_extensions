@@ -885,11 +885,11 @@ class InputSizeManager:
                         self._set_size_value(pipeline, pipeline_attr, scale)
 
         if pipeline["type"] == "MultiScaleFlipAug":
-            for sub_pipeline in reversed(pipeline["transforms"]):
+            for sub_pipeline in pipeline["transforms"]:
                 self._set_pipeline_size_vlaue(sub_pipeline, scale)
 
         if pipeline["type"] == "AutoAugment":
-            for sub_pipelines in reversed(pipeline["policies"]):
+            for sub_pipelines in pipeline["policies"]:
                 for sub_pipeline in sub_pipelines:
                     self._set_pipeline_size_vlaue(sub_pipeline, scale)
 
