@@ -39,7 +39,10 @@ class MockOTXSegmentationTask(OTXSegmentationTask):
         pass
 
     def _export_model(*args, **kwargs):
-        return {"outputs": {"bin": f"/tmp/model.xml", "xml": f"/tmp/model.bin", "onnx": f"/tmp/model.onnx"}}
+        return {
+            "outputs": {"bin": f"/tmp/model.xml", "xml": f"/tmp/model.bin", "onnx": f"/tmp/model.onnx"},
+            "inference_parameters": {"mean_values": "", "scale_values": ""},
+        }
 
 
 class MockModel:
@@ -126,5 +129,6 @@ class TestOTXSegmentationTask:
         mocker_open = mocker.patch("builtins.open")
         mocker_open.__enter__.return_value = True
         mocker.patch("otx.algorithms.segmentation.task.embed_ir_model_data", return_value=None)
+        mocker.patch("otx.algorithms.segmentation.task.embed_onnx_model_data", return_value=None)
         self.seg_task.export(export_type, otx_model)
         mocker_open.assert_called()
