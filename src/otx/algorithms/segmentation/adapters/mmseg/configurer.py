@@ -549,6 +549,7 @@ class SegmentationConfigurer:
         if input_size is None:
             return
 
+        # segmentation models have different input size in train and val data pipeline
         base_input_size = {
             "train" : 512,
             "val" : 544,

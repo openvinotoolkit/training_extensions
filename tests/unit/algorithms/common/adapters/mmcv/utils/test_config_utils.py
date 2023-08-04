@@ -6,6 +6,10 @@ from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import get_adaptive_num_workers, InputSizeManager, get_configurable_input_size
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
+
+@e2e_pytest_unit
 def test_get_adaptive_num_workers(mocker):
     num_gpu = 5
     mock_torch = mocker.patch.object(config_utils, "torch")
@@ -18,6 +22,7 @@ def test_get_adaptive_num_workers(mocker):
     assert get_adaptive_num_workers() == num_cpu // num_gpu
 
 
+@e2e_pytest_unit
 def test_get_adaptive_num_workers_no_gpu(mocker):
     num_gpu = 0
     mock_torch = mocker.patch.object(config_utils, "torch")
@@ -174,6 +179,7 @@ mock_data_pipeline_to_estimate = {
 }
 
 
+@e2e_pytest_unit
 class TestInputSizeManager:
     @pytest.mark.parametrize("base_input_size", [None, 100, [100, 200], {"train" : 100}])
     def test_init(self, base_input_size):
@@ -274,6 +280,7 @@ def get_mock_model_ckpt(case):
         return {"config" : {"learning_parameters" : {"input_size" : {"value" : "512x512"}}}}
 
 
+@e2e_pytest_unit
 @pytest.mark.parametrize("input_size_config", [InputSizePreset.DEFAULT, InputSizePreset._1024x1024])
 @pytest.mark.parametrize("model_ckpt_case", ["none", "no_input_size", "input_size_default", "input_size_exist"])
 def test_get_configurable_input_size(mocker, input_size_config, model_ckpt_case):
