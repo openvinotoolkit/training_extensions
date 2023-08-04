@@ -156,7 +156,7 @@ def read_py_config(filename: str) -> adict:
     return cfg_dict
 
 
-def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str], Any]) -> None:
+def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str], Any]) -> None:
     """Embeds model api config to onnx file."""
     model = onnx.load(onnx_file)
 
