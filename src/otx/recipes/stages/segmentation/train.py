@@ -39,4 +39,10 @@ custom_hooks = [
         priority=75,
         start=1,
     ),
+    dict(
+        type="AdaptiveTrainSchedulingHook",
+        enable_adaptive_interval_hook=False,
+        enable_eval_before_run=True,
+    ),
+    dict(type="LoggerReplaceHook"),
 ]

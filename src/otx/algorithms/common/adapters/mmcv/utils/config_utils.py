@@ -419,18 +419,6 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-def patch_default_config(config: Config):
-    """Patch default config."""
-    if "runner" not in config:
-        config.runner = ConfigDict({"type": "EpochBasedRunner"})
-    if "log_config" not in config:
-        config.log_config = ConfigDict()
-    if "evaluation" not in config:
-        config.evaluation = ConfigDict()
-    if "checkpoint_config" not in config:
-        config.checkpoint_config = ConfigDict({"type": "CheckpointHook", "interval": 1})
-
-
 def patch_data_pipeline(config: Config, data_pipeline: str = ""):
     """Replace data pipeline to data_pipeline.py if it exist."""
     if os.path.isfile(data_pipeline):
@@ -451,31 +439,6 @@ def patch_color_conversion(config: Config):
         cfg.to_rgb = not bool(to_rgb)
 
 
-def patch_runner(config: Config):
-    """Patch runner."""
-    assert "runner" in config
-
-    # Check that there is no conflict in specification of number of training epochs.
-    # Move global definition of epochs inside runner config.
-    if "total_epochs" in config:
-        if is_epoch_based_runner(config.runner):
-            if config.runner.max_epochs != config.total_epochs:
-                logger.warning("Conflicting declaration of training epochs number.")
-            config.runner.max_epochs = config.total_epochs
-        else:
-            logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
-        remove_from_config(config, "total_epochs")
-
-    # Change runner's type.
-    if config.runner.type != "AccuracyAwareRunner":
-        if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
-            logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-            config.runner.type = "EpochRunnerWithCancel"
-        elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
-            logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-            config.runner.type = "IterBasedRunnerWithCancel"
-
-
 def patch_fp16(config: Config):
     """Remove FP16 config if running on CPU device and revert to FP32.
 
@@ -494,15 +457,6 @@ def patch_adaptive_interval_training(config: Config):
 
     This function can be removed by adding custom hook cfg into recipe.py directly.
     """
-    # default adaptive hook for evaluating before and after training
-    add_custom_hook_if_not_exists(
-        config,
-        ConfigDict(
-            type="AdaptiveTrainSchedulingHook",
-            enable_adaptive_interval_hook=False,
-            enable_eval_before_run=True,
-        ),
-    )
     # Add/remove adaptive interval hook
     if config.get("use_adaptive_interval", False):
         update_or_add_custom_hook(
@@ -638,23 +592,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
-
-
-def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
-    """Align data_cfg with recipe_cfg."""
-    # we assumed config has 'otx_dataset' and 'labels' key in it
-    # by 'patch_datasets' function
-
-    data_config = data_config.data
-    config = config.data
-    for subset in data_config.keys():
-        subset_config = data_config.get(subset, {})
-        for key in list(subset_config.keys()):
-            found_config = get_configs_by_keys(config.get(subset), key, return_path=True)
-            assert len(found_config) == 1
-            value = subset_config.pop(key)
-            path = list(found_config.keys())[0]
-            update_config(subset_config, {path: value})
 
 
 DEFAULT_META_KEYS = (

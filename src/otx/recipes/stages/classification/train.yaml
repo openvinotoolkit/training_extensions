@@ -18,3 +18,14 @@ evaluation:
   metric: ["accuracy"]
 
 channel_last: True
+
+custom_hooks: [
+  {
+    type: AdaptiveTrainSchedulingHook,
+    enable_adaptive_interval_hook: False,
+    enable_eval_before_run: True,
+  },
+  {
+    type: LoggerReplaceHook
+  },
+]

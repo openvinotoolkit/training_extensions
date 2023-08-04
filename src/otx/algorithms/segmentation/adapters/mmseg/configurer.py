@@ -42,6 +42,7 @@ class SegmentationConfigurer(BaseConfigurer):
         self.org_model_classes: List[str] = []
         self.model_classes: List[str] = []
         self.data_classes: List[str] = []
+        self.task: Optional[str] = "segmentation"
 
     # pylint: disable=too-many-arguments
     def configure(
@@ -61,7 +62,7 @@ class SegmentationConfigurer(BaseConfigurer):
         self.configure_base(cfg, data_cfg, data_classes, model_classes)
         self.configure_device(cfg, training)
         self.configure_ckpt(cfg, model_ckpt)
-        self.configure_model(cfg, ir_options, "segmentation")
+        self.configure_model(cfg, ir_options)
         self.configure_data(cfg, training, data_cfg)
         self.configure_task(cfg, training)
         self.configure_hook(cfg)
@@ -87,8 +88,7 @@ class SegmentationConfigurer(BaseConfigurer):
         Merge cfg and data_cfg
         Wrap original dataset type to MPAsegDataset
         """
-        if data_cfg:
-            cfg.merge_from_dict(data_cfg)
+        super().configure_data(cfg, training, data_cfg)
 
         train_data_cfg = self.get_data_cfg(cfg, "train")
         for mode in ["train", "val", "test"]:

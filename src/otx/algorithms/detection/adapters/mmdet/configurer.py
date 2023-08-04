@@ -36,6 +36,7 @@ class DetectionConfigurer(BaseConfigurer):
         self.org_model_classes = []
         self.model_classes = []
         self.data_classes = []
+        self.task = "detection"
 
     # pylint: disable=too-many-arguments
     def configure(
@@ -55,7 +56,7 @@ class DetectionConfigurer(BaseConfigurer):
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes)
         self.configure_device(cfg, training)
-        self.configure_model(cfg, ir_options, "detection")
+        self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, training, data_cfg)
         self.configure_regularization(cfg, training)
@@ -133,15 +134,15 @@ class DetectionConfigurer(BaseConfigurer):
     def _configure_eval_dataset(self, cfg):
         if cfg.get("task", "detection") == "detection":
             eval_types = ["val", "test"]
-        for eval_type in eval_types:
-            if cfg.data[eval_type]["type"] == "TaskAdaptEvalDataset":
-                cfg.data[eval_type]["model_classes"] = self.model_classes
-            else:
-                # Wrap original dataset config
-                org_type = cfg.data[eval_type]["type"]
-                cfg.data[eval_type]["type"] = "TaskAdaptEvalDataset"
-                cfg.data[eval_type]["org_type"] = org_type
-                cfg.data[eval_type]["model_classes"] = self.model_classes
+            for eval_type in eval_types:
+                if cfg.data[eval_type]["type"] == "TaskAdaptEvalDataset":
+                    cfg.data[eval_type]["model_classes"] = self.model_classes
+                else:
+                    # Wrap original dataset config
+                    org_type = cfg.data[eval_type]["type"]
+                    cfg.data[eval_type]["type"] = "TaskAdaptEvalDataset"
+                    cfg.data[eval_type]["org_type"] = org_type
+                    cfg.data[eval_type]["model_classes"] = self.model_classes
 
     def configure_task_data_pipeline(self, cfg):
         """Trying to alter class indices of training data according to model class order."""

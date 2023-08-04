@@ -10,7 +10,6 @@ from .automatic_bs import adapt_batch_size
 from .builder import build_dataloader, build_dataset
 from .config_utils import (
     MPAConfig,
-    align_data_config_with_recipe,
     config_from_string,
     get_data_cfg,
     get_dataset_configs,
@@ -19,12 +18,10 @@ from .config_utils import (
     patch_adaptive_interval_training,
     patch_color_conversion,
     patch_data_pipeline,
-    patch_default_config,
     patch_early_stopping,
     patch_fp16,
     patch_from_hyperparams,
     patch_persistent_workers,
-    patch_runner,
     prepare_for_testing,
     prepare_work_dir,
     remove_from_config,

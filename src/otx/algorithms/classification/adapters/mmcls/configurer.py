@@ -38,6 +38,7 @@ class ClassificationConfigurer(BaseConfigurer):
         self.org_model_classes = []
         self.model_classes = []
         self.data_classes = []
+        self.task = "classification"
 
     # pylint: disable=too-many-arguments
     def configure(
@@ -74,7 +75,7 @@ class ClassificationConfigurer(BaseConfigurer):
         patch_datasets(cfg, **options_for_patch_datasets)
         patch_evaluation(cfg, **options_for_patch_evaluation)
 
-    def configure_model(self, cfg, ir_options, task="classification"):  # noqa: C901
+    def configure_model(self, cfg, ir_options):  # noqa: C901
         """Patch config's model.
 
         Change model type to super type
@@ -84,9 +85,9 @@ class ClassificationConfigurer(BaseConfigurer):
         if ir_options is None:
             ir_options = {"ir_model_path": None, "ir_weight_path": None, "ir_weight_init": False}
 
-        cfg.model_task = cfg.model.pop("task", task)
-        if cfg.model_task != "classification":
-            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {task} recipe")
+        cfg.model_task = cfg.model.pop("task", self.task)
+        if cfg.model_task != self.task:
+            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {self.task} recipe")
 
         super_type = cfg.model.pop("super_type", None)
         if super_type:
