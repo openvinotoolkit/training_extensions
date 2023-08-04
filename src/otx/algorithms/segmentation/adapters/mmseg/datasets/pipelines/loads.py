@@ -28,9 +28,9 @@ from otx.algorithms.segmentation.adapters.mmseg.datasets.dataset import (
 class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
     """Pipeline element that loads an image from a OTX Dataset on the fly."""
 
-    def __init__(self, to_float32: bool = False, use_otx_adapter: bool = True):
+    def __init__(self, use_otx_adapter: bool = True, **kwargs):
         self.use_otx_adapter = use_otx_adapter
-        super().__init__(to_float32)
+        super().__init__(**kwargs)
 
 
 @PIPELINES.register_module()

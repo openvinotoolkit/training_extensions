@@ -65,7 +65,8 @@ def test_patch_datasets_disable_memcache_for_test_subset():
     assert config.data.val.pipeline[0].type == "LoadImageFromOTXDataset"
     assert config.data.val.pipeline[0].enable_memcache == True
     assert config.data.test.pipeline[0].type == "LoadImageFromOTXDataset"
-    assert config.data.test.pipeline[0].enable_memcache == False
+    assert getattr(config.data.test.pipeline[0], "enable_memcache", False) == False
+    # Note: cannot set enable_memcache attr due to mmdeploy error
     assert config.data.unlabeled.pipeline[0].type == "LoadImageFromOTXDataset"
     assert config.data.unlabeled.pipeline[0].enable_memcache == True
 

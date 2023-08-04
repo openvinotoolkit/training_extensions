@@ -39,7 +39,8 @@ def patch_datasets(
                 get_meta_keys(collect_cfg)
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
             cfg_.type = "LoadImageFromOTXDataset"
-            cfg_.enable_memcache = not (subset == "test")
+            if subset != "test":
+                cfg_.enable_memcache = True
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
             cfg_.type = "LoadAnnotationFromOTXDataset"
 

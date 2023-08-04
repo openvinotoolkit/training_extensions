@@ -27,10 +27,10 @@ class LoadImageFromOTXDataset:
         results['index']: index of the item in the dataset
 
     :param to_float32: optional bool, True to convert images to fp32. defaults to False
-    :param enable_memcache: optional bool, True to enable in-memory cache. defaults to True
+    :param enable_memcache: optional bool, True to enable in-memory cache. defaults to False
     """
 
-    def __init__(self, to_float32: bool = False, enable_memcache: bool = True):
+    def __init__(self, to_float32: bool = False, enable_memcache: bool = False):
         self.to_float32 = to_float32
         self.enable_memcache = enable_memcache
         try:
