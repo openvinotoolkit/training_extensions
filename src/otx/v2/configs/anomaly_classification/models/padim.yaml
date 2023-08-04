@@ -1,0 +1,12 @@
+model:
+  name: padim
+  backbone: resnet18
+  pre_trained: true
+  layers:
+    - layer1
+    - layer2
+    - layer3
+  normalization_method: min_max
+  input_size:
+    - 256
+    - 256

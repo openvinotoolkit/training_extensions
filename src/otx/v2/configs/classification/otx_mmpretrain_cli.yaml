@@ -1,0 +1,103 @@
+# Basic Information for Config
+framework: mmpretrain
+data:
+  task: Classification
+
+  train_type: Incremental
+
+model:
+  name: otx_efficientnet_b0
+  head:
+    num_classes: 2
+
+train_dataloader:
+  batch_size: 32
+  num_workers: 2
+  dataset:
+    type: OTXClsDataset
+    pipeline:
+      - scale: 224
+        type: Resize
+      - direction: horizontal
+        prob: 0.5
+        type: RandomFlip
+      - config_str: augmix-m5-w3-d1
+        type: AugMixAugment
+      - angle: !!python/tuple
+          - -10
+          - 10
+        p: 0.35
+        type: RandomRotate
+      - type: PackInputs
+
+val_dataloader:
+  batch_size: 32
+  num_workers: 2
+  dataset:
+    type: OTXClsDataset
+    pipeline:
+      - scale: 224
+        type: Resize
+      - type: PackInputs
+
+test_dataloader:
+  batch_size: 32
+  num_workers: 2
+  dataset:
+    type: OTXClsDataset
+    pipeline:
+      - scale: 224
+        type: Resize
+      - type: PackInputs
+
+# Hooks
+default_hooks:
+  logger:
+    type: LoggerHook
+    interval: 100
+  timer:
+    type: IterTimerHook
+  checkpoint:
+    interval: 1
+    max_keep_ckpts: 1
+    save_best: auto
+    type: CheckpointHook
+custom_hooks: null
+
+param_scheduler:
+  type: CosineAnnealingLR
+
+# Visualizer
+visualizer:
+  type: UniversalVisualizer
+  vis_backends:
+    - type: LocalVisBackend
+    - type: TensorboardVisBackend
+
+# Evaluation
+val_evaluator:
+  - type: Accuracy
+    topk: !!python/tuple
+      - 1
+      - 5
+
+test_evaluator:
+  - type: Accuracy
+    topk: !!python/tuple
+      - 1
+      - 5
+
+# Optimizer
+optimizer:
+  type: SGD
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.0005
+
+# OTX Training Configs
+max_epochs: 10
+max_iters: null
+val_interval: 1
+seed: 1234
+deterministic: false
+precision: float32

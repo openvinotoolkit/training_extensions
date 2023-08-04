@@ -1,0 +1,30 @@
+# Model Configuration
+model:
+  type: CustomImageClassifier
+  backbone:
+    pretrained: true
+    type: OTXEfficientNet
+    version: b0
+  head:
+    in_channels: -1
+    loss:
+      loss_weight: 1.0
+      type: CrossEntropyLoss
+    num_classes: 1000
+    topk: !!python/tuple
+      - 1
+      - 5
+    type: CustomLinearClsHead
+  neck:
+    type: GlobalAveragePooling
+  pretrained: null
+  data_preprocessor:
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375
+    to_rgb: true
