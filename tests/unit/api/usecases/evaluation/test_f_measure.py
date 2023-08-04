@@ -1,16 +1,6 @@
-# Copyright (C) 2020-2021 Intel Corporation
+# Copyright (C) 2020-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
 
 import datetime
 from typing import cast
@@ -962,7 +952,7 @@ class TestFMeasureCalculator:
         # Check "_AggregatedResults" object returned by "get_results_per_confidence" when All Classes f-measure is more
         # than best f-measure in results_per_confidence
         expected_results_per_confidence = _AggregatedResults(["class_1", "class_2"])
-        for confidence_threshold in np.arange(*[0.6, 0.9]):
+        for confidence_threshold in np.arange(*[0.6, 0.9, 0.1]):
             result_point = f_measure_calculator.evaluate_classes(
                 classes=["class_1", "class_2"],
                 iou_threshold=0.7,
@@ -978,7 +968,7 @@ class TestFMeasureCalculator:
 
         actual_results_per_confidence = f_measure_calculator.get_results_per_confidence(
             classes=["class_1", "class_2"],
-            confidence_range=[0.6, 0.9],
+            confidence_range=[0.6, 0.9, 0.1],  # arrange(0.6, 0.9, 0.1)
             iou_threshold=0.7,
         )
         assert actual_results_per_confidence.all_classes_f_measure_curve == (
@@ -987,7 +977,9 @@ class TestFMeasureCalculator:
         assert actual_results_per_confidence.f_measure_curve == expected_results_per_confidence.f_measure_curve
         assert actual_results_per_confidence.recall_curve == expected_results_per_confidence.recall_curve
         assert actual_results_per_confidence.best_f_measure == 0.5454545454545453
-        assert actual_results_per_confidence.best_threshold == 0.6
+        # 0.6 -> 0.54, 0.7 -> 0.54, 0.8 -> 0.54, 0.9 -> 0.44
+        # Best ""LARGEST" trehshold should be 0.8 (considering numerical error)
+        assert abs(actual_results_per_confidence.best_threshold - 0.8) < 0.001
         # Check "_AggregatedResults" object returned by "get_results_per_confidence" when All Classes f-measure is less
         # than best f-measure in results_per_confidence
         actual_results_per_confidence = f_measure_calculator.get_results_per_confidence(

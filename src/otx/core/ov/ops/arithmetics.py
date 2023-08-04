@@ -1,7 +1,7 @@
 """Arithmetics-related codes for otx.core.ov.ops.arithmetics."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
 
@@ -23,7 +23,7 @@ class MultiplyV1(Operation[MultiplyV1Attribute]):
     """MultiplyV1 class."""
 
     TYPE = "Multiply"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = MultiplyV1Attribute
 
     def forward(self, input_0, input_1):
@@ -51,7 +51,7 @@ class DivideV1(Operation[DivideV1Attribute]):
     """DivideV1 class."""
 
     TYPE = "Divide"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = DivideV1Attribute
 
     def forward(self, input_0, input_1):
@@ -85,7 +85,7 @@ class AddV1(Operation[AddV1Attribute]):
     """AddV1 class."""
 
     TYPE = "Add"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = AddV1Attribute
 
     def forward(self, input_0, input_1):
@@ -112,7 +112,7 @@ class SubtractV1(Operation[SubtractV1Attribute]):
     """SubtractV1 class."""
 
     TYPE = "Subtract"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SubtractV1Attribute
 
     def forward(self, input_0, input_1):
@@ -139,7 +139,7 @@ class TanV0(Operation[TanV0Attribute]):
     """TanV0 class."""
 
     TYPE = "Tan"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = TanV0Attribute
 
     def forward(self, inputs):

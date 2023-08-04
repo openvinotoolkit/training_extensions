@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .visual_prompting_config import get_visual_promtping_config, update_visual_prompting_config
-
-__all__ = ["get_visual_promtping_config", "update_visual_prompting_config"]
+from .visual_prompting_config import (
+    get_visual_promtping_config,  # noqa: F401
+    update_visual_prompting_config,  # noqa: F401
+)

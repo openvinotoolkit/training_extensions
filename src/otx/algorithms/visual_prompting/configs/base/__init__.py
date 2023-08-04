@@ -14,6 +14,5 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import VisualPromptingBaseConfig
-
-__all__ = ["VisualPromptingBaseConfig"]
+from .configuration import VisualPromptingBaseConfig  # noqa: F401
+from .configuration_enums import Models  # noqa: F401

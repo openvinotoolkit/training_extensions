@@ -64,15 +64,11 @@ class MockModel(nn.Module):
 
     def __init__(self, task_type):
         super().__init__()
-        self.module = MockModule()
-        self.module.backbone = MockModule()
         self.backbone = MockModule()
         self.task_type = task_type
 
     def forward(self, return_loss: bool, imgs: DatasetItemEntity):
-        forward_hooks = list(self.module.backbone._forward_hooks.values())
-        for hook in forward_hooks:
-            hook(1, 2, 3)
+        feat = self.backbone(torch.randn(1, 400, 8, 7, 7))  # bs, channel, video_len, h, w
         if self.task_type == "cls":
             return np.array([[0, 0, 1]])
         return [[np.array([[0, 0, 1, 1, 0.1]]), np.array([[0, 0, 1, 1, 0.2]]), np.array([[0, 0, 1, 1, 0.7]])]]
@@ -95,6 +91,9 @@ class MockDataset(DatasetEntity):
             return {"mean_class_accuracy": 1.0}
         else:
             return {"mAP@0.5IOU": 1.0}
+
+    def __len__(self):
+        return len(self.dataset)
 
 
 class MockDataLoader:
@@ -130,11 +129,8 @@ class MockExporter:
             f.write(dummy_data)
 
 
-def mock_data_pipeline(config: Config, *args, **kwargs):
-    config.data = {}
-    for subset in ["train", "val", "test", "unlabeled"]:
-        config.data[f"{subset}_dataloader"] = {}
-    return True
+def return_model(model, *args, **kwargs):
+    return model
 
 
 class TestMMActionTask:
@@ -204,12 +200,8 @@ class TestMMActionTask:
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("cls"))
         mocker.patch.object(MMActionTask, "get_model_ckpt", return_value="fake_weight")
         mocker.patch(
-            "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            side_effect=mock_data_pipeline,
-        )
-        mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
-            return_value=MockModel("cls"),
+            side_effect=return_model,
         )
         mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.train_model",
@@ -228,7 +220,7 @@ class TestMMActionTask:
         _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)
         output_model = ModelEntity(self.cls_dataset, _config)
         self.cls_task.train(self.cls_dataset, output_model)
-        output_model.performance == 1.0
+        assert output_model.performance.score.value == 1.0
         assert self.cls_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
 
         mocker.patch(
@@ -241,17 +233,13 @@ class TestMMActionTask:
         )
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("det"))
         mocker.patch(
-            "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            side_effect=mock_data_pipeline,
-        )
-        mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
-            return_value=MockModel("det"),
+            side_effect=return_model,
         )
         _config = ModelConfiguration(ActionConfig(), self.det_label_schema)
         output_model = ModelEntity(self.det_dataset, _config)
         self.det_task.train(self.det_dataset, output_model)
-        output_model.performance == 1.0
+        assert output_model.performance.score.value == 1.0
         assert self.cls_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
 
     @e2e_pytest_unit
@@ -275,12 +263,8 @@ class TestMMActionTask:
         )
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("cls"))
         mocker.patch(
-            "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            side_effect=mock_data_pipeline,
-        )
-        mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
-            return_value=MockModel("cls"),
+            side_effect=return_model,
         )
 
         inference_parameters = InferenceParameters(is_evaluation=True)
@@ -298,12 +282,8 @@ class TestMMActionTask:
         )
         mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("det"))
         mocker.patch(
-            "otx.algorithms.action.adapters.mmaction.task.patch_data_pipeline",
-            side_effect=mock_data_pipeline,
-        )
-        mocker.patch(
             "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
-            return_value=MockModel("det"),
+            side_effect=return_model,
         )
         inference_parameters = InferenceParameters(is_evaluation=True)
         outputs = self.det_task.infer(self.det_dataset, inference_parameters)
@@ -401,3 +381,66 @@ class TestMMActionTask:
         MMActionTask.configure_distributed(config)
 
         assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
+
+    @e2e_pytest_unit
+    def test_geti_scenario(self, mocker):
+        """Test Geti scenario.
+
+        Train -> Eval -> Export
+        """
+        mocker.patch(
+            "otx.algorithms.action.adapters.mmaction.task.build_dataset",
+            return_value=MockDataset(self.cls_dataset, "cls"),
+        )
+        mocker.patch(
+            "otx.algorithms.action.adapters.mmaction.task.build_dataloader",
+            return_value=MockDataLoader(self.cls_dataset),
+        )
+        mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("cls"))
+        mocker.patch.object(MMActionTask, "get_model_ckpt", return_value="fake_weight")
+        mocker.patch(
+            "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
+            side_effect=return_model,
+        )
+        mocker.patch(
+            "otx.algorithms.action.adapters.mmaction.task.train_model",
+            return_value=True,
+        )
+        mocker.patch("torch.load", return_value={"state_dict": np.ndarray([1, 1, 1])})
+
+        # mock for testing num_workers
+        num_cpu = 20
+        mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
+        mock_multiprocessing.cpu_count.return_value = num_cpu
+        num_gpu = 5
+        mock_torch = mocker.patch.object(config_utils, "torch")
+        mock_torch.cuda.device_count.return_value = num_gpu
+
+        _config = ModelConfiguration(ActionConfig(), self.cls_label_schema)
+        output_model = ModelEntity(self.cls_dataset, _config)
+        self.cls_task.train(self.cls_dataset, output_model)
+
+        mocker.patch(
+            "otx.algorithms.action.adapters.mmaction.task.build_dataset",
+            return_value=MockDataset(self.cls_dataset, "cls"),
+        )
+        mocker.patch(
+            "otx.algorithms.action.adapters.mmaction.task.build_dataloader",
+            return_value=MockDataLoader(self.cls_dataset),
+        )
+        mocker.patch.object(MMActionTask, "build_model", return_value=MockModel("cls"))
+        mocker.patch(
+            "otx.algorithms.action.adapters.mmaction.task.build_data_parallel",
+            side_effect=return_model,
+        )
+
+        inference_parameters = InferenceParameters(is_evaluation=True)
+        outputs = self.cls_task.infer(self.cls_dataset, inference_parameters)
+
+        mocker.patch("otx.algorithms.action.adapters.mmaction.task.Exporter", return_value=MockExporter(self.cls_task))
+        mocker.patch("torch.load", return_value={})
+        mocker.patch("torch.nn.Module.load_state_dict", return_value=True)
+
+        export_type = ExportType.OPENVINO
+        precision = ModelPrecision.FP32
+        self.cls_task.export(export_type, output_model, precision, False)

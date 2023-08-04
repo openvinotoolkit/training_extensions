@@ -1,7 +1,7 @@
 """Type-conversion-related modules for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass
 
@@ -50,7 +50,7 @@ class ConvertV0(Operation[ConvertV0Attribute]):
     """ConvertV0 class."""
 
     TYPE = "Convert"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConvertV0Attribute
 
     @staticmethod

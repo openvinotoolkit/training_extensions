@@ -39,7 +39,12 @@ rebuild_args = {
         "--model": "MobileNet-V3-large-1x",
         "--train-type": "Semisupervised",
     },
-    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "Semisupervised"},
+    "detection": {
+        "default": "MobileNetV2-ATSS",
+        "--task": "detection",
+        "--model": "SSD",
+        "--train-type": "Semisupervised",
+    },
 }
 
 

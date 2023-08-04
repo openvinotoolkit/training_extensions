@@ -16,6 +16,8 @@
 
 from pathlib import Path
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.task_environment import TaskEnvironment
@@ -31,6 +33,7 @@ from otx.cli.utils.io import (
 from otx.cli.utils.nncf import is_checkpoint_nncf
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 
@@ -86,7 +89,7 @@ def get_args():
         help="Weight of the saliency map when overlaying the input image with saliency map.",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
 
     return parser.parse_args(), override_param
 

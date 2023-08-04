@@ -4,12 +4,22 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from pathlib import Path
 from typing import Any, Dict, Tuple
 
 from openvino.runtime import Core, serialize
 
 
-def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str], Any]) -> None:
+def check_if_quantized(model: Any) -> bool:
+    """Checks if OpenVINO model is already quantized."""
+    nodes = model.get_ops()
+    for op in nodes:
+        if "FakeQuantize" == op.get_type_name():
+            return True
+    return False
+
+
+def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str, str], Any]) -> None:
     """Embeds serialized data to IR xml file.
 
     Args:
@@ -21,4 +31,9 @@ def embed_ir_model_data(xml_file: str, data_items: Dict[Tuple[str], Any]) -> Non
     model = core.read_model(xml_file)
     for k, data in data_items.items():
         model.set_rt_info(data, list(k))
-    serialize(model, xml_file)
+
+    # workaround for CVS-110054
+    tmp_xml_path = Path(Path(xml_file).parent) / "tmp.xml"
+    serialize(model, str(tmp_xml_path))
+    tmp_xml_path.rename(xml_file)
+    Path(str(tmp_xml_path.parent / tmp_xml_path.stem) + ".bin").unlink()

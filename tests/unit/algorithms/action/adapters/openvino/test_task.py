@@ -5,11 +5,12 @@
 #
 
 import os
+import pathlib
 from typing import Any, Dict
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter
+from openvino.model_api.adapters import OpenvinoAdapter
 
 from otx.algorithms.action.adapters.openvino import ActionOVClsDataLoader
 from otx.algorithms.action.configs.base.configuration import ActionConfig
@@ -41,7 +42,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     ClassificationToAnnotationConverter,
     DetectionBoxToAnnotationConverter,
@@ -56,7 +57,7 @@ from tests.unit.algorithms.action.test_helpers import (
 )
 
 
-class MockOVInferencer(BaseInferencer):
+class MockOVInferencer(IInferencer):
     """Mock class for OV inferencer."""
 
     def __init__(self, *args, **kwargs):
@@ -87,7 +88,7 @@ class MockModel:
     """Mock class for OV model."""
 
     def preprocess(self, image):
-        return "Preprocess function is called"
+        return "Preprocess function is called", None
 
     def postprocess(self, prediction, metadata):
         return "Postprocess function is called"
@@ -175,7 +176,7 @@ class TestActionOVInferencer:
         """Test pre_process funciton."""
         dataset = generate_action_cls_otx_dataset(1, 10, self.labels)
         inputs = dataset._items
-        assert self.inferencer.pre_process(inputs) == "Preprocess function is called"
+        assert self.inferencer.pre_process(inputs) == ("Preprocess function is called", None)
 
     @e2e_pytest_unit
     def test_post_process(self, mocker) -> None:
@@ -337,12 +338,17 @@ class TestActionOVTask:
             def run(self, model):
                 return model
 
-        def mock_save_model(model, tempdir, model_name):
+        def mock_save_model(model, output_xml):
             """Mock function for save_model function."""
-            with open(os.path.join(tempdir, "model.xml"), "wb") as f:
+            with open(output_xml, "wb") as f:
                 f.write(np.ndarray(1).tobytes())
-            with open(os.path.join(tempdir, "model.bin"), "wb") as f:
+            bin_path = pathlib.Path(output_xml).parent / pathlib.Path(str(pathlib.Path(output_xml).stem) + ".bin")
+            with open(bin_path, "wb") as f:
                 f.write(np.ndarray(1).tobytes())
+
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.ov.Core.read_model", autospec=True)
+        mocker.patch("otx.algorithms.action.adapters.openvino.task.ov.serialize", new=mock_save_model)
+        fake_quantize = mocker.patch("otx.algorithms.action.adapters.openvino.task.nncf.quantize", autospec=True)
 
         mocker.patch(
             "otx.algorithms.action.adapters.openvino.task.get_ovdataloader", return_value=MockDataloader(self.dataset)
@@ -350,18 +356,13 @@ class TestActionOVTask:
         mocker.patch(
             "otx.algorithms.action.adapters.openvino.task.DataLoaderWrapper", return_value=MockDataloader(self.dataset)
         )
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.load_model", return_value=self.model)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.get_nodes_by_type", return_value=False)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.IEEngine", return_value=True)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.create_pipeline", return_value=MockPipeline())
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.compress_model_weights", return_value=True)
-        mocker.patch("otx.algorithms.action.adapters.openvino.task.save_model", side_effect=mock_save_model)
         mocker.patch(
             "otx.algorithms.action.adapters.openvino.task.ActionOpenVINOTask.load_inferencer",
             return_value=MockOVInferencer(),
         )
         task = ActionOpenVINOTask(self.task_environment)
         task.optimize(OptimizationType.POT, self.dataset, self.model, OptimizationParameters())
+        fake_quantize.assert_called_once()
         assert self.model.get_data("openvino.xml") is not None
         assert self.model.get_data("openvino.bin") is not None
         assert self.model.model_format == ModelFormat.OPENVINO
@@ -390,7 +391,5 @@ class TestDataLoaderWrapper:
         """Test __getitem__ function."""
 
         out = self.dataloader[0]
-        assert out[0][0] == 0
-        assert isinstance(out[0][1], AnnotationSceneEntity)
-        assert len(out[1]) == 10
-        assert isinstance(out[2], dict)
+        assert isinstance(out[1], AnnotationSceneEntity)
+        assert len(out[0]) == 29

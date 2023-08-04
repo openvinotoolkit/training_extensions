@@ -71,6 +71,17 @@ class TestBaseRecordingForwardHook:
         hook._handle = MockHandle()
         hook.__exit__(None, None, None)
 
+    @e2e_pytest_unit
+    def test_normalize_map(self) -> None:
+        hook = MockBaseRecordingForwardHook(torch.nn.Module())
+        maps = torch.full((2, 2), 0.5, dtype=torch.float32)
+        norm_map = hook._normalize_map(maps)
+        assert (norm_map == torch.zeros((2, 2), dtype=torch.uint8)).all()
+
+        maps = torch.full((2, 2, 2), 0.5, dtype=torch.float32)
+        norm_map = hook._normalize_map(maps)
+        assert (norm_map == torch.zeros((2, 2, 2), dtype=torch.uint8)).all()
+
 
 class TestEigenCamHook:
     """Test class for EigenCamHook."""

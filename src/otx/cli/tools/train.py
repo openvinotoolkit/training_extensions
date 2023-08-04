@@ -22,6 +22,8 @@ from contextlib import ExitStack
 from pathlib import Path
 from typing import Optional
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
@@ -36,6 +38,7 @@ from otx.cli.utils.multi_gpu import MultiGPUManager, is_multigpu_child_process
 from otx.cli.utils.parser import (
     MemSizeAction,
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 from otx.cli.utils.report import get_otx_report
@@ -159,7 +162,7 @@ def get_args():
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
     if not hyper_parameters and "params" in params:
         if "params" in params:
             params = params[params.index("params") :]

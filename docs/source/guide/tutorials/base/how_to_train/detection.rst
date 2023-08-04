@@ -52,8 +52,8 @@ Dataset preparation
   Currently, we support the following object detection dataset formats:
 
   - `COCO <https://cocodataset.org/#format-data>`_
-  - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/docs/formats/pascal_voc/>`_
-  - `YOLO <https://openvinotoolkit.github.io/datumaro/docs/formats/yolo/>`_
+  - `Pascal-VOC <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/pascal_voc.html>`_
+  - `YOLO <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/yolo.html>`_
 
 1. Clone a repository with
 `WGISD dataset <https://github.com/thsant/wgisd>`_.
@@ -134,13 +134,13 @@ The list of supported templates for object detection is available with the comma
 .. code-block::
 
   (otx) ...$ otx find --template --task DETECTION
-  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
-  |    TASK   |                 ID                |  NAME |                                      PATH                                     |
-  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
-  | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-  | DETECTION |  Custom_Object_Detection_Gen3_SSD |  SSD  |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
-  | DETECTION | Custom_Object_Detection_Gen3_ATSS |  ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
-  +-----------+-----------------------------------+-------+-------------------------------------------------------------------------------+
+  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
+  |    TASK   |                       ID                      |       NAME       |                                   BASE PATH                                   |
+  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
+  | DETECTION |        Custom_Object_Detection_Gen3_SSD       |       SSD        |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
+  | DETECTION |         Custom_Object_Detection_YOLOX         |      YOLOX       | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
+  | DETECTION |        Custom_Object_Detection_Gen3_ATSS      | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
+  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+v
 
 .. _detection_workspace:
 
@@ -165,7 +165,7 @@ Let's prepare the object detection workspace running the following command:
   (otx) ...$ otx build Custom_Object_Detection_Gen3_ATSS --train-data-roots data/wgisd
 
   # or its name
-  (otx) ...$ otx build ATSS --train-data-roots data/wgisd
+  (otx) ...$ otx build MobileNetV2-ATSS --train-data-roots data/wgisd
 
   # or its path
   (otx) ...$ otx build otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --train-data-roots data/wgisd
@@ -173,7 +173,7 @@ Let's prepare the object detection workspace running the following command:
   ...
   [*] Workspace Path: otx-workspace-DETECTION
   [*] Load Model Template ID: Custom_Object_Detection_Gen3_ATSS
-  [*] Load Model Name: ATSS
+  [*] Load Model Name: MobileNetV2-ATSS
   [*]     - Updated: otx-workspace-DETECTION/model.py
   [*]     - Updated: otx-workspace-DETECTION/data_pipeline.py
   [*]     - Updated: otx-workspace-DETECTION/tile_pipeline.py
@@ -357,6 +357,22 @@ using ``otx eval`` and passing the IR model path to the ``--load-weights`` param
   2023-01-10 06:24:54,944 | INFO : Start OpenVINO metric evaluation
   2023-01-10 06:24:55,117 | INFO : OpenVINO metric evaluation completed
   Performance(score: 0.5487693710118504, dashboard: (1 metric groups))
+
+
+4. ``Optional`` Additionally, we can tune confidence threshold via the command line.
+Learn more about template-specific parameters using ``otx export params --help``.
+
+For example, if there are too many False-Positive predictions (there we have a prediction, but don't have annotated object for it), we can suppress its number by increasing the confidence threshold as it is shown below.
+
+Please note, by default, the optimal confidence threshold is detected based on validation results to maximize the final F1 metric. To set a custom confidence threshold, please disable ``result_based_confidence_threshold`` option.
+
+.. code-block::
+
+  (otx) ...$ otx export --load-weights ../outputs/weights.pth \
+                      --output ../outputs \
+                      params \
+                      --postprocessing.confidence_threshold 0.5 \
+                      --postprocessing.result_based_confidence_threshold false
 
 
 *************

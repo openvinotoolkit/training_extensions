@@ -14,6 +14,4 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import VisualPromptingConfig
-
-__all__ = ["VisualPromptingConfig"]
+from .configuration import VisualPromptingConfig  # noqa: F401

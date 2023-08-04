@@ -10,10 +10,13 @@ from random import sample
 from time import time
 from typing import Callable, Dict, List, Tuple, Union
 
+import cv2
 import numpy as np
 from mmcv.ops import nms
 from mmdet.core import BitmapMasks, bbox2result
 from tqdm import tqdm
+
+from otx.api.utils.dataset_utils import non_linear_normalization
 
 
 def timeit(func) -> Callable:
@@ -129,6 +132,22 @@ class Tile:
             pbar.update(1)
         return tiles, cache_result
 
+    def random_select_gt(self, result: Dict, num: int):
+        """Randomly select ground truth masks for each image.
+
+        Limit the number of ground truth masks by randomly select `num` due to RAM OOM for Instance Segmentation task.
+
+        Args:
+            result (Dict): the original image-level result (i.e. the original image annotation)
+            num (int): the number of ground truth masks to be selected
+        """
+
+        if "gt_masks" in result and len(result["gt_masks"]) > num:
+            indices = np.random.choice(len(result["gt_bboxes"]), size=num, replace=False)
+            result["gt_bboxes"] = result["gt_bboxes"][indices]
+            result["gt_labels"] = result["gt_labels"][indices]
+            result["gt_masks"] = result["gt_masks"][indices]
+
     def gen_single_img(self, result: Dict, dataset_idx: int) -> Dict:
         """Add full-size image for inference or training.
 
@@ -139,21 +158,15 @@ class Tile:
         Returns:
             Dict: annotation with some other useful information for data pipeline.
         """
+        self.random_select_gt(result, self.max_annotation)
         result["full_res_image"] = True
         result["tile_box"] = (0, 0, result["img_shape"][1], result["img_shape"][0])
         result["dataset_idx"] = dataset_idx
         result["original_shape_"] = result["img_shape"]
         result["uuid"] = str(uuid.uuid4())
-        result["gt_bboxes"] = np.zeros((0, 4), dtype=np.float32)
-        result["gt_labels"] = np.array([], dtype=int)
-        result["gt_masks"] = []
-
-        # Limit the number of ground truth by randomly select 5000 get due to RAM OOM
-        if "gt_masks" in result and len(result["gt_masks"]) > self.max_annotation:
-            indices = np.random.choice(len(result["gt_bboxes"]), size=self.max_annotation, replace=False)
-            result["gt_bboxes"] = result["gt_bboxes"][indices]
-            result["gt_labels"] = result["gt_labels"][indices]
-            result["gt_masks"] = result["gt_masks"][indices]
+        result["gt_bboxes"] = result["gt_bboxes"] if "gt_bboxes" in result else np.zeros((0, 4), dtype=np.float32)
+        result["gt_labels"] = result["gt_labels"] if "gt_labels" in result else np.array([], dtype=int)
+        result["gt_masks"] = result["gt_masks"] if "gt_masks" in result else []
         return result
 
     # pylint: disable=too-many-locals
@@ -168,6 +181,7 @@ class Tile:
             List[Dict]: a list of tile annotation with some other useful information for data pipeline.
         """
         tile_list = []
+        self.random_select_gt(result, self.max_annotation)
         gt_bboxes = result.get("gt_bboxes", np.zeros((0, 4), dtype=np.float32))
         gt_masks = result.get("gt_masks", None)
         gt_bboxes_ignore = result.get("gt_bboxes_ignore", np.zeros((0, 4), dtype=np.float32))
@@ -471,3 +485,107 @@ class Tile:
         if "gt_labels" in self.tiles[idx]:
             ann["labels"] = self.tiles[idx]["gt_labels"]
         return ann
+
+    def merge_vectors(self, feature_vectors: List[np.ndarray]) -> np.ndarray:
+        """Merge tile-level feature vectors to image-level feature vector.
+
+        Args:
+            feature_vectors (List[np.ndarray]): tile-level feature vectors.
+
+        Returns:
+            merged_vectors (List[np.ndarray]): Merged vectors for each image.
+        """
+
+        image_vectors: dict = {}
+        for vector, tile in zip(feature_vectors, self.tiles):
+            data_idx = tile.get("index", None) if "index" in tile else tile.get("dataset_idx", None)
+            if data_idx in image_vectors:
+                # tile vectors
+                image_vectors[data_idx].append(vector)
+            else:
+                # whole image vector
+                image_vectors[data_idx] = [vector]
+        return [np.average(image, axis=0) for idx, image in image_vectors.items()]
+
+    def merge_maps(self, saliency_maps: Union[List[List[np.ndarray]], List[np.ndarray]]) -> List:
+        """Merge tile-level saliency maps to image-level saliency map.
+
+        Args:
+            saliency_maps (List[List[np.array] | np.ndarray]): tile-level saliency maps.
+            Each map is a list of maps for each detected class or None if class wasn't detected.
+
+        Returns:
+            merged_maps (List[list | np.ndarray | None]): Merged saliency maps for each image.
+        """
+
+        dtype = None
+        for map in saliency_maps:
+            for cl_map in map:
+                # find first class map which is not None
+                if cl_map is not None and dtype is None:
+                    dtype = cl_map.dtype
+                    feat_h, feat_w = cl_map.shape
+                    break
+            if dtype is not None:
+                break
+        else:
+            # if None for each class for each image
+            return saliency_maps[: self.num_images]
+
+        merged_maps = []
+        ratios = {}
+        num_classes = len(saliency_maps[0])
+
+        for orig_image in self.cached_results:
+            img_idx = orig_image["index"]
+            ratios[img_idx] = np.array([feat_h, feat_w]) / self.tile_size
+            image_h, image_w = orig_image["height"], orig_image["width"]
+
+            image_map_h = int(image_h * ratios[img_idx][0])
+            image_map_w = int(image_w * ratios[img_idx][1])
+            merged_maps.append([np.zeros((image_map_h, image_map_w)) for _ in range(num_classes)])
+
+        for map, tile in zip(saliency_maps[self.num_images :], self.tiles[self.num_images :]):
+            for class_idx in range(num_classes):
+                if map[class_idx] is None:
+                    continue
+                cls_map = map[class_idx]
+                img_idx = tile["dataset_idx"]
+                x_1, y_1, x_2, y_2 = tile["tile_box"]
+                y_1, x_1 = ((y_1, x_1) * ratios[img_idx]).astype(np.uint16)
+                y_2, x_2 = ((y_2, x_2) * ratios[img_idx]).astype(np.uint16)
+
+                map_h, map_w = cls_map.shape
+                # resize feature map if it got from the tile which width and height is less the tile_size
+                if (map_h > y_2 - y_1 > 0) and (map_w > x_2 - x_1 > 0):
+                    cls_map = cv2.resize(cls_map, (x_2 - x_1, y_2 - y_1))
+                # cut the rest of the feature map that went out of the image borders
+                map_h, map_w = y_2 - y_1, x_2 - x_1
+
+                for hi, wi in [(h_, w_) for h_ in range(map_h) for w_ in range(map_w)]:
+                    map_pixel = cls_map[hi, wi]
+                    # on tile overlap add 0.5 value of each tile
+                    if merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] != 0:
+                        merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] = 0.5 * (
+                            map_pixel + merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi]
+                        )
+                    else:
+                        merged_maps[img_idx][class_idx][y_1 + hi, x_1 + wi] = map_pixel
+
+        norm_maps = []
+        for merged_map, image_sal_map in zip(merged_maps, saliency_maps[: self.num_images]):
+            for class_idx in range(num_classes):
+                # don't have detections for this class on merged map
+                if (merged_map[class_idx] == 0).all():
+                    merged_map[class_idx] = None
+                else:
+                    image_map_cls = image_sal_map[class_idx]
+                    # resize the feature map for whole image to add it to merged saliency maps
+                    if image_map_cls is not None:
+                        map_h, map_w = merged_map[class_idx].shape
+                        image_map_cls = cv2.resize(image_map_cls, (map_w, map_h))
+                        merged_map[class_idx] += (0.5 * image_map_cls).astype(dtype)
+                    merged_map[class_idx] = non_linear_normalization(merged_map[class_idx])
+            norm_maps.append(merged_map)
+
+        return norm_maps

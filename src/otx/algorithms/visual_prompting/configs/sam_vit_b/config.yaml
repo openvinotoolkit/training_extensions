@@ -1,10 +1,19 @@
 dataset:
   task: visual_prompting
-  train_batch_size: 2
+  train_batch_size: 4
   val_batch_size: 1
   test_batch_size: 1
   num_workers: 4
   image_size: 1024 # dimensions to which images are resized (mandatory)
+  normalize:
+    mean:
+      - 123.675
+      - 116.28
+      - 103.53
+    std:
+      - 58.395
+      - 57.12
+      - 57.375
   offset_bbox: 20 # randomness for generating bounding box, pixel
 
 model:
@@ -18,10 +27,15 @@ model:
   freeze_prompt_encoder: true
   freeze_mask_decoder: false
   checkpoint: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+  # just for inference
+  return_single_mask: true
+  use_stability_score: false
+  stability_score_offset: 1.
+  return_extra_metrics: false
 
 optimizer:
   name: Adam
-  lr: 0.0001
+  lr: 0.000001
 
 callback:
   checkpoint: # arguments for ModelCheckpoint

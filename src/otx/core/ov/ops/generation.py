@@ -1,7 +1,7 @@
 """Generation-related module for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass
 
@@ -24,7 +24,7 @@ class RangeV4(Operation[RangeV4Attribute]):
     """RangeV4 class."""
 
     TYPE = "Range"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = RangeV4Attribute
 
     def forward(self, start, stop, step):

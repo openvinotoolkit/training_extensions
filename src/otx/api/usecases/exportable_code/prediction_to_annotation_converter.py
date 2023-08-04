@@ -5,11 +5,12 @@
 #
 
 import abc
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
-from openvino.model_zoo.model_api.models import utils
+from openvino.model_api.models import utils
+from openvino.model_api.models.utils import ClassificationResult
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -214,7 +215,7 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
             scored_label = ScoredLabel(self.labels[int(box.id)], float(box.score))
-            coords = np.array(box.get_coords(), dtype=float)
+            coords = np.array([box.xmin, box.ymin, box.xmax, box.ymax], dtype=float)
             if (coords[2] - coords[0]) * (coords[3] - coords[1]) < 1.0:
                 continue
             coords /= np.tile(image_size, 2)
@@ -285,7 +286,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         self.label_schema = label_schema
 
     def convert_to_annotation(
-        self, predictions: List[Tuple[int, float]], metadata: Optional[Dict] = None
+        self, predictions: ClassificationResult, metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
@@ -297,10 +298,8 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
         labels = []
-        for index, score in predictions:
-            labels.append(ScoredLabel(self.labels[index], float(score)))
-        if self.hierarchical:
-            labels = self.label_schema.resolve_labels_probabilistic(labels)
+        for label in predictions.top_labels:
+            labels.append(ScoredLabel(self.labels[label[0]], float(label[-1])))
 
         if not labels and self.empty_label:
             labels = [ScoredLabel(self.empty_label, probability=1.0)]
@@ -422,6 +421,34 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                 )
             ]
         return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
+
+
+class VisualPromptingToAnnotationConverter(IPredictionToAnnotationConverter):
+    """Converts Visual Prompting Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
+    """
+
+    def convert_to_annotation(self, hard_prediction: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:  # type: ignore
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            hard_prediction (np.ndarray): Hard_prediction from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
+        soft_prediction = metadata.get("soft_prediction", np.ones(hard_prediction.shape))
+        # TODO (sungchul): condition to distinguish between mask and polygon
+        annotations = create_annotation_from_segmentation_map(
+            hard_prediction=hard_prediction,
+            soft_prediction=soft_prediction,
+            label_map={1: metadata["label"].label},
+        )
+
+        return annotations
 
 
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):

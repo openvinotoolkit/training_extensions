@@ -1,7 +1,7 @@
 """Operation-related modules for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import re
 from dataclasses import dataclass, fields
@@ -32,7 +32,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
     """Operation class."""
 
     TYPE = ""
-    VERSION = -1
+    VERSION = ""
     ATTRIBUTE_FACTORY: Type[Attribute] = Attribute
 
     def __init__(self, name: str, **kwargs):
@@ -44,9 +44,9 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
     def from_ov(cls, ov_op):
         """Operation's from_ov function."""
         op_type = ov_op.get_type_name()
-        op_version = ov_op.get_version()
+        op_version = ov_op.get_type_info().version_id
         op_name = get_op_name(ov_op)
-        assert cls.TYPE and cls.VERSION >= 0
+        assert cls.TYPE and cls.VERSION
         assert op_type == cls.TYPE
         assert op_version == cls.VERSION
 
@@ -66,7 +66,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
         return self.TYPE
 
     @property
-    def version(self) -> int:
+    def version(self) -> str:
         """Operation's version property."""
         return self.VERSION
 

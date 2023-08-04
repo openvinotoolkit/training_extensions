@@ -390,3 +390,40 @@ class ImageTilingDataset(OTXDetDataset):
             merged_results (list[list | tuple]): Merged results of the dataset.
         """
         return self.tile_dataset.merge(results)
+
+    def merge_vectors(self, feature_vectors: List[np.ndarray], dump_vectors: bool) -> Union[np.ndarray, List[None]]:
+        """Merge tile-level feature vectors to image-level feature-vector.
+
+        Args:
+            feature_vectors (list[np.ndarray]): tile-level feature vectors.
+            dump_vectors (bool): whether to dump vectors.
+
+        Returns:
+            merged_vectors (np.ndarray | List[None]): Merged vector for each image.
+        """
+
+        if dump_vectors:
+            return self.tile_dataset.merge_vectors(feature_vectors)
+        else:
+            return [None] * self.num_samples
+
+    def merge_maps(self, saliency_maps: List, dump_maps: bool) -> List:
+        """Merge tile-level saliency maps to image-level saliency map.
+
+        Args:
+            saliency_maps (list[list | np.ndarray]): tile-level saliency maps.
+            dump_maps (bool): whether to dump saliency maps.
+
+        Returns:
+            merged_maps (List[list | np.ndarray | None]): Merged saliency map for each image.
+        """
+
+        if dump_maps:
+            return self.tile_dataset.merge_maps(saliency_maps)
+        else:
+            return [None] * self.num_samples
+
+    def __del__(self):
+        """Delete the temporary directory when the object is deleted."""
+        if getattr(self, "tmp_dir", False):
+            self.tmp_dir.cleanup()

@@ -7,7 +7,7 @@
 from omegaconf import DictConfig
 from torch import Tensor, nn
 
-from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones import (
+from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.backbones.vit import (
     build_vit,
 )
 
@@ -28,13 +28,14 @@ class SAMImageEncoder(nn.Module):
                 (f"{config.backbone} for image encoder of SAM is not implemented yet. " f"Use vit_b, l, or h.")
             )
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, images: Tensor) -> Tensor:
         """Forward function of image encoder.
 
         Args:
-            x (Tensor): Input tensor.
+            images (Tensor): Input tensor.
 
         Returns:
-            Tensor: Output tensor.
+            image_embeddings (Tensor): Output tensor.
         """
-        return self.backbone(x)
+        image_embeddings = self.backbone(images)
+        return image_embeddings

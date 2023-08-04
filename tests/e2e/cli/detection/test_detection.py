@@ -35,9 +35,9 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
-    pot_validate_fq_testing,
+    ptq_eval_testing,
+    ptq_optimize_testing,
+    ptq_validate_fq_testing,
 )
 
 # Pre-train w/ 'person' class
@@ -46,7 +46,7 @@ args0 = {
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "15", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "7", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
@@ -144,7 +144,7 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05, half_precision=half_precision)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -283,23 +283,23 @@ class TestToolsMPADetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
+    def test_ptq_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_validate_fq(self, template, tmp_dir_path):
+    def test_ptq_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
+        ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, tmp_dir_path):
+    def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

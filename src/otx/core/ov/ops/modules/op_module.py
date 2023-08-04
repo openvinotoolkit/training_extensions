@@ -1,13 +1,13 @@
 """Operation module for otx.core.ov.ops.modeuls."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import inspect
 from typing import Dict, List, Optional, Union
 
 import torch
-from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
+from openvino.runtime import Node
 
 from ..op import Operation
 from ..utils import convert_op_to_torch

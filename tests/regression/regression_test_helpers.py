@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Union
 
 from otx.api.entities.model_template import ModelTemplate
 
-TEST_TYPES = ["train", "export", "deploy", "nncf", "pot"]
+TEST_TYPES = ["train", "export", "deploy", "nncf", "ptq"]
 TASK_TYPES = [
     "classification",
     "detection",
@@ -62,8 +62,8 @@ TIME_LOG = {
     "deploy_eval_time": "Deploy eval time (sec.)",
     "nncf_time": "NNCF time (sec.)",
     "nncf_eval_time": "NNCF eval time (sec.)",
-    "pot_time": "POT time (sec.)",
-    "pot_eval_time": "POT eval time (sec.)",
+    "ptq_time": "PTQ time (sec.)",
+    "ptq_eval_time": "PTQ eval time (sec.)",
 }
 
 

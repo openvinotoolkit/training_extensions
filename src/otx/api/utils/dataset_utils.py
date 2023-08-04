@@ -259,3 +259,16 @@ def add_saliency_maps_to_dataset_item(
             roi=dataset_item.roi,
         )
         dataset_item.append_metadata_item(saliency_media, model=model)
+
+
+def non_linear_normalization(saliency_map: np.ndarray) -> np.ndarray:
+    """Use non-linear normalization y=x**1.5 for 2D saliency maps."""
+
+    min_soft_score = np.min(saliency_map)
+    # make merged_map distribution positive to perform non-linear normalization y=x**1.5
+    saliency_map = (saliency_map - min_soft_score) ** 1.5
+
+    max_soft_score = np.max(saliency_map)
+    saliency_map = 255.0 / (max_soft_score + 1e-12) * saliency_map
+
+    return np.uint8(np.floor(saliency_map))

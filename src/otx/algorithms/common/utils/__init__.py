@@ -19,14 +19,16 @@ from .callback import (
     OptimizationProgressCallback,
     TrainingProgressCallback,
 )
-from .data import get_cls_img_indices, get_image, get_old_new_img_indices
+from .data import OTXOpenVinoDataLoader, get_cls_img_indices, get_image, get_old_new_img_indices
 from .dist_utils import append_dist_rank_suffix
 from .ir import embed_ir_model_data
 from .utils import (
     UncopiableDefaultDict,
     get_arg_spec,
+    get_default_async_reqs_num,
     get_task_class,
     load_template,
+    read_py_config,
     set_random_seed,
 )
 
@@ -44,4 +46,7 @@ __all__ = [
     "get_image",
     "set_random_seed",
     "append_dist_rank_suffix",
+    "OTXOpenVinoDataLoader",
+    "read_py_config",
+    "get_default_async_reqs_num",
 ]

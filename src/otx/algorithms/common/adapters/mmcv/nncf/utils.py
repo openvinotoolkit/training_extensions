@@ -2,7 +2,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+import inspect
 import os
 from copy import deepcopy
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -117,6 +117,38 @@ def model_eval(
         return eval_res[metric_name]
 
 
+def nncf_state_dict_pre_hook(state_dict, prefix, *args, **kwargs):
+    """NNCF-specific state dict pre-hook.
+
+    This hook removes extra prefixes from nncf-related parameters
+    before loading to NNCF-ready model.
+    """
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        if "_nncf" in key:
+            if key.startswith("backbone"):
+                key = key.replace("backbone.", "", 1)
+        state_dict[key] = val
+
+    return state_dict
+
+
+def nncf_state_dict_hook(module, state_dict, prefix, *args, **kwargs):
+    """NNCF-specific state dict post-hook.
+
+    This hook prevents extra buffers from being saved to state dict,
+    reverting this behavior, introduced by mmcv.
+    """
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        if "_level_high" in key or "_level_low" in key:
+            continue
+
+        state_dict[key] = val
+
+    return state_dict
+
+
 # pylint: disable-next=too-many-branches,too-many-statements,too-many-locals
 def wrap_nncf_model(  # noqa: C901
     config: Config,
@@ -135,6 +167,7 @@ def wrap_nncf_model(  # noqa: C901
     check_nncf_is_enabled()
 
     from nncf import NNCFConfig
+    from nncf.config.utils import is_accuracy_aware_training
     from nncf.torch import (
         create_compressed_model,
         load_state,
@@ -261,12 +294,31 @@ def wrap_nncf_model(  # noqa: C901
     if "log_dir" in nncf_config:
         os.makedirs(nncf_config["log_dir"], exist_ok=True)
 
+    uncompressed_model_accuracy = None
+    if is_accuracy_aware_training(nncf_config) and model_eval_fn is not None:
+        # Evaluate model before compressing
+        uncompressed_model_accuracy = model_eval_fn(model)
+
+    model._register_state_dict_hook(nncf_state_dict_hook)
+    model._register_load_state_dict_pre_hook(nncf_state_dict_pre_hook)
+
     compression_ctrl, model = create_compressed_model(
         model,
         nncf_config,
         dummy_forward_fn=dummy_forward_fn,
         wrap_inputs_fn=wrap_inputs_fn,
         compression_state=compression_state,
+    )
+
+    if uncompressed_model_accuracy is not None:
+        model.nncf._uncompressed_model_accuracy = uncompressed_model_accuracy
+
+    # Hiding signature of the forward method is required for model export to work
+    model.__class__.forward.__signature__ = inspect.Signature(
+        [
+            inspect.Parameter("args", inspect.Parameter.VAR_POSITIONAL),
+            inspect.Parameter("kwargs", inspect.Parameter.VAR_KEYWORD),
+        ]
     )
 
     if resuming_state_dict:

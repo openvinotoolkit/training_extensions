@@ -1,9 +1,11 @@
 import pytest
 
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.adapters.torch.utils import bs_search_algo
 
 
+@e2e_pytest_unit
 class TestBsSearchAlgo:
     @pytest.fixture(autouse=True)
     def setup_test(self, mocker):

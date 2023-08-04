@@ -22,7 +22,8 @@ import shutil
 import subprocess  # nosec B404
 import tempfile
 from glob import glob
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+from warnings import warn
 
 import torch
 from anomalib.data.utils.transform import get_transforms
@@ -44,6 +45,7 @@ from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.algorithms.common.utils import embed_ir_model_data
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
@@ -302,6 +304,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             subprocess.run(optimize_command, check=True)
             bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
             xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
+
+            self._add_metadata_to_ir(xml_file)
+
             with open(bin_file, "rb") as file:
                 output_model.set_data("openvino.bin", file.read())
             with open(xml_file, "rb") as file:
@@ -312,6 +317,51 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
+
+    def _add_metadata_to_ir(self, xml_file: str) -> None:
+        """Adds the metadata to the model IR.
+
+        Adds the metadata to the model IR. So that it can be used with the new modelAPI.
+        This is because the metadata.json is not used by the new modelAPI.
+        # TODO CVS-114640
+        # TODO: Step 1. Remove metadata.json when modelAPI becomes the default inference method.
+        # TODO: Step 2. Remove this function when Anomalib is upgraded as the model graph will contain the required ops
+        # TODO: Step 3. Update modelAPI to remove pre/post-processing steps when Anomalib version is upgraded.
+        """
+        metadata = self._get_metadata_dict()
+        extra_model_data: Dict[Tuple[str, str], Any] = {}
+        for key, value in metadata.items():
+            if key in ("transform", "min", "max"):
+                continue
+            extra_model_data[("model_info", key)] = value
+        # Add transforms
+        if "transform" in metadata:
+            for transform_dict in metadata["transform"]["transform"]["transforms"]:
+                transform = transform_dict.pop("__class_fullname__")
+                if transform == "Normalize":
+                    extra_model_data[("model_info", "mean_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["mean"]]
+                    )
+                    extra_model_data[("model_info", "scale_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["std"]]
+                    )
+                elif transform == "Resize":
+                    extra_model_data[("model_info", "orig_height")] = transform_dict["height"]
+                    extra_model_data[("model_info", "orig_width")] = transform_dict["width"]
+                else:
+                    warn(f"Transform {transform} is not supported currently")
+        # Since we only need the diff of max and min, we fuse the min and max into one op
+        if "min" in metadata and "max" in metadata:
+            extra_model_data[("model_info", "normalization_scale")] = metadata["max"] - metadata["min"]
+
+        extra_model_data[("model_info", "reverse_input_channels")] = True
+        extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
+        extra_model_data[("model_info", "labels")] = ["Normal", "Anomaly"]
+        embed_ir_model_data(xml_file, extra_model_data)
+
+    def _serialize_list(self, arr: Union[Tuple, List]) -> str:
+        """Converts a list to space separated string."""
+        return " ".join(map(str, arr))
 
     def model_info(self) -> Dict:
         """Return model info to save the model weights.
@@ -348,6 +398,12 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
+        """Sets metadata in output_model."""
+        metadata = self._get_metadata_dict()
+        output_model.set_data("metadata", json.dumps(metadata).encode())
+
+    def _get_metadata_dict(self) -> Dict[str, Any]:
+        """Returns metadata dict."""
         image_threshold = (
             self.model.image_threshold.value.cpu().numpy().tolist() if hasattr(self.model, "image_threshold") else 0.5
         )
@@ -374,7 +430,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             else:
                 transform = self.trainer.datamodule.train_dataloader().dataset.transform
         metadata = {
-            "transform": transform.to_dict(),
+            # TODO: Replace with transform.to_dict() when OTX supports albumentations 1.3.0
+            "transform": {"transform": transform._to_dict()},
             "image_threshold": image_threshold,
             "pixel_threshold": pixel_threshold,
             "image_shape": list(self.config.model.input_size),
@@ -384,7 +441,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             metadata["max"] = max
         # Set the task type for inferencer
         metadata["task"] = str(self.task_type).lower().split("_")[-1]
-        output_model.set_data("metadata", json.dumps(metadata).encode())
+        return metadata
 
     @staticmethod
     def _is_docker() -> bool:

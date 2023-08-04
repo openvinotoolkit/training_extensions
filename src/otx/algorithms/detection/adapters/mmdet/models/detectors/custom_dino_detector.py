@@ -164,7 +164,7 @@ if is_mmdeploy_enabled():
 
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(feats)
-            saliency_map = ActivationMapHook.func(cls_scores)
+            saliency_map = ActivationMapHook(self).func(cls_scores)
             return (*bbox_results, feature_vector, saliency_map)
 
         return bbox_results

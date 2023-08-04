@@ -21,24 +21,25 @@ import os
 import tempfile
 import time
 import warnings
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
+import nncf
 import numpy as np
+import openvino.runtime as ov
 from addict import Dict as ADDict
-from compression.api import DataLoader
-from compression.engines.ie_engine import IEEngine
-from compression.graph import load_model, save_model
-from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
-from compression.pipeline.initializer import create_pipeline
+from nncf.common.quantization.structs import QuantizationPreset
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
+from openvino.model_api.models.utils import ClassificationResult
 
-from otx.algorithms.classification.adapters.openvino import model_wrappers
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
-    get_cls_inferencer_configuration,
 )
-from otx.algorithms.common.utils.utils import get_default_async_reqs_num
+from otx.algorithms.common.utils import OTXOpenVinoDataLoader
+from otx.algorithms.common.utils.ir import check_if_quantized
+from otx.algorithms.common.utils.utils import get_default_async_reqs_num, read_py_config
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
@@ -63,7 +64,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     ClassificationToAnnotationConverter,
 )
@@ -77,17 +78,11 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 
-try:
-    from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-    from openvino.model_zoo.model_api.models import Model
-except ImportError:
-    warnings.warn("ModelAPI was not found.")
-
 logger = logging.getLogger(__name__)
 
 
 # TODO: refactoring to Sphinx style.
-class ClassificationOpenVINOInferencer(BaseInferencer):
+class ClassificationOpenVINOInferencer(IInferencer):
     """ClassificationOpenVINOInferencer class in OpenVINO task."""
 
     def __init__(
@@ -117,89 +112,44 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
             max_num_requests=num_requests,
             plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
-        self.configuration = get_cls_inferencer_configuration(self.label_schema)
-        self.model = Model.create_model("otx_classification", model_adapter, self.configuration, preload=True)
-
+        self.model = Model.create_model(model_adapter, "Classification", {}, preload=True)
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
         self.callback_exceptions: List[Exception] = []
-        self.model.model_adapter.set_callback(self._async_callback)
-
-    def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        """Pre-process function of OpenVINO Classification Inferencer."""
-
-        return self.model.preprocess(image)
+        self.model.inference_adapter.set_callback(self._async_callback)
 
     def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
-            res_copy_func, args = callback_args
-            id, preprocessing_meta, result_handler = args
-            prediction = res_copy_func(request)
-
-            processed_prediciton = self.post_process(prediction, preprocessing_meta)
-            aux_data = self.model.postprocess_aux_outputs(prediction, preprocessing_meta)
-            result_handler(id, processed_prediciton, aux_data)
+            id, preprocessing_meta, result_handler = callback_args
+            raw_prediction = self.model.inference_adapter.copy_raw_result(request)
+            processed_prediciton = self.model.postprocess(raw_prediction, preprocessing_meta)
+            annotation = self.converter.convert_to_annotation(processed_prediciton, preprocessing_meta)
+            aux_data = (
+                processed_prediciton.raw_scores,
+                processed_prediciton.saliency_map,
+                processed_prediciton.feature_vector,
+            )
+            result_handler(id, annotation, aux_data)
 
         except Exception as e:
             self.callback_exceptions.append(e)
 
-    def post_process(
-        self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
-    ) -> Optional[AnnotationSceneEntity]:
-        """Post-process function of OpenVINO Classification Inferencer."""
-
-        classification = self.model.postprocess(prediction, metadata)
-        return self.converter.convert_to_annotation(classification, metadata)
-
-    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, np.ndarray, Any]:
+    def predict(self, image: np.ndarray) -> Tuple[ClassificationResult, AnnotationSceneEntity]:
         """Predict function of OpenVINO Classification Inferencer."""
-
-        image, metadata = self.pre_process(image)
-        raw_predictions = self.forward(image)
-        predictions = self.post_process(raw_predictions, metadata)
-        probs, actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
-
-        return predictions, probs, actmap, repr_vectors, act_score
+        cls_result = self.model(image)
+        return cls_result, self.converter.convert_to_annotation(cls_result)
 
     def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
         if not self.model.is_ready():
             self.model.await_any()
-        image, metadata = self.pre_process(image)
+        image, metadata = self.model.preprocess(image)
         callback_data = id, metadata, result_handler
-        self.model.infer_async(image, callback_data)
+        self.model.inference_adapter.infer_async(image, callback_data)
 
     def await_all(self) -> None:
         """Await all running infer requests if any."""
         self.model.await_all()
-
-    def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-        """Forward function of OpenVINO Classification Inferencer."""
-
-        return self.model.infer_sync(image)
-
-
-class OTXOpenVinoDataLoader(DataLoader):
-    """DataLoader implementation for ClassificationOpenVINOTask."""
-
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
-        super().__init__(config=None)
-        self.dataset = dataset
-        self.inferencer = inferencer
-
-    def __getitem__(self, index: int):
-        """Get item from dataset."""
-
-        image = self.dataset[index].numpy
-        annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(image)
-
-        return (index, annotation), inputs, metadata
-
-    def __len__(self):
-        """Get length of dataset."""
-
-        return len(self.dataset)
 
 
 class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IExplainTask, IOptimizationTask):
@@ -210,6 +160,8 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         self.hparams = self.task_environment.get_hyper_parameters(ClassificationConfig)
         self.model = self.task_environment.model
         self.inferencer = self.load_inferencer()
+        template_file_path = self.task_environment.model_template.model_template_path
+        self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
     def load_inferencer(self) -> ClassificationOpenVINOInferencer:
         """load_inferencer function of ClassificationOpenVINOTask."""
@@ -246,19 +198,26 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
             dataset_item = dataset[id]
-            probs, saliency_map, repr_vector, act_score = aux_data
+            probs, saliency_map, repr_vector = aux_data
             item_labels = predicted_scene.annotations[0].get_labels()
             dataset_item.append_labels(item_labels)
-            active_score_media = FloatMetadata(name="active_score", value=act_score, float_type=FloatType.ACTIVE_SCORE)
-            dataset_item.append_metadata_item(active_score_media, model=self.model)
 
-            probs_meta = TensorEntity(name="probabilities", numpy=probs.reshape(-1))
-            dataset_item.append_metadata_item(probs_meta, model=self.model)
+            if probs is not None:
+                act_score = np.max(probs) - np.min(probs)
+                active_score_media = FloatMetadata(
+                    name="active_score", value=act_score, float_type=FloatType.ACTIVE_SCORE
+                )
+                dataset_item.append_metadata_item(active_score_media, model=self.model)
+
+                probs_meta = TensorEntity(name="probabilities", numpy=probs.reshape(-1))
+                dataset_item.append_metadata_item(probs_meta, model=self.model)
 
             if dump_features:
-                if saliency_map is not None and repr_vector is not None:
+                if saliency_map.ndim > 1 and repr_vector.ndim > 0:
                     feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
                     dataset_item.append_metadata_item(feature_vec_media, model=self.model)
+                    if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
+                        saliency_map = saliency_map.squeeze()
 
                     add_saliency_maps_to_dataset_item(
                         dataset_item=dataset_item,
@@ -282,10 +241,8 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             if enable_async_inference:
                 self.inferencer.enqueue_prediction(dataset_item.numpy, i - 1, add_prediction)
             else:
-                predicted_scene, probs, saliency_map, repr_vector, act_score = self.inferencer.predict(
-                    dataset_item.numpy
-                )
-                add_prediction(i - 1, predicted_scene, (probs, saliency_map, repr_vector, act_score))
+                cls_result, predicted_scene = self.inferencer.predict(dataset_item.numpy)
+                add_prediction(i - 1, predicted_scene, (None, cls_result.saliency_map, cls_result.feature_vector))
 
             end_time = time.perf_counter() - start_time
             total_time += end_time
@@ -316,12 +273,18 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, _, saliency_map, _, _ = self.inferencer.predict(dataset_item.numpy)
-            if saliency_map is None:
+            cls_result, predicted_scene = self.inferencer.predict(dataset_item.numpy)
+
+            if cls_result.saliency_map.ndim < 2:
                 raise RuntimeError(
                     "There is no Saliency Map in OpenVINO IR model output. "
                     "Please export model to OpenVINO IR with dump_features"
                 )
+
+            if cls_result.saliency_map.ndim == 4 and cls_result.saliency_map.shape[0] == 1:
+                saliency_map = cls_result.saliency_map.squeeze()
+            else:
+                saliency_map = cls_result.saliency_map
 
             item_labels = predicted_scene.annotations[0].get_labels()
             dataset_item.append_labels(item_labels)
@@ -352,7 +315,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         logger.info("Deploying the model")
 
         work_dir = os.path.dirname(demo.__file__)
-        parameters = get_cls_deploy_config(self.task_environment.label_schema, self.inferencer.configuration)
+        parameters = get_cls_deploy_config(self.task_environment.label_schema, {})
 
         if self.model is None:
             raise RuntimeError("deploy failed, model is None")
@@ -363,15 +326,6 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
-            # model_wrappers files
-            for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
-                if "__pycache__" in root:
-                    continue
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arch.write(
-                        file_path, os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1])
-                    )
             # other python files
             arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
@@ -390,10 +344,12 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         """Optimize function of ClassificationOpenVINOTask."""
 
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("POT is the only supported optimization type for OpenVino models")
+            raise ValueError("PTQ is the only supported optimization type for OpenVino models")
 
         dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
+
+        quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])
 
         if self.model is None:
             raise RuntimeError("optimize failed, model is None")
@@ -406,47 +362,38 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             with open(bin_path, "wb") as f:
                 f.write(self.model.get_data("openvino.bin"))
 
-            model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
-
-            model = load_model(model_config)
-
-            if get_nodes_by_type(model, ["FakeQuantize"]):
-                raise RuntimeError("Model is already optimized by POT")
+            ov_model = ov.Core().read_model(xml_path)
+            if check_if_quantized(ov_model):
+                raise RuntimeError("Model is already optimized by PTQ")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
 
-        engine_config = ADDict({"device": "CPU"})
+        optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
+        ptq_config = ADDict()
+        if os.path.exists(optimization_config_path):
+            ptq_config = read_py_config(optimization_config_path)
+        else:
+            logger.info("PTQ config is not loaded")
 
-        stat_subset_size = self.hparams.pot_parameters.stat_subset_size
-        preset = self.hparams.pot_parameters.preset.name.lower()
+        ptq_config.update(
+            subset_size=min(self.hparams.pot_parameters.stat_subset_size, len(data_loader)),
+            preset=QuantizationPreset(self.hparams.pot_parameters.preset.name.lower()),
+        )
 
-        algorithms = [
-            {
-                "name": "DefaultQuantization",
-                "params": {
-                    "target_device": "ANY",
-                    "preset": preset,
-                    "stat_subset_size": min(stat_subset_size, len(data_loader)),
-                    "shuffle_data": True,
-                },
-            }
-        ]
-
-        engine = IEEngine(config=engine_config, data_loader=data_loader, metric=None)
-
-        pipeline = create_pipeline(algorithms, engine)
-
-        compressed_model = pipeline.run(model)
-
-        compress_model_weights(compressed_model)
+        compressed_model = nncf.quantize(
+            ov_model,
+            quantization_dataset,
+            **ptq_config,
+        )
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
-            save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as f:
+            xml_path = os.path.join(tempdir, "model.xml")
+            ov.serialize(compressed_model, xml_path)
+            with open(xml_path, "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
@@ -464,4 +411,4 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
-        logger.info("POT optimization completed")
+        logger.info("PQT optimization completed")

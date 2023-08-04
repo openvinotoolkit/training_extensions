@@ -47,6 +47,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
@@ -374,7 +375,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         model.CLASSES = target_classes
 
         if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
 
@@ -423,6 +424,18 @@ class MMSegmentationTask(OTXSegmentationTask):
     ):
         """Export function of OTX Segmentation Task."""
         # copied from OTX inference_task.py
+        self._data_cfg = ConfigDict(
+            data=ConfigDict(
+                train=ConfigDict(
+                    otx_dataset=None,
+                    labels=self._labels,
+                ),
+                test=ConfigDict(
+                    otx_dataset=None,
+                    labels=self._labels,
+                ),
+            )
+        )
         self._init_task(export=True)
 
         cfg = self.configure(False, "test", None)

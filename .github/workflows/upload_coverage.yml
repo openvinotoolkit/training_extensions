@@ -1,7 +1,7 @@
 name: Upload coverage
 on:
   workflow_run:
-    workflows: ["Pre Checks"]
+    workflows: ["PR Checks"]
     types:
       - completed
 

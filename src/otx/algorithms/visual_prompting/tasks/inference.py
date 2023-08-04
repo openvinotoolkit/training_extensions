@@ -16,10 +16,13 @@
 
 import ctypes
 import io
+import json
 import os
 import shutil
+import subprocess
 import tempfile
 import time
+import warnings
 from collections import OrderedDict
 from typing import Dict, List, Optional, Union
 
@@ -45,6 +48,7 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import (
     ModelEntity,
+    ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
     OptimizationMethod,
@@ -65,7 +69,7 @@ logger = get_logger()
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Visual Prompting Task.
 
-    Train, Infer, Export, Optimize and Deploy an Visual Prompting Task.
+    Train, Infer, and Export an Visual Prompting Task.
 
     Args:
         task_environment (TaskEnvironment): OTX Task environment.
@@ -86,9 +90,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         # Hyperparameters.
         self._work_dir_is_temp = False
         self.output_path = output_path
+        self.mode = "train"
+        if task_environment.model is not None and task_environment.model.train_dataset is None:
+            self.mode = "export"
         if self.output_path is None:
             self.output_path = tempfile.mkdtemp(prefix="otx-visual_prompting")
             self._work_dir_is_temp = True
+            self.mode = "inference"
         self.config = self.get_config()
 
         # Set default model attributes.
@@ -111,33 +119,29 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
 
         # set checkpoints
-        resume_from_checkpoint = model_checkpoint = None
-        if self.task_environment.model is not None:
-            # self.task_environment.model is set for two cases:
-            # 1. otx train : args.load_weights or args.resume_from
-            #   - path and resume are set into model_adapters
-            # 2. otx eval
-            #   - both resume_from and path are not needed to be set, path is not set into model_adapters,
-            #     so it can be distinguished by using it
-            resume_from_checkpoint = model_checkpoint = self.task_environment.model.model_adapters.get("path", None)
-            if isinstance(resume_from_checkpoint, str) and resume_from_checkpoint.endswith(".pth"):
-                # TODO (sungchul): support resume from checkpoint
-                logger.info("[*] Pytorch checkpoint cannot be used for resuming. It will be supported.")
-                resume_from_checkpoint = None
-            elif not self.task_environment.model.model_adapters.get("resume", False):
+        model_checkpoint: Optional[str] = None
+        resume_from_checkpoint: Optional[str] = None
+        if self.mode == "train" and self.task_environment.model is not None:
+            # when args.load_weights or args.resume_from is set
+            resume_from_checkpoint = model_checkpoint = self.task_environment.model.model_adapters.get("path", None)  # type: ignore  # noqa: E501
+            if self.task_environment.model.model_adapters.get("resume", False):
+                if resume_from_checkpoint.endswith(".pth"):  # type: ignore
+                    logger.info("[*] Pytorch checkpoint cannot be used for resuming. It will be supported.")
+                    resume_from_checkpoint = None
+                else:
+                    model_checkpoint = None
+            else:
                 # If not resuming, set resume_from_checkpoint to None to avoid training in resume environment
                 # and saving to configuration.
                 resume_from_checkpoint = None
-            else:
-                # If resuming, set model_checkpoint to None to avoid loading weights twice and saving to configuration.
-                model_checkpoint = None
 
         config = get_visual_promtping_config(
-            self.model_name,
-            self.hyper_parameters,
-            self.output_path,  # type: ignore[arg-type]
-            model_checkpoint,  # type: ignore[arg-type]
-            resume_from_checkpoint,  # type: ignore[arg-type]
+            task_name=self.model_name,
+            otx_config=self.hyper_parameters,
+            config_dir=self.base_dir,
+            mode=self.mode,
+            model_checkpoint=model_checkpoint,
+            resume_from_checkpoint=resume_from_checkpoint,
         )
 
         config.dataset.task = "visual_prompting"
@@ -248,8 +252,55 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def _export_to_onnx(self, onnx_path: str):
-        raise NotImplementedError
+    def _export_to_onnx(self, onnx_path: Dict[str, str]):
+        """Export model to ONNX.
+
+        Args:
+             onnx_path (Dict[str, str]): Paths to save ONNX models.
+        """
+        height = width = self.config.model.image_size
+        for module, path in onnx_path.items():
+            if module == "visual_prompting_image_encoder":
+                dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float)}
+                output_names = ["image_embeddings"]
+                dynamic_axes = None
+                model_to_export = self.model.image_encoder
+
+            else:
+                # sam without backbone
+                embed_dim = self.model.prompt_encoder.embed_dim
+                embed_size = self.model.prompt_encoder.image_embedding_size
+                mask_input_size = [4 * x for x in embed_size]
+                dynamic_axes = {
+                    "point_coords": {1: "num_points"},
+                    "point_labels": {1: "num_points"},
+                }
+                dummy_inputs = {
+                    "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
+                    "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float),
+                    "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
+                    "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
+                    "has_mask_input": torch.tensor([[1]], dtype=torch.float),
+                }
+                output_names = ["iou_predictions", "low_res_masks"]
+                model_to_export = self.model
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)
+                warnings.filterwarnings("ignore", category=UserWarning)
+                with open(path, "wb") as f:
+                    torch.onnx.export(
+                        model_to_export,
+                        tuple(dummy_inputs.values()),
+                        f,
+                        export_params=True,
+                        verbose=False,
+                        opset_version=12,
+                        do_constant_folding=True,
+                        input_names=list(dummy_inputs.keys()),
+                        output_names=output_names,
+                        dynamic_axes=dynamic_axes,
+                    )
 
     def export(  # noqa: D102
         self,
@@ -258,7 +309,83 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = False,
     ) -> None:
-        raise NotImplementedError
+        """Export model to OpenVINO IR.
+
+        When SAM gets an image for inference, image encoder runs just once to get image embedding.
+        After that, prompt encoder + mask decoder runs repeatedly to get mask prediction.
+        For this case, SAM should be divided into two parts, image encoder and prompt encoder + mask decoder.
+
+        Args:
+            export_type (ExportType): Export type should be ExportType.OPENVINO
+            output_model (ModelEntity): The model entity in which to write the OpenVINO IR data
+            precision (bool): Output model weights and inference precision
+            dump_features (bool): Flag to return "feature_vector" and "saliency_map".
+
+        Raises:
+            Exception: If export_type is not ExportType.OPENVINO
+        """
+        if dump_features:
+            logger.warning(
+                "Feature dumping is not implemented for the visual prompting task."
+                "The saliency maps and representation vector outputs will not be dumped in the exported model."
+            )
+
+        if export_type == ExportType.ONNX:
+            output_model.model_format = ModelFormat.ONNX
+            output_model.optimization_type = ModelOptimizationType.ONNX
+            if precision == ModelPrecision.FP16:
+                raise RuntimeError("Export to FP16 ONNX is not supported")
+        elif export_type == ExportType.OPENVINO:
+            output_model.model_format = ModelFormat.OPENVINO
+            output_model.optimization_type = ModelOptimizationType.MO
+        else:
+            raise RuntimeError(f"not supported export type {export_type}")
+
+        self.precision[0] = precision
+        output_model.has_xai = dump_features
+
+        logger.info("Exporting to the OpenVINO model.")
+        onnx_path = {
+            "visual_prompting_image_encoder": os.path.join(self.output_path, "visual_prompting_image_encoder.onnx"),
+            "visual_prompting_decoder": os.path.join(self.output_path, "visual_prompting_decoder.onnx"),
+        }
+        self._export_to_onnx(onnx_path)
+
+        if export_type == ExportType.ONNX:
+            for module, path in onnx_path.items():
+                with open(path, "rb") as file:
+                    output_model.set_data(f"{module}.onnx", file.read())
+        else:
+            for module, path in onnx_path.items():
+                optimize_command = [
+                    "mo",
+                    "--input_model",
+                    path,
+                    "--output_dir",
+                    self.output_path,
+                    "--model_name",
+                    module,
+                ]
+                if module == "visual_prompting_image_encoder":
+                    optimize_command += [
+                        "--mean_values",
+                        str(self.config.dataset.normalize.mean).replace(", ", ","),
+                        "--scale_values",
+                        str(self.config.dataset.normalize.std).replace(", ", ","),
+                    ]
+                if precision == ModelPrecision.FP16:
+                    optimize_command.append("--compress_to_fp16")
+                subprocess.run(optimize_command, check=True)
+                with open(path.replace(".onnx", ".bin"), "rb") as file:
+                    output_model.set_data(f"{module}.bin", file.read())
+                with open(path.replace(".onnx", ".xml"), "rb") as file:
+                    output_model.set_data(f"{module}.xml", file.read())
+
+        output_model.precision = self.precision
+        output_model.optimization_methods = self.optimization_methods
+
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        self._set_metadata(output_model)
 
     def model_info(self) -> Dict:
         """Return model info to save the model weights.
@@ -287,6 +414,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
+
+    def _set_metadata(self, output_model: ModelEntity) -> None:
+        """Set metadata to the output model."""
+        metadata = {"image_size": int(self.config.dataset.image_size)}
+
+        # Set the task type for inferencer
+        metadata["task"] = str(self.task_type).lower().split("_")[-1]  # type: ignore
+        output_model.set_data("metadata", json.dumps(metadata).encode())
 
     @staticmethod
     def _is_docker() -> bool:

@@ -442,7 +442,6 @@ def format_list_to_str(value_lists: list):
     return f"[{str_value[:-2]}]"
 
 
-# TODO [Eugene] please add unit test for this function
 def adaptive_tile_params(
     tiling_parameters: DetectionConfig.BaseTilingParameters, dataset: DatasetEntity, object_tile_ratio=0.03, rule="avg"
 ):

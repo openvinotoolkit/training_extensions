@@ -174,15 +174,6 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
-        num_checkpoints = configurable_integer(
-            default_value=5,
-            min_value=1,
-            max_value=100,
-            header="Number of checkpoints that is done during the single training round",
-            description="",
-            affects_outcome_of=ModelLifecycle.NONE,
-        )
-
         enable_supcon = configurable_boolean(
             default_value=False,
             header="Enable Supervised Contrastive helper loss",
@@ -398,7 +389,7 @@ class BaseConfig(ConfigurableParameters):
             "to crash or result in out-of-memory errors. It is recommended to "
             "adjust the scale factor value carefully based on the available "
             "hardware resources and the needs of the application.",
-            default_value=2.0,
+            default_value=1.0,
             min_value=1.0,
             max_value=4.0,
             affects_outcome_of=ModelLifecycle.NONE,

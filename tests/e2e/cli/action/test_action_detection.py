@@ -17,8 +17,8 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
-    pot_eval_testing,
-    pot_optimize_testing,
+    ptq_eval_testing,
+    ptq_optimize_testing,
     otx_resume_testing,
     get_template_dir,
 )
@@ -93,27 +93,27 @@ class TestToolsOTXActionDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
-        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.05)
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
+    @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
+    def test_ptq_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skip(reason="Issue#2059: OpenVINO exported model shows 0.0 AP50 in torch1.13")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template, tmp_dir_path):
+    @pytest.mark.skip(reason="Issue#2279: Exported action detection model shows 0.0 on a toy dataset")
+    def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "action_det"
-        pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

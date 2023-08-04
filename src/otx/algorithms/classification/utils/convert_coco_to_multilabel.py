@@ -61,7 +61,7 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
     overall_classes: List = coco_dataset.get_classes()
     for class_name in overall_classes:
         multilabel_ann_format["categories"]["label"]["label_groups"].append(
-            {"name": str(class_name), "group_type": "exclusive", "labels": [str(class_name)]}
+            {"name": f"___{str(class_name)}", "group_type": "exclusive", "labels": [str(class_name)]}
         )
 
         multilabel_ann_format["categories"]["label"]["labels"].append(

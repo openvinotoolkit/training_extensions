@@ -5,7 +5,7 @@
 #
 
 import os
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 import numpy as np
 
@@ -104,7 +104,9 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> DatasetEntity:
 
 
 def init_environment(model: Optional[ModelEntity] = None):
-    model_template = parse_model_template(os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR, "template.yaml"))
+    model_template = parse_model_template(
+        os.path.join(DEFAULT_VISUAL_PROMPTING_TEMPLATE_DIR, "template_experimental.yaml")
+    )
     hyper_parameters = create(model_template.hyper_parameters.data)
     labels_schema = generate_otx_label_schema()
     environment = TaskEnvironment(
@@ -117,6 +119,10 @@ def init_environment(model: Optional[ModelEntity] = None):
 
 
 class MockDatasetConfig:
+    class _normalize:
+        mean = [1.0, 1.0, 1.0]
+        std = [0.0, 0.0, 0.0]
+
     def __init__(self, use_mask: bool = False):
         self.image_size: Tuple[int] = (4, 4)
         self.use_mask: bool = use_mask
@@ -125,6 +131,7 @@ class MockDatasetConfig:
         self.val_batch_size: int = 1
         self.test_batch_size: int = 1
         self.offset_bbox: int = 0
+        self.normalize = self._normalize
 
 
 class MockConfig:

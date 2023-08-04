@@ -23,18 +23,17 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import attr
+import nncf
 import numpy as np
+import openvino.runtime as ov
 from addict import Dict as ADDict
-from compression.api import DataLoader
-from compression.engines.ie_engine import IEEngine
-from compression.graph import load_model, save_model
-from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
-from compression.pipeline.initializer import create_pipeline
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
+from nncf.common.quantization.structs import QuantizationPreset
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.models import Model
 
+from otx.algorithms.common.utils import OTXOpenVinoDataLoader, get_default_async_reqs_num, read_py_config
+from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.common.utils.utils import get_default_async_reqs_num
 from otx.algorithms.segmentation.adapters.openvino import model_wrappers
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
@@ -63,7 +62,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     SegmentationToAnnotationConverter,
 )
@@ -79,7 +78,7 @@ logger = get_logger()
 
 
 # pylint: disable=too-many-locals, too-many-statements, unused-argument
-class OpenVINOSegmentationInferencer(BaseInferencer):
+class OpenVINOSegmentationInferencer(IInferencer):
     """Inferencer implementation for Segmentation using OpenVINO backend."""
 
     def __init__(
@@ -117,14 +116,14 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
             )
         }
         self.model = Model.create_model(
-            hparams.postprocessing.class_name.value,
             model_adapter,
+            hparams.postprocessing.class_name.value,
             self.configuration,
             preload=True,
         )
         self.converter = SegmentationToAnnotationConverter(label_schema)
         self.callback_exceptions: List[Exception] = []
-        self.model.model_adapter.set_callback(self._async_callback)
+        self.model.inference_adapter.set_callback(self._async_callback)
 
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         """Pre-process function of OpenVINO Segmentation Inferencer."""
@@ -157,7 +156,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
             self.model.await_any()
         image, metadata = self.pre_process(image)
         callback_data = id, metadata, result_handler
-        self.model.infer_async(image, callback_data)
+        self.model.inference_adapter.infer_async(image, callback_data)
 
     def await_all(self) -> None:
         """Await all running infer requests if any."""
@@ -166,35 +165,13 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
     def _async_callback(self, request: Any, callback_args: tuple) -> None:
         """Fetches the results of async inference."""
         try:
-            res_copy_func, args = callback_args
-            id, preprocessing_meta, result_handler = args
-            prediction = res_copy_func(request)
-
+            id, preprocessing_meta, result_handler = callback_args
+            prediction = self.model.inference_adapter.copy_raw_result(request)
             processed_prediciton = self.post_process(prediction, preprocessing_meta)
             result_handler(id, *processed_prediciton)
 
         except Exception as e:
             self.callback_exceptions.append(e)
-
-
-class OTXOpenVinoDataLoader(DataLoader):
-    """Data loader for OTXDetection using OpenVINO backend."""
-
-    def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
-        self.dataset = dataset
-        self.inferencer = inferencer
-
-    def __getitem__(self, index: int):
-        """Return dataset item from index."""
-        image = self.dataset[index].numpy
-        annotation = self.dataset[index].annotation_scene
-        inputs, metadata = self.inferencer.pre_process(image)
-
-        return (index, annotation), inputs, metadata
-
-    def __len__(self):
-        """Length of OTXOpenVinoDataLoader."""
-        return len(self.dataset)
 
 
 class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
@@ -260,11 +237,11 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
             if dump_soft_prediction:
                 for label_index, label in self._label_dictionary.items():
-                    if label_index == 0:
-                        continue
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     if process_soft_prediction:
                         current_label_soft_prediction = get_activation_map(current_label_soft_prediction)
+                    else:
+                        current_label_soft_prediction = (current_label_soft_prediction * 255).astype(np.uint8)
                     result_media = ResultMediaEntity(
                         name=label.name,
                         type="soft_prediction",
@@ -357,15 +334,17 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         """Optimize function of OpenVINOSegmentationTask."""
-        logger.info("Start POT optimization")
+        logger.info("Start PTQ optimization")
         if self.model is None:
-            raise RuntimeError("POT optimize failed, model is None")
+            raise RuntimeError("PTQ optimize failed, model is None")
 
         if optimization_type is not OptimizationType.POT:
-            raise ValueError("POT is the only supported optimization type for OpenVino models")
+            raise ValueError("PTQ is the only supported optimization type for OpenVino models")
 
         dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
+
+        quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
@@ -375,44 +354,35 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             with open(bin_path, "wb") as f:
                 f.write(self.model.get_data("openvino.bin"))
 
-            model_config = ADDict({"model_name": "openvino_model", "model": xml_path, "weights": bin_path})
-
-            model = load_model(model_config)
-
-            if get_nodes_by_type(model, ["FakeQuantize"]):
-                raise RuntimeError("Model is already optimized by POT")
+            ov_model = ov.Core().read_model(xml_path)
+            if check_if_quantized(ov_model):
+                raise RuntimeError("Model is already optimized by PTQ")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10, None)
 
-        engine_config = ADDict({"device": "CPU"})
-
-        optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
+        optimization_config_path = os.path.join(self._base_dir, "ptq_optimization_config.py")
+        ptq_config = ADDict()
         if os.path.exists(optimization_config_path):
-            with open(optimization_config_path, encoding="UTF-8") as f_src:
-                algorithms = ADDict(json.load(f_src))["algorithms"]
-        else:
-            algorithms = [ADDict({"name": "DefaultQuantization", "params": {"target_device": "ANY"}})]
-        for algo in algorithms:
-            algo.params.stat_subset_size = self.hparams.pot_parameters.stat_subset_size
-            algo.params.shuffle_data = True
-            if "Quantization" in algo["name"]:
-                algo.params.preset = self.hparams.pot_parameters.preset.name.lower()
+            ptq_config = read_py_config(optimization_config_path)
+        ptq_config.update(
+            subset_size=min(self.hparams.pot_parameters.stat_subset_size, len(data_loader)),
+            preset=QuantizationPreset(self.hparams.pot_parameters.preset.name.lower()),
+        )
 
-        engine = IEEngine(config=engine_config, data_loader=data_loader, metric=None)
-
-        pipeline = create_pipeline(algorithms, engine)
-
-        compressed_model = pipeline.run(model)
-
-        compress_model_weights(compressed_model)
+        compressed_model = nncf.quantize(
+            ov_model,
+            quantization_dataset,
+            **ptq_config,
+        )
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
-            save_model(compressed_model, tempdir, model_name="model")
-            with open(os.path.join(tempdir, "model.xml"), "rb") as f:
+            xml_path = os.path.join(tempdir, "model.xml")
+            ov.serialize(compressed_model, xml_path)
+            with open(xml_path, "rb") as f:
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
@@ -433,4 +403,4 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
-        logger.info("POT optimization completed")
+        logger.info("PTQ optimization completed")

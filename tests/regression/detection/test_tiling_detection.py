@@ -23,7 +23,7 @@ from tests.test_suite.run_test_command import (
     otx_deploy_openvino_testing,
     otx_export_testing,
     otx_train_testing,
-    pot_optimize_testing,
+    ptq_optimize_testing,
 )
 
 from tests.regression.regression_command import (
@@ -31,7 +31,7 @@ from tests.regression.regression_command import (
     regression_openvino_testing,
     regression_deployment_testing,
     regression_nncf_eval_testing,
-    regression_pot_eval_testing,
+    regression_ptq_eval_testing,
     regression_train_time_testing,
     regression_eval_time_testing,
 )
@@ -211,28 +211,28 @@ class TestRegressionTilingDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize_eval(self, template, tmp_dir_path):
+    def test_ptq_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / TASK_TYPE
-        pot_start_time = timer()
-        pot_optimize_testing(template, tmp_dir_path, otx_dir, tiling_detection_data_args)
-        pot_elapsed_time = timer() - pot_start_time
+        ptq_start_time = timer()
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, tiling_detection_data_args)
+        ptq_elapsed_time = timer() - ptq_start_time
 
-        pot_eval_start_time = timer()
-        test_result = regression_pot_eval_testing(
+        ptq_eval_start_time = timer()
+        test_result = regression_ptq_eval_testing(
             template,
             tmp_dir_path,
             otx_dir,
             tiling_detection_data_args,
-            criteria=tiling_detection_regression_config["regression_criteria"]["pot"],
+            criteria=tiling_detection_regression_config["regression_criteria"]["ptq"],
             reg_threshold=0.10,
             result_dict=self.performance[template.name],
         )
-        pot_eval_elapsed_time = timer() - pot_eval_start_time
+        ptq_eval_elapsed_time = timer() - ptq_eval_start_time
 
-        self.performance[template.name][TIME_LOG["pot_time"]] = round(pot_elapsed_time, 3)
-        self.performance[template.name][TIME_LOG["pot_eval_time"]] = round(pot_eval_elapsed_time, 3)
-        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["pot"].append(self.performance)
+        self.performance[template.name][TIME_LOG["ptq_time"]] = round(ptq_elapsed_time, 3)
+        self.performance[template.name][TIME_LOG["ptq_eval_time"]] = round(ptq_eval_elapsed_time, 3)
+        result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["ptq"].append(self.performance)
 
         assert test_result["passed"] is True, test_result["log"]

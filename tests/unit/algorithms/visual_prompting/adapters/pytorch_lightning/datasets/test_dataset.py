@@ -4,19 +4,26 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Any, Dict, List, Optional, Tuple
-
 import numpy as np
 import pytest
 from torch.utils.data import DataLoader
+from torchvision import transforms
 
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataModule,
     OTXVisualPromptingDataset,
+    convert_polygon_to_mask,
+    generate_bbox,
+    generate_bbox_from_mask,
+    get_transform,
 )
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
+    MultipleInputsCompose,
+    Pad,
+    ResizeLongestSide,
     collate_fn,
 )
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.shapes.polygon import Point, Polygon
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -24,36 +31,140 @@ from tests.unit.algorithms.visual_prompting.test_helpers import (
     MockDatasetConfig,
     generate_visual_prompting_dataset,
 )
-from otx.api.entities.datasets import DatasetEntity
+
+
+@pytest.fixture
+def transform():
+    return lambda items: items
+
+
+@pytest.fixture
+def image_size():
+    return 32
+
+
+@pytest.fixture
+def mean():
+    return [1.0, 1.0, 1.0]
+
+
+@pytest.fixture
+def std():
+    return [0.0, 0.0, 0.0]
+
+
+@pytest.fixture
+def dataset_polygon() -> DatasetEntity:
+    """Set dataset with polygon."""
+    return generate_visual_prompting_dataset(use_mask=False)
+
+
+@pytest.fixture
+def dataset_mask() -> DatasetEntity:
+    """Set dataset with mask."""
+    return generate_visual_prompting_dataset(use_mask=True)
+
+
+@e2e_pytest_unit
+def test_get_transform(image_size, mean, std):
+    """Test get_transform."""
+    transform = get_transform(image_size=image_size, mean=mean, std=std)
+
+    assert isinstance(transform, MultipleInputsCompose)
+    assert isinstance(transform.transforms[0], ResizeLongestSide)
+    assert transform.transforms[0].target_length == 32
+    assert isinstance(transform.transforms[1], Pad)
+    assert isinstance(transform.transforms[2], transforms.Normalize)
+    assert transform.transforms[2].mean == mean
+    assert transform.transforms[2].std == std
+
+
+@e2e_pytest_unit
+def test_convert_polygon_to_mask(mocker) -> None:
+    """Test convert_polygon_to_mask."""
+    mocker.patch(
+        "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+        return_value=transform,
+    )
+
+    polygon = Polygon(points=[Point(x=0.1, y=0.1), Point(x=0.2, y=0.2), Point(x=0.3, y=0.3)])
+    width = 100
+    height = 100
+
+    mask = convert_polygon_to_mask(polygon, width, height)
+
+    assert isinstance(mask, np.ndarray)
+    assert mask.shape == (height, width)
+    assert mask.sum() == 21
+
+
+@e2e_pytest_unit
+def test_generate_bbox(mocker) -> None:
+    """Test generate_bbox."""
+    mocker.patch(
+        "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+        return_value=transform,
+    )
+
+    x1, y1, x2, y2 = 10, 20, 30, 40
+    width = 100
+    height = 100
+
+    bbox = generate_bbox(x1, y1, x2, y2, width, height)
+
+    assert isinstance(bbox, list)
+    assert len(bbox) == 4
+    assert bbox[0] >= 0 and bbox[0] <= width
+    assert bbox[1] >= 0 and bbox[1] <= height
+    assert bbox[2] >= 0 and bbox[2] <= width
+    assert bbox[3] >= 0 and bbox[3] <= height
+
+
+@e2e_pytest_unit
+def test_generate_bbox_from_mask(mocker) -> None:
+    """Test generate_bbox_from_mask."""
+    mocker.patch(
+        "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+        return_value=transform,
+    )
+
+    gt_mask = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
+    width = 3
+    height = 3
+
+    bbox = generate_bbox_from_mask(gt_mask, width, height)
+
+    assert isinstance(bbox, list)
+    assert len(bbox) == 4
+    assert bbox[0] >= 0 and bbox[0] <= width
+    assert bbox[1] >= 0 and bbox[1] <= height
+    assert bbox[2] >= 0 and bbox[2] <= width
+    assert bbox[3] >= 0 and bbox[3] <= height
 
 
 class TestOTXVIsualPromptingDataset:
-    @pytest.fixture(autouse=True)
-    def setup(self) -> None:
-        self.transform = lambda items: items
-
-    @pytest.fixture
-    def dataset_polygon(self) -> DatasetEntity:
-        """Set dataset with polygon."""
-        return generate_visual_prompting_dataset(use_mask=False)
-
-    @pytest.fixture
-    def dataset_mask(self) -> DatasetEntity:
-        """Set dataset with mask."""
-        return generate_visual_prompting_dataset(use_mask=True)
-
     @e2e_pytest_unit
-    def test_len(self, dataset_polygon) -> None:
+    def test_len(self, mocker, dataset_polygon, transform, image_size, mean, std) -> None:
         """Test __len__."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=transform,
+        )
+        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, image_size, mean, std)
         assert len(otx_dataset) == 4
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("use_mask", [False, True])
-    def test_getitem(self, dataset_polygon, dataset_mask, use_mask: bool) -> None:
+    def test_getitem(
+        self, mocker, dataset_polygon, dataset_mask, transform, image_size, mean, std, use_mask: bool
+    ) -> None:
         """Test __getitem__."""
+        mocker.patch(
+            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset.get_transform",
+            return_value=transform,
+        )
         dataset = dataset_mask if use_mask else dataset_polygon
-        otx_dataset = OTXVisualPromptingDataset(dataset=dataset, transform=self.transform)
+        otx_dataset = OTXVisualPromptingDataset(dataset, image_size, mean, std)
 
         item = otx_dataset[0]
 
@@ -70,57 +181,6 @@ class TestOTXVIsualPromptingDataset:
         assert isinstance(item["gt_masks"][0], np.ndarray)
         assert isinstance(item["bboxes"], np.ndarray)
         assert item["points"] == []
-
-    @e2e_pytest_unit
-    def test_convert_polygon_to_mask(self, dataset_polygon) -> None:
-        """Test convert_polygon_to_mask."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
-
-        polygon = Polygon(points=[Point(x=0.1, y=0.1), Point(x=0.2, y=0.2), Point(x=0.3, y=0.3)])
-        width = 100
-        height = 100
-
-        mask = otx_dataset.convert_polygon_to_mask(polygon, width, height)
-
-        assert isinstance(mask, np.ndarray)
-        assert mask.shape == (height, width)
-        assert mask.sum() == 21
-
-    @e2e_pytest_unit
-    def test_generate_bbox(self, dataset_polygon) -> None:
-        """Test generate_bbox."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
-
-        x1, y1, x2, y2 = 10, 20, 30, 40
-        width = 100
-        height = 100
-
-        bbox = otx_dataset.generate_bbox(x1, y1, x2, y2, width, height)
-
-        assert isinstance(bbox, list)
-        assert len(bbox) == 4
-        assert bbox[0] >= 0 and bbox[0] <= width
-        assert bbox[1] >= 0 and bbox[1] <= height
-        assert bbox[2] >= 0 and bbox[2] <= width
-        assert bbox[3] >= 0 and bbox[3] <= height
-
-    @e2e_pytest_unit
-    def test_generate_bbox_from_mask(self, dataset_polygon) -> None:
-        """Test generate_bbox_from_mask."""
-        otx_dataset = OTXVisualPromptingDataset(dataset_polygon, self.transform)
-
-        gt_mask = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
-        width = 3
-        height = 3
-
-        bbox = otx_dataset.generate_bbox_from_mask(gt_mask, width, height)
-
-        assert isinstance(bbox, list)
-        assert len(bbox) == 4
-        assert bbox[0] >= 0 and bbox[0] <= width
-        assert bbox[1] >= 0 and bbox[1] <= height
-        assert bbox[2] >= 0 and bbox[2] <= width
-        assert bbox[3] >= 0 and bbox[3] <= height
 
 
 class TestOTXVisualPromptingDataModule:

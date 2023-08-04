@@ -32,8 +32,8 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
 
-    def __init__(self, module: torch.nn.Module) -> None:
-        super().__init__(module)
+    def __init__(self, module: torch.nn.Module, normalize: bool = True, use_cls_softmax: bool = True) -> None:
+        super().__init__(module, normalize=normalize)
         self._neck = module.neck if module.with_neck else None
         self._bbox_head = module.bbox_head
         self._num_cls_out_channels = module.bbox_head.cls_out_channels  # SSD-like heads also have background class
@@ -41,6 +41,7 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
             self._num_anchors = module.bbox_head.anchor_generator.num_base_anchors
         else:
             self._num_anchors = [1] * 10
+        self.use_cls_softmax = use_cls_softmax
 
     def func(
         self,
@@ -58,7 +59,11 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
             cls_scores = feature_map
         else:
             cls_scores = self._get_cls_scores_from_feature_map(feature_map)
-        cls_scores = [torch.softmax(t, dim=1) for t in cls_scores]
+
+        # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
+        # it would highlight one of the class maps as a background class
+        if self.use_cls_softmax and self._num_cls_out_channels > 1:
+            cls_scores = [torch.softmax(t, dim=1) for t in cls_scores]
 
         batch_size, _, height, width = cls_scores[-1].size()
         saliency_maps = torch.empty(batch_size, self._num_cls_out_channels, height, width)
@@ -77,12 +82,12 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                 )
             saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
 
-        saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, -1))
-        max_values, _ = torch.max(saliency_maps, -1)
-        min_values, _ = torch.min(saliency_maps, -1)
-        saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
+        if self._norm_saliency_maps:
+            saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, -1))
+            saliency_maps = self._normalize_map(saliency_maps)
+
         saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, height, width))
-        saliency_maps = saliency_maps.to(torch.uint8)
+
         return saliency_maps
 
     def _get_cls_scores_from_feature_map(self, x: torch.Tensor) -> List:
@@ -211,11 +216,7 @@ class MaskRCNNRecordingForwardHook(BaseRecordingForwardHook):
         test_cfg = self._module.roi_head.test_cfg.copy()
         test_cfg["mask_thr_binary"] = -1
 
-        saliency_maps = []  # type: List[List[Optional[np.ndarray]]]
-        for i in range(batch_size):
-            saliency_maps.append([])
-            for j in range(self._module.roi_head.mask_head.num_classes):
-                saliency_maps[i].append(None)
+        saliency_maps = [[None for _ in range(self._module.roi_head.mask_head.num_classes)] for _ in range(batch_size)]
 
         for i in range(batch_size):
             if det_bboxes[i].shape[0] == 0:

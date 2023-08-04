@@ -26,6 +26,7 @@ class TestDetectionConfigurer:
         self.configurer = DetectionConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(self.data_cfg)
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
     @e2e_pytest_unit
@@ -175,6 +176,7 @@ class TestDetectionConfigurer:
         ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
         ssd_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
         model_cfg = copy.deepcopy(ssd_cfg)
+        model_cfg.merge_from_dict(self.data_cfg)
         self.configurer.configure_task(model_cfg, self.det_dataset, True)
         assert model_cfg.model.bbox_head.anchor_generator != ssd_cfg.model.bbox_head.anchor_generator
 
@@ -276,6 +278,7 @@ class TestSemiSLDetectionConfigurer:
         self.configurer = SemiSLDetectionConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(self.data_cfg)
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
     def test_configure_data(self, mocker):

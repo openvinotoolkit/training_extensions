@@ -99,7 +99,13 @@ if is_mmdeploy_enabled():
         if ctx.cfg["dump_features"]:
             feature_vector = FeatureVectorHook.func(feat)
             cls_scores = outs[0]
-            saliency_map = DetClassProbabilityMapHook(self).func(feature_map=cls_scores, cls_scores_provided=True)
+            postprocess_kwargs = {
+                "normalize": ctx.cfg["normalize_saliency_maps"],
+                "use_cls_softmax": ctx.cfg["softmax_saliency_maps"],
+            }
+            saliency_map = DetClassProbabilityMapHook(self, **postprocess_kwargs).func(
+                feature_map=cls_scores, cls_scores_provided=True
+            )
             return (*bbox_results, feature_vector, saliency_map)
 
         return bbox_results
