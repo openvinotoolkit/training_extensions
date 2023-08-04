@@ -164,6 +164,6 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
         meta = model.metadata_props.add()
         attr_path = " ".join(map(str, item))
         meta.key = attr_path.strip()
-        meta.value = extra_model_data[item]
+        meta.value = str(extra_model_data[item])
 
     onnx.save(model, onnx_file)
