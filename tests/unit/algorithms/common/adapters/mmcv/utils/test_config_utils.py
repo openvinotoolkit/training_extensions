@@ -3,7 +3,11 @@ import re
 import pytest
 
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import get_adaptive_num_workers, InputSizeManager, get_configurable_input_size
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    get_adaptive_num_workers,
+    InputSizeManager,
+    get_configurable_input_size,
+)
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -37,7 +41,7 @@ def test_get_adaptive_num_workers_no_gpu(mocker):
 
 @pytest.fixture
 def mock_data_pipeline():
-    image_size=(400, 400)
+    image_size = (400, 400)
 
     return [
         dict(type="Mosaic", img_scale=image_size),
@@ -64,7 +68,9 @@ def mock_data_pipeline():
                 [
                     dict(
                         type="Resize",
-                        img_scale=[image_size,],
+                        img_scale=[
+                            image_size,
+                        ],
                         multiscale_mode="value",
                         keep_ratio=True,
                     )
@@ -72,14 +78,18 @@ def mock_data_pipeline():
                 [
                     dict(
                         type="Resize",
-                        img_scale=[image_size,],
+                        img_scale=[
+                            image_size,
+                        ],
                         multiscale_mode="value",
                         keep_ratio=True,
                     ),
                     dict(type="RandomCrop", crop_type="absolute_range", crop_size=image_size),
                     dict(
                         type="Resize",
-                        img_scale=[image_size,],
+                        img_scale=[
+                            image_size,
+                        ],
                         multiscale_mode="value",
                         override=True,
                         keep_ratio=True,
@@ -89,23 +99,24 @@ def mock_data_pipeline():
         ),
     ]
 
+
 mock_data_pipeline_to_estimate = {
-    "pad_smaller_than_resize" : {
-        "pipeline" : [
+    "pad_smaller_than_resize": {
+        "pipeline": [
             dict(type="Resize", img_scale=(300, 300), keep_ratio=True),
             dict(type="Pad", size=(200, 200)),
         ],
-        "input_size" : (300, 300)
+        "input_size": (300, 300),
     },
-    "crop_bigger_than_resize" : {
-        "pipeline" : [
+    "crop_bigger_than_resize": {
+        "pipeline": [
             dict(type="Resize", img_scale=(300, 300), keep_ratio=True),
             dict(type="crop", size=(400, 400)),
         ],
-        "input_size" : (300, 300)
+        "input_size": (300, 300),
     },
-    "multi_scale_flip_aug" : {
-        "pipeline" : [
+    "multi_scale_flip_aug": {
+        "pipeline": [
             dict(
                 type="MultiScaleFlipAug",
                 img_scale=(232, 232),
@@ -117,10 +128,10 @@ mock_data_pipeline_to_estimate = {
                 ],
             ),
         ],
-        "input_size" : (500, 500)
+        "input_size": (500, 500),
     },
-    "multi_scale_flip_aug_pad_bigger_than_resize" : {
-        "pipeline" : [
+    "multi_scale_flip_aug_pad_bigger_than_resize": {
+        "pipeline": [
             dict(
                 type="MultiScaleFlipAug",
                 img_scale=(232, 232),
@@ -132,25 +143,28 @@ mock_data_pipeline_to_estimate = {
                 ],
             ),
         ],
-        "input_size" : (232, 232)
+        "input_size": (232, 232),
     },
-    "resize_crop_pad" : {
-        "pipeline" : [
-        dict(type="Resize", img_scale=(300, 300), keep_ratio=True),
-        dict(type="crop", size=(200, 200)),
-        dict(type="Pad", size=(400, 400)),
+    "resize_crop_pad": {
+        "pipeline": [
+            dict(type="Resize", img_scale=(300, 300), keep_ratio=True),
+            dict(type="crop", size=(200, 200)),
+            dict(type="Pad", size=(400, 400)),
         ],
-        "input_size" : (400, 400)
+        "input_size": (400, 400),
     },
-    "auto_augment" : {
-        "pipeline" : [
+    "auto_augment": {
+        "pipeline": [
             dict(
                 type="AutoAugment",
                 policies=[
                     [
                         dict(
                             type="Resize",
-                            img_scale=[(500, 500), (900, 900),],
+                            img_scale=[
+                                (500, 500),
+                                (900, 900),
+                            ],
                             multiscale_mode="value",
                             keep_ratio=True,
                         )
@@ -165,7 +179,9 @@ mock_data_pipeline_to_estimate = {
                         dict(type="RandomCrop", crop_type="absolute_range", crop_size=(200, 300)),
                         dict(
                             type="Resize",
-                            img_scale=[(100, 200),],
+                            img_scale=[
+                                (100, 200),
+                            ],
                             multiscale_mode="value",
                             override=True,
                             keep_ratio=True,
@@ -174,27 +190,27 @@ mock_data_pipeline_to_estimate = {
                 ],
             ),
         ],
-        "input_size" : (500, 500)
-    }
+        "input_size": (500, 500),
+    },
 }
 
 
 @e2e_pytest_unit
 class TestInputSizeManager:
-    @pytest.mark.parametrize("base_input_size", [None, 100, [100, 200], {"train" : 100}])
+    @pytest.mark.parametrize("base_input_size", [None, 100, [100, 200], {"train": 100}])
     def test_init(self, base_input_size):
         # prepare
-        mock_data_config = {"train" : {"pipeline" : []}}
+        mock_data_config = {"train": {"pipeline": []}}
 
         # check
         InputSizeManager(mock_data_config, base_input_size)
 
     def test_init_insufficient_base_input_size(self):
         # prepare
-        mock_data_config = {"train" : {"pipeline" : []}}
-        base_input_size = {"val" : 100}
+        mock_data_config = {"train": {"pipeline": []}}
+        base_input_size = {"val": 100}
 
-        # check if data pipeline has train but base_input_size doesn't have it, error is raised 
+        # check if data pipeline has train but base_input_size doesn't have it, error is raised
         with pytest.raises(ValueError):
             InputSizeManager(mock_data_config, base_input_size)
 
@@ -209,7 +225,7 @@ class TestInputSizeManager:
             expected_input_size_tuple = (input_size, input_size)
             expected_input_size_int = input_size
 
-        mock_data_config = {"train" : {"pipeline" : mock_data_pipeline}}
+        mock_data_config = {"train": {"pipeline": mock_data_pipeline}}
 
         # execute
         InputSizeManager(mock_data_config, base_input_size).set_input_size(input_size)
@@ -229,10 +245,10 @@ class TestInputSizeManager:
 
         check_val_changed(mock_data_pipeline)
 
-    @pytest.mark.parametrize("base_input_size", [100, [100, 200], {"train" : 100}])
+    @pytest.mark.parametrize("base_input_size", [100, [100, 200], {"train": 100}])
     def test_base_input_size_with_given_args(self, base_input_size):
         # prepare
-        mock_data_config = {"train" : {"pipeline" : []}}
+        mock_data_config = {"train": {"pipeline": []}}
         if isinstance(base_input_size, int):
             base_input_size = [base_input_size, base_input_size]
         elif isinstance(base_input_size, dict):
@@ -252,7 +268,7 @@ class TestInputSizeManager:
         estimated_input_size = [100, 100]
 
         # execute
-        input_size_manager.get_input_size_from_cfg = mocker.MagicMock(return_value = estimated_input_size)
+        input_size_manager.get_input_size_from_cfg = mocker.MagicMock(return_value=estimated_input_size)
 
         # check if base_input_size argument isn't given, input size is estimated
         assert input_size_manager.base_input_size == estimated_input_size
@@ -262,7 +278,7 @@ class TestInputSizeManager:
         # prepare
         pipeline = mock_data_pipeline_to_estimate[test_case]["pipeline"]
         input_size = mock_data_pipeline_to_estimate[test_case]["input_size"]
-        mock_data_config = {"train" : {"pipeline" : pipeline}}
+        mock_data_config = {"train": {"pipeline": pipeline}}
         input_size_manager = InputSizeManager(mock_data_config)
 
         # check input size is estimated as expected
@@ -273,11 +289,11 @@ def get_mock_model_ckpt(case):
     if case == "none":
         return None
     if case == "no_input_size":
-        return {"config" : {}}
+        return {"config": {}}
     if case == "input_size_default":
-        return {"config" : {"learning_parameters" : {"input_size" : {"value" : "Default"}}}}
+        return {"config": {"learning_parameters": {"input_size": {"value": "Default"}}}}
     if case == "input_size_exist":
-        return {"config" : {"learning_parameters" : {"input_size" : {"value" : "512x512"}}}}
+        return {"config": {"learning_parameters": {"input_size": {"value": "512x512"}}}}
 
 
 @e2e_pytest_unit
@@ -288,7 +304,7 @@ def test_get_configurable_input_size(mocker, input_size_config, model_ckpt_case)
     mock_torch = mocker.patch.object(config_utils, "torch")
     mock_torch.load.return_value = get_mock_model_ckpt(model_ckpt_case)
     input_size_parser = re.compile("(\d+)x(\d+)")
-    
+
     if input_size_config == InputSizePreset.DEFAULT:
         if model_ckpt_case == "none" or model_ckpt_case == "no_input_size" or model_ckpt_case == "input_size_default":
             expeted_value = None
@@ -301,4 +317,7 @@ def test_get_configurable_input_size(mocker, input_size_config, model_ckpt_case)
         expeted_value = (int(pattern.group(1)), int(pattern.group(2)))
 
     # check expected value is returned
-    assert get_configurable_input_size(input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock()) == expeted_value
+    assert (
+        get_configurable_input_size(input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock())
+        == expeted_value
+    )

@@ -44,9 +44,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
     MPAConfig,
     update_or_add_custom_hook,
-    InputSizeManager,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType

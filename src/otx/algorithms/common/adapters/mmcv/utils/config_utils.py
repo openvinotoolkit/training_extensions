@@ -27,7 +27,7 @@ import tempfile
 import warnings
 from collections.abc import Mapping
 from importlib import import_module
-from typing import Any, Callable, Dict, List, Tuple, Union, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from mmcv import Config, ConfigDict
@@ -35,9 +35,9 @@ from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
 from mmcv.utils.misc import import_modules_from_strings
 from mmcv.utils.path import check_file_exist
 
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
@@ -719,26 +719,26 @@ class InputSizeManager:
     """
 
     PIPELINE_TO_CHANGE: Dict[str, List[str]] = {
-        "resize" : ["size", "img_scale"],
-        "pad" : ["size"],
-        "crop" : ["crop_size"],
-        "mosaic" : ["img_scale"],
-        "randomaffine" : ["border"],
-        "multiscaleflipaug" : ["img_scale"],
+        "resize": ["size", "img_scale"],
+        "pad": ["size"],
+        "crop": ["crop_size"],
+        "mosaic": ["img_scale"],
+        "randomaffine": ["border"],
+        "multiscaleflipaug": ["img_scale"],
     }
 
     def __init__(
         self,
         data_config: Dict,
-        base_input_size: Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]] = None,
+        base_input_size: Optional[Union[int, Tuple[int, int], Dict[str, int], Dict[str, Tuple[int, int]]]] = None,
     ):
         self._data_config = data_config
         if isinstance(base_input_size, int):
-            base_input_size = [base_input_size, base_input_size]
+            base_input_size = (base_input_size, base_input_size)
         elif isinstance(base_input_size, dict):
             for task in base_input_size.keys():
                 if isinstance(base_input_size[task], int):
-                    base_input_size[task] = [base_input_size[task], base_input_size[task]]
+                    base_input_size[task] = (base_input_size[task], base_input_size[task])  # type: ignore[assignment]
             for data_type in ["train", "val", "test"]:
                 if data_type in data_config and data_type not in base_input_size:
                     raise ValueError(
@@ -747,7 +747,7 @@ class InputSizeManager:
 
         self._base_input_size = base_input_size
 
-    def set_input_size(self, input_size: Union[int, List[int]]):
+    def set_input_size(self, input_size: Union[int, List[int], Tuple[int, int]]):
         """Set input size in data pipe line.
 
         Args:
@@ -760,20 +760,22 @@ class InputSizeManager:
         if not isinstance(self.base_input_size, dict):
             resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
 
-        # scale size values    
+        # scale size values
         for data_type in ["train", "val", "test"]:
             if data_type in self._data_config:
                 if isinstance(self.base_input_size, dict):
-                    resize_ratio = (input_size[0] / self.base_input_size[data_type][0],
-                                    input_size[1] / self.base_input_size[data_type][1])
+                    resize_ratio = (
+                        input_size[0] / self.base_input_size[data_type][0],
+                        input_size[1] / self.base_input_size[data_type][1],
+                    )
                 pipelines = self._get_pipelines(data_type)
                 for pipeline in pipelines:
                     self._set_pipeline_size_vlaue(pipeline, resize_ratio)
 
     @property
-    def base_input_size(self) -> Union[List[int], Dict[str, List[int]]] :
+    def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
         """Getter function of `base_input_size` attirbute.
-        
+
         If it isn't set when intializing class, it's estimated by checking data pipeline.
         Same value is returned after estimation.
 
@@ -784,7 +786,7 @@ class InputSizeManager:
             Union[List[int], Dict[str, List[int]]]: Base input size.
         """
         if self._base_input_size is not None:
-            return self._base_input_size
+            return self._base_input_size  # type: ignore[return-value]
 
         input_size = self.get_input_size_from_cfg()
         if input_size is None:
@@ -792,12 +794,10 @@ class InputSizeManager:
 
         self._base_input_size = input_size
         return input_size
-        
 
     def get_input_size_from_cfg(
-        self,
-        task: Union[str, List[str]] = ["test", "val", "train"]
-    ) -> Union[None, List[int]]:
+        self, task: Union[str, List[str]] = ["test", "val", "train"]
+    ) -> Union[None, Tuple[int, int]]:
         """Estimate image size using data pipeline.
 
         Args:
@@ -813,15 +813,12 @@ class InputSizeManager:
             if target_task in self._data_config:
                 input_size = self._estimate_post_img_size(self._data_config[target_task]["pipeline"])
                 if input_size is not None:
-                    return input_size
+                    return tuple(input_size)  # type: ignore[return-value]
 
         return None
 
-
     def _estimate_post_img_size(
-        self,
-        pipelines: Dict,
-        default_size: Optional[List[int]] = None
+        self, pipelines: Dict, default_size: Optional[List[int]] = None
     ) -> Union[List[int], None]:
         # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
@@ -838,7 +835,7 @@ class InputSizeManager:
                     else:
                         for i in range(2):
                             if post_img_size[i] < img_size[i]:
-                                post_img_size[i] = img_size[i] 
+                                post_img_size[i] = img_size[i]
             elif "crop" in pipeline["type"].lower():
                 img_size = self._get_size_value(pipeline, "crop")
                 if img_size is not None:
@@ -847,7 +844,7 @@ class InputSizeManager:
                     else:
                         for i in range(2):
                             if post_img_size[i] > img_size[i]:
-                                post_img_size[i] = img_size[i] 
+                                post_img_size[i] = img_size[i]
             elif pipeline["type"] == "MultiScaleFlipAug":
                 img_size = self._get_size_value(pipeline, "multiscaleflipaug")
                 if img_size is not None:
@@ -875,9 +872,9 @@ class InputSizeManager:
 
     def _get_pipelines(self, data_type: str):
         if "pipeline" in self._data_config[data_type]:
-            return self._data_config[data_type]['pipeline']
+            return self._data_config[data_type]["pipeline"]
         if "dataset" in self._data_config[data_type]:
-            return self._data_config[data_type]['dataset']['pipeline']
+            return self._data_config[data_type]["dataset"]["pipeline"]
         raise RuntimeError("Failed to find pipeline.")
 
     def _set_pipeline_size_vlaue(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
@@ -902,15 +899,16 @@ class InputSizeManager:
             pipeline[attr] = round(pipeline[attr] * scale[0])
         elif isinstance(pipeline[attr], list) and isinstance(pipeline[attr][0], tuple):
             for idx in range(len(pipeline[attr])):
-                pipeline[attr][idx] = (round(pipeline[attr][idx][0] * scale[0]),
-                                    round(pipeline[attr][idx][1] * scale[1]))
+                pipeline[attr][idx] = (
+                    round(pipeline[attr][idx][0] * scale[0]),
+                    round(pipeline[attr][idx][1] * scale[1]),
+                )
         else:
             pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
 
 
 def get_configurable_input_size(
-    input_size_config: InputSizePreset = InputSizePreset.DEFAULT,
-    model_ckpt: Optional[str] = None
+    input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
 ) -> Union[None, Tuple[int, int]]:
     """Get configurable input size configuration. If it doesn't exist, return None.
 
@@ -927,7 +925,7 @@ def get_configurable_input_size(
             return None
 
         model_info = torch.load(model_ckpt, map_location="cpu")
-        for key in ['config', 'learning_parameters', 'input_size', 'value']:
+        for key in ["config", "learning_parameters", "input_size", "value"]:
             if key not in model_info:
                 return None
             model_info = model_info[key]
@@ -940,5 +938,5 @@ def get_configurable_input_size(
     else:
         input_size = input_size_config.value
 
-    parsed_tocken = re.match("(\d+)x(\d+)", input_size)
+    parsed_tocken = re.match("(\\d+)x(\\d+)", input_size)
     return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))

@@ -270,7 +270,7 @@ class TestDetectionConfigurer:
         # excute
         self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
 
-        #check
+        # check
         if input_size is not None:
             mock_input_manager_cls.assert_called_once_with(mock_cfg.data, None)
             mock_input_manager.set_input_size.assert_called_once_with(input_size)
@@ -286,7 +286,11 @@ class TestDetectionConfigurer:
         mock_cfg.model.type = "CustomYOLOX"
         if is_yolox_tiny:
             mock_cfg.model.backbone.widen_factor = 0.375
-            base_input_size = {"train" : 640, "val" : 416, "test" : 416,}
+            base_input_size = {
+                "train": 640,
+                "val": 416,
+                "test": 416,
+            }
         else:
             base_input_size = None
         mocker.patch.object(configurer, "get_configurable_input_size", return_value=input_size)
@@ -303,7 +307,7 @@ class TestDetectionConfigurer:
         # excute
         self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
 
-        #check
+        # check
         mock_input_manager_cls.assert_called_once_with(mock_cfg.data, base_input_size)
         mock_input_manager.set_input_size.assert_called_once_with(input_size)
 

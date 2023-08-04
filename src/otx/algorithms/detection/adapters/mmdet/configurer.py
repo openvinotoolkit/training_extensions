@@ -26,11 +26,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    get_configurable_input_size,
     recursively_update_cfg,
     update_or_add_custom_hook,
-    InputSizeManager,
-    get_configurable_input_size
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
@@ -39,7 +40,6 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_evaluation,
     should_cluster_anchors,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 logger = get_logger()
 
@@ -661,10 +661,9 @@ class DetectionConfigurer:
 
     @staticmethod
     def configure_input_size(
-        cfg,
-        input_size_config: InputSizePreset = InputSizePreset.DEFAULT,
-        model_ckpt: Optional[str] = None
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
     ):
+        """Change input size if necessary."""
         input_size = get_configurable_input_size(input_size_config, model_ckpt)
         if input_size is None:
             return
@@ -679,9 +678,9 @@ class DetectionConfigurer:
                     # YOLOX tiny has a different input size in train and val data pipeline
                     cfg.model.input_size = (input_size[0], input_size[1])
                     base_input_size = {
-                        "train" : 640,
-                        "val" : 416,
-                        "test" : 416,
+                        "train": 640,
+                        "val": 416,
+                        "test": 416,
                     }
 
         InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)

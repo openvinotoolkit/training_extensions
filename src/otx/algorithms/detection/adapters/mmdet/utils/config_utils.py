@@ -19,12 +19,12 @@ from typing import List, Optional
 from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
+    InputSizeManager,
     get_configs_by_pairs,
     get_dataset_configs,
     get_meta_keys,
     patch_color_conversion,
     remove_from_config,
-    InputSizeManager,
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig

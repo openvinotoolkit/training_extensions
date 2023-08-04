@@ -53,12 +53,14 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
+)
+from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataset as otx_build_dataset,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
     MPAConfig,
     update_or_add_custom_hook,
-    InputSizeManager,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType

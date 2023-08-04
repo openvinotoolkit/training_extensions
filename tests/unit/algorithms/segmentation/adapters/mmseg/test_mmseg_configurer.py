@@ -221,12 +221,16 @@ class TestSegmentationConfigurer:
         mock_input_manager = mocker.MagicMock()
         mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
         mock_input_manager_cls.return_value = mock_input_manager
-        base_input_size = {"train" : 512, "val" : 544, "test" : 544,}
+        base_input_size = {
+            "train": 512,
+            "val": 544,
+            "test": 544,
+        }
 
         # excute
         self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
 
-        #check
+        # check
         if input_size is not None:
             mock_input_manager_cls.assert_called_once_with(mock_cfg.data, base_input_size)
             mock_input_manager.set_input_size.assert_called_once_with(input_size)

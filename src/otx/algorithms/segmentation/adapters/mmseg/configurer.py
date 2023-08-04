@@ -27,12 +27,13 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    get_configurable_input_size,
     recursively_update_cfg,
     remove_custom_hook,
     update_or_add_custom_hook,
-    InputSizeManager,
-    get_configurable_input_size,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
@@ -40,7 +41,6 @@ from otx.algorithms.segmentation.adapters.mmseg.utils import (
     patch_datasets,
     patch_evaluation,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 logger = get_logger()
 
@@ -541,19 +541,18 @@ class SegmentationConfigurer:
 
     @staticmethod
     def configure_input_size(
-        cfg,
-        input_size_config: InputSizePreset = InputSizePreset.DEFAULT,
-        model_ckpt: Optional[str] = None
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
     ):
+        """Change input size if necessary."""
         input_size = get_configurable_input_size(input_size_config, model_ckpt)
         if input_size is None:
             return
 
         # segmentation models have different input size in train and val data pipeline
         base_input_size = {
-            "train" : 512,
-            "val" : 544,
-            "test" : 544,
+            "train": 512,
+            "val": 544,
+            "test": 544,
         }
 
         InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)

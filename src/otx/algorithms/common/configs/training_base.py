@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme, InputSizePreset
+from .configuration_enums import BatchSizeAdaptType, InputSizePreset, POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
