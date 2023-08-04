@@ -1,4 +1,3 @@
-
 import io
 from typing import List, Optional, Union
 
@@ -53,7 +52,6 @@ class GetiAnomalibTask(GetiTask):
             train_type=self.train_type,
             work_dir=output_path,
         )
-
 
     def load_model(self, model: Optional[ModelEntity]) -> Union[torch.nn.Module, AnomalyModule]:
         """Create and Load Anomalib Module from ModelEntity.
@@ -142,7 +140,7 @@ class GetiAnomalibTask(GetiTask):
             val_dataloader=val_dataloader,
             seed=seed,
             deterministic=deterministic,
-            **params
+            **params,
         )
         self.model = results["model"]
         self.torch_checkpoint = results["checkpoint"]
@@ -171,11 +169,7 @@ class GetiAnomalibTask(GetiTask):
         params = GetiTask.covert_parameter(inference_parameters)
 
         # Update Model
-        results = self.auto_engine.predict(
-            model=self.model,
-            img=dataloader,
-            **params
-        )
+        results = self.auto_engine.predict(model=self.model, img=dataloader, **params)
 
         # Update result to DatasetEntity
         dataset_entity = GetiTask.get_dataset_entity_from_result(dataset_entity, results)
@@ -204,9 +198,7 @@ class GetiAnomalibTask(GetiTask):
         output_model.has_xai = dump_features
 
         # Run Exporting with AutoEngine
-        results = self.auto_engine.export(
-            model=self.model
-        )
+        results = self.auto_engine.export(model=self.model)
 
         # Update output_model with results
         if export_type == ExportType.ONNX:

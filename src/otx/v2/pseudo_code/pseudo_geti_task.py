@@ -1,6 +1,4 @@
-import os
-import tempfile
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional, Union
 
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -11,7 +9,6 @@ from otx.api.entities.model import (
     OptimizationMethod,
 )
 from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.v2.api.core import BaseDataset
@@ -29,7 +26,7 @@ class GetiTask:
         return {
             "resume": parameters.resume,
             "update_progress": parameters.update_progress,
-            "save_model": parameters.save_model
+            "save_model": parameters.save_model,
         }
 
     @staticmethod
