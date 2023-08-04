@@ -15,9 +15,9 @@
 # and limitations under the License.
 
 from .byol import OTXBYOL
-from .sam_classifier import SAMImageClassifier
+from .custom_image_classifier import CustomImageClassifier
 from .semisl_classifier import SemiSLClassifier
 from .semisl_multilabel_classifier import SemiSLMultilabelClassifier
 from .supcon_classifier import SupConClassifier
 
-__all__ = ["OTXBYOL", "SAMImageClassifier", "SemiSLClassifier", "SemiSLMultilabelClassifier", "SupConClassifier"]
+__all__ = ["OTXBYOL", "CustomImageClassifier", "SemiSLClassifier", "SemiSLMultilabelClassifier", "SupConClassifier"]

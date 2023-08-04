@@ -1,6 +1,6 @@
 # Model Configuration
 model:
-  type: SAMImageClassifier
+  type: CustomImageClassifier
   backbone:
     pretrained: true
     type: OTXMobileNetV3

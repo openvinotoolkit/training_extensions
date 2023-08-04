@@ -1,7 +1,7 @@
 """Utils function for otx.v2.adapters.openvino.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
 

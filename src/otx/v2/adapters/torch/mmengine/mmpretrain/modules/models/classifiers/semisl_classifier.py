@@ -8,7 +8,7 @@ from mmpretrain.models import ClsDataPreprocessor
 from mmpretrain.registry import MODELS
 from otx.v2.api.utils.logger import get_logger
 
-from .sam_classifier import SAMImageClassifier
+from .custom_image_classifier import CustomImageClassifier
 
 logger = get_logger()
 
@@ -31,7 +31,7 @@ class SemiSLClsDataPreprocessor(ClsDataPreprocessor):
 
 
 @MODELS.register_module()
-class SemiSLClassifier(SAMImageClassifier):
+class SemiSLClassifier(CustomImageClassifier):
     """Semi-SL Classifier.
 
     This classifier supports unlabeled data by overriding forward_train

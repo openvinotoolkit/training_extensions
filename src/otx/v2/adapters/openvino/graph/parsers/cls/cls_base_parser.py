@@ -1,7 +1,7 @@
 """Class base parser for otx.v2.adapters.openvino.graph.parsers.cls.cls_base_parser."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from typing import Dict, List, Optional
 

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .classifiers import OTXBYOL, SAMImageClassifier, SemiSLClassifier, SupConClassifier
+from .classifiers import OTXBYOL, CustomImageClassifier, SemiSLClassifier, SupConClassifier
 from .heads import (
     ClsHead,
     ConstrastiveHead,
@@ -41,7 +41,7 @@ from .necks import SelfSLMLP
 
 __all__ = [
     "OTXBYOL",
-    "SAMImageClassifier",
+    "CustomImageClassifier",
     "SemiSLClassifier",
     "SupConClassifier",
     "CustomLinearClsHead",

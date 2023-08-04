@@ -1,4 +1,8 @@
 """Logger hooks."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 from collections import defaultdict
 from typing import Any, Dict, Optional
 
@@ -30,6 +34,19 @@ class OTXLoggerHook(LoggerHook):
                 points.append(f"({x},{y})")
             return "curve[" + ",".join(points) + "]"
 
+    _TAGS_TO_SKIP = (
+        "accuracy_top-1",
+        "current_iters",
+        "decode.acc_seg",
+        "decode.loss_ce_ignore",
+    )
+
+    _TAGS_TO_RENAME = {
+        "train/time": "train/time (sec/iter)",
+        "train/data_time": "train/data_time (sec/iter)",
+        "val/accuracy": "val/accuracy (%)",
+    }
+
     def __init__(
         self,
         curves: Optional[Dict[Any, Curve]] = None,
@@ -44,12 +61,13 @@ class OTXLoggerHook(LoggerHook):
     @master_only
     def log(self, runner: Runner):
         """Log function for OTXLoggerHook."""
-        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=())
+        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=self._TAGS_TO_SKIP)
         if runner.max_epochs is not None:
             normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
         else:
             normalized_iter = self.get_iter(runner)
         for tag, value in tags.items():
+            tag = self._TAGS_TO_RENAME.get(tag, tag)
             curve = self.curves[tag]
             # Remove duplicates.
             if len(curve.x) > 0 and curve.x[-1] == normalized_iter:
@@ -57,6 +75,11 @@ class OTXLoggerHook(LoggerHook):
                 curve.y.pop()
             curve.x.append(normalized_iter)
             curve.y.append(value)
+
+    def before_run(self, runner: Runner):
+        """Called before_run in OTXLoggerHook."""
+        super().before_run(runner)
+        self.curves.clear()
 
     def after_train_epoch(self, runner: Runner):
         """Called after_train_epoch in OTXLoggerHook."""

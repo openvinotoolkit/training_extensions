@@ -28,10 +28,9 @@ def configure_task_type(
     if data_format is None and data_roots is not None:
         try:
             from otx.v2.adapters.datumaro.manager.dataset_manager import DatasetManager
-
-            data_format = DatasetManager.get_data_format(data_roots)
         except:
             raise ImportError("Need datumaro to automatically detect the task type.")
+        data_format = DatasetManager.get_data_format(data_roots)
     for task_key, data_value in TASK_TYPE_TO_SUPPORTED_FORMAT.items():
         if data_format in data_value:
             task_type = task_key

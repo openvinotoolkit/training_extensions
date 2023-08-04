@@ -17,7 +17,7 @@ logger = get_logger()
 
 
 @MODELS.register_module()
-class SAMImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
+class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
     """SAM-enabled ImageClassifier."""
 
     def __init__(self, **kwargs):
@@ -265,7 +265,7 @@ if is_mmdeploy_enabled():
     )
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.SAMImageClassifier.extract_feat"
+        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.extract_feat"
     )
     def sam_image_classifier__extract_feat(self, img, **kwargs):  # pylint: disable=unused-argument
         """Feature extraction function for SAMClassifier with mmdeploy."""
@@ -283,7 +283,7 @@ if is_mmdeploy_enabled():
         return feat
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.SAMImageClassifier.predict"
+        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.predict"
     )
     def sam_image_classifier__predict(self, img, **kwargs):  # pylint: disable=unused-argument
         """Simple test function used for inference for SAMClassifier with mmdeploy."""

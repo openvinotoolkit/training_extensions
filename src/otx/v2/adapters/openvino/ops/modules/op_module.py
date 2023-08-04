@@ -1,7 +1,7 @@
 """Operation module for otx.v2.adapters.openvino.ops.modeuls."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import inspect
 from typing import Dict, List, Optional, Union

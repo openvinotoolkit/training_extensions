@@ -1,7 +1,7 @@
 """Movement-related modules for otx.v2.adapters.openvino.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import math
 from dataclasses import dataclass, field

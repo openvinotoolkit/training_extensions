@@ -5,7 +5,7 @@ train_type: Incremental
 
 # Model Configuration
 model:
-  type: SAMImageClassifier
+  type: CustomImageClassifier
   backbone:
     pretrained: true
     type: OTXEfficientNet
