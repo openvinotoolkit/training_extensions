@@ -200,9 +200,11 @@ class BaseConfig(ConfigurableParameters):
 
         input_size = selectable(
             default_value=InputSizePreset.DEFAULT,
-            header="Change input image size.",
-            description="You can reduce training and inference time by using small input size.",
-            warning="Small input size may decrease model performance.",
+            header="Configure model input size.",
+            description="The input size of the given model could be configured to one of the predefined resolutions."
+            "Reduced training and inference time could be expected by using smaller input size."
+            "Defaults to per-model default resolution.",
+            warning="Small input size may decrease model accuracy at the price of better train and inference speed.",
             affects_outcome_of=ModelLifecycle.NONE,
             visible_in_ui=False,
         )

@@ -52,6 +52,8 @@ class InputSizePreset(ConfigurableEnum):
     """Configurable input size preset."""
 
     DEFAULT = "Default"
+    _64x64 = "64x64"
+    _128x128 = "128x128"
     _256x256 = "256x256"
     _384x384 = "384x384"
     _512x512 = "512x512"

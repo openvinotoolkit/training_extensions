@@ -224,10 +224,13 @@ learning_parameters:
   input_size:
     affects_outcome_of: TRAINING
     default_value: Default
-    description: You can reduce training and inference time by using small input size.
+    description:
+      The input size of the given model could be configured to one of the predefined resolutions.
+      Reduced training and inference time could be expected by using smaller input size.
+      Defaults to per-model default resolution.
     editable: true
     enum_name: InputSizePreset
-    header: Change input image size.
+    header: Configure model input size.
     options:
       DEFAULT: "Default"
       _256x256: "256x256"
@@ -243,7 +246,7 @@ learning_parameters:
       type: UI_RULES
     value: Default
     visible_in_ui: false
-    warning: Small input size may decrease model performance.
+    warning: Small input size may decrease model accuracy at the price of better train and inference speed.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
