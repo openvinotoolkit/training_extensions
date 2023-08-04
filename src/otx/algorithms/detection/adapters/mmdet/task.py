@@ -533,14 +533,26 @@ class MMDetectionTask(OTXDetectionTask):
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
+        backend_cfg_backup = {}
         if export_format == ExportType.ONNX:
+            backend_cfg_backup = export_options["deploy_cfg"]["backend_config"]
             export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
+            export_options["deploy_cfg"]["ir_config"]["dynamic_axes"]["image"] = {0: "batch"}
 
         exporter = DetectionExporter()
         results = exporter.run(
             cfg,
             **export_options,
         )
+
+        if export_format == ExportType.ONNX:
+            results["inference_parameters"] = {}
+            results["inference_parameters"]["mean_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--mean_values"])
+            )
+            results["inference_parameters"]["scale_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--scale_values"])
+            )
 
         return results
 
