@@ -5,63 +5,64 @@ default_language_version:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 23.9.1
     hooks:
       - id: black
         args: [--line-length, "120"]
-        files: '^(src|tests)/.*\.py'
+        files: '^(src/otx/v2)/.*\.py'
 
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
+    rev: v3.0.3
     hooks:
       - id: prettier
         exclude: "src/otx/recipes"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.1.1"
+    rev: "v1.6.0"
     hooks:
       - id: mypy
-        files: '^(src)/.*\.py'
-        additional_dependencies: [
-            # numpy==1.19.5,
+        files: '^(src/otx/v2)/.*\.py'
+        additional_dependencies:
+          [
             types-PyYAML,
             attrs==21.2.*,
             types-requests,
             types-Deprecated,
             types-docutils,
             types_futures,
+            types-setuptools,
             types-python-dateutil,
             tokenize-rt==3.2.0,
           ]
-        args: [--no-strict-optional, --ignore-missing-imports]
-        exclude: "^src/otx/recipes"
+        args: [--disallow-untyped-calls]
+        exclude: "^src/otx/recipes|src/otx/v2/demo|src/otx/v2/pseudo_code|src/otx/algorithms|src/otx/v2/api/entities"
 
   - repo: https://github.com/AleksaC/hadolint-py
-    rev: v2.10.0
+    rev: v2.12.0.3
     hooks:
       - id: hadolint
         name: Lint Dockerfiles
         description: Runs hadolint to lint Dockerfiles
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.5
+    rev: v0.9.0.6
     hooks:
       - id: shellcheck # TODO remove this when all shell scripts have been removed from otx
 
   # markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.33.0
+    rev: v0.37.0
     hooks:
       - id: markdownlint
         args: [--config=.markdownlint.yaml]
 
   # Ruff
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.258"
+    rev: "v0.1.0"
     hooks:
       - id: ruff
-        exclude: "tests|src/otx/recipes"
+        exclude: "tests|src/otx/recipes|src/otx/v2/demo|src/otx/v2/pseudo_code|src/otx/algorithms|src/otx/v2/api/entities"
         args: [--fix]
 
   # # Git conflict marker

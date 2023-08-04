@@ -1,19 +1,124 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # SETUP CONFIGURATION.                                                        #
 [build-system]
-# FIXME: specified torch wheel to build torch cpp extension should be fixed in some
-# different way instead of using static link url
 requires = [
-    "setuptools>=42",
+    "setuptools>=61",
     "wheel",
     "Cython~=0.29.32",
-    "numpy~=1.21.0"
+    "numpy~=1.21.0",
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "otx"
+dynamic = ["version"]
+description = "OpenVINO™ Training Extensions: Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO™"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    { name = "OpenVINO™ Training Extensions Contributors" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "attrs>=21.2.0",
+    "dill>=0.3.6",
+    "docstring_parser",
+    "imagesize==1.4.1",
+    "jsonargparse==4.25.0",
+    "networkx>=2.6,<=2.8.0",
+    "numpy>=1.21.0,<=1.23.4",
+    "omegaconf>=2.1.1",
+    "opencv-python>=4.5",
+    "pymongo",
+    "rich",
+    "rich-argparse",
+    "scikit-learn>=1.0.2",
+    "Shapely>=1.7.1,<=1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "tox==4.4.5",
+    "pre-commit==2.20.0",
+    "pylint",
+    "pytest",
+    "coverage",
+    "pytest-timeout",
+    "pytest-mock",
+    "onnx==1.13.0",
+    "onnxruntime==1.14.1",
+    "pytest-csv",
+]
+docs = [
+    "furo",
+    "myst-parser",
+    "sphinx==5.3.0",
+    "pydata-sphinx-theme==0.12.0",
+    "sphinx-tabs",
+    "sphinx-panels",
+    "sphinx-copybutton==0.5.0",
+    "sphinx-autoapi",
+    "sphinxemoji",
+    "nbsphinx",
+]
+base = [
+    "natsort>=6.0.0",
+    "prettytable",
+    "protobuf>=3.20.0",
+    "pyyaml",
+    "datumaro~=1.4.0",
+    "psutil",
+    "scipy>=1.8",
+    "bayesian-optimization>=1.2.0",
+    "tensorboard>=2.11.0",
+    "multiprocess",
+    "torch==2.0.0",
+]
+openvino = [
+    "nncf==2.5.0",
+    "onnx==1.13.0",
+    "openvino-model-api==0.1.5",
+    "openvino==2023.0",
+    "openvino-dev==2023.0",
+    "openvino-telemetry>=2022.1.0",
+]
+anomaly = [
+    "anomalib==0.5.1",
+    "kornia==0.6.9",
+]
+classification = [
+    "mmpretrain==1.0.*",
+    "mmdeploy",
+    "timm==0.6.12",
+    "pytorchcv",
+    "yapf<0.40.0",
+]
+
+[project.scripts]
+otx = "otx.v2.cli.cli:main"
+
+[project.urls]
+Documentation = "https://openvinotoolkit.github.io/training_extensions/"
+Repository = "https://github.com/openvinotoolkit/training_extensions/"
+
+[tool.setuptools.dynamic]
+version = {attr = "otx.v2.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["otx*"]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# CIBUILDWHEEL CONFIGURATION.                                                 #
+# CI CONFIGURATION.                                                        #
 [tool.cibuildwheel]
 build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
 
@@ -22,16 +127,13 @@ build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310
 # COVERAGE CONFIGURATION.                                                     #
 [tool.coverage.run]
 source = [
-    "src/otx/",
+    "src/otx/v2",
 ]
 omit = [
-    "src/otx/algorithms/*/configs/**/*pipeline*.py",
-    "src/otx/algorithms/*/configs/**/model*.py",
-    "src/otx/algorithms/*/configs/**/deployment.py",
-    "src/otx/algorithms/**/configs/**/backbones/*",
-    "src/otx/algorithms/**/*sample*.py",
     "**/__init__.py",
-    "src/otx/recipes/*",
+    "src/otx/v2/configs/*",
+    "src/otx/v2/demo/*",
+    "src/otx/v2/pseudo_code/*",
 ]
 
 
@@ -50,36 +152,83 @@ follow_imports = "skip"
 # RUFF CONFIGURATION                                                          #
 [tool.ruff]
 # Enable rules
-# pydocstyle (`D`)
-# pycodestyle error (`E`)
-# pycodestyle warning (`W`)
-# Pyflakes (`F`)
-# isort (`I`)
-# pylint (`PL`)
-select = ["D", "E", "F", "I", "W", "PL"]
+select = [
+    "F",    # Pyflakes (`F`)
+
+    # Enable all `pydocstyle` rules, limiting to those that adhere to the
+    # Google convention via `convention = "google"`, below.
+    "D",    # pydocstyle (`D`)
+    "E",    # pycodestyle error (`E`)
+    "W",    # pycodestyle warning (`W`)
+
+    "I",    # isort (`I`)
+    "PL",   # pylint (`PL`)
+
+    "C90",  # mccabe (`C90`)
+    "N",    # pep8-naming (`N`)
+    "UP",   # pyupgrade (`UP`)
+
+    "YTT",  # flake8-2020 (`YTT`)
+    "ANN",  # flake8-annotations (`ANN`)
+    "S",    # flake8-bandit (`S`)
+    # "BLE",  # flake8-blind-except (`BLE`)  -> Need to discuss new exception structure
+    "B",    # flake8-bugbear (`B`)
+    "A",    # flake8-builtins (`A`)
+    "COM",  # flake8-commas (`COM`)
+    # "CPY",  # flake8-copyright (`CPY`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+    "C4",   # flake8-comprehensions (`C4`)
+    "DTZ",  # flake8-datatimez (`DTZ`)
+    "T10",  # flake8-debugger (`T10`)
+    "EM",   # flake8-errmsg (`EM`)
+    "FA",   # flake8-future-annotations (`FA`)
+    "ISC",  # flake8-implicit-str-concat (`ISC`)
+    "ICN",  # flake8-import-conventions (`ICN`)
+    "PIE",  # flake8-pie (`PIE`)
+    "PT",   # flake8-pytest-style (`PT`)
+    "RSE",  # flake8-raise (`RSE`)
+    "RET",  # flake8-return (`RET`)
+    "SLF",  # flake8-self (`SLF`)
+    "SIM",  # flake8-simplify (`SIM`)
+    "TID",  # flake8-tidy-imports (`TID`)
+    "TCH",  # flake8-type-checking (`TCH`)
+    "INT",  # flake8-gettext (`INT`)
+    "ARG",  # flake8-unsused-arguments (`ARG`)
+    "PTH",  # flake8-use-pathlib (`PTH`)
+    "TD",   # flake8-todos (`TD`)
+    "FIX",  # flake8-fixme (`FIX`)
+    # "LOG",  # flake8-logging (`LOG`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+
+    "ERA",  # eradicate (`ERA`)
+    "PD",   # pandas-vet (`PD`)
+    "PGH",  # pygrep-hooks (`PGH`)
+    "TRY",  # tryceratos (`TRY`)
+    "FLY",  # flynt (`FLY`)
+    "NPY",  # NumPy-specific rules (`NPY`)
+    "PERF", # Perflint (`PERF`)
+    # "FURB", # refurb (`FURB`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
+    "RUF",  # Ruff-specific rules (`RUF`)
+]
 
 ignore = [
     # pydocstyle
-    "D107", # Missing docstring in __init__
-    "D202", # No blank lines allowed after function docstring
-    "D203", # 1 blank line required before class docstring
-    "D213", # Multi-line docstring summary should start at the second line
-    "D401", # First line should be in imperative mood; try rephrasing
-    "D404", # First word of the docstring should not be This
-    "D406", # Section name should end with a newline
-    "D407", # Missing dashed underline after section
-    "D413", # Missing blank line after last section
-    "D418", # Methods decorated with @overload shouldn't contain a docstring
+    # On top of the Google convention, disable `D417`, which requires
+    # documentation for every function parameter.
+    "D417", # Missing argument descriptions in the docstring
 
-    # pylint
-    "PLW2901" # Redefine loop name
+    # flake8-annotations
+    "ANN101",   # Missing-type-self
+    "ANN002",   # Missing type annotation for *args
+    "ANN003",   # Missing type annotation for **kwargs
+    # flake8-type-checking
+    "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
-fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
-unfixable = [
-    "F401",     # disable autofix for unused imports
-]
+fixable = ["ALL"]
+# fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+# unfixable = [
+#     "F401",     # disable autofix for unused imports
+# ]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -107,7 +256,35 @@ exclude = [
 
 # Extended exclude for the project specific
 extend-exclude = [
-    "src/otx/api"
+    # Disable: tests for v1.X
+    "tests/assets",
+    "tests/e2e",
+    "tests/fuzzing",
+    "tests/integration",
+    "tests/regression",
+    "tests/test_suite",
+    "tests/unit",
+    "tests/conftest.py",
+    "tests/run_model_templates_tests.py",
+    "tests/test_helpers.py",
+
+    # Disable: v1.X
+    "src/otx/api",
+    "src/otx/algorithms",
+    "src/otx/cli",
+    "src/otx/core",
+    "src/otx/hpo",
+    "src/otx/recipes",
+    "src/otx/v2/demo",
+    "src/otx/v2/pseudo_code",
+    "src/otx/v2/configs",
+    "src/otx/v2/api/entities",
+
+    # TODO: Enable below
+    "src/otx/v2/adapters/openvino",
+    "src/otx/v2/adapters/datumaro",
+    "src/otx/v2/adapters/torch/mmengine/modules",
+    "src/otx/v2/adapters/torch/mmengine/mmpretrain/modules",
 ]
 
 # Same as Black.
@@ -119,15 +296,28 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # minimum target version
 target-version = "py38"
 
-format = "grouped"
-
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
+max-complexity = 20
 
 [tool.ruff.pylint]
 allow-magic-value-types = ["str", "bytes", "int", "float"]
 max-args = 20
-max-branches = 25
-max-statements = 120
+max-branches = 50
+max-statements = 150
 max-returns = 10
+
+[tool.ruff.per-file-ignores]
+# Declare an additional exclude rule for test code
+"tests/**/*.py" = [
+    "S101",     # pytest-style allows `assert` statements in tests.
+    "SLF001",   # We sometimes need to inspect private functions for testing.
+    "TCH003",   # It doesn't seem necessary to use TYPE_CHECKING in tests.
+    "PT004",    # fixture ignore type returning.
+    "E501",     # Test skips lines that are too long.
+    "ANN001",   # Skip annotation type hint in test codes
+    "D",     # Test skips missing docstring argument with magic (fixture) methods.
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
