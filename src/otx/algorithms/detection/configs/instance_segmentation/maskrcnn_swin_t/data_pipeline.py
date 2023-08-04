@@ -24,7 +24,7 @@ train_pipeline = [
     dict(type="LoadImageFromFile"),
     dict(type="LoadAnnotations", with_bbox=True, with_mask=True, poly2mask=False),
     dict(type="Resize", img_scale=__img_size, keep_ratio=True),
-    dict(type="RandomFlip", flip_ratio=0.5, direction=['horizontal', 'vertical']),
+    dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
