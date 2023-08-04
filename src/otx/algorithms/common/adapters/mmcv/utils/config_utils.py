@@ -739,6 +739,11 @@ class InputSizeManager:
             for task in base_input_size.keys():
                 if isinstance(base_input_size[task], int):
                     base_input_size[task] = [base_input_size[task], base_input_size[task]]
+            for data_type in ["train", "val", "test"]:
+                if data_type in data_config and data_type not in base_input_size:
+                    raise ValueError(
+                        f"There is {data_type} data configuration but base input size for it doesn't exists."
+                    )
 
         self._base_input_size = base_input_size
 
@@ -849,12 +854,13 @@ class InputSizeManager:
                     post_img_size = img_size
                 post_img_size = self._estimate_post_img_size(pipeline["transforms"], post_img_size)
             elif pipeline["type"] == "AutoAugment":
-                post_img_size = self._estimate_post_img_size(pipeline["policies"], post_img_size)
+                post_img_size = self._estimate_post_img_size(pipeline["policies"][0], post_img_size)
 
         return post_img_size
 
-    def _get_size_value(self, pipeline: Dict, attr: str) -> Union[List[int], None]:
-        for pipeline_attr in self.PIPELINE_TO_CHANGE[attr]:
+    @classmethod
+    def _get_size_value(cls, pipeline: Dict, attr: str) -> Union[List[int], None]:
+        for pipeline_attr in cls.PIPELINE_TO_CHANGE[attr]:
             if pipeline_attr not in pipeline:
                 continue
             size_val = pipeline[pipeline_attr]
@@ -874,7 +880,7 @@ class InputSizeManager:
             return self._data_config[data_type]['dataset']['pipeline']
         raise RuntimeError("Failed to find pipeline.")
 
-    def _set_pipeline_size_vlaue(self, pipeline: Dict, scale: Tuple[Union[int, float]]):
+    def _set_pipeline_size_vlaue(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
         for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
             if pipeline_name in pipeline["type"].lower():
                 for pipeline_attr in pipeline_attrs:
@@ -886,11 +892,12 @@ class InputSizeManager:
                 self._set_pipeline_size_vlaue(sub_pipeline, scale)
 
         if pipeline["type"] == "AutoAugment":
-            for sub_pipeline in reversed(pipeline["policies"]):
-                self._set_pipeline_size_vlaue(sub_pipeline, scale)
+            for sub_pipelines in reversed(pipeline["policies"]):
+                for sub_pipeline in sub_pipelines:
+                    self._set_pipeline_size_vlaue(sub_pipeline, scale)
 
     @staticmethod
-    def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float]]):
+    def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]):
         if isinstance(pipeline[attr], int):
             pipeline[attr] = round(pipeline[attr] * scale[0])
         elif isinstance(pipeline[attr], list) and isinstance(pipeline[attr][0], tuple):
@@ -904,15 +911,15 @@ class InputSizeManager:
 def get_configurable_input_size(
     input_size_config: InputSizePreset = InputSizePreset.DEFAULT,
     model_ckpt: Optional[str] = None
-) -> Union[None, List[int]]:
-    """Get configurable input size configuration. If it doesn't exists, return None.
+) -> Union[None, Tuple[int, int]]:
+    """Get configurable input size configuration. If it doesn't exist, return None.
 
     Args:
         input_size_config (InputSizePreset, optional): Input size configuration. Defaults to InputSizePreset.DEFAULT.
         model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
 
     Returns:
-        Union[None, List[int]]: Pair of width and height. If there is no input size configuration, return None.
+        Union[None, Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
     """
     input_size = None
     if input_size_config == InputSizePreset.DEFAULT:
