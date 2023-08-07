@@ -726,7 +726,7 @@ class InputSizeManager:
         "randomaffine": ["border"],
         "multiscaleflipaug": ["img_scale"],
     }
-    DATA_TYPES: Union[str, str, str] = ("train", "val", "test")
+    DATA_TYPES: Tuple[str, str, str] = ("train", "val", "test")
 
     def __init__(
         self,
