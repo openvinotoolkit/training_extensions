@@ -20,6 +20,7 @@ from typing import Any, List, Optional, Sequence, Tuple
 import cv2
 import numpy as np
 import pycocotools.mask as mask_util
+from mmdet.core import BitmapMasks
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.color import Color
@@ -169,7 +170,7 @@ def expand_box(box: np.ndarray, scale_h: float, scale_w: float):
     return expanded_box
 
 
-def mask_resize(box: np.ndarray, mask: np.ndarray):
+def mask_resize(box: np.ndarray, mask: np.ndarray, img_height: int, img_width: int):
     """Resize mask to the size of the bounding box.
 
     Args:
@@ -177,7 +178,7 @@ def mask_resize(box: np.ndarray, mask: np.ndarray):
         mask (np.ndarray): mask to be resize
 
     Returns:
-        mask (np.ndarray): resized mask
+        bit_mask (np.ndarray): full size mask
     """
     # scaling bbox to prevent up-sampling artifacts on segment borders.
     mask = np.pad(mask, ((1, 1), (1, 1)), "constant", constant_values=0)
@@ -185,9 +186,16 @@ def mask_resize(box: np.ndarray, mask: np.ndarray):
     scale_w = mask.shape[1] / (mask.shape[1] - 2.0)
     extended_box = expand_box(box, scale_h=scale_h, scale_w=scale_w).astype(int)
     w, h = np.maximum(extended_box[2:] - extended_box[:2] + 1, 1)
-    mask = cv2.resize(mask.astype(np.float32), (w, h))
+    x0, y0 = np.clip(extended_box[:2], a_min=0, a_max=[img_width, img_height])
+    x1, y1 = np.clip(extended_box[2:] + 1, a_min=0, a_max=[img_width, img_height])
+    mask = cv2.resize(mask.astype(np.float32), (w, h)) > 0.5
     mask = mask.astype(np.uint8)
-    return mask
+    bit_mask = np.zeros((img_height, img_width), dtype=np.uint8)
+    bit_mask[y0:y1, x0:x1] = mask[
+        (y0 - extended_box[1]) : (y1 - extended_box[1]),
+        (x0 - extended_box[0]) : (x1 - extended_box[0]),
+    ]
+    return bit_mask
 
 
 def create_detection_shapes(
@@ -272,12 +280,17 @@ def create_mask_shapes(
                 continue
 
             assigned_label = [ScoredLabel(labels[label_idx], probability=probability)]
-            coords = box[:4].astype(float).copy()
-            left, top = coords[:2]
             if not use_ellipse_shapes:
                 if isinstance(mask, dict):
                     mask = mask_util.decode(mask)
-                mask = mask_resize(coords, mask)
+
+                if mask.shape[0] != height or mask.shape[1] != width:
+                    # resize mask to the size of the bounding box
+                    coords = box[:4].astype(float).copy()
+                    mask = mask_resize(coords, mask, height, width)
+
+                if mask.sum() == 0:
+                    continue
 
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 if hierarchies is None:
@@ -290,11 +303,11 @@ def create_mask_shapes(
                     if rotated_polygon:
                         box_points = cv2.boxPoints(cv2.minAreaRect(contour))
                         points = [
-                            Point(x=(point[0] + left) / width, y=(point[1] + top) / height) for point in box_points
+                            Point(x=(point[0]) / width, y=(point[1]) / height) for point in box_points
                         ]
                     else:
                         points = [
-                            Point(x=(point[0][0] + left) / width, y=(point[0][1] + top) / height) for point in contour
+                            Point(x=(point[0][0]) / width, y=(point[0][1]) / height) for point in contour
                         ]
 
                     polygon = Polygon(points=points)
@@ -302,7 +315,7 @@ def create_mask_shapes(
                         shapes.append(Annotation(polygon, labels=assigned_label, id=ID(f"{label_idx:08}")))
             else:
                 ellipse = Ellipse(
-                    (box[0] + left) / width, (box[1] + top) / height, (box[2] + left) / width, (box[3] + top) / height
+                    (box[0]) / width, (box[1]) / height, (box[2]) / width, (box[3]) / height
                 )
                 shapes.append(Annotation(ellipse, labels=assigned_label, id=ID(f"{label_idx:08}")))
     return shapes
