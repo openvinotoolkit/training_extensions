@@ -14,7 +14,7 @@ from openvino.model_api.models import ImageModel, Model
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
-from otx.algorithms.detection.adapters.openvino.model_wrappers import OTXMaskRCNNModel
+from openvino.model_api.models import MaskRCNNModel
 from otx.algorithms.detection.adapters.openvino.task import (
     OpenVINODetectionTask,
     OpenVINOMaskInferencer,
@@ -37,6 +37,7 @@ from tests.unit.algorithms.detection.test_helpers import (
     generate_det_dataset,
     init_environment,
 )
+from openvino.model_api.models.utils import InstanceSegmentationResult
 
 
 class TestTilingTileClassifier:
@@ -72,30 +73,34 @@ class TestTilingTileClassifier:
         """
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
-        adapter_mock = mocker.Mock(set_callback=mocker.Mock(return_value=None))
+        adapter_mock = mocker.Mock(
+            set_callback=mocker.Mock(return_value=None), get_rt_info=mocker.Mock(return_value={})
+        )
         mocker.patch.object(ImageModel, "__init__", return_value=None)
         mocker.patch.object(Model, "__init__", return_value=None)
-        mocked_model.return_value = mocker.MagicMock(spec=OTXMaskRCNNModel, model_adapter=adapter_mock)
+        mocked_model.return_value = mocker.MagicMock(spec=MaskRCNNModel, model_adapter=adapter_mock)
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
+        ov_mask_inferencer.model = mocked_model
         ov_mask_inferencer.model.resize_mask = False
         ov_mask_inferencer.model.preprocess.return_value = ({"foo": "bar"}, {"baz": "qux"})
-        ov_mask_inferencer.model.postprocess.return_value = (
-            np.array([], dtype=np.float32),
-            np.array([], dtype=np.uint32),
-            np.zeros((0, 4), dtype=np.float32),
-            [],
-        )
         ov_inferencer = OpenVINOTileClassifierWrapper(
             ov_mask_inferencer, tile_classifier_model_file="", tile_classifier_weight_file="", mode="sync"
         )
-        ov_inferencer.model.__model__ = "OTX_MaskRCNN"
+        ov_inferencer.model.__model__ = "MaskRCNN"
         mock_predict = mocker.patch.object(
-            ov_inferencer.tiler.classifier, "infer_sync", return_value={"tile_prob": 0.5}
+            ov_inferencer.tiler.tile_classifier_model, "infer_sync", return_value={"tile_prob": 0.5}
+        )
+        mocker.patch.object(ov_inferencer.tiler, "_postprocess_tile", return_value={})
+        mocker.patch.object(
+            ov_inferencer.tiler,
+            "_merge_results",
+            return_value=InstanceSegmentationResult(
+                [], [np.zeros((0, 4), dtype=np.float32)], np.zeros((0, 4), dtype=np.float32)
+            ),
         )
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
         ov_task = OpenVINODetectionTask(self.task_env)
-        ov_task.inferencer.predict = partial(ov_task.inferencer.predict, mode="sync")
         updated_dataset = ov_task.infer(self.dataset)
 
         mock_predict.assert_called()
