@@ -12,6 +12,7 @@ from otx.algorithms.classification.adapters.mmcls.configurer import (
     IncrClassificationConfigurer,
     SemiSLClassificationConfigurer,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import DEFAULT_CLS_TEMPLATE_DIR
 
@@ -40,6 +41,7 @@ class TestClassificationConfigurer:
         mock_cfg_gpu = mocker.patch.object(ClassificationConfigurer, "configure_samples_per_gpu")
         mock_cfg_fp16_optimizer = mocker.patch.object(ClassificationConfigurer, "configure_fp16_optimizer")
         mock_cfg_compat_cfg = mocker.patch.object(ClassificationConfigurer, "configure_compat_cfg")
+        mock_cfg_input_size = mocker.patch.object(ClassificationConfigurer, "configure_input_size")
 
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg)
@@ -54,6 +56,7 @@ class TestClassificationConfigurer:
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
         mock_cfg_fp16_optimizer.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
+        mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
         assert returned_value == model_cfg
 
     @e2e_pytest_unit
@@ -237,6 +240,26 @@ class TestClassificationConfigurer:
         config.update(self.data_cfg)
         config.data.train.dataset = ConfigDict({"dataset": [1, 2, 3]})
         assert [1, 2, 3] == self.configurer.get_data_cfg(config, "train")
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("input_size", [None, (128, 128)])
+    def test_configure_input_size(self, mocker, input_size):
+        # prepare
+        mock_cfg = mocker.MagicMock()
+        mocker.patch.object(configurer, "get_configurable_input_size", return_value=input_size)
+        mock_input_manager = mocker.MagicMock()
+        mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
+        mock_input_manager_cls.return_value = mock_input_manager
+
+        # excute
+        self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
+
+        # check
+        if input_size is not None:
+            mock_input_manager_cls.assert_called_once_with(mock_cfg.data)
+            mock_input_manager.set_input_size.assert_called_once_with(input_size)
+        else:
+            mock_input_manager_cls.assert_not_called()
 
 
 class TestIncrClassificationConfigurer:

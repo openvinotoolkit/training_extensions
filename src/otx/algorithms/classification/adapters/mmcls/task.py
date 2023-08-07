@@ -209,6 +209,7 @@ class MMClassificationTask(OTXClassificationTask):
             ir_options,
             data_classes,
             model_classes,
+            self._hyperparams.learning_parameters.input_size,
             options_for_patch_datasets=options_for_patch_datasets,
             options_for_patch_evaluation=options_for_patch_evaluation,
         )

@@ -222,7 +222,7 @@ learning_parameters:
     visible_in_ui: true
     warning: null
   input_size:
-    affects_outcome_of: TRAINING
+    affects_outcome_of: INFERENCE
     default_value: Default
     description:
       The input size of the given model could be configured to one of the predefined resolutions.
