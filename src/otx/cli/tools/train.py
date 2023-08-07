@@ -247,8 +247,13 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(
-            train, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size,
-            datetime.datetime.fromtimestamp(start_time))
+            train,
+            args.gpus,
+            args.rdzv_endpoint,
+            args.base_rank,
+            args.world_size,
+            datetime.datetime.fromtimestamp(start_time),
+        )
         if (
             multigpu_manager.is_available()
             and not template.task_type.is_anomaly  # anomaly tasks don't use this way for multi-GPU training
