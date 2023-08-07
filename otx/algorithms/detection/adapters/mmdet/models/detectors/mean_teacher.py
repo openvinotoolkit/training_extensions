@@ -189,6 +189,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                         continue
                     ul_loss = ul_losses[ul_loss_name]
                     if "_bbox" in ul_loss_name:
+                        if self.unlabeled_reg_loss_weight == 0:
+                            continue
                         if isinstance(ul_loss, list):
                             losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_reg_loss_weight for loss in ul_loss]
                         else:
