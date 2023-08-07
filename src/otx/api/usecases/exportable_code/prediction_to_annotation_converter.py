@@ -10,7 +10,12 @@ from typing import Any, Dict, List, Optional, Union
 import cv2
 import numpy as np
 from openvino.model_api.models import utils
-from openvino.model_api.models.utils import ClassificationResult, ImageResultWithSoftPrediction, InstanceSegmentationResult, DetectionResult
+from openvino.model_api.models.utils import (
+    ClassificationResult,
+    ImageResultWithSoftPrediction,
+    InstanceSegmentationResult,
+    DetectionResult,
+)
 
 from otx.api.entities.annotation import (
     Annotation,
