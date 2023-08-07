@@ -219,6 +219,7 @@ class OTXCLIv2:
         parser_kwargs: Dict[str, Any] = {},
     ):
         cli_otx_logo()
+        self.error = None
         self.engine_defaults = {}
         self.pre_args = {}
         self.auto_engine_class = AutoEngine
@@ -390,17 +391,14 @@ class OTXCLIv2:
             )
             self.pre_args = pre_args
             return temp_engine
-        except:
+        except Exception as e:
+            self.error = e
             return None
 
     def get_model_class(self):
         if self.auto_engine is not None:
             framework_engine = self.auto_engine.build_framework_engine()
             default_configs = [self.auto_engine.config_path]
-            # if hasattr(framework_engine, "registry"):
-            #     registry = framework_engine.registry
-            # else:
-            #     raise NotImplementedError()
             # Find Model
             model_name = None
             if "model.name" in self.pre_args:
@@ -410,15 +408,11 @@ class OTXCLIv2:
                 model_name = model_cfg.get("name", model_cfg.get("type", None))
             if model_name is None:
                 raise ValueError("The appropriate model was not found in config..")
-            # model = registry.get(model_name)
-            # if model is None:
-            #     # TODO: Using get_model
             model = self.auto_engine.get_model(model=model_name)
             if model is None:
                 raise ValueError()
             if model_name in self.auto_engine.config_list:
                 default_configs.append(self.auto_engine.config_list[model_name])
-            # model_cls = create_dynamic_data_class_from_dict(model_name, model)
             # TODO: Need more flexible way for Model API
             return model.__class__, default_configs
         return None, None
@@ -432,6 +426,9 @@ class OTXCLIv2:
 
     def instantiate_classes(self) -> None:
         """Instantiates the classes and sets their attributes."""
+        if self.auto_engine is None and self.error is not None:
+            # Raise an existing raised exception only when the actual command is executed.
+            raise self.error
         self.config_init = self.parser.instantiate_classes(self.config)
         data_cfg = self._pop(self.config_init, "data")
         model_cfg = self._pop(self.config_init, "model")
@@ -520,9 +517,6 @@ class OTXCLIv2:
 
     def _prepare_subcommand_kwargs(self, subcommand: str) -> Dict[str, Any]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
-        # subcommand_kwargs = {
-        #     k: v for k, v in self.config_init[subcommand].items() if k in self._subcommand_method_arguments[subcommand]
-        # }
         config = namespace_to_dict(self.config_init[subcommand])
         subcommand_kwargs = {}
         left_kwargs = {}

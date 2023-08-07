@@ -106,8 +106,8 @@ def get_extensions():
 
     def _cython_modules():
         cython_files = [
-            "src/otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/pil_augment.pyx",
-            "src/otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/cv_augment.pyx"
+            "src/otx/v2/adapters/torch/mmengine/modules/pipelines/transforms/cython_augments/pil_augment.pyx",
+            "src/otx/v2/adapters/torch/mmengine/modules/pipelines/transforms/cython_augments/cv_augment.pyx"
         ]
 
         ext_modules = [
@@ -214,13 +214,6 @@ setup(
     entry_points={
         "console_scripts": [
             "otx=otx.v2.cli.cli:main",
-            # "otx_demo=otx.v2.tools.demo:main",
-            # "otx_eval=otx.v2.tools.eval:main",
-            # "otx_export=otx.v2.tools.export:main",
-            # "otx_find=otx.v2.tools.find:main",
-            # "otx_train=otx.v2.tools.train:main",
-            # "otx_optimize=otx.v2.tools.optimize:main",
-            # "otx_build=otx.v2.tools.build:main",
         ]
     },
 )
