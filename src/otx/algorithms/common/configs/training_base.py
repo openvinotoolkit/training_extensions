@@ -204,7 +204,7 @@ class BaseConfig(ConfigurableParameters):
             description="The input size of the given model could be configured to one of the predefined resolutions."
             "Reduced training and inference time could be expected by using smaller input size."
             "Defaults to per-model default resolution.",
-            warning="Small input size may decrease model accuracy at the price of better train and inference speed.",
+            warning="Modifying input size may decrease model performance.",
             affects_outcome_of=ModelLifecycle.NONE,
             visible_in_ui=False,
         )

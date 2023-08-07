@@ -302,7 +302,7 @@ learning_parameters:
       type: UI_RULES
     value: Default
     visible_in_ui: false
-    warning: Small input size may decrease model accuracy at the price of better train and inference speed.
+    warning: Modifying input size may decrease model performance.
   type: PARAMETER_GROUP
   visible_in_ui: true
 pot_parameters:

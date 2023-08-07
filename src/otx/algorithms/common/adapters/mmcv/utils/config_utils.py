@@ -726,6 +726,7 @@ class InputSizeManager:
         "randomaffine": ["border"],
         "multiscaleflipaug": ["img_scale"],
     }
+    DATA_TYPES: Union[str, str, str] = ("train", "val", "test")
 
     def __init__(
         self,
@@ -739,7 +740,7 @@ class InputSizeManager:
             for task in base_input_size.keys():
                 if isinstance(base_input_size[task], int):
                     base_input_size[task] = (base_input_size[task], base_input_size[task])  # type: ignore[assignment]
-            for data_type in ["train", "val", "test"]:
+            for data_type in self.DATA_TYPES:
                 if data_type in data_config and data_type not in base_input_size:
                     raise ValueError(
                         f"There is {data_type} data configuration but base input size for it doesn't exists."
@@ -761,7 +762,7 @@ class InputSizeManager:
             resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
 
         # scale size values
-        for data_type in ["train", "val", "test"]:
+        for data_type in self.DATA_TYPES:
             if data_type in self._data_config:
                 if isinstance(self.base_input_size, dict):
                     resize_ratio = (
@@ -770,7 +771,7 @@ class InputSizeManager:
                     )
                 pipelines = self._get_pipelines(data_type)
                 for pipeline in pipelines:
-                    self._set_pipeline_size_vlaue(pipeline, resize_ratio)
+                    self._set_pipeline_size_value(pipeline, resize_ratio)
 
     @property
     def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
@@ -877,7 +878,7 @@ class InputSizeManager:
             return self._data_config[data_type]["dataset"]["pipeline"]
         raise RuntimeError("Failed to find pipeline.")
 
-    def _set_pipeline_size_vlaue(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
+    def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
         for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
             if pipeline_name in pipeline["type"].lower():
                 for pipeline_attr in pipeline_attrs:
@@ -886,12 +887,12 @@ class InputSizeManager:
 
         if pipeline["type"] == "MultiScaleFlipAug":
             for sub_pipeline in pipeline["transforms"]:
-                self._set_pipeline_size_vlaue(sub_pipeline, scale)
+                self._set_pipeline_size_value(sub_pipeline, scale)
 
         if pipeline["type"] == "AutoAugment":
             for sub_pipelines in pipeline["policies"]:
                 for sub_pipeline in sub_pipelines:
-                    self._set_pipeline_size_vlaue(sub_pipeline, scale)
+                    self._set_pipeline_size_value(sub_pipeline, scale)
 
     @staticmethod
     def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]):
