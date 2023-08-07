@@ -15,7 +15,6 @@ from torch import distributed as dist
 from otx.algorithms.common.adapters.mmcv.utils import (
     patch_adaptive_interval_training,
     patch_early_stopping,
-    patch_fp16,
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
@@ -46,7 +45,6 @@ class BaseConfigurer:
         """
 
         self.configure_compatibility(cfg, **kwargs)
-        patch_fp16(cfg)
         patch_adaptive_interval_training(cfg)
         patch_early_stopping(cfg)
         patch_persistent_workers(cfg)
@@ -160,8 +158,6 @@ class BaseConfigurer:
         """Patch cfg.data.
 
         Merge cfg and data_cfg
-        Match cfg.data.train.type to super_type
-        Patch for unlabeled data path ==> This may be moved to SemiClassificationConfigurer
         """
 
         logger.info("configure_data()")
@@ -239,7 +235,7 @@ class BaseConfigurer:
         cfg: Config,
         subset: str,
     ):
-        """Settings samples_per_gpu for training and inference."""
+        """Settings samples_per_gpu for training and inference in case of corner cases."""
 
         dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
         samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
@@ -267,26 +263,34 @@ class BaseConfigurer:
             cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
     @staticmethod
-    def configure_fp16_optimizer(cfg: Config):
+    def configure_fp16(cfg: Config):
         """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
 
         fp16_config = cfg.pop("fp16", None)
+
         if fp16_config is not None:
-            optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
-            opts: Dict[str, Any] = dict(
-                distributed=getattr(cfg, "distributed", False),
-                **fp16_config,
-            )
-            if optim_type == "SAMOptimizerHook":
-                opts["type"] = "Fp16SAMOptimizerHook"
-            elif optim_type == "OptimizerHook":
-                opts["type"] = "Fp16OptimizerHook"
+            if torch.cuda.is_available():
+                optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
+                opts: Dict[str, Any] = dict(
+                    distributed=getattr(cfg, "distributed", False),
+                    **fp16_config,
+                )
+                if optim_type == "SAMOptimizerHook":
+                    opts["type"] = "Fp16SAMOptimizerHook"
+                elif optim_type == "OptimizerHook":
+                    opts["type"] = "Fp16OptimizerHook"
+                else:
+                    # does not support optimizerhook type
+                    # let mm library handle it
+                    cfg.fp16 = fp16_config
+                    opts = dict()
+                cfg.optimizer_config.update(opts)
             else:
-                # does not support optimizerhook type
-                # let mm library handle it
-                cfg.fp16 = fp16_config
-                opts = dict()
-            cfg.optimizer_config.update(opts)
+                logger.info("Revert FP16 to FP32 on CPU device")
+                if isinstance(cfg, Config):
+                    del cfg._cfg_dict["fp16"]  # pylint: disable=protected-access
+                elif isinstance(cfg, ConfigDict):
+                    del cfg["fp16"]
 
     @staticmethod
     def configure_compat_cfg(cfg: Config):

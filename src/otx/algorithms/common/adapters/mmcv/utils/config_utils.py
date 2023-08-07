@@ -439,19 +439,6 @@ def patch_color_conversion(config: Config):
         cfg.to_rgb = not bool(to_rgb)
 
 
-def patch_fp16(config: Config):
-    """Remove FP16 config if running on CPU device and revert to FP32.
-
-    Please refer https://github.com/pytorch/pytorch/issues/23377
-    """
-    if not torch.cuda.is_available() and "fp16" in config:
-        logger.info("Revert FP16 to FP32 on CPU device")
-        if isinstance(config, Config):
-            del config._cfg_dict["fp16"]  # pylint: disable=protected-access
-        elif isinstance(config, ConfigDict):
-            del config["fp16"]
-
-
 def patch_adaptive_interval_training(config: Config):
     """Update adaptive interval settings for OTX training.
 
