@@ -20,7 +20,6 @@ from typing import Any, List, Optional, Sequence, Tuple
 import cv2
 import numpy as np
 import pycocotools.mask as mask_util
-from mmdet.core import BitmapMasks
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.color import Color
@@ -176,6 +175,8 @@ def mask_resize(box: np.ndarray, mask: np.ndarray, img_height: int, img_width: i
     Args:
         box (np.ndarray): bounding box which enclosing the mask
         mask (np.ndarray): mask to be resize
+        img_height (int): image height
+        img_width (int): image width
 
     Returns:
         bit_mask (np.ndarray): full size mask
@@ -302,20 +303,14 @@ def create_mask_shapes(
 
                     if rotated_polygon:
                         box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                        points = [
-                            Point(x=(point[0]) / width, y=(point[1]) / height) for point in box_points
-                        ]
+                        points = [Point(x=(point[0]) / width, y=(point[1]) / height) for point in box_points]
                     else:
-                        points = [
-                            Point(x=(point[0][0]) / width, y=(point[0][1]) / height) for point in contour
-                        ]
+                        points = [Point(x=(point[0][0]) / width, y=(point[0][1]) / height) for point in contour]
 
                     polygon = Polygon(points=points)
                     if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                         shapes.append(Annotation(polygon, labels=assigned_label, id=ID(f"{label_idx:08}")))
             else:
-                ellipse = Ellipse(
-                    (box[0]) / width, (box[1]) / height, (box[2]) / width, (box[3]) / height
-                )
+                ellipse = Ellipse((box[0]) / width, (box[1]) / height, (box[2]) / width, (box[3]) / height)
                 shapes.append(Annotation(ellipse, labels=assigned_label, id=ID(f"{label_idx:08}")))
     return shapes

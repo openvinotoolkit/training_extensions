@@ -8,12 +8,7 @@
 img_size = (512, 512)
 
 tile_cfg = dict(
-    tile_size=400,
-    min_area_ratio=0.9,
-    overlap_ratio=0.2,
-    iou_threshold=0.45,
-    max_per_img=1500,
-    filter_empty_gt=True
+    tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
 )
 
 img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
