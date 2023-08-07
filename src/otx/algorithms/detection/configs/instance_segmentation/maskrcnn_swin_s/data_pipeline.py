@@ -18,7 +18,7 @@
 
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
-__img_size = (1024, 1024)
+__img_size = (1344, 1344)
 
 train_pipeline = [
     dict(type="LoadImageFromFile"),
@@ -50,7 +50,7 @@ test_pipeline = [
 __dataset_type = "CocoDataset"
 __data_root = "data/coco/"
 
-__samples_per_gpu = 4
+__samples_per_gpu = 2
 
 data = dict(
     samples_per_gpu=__samples_per_gpu,
