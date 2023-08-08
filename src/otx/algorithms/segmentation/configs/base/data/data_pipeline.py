@@ -21,7 +21,7 @@ __crop_size = (512, 512)
 
 train_pipeline = [
     dict(type="LoadImageFromOTXDataset"),
-    dict(type="LoadAnnotationFromOTXDataset", use_otx_adapter=True),
+    dict(type="LoadAnnotationFromOTXDataset", enable_memcache=True, use_otx_adapter=True),
     dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0)),
     dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type="RandomFlip", prob=0.5, direction="horizontal"),

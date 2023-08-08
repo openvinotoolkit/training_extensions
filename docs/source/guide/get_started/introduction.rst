@@ -39,7 +39,7 @@ OpenVINO™ Training Extensions will provide the :doc:`following features <../ex
 - **Distributed training** to accelerate the training process when you have multiple GPUs
 - **Half-precision training** to save GPUs memory and use larger batch sizes
 - Integrated, efficient :doc:`hyper-parameter optimization module <../explanation/additional_features/hpo>` (**HPO**). Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
-- OpenVINO™ Training Extensions uses `Datumaro <https://openvinotoolkit.github.io/datumaro/docs/>`_ as the backend to handle datasets. On account of that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. In the future there will be more supported formats available to give more freedom of datasets format choice.
+- OpenVINO™ Training Extensions uses `Datumaro <https://openvinotoolkit.github.io/datumaro/stable/index.html>`_ as the backend to handle datasets. On account of that, OpenVINO™ Training Extensions supports the most common academic field dataset formats for each task. In the future there will be more supported formats available to give more freedom of datasets format choice.
 - Improved :doc:`auto-configuration functionality <../explanation/additional_features/auto_configuration>`. OpenVINO™ Training Extensions analyzes provided dataset and selects the proper task and model template to provide the best accuracy/speed trade-off. It will also make a random auto-split of your dataset if there is no validation set provided.
 
 ************

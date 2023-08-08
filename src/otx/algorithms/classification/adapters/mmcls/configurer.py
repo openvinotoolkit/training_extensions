@@ -4,6 +4,7 @@
 #
 
 import importlib
+from typing import Optional
 
 import torch
 from mmcv import build_from_cfg
@@ -20,9 +21,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataset,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    get_configured_input_size,
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
@@ -51,6 +55,7 @@ class ClassificationConfigurer(BaseConfigurer):
         ir_options=None,
         data_classes=None,
         model_classes=None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
         **kwargs,
     ):
         """Create MMCV-consumable config from given inputs."""
@@ -66,6 +71,7 @@ class ClassificationConfigurer(BaseConfigurer):
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_compatibility(self, cfg, **kwargs):
@@ -190,6 +196,18 @@ class ClassificationConfigurer(BaseConfigurer):
             cfg.model.head.topk = (1,) if cfg.model.head.num_classes < 5 else (1, 5)
             if cfg.model.get("multilabel", False) or cfg.model.get("hierarchical", False):
                 cfg.model.head.pop("topk", None)
+
+    @staticmethod
+    def configure_input_size(
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+    ):
+        """Change input size if necessary."""
+        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        if input_size is None:
+            return
+
+        InputSizeManager(cfg.data).set_input_size(input_size)
+        logger.info("Input size is changed to {}".format(input_size))
 
 
 CLASS_INC_DATASET = [

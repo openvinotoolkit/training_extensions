@@ -20,13 +20,14 @@ import multiprocessing
 import os
 import os.path as osp
 import platform
+import re
 import shutil
 import sys
 import tempfile
 import warnings
 from collections.abc import Mapping
 from importlib import import_module
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from mmcv import Config, ConfigDict
@@ -34,6 +35,7 @@ from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
 from mmcv.utils.misc import import_modules_from_strings
 from mmcv.utils.path import check_file_exist
 
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 
@@ -622,3 +624,244 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
     while "dataset" in data_cfg:
         data_cfg = data_cfg.dataset
     return data_cfg
+
+
+class InputSizeManager:
+    """Class for changing input size and getting input size value by checking data pipeline.
+
+    NOTE: "resize", "pad", "crop", "mosaic", "randomaffine", "multiscaleflipaug" and "AutoAugment"
+    are considered at now. If other data pipelines exist, it can work differently than expected.
+
+    Args:
+        data_config (Dict): Data configuration expected to have "train", "val" or "test" data pipeline.
+        base_input_size (Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]], optional):
+            Default input size. If it's a None, it's estimated based on data pipeline. If it's an integer,
+            it's expected that all data pipeline have (base_input_size x base_input_size) input size.
+            If it's an integer list, all data pipeline have same (base_input_size[0] x base_input_size[1]) input size.
+            If it's dictionary, each data pipeline has specified input size. It should have format as below:
+                {"train" : [w, h], "val" : [w, h], "test" : [w, h]}
+    """
+
+    PIPELINE_TO_CHANGE: Dict[str, List[str]] = {
+        "resize": ["size", "img_scale"],
+        "pad": ["size"],
+        "crop": ["crop_size"],
+        "mosaic": ["img_scale"],
+        "randomaffine": ["border"],
+        "multiscaleflipaug": ["img_scale"],
+    }
+    SUBSET_TYPES: Tuple[str, str, str] = ("train", "val", "test")
+
+    def __init__(
+        self,
+        data_config: Dict,
+        base_input_size: Optional[Union[int, Tuple[int, int], Dict[str, int], Dict[str, Tuple[int, int]]]] = None,
+    ):
+        self._data_config = data_config
+        if isinstance(base_input_size, int):
+            base_input_size = (base_input_size, base_input_size)
+        elif isinstance(base_input_size, dict):
+            for task in base_input_size.keys():
+                if isinstance(base_input_size[task], int):
+                    base_input_size[task] = (base_input_size[task], base_input_size[task])  # type: ignore[assignment]
+            for subset_type in self.SUBSET_TYPES:
+                if subset_type in data_config and subset_type not in base_input_size:
+                    raise ValueError(
+                        f"There is {subset_type} data configuration but base input size for it doesn't exists."
+                    )
+
+        self._base_input_size = base_input_size
+
+    def set_input_size(self, input_size: Union[int, List[int], Tuple[int, int]]):
+        """Set input size in data pipe line.
+
+        Args:
+            input_size (Union[int, List[int]]):
+                input size to set. If it's an integer, (input_size x input_size) will be set.
+                If input_size is an integer list, (input_size[0] x input_size[1]) will be set.
+        """
+        if isinstance(input_size, int):
+            input_size = [input_size, input_size]
+        if not isinstance(self.base_input_size, dict):
+            resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
+
+        # scale size values
+        for subset_type in self.SUBSET_TYPES:
+            if subset_type in self._data_config:
+                if isinstance(self.base_input_size, dict):
+                    resize_ratio = (
+                        input_size[0] / self.base_input_size[subset_type][0],
+                        input_size[1] / self.base_input_size[subset_type][1],
+                    )
+                pipelines = self._get_pipelines(subset_type)
+                for pipeline in pipelines:
+                    self._set_pipeline_size_value(pipeline, resize_ratio)
+
+    @property
+    def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
+        """Getter function of `base_input_size` attirbute.
+
+        If it isn't set when intializing class, it's estimated by checking data pipeline.
+        Same value is returned after estimation.
+
+        Raises:
+            RuntimeError: If failed to estimate base input size from data pipeline, raise an error.
+
+        Returns:
+            Union[List[int], Dict[str, List[int]]]: Base input size.
+        """
+        if self._base_input_size is not None:
+            return self._base_input_size  # type: ignore[return-value]
+
+        input_size = self.get_input_size_from_cfg()
+        if input_size is None:
+            raise RuntimeError("There isn't any pipeline in the data configurations.")
+
+        self._base_input_size = input_size
+        return input_size
+
+    def get_input_size_from_cfg(
+        self, subset: Union[str, List[str]] = ["test", "val", "train"]
+    ) -> Union[None, Tuple[int, int]]:
+        """Estimate image size using data pipeline.
+
+        Args:
+            subset (Union[str, List[str]], optional): Which pipelines to check. Defaults to ["test", "val", "train"].
+
+        Returns:
+            Union[None, List[int]]: Return estimiated input size. If failed to estimate, return None.
+        """
+        if isinstance(subset, str):
+            subset = [subset]
+
+        for target_subset in subset:
+            if target_subset in self._data_config:
+                input_size = self._estimate_post_img_size(self._data_config[target_subset]["pipeline"])
+                if input_size is not None:
+                    return tuple(input_size)  # type: ignore[return-value]
+
+        return None
+
+    def _estimate_post_img_size(
+        self, pipelines: Dict, default_size: Optional[List[int]] = None
+    ) -> Union[List[int], None]:
+        # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
+        post_img_size = default_size
+        for pipeline in pipelines:
+            if "resize" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "resize")
+                if img_size is not None:
+                    post_img_size = img_size
+            elif "pad" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "pad")
+                if img_size is not None:
+                    if post_img_size is None:
+                        post_img_size = img_size
+                    else:
+                        for i in range(2):
+                            if post_img_size[i] < img_size[i]:
+                                post_img_size[i] = img_size[i]
+            elif "crop" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "crop")
+                if img_size is not None:
+                    if post_img_size is None:
+                        post_img_size = img_size
+                    else:
+                        for i in range(2):
+                            if post_img_size[i] > img_size[i]:
+                                post_img_size[i] = img_size[i]
+            elif pipeline["type"] == "MultiScaleFlipAug":
+                img_size = self._get_size_value(pipeline, "multiscaleflipaug")
+                if img_size is not None:
+                    post_img_size = img_size
+                post_img_size = self._estimate_post_img_size(pipeline["transforms"], post_img_size)
+            elif pipeline["type"] == "AutoAugment":
+                post_img_size = self._estimate_post_img_size(pipeline["policies"][0], post_img_size)
+
+        return post_img_size
+
+    @classmethod
+    def _get_size_value(cls, pipeline: Dict, attr: str) -> Union[List[int], None]:
+        for pipeline_attr in cls.PIPELINE_TO_CHANGE[attr]:
+            if pipeline_attr not in pipeline:
+                continue
+            size_val = pipeline[pipeline_attr]
+            if isinstance(size_val, int):
+                return [size_val, size_val]
+            elif isinstance(size_val, tuple):
+                return list(size_val)
+            elif isinstance(size_val, list):
+                return list(size_val[0])
+
+        return None
+
+    def _get_pipelines(self, subset_type: str):
+        if "pipeline" in self._data_config[subset_type]:
+            return self._data_config[subset_type]["pipeline"]
+        if "dataset" in self._data_config[subset_type]:
+            return self._data_config[subset_type]["dataset"]["pipeline"]
+        raise RuntimeError("Failed to find pipeline.")
+
+    def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
+        for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
+            if pipeline_name in pipeline["type"].lower():
+                for pipeline_attr in pipeline_attrs:
+                    if pipeline_attr in pipeline:
+                        self._set_size_value(pipeline, pipeline_attr, scale)
+
+        if pipeline["type"] == "MultiScaleFlipAug":
+            for sub_pipeline in pipeline["transforms"]:
+                self._set_pipeline_size_value(sub_pipeline, scale)
+
+        if pipeline["type"] == "AutoAugment":
+            for sub_pipelines in pipeline["policies"]:
+                for sub_pipeline in sub_pipelines:
+                    self._set_pipeline_size_value(sub_pipeline, scale)
+
+    @staticmethod
+    def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]):
+        if isinstance(pipeline[attr], int):
+            pipeline[attr] = round(pipeline[attr] * scale[0])
+        elif isinstance(pipeline[attr], list) and isinstance(pipeline[attr][0], tuple):
+            for idx in range(len(pipeline[attr])):
+                pipeline[attr][idx] = (
+                    round(pipeline[attr][idx][0] * scale[0]),
+                    round(pipeline[attr][idx][1] * scale[1]),
+                )
+        else:
+            pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
+
+
+def get_configured_input_size(
+    input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+) -> Union[None, Tuple[int, int]]:
+    """Get configurable input size configuration. If it doesn't exist, return None.
+
+    Args:
+        input_size_config (InputSizePreset, optional): Input size configuration. Defaults to InputSizePreset.DEFAULT.
+        model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
+
+    Returns:
+        Union[None, Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
+    """
+    input_size = None
+    if input_size_config == InputSizePreset.DEFAULT:
+        if model_ckpt is None:
+            return None
+
+        model_info = torch.load(model_ckpt, map_location="cpu")
+        for key in ["config", "learning_parameters", "input_size", "value"]:
+            if key not in model_info:
+                return None
+            model_info = model_info[key]
+        input_size = model_info
+
+        if input_size == InputSizePreset.DEFAULT.value:
+            return None
+
+        logger.info("Given model weight was trained with {} input size.".format(input_size))
+    else:
+        input_size = input_size_config.value
+
+    parsed_tocken = re.match("(\\d+)x(\\d+)", input_size)
+    return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))

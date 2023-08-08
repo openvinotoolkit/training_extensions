@@ -5,15 +5,12 @@
 #
 
 import os
-import json
 from contextlib import nullcontext
-from copy import deepcopy
 from typing import Any, Dict
 
 import numpy as np
 import pytest
 import torch
-from mmcv.utils import Config
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
@@ -23,14 +20,11 @@ from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_imag
     CustomImageClassifier,
 )
 from otx.algorithms.classification.configs.base import ClassificationConfig
-from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model import (
     ModelConfiguration,
     ModelEntity,
@@ -38,14 +32,13 @@ from otx.api.entities.model import (
     ModelOptimizationType,
     ModelPrecision,
 )
-from otx.api.entities.model_template import InstantiationType, parse_model_template, TaskFamily, TaskType
+from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE_DIR,
     init_environment,
-    generate_cls_dataset,
     generate_label_schema,
 )
 
@@ -150,7 +143,7 @@ class TestMMClassificationTask:
 
         ml_task_env, self.ml_cls_dataset = init_environment(hyper_parameters, model_template, True, False, 100)
         self.ml_cls_task = MMClassificationTask(ml_task_env)
-        self.ml_cls_label_schema = generate_label_schema(self.ml_cls_dataset.get_labels(), False, False)
+        self.ml_cls_label_schema = generate_label_schema(self.ml_cls_dataset.get_labels(), True, False)
 
         hl_task_env, self.hl_cls_dataset = init_environment(hyper_parameters, model_template, False, True, 100)
         self.hl_cls_task = MMClassificationTask(hl_task_env)
@@ -368,7 +361,7 @@ class TestMMClassificationTask:
         inference_parameters = InferenceParameters(is_evaluation=True)
         outputs = self.hl_cls_task.infer(self.hl_cls_dataset.with_empty_annotations(), inference_parameters)
         for output in outputs:
-            assert output.get_annotations()[-1].get_labels()[0].probability == 0.7
+            assert output.get_annotations()[-1].get_labels()[0].probability == 0.0
 
     @e2e_pytest_unit
     def test_cls_evaluate(self) -> None:

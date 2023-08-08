@@ -133,7 +133,7 @@ class TestSegmentationCLI:
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_export_onnx(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation"
-        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True, check_ir_meta=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

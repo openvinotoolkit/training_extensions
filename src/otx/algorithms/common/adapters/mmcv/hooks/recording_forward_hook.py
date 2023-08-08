@@ -20,6 +20,7 @@ from typing import List, Optional, Sequence, Union
 
 import numpy as np
 import torch
+from torch.nn import LayerNorm
 
 from otx.algorithms.classification import MMCLS_AVAILABLE
 
@@ -238,3 +239,130 @@ class ReciproCAMHook(BaseRecordingForwardHook):
                     mosaic_feature_map_mask[k, :, i, j] = torch.ones(c).to(feature_map.device)
             mosaic_feature_map = feature_map_repeated * mosaic_feature_map_mask
         return mosaic_feature_map
+
+
+class ViTReciproCAMHook(BaseRecordingForwardHook):
+    """Implementation of ViTRecipro-CAM for class-wise saliency map for transformer-based classifiers.
+
+    Args:
+    module (torch.nn.Module): The PyTorch module.
+    layer_index (int): Index of the target transformer_encoder layer.
+    use_gaussian (bool): Defines kernel type for mosaic feature map generation.
+    If True, use gaussian 3x3 kernel. If False, use 1x1 kernel.
+    cls_token (bool): If True, includes classification token into the mosaic feature map.
+    """
+
+    def __init__(
+        self, module: torch.nn.Module, layer_index: int = -1, use_gaussian: bool = True, cls_token: bool = True
+    ):
+        super().__init__(module)
+        self._layer_index = layer_index
+        self._target_layernorm = self._get_target_layernorm()
+        self._final_norm = module.backbone.norm1 if module.backbone.final_norm else None
+        self._neck = module.neck if module.with_neck else None
+        self._num_classes = module.head.num_classes
+        self._use_gaussian = use_gaussian
+        self._cls_token = cls_token
+
+    def _get_target_layernorm(self) -> torch.nn.Module:
+        """Returns the first (out of two) layernorm layer from the layer_index backbone layer."""
+        assert self._layer_index < 0, "negative index expected, e.g. -1 for the last layer."
+        layernorm_layers = []
+        for module in self._module.backbone.modules():
+            if isinstance(module, LayerNorm):
+                layernorm_layers.append(module)
+        assert len(layernorm_layers) == self._module.backbone.num_layers * 2 + int(self._module.backbone.final_norm)
+        target_layernorm_index = self._layer_index * 2 - int(self._module.backbone.final_norm)
+        return layernorm_layers[target_layernorm_index]
+
+    def func(self, feature_map: torch.Tensor, _: int = -1) -> torch.Tensor:
+        """Generate the class-wise saliency maps using ViTRecipro-CAM and then normalizing to (0, 255).
+
+        Args:
+            feature_map (torch.Tensor): feature maps from target layernorm layer.
+
+        Returns:
+            torch.Tensor: Class-wise Saliency Maps. One saliency map per each class - [batch, class_id, H, W]
+        """
+        batch_size, token_number, _ = feature_map.size()
+        h = w = int((token_number - 1) ** 0.5)
+        saliency_maps = torch.empty(batch_size, self._num_classes, h, w)
+        for i in range(batch_size):
+            mosaic_feature_map = self._get_mosaic_feature_map(feature_map[i])
+            mosaic_prediction = self._predict_from_feature_map(mosaic_feature_map)
+            saliency_maps[i] = mosaic_prediction.transpose(1, 0).reshape((self._num_classes, h, w))
+
+        if self._norm_saliency_maps:
+            saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h * w))
+            saliency_maps = self._normalize_map(saliency_maps)
+
+        saliency_maps = saliency_maps.reshape((batch_size, self._num_classes, h, w))
+        return saliency_maps
+
+    def _get_mosaic_feature_map(self, feature_map: torch.Tensor) -> torch.Tensor:
+        token_number, dim = feature_map.size()
+        mosaic_feature_map = torch.zeros(token_number - 1, token_number, dim).to(feature_map.device)
+        h = w = int((token_number - 1) ** 0.5)
+
+        if self._use_gaussian:
+            if self._cls_token:
+                mosaic_feature_map[:, 0, :] = feature_map[0, :]
+            feature_map_spacial = feature_map[1:, :].reshape(1, h, w, dim)
+            feature_map_spacial_repeated = feature_map_spacial.repeat(h * w, 1, 1, 1)  # 196, 14, 14, 192
+
+            spacial_order = torch.arange(h * w).reshape(h, w)
+            gaussian = torch.tensor(
+                [[1 / 16.0, 1 / 8.0, 1 / 16.0], [1 / 8.0, 1 / 4.0, 1 / 8.0], [1 / 16.0, 1 / 8.0, 1 / 16.0]]
+            ).to(feature_map.device)
+            mosaic_feature_map_mask_padded = torch.zeros(h * w, h + 2, w + 2).to(feature_map.device)
+            for i in range(h):
+                for j in range(w):
+                    k = spacial_order[i, j]
+                    i_pad = i + 1
+                    j_pad = j + 1
+                    mosaic_feature_map_mask_padded[k, i_pad - 1 : i_pad + 2, j_pad - 1 : j_pad + 2] = gaussian
+            mosaic_feature_map_mask = mosaic_feature_map_mask_padded[:, 1:-1, 1:-1]
+            mosaic_feature_map_mask = torch.tensor(mosaic_feature_map_mask.unsqueeze(3).repeat(1, 1, 1, dim))
+
+            mosaic_fm_wo_cls_token = feature_map_spacial_repeated * mosaic_feature_map_mask
+            mosaic_feature_map[:, 1:, :] = mosaic_fm_wo_cls_token.reshape(h * w, h * w, dim)
+        else:
+            feature_map_repeated = feature_map.unsqueeze(0).repeat(h * w, 1, 1)
+            mosaic_feature_map_mask = torch.zeros(h * w, token_number).to(feature_map.device)
+            for i in range(h * w):
+                mosaic_feature_map_mask[i, i + 1] = torch.ones(1).to(feature_map.device)
+            if self._cls_token:
+                mosaic_feature_map_mask[:, 0] = torch.ones(1).to(feature_map.device)
+            mosaic_feature_map_mask = torch.tensor(mosaic_feature_map_mask.unsqueeze(2).repeat(1, 1, dim))
+            mosaic_feature_map = feature_map_repeated * mosaic_feature_map_mask
+
+        return mosaic_feature_map
+
+    def _predict_from_feature_map(self, x: torch.Tensor) -> torch.Tensor:
+        with torch.no_grad():
+            # Part of the target transformer_encoder layer (except first LayerNorm)
+            target_layer = self._module.backbone.layers[self._layer_index]
+            x = x + target_layer.attn(x)
+            x = target_layer.ffn(target_layer.norm2(x), identity=x)
+
+            # Rest transformer_encoder layers, if not the last one picked as a target
+            if self._layer_index < -1:
+                for layer in self._module.backbone.layers[(self._layer_index + 1) :]:
+                    x = layer(x)
+
+            if self._final_norm:
+                x = self._final_norm(x)
+            if self._neck:
+                x = self._neck(x)
+
+            cls_token = x[:, 0]
+            layer_output = [None, cls_token]
+            logit = self._module.head.simple_test(layer_output)
+            if isinstance(logit, list):
+                logit = torch.from_numpy(np.array(logit))
+        return logit
+
+    def __enter__(self) -> BaseRecordingForwardHook:
+        """Enter."""
+        self._handle = self._target_layernorm.register_forward_hook(self._recording_forward)
+        return self

@@ -18,10 +18,13 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataset,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    get_configured_input_size,
     patch_color_conversion,
     remove_custom_hook,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
@@ -52,6 +55,7 @@ class SegmentationConfigurer(BaseConfigurer):
         ir_options: Optional[Config] = None,
         data_classes: Optional[List[str]] = None,
         model_classes: Optional[List[str]] = None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
     ) -> Config:
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={training}")
@@ -66,6 +70,7 @@ class SegmentationConfigurer(BaseConfigurer):
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_compatibility(self, cfg, **kwargs):
@@ -187,6 +192,25 @@ class SegmentationConfigurer(BaseConfigurer):
                 return new_path
         return ckpt_path
 
+    @staticmethod
+    def configure_input_size(
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+    ):
+        """Change input size if necessary."""
+        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        if input_size is None:
+            return
+
+        # segmentation models have different input size in train and val data pipeline
+        base_input_size = {
+            "train": 512,
+            "val": 544,
+            "test": 544,
+        }
+
+        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        logger.info("Input size is changed to {}".format(input_size))
+
 
 class IncrSegmentationConfigurer(SegmentationConfigurer):
     """Patch config to support incremental learning for semantic segmentation."""
@@ -196,9 +220,7 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
         super().configure_task(cfg, training)
 
         # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
-        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
-            self.model_classes
-        ):
+        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set():
             is_cls_incr = False
         else:
             is_cls_incr = True

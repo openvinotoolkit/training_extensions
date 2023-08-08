@@ -47,6 +47,31 @@ def test_patch_datasets():
 
 
 @e2e_pytest_unit
+def test_patch_datasets_disable_memcache_for_test_subset():
+    """Test patch_datasets function to check memcache disabled for test set."""
+    config = Config(
+        dict(
+            data=dict(
+                train=dict(pipeline=[dict(type="LoadImageFromFile")]),
+                val=dict(pipeline=[dict(type="LoadImageFromFile")]),
+                test=dict(pipeline=[dict(type="LoadImageFromFile")]),
+                unlabeled=dict(pipeline=[dict(type="LoadImageFromFile")]),
+            )
+        )
+    )
+    patch_datasets(config, type="FakeType")
+    assert config.data.train.pipeline[0].type == "LoadImageFromOTXDataset"
+    assert config.data.train.pipeline[0].enable_memcache == True
+    assert config.data.val.pipeline[0].type == "LoadImageFromOTXDataset"
+    assert config.data.val.pipeline[0].enable_memcache == True
+    assert config.data.test.pipeline[0].type == "LoadImageFromOTXDataset"
+    assert getattr(config.data.test.pipeline[0], "enable_memcache", False) == False
+    # Note: cannot set enable_memcache attr due to mmdeploy error
+    assert config.data.unlabeled.pipeline[0].type == "LoadImageFromOTXDataset"
+    assert config.data.unlabeled.pipeline[0].enable_memcache == True
+
+
+@e2e_pytest_unit
 def test_patch_evaluation():
     """Test patch_evaluation function."""
     config = Config(dict(evaluation=dict()))

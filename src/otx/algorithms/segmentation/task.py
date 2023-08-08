@@ -31,6 +31,7 @@ from otx.algorithms.common.utils.callback import (
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
 )
@@ -222,15 +223,20 @@ class OTXSegmentationTask(OTXTask, ABC):
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
+        ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
+
         if export_type == ExportType.ONNX:
+            ir_extra_data[("model_info", "mean_values")] = results.get("inference_parameters").get("mean_values")
+            ir_extra_data[("model_info", "scale_values")] = results.get("inference_parameters").get("scale_values")
+
             onnx_file = outputs.get("onnx")
+            embed_onnx_model_data(onnx_file, ir_extra_data)
             with open(onnx_file, "rb") as f:
                 output_model.set_data("model.onnx", f.read())
         else:
             bin_file = outputs.get("bin")
             xml_file = outputs.get("xml")
 
-            ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
             embed_ir_model_data(xml_file, ir_extra_data)
 
             with open(bin_file, "rb") as f:
