@@ -28,7 +28,9 @@ def get_model(
         AnomalyModule: _description_
     """
     if isinstance(model, str):
-        pass
+        if model in MODEL_CONFIGS:
+            model = MODEL_CONFIGS[model]
+        model = OmegaConf.load(model)
     if not model.get("model", False):
         model = DictConfig(content={"model": model})
     if checkpoint is not None:

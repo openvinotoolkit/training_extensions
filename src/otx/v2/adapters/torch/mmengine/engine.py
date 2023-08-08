@@ -74,9 +74,11 @@ class MMXEngine(Engine):
         if model is not None:
             kwargs["model"] = model
             if isinstance(model, torch.nn.Module):
-                num_classes = model.head.num_classes
+                head = model.head if hasattr(model, "head") else None
+                num_classes = head.num_classes if head else -1
             else:
-                num_classes = model["head"].get("num_classes", -1)
+                head = model.get("head", {})
+                num_classes = head.get("num_classes", -1)
         if train_dataloader is not None:
             kwargs["train_dataloader"] = train_dataloader
         if val_dataloader is not None:
