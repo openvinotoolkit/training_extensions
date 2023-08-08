@@ -119,13 +119,6 @@ class ClassificationConfigurer(BaseConfigurer):
         self.configure_in_channel(cfg)
         self.configure_topk(cfg)
 
-    def configure_task(self, cfg, training):
-        """Patch config to support training algorithm."""
-        super().configure_task(cfg, training)
-        if "task_adapt" in cfg:
-            src_data_cfg = self.get_data_cfg(cfg, "train")
-            src_data_cfg.pop("old_new_indices", None)
-
     def _configure_head(self, cfg):
         """Patch nuber of classes of head.."""
         cfg.model.head.num_classes = len(self.model_classes)

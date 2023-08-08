@@ -14,14 +14,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import List, Optional
+from typing import List
 
 from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_pairs,
     get_dataset_configs,
-    get_meta_keys,
     patch_color_conversion,
 )
 from otx.algorithms.common.utils.logger import get_logger
@@ -33,20 +31,12 @@ logger = get_logger()
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.CLASSIFICATION,
-    subsets: Optional[List[str]] = None,
+    subsets: List[str] = ["train", "val", "test", "unlabeled"],
     **kwargs,
 ):
     """Update dataset configs."""
     assert "data" in config
     assert "type" in kwargs
-
-    if subsets is None:
-        subsets = ["train", "val", "test", "unlabeled"]
-
-    def update_pipeline(cfg):
-        if subset == "train":
-            for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
-                get_meta_keys(collect_cfg, ["entity_id", "label_id"])
 
     for subset in subsets:
         if subset not in config.data:
@@ -63,8 +53,6 @@ def patch_datasets(
             cfg.otx_dataset = None
             cfg.labels = None
             cfg.update(kwargs)
-
-            update_pipeline(cfg)
 
     patch_color_conversion(config)
 
