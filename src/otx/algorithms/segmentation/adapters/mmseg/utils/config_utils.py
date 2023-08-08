@@ -1,18 +1,6 @@
 """Collection of utils for task implementation in Segmentation Task."""
-
-# Copyright (C) 2021 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 
 import logging
@@ -45,12 +33,14 @@ def patch_datasets(
     if subsets is None:
         subsets = ["train", "val", "test", "unlabeled"]
 
-    def update_pipeline(cfg):
+    def update_pipeline(cfg, subset):
         if subset == "train":
             for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
                 get_meta_keys(collect_cfg)
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
             cfg_.type = "LoadImageFromOTXDataset"
+            if subset != "test":
+                cfg_.enable_memcache = True
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
             cfg_.type = "LoadAnnotationFromOTXDataset"
 
@@ -72,7 +62,7 @@ def patch_datasets(
             remove_from_config(cfg, "split")
             remove_from_config(cfg, "classes")
 
-            update_pipeline(cfg)
+            update_pipeline(cfg, subset)
 
     patch_color_conversion(config)
 

@@ -32,6 +32,7 @@ from otx.api.entities.model_template import (
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.api.usecases.exportable_code.prediction_to_annotation_converter import DetectionBoxToAnnotationConverter
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_TEMPLATE_DIR,
@@ -66,30 +67,19 @@ class TestOpenVINODetectionInferencer:
         assert returned_value == {"foo": "bar"}
 
     @e2e_pytest_unit
-    def test_post_process(self):
-        """Test post_process method in OpenVINODetectionInferencer."""
-        fake_prediction = {
-            "boxes": np.random.rand(1, 5, 5),
-            "labels": np.array([[0, 0, 0, 1, 0]]),
-            "feature_vector": np.random.rand(1, 320, 1, 1),
-            "saliency_map": np.random.rand(1, 2, 6, 8),
-        }
-        fake_metadata = {"original_shape": (480, 640, 3), "resized_shape": (736, 992, 3)}
-        returned_value = self.ov_inferencer.post_process(fake_prediction, fake_metadata)
-        assert isinstance(returned_value, AnnotationSceneEntity)
-
-    @e2e_pytest_unit
     def test_predict(self, mocker):
         """Test predict method in OpenVINODetectionInferencer."""
         fake_output = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=[])
         mock_pre_process = mocker.patch.object(OpenVINODetectionInferencer, "pre_process", return_value=("", ""))
         mock_forward = mocker.patch.object(OpenVINODetectionInferencer, "forward")
-        mock_post_process = mocker.patch.object(OpenVINODetectionInferencer, "post_process", return_value=fake_output)
+        mock_converter = mocker.patch.object(
+            self.ov_inferencer.converter, "convert_to_annotation", return_value=fake_output
+        )
         returned_value, _ = self.ov_inferencer.predict(self.fake_input)
 
         mock_pre_process.assert_called_once()
         mock_forward.assert_called_once()
-        mock_post_process.assert_called_once()
+        mock_converter.assert_called_once()
         assert returned_value == fake_output
 
     @e2e_pytest_unit

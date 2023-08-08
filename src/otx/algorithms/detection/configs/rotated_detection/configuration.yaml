@@ -221,8 +221,32 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
-  type: PARAMETER_GROUP
-  visible_in_ui: true
+  input_size:
+    affects_outcome_of: INFERENCE
+    default_value: Default
+    description:
+      The input size of the given model could be configured to one of the predefined resolutions.
+      Reduced training and inference time could be expected by using smaller input size.
+      Defaults to per-model default resolution.
+    editable: true
+    enum_name: InputSizePreset
+    header: Configure model input size.
+    options:
+      DEFAULT: "Default"
+      _256x256: "256x256"
+      _384x384: "384x384"
+      _512x512: "512x512"
+      _768x768: "768x768"
+      _1024x1024: "1024x1024"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: Default
+    visible_in_ui: false
+    warning: Modifying input size may decrease model performance.
 postprocessing:
   confidence_threshold:
     affects_outcome_of: INFERENCE

@@ -30,15 +30,14 @@ from addict import Dict as ADDict
 from nncf.common.quantization.structs import QuantizationPreset
 from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_api.models import Model
+from openvino.model_api.models.utils import ImageResultWithSoftPrediction
 
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader, get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.openvino import model_wrappers
-from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
-    get_activation_map,
-)
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
+from otx.algorithms.segmentation.utils import get_activation_map
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -62,7 +61,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
-from otx.api.usecases.exportable_code.inference import BaseInferencer
+from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     SegmentationToAnnotationConverter,
 )
@@ -78,7 +77,7 @@ logger = get_logger()
 
 
 # pylint: disable=too-many-locals, too-many-statements, unused-argument
-class OpenVINOSegmentationInferencer(BaseInferencer):
+class OpenVINOSegmentationInferencer(IInferencer):
     """Inferencer implementation for Segmentation using OpenVINO backend."""
 
     def __init__(
@@ -117,7 +116,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         }
         self.model = Model.create_model(
             model_adapter,
-            hparams.postprocessing.class_name.value,
+            "Segmentation",
             self.configuration,
             preload=True,
         )
@@ -125,36 +124,16 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         self.callback_exceptions: List[Exception] = []
         self.model.inference_adapter.set_callback(self._async_callback)
 
-    def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        """Pre-process function of OpenVINO Segmentation Inferencer."""
-        return self.model.preprocess(image)
-
-    def post_process(
-        self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
-    ) -> Tuple[AnnotationSceneEntity, Any, Any]:
-        """Post-process function of OpenVINO Segmentation Inferencer."""
-        hard_prediction = self.model.postprocess(prediction, metadata)
-        soft_prediction = metadata["soft_prediction"]
-        feature_vector = metadata["feature_vector"]
-        predicted_scene = self.converter.convert_to_annotation(hard_prediction, metadata)
-
-        return predicted_scene, feature_vector, soft_prediction
-
-    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, Any, Any]:
+    def predict(self, image: np.ndarray) -> Tuple[ImageResultWithSoftPrediction, AnnotationSceneEntity]:
         """Perform a prediction for a given input image."""
-        image, metadata = self.pre_process(image)
-        predictions = self.forward(image)
-        return self.post_process(predictions, metadata)
-
-    def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-        """Forward function of OpenVINO Segmentation Inferencer."""
-        return self.model.infer_sync(image)
+        result = self.model(image)
+        return result, self.converter.convert_to_annotation(result)
 
     def enqueue_prediction(self, image: np.ndarray, id: int, result_handler: Any) -> None:
         """Runs async inference."""
         if not self.model.is_ready():
             self.model.await_any()
-        image, metadata = self.pre_process(image)
+        image, metadata = self.model.preprocess(image)
         callback_data = id, metadata, result_handler
         self.model.inference_adapter.infer_async(image, callback_data)
 
@@ -166,9 +145,10 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         """Fetches the results of async inference."""
         try:
             id, preprocessing_meta, result_handler = callback_args
-            prediction = self.model.inference_adapter.copy_raw_result(request)
-            processed_prediciton = self.post_process(prediction, preprocessing_meta)
-            result_handler(id, *processed_prediciton)
+            raw_prediction = self.model.inference_adapter.copy_raw_result(request)
+            processed_prediciton = self.model.postprocess(raw_prediction, preprocessing_meta)
+            annotation = self.converter.convert_to_annotation(processed_prediciton, preprocessing_meta)
+            result_handler(id, annotation, processed_prediciton.feature_vector, processed_prediciton.saliency_map)
 
         except Exception as e:
             self.callback_exceptions.append(e)
@@ -235,13 +215,13 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                 feature_vector_media = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(feature_vector_media, model=self.model)
 
-            if dump_soft_prediction:
+            if dump_soft_prediction and soft_prediction is not None and soft_prediction.ndim > 1:
                 for label_index, label in self._label_dictionary.items():
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     if process_soft_prediction:
-                        current_label_soft_prediction = get_activation_map(current_label_soft_prediction)
-                    else:
-                        current_label_soft_prediction = (current_label_soft_prediction * 255).astype(np.uint8)
+                        current_label_soft_prediction = get_activation_map(
+                            current_label_soft_prediction, normalize=False
+                        )
                     result_media = ResultMediaEntity(
                         name=label.name,
                         type="soft_prediction",
@@ -259,8 +239,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             if enable_async_inference:
                 self.inferencer.enqueue_prediction(dataset_item.numpy, i - 1, add_prediction)
             else:
-                predicted_scene, feature_vector, soft_prediction = self.inferencer.predict(dataset_item.numpy)
-                add_prediction(i - 1, predicted_scene, feature_vector, soft_prediction)
+                result, predicted_scene = self.inferencer.predict(dataset_item.numpy)
+                add_prediction(i - 1, predicted_scene, result.feature_vector, result.saliency_map)
             end_time = time.perf_counter() - start_time
             total_time += end_time
 
@@ -289,8 +269,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             raise RuntimeError("deploy failed, model is None")
 
         work_dir = os.path.dirname(demo.__file__)
-        parameters = {}
-        parameters["type_of_model"] = self.hparams.postprocessing.class_name.value
+        parameters: Dict[str, Any] = {}
+        parameters["type_of_model"] = "Segmentation"
         parameters["converter_type"] = "SEGMENTATION"
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)

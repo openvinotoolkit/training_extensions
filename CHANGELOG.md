@@ -2,17 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## \[v1.5.0\]
+## \[v1.5.0 - unreleased\]
 
 ### New features
 
 - Enable configurable confidence threshold for otx eval and export(<https://github.com/openvinotoolkit/training_extensions/pull/2388>)
 - Add YOLOX variants as new object detector models (<https://github.com/openvinotoolkit/training_extensions/pull/2402>)
 - Enable FeatureVectorHook to support action tasks(<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
+- Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
+- Add a new feature to configure input size(<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
 
 ### Enhancements
 
--
+- Refine input data in-memory caching (<https://github.com/openvinotoolkit/training_extensions/pull/2416>)
+- Adapt timeout value of initialization for distributed training (<https://github.com/openvinotoolkit/training_extensions/pull/2422>)
 
 ### Bug fixes
 
@@ -21,6 +24,16 @@ All notable changes to this project will be documented in this file.
 ### Known issues
 
 - OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+
+## \[v1.4.1\]
+
+### Enhancements
+
+- Update the README file in exportable code (<https://github.com/openvinotoolkit/training_extensions/pull/2411>)
+
+### Bug fixes
+
+- Fix broken links in documentation (<https://github.com/openvinotoolkit/training_extensions/pull/2405>)
 
 ## \[v1.4.0\]
 
@@ -55,6 +68,7 @@ All notable changes to this project will be documented in this file.
 - Fix NNCF training on CPU (<https://github.com/openvinotoolkit/training_extensions/pull/2373>)
 - Fix H-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2377>)
 - Fix invalid import structures in otx.api (<https://github.com/openvinotoolkit/training_extensions/pull/2383>)
+- Add for async inference calculating saliency maps from predictions (Mask RCNN IR) (<https://github.com/openvinotoolkit/training_extensions/pull/2395>)
 
 ### Known issues
 
@@ -264,7 +278,7 @@ All notable changes to this project will be documented in this file.
 - Enhance `find` command to find configurations of supported tasks / algorithms / models / backbones
 - Introduce `build` command to customize task or model configurations in isolated workspace
 - Auto-config feature to automatically select the right algorithm and default model for the `train` & `build` command by detecting the task type of given input dataset
-- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/stable/guide/get_started/introduction.html)
+- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/introduction.html)
 - Improve training performance by introducing enhanced loss for the few-shot transfer
 
 ### Bug fixes

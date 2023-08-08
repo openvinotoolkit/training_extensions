@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme
+from .configuration_enums import BatchSizeAdaptType, InputSizePreset, POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
@@ -196,6 +196,17 @@ class BaseConfig(ConfigurableParameters):
             header="Enable auto adaptive num_workers",
             description="Adapt num_workers according to current hardware status automatically.",
             affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        input_size = selectable(
+            default_value=InputSizePreset.DEFAULT,
+            header="Configure model input size.",
+            description="The input size of the given model could be configured to one of the predefined resolutions."
+            "Reduced training and inference time could be expected by using smaller input size."
+            "Defaults to per-model default resolution.",
+            warning="Modifying input size may decrease model performance.",
+            affects_outcome_of=ModelLifecycle.NONE,
+            visible_in_ui=False,
         )
 
     @attrs

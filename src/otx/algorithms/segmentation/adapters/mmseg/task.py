@@ -44,6 +44,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
     MPAConfig,
     update_or_add_custom_hook,
 )
@@ -176,8 +177,10 @@ class MMSegmentationTask(OTXSegmentationTask):
             ir_options,
             data_classes,
             model_classes,
+            self._hyperparams.learning_parameters.input_size,
         )
         self._config = cfg
+
         return cfg
 
     def build_model(
@@ -460,14 +463,27 @@ class MMSegmentationTask(OTXSegmentationTask):
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
+        backend_cfg_backup = {}
         if export_format == ExportType.ONNX:
+            backend_cfg_backup = export_options["deploy_cfg"]["backend_config"]
             export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
+            export_options["deploy_cfg"]["ir_config"]["dynamic_axes"]["input"] = {0: "batch"}
 
         exporter = SegmentationExporter()
         results = exporter.run(
             cfg,
             **export_options,
         )
+
+        if export_format == ExportType.ONNX:
+            results["inference_parameters"] = {}
+            results["inference_parameters"]["mean_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--mean_values"])
+            )
+            results["inference_parameters"]["scale_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--scale_values"])
+            )
+
         return results
 
     # This should moved somewhere
@@ -522,23 +538,15 @@ class MMSegmentationTask(OTXSegmentationTask):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_pairs(
-                    cfg.data.test.pipeline,
-                    dict(type="Resize"),
-                )
-                assert len(resize_cfg) == 1
-                resize_cfg = resize_cfg[0]
-                size = resize_cfg.size
-                if isinstance(size, int):
-                    size = (size, size)
+                input_size_manager = InputSizeManager(cfg.data)
+                size = input_size_manager.get_input_size_from_cfg("test")
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error
                 # when converting to OpenVINO IR
                 deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
             patch_input_preprocessing(deploy_cfg)
-            if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(deploy_cfg)
+            patch_input_shape(deploy_cfg)
 
         return deploy_cfg
 
