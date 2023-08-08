@@ -49,14 +49,14 @@ class MemCacheHandlerBase:
         """Get the reserved memory pool size (bytes)."""
         return len(self._arr)
 
-    def get(self, key: Any) -> Tuple[Optional[np.ndarray], Optional[Any]]:
+    def get(self, key: Any) -> Tuple[Optional[np.ndarray], Optional[Dict]]:
         """Try to look up the cached item with the given key.
 
         Args:
             key (Any): A key for looking up the cached item
 
         Returns:
-            If succeed return (np.ndarray, dict), otherwise return (None, None)
+            If succeed return (np.ndarray, Dict), otherwise return (None, None)
         """
         if self.mem_size == 0 or key not in self._cache_addr:
             return None, None
@@ -68,13 +68,13 @@ class MemCacheHandlerBase:
         data = np.frombuffer(self._arr, dtype=np.uint8, count=count, offset=offset)
         return np.lib.stride_tricks.as_strided(data, shape, strides), meta
 
-    def put(self, key: Any, data: np.ndarray, meta: Optional[Any] = None) -> Optional[int]:
-        """Try to store np.ndarray with a key to the reserved memory pool.
+    def put(self, key: Any, data: np.ndarray, meta: Optional[Dict] = None) -> Optional[int]:
+        """Try to store np.ndarray and metadata with a key to the reserved memory pool.
 
         Args:
             key (Any): A key to store the cached item
             data (np.ndarray): A data sample to store
-            meta (Optional[Dict]): A meta data of the data sample
+            meta (Optional[Dict]): A metadata of the data sample
 
         Returns:
             Optional[int]: If succeed return the address of cached item in memory pool
