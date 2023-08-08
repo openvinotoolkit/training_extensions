@@ -1,4 +1,4 @@
-_base_ = ["./train.py", "../_base_/models/segmentors/segmentor.py", "../_base_/data/custom_seg.py"]
+_base_ = ["./train.py", "../_base_/models/segmentors/segmentor.py"]
 
 optimizer = dict(_delete_=True, type="Adam", lr=1e-3, eps=1e-08, weight_decay=0.0)
 
@@ -25,7 +25,8 @@ runner = dict(type="EpochRunnerWithCancel", max_epochs=300)
 
 checkpoint_config = dict(by_epoch=True, interval=1)
 
-evaluation = dict(interval=1, metric=["mDice", "mIoU"], show_log=True)
+evaluation = dict(interval=1, metric="mDice", save_best="mDice", rule="greater", show_log=True)
+early_stop_metric = "mDice"
 
 seed = 42
 find_unused_parameters = False

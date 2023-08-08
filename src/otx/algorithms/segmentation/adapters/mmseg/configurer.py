@@ -18,16 +18,13 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataset,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    patch_color_conversion,
     remove_custom_hook,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
-from otx.algorithms.segmentation.adapters.mmseg.utils import (
-    patch_datasets,
-    patch_evaluation,
-)
 
 logger = get_logger()
 
@@ -73,31 +70,7 @@ class SegmentationConfigurer(BaseConfigurer):
 
     def configure_compatibility(self, cfg, **kwargs):
         """Configure for OTX compatibility with mmseg."""
-        options_for_patch_datasets = {"type": "MPASegDataset"}
-        patch_datasets(cfg, **options_for_patch_datasets)
-        patch_evaluation(cfg)
-
-    def configure_data(
-        self,
-        cfg: Config,
-        training: bool,
-        data_cfg: Optional[Config],
-    ) -> None:
-        """Patch cfg.data.
-
-        Merge cfg and data_cfg
-        Wrap original dataset type to MPAsegDataset
-        """
-        super().configure_data(cfg, training, data_cfg)
-
-        train_data_cfg = self.get_data_cfg(cfg, "train")
-        for mode in ["train", "val", "test"]:
-            if train_data_cfg.type == "MPASegDataset" and cfg.data.get(mode, False):
-                if cfg.data[mode]["type"] != "MPASegDataset":
-                    # Wrap original dataset config
-                    org_type = cfg.data[mode]["type"]
-                    cfg.data[mode]["type"] = "MPASegDataset"
-                    cfg.data[mode]["org_type"] = org_type
+        patch_color_conversion(cfg)
 
     def configure_task(
         self,

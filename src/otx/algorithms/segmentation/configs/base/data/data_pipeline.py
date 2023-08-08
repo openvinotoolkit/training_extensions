@@ -20,19 +20,34 @@ __img_scale = (544, 544)
 __crop_size = (512, 512)
 
 train_pipeline = [
-    dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations", use_otx_adapter=True),
+    dict(type="LoadImageFromOTXDataset"),
+    dict(type="LoadAnnotationFromOTXDataset", use_otx_adapter=True),
     dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0)),
     dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type="RandomFlip", prob=0.5, direction="horizontal"),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="Pad", size=__crop_size, pad_val=0, seg_pad_val=255),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_semantic_seg"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_semantic_seg"],
+        meta_keys=[
+            "ori_shape",
+            "pad_shape",
+            "ori_filename",
+            "filename",
+            "scale_factor",
+            "flip",
+            "img_norm_cfg",
+            "flip_direction",
+            "ignored_labels",
+            "img_shape",
+        ],
+    ),
 ]
 
 test_pipeline = [
-    dict(type="LoadImageFromFile", use_otx_adapter=True),
+    dict(type="LoadImageFromOTXDataset", use_otx_adapter=True),
     dict(
         type="MultiScaleFlipAug",
         img_scale=__img_scale,
@@ -42,13 +57,16 @@ test_pipeline = [
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
-            dict(type="Collect", keys=["img"]),
+            dict(
+                type="Collect",
+                keys=["img"],
+            ),
         ],
     ),
 ]
 
 data = dict(
-    train=dict(dataset=dict(pipeline=train_pipeline)),
-    val=dict(pipeline=test_pipeline),
-    test=dict(pipeline=test_pipeline),
+    train=dict(type="MPASegDataset", pipeline=train_pipeline),
+    val=dict(type="MPASegDataset", pipeline=test_pipeline),
+    test=dict(type="MPASegDataset", pipeline=test_pipeline),
 )
