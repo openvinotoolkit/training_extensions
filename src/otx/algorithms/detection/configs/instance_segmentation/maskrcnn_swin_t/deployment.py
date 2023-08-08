@@ -2,10 +2,12 @@
 
 _base_ = ["../../base/deployments/base_instance_segmentation_dynamic.py"]
 
+
+# NOTE: Its necessary to use opset11 as squeeze>=opset13 does not work in
+# mmdeploy::mmcv::ops::roi_align::roi_align_default.
+# Refer to src/otx/algorithms/common/adapters/mmdeploy/ops/custom_ops.py::squeeze__default for future rewrite.
 ir_config = dict(
     output_names=["boxes", "labels", "masks"],
-    # NOTE: Its necessary to use opset 11 as squeeze does not work in
-    # roi_align_default ONNX in opset 16. Beaware of this for future update.
     opset_version=11,
 )
 
