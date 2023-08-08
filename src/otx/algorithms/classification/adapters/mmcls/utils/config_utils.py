@@ -49,9 +49,6 @@ def patch_datasets(
 
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
-            cfg.domain = domain
-            cfg.otx_dataset = None
-            cfg.labels = None
             cfg.update(kwargs)
 
     patch_color_conversion(config)

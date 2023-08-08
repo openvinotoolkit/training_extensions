@@ -48,7 +48,6 @@ __all__ = [
     "patch_early_stopping",
     "patch_from_hyperparams",
     "patch_persistent_workers",
-    "align_data_config_with_recipe",
     "get_meta_keys",
     "prepare_work_dir",
     "get_data_cfg",

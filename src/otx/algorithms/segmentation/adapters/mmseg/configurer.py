@@ -220,7 +220,9 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
         super().configure_task(cfg, training)
 
         # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
-        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set():
+        if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
+            self.model_classes
+        ):
             is_cls_incr = False
         else:
             is_cls_incr = True
