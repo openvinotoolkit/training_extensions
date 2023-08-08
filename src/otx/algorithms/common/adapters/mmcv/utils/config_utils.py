@@ -726,7 +726,7 @@ class InputSizeManager:
         "randomaffine": ["border"],
         "multiscaleflipaug": ["img_scale"],
     }
-    DATA_TYPES: Tuple[str, str, str] = ("train", "val", "test")
+    SUBSET_TYPES: Tuple[str, str, str] = ("train", "val", "test")
 
     def __init__(
         self,
@@ -740,10 +740,10 @@ class InputSizeManager:
             for task in base_input_size.keys():
                 if isinstance(base_input_size[task], int):
                     base_input_size[task] = (base_input_size[task], base_input_size[task])  # type: ignore[assignment]
-            for data_type in self.DATA_TYPES:
-                if data_type in data_config and data_type not in base_input_size:
+            for subset_type in self.SUBSET_TYPES:
+                if subset_type in data_config and subset_type not in base_input_size:
                     raise ValueError(
-                        f"There is {data_type} data configuration but base input size for it doesn't exists."
+                        f"There is {subset_type} data configuration but base input size for it doesn't exists."
                     )
 
         self._base_input_size = base_input_size
@@ -762,14 +762,14 @@ class InputSizeManager:
             resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
 
         # scale size values
-        for data_type in self.DATA_TYPES:
-            if data_type in self._data_config:
+        for subset_type in self.SUBSET_TYPES:
+            if subset_type in self._data_config:
                 if isinstance(self.base_input_size, dict):
                     resize_ratio = (
-                        input_size[0] / self.base_input_size[data_type][0],
-                        input_size[1] / self.base_input_size[data_type][1],
+                        input_size[0] / self.base_input_size[subset_type][0],
+                        input_size[1] / self.base_input_size[subset_type][1],
                     )
-                pipelines = self._get_pipelines(data_type)
+                pipelines = self._get_pipelines(subset_type)
                 for pipeline in pipelines:
                     self._set_pipeline_size_value(pipeline, resize_ratio)
 
@@ -797,22 +797,22 @@ class InputSizeManager:
         return input_size
 
     def get_input_size_from_cfg(
-        self, task: Union[str, List[str]] = ["test", "val", "train"]
+        self, subset: Union[str, List[str]] = ["test", "val", "train"]
     ) -> Union[None, Tuple[int, int]]:
         """Estimate image size using data pipeline.
 
         Args:
-            task (Union[str, List[str]], optional): Which pipelines to check. Defaults to ["test", "val", "train"].
+            subset (Union[str, List[str]], optional): Which pipelines to check. Defaults to ["test", "val", "train"].
 
         Returns:
             Union[None, List[int]]: Return estimiated input size. If failed to estimate, return None.
         """
-        if isinstance(task, str):
-            task = [task]
+        if isinstance(subset, str):
+            subset = [subset]
 
-        for target_task in task:
-            if target_task in self._data_config:
-                input_size = self._estimate_post_img_size(self._data_config[target_task]["pipeline"])
+        for target_subset in subset:
+            if target_subset in self._data_config:
+                input_size = self._estimate_post_img_size(self._data_config[target_subset]["pipeline"])
                 if input_size is not None:
                     return tuple(input_size)  # type: ignore[return-value]
 
@@ -871,11 +871,11 @@ class InputSizeManager:
 
         return None
 
-    def _get_pipelines(self, data_type: str):
-        if "pipeline" in self._data_config[data_type]:
-            return self._data_config[data_type]["pipeline"]
-        if "dataset" in self._data_config[data_type]:
-            return self._data_config[data_type]["dataset"]["pipeline"]
+    def _get_pipelines(self, subset_type: str):
+        if "pipeline" in self._data_config[subset_type]:
+            return self._data_config[subset_type]["pipeline"]
+        if "dataset" in self._data_config[subset_type]:
+            return self._data_config[subset_type]["dataset"]["pipeline"]
         raise RuntimeError("Failed to find pipeline.")
 
     def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
@@ -908,7 +908,7 @@ class InputSizeManager:
             pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
 
 
-def get_configurable_input_size(
+def get_configured_input_size(
     input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
 ) -> Union[None, Tuple[int, int]]:
     """Get configurable input size configuration. If it doesn't exist, return None.

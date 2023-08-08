@@ -28,7 +28,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    get_configurable_input_size,
+    get_configured_input_size,
     recursively_update_cfg,
     remove_custom_hook,
     update_or_add_custom_hook,
@@ -544,7 +544,7 @@ class SegmentationConfigurer:
         cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configurable_input_size(input_size_config, model_ckpt)
+        input_size = get_configured_input_size(input_size_config, model_ckpt)
         if input_size is None:
             return
 

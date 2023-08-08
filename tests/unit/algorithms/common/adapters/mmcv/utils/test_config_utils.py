@@ -6,7 +6,7 @@ from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     get_adaptive_num_workers,
     InputSizeManager,
-    get_configurable_input_size,
+    get_configured_input_size,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
@@ -299,7 +299,7 @@ def get_mock_model_ckpt(case):
 @e2e_pytest_unit
 @pytest.mark.parametrize("input_size_config", [InputSizePreset.DEFAULT, InputSizePreset._1024x1024])
 @pytest.mark.parametrize("model_ckpt_case", ["none", "no_input_size", "input_size_default", "input_size_exist"])
-def test_get_configurable_input_size(mocker, input_size_config, model_ckpt_case):
+def test_get_configured_input_size(mocker, input_size_config, model_ckpt_case):
     # prepare
     mock_torch = mocker.patch.object(config_utils, "torch")
     mock_torch.load.return_value = get_mock_model_ckpt(model_ckpt_case)
@@ -318,6 +318,6 @@ def test_get_configurable_input_size(mocker, input_size_config, model_ckpt_case)
 
     # check expected value is returned
     assert (
-        get_configurable_input_size(input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock())
+        get_configured_input_size(input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock())
         == expeted_value
     )

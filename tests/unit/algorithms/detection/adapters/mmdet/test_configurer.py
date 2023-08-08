@@ -262,7 +262,7 @@ class TestDetectionConfigurer:
     def test_configure_input_size_not_yolox(self, mocker, input_size):
         # prepare
         mock_cfg = mocker.MagicMock()
-        mocker.patch.object(configurer, "get_configurable_input_size", return_value=input_size)
+        mocker.patch.object(configurer, "get_configured_input_size", return_value=input_size)
         mock_input_manager = mocker.MagicMock()
         mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
         mock_input_manager_cls.return_value = mock_input_manager
@@ -293,7 +293,7 @@ class TestDetectionConfigurer:
             }
         else:
             base_input_size = None
-        mocker.patch.object(configurer, "get_configurable_input_size", return_value=input_size)
+        mocker.patch.object(configurer, "get_configured_input_size", return_value=input_size)
         mock_input_manager = mocker.MagicMock()
         mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
         mock_input_manager_cls.return_value = mock_input_manager
