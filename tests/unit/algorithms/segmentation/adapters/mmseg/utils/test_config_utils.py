@@ -41,13 +41,36 @@ def _create_dummy_config() -> Config:
 
 class TestConfigUtilsValidation:
     @e2e_pytest_unit
-    @e2e_pytest_unit
     def test_patch_datasets(self) -> None:
         config: Config = _create_dummy_config()
         patch_datasets(config, type="MPASegDataset")
 
         assert "classes" not in config.data.train.dataset
         assert "labels" in config.data.train.dataset
+
+    @e2e_pytest_unit
+    def test_patch_datasets_disable_memcache_for_test_subset(self) -> None:
+        """Test patch_datasets function to check memcache disabled for test set."""
+        config = Config(
+            dict(
+                data=dict(
+                    train=dict(pipeline=[dict(type="LoadImageFromFile")]),
+                    val=dict(pipeline=[dict(type="LoadImageFromFile")]),
+                    test=dict(pipeline=[dict(type="LoadImageFromFile")]),
+                    unlabeled=dict(pipeline=[dict(type="LoadImageFromFile")]),
+                )
+            )
+        )
+        patch_datasets(config, type="FakeType")
+        assert config.data.train.pipeline[0].type == "LoadImageFromOTXDataset"
+        assert config.data.train.pipeline[0].enable_memcache == True
+        assert config.data.val.pipeline[0].type == "LoadImageFromOTXDataset"
+        assert config.data.val.pipeline[0].enable_memcache == True
+        assert config.data.test.pipeline[0].type == "LoadImageFromOTXDataset"
+        assert getattr(config.data.test.pipeline[0], "enable_memcache", False) == False
+        # Note: cannot set enable_memcache attr due to mmdeploy error
+        assert config.data.unlabeled.pipeline[0].type == "LoadImageFromOTXDataset"
+        assert config.data.unlabeled.pipeline[0].enable_memcache == True
 
     @e2e_pytest_unit
     def test_patch_evaluation(self) -> None:

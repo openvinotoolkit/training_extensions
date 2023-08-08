@@ -208,6 +208,7 @@ class MMDetectionTask(OTXDetectionTask):
             ir_options,
             data_classes,
             model_classes,
+            self._hyperparams.learning_parameters.input_size,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
@@ -215,6 +216,7 @@ class MMDetectionTask(OTXDetectionTask):
             elif self._anchors is not None:
                 self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
+
         return cfg
 
     # pylint: disable=too-many-branches, too-many-statements

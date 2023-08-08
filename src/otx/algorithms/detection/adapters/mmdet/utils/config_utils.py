@@ -1,24 +1,13 @@
 """Collection of utils for task implementation in Detection Task."""
-
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from typing import List, Optional
 
 from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
+    InputSizeManager,
     get_configs_by_pairs,
     get_dataset_configs,
     get_meta_keys,
@@ -67,12 +56,14 @@ def patch_datasets(
     if subsets is None:
         subsets = ["train", "val", "test", "unlabeled"]
 
-    def update_pipeline(cfg):
+    def update_pipeline(cfg, subset):
         if subset == "train":
             for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
                 get_meta_keys(collect_cfg, ["gt_ann_ids"])
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
             cfg_.type = "LoadImageFromOTXDataset"
+            if subset != "test":
+                cfg_.enable_memcache = True
         for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
             cfg_.type = "LoadAnnotationFromOTXDataset"
             cfg_.domain = domain
@@ -98,7 +89,7 @@ def patch_datasets(
             remove_from_config(cfg, "img_prefix")
             remove_from_config(cfg, "classes")  # Get from DatasetEntity
 
-            update_pipeline(cfg)
+            update_pipeline(cfg, subset)
 
     patch_color_conversion(config)
 
@@ -274,8 +265,8 @@ def patch_input_preprocessing(cfg: ConfigDict, deploy_cfg: ConfigDict):
 def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     """Update backend configuration with input shape information.
 
-    This function retrieves the Resize config from `cfg.data.test.pipeline`, checks
-    that only one Resize then sets the input shape for the backend model in `deploy_cfg`
+    This function retrieves the input size from `cfg.data.test.pipeline`,
+    then sets the input shape for the backend model in `deploy_cfg`
 
     ```
     {
@@ -292,15 +283,9 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
     """
-    resize_cfgs = get_configs_by_pairs(
-        cfg.data.test.pipeline,
-        dict(type="MultiScaleFlipAug"),
-    )
-    assert len(resize_cfgs) == 1
-    resize_cfg: ConfigDict = resize_cfgs[0]
-    size = resize_cfg.img_scale
-    if isinstance(size, int):
-        size = (size, size)
+    input_size_manager = InputSizeManager(cfg.data)
+    size = input_size_manager.get_input_size_from_cfg("test")
+
     assert all(isinstance(i, int) and i > 0 for i in size)
     # default is static shape to prevent an unexpected error
     # when converting to OpenVINO IR
