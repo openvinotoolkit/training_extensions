@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 - Enable FeatureVectorHook to support action tasks(<https://github.com/openvinotoolkit/training_extensions/pull/2408>)
 - Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
 - Add a new feature to configure input size(<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
-- Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<>)
+- Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
 
 ### Enhancements
 
