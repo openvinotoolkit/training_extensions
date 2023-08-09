@@ -86,6 +86,8 @@ class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_supcon(self, template, tmp_dir_path):
+        if template.name == "SegNext-s":
+            pytest.skip(reason="Segnext model doesn't support supcon training.")
         args1 = copy.deepcopy(args)
         args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
