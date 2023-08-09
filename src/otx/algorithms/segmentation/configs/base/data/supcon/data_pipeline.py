@@ -21,8 +21,8 @@ __img_scale = (544, 544)
 __resize_target_size = (512, 512)
 
 __train_pipeline = [
-    dict(type="LoadImageFromOTXDataset"),
-    dict(type="LoadAnnotationFromOTXDataset", enable_memcache=True),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(type="LoadAnnotationFromOTXDataset"),
     dict(
         type="TwoCropTransform",
         view0=[
