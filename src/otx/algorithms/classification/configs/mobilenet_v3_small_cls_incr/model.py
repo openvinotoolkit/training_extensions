@@ -12,6 +12,4 @@ model = dict(
     task="classification",
 )
 
-custom_hooks = [
-    dict(type="AdaptiveRepeatDataHook")
-]
+custom_hooks = [dict(type="AdaptiveRepeatDataHook")]

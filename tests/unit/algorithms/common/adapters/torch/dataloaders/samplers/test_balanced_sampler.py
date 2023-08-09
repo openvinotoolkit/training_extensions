@@ -27,7 +27,7 @@ class TestBalancedSampler:
             count += 1
 
         assert count == len(sampler)
-    
+
     @e2e_pytest_unit
     @pytest.mark.parametrize("batch", [1, 2, 4, 8, 16])
     def test_sampler_iter_with_adptive_repeat(self, batch):

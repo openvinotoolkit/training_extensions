@@ -36,7 +36,7 @@ class TaskAdaptHook(Hook):
         sampler_flag=False,
         sampler_type="cls_incr",
         efficient_mode=False,
-        use_adaptive_repeat=False
+        use_adaptive_repeat=False,
     ):
         self.src_classes = src_classes
         self.dst_classes = dst_classes
@@ -63,13 +63,21 @@ class TaskAdaptHook(Hook):
             rank, world_size = get_dist_info()
             if self.sampler_type == "balanced":
                 sampler = BalancedSampler(
-                    dataset, batch_size, efficient_mode=self.efficient_mode, num_replicas=world_size, 
-                    rank=rank, use_adaptive_repeats=self.use_adaptive_repeat
+                    dataset,
+                    batch_size,
+                    efficient_mode=self.efficient_mode,
+                    num_replicas=world_size,
+                    rank=rank,
+                    use_adaptive_repeats=self.use_adaptive_repeat,
                 )
             else:
                 sampler = ClsIncrSampler(
-                    dataset, batch_size, efficient_mode=self.efficient_mode, num_replicas=world_size, 
-                    rank=rank, use_adaptive_repeats=self.use_adaptive_repeat
+                    dataset,
+                    batch_size,
+                    efficient_mode=self.efficient_mode,
+                    num_replicas=world_size,
+                    rank=rank,
+                    use_adaptive_repeats=self.use_adaptive_repeat,
                 )
             runner.data_loader = DataLoader(
                 dataset,

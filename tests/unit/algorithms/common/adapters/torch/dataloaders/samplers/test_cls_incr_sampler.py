@@ -42,7 +42,7 @@ class TestClsIncrSampler:
 
         for _ in sampler_iter:
             count += 1
-        
+
         repeated_len = len(self.mock_dataset) * sampler.repeat
         if not sampler.drop_last:
             assert count == math.ceil(repeated_len / batch) * batch

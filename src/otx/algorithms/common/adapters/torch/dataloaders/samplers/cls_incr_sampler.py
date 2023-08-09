@@ -5,12 +5,11 @@
 
 import math
 import random
-from typing import Sized
 
 import numpy as np
-from .otx_sampler import OTXSampler
+from torch.utils.data import Dataset
 
-from otx.algorithms.common.utils.task_adapt import unwrap_dataset
+from .otx_sampler import OTXSampler
 
 
 class ClsIncrSampler(OTXSampler):  # pylint: disable=too-many-instance-attributes
@@ -40,20 +39,20 @@ class ClsIncrSampler(OTXSampler):  # pylint: disable=too-many-instance-attribute
     """
 
     def __init__(
-        self, 
-        dataset: Sized, 
-        samples_per_gpu: int, 
-        efficient_mode: bool = False, 
-        num_replicas: int = 1, 
-        rank: int = 0, 
+        self,
+        dataset: Dataset,
+        samples_per_gpu: int,
+        efficient_mode: bool = False,
+        num_replicas: int = 1,
+        rank: int = 0,
         drop_last: bool = False,
-        use_adaptive_repeats: bool = False
+        use_adaptive_repeats: bool = False,
     ):
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
-        
+
         super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
 
         if hasattr(self.dataset, "img_indices"):

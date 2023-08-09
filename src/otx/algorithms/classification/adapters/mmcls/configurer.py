@@ -648,7 +648,7 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
             sampler_flag=sampler_flag,
             sampler_type=sampler_type,
             efficient_mode=efficient_mode,
-            use_adaptive_repeat=True
+            use_adaptive_repeat=True,
         )
         update_or_add_custom_hook(cfg, task_adapt_hook)
 

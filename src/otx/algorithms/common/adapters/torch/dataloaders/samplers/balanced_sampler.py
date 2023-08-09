@@ -1,10 +1,12 @@
 """Balanced sampler for imbalanced data."""
 import math
+
 import numpy as np
-from typing import Sized
-from .otx_sampler import OTXSampler
+from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils.logger import get_logger
+
+from .otx_sampler import OTXSampler
 
 logger = get_logger()
 
@@ -35,23 +37,23 @@ class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attribut
     """
 
     def __init__(
-            self, 
-            dataset: Sized, 
-            samples_per_gpu: int, 
-            efficient_mode: bool = False, 
-            num_replicas: int = 1, 
-            rank: int = 0, 
-            drop_last: bool = False,
-            use_adaptive_repeats: bool = False
-        ):
+        self,
+        dataset: Dataset,
+        samples_per_gpu: int,
+        efficient_mode: bool = False,
+        num_replicas: int = 1,
+        rank: int = 0,
+        drop_last: bool = False,
+        use_adaptive_repeats: bool = False,
+    ):
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
-        
+
         super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
-        
-        self.img_indices = self.dataset.img_indices
+
+        self.img_indices = self.dataset.img_indices  # type: ignore[attr-defined]
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
 
