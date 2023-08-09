@@ -49,6 +49,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     MPAConfig,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
@@ -206,6 +207,7 @@ class MMDetectionTask(OTXDetectionTask):
             ir_options,
             data_classes,
             model_classes,
+            self._hyperparams.learning_parameters.input_size,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
@@ -213,6 +215,7 @@ class MMDetectionTask(OTXDetectionTask):
             elif self._anchors is not None:
                 self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
+
         return cfg
 
     # pylint: disable=too-many-branches, too-many-statements
@@ -278,7 +281,7 @@ class MMDetectionTask(OTXDetectionTask):
         model.CLASSES = target_classes
 
         if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
 
@@ -532,14 +535,26 @@ class MMDetectionTask(OTXDetectionTask):
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
+        backend_cfg_backup = {}
         if export_format == ExportType.ONNX:
+            backend_cfg_backup = export_options["deploy_cfg"]["backend_config"]
             export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
+            export_options["deploy_cfg"]["ir_config"]["dynamic_axes"]["image"] = {0: "batch"}
 
         exporter = DetectionExporter()
         results = exporter.run(
             cfg,
             **export_options,
         )
+
+        if export_format == ExportType.ONNX:
+            results["inference_parameters"] = {}
+            results["inference_parameters"]["mean_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--mean_values"])
+            )
+            results["inference_parameters"]["scale_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--scale_values"])
+            )
 
         return results
 

@@ -48,7 +48,7 @@ Storage Caching
 
 OpenVINO™ Training Extensions uses `Datumaro <https://github.com/openvinotoolkit/datumaro>`_
 under the hood for dataset managements.
-Since Datumaro `supports <https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/arrow.html>`_
+Since Datumaro `supports <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html>`_
 `Apache Arrow <https://arrow.apache.org/overview/>`_, OpenVINO™ Training Extensions
 can exploit fast data loading using memory-mapped arrow file at the expanse of storage consumtion.
 
@@ -67,7 +67,7 @@ One could change it by modifying ``OTX_CACHE`` environment variable.
    $ OTX_CACHE=/path/to/cache otx train .. params --algo_backend.storage_cache_scheme JPEG/75
 
 
-Please refere `Datumaro document <https://openvinotoolkit.github.io/datumaro/latest/docs/explanation/formats/arrow.html#export-to-arrow>`_
+Please refere `Datumaro document <https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html#export-to-arrow>`_
 for available schemes to choose but we recommend ``JPEG/75`` for fast data loaidng.
 
 .. [1] Dan Hendrycks, Norman Mu, Ekin D. Cubuk, Barret Zoph, Justin Gilmer, and Balaji Lakshminarayanan. "AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty" International Conference on Learning Representations. 2020.

@@ -6,7 +6,7 @@
 import importlib
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
@@ -32,9 +32,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    get_configured_input_size,
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 
@@ -63,6 +66,7 @@ class ClassificationConfigurer:
         ir_options=None,
         data_classes=None,
         model_classes=None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
         **kwargs,
     ):
         """Create MMCV-consumable config from given inputs."""
@@ -78,6 +82,7 @@ class ClassificationConfigurer:
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16_optimizer(cfg)
         self.configure_compat_cfg(cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_base(self, cfg, data_cfg, data_classes, model_classes, **kwargs):
@@ -569,6 +574,18 @@ class ClassificationConfigurer:
                 cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
         _configure_dataloader(cfg)
+
+    @staticmethod
+    def configure_input_size(
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+    ):
+        """Change input size if necessary."""
+        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        if input_size is None:
+            return
+
+        InputSizeManager(cfg.data).set_input_size(input_size)
+        logger.info("Input size is changed to {}".format(input_size))
 
 
 CLASS_INC_DATASET = [

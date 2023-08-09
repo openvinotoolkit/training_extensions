@@ -83,17 +83,17 @@ class VisualPromptingBaseConfig(BaseConfig):
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
-        orig_width = configurable_float(
+        orig_width = configurable_integer(
             header="Original width",
             description="Model input width before embedding processing.",
-            default_value=64.0,
+            default_value=64,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
-        orig_height = configurable_float(
+        orig_height = configurable_integer(
             header="Original height",
             description="Model input height before embedding processing.",
-            default_value=64.0,
+            default_value=64,
             affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 

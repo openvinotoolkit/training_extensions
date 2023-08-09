@@ -31,6 +31,7 @@ from otx.algorithms.common.utils.callback import (
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, get_det_model_api_configuration
 from otx.api.configuration import cfg_helper
@@ -83,9 +84,12 @@ class OTXDetectionTask(OTXTask, ABC):
         )
         self._anchors: Dict[str, int] = {}
 
-        if hasattr(self._hyperparams, "postprocessing"):
-            if hasattr(self._hyperparams.postprocessing, "confidence_threshold"):
-                self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
+        if (
+            hasattr(self._hyperparams, "postprocessing")
+            and not getattr(self._hyperparams.postprocessing, "result_based_confidence_threshold", False)
+            and hasattr(self._hyperparams.postprocessing, "confidence_threshold")
+        ):
+            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         else:
             self.confidence_threshold = 0.0
 
@@ -104,7 +108,6 @@ class OTXDetectionTask(OTXTask, ABC):
 
         Args:
             model_data: The model data.
-
         """
         loaded_postprocessing = model_data.get("config", {}).get("postprocessing", {})
         hparams = self._hyperparams.postprocessing
@@ -112,6 +115,13 @@ class OTXDetectionTask(OTXTask, ABC):
             hparams.use_ellipse_shapes = loaded_postprocessing["use_ellipse_shapes"]["value"]
         else:
             hparams.use_ellipse_shapes = False
+        # If confidence threshold is adaptive then up-to-date value should be stored in the model
+        # and should not be changed during inference. Otherwise user-specified value should be taken.
+        if hparams.result_based_confidence_threshold:
+            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
+        else:
+            self.confidence_threshold = hparams.confidence_threshold
+        logger.info(f"Confidence threshold {self.confidence_threshold}")
 
     def _load_tiling_parameters(self, model_data):
         """Load tiling parameters from PyTorch model.
@@ -158,8 +168,6 @@ class OTXDetectionTask(OTXTask, ABC):
             buffer = io.BytesIO(model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
-            # set confidence_threshold as well
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
             self._load_postprocessing(model_data)
@@ -287,11 +295,6 @@ class OTXDetectionTask(OTXTask, ABC):
             explain_predicted_classes = inference_parameters.explain_predicted_classes
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
-        if not self._hyperparams.postprocessing.result_based_confidence_threshold:
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        logger.info(f"Confidence threshold {self.confidence_threshold}")
 
         dataset.purpose = DatasetPurpose.INFERENCE
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
@@ -333,20 +336,25 @@ class OTXDetectionTask(OTXTask, ABC):
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
+        ir_extra_data = get_det_model_api_configuration(
+            self._task_environment.label_schema,
+            self._task_type,
+            self.confidence_threshold,
+            self._hyperparams.tiling_parameters,
+        )
+
         if export_type == ExportType.ONNX:
+            ir_extra_data[("model_info", "mean_values")] = results.get("inference_parameters").get("mean_values")
+            ir_extra_data[("model_info", "scale_values")] = results.get("inference_parameters").get("scale_values")
+
             onnx_file = outputs.get("onnx")
+            embed_onnx_model_data(onnx_file, ir_extra_data)
             with open(onnx_file, "rb") as f:
                 output_model.set_data("model.onnx", f.read())
         else:
             bin_file = outputs.get("bin")
             xml_file = outputs.get("xml")
 
-            ir_extra_data = get_det_model_api_configuration(
-                self._task_environment.label_schema,
-                self._task_type,
-                self.confidence_threshold,
-                self._hyperparams.tiling_parameters,
-            )
             embed_ir_model_data(xml_file, ir_extra_data)
 
             with open(bin_file, "rb") as f:

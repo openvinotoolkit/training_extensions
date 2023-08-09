@@ -27,10 +27,12 @@ class LoadImageFromOTXDataset:
         results['index']: index of the item in the dataset
 
     :param to_float32: optional bool, True to convert images to fp32. defaults to False
+    :param enable_memcache: optional bool, True to enable in-memory cache. defaults to False
     """
 
-    def __init__(self, to_float32: bool = False):
+    def __init__(self, to_float32: bool = False, enable_memcache: bool = False):
         self.to_float32 = to_float32
+        self.enable_memcache = enable_memcache
         try:
             self.mem_cache_handler = MemCacheHandlerSingleton.get()
         except MemCacheHandlerError:
@@ -48,14 +50,16 @@ class LoadImageFromOTXDataset:
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
-        key = self._get_unique_key(results)
-
-        img = self.mem_cache_handler.get(key)
+        img = None
+        if self.enable_memcache:
+            key = self._get_unique_key(results)
+            img, meta = self.mem_cache_handler.get(key)
 
         if img is None:
-            # Get image (possibly from cache)
+            # Get image (possibly from file cache)
             img = get_image(results, _CACHE_DIR.name, to_float32=False)
-            self.mem_cache_handler.put(key, img)
+            if self.enable_memcache:
+                self.mem_cache_handler.put(key, img)
 
         if self.to_float32:
             img = img.astype(np.float32)

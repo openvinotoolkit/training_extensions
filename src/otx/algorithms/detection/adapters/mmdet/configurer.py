@@ -6,7 +6,7 @@
 import importlib
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
@@ -26,9 +26,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    get_configured_input_size,
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
@@ -64,6 +67,7 @@ class DetectionConfigurer:
         ir_options=None,
         data_classes=None,
         model_classes=None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
     ):
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={training}")
@@ -79,6 +83,7 @@ class DetectionConfigurer:
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16_optimizer(cfg)
         self.configure_compat_cfg(cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_base(self, cfg, data_cfg, data_classes, model_classes):
@@ -653,6 +658,33 @@ class DetectionConfigurer:
                 cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
         _configure_dataloader(cfg)
+
+    @staticmethod
+    def configure_input_size(
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+    ):
+        """Change input size if necessary."""
+        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        if input_size is None:
+            return
+
+        base_input_size = None
+        model_cfg = cfg.get("model")
+        if model_cfg is not None:
+            if cfg.model.type == "CustomYOLOX":
+                if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
+                    raise ValueError("YOLOX should have input size being multiple of 32.")
+                if cfg.model.backbone.widen_factor == 0.375:  # YOLOX tiny case
+                    # YOLOX tiny has a different input size in train and val data pipeline
+                    cfg.model.input_size = (input_size[0], input_size[1])
+                    base_input_size = {
+                        "train": 640,
+                        "val": 416,
+                        "test": 416,
+                    }
+
+        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        logger.info("Input size is changed to {}".format(input_size))
 
 
 class IncrDetectionConfigurer(DetectionConfigurer):

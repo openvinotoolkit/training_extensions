@@ -131,7 +131,7 @@ class OTXClassificationTask(OTXTask, ABC):
     def _is_multi_label(self, label_groups: List[LabelGroup], all_labels: List[LabelEntity]):
         """Check whether the current training mode is multi-label or not."""
         # NOTE: In the current Geti, multi-label should have `___` symbol for all group names.
-        find_multilabel_symbol = ["___" in getattr(i, "name", "") for i in label_groups]
+        find_multilabel_symbol = ["___" in i.name for i in label_groups]
         return (
             (len(label_groups) > 1) and (len(label_groups) == len(all_labels)) and (False not in find_multilabel_symbol)
         )
@@ -388,7 +388,6 @@ class OTXClassificationTask(OTXTask, ABC):
     # pylint: disable=too-many-locals
     def _get_item_labels(self, prediction_item, pos_thr):
         item_labels = []
-
         if self._multilabel:
             if max(prediction_item) < pos_thr:
                 logger.info("Confidence is smaller than pos_thr, empty_label will be appended to item_labels.")
@@ -416,7 +415,7 @@ class OTXClassificationTask(OTXTask, ABC):
                         label_str = self._hierarchical_info["all_groups"][label_str_idx][0]
                         otx_label = next(x for x in self._labels if x.name == label_str)
                         item_labels.append(ScoredLabel(label=otx_label, probability=float(logit)))
-            item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
+            item_labels = self._task_environment.label_schema.resolve_labels_greedily(item_labels)
             if not item_labels:
                 logger.info("item_labels is empty.")
                 item_labels.append(ScoredLabel(self._empty_label, probability=1.0))

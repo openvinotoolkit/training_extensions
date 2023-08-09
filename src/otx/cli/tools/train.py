@@ -38,6 +38,7 @@ from otx.cli.utils.multi_gpu import MultiGPUManager, is_multigpu_child_process
 from otx.cli.utils.parser import (
     MemSizeAction,
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 from otx.cli.utils.report import get_otx_report
@@ -161,7 +162,7 @@ def get_args():
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
     if not hyper_parameters and "params" in params:
         if "params" in params:
             params = params[params.index("params") :]
@@ -245,7 +246,14 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     (config_manager.output_path / "logs").mkdir(exist_ok=True, parents=True)
 
     if args.gpus:
-        multigpu_manager = MultiGPUManager(train, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
+        multigpu_manager = MultiGPUManager(
+            train,
+            args.gpus,
+            args.rdzv_endpoint,
+            args.base_rank,
+            args.world_size,
+            datetime.datetime.fromtimestamp(start_time),
+        )
         if (
             multigpu_manager.is_available()
             and not template.task_type.is_anomaly  # anomaly tasks don't use this way for multi-GPU training
