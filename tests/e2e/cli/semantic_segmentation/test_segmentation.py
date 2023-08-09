@@ -341,7 +341,6 @@ class TestToolsMPASelfSLSegmentation:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
-        # if Path(template.model_template_path, )
         if not (Path(templates[0].model_template_path).parent / "selfsl").is_dir():
             pytest.skip("Self-SL training type isn't available for this template")
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
