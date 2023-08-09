@@ -41,7 +41,7 @@ class LoadAnnotationFromOTXDataset:
 
     def __init__(
         self,
-        min_size: int,
+        min_size: int = -1,
         with_bbox: bool = True,
         with_label: bool = True,
         with_mask: bool = False,

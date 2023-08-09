@@ -1,6 +1,5 @@
 _base_ = [
     "../_base_/default.py",
-    "../_base_/data/data.py",
     "../_base_/logs/tensorboard_logger.py",
     "../_base_/optimizers/sgd.py",
     "../_base_/runners/epoch_runner_cancel.py",
@@ -25,7 +24,8 @@ lr_config = dict(
     warmup_ratio=1.0 / 3,
 )
 
-evaluation = dict(interval=1, metric="mAP", classwise=True, save_best="mAP")
+evaluation = dict(interval=1, metric="mAP", save_best="mAP")
+early_stop_metric = "mAP"
 
 custom_hooks = [
     dict(
@@ -43,4 +43,10 @@ custom_hooks = [
         enable_eval_before_run=True,
     ),
     dict(type="LoggerReplaceHook"),
+    dict(
+        type="CustomModelEMAHook",
+        priority="ABOVE_NORMAL",
+        resume_from=None,
+        epoch_momentum=0.4,
+    ),
 ]

@@ -23,7 +23,6 @@ from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
     patch_datasets,
-    patch_evaluation,
     should_cluster_anchors,
 )
 
@@ -68,7 +67,6 @@ class DetectionConfigurer(BaseConfigurer):
         """Configure for OTX compatibility with mmdet."""
         options_for_patch_datasets = {"type": "OTXDetDataset"}
         patch_datasets(cfg, **options_for_patch_datasets)
-        patch_evaluation(cfg)
 
     def configure_regularization(self, cfg):  # noqa: C901
         """Patch regularization parameters."""
@@ -99,10 +97,6 @@ class DetectionConfigurer(BaseConfigurer):
                 self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "mpa":
                 self.configure_bbox_head(cfg)
-                self.configure_ema(cfg)
-            else:
-                src_data_cfg = self.get_data_cfg(cfg, "train")
-                src_data_cfg.pop("old_new_indices", None)
 
     def configure_classes(self, cfg):
         """Patch classes for model and dataset."""
@@ -147,7 +141,7 @@ class DetectionConfigurer(BaseConfigurer):
         class_adapt_cfg = dict(type="AdaptClassLabels", src_classes=self.data_classes, dst_classes=self.model_classes)
         pipeline_cfg = tr_data_cfg.pipeline
         for i, operation in enumerate(pipeline_cfg):
-            if operation["type"] == "LoadAnnotations":  # insert just after this operation
+            if operation["type"] == "LoadAnnotationFromOTXDataset":  # insert just after this operation
                 op_next_ann = pipeline_cfg[i + 1] if i + 1 < len(pipeline_cfg) else {}
                 if op_next_ann.get("type", "") == class_adapt_cfg["type"]:
                     op_next_ann.update(class_adapt_cfg)
@@ -165,77 +159,20 @@ class DetectionConfigurer(BaseConfigurer):
             cluster_anchors(cfg, train_dataset)
 
     def configure_bbox_head(self, cfg):
-        """Patch bbox head in detector for class incremental learning.
-
-        Most of patching are related with hyper-params in focal loss
-        """
+        """Patch classification loss if there are ignore labels."""
         if cfg.get("task", "detection") == "detection":
             bbox_head = cfg.model.bbox_head
         else:
             bbox_head = cfg.model.roi_head.bbox_head
-
-        alpha, gamma = 0.25, 2.0
-        if bbox_head.type in ["ATSSHead"]:
-            gamma = 3 if cfg["task_adapt"].get("efficient_mode", False) else 4.5
-            bbox_head.loss_cls.gamma = gamma
-        elif bbox_head.type in ["VFNetHead", "CustomVFNetHead"]:
-            alpha = 0.75
-            gamma = 1 if cfg["task_adapt"].get("efficient_mode", False) else 2
-        # TODO Move this part
-        # This is not related with patching bbox head
-        elif bbox_head.type in ["YOLOXHead", "CustomYOLOXHead"]:
-            if cfg.data.train.type == "MultiImageMixDataset":
-                self.add_yolox_hooks(cfg)
 
         if cfg.get("ignore", False):
             bbox_head.loss_cls = ConfigDict(
                 type="CrossSigmoidFocalLoss",
                 use_sigmoid=True,
                 num_classes=len(self.model_classes),
-                alpha=alpha,
-                gamma=gamma,
+                alpha=bbox_head.loss_cls.get("alpha", 0.25),
+                gamma=bbox_head.loss_csl.get("gamma", 2.0),
             )
-
-    @staticmethod
-    def configure_ema(cfg):
-        """Patch ema settings."""
-        adaptive_ema = cfg.get("adaptive_ema", {})
-        if adaptive_ema:
-            update_or_add_custom_hook(
-                cfg,
-                ConfigDict(
-                    type="CustomModelEMAHook",
-                    priority="ABOVE_NORMAL",
-                    resume_from=cfg.get("resume_from"),
-                    **adaptive_ema,
-                ),
-            )
-        else:
-            update_or_add_custom_hook(
-                cfg,
-                ConfigDict(type="EMAHook", priority="ABOVE_NORMAL", resume_from=cfg.get("resume_from"), momentum=0.1),
-            )
-
-    @staticmethod
-    def add_yolox_hooks(cfg):
-        """Update yolox hooks."""
-        update_or_add_custom_hook(
-            cfg,
-            ConfigDict(
-                type="YOLOXModeSwitchHook",
-                num_last_epochs=15,
-                priority=48,
-            ),
-        )
-        update_or_add_custom_hook(
-            cfg,
-            ConfigDict(
-                type="SyncNormHook",
-                num_last_epochs=15,
-                interval=1,
-                priority=48,
-            ),
-        )
 
     @staticmethod
     def configure_input_size(
