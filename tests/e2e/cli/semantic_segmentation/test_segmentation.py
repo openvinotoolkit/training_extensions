@@ -72,7 +72,11 @@ if TT_STABILITY_TESTS:
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
 else:
-    templates = [template for template in Registry("src/otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates if "SegNext" not in template.model_template_id]
+    templates = [
+        template
+        for template in Registry("src/otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
+        if "SegNext" not in template.model_template_id
+    ]
     # add one custom model template for new segmentation models. In the future we will update them as main templates
     # we need to start to test them now. For time saving - one new model will be validated
     custom_model = parse_model_template(
