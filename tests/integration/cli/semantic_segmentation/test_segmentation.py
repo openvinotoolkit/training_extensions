@@ -50,9 +50,8 @@ args_semisl = {
 }
 
 args_selfsl = {
-    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
+    "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "--input": "tests/assets/segmentation/custom/images/training",
-    "--train-type": "Selfsupervised",
     "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
@@ -71,21 +70,15 @@ MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
     os.path.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "template.yaml")
 )
-default_templates = [default_template]
-default_templates_ids = [default_template.model_template_id]
+# add integration test for semi-sl with new SegNext model and prototype based approach
+segnext_template = parse_model_template(
+    os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_s", "template.yaml")
+)
+default_templates = [default_template, segnext_template]
+default_templates_ids = [default_template.model_template_id, segnext_template.model_template_id]
 
 templates = Registry("src/otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
-
-# add integration test for semi-sl with new SegNext model and prototype based approach
-# other tests will be updated accordingly after fully transfer to segnext templates
-segnext_experimental_template = parse_model_template(
-    os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_s", "template_experimental.yaml")
-)
-templates_inc_segnext = [segnext_experimental_template, default_template]
-templates_ids_inc_segnext = [segnext_experimental_template.model_template_id, default_template.model_template_id]
-
-
 TestSemanticSegmentationModelTemplates = generate_model_template_testing(templates)
 
 
@@ -185,7 +178,7 @@ class TestSegmentationCLI:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_semisl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_semisl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
@@ -195,7 +188,7 @@ class TestSegmentationCLI:
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
-    @pytest.mark.parametrize("template", templates_inc_segnext, ids=templates_ids_inc_segnext)
+    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args_semisl)
