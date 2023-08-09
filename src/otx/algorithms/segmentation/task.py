@@ -32,10 +32,8 @@ from otx.algorithms.common.utils.callback import (
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
-from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
-    get_activation_map,
-)
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
+from otx.algorithms.segmentation.utils import get_activation_map
 from otx.algorithms.segmentation.utils.metadata import get_seg_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
