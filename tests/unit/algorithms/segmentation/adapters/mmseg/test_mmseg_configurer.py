@@ -29,7 +29,17 @@ class TestSegmentationConfigurer:
     def setup(self) -> None:
         self.configurer = SegmentationConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
+        self.data_cfg = MPAConfig(
+            {
+                "data": {
+                    "train": {"otx_dataset": [], "labels": []},
+                    "val": {"otx_dataset": [], "labels": []},
+                    "test": {"otx_dataset": [], "labels": []},
+                }
+            }
+        )
 
     @e2e_pytest_unit
     def test_configure(self, mocker):
@@ -40,7 +50,7 @@ class TestSegmentationConfigurer:
         mock_cfg_task = mocker.patch.object(SegmentationConfigurer, "configure_task")
         mock_cfg_hook = mocker.patch.object(SegmentationConfigurer, "configure_hook")
         mock_cfg_gpu = mocker.patch.object(SegmentationConfigurer, "configure_samples_per_gpu")
-        mock_cfg_fp16_optimizer = mocker.patch.object(SegmentationConfigurer, "configure_fp16_optimizer")
+        mock_cfg_fp16 = mocker.patch.object(SegmentationConfigurer, "configure_fp16")
         mock_cfg_compat_cfg = mocker.patch.object(SegmentationConfigurer, "configure_compat_cfg")
         mock_cfg_input_size = mocker.patch.object(SegmentationConfigurer, "configure_input_size")
 
@@ -54,18 +64,13 @@ class TestSegmentationConfigurer:
         mock_cfg_task.assert_called_once_with(model_cfg, True)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
-        mock_cfg_fp16_optimizer.assert_called_once_with(model_cfg)
+        mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
         assert returned_value == model_cfg
 
     @e2e_pytest_unit
     def test_configure_base(self, mocker):
-        mocker.patch(
-            "otx.algorithms.segmentation.adapters.mmseg.configurer.align_data_config_with_recipe",
-            return_value=True,
-        )
-
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg._cfg_dict)
         self.configurer.configure_base(model_cfg, data_cfg, [], [])
@@ -138,8 +143,11 @@ class TestSegmentationConfigurer:
             "torch.distributed.is_initialized",
             return_value=True,
         )
+        mocker.patch(
+            "torch.distributed.get_world_size",
+            return_value=2,
+        )
         world_size = 2
-        mocker.patch.object(configurer, "dist").get_world_size.return_value = world_size
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
         origin_lr = config.optimizer.lr
@@ -176,25 +184,26 @@ class TestSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_samples_per_gpu(self):
         model_cfg = copy.deepcopy(self.model_cfg)
-        model_cfg.data.train.dataset.otx_dataset = range(1)
+        model_cfg.data.train_dataloader = ConfigDict({"samples_per_gpu": 2})
+        model_cfg.data.train.otx_dataset = range(1)
         self.configurer.configure_samples_per_gpu(model_cfg, "train")
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
-    def test_configure_fp16_optimizer(self):
+    def test_configure_fp16(self):
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.fp16 = {}
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16OptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "SAMOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16SAMOptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "DummyOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "DummyOptimizerHook"
 
     @e2e_pytest_unit
@@ -243,28 +252,49 @@ class TestIncrSegmentationConfigurer:
     def setup(self) -> None:
         self.configurer = IncrSegmentationConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
+        self.data_cfg = MPAConfig(
+            {
+                "data": {
+                    "train": {"otx_dataset": [], "labels": []},
+                    "val": {"otx_dataset": [], "labels": []},
+                    "test": {"otx_dataset": [], "labels": []},
+                }
+            }
+        )
 
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
         mocker.patch.object(SegmentationConfigurer, "configure_task")
         self.configurer.configure_task(self.model_cfg, True)
-        assert self.model_cfg.custom_hooks[1].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[1].sampler_flag is False
+        assert self.model_cfg.custom_hooks[3].type == "TaskAdaptHook"
+        assert self.model_cfg.custom_hooks[3].sampler_flag is False
 
 
 class TestSemiSLSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLSegmentationConfigurer()
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
+        self.model_cfg.model_task = "segmentation"
+        self.model_cfg.distributed = False
+        self.data_cfg = MPAConfig(
+            {
+                "data": {
+                    "train": {"otx_dataset": [], "labels": []},
+                    "val": {"otx_dataset": [], "labels": []},
+                    "test": {"otx_dataset": [], "labels": []},
+                    "unlabeled": {"otx_dataset": [0], "labels": []},
+                }
+            }
+        )
 
     @e2e_pytest_unit
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
-        unlabeled_dict = dict(data=dict(unlabeled=dict(otx_dataset="foo")))
-        data_cfg.merge_from_dict(unlabeled_dict)
         mock_ul_dataloader = mocker.patch.object(SemiSLSegmentationConfigurer, "configure_unlabeled_dataloader")
         self.configurer.configure_data(self.model_cfg, True, data_cfg)
         mock_ul_dataloader.assert_called_once()
@@ -281,8 +311,6 @@ class TestSemiSLSegmentationConfigurer:
         data_cfg = copy.deepcopy(self.data_cfg)
         data_cfg.model_task = "segmentation"
         data_cfg.distributed = False
-        unlabeled_dict = dict(data=dict(unlabeled=dict(otx_dataset="foo")))
-        data_cfg.merge_from_dict(unlabeled_dict)
         mocker_build_dataset = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataset")
         mocker_build_dataloader = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataloader")
         self.configurer.configure_data(self.model_cfg, True, data_cfg)

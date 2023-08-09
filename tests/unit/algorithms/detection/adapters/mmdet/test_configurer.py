@@ -3,6 +3,7 @@ import os
 
 import pytest
 import tempfile
+from mmcv.runner import CheckpointLoader
 from mmcv.utils import ConfigDict
 
 from otx.api.entities.model_template import TaskType
@@ -26,9 +27,19 @@ class TestDetectionConfigurer:
     def setup(self) -> None:
         self.configurer = DetectionConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
-        self.model_cfg.merge_from_dict(self.data_cfg)
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
+
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
+        self.data_cfg = ConfigDict(
+            {
+                "data": {
+                    "train": {"otx_dataset": self.det_dataset, "labels": self.det_labels},
+                    "val": {"otx_dataset": self.det_dataset, "labels": self.det_labels},
+                    "test": {"otx_dataset": self.det_dataset, "labels": self.det_labels},
+                }
+            }
+        )
 
     @e2e_pytest_unit
     def test_configure(self, mocker):
@@ -40,7 +51,7 @@ class TestDetectionConfigurer:
         mock_cfg_task = mocker.patch.object(DetectionConfigurer, "configure_task")
         mock_cfg_hook = mocker.patch.object(DetectionConfigurer, "configure_hook")
         mock_cfg_gpu = mocker.patch.object(DetectionConfigurer, "configure_samples_per_gpu")
-        mock_cfg_fp16_optimizer = mocker.patch.object(DetectionConfigurer, "configure_fp16_optimizer")
+        mock_cfg_fp16 = mocker.patch.object(DetectionConfigurer, "configure_fp16")
         mock_cfg_compat_cfg = mocker.patch.object(DetectionConfigurer, "configure_compat_cfg")
         mock_cfg_input_size = mocker.patch.object(DetectionConfigurer, "configure_input_size")
 
@@ -55,20 +66,15 @@ class TestDetectionConfigurer:
         mock_cfg_task.assert_called_once_with(model_cfg, self.det_dataset, True)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
-        mock_cfg_fp16_optimizer.assert_called_once_with(model_cfg)
+        mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
         assert returned_value == model_cfg
 
     @e2e_pytest_unit
     def test_configure_base(self, mocker):
-        mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.configurer.align_data_config_with_recipe",
-            return_value=True,
-        )
-
         model_cfg = copy.deepcopy(self.model_cfg)
-        data_cfg = copy.deepcopy(self.data_cfg._cfg_dict)
+        data_cfg = copy.deepcopy(self.data_cfg)
         self.configurer.configure_base(model_cfg, data_cfg, [], [])
 
     @e2e_pytest_unit
@@ -77,8 +83,8 @@ class TestDetectionConfigurer:
             "torch.distributed.is_initialized",
             return_value=True,
         )
+        mocker.patch("torch.distributed.get_world_size", return_value=2)
         world_size = 2
-        mocker.patch.object(configurer, "dist").get_world_size.return_value = world_size
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
         origin_lr = config.optimizer.lr
@@ -123,8 +129,9 @@ class TestDetectionConfigurer:
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.resume = True
 
-        mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.configurer.CheckpointLoader.load_checkpoint",
+        mocker.patch.object(
+            CheckpointLoader,
+            "load_checkpoint",
             return_value={"model": None},
         )
         with tempfile.TemporaryDirectory() as tempdir:
@@ -177,9 +184,10 @@ class TestDetectionConfigurer:
     def test_configure_task(self, mocker):
         ssd_dir = os.path.join("src/otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
         ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "data_pipeline.py"))
         ssd_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
         model_cfg = copy.deepcopy(ssd_cfg)
-        model_cfg.merge_from_dict(self.data_cfg)
+        model_cfg.merge_from_dict(data_pipeline_cfg)
         self.configurer.configure_task(model_cfg, self.det_dataset, True)
         assert model_cfg.model.bbox_head.anchor_generator != ssd_cfg.model.bbox_head.anchor_generator
 
@@ -219,20 +227,20 @@ class TestDetectionConfigurer:
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
-    def test_configure_fp16_optimizer(self):
+    def test_configure_fp16(self):
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.fp16 = {}
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16OptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "SAMOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16SAMOptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "DummyOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "DummyOptimizerHook"
 
     @e2e_pytest_unit

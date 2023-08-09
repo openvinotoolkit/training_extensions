@@ -3,6 +3,7 @@ import os
 
 import pytest
 import tempfile
+from mmcv.runner import CheckpointLoader
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
@@ -22,7 +23,17 @@ class TestClassificationConfigurer:
     def setup(self) -> None:
         self.configurer = ClassificationConfigurer()
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
+        self.data_cfg = MPAConfig(
+            {
+                "data": {
+                    "train": {"otx_dataset": [], "labels": []},
+                    "val": {"otx_dataset": [], "labels": []},
+                    "test": {"otx_dataset": [], "labels": []},
+                }
+            }
+        )
 
         self.multilabel_model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_multilabel.py"))
         self.hierarchical_model_cfg = MPAConfig.fromfile(
@@ -39,7 +50,7 @@ class TestClassificationConfigurer:
         mock_cfg_task = mocker.patch.object(ClassificationConfigurer, "configure_task")
         mock_cfg_hook = mocker.patch.object(ClassificationConfigurer, "configure_hook")
         mock_cfg_gpu = mocker.patch.object(ClassificationConfigurer, "configure_samples_per_gpu")
-        mock_cfg_fp16_optimizer = mocker.patch.object(ClassificationConfigurer, "configure_fp16_optimizer")
+        mock_cfg_fp16 = mocker.patch.object(ClassificationConfigurer, "configure_fp16")
         mock_cfg_compat_cfg = mocker.patch.object(ClassificationConfigurer, "configure_compat_cfg")
         mock_cfg_input_size = mocker.patch.object(ClassificationConfigurer, "configure_input_size")
 
@@ -54,26 +65,13 @@ class TestClassificationConfigurer:
         mock_cfg_task.assert_called_once_with(model_cfg, True)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
-        mock_cfg_fp16_optimizer.assert_called_once_with(model_cfg)
+        mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
         assert returned_value == model_cfg
 
     @e2e_pytest_unit
     def test_configure_base(self, mocker):
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.align_data_config_with_recipe",
-            return_value=True,
-        )
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.patch_datasets",
-            return_value=True,
-        )
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.patch_persistent_workers",
-            return_value=True,
-        )
-
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg._cfg_dict)
         self.configurer.configure_base(model_cfg, data_cfg, [], [])
@@ -84,8 +82,11 @@ class TestClassificationConfigurer:
             "torch.distributed.is_initialized",
             return_value=True,
         )
+        mocker.patch(
+            "torch.distributed.get_world_size",
+            return_value=2,
+        )
         world_size = 2
-        mocker.patch.object(configurer, "dist").get_world_size.return_value = world_size
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
         origin_lr = config.optimizer.lr
@@ -146,8 +147,9 @@ class TestClassificationConfigurer:
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.resume = True
 
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.CheckpointLoader.load_checkpoint",
+        mocker.patch.object(
+            CheckpointLoader,
+            "load_checkpoint",
             return_value={"model": None},
         )
         with tempfile.TemporaryDirectory() as tempdir:
@@ -208,21 +210,21 @@ class TestClassificationConfigurer:
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
-    def test_configure_fp16_optimizer(self):
+    def test_configure_fp16(self):
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "OptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16OptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "SAMOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16SAMOptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "DummyOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "DummyOptimizerHook"
 
     @e2e_pytest_unit
