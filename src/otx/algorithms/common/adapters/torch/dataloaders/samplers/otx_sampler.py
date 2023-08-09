@@ -5,9 +5,6 @@
 
 import math
 
-import torch
-from mmcls.core.utils import sync_random_seed
-from mmcls.datasets import SAMPLERS
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
@@ -16,7 +13,6 @@ from otx.algorithms.common.utils.logger import get_logger
 logger = get_logger()
 
 
-@SAMPLERS.register_module()
 class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     """Sampler that easily adapts to the dataset statistics.
 
@@ -51,7 +47,6 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         num_replicas: int = 1,
         rank: int = 0,
         shuffle: bool = True,
-        seed: int = 0,
         coef: float = -0.7,
         min_repeat: float = 1.0,
     ):
@@ -64,7 +59,6 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         self.num_samples = int(math.ceil(len(self.dataset) * self.repeat / self.num_replicas))
         self.total_size = self.num_samples * self.num_replicas
-        self.seed = sync_random_seed(seed)
 
     def _get_proper_repeats(self, use_adaptive_repeats: bool, coef: float, min_repeat: float):
         """Calculate the proper repeats with considering the number of iterations."""
@@ -81,21 +75,7 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
     def __iter__(self):
         """Iter."""
-        # deterministically shuffle based on epoch
-        if self.shuffle:
-            if self.num_replicas > 1:  # In distributed environment
-                # deterministically shuffle based on epoch
-                g = torch.Generator()
-                # When :attr:`shuffle=True`, this ensures all replicas
-                # use a different random ordering for each epoch.
-                # Otherwise, the next iteration of this sampler will
-                # yield the same ordering.
-                g.manual_seed(self.epoch + self.seed)
-                indices = torch.randperm(len(self.dataset), generator=g).tolist()
-            else:
-                indices = torch.randperm(len(self.dataset)).tolist()
-        else:
-            indices = list(range(len(self.dataset)))
+        indices = list(range(len(self.dataset)))
 
         # produce repeats e.g. [0, 0, 0, 1, 1, 1, 2, 2, 2....]
         indices = [x for x in indices for _ in range(self.repeat)]
