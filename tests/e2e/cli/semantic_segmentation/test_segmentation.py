@@ -232,8 +232,8 @@ class TestToolsMPASegmentation:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template, tmp_dir_path):
-        if template.name not in ["SegNext-s", "Lite-HRNet-x-mod3"]:
+    def test_ptq_optimize(self, template, tmp_dir_path):
+        if template.name not in ["SegNext-t", "Lite-HRNet-x-mod3"]:
             pytest.skip(reason="Skip the majority of models to reduce PTQ running time.")
         tmp_dir_path = tmp_dir_path / "segmentation"
         ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
@@ -242,7 +242,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_validate_fq(self, template, tmp_dir_path):
-        if template.name not in ["SegNext-s", "Lite-HRNet-x-mod3"]:
+        if template.name not in ["SegNext-t", "Lite-HRNet-x-mod3"]:
             pytest.skip(reason="Skip the majority of models to reduce PTQ running time.")
         tmp_dir_path = tmp_dir_path / "segmentation"
         ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "semantic_segmentation", type(self).__name__)
@@ -251,7 +251,7 @@ class TestToolsMPASegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_eval(self, template, tmp_dir_path):
-        if template.name not in ["SegNext-s", "Lite-HRNet-x-mod3"]:
+        if template.name not in ["SegNext-t", "Lite-HRNet-x-mod3"]:
             pytest.skip(reason="Skip the majority of models to reduce PTQ running time.")
         tmp_dir_path = tmp_dir_path / "segmentation"
         ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
