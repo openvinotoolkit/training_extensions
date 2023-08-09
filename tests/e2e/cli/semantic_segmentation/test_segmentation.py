@@ -85,6 +85,7 @@ else:
     templates.append(custom_model)
     templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsMPASegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
