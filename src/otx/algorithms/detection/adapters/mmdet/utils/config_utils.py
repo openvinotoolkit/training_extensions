@@ -316,3 +316,20 @@ def patch_ir_scale_factor(deploy_cfg: ConfigDict, hyper_parameters: DetectionCon
                 ConfigDict(opt_shapes=ConfigDict(input=[1, 3, ir_input_shape[2], ir_input_shape[3]]))
             ]
             print(f"-----------------> x {tile_ir_scale_factor} = {ir_input_shape}")
+
+
+def patch_samples_per_gpu(cfg: ConfigDict, hyperparams: DetectionConfig):
+    """Patch samples_per_gpu in cfg inplace from hyper parameters.
+
+    Args:
+        cfg (ConfigDict): model config
+        hyperparams (DetectionConfig): OTX detection hyper parameters
+    """
+    params = hyperparams.learning_parameters
+    hparams = ConfigDict(
+        data=ConfigDict(
+            val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+            test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+        ),
+    )
+    cfg.merge_from_dict(hparams)

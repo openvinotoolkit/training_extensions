@@ -69,6 +69,7 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_input_preprocessing,
     patch_input_shape,
     patch_ir_scale_factor,
+    patch_samples_per_gpu,
     patch_tiling,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
@@ -124,6 +125,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         if not export:
             patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
+            patch_samples_per_gpu(self._recipe_cfg, self._hyperparams)
 
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
@@ -346,7 +348,6 @@ class MMDetectionTask(OTXDetectionTask):
 
         # Data loader
         mm_dataset = build_dataset(cfg.data.test)
-
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
         # If the batch size and the number of data are not divisible, the metric may score differently.
         # To avoid this, use 1 if they are not divisible.
