@@ -4,7 +4,7 @@
 #
 import copy
 import os
-
+from pathlib import Path
 import pytest
 import torch
 
@@ -60,13 +60,13 @@ resume_params = [
     "4",
 ]
 
-otx_dir = os.getcwd()
+otx_dir = Path.cwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
-        os.path.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "template.yaml")
+        Path("src/otx/algorithms/segmentation/configs") / "ocr_lite_hrnet_18_mod2" / "template.yaml"
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
@@ -80,11 +80,10 @@ else:
     # add one custom model template for new segmentation models. In the future we will update them as main templates
     # we need to start to test them now. For time saving - one new model will be validated
     custom_model = parse_model_template(
-        os.path.join("src/otx/algorithms/segmentation/configs", "ham_segnext_t", "template.yaml")
+        Path("src/otx/algorithms/segmentation/configs") / "ham_segnext_t" / "template.yaml"
     )
     templates.append(custom_model)
     templates_ids = [template.model_template_id for template in templates]
-
 
 class TestToolsMPASegmentation:
     @e2e_pytest_component
@@ -317,11 +316,11 @@ class TestToolsMPASelfSLSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path_1 = tmp_dir_path / "segmentation/test_selfsl"
-        if not os.path.exists(os.path.join(template.model_template_path[:-14], "selfsl")):
-            pytest.skip("SelfSL isn't available for this template")
+        if not (Path(templates[0].model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
-        assert os.path.exists(f"{template_work_dir}/selfsl")
+        assert (Path(template_work_dir) / "selfsl").is_dir()
         args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         tmp_dir_path_2 = tmp_dir_path / "segmentation/test_selfsl_sl"
@@ -331,8 +330,8 @@ class TestToolsMPASelfSLSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
-        if not os.path.exists(os.path.join(template.model_template_path[:-14], "selfsl")):
-            pytest.skip("SelfSL isn't available for this template")
+        if not (Path(templates[0].model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
         tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl_sl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -341,11 +340,12 @@ class TestToolsMPASelfSLSegmentation:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
-        if not os.path.exists(os.path.join(template.model_template_path[:-14], "selfsl")):
-            pytest.skip("SelfSL isn't available for this template")
+        # if Path(template.model_template_path, )
+        if not (Path(templates[0].model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
         args_selfsl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl_multigpu)
         template_work_dir = get_template_dir(template, tmp_dir_path)
-        assert os.path.exists(f"{template_work_dir}/selfsl")
+        assert (Path(template_work_dir) / "selfsl").is_dir()
