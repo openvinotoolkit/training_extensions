@@ -617,7 +617,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
             samples_per_gpu=int(params.batch_size),
             workers_per_gpu=int(params.num_workers),
             val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
-            test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size))
+            test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
         ),
         runner=runner,
     )
