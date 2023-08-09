@@ -332,7 +332,7 @@ pot_parameters:
     description: Number of data samples used for post-training optimization
     editable: true
     header: Number of data samples
-    max_value: 9223372036854775807
+    max_value: 100000
     min_value: 1
     type: INTEGER
     ui_rules:

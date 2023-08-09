@@ -279,7 +279,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize,
+            max_value=100000,
         )
 
         stat_requests_number = configurable_integer(
@@ -287,7 +287,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of requests during statistics collection",
             default_value=0,
             min_value=0,
-            max_value=maxsize,
+            max_value=200,
         )
 
         preset = selectable(
