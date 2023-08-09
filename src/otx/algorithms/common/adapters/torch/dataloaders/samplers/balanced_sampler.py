@@ -57,7 +57,7 @@ class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attribut
 
         super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
 
-        self.img_indices = self.dataset.img_indices # type: ignore[attr-defined]
+        self.img_indices = self.dataset.img_indices  # type: ignore[attr-defined]
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
 
