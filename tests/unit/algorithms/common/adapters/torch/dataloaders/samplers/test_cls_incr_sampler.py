@@ -17,10 +17,6 @@ class TestClsIncrSampler:
                 return 10
 
         self.mock_dataset = MockDataset()
-        mocker.patch(
-            "otx.algorithms.common.adapters.torch.dataloaders.samplers.cls_incr_sampler.unwrap_dataset",
-            return_value=(self.mock_dataset, 1),
-        )
 
     @e2e_pytest_unit
     def test_sampler_iter(self):
