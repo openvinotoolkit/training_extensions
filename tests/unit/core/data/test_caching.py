@@ -7,13 +7,8 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from torch.utils.data import DataLoader, Dataset
 
-from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
-from otx.api.entities.dataset_item import DatasetItemEntity
-from otx.api.entities.image import Image
 from otx.core.data.caching import MemCacheHandlerSingleton
-from otx.core.data.pipelines.load_image_from_otx_dataset import LoadImageFromOTXDataset
 
 
 @pytest.fixture
@@ -35,39 +30,6 @@ def fxt_data_list():
         data_list += [(key, data, meta)]
 
     return data_list
-
-
-@pytest.fixture
-def fxt_caching_dataset_cls(fxt_data_list: list):
-    class CachingDataset(Dataset):
-        def __init__(self, enable_memcache: bool = True) -> None:
-            super().__init__()
-            self.d_items = [
-                DatasetItemEntity(
-                    media=Image(data=data),
-                    annotation_scene=AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.ANNOTATION),
-                )
-                for _, data, _ in fxt_data_list
-            ]
-            self.load = LoadImageFromOTXDataset(enable_memcache=enable_memcache)
-
-        def __len__(self):
-            return len(self.d_items)
-
-        def __getitem__(self, index):
-            d_item = self.d_items[index]
-
-            results = {
-                "dataset_item": d_item,
-                "height": d_item.media.numpy.shape[0],
-                "width": d_item.media.numpy.shape[1],
-                "index": index,
-            }
-
-            results = self.load(results)
-            return results["img"]
-
-    yield CachingDataset
 
 
 def get_data_list_size(data_list):
@@ -119,59 +81,3 @@ class TestMemCacheHandler:
 
         # Unfully (half) cached
         assert len(handler) == len(fxt_data_list) // 2
-
-
-class TestLoadImageFromFileWithCache:
-    @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
-    def test_combine_with_dataloader(self, mode, fxt_caching_dataset_cls, fxt_data_list):
-        mem_size = get_data_list_size(fxt_data_list)
-        MemCacheHandlerSingleton.create(mode, mem_size)
-
-        dataset = fxt_caching_dataset_cls()
-
-        with patch(
-            "otx.core.data.pipelines.load_image_from_otx_dataset.get_image",
-            side_effect=[data for _, data, _ in fxt_data_list],
-        ) as mock:
-            for _ in DataLoader(dataset):
-                continue
-
-            # This initial round requires all data samples to be read from disk.
-            assert mock.call_count == len(dataset)
-
-        with patch(
-            "otx.core.data.pipelines.load_image_from_otx_dataset.get_image",
-            side_effect=[data for _, data, _ in fxt_data_list],
-        ) as mock:
-            for _ in DataLoader(dataset):
-                continue
-
-            # The second round requires no read.
-            assert mock.call_count == 0
-
-    @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
-    def test_disable_mem_cache(self, mode, fxt_caching_dataset_cls, fxt_data_list):
-        mem_size = get_data_list_size(fxt_data_list)
-        MemCacheHandlerSingleton.create(mode, mem_size)
-
-        dataset = fxt_caching_dataset_cls(enable_memcache=False)
-
-        with patch(
-            "otx.core.data.pipelines.load_image_from_otx_dataset.get_image",
-            side_effect=[data for _, data, _ in fxt_data_list],
-        ) as mock:
-            for _ in DataLoader(dataset):
-                continue
-
-            # This initial round requires all data samples to be read from disk.
-            assert mock.call_count == len(dataset)
-
-        with patch(
-            "otx.core.data.pipelines.load_image_from_otx_dataset.get_image",
-            side_effect=[data for _, data, _ in fxt_data_list],
-        ) as mock:
-            for _ in DataLoader(dataset):
-                continue
-
-            # The second round goes the same due to no cache support
-            assert mock.call_count == len(dataset)

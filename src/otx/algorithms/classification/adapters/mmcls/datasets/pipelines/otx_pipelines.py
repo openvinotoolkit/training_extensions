@@ -12,7 +12,7 @@ from mmcv.utils.registry import build_from_cfg
 from PIL import Image, ImageFilter
 from torchvision import transforms as T
 
-import otx.core.data.pipelines.load_image_from_otx_dataset as load_image_base
+import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset as load_image_base
 
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.
