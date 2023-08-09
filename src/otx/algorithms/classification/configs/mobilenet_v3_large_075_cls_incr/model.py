@@ -19,3 +19,7 @@ model = dict(
         hid_channels=1280,
     ),
 )
+
+custom_hooks = [
+    dict(type="AdaptiveRepeatDataHook")
+]

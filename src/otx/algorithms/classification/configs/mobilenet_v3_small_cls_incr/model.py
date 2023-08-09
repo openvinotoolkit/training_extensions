@@ -11,3 +11,7 @@ model = dict(
     type="CustomImageClassifier",
     task="classification",
 )
+
+custom_hooks = [
+    dict(type="AdaptiveRepeatDataHook")
+]
