@@ -108,7 +108,7 @@ class Engine:
         val_interval: Optional[int] = None,
         **kwargs,
     ):
-        """Provide a function responsible for OTX's train.
+        """Perform training.
 
         Raises:
             NotImplementedError: _description_
@@ -122,7 +122,7 @@ class Engine:
         precision: Optional[str] = None,
         **kwargs,
     ):
-        """Provide a function responsible for OTX's validate.
+        """Perform validation.
 
         Raises:
             NotImplementedError: _description_
@@ -136,7 +136,7 @@ class Engine:
         precision: Optional[str] = None,
         **kwargs,
     ):
-        """Provide a function responsible for OTX's test.
+        """Perform testing.
 
         Raises:
             NotImplementedError: _description_
@@ -150,8 +150,7 @@ class Engine:
         img=None,
         pipeline: Optional[List[Dict]] = None,
     ) -> List[Dict]:
-        raise NotImplementedError()
-        """Provide a function responsible for OTX's predict.
+        """Perform prediction.
 
         Raises:
             NotImplementedError: _description_
@@ -159,7 +158,7 @@ class Engine:
         raise NotImplementedError()
 
     def export(self, *args, **kwargs):
-        """Provide a function responsible for OTX's export.
+        """Perform exporting.
 
         Raises:
             NotImplementedError: _description_
@@ -369,6 +368,8 @@ class AutoEngine(Engine):
         if model is None and self.get_model is not None:
             # Model Setting
             model = self.get_model(model=self.config, num_classes=self.dataset_obj.num_classes)
+        elif isinstance(model, (str, Dict)):
+            model = self.get_model(model=model)
 
         # Training
         if self.engine is None:
