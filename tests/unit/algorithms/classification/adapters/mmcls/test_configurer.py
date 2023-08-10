@@ -64,7 +64,7 @@ class TestClassificationConfigurer:
         mock_cfg_data.assert_called_once_with(model_cfg, data_cfg)
         mock_cfg_task.assert_called_once_with(model_cfg)
         mock_cfg_hook.assert_called_once_with(model_cfg)
-        mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
+        mock_cfg_gpu.assert_called_once_with(model_cfg)
         mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
@@ -206,7 +206,7 @@ class TestClassificationConfigurer:
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.update(self.data_cfg)
         model_cfg.data.train.otx_dataset = range(1)
-        self.configurer.configure_samples_per_gpu(model_cfg, "train")
+        self.configurer.configure_samples_per_gpu(model_cfg)
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit

@@ -42,7 +42,6 @@ class ClassificationConfigurer(BaseConfigurer):
         cfg,
         model_ckpt,
         data_cfg,
-        subset="train",
         ir_options=None,
         data_classes=None,
         model_classes=None,
@@ -59,7 +58,7 @@ class ClassificationConfigurer(BaseConfigurer):
         self.configure_data(cfg, data_cfg)
         self.configure_task(cfg)
         self.configure_hook(cfg)
-        self.configure_samples_per_gpu(cfg, subset)
+        self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
         self.configure_input_size(cfg, input_size, model_ckpt)

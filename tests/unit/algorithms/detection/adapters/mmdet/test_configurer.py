@@ -65,7 +65,7 @@ class TestDetectionConfigurer:
         mock_cfg_regularization.assert_called_once_with(model_cfg)
         mock_cfg_task.assert_called_once_with(model_cfg, self.det_dataset)
         mock_cfg_hook.assert_called_once_with(model_cfg)
-        mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
+        mock_cfg_gpu.assert_called_once_with(model_cfg)
         mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
@@ -223,7 +223,7 @@ class TestDetectionConfigurer:
     def test_configure_samples_per_gpu(self):
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.data.train.otx_dataset = range(1)
-        self.configurer.configure_samples_per_gpu(model_cfg, "train")
+        self.configurer.configure_samples_per_gpu(model_cfg)
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
@@ -333,8 +333,8 @@ class TestIncrDetectionConfigurer:
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
         self.configurer.configure_task(self.model_cfg, self.det_dataset)
-        assert self.model_cfg.custom_hooks[1].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[1].sampler_flag is False
+        assert self.model_cfg.custom_hooks[2].type == "TaskAdaptHook"
+        assert self.model_cfg.custom_hooks[2].sampler_flag is False
 
 
 class TestSemiSLDetectionConfigurer:
