@@ -378,7 +378,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot get configuration.")
 
-        configuration = {
+        configuration: Dict[str, Any] = {
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
         }
 
