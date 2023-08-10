@@ -24,10 +24,8 @@ lr_config = dict(
     warmup_ratio=1.0 / 3,
 )
 
-evaluation = dict(
-    interval=1,
-    metric=["mIoU", "mDice"],
-)
+evaluation = dict(interval=1, metric="mDice", save_best="mDice", rule="greater", show_log=True)
+early_stop_metric = "mDice"
 
 custom_hooks = [
     dict(

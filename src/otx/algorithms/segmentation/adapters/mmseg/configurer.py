@@ -36,21 +36,12 @@ logger = get_logger()
 class SegmentationConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    def __init__(self) -> None:
-        self.task_adapt_type: Optional[str] = None
-        self.task_adapt_op: str = "REPLACE"
-        self.org_model_classes: List[str] = []
-        self.model_classes: List[str] = []
-        self.data_classes: List[str] = []
-        self.task: Optional[str] = "segmentation"
-
     # pylint: disable=too-many-arguments
     def configure(
         self,
         cfg: Config,
         model_ckpt: str,
         data_cfg: Config,
-        training: bool = True,
         subset: str = "train",
         ir_options: Optional[Config] = None,
         data_classes: Optional[List[str]] = None,
@@ -58,14 +49,14 @@ class SegmentationConfigurer(BaseConfigurer):
         input_size: InputSizePreset = InputSizePreset.DEFAULT,
     ) -> Config:
         """Create MMCV-consumable config from given inputs."""
-        logger.info(f"configure!: training={training}")
+        logger.info(f"configure!: training={self.training}")
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes)
-        self.configure_device(cfg, training)
+        self.configure_device(cfg)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_model(cfg, ir_options)
-        self.configure_data(cfg, training, data_cfg)
-        self.configure_task(cfg, training)
+        self.configure_data(cfg, data_cfg)
+        self.configure_task(cfg)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16(cfg)
@@ -80,10 +71,9 @@ class SegmentationConfigurer(BaseConfigurer):
     def configure_task(
         self,
         cfg: Config,
-        training: bool,
     ) -> None:
         """Patch config to support training algorithm."""
-        super().configure_task(cfg, training)
+        super().configure_task(cfg)
         if "task_adapt" in cfg:
             self.configure_decode_head(cfg)
 
@@ -215,9 +205,9 @@ class SegmentationConfigurer(BaseConfigurer):
 class IncrSegmentationConfigurer(SegmentationConfigurer):
     """Patch config to support incremental learning for semantic segmentation."""
 
-    def configure_task(self, cfg: ConfigDict, training: bool) -> None:
+    def configure_task(self, cfg: ConfigDict) -> None:
         """Patch config to support incremental learning."""
-        super().configure_task(cfg, training)
+        super().configure_task(cfg)
 
         # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
         if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
@@ -242,17 +232,17 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
 class SemiSLSegmentationConfigurer(SegmentationConfigurer):
     """Patch config to support semi supervised learning for semantic segmentation."""
 
-    def configure_data(self, cfg: ConfigDict, training: bool, data_cfg: ConfigDict) -> None:
+    def configure_data(self, cfg: ConfigDict, data_cfg: ConfigDict) -> None:
         """Patch cfg.data."""
-        super().configure_data(cfg, training, data_cfg)
+        super().configure_data(cfg, data_cfg)
         # Set unlabeled data hook
-        if training:
+        if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 self.configure_unlabeled_dataloader(cfg)
 
-    def configure_task(self, cfg: ConfigDict, training: bool, **kwargs: Any) -> None:
+    def configure_task(self, cfg: ConfigDict, **kwargs: Any) -> None:
         """Adjust settings for task adaptation."""
-        super().configure_task(cfg, training, **kwargs)
+        super().configure_task(cfg, **kwargs)
 
         # Remove task adapt hook (set default torch random sampler)
         remove_custom_hook(cfg, "TaskAdaptHook")

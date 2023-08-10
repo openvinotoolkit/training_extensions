@@ -163,16 +163,15 @@ class MMSegmentationTask(OTXSegmentationTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrSegmentationConfigurer()
+            configurer = IncrSegmentationConfigurer("segmentation", training)
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLSegmentationConfigurer()
+            configurer = SemiSLSegmentationConfigurer("segmentation", training)
         else:
-            configurer = SegmentationConfigurer()
+            configurer = SegmentationConfigurer("segmentation", training)
         cfg = configurer.configure(
             recipe_cfg,
             self._model_ckpt,
             self._data_cfg,
-            training,
             subset,
             ir_options,
             data_classes,

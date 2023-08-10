@@ -36,21 +36,12 @@ logger = get_logger()
 class ClassificationConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    def __init__(self):
-        self.task_adapt_type = None
-        self.task_adapt_op = "REPLACE"
-        self.org_model_classes = []
-        self.model_classes = []
-        self.data_classes = []
-        self.task = "classification"
-
     # pylint: disable=too-many-arguments
     def configure(
         self,
         cfg,
         model_ckpt,
         data_cfg,
-        training=True,
         subset="train",
         ir_options=None,
         data_classes=None,
@@ -59,14 +50,14 @@ class ClassificationConfigurer(BaseConfigurer):
         **kwargs,
     ):
         """Create MMCV-consumable config from given inputs."""
-        logger.info(f"configure!: training={training}")
+        logger.info(f"configure!: training={self.training}")
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes, **kwargs)
-        self.configure_device(cfg, training)
+        self.configure_device(cfg)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_model(cfg, ir_options)
-        self.configure_data(cfg, training, data_cfg)
-        self.configure_task(cfg, training)
+        self.configure_data(cfg, data_cfg)
+        self.configure_task(cfg)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16(cfg)
@@ -222,16 +213,16 @@ WEIGHT_MIX_CLASSIFIER = ["CustomImageClassifier"]
 class IncrClassificationConfigurer(ClassificationConfigurer):
     """Patch config to support incremental learning for classification."""
 
-    def configure_task(self, cfg, training):
+    def configure_task(self, cfg):
         """Patch config to support incremental learning."""
-        super().configure_task(cfg, training)
+        super().configure_task(cfg)
         if "task_adapt" in cfg and self.task_adapt_type == "mpa":
-            self.configure_task_adapt_hook(cfg, training)
+            self.configure_task_adapt_hook(cfg)
 
-    def configure_task_adapt_hook(self, cfg, training):
+    def configure_task_adapt_hook(self, cfg):
         """Add TaskAdaptHook for sampler."""
         train_data_cfg = self.get_data_cfg(cfg, "train")
-        if training:
+        if self.training:
             if train_data_cfg.type not in CLASS_INC_DATASET:
                 logger.warning(f"Class Incremental Learning for {train_data_cfg.type} is not yet supported!")
             if "new_classes" not in train_data_cfg:
@@ -294,11 +285,11 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
 class SemiSLClassificationConfigurer(ClassificationConfigurer):
     """Patch config to support semi supervised learning for classification."""
 
-    def configure_data(self, cfg, training, data_cfg):
+    def configure_data(self, cfg, data_cfg):
         """Patch cfg.data."""
-        super().configure_data(cfg, training, data_cfg)
+        super().configure_data(cfg, data_cfg)
         # Set unlabeled data hook
-        if training:
+        if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 self.configure_unlabeled_dataloader(cfg)
 

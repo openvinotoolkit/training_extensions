@@ -27,7 +27,7 @@ from tests.unit.algorithms.segmentation.test_helpers import (
 class TestSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = SegmentationConfigurer()
+        self.configurer = SegmentationConfigurer("segmentation", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
         data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
@@ -56,12 +56,12 @@ class TestSegmentationConfigurer:
 
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg)
-        returned_value = self.configurer.configure(model_cfg, "", data_cfg, True)
+        returned_value = self.configurer.configure(model_cfg, "", data_cfg)
         mock_cfg_base.assert_called_once_with(model_cfg, data_cfg, None, None)
-        mock_cfg_device.assert_called_once_with(model_cfg, True)
+        mock_cfg_device.assert_called_once_with(model_cfg)
         mock_cfg_model.assert_called_once_with(model_cfg, None)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
-        mock_cfg_task.assert_called_once_with(model_cfg, True)
+        mock_cfg_task.assert_called_once_with(model_cfg)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
         mock_cfg_fp16.assert_called_once_with(model_cfg)
@@ -84,7 +84,7 @@ class TestSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
-        self.configurer.configure_data(self.model_cfg, True, data_cfg)
+        self.configurer.configure_data(self.model_cfg, data_cfg)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
         assert self.model_cfg.data.val
@@ -94,7 +94,7 @@ class TestSegmentationConfigurer:
         model_cfg = copy.deepcopy(self.model_cfg)
         mock_cfg_classes = mocker.patch.object(SegmentationConfigurer, "configure_classes")
         mock_cfg_ignore = mocker.patch.object(SegmentationConfigurer, "configure_decode_head")
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg)
 
         mock_cfg_classes.assert_called_once()
         mock_cfg_ignore.assert_called_once()
@@ -151,7 +151,7 @@ class TestSegmentationConfigurer:
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
         origin_lr = config.optimizer.lr
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is True
         assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
 
@@ -164,7 +164,7 @@ class TestSegmentationConfigurer:
             return_value=False,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is False
         assert config.device == "cpu"
 
@@ -177,7 +177,7 @@ class TestSegmentationConfigurer:
             return_value=True,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is False
         assert config.device == "cuda"
 
@@ -250,7 +250,7 @@ class TestSegmentationConfigurer:
 class TestIncrSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = IncrSegmentationConfigurer()
+        self.configurer = IncrSegmentationConfigurer("segmentation", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
         data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
@@ -267,7 +267,7 @@ class TestIncrSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
         mocker.patch.object(SegmentationConfigurer, "configure_task")
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg)
         assert self.model_cfg.custom_hooks[3].type == "TaskAdaptHook"
         assert self.model_cfg.custom_hooks[3].sampler_flag is False
 
@@ -275,7 +275,7 @@ class TestIncrSegmentationConfigurer:
 class TestSemiSLSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = SemiSLSegmentationConfigurer()
+        self.configurer = SemiSLSegmentationConfigurer("segmentation", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
         data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
@@ -296,14 +296,14 @@ class TestSemiSLSegmentationConfigurer:
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
         mock_ul_dataloader = mocker.patch.object(SemiSLSegmentationConfigurer, "configure_unlabeled_dataloader")
-        self.configurer.configure_data(self.model_cfg, True, data_cfg)
+        self.configurer.configure_data(self.model_cfg, data_cfg)
         mock_ul_dataloader.assert_called_once()
 
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
         model_cfg = ConfigDict(dict(model=dict(type="", task_adapt=True)))
         mock_remove_hook = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.remove_custom_hook")
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg)
         mock_remove_hook.assert_called_once()
 
     @e2e_pytest_unit
@@ -313,7 +313,7 @@ class TestSemiSLSegmentationConfigurer:
         data_cfg.distributed = False
         mocker_build_dataset = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataset")
         mocker_build_dataloader = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataloader")
-        self.configurer.configure_data(self.model_cfg, True, data_cfg)
+        self.configurer.configure_data(self.model_cfg, data_cfg)
 
         mocker_build_dataset.assert_called_once()
         mocker_build_dataloader.assert_called_once()

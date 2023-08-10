@@ -25,9 +25,6 @@ runner = dict(type="EpochRunnerWithCancel", max_epochs=300)
 
 checkpoint_config = dict(by_epoch=True, interval=1)
 
-evaluation = dict(interval=1, metric="mDice", save_best="mDice", rule="greater", show_log=True)
-early_stop_metric = "mDice"
-
 seed = 42
 find_unused_parameters = False
 

@@ -29,13 +29,14 @@ logger = get_logger()
 class BaseConfigurer:
     """Base configurer class for mmcv configs."""
 
-    def __init__(self):
+    def __init__(self, task, training):
         self.task_adapt_type = None
         self.task_adapt_op = "REPLACE"
         self.org_model_classes = []
         self.model_classes = []
         self.data_classes = []
-        self.task = None
+        self.task = task
+        self.training = training
 
     def configure_base(self, cfg, data_cfg, data_classes, model_classes, **kwargs):
         """Basic configuration work for recipe.
@@ -62,12 +63,12 @@ class BaseConfigurer:
         """Patch for compatibilty with mmX config."""
         raise NotImplementedError
 
-    def configure_device(self, cfg, training):
+    def configure_device(self, cfg):
         """Setting device for training and inference."""
         cfg.distributed = False
         if torch.distributed.is_initialized():
             cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
-            if training:  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
+            if self.training:  # TODO multi GPU is available only in training. Evaluation needs to be supported later.
                 cfg.distributed = True
                 self.configure_distributed(cfg)
         elif "gpu_ids" not in cfg:
@@ -154,7 +155,7 @@ class BaseConfigurer:
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-    def configure_data(self, cfg, training, data_cfg):  # noqa: C901
+    def configure_data(self, cfg, data_cfg):  # noqa: C901
         """Patch cfg.data.
 
         Merge cfg and data_cfg
@@ -169,10 +170,10 @@ class BaseConfigurer:
                     for key in new_data_cfg:
                         src_data_cfg[key] = new_data_cfg[key]
 
-    def configure_task(self, cfg, training):
+    def configure_task(self, cfg):
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
-            logger.info(f"task config!!!!: training={training}")
+            logger.info(f"task config!!!!: training={self.training}")
             self.task_adapt_type = cfg["task_adapt"].get("type", None)
             self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
             self.configure_classes(cfg)

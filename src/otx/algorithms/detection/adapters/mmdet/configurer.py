@@ -34,14 +34,6 @@ logger = get_logger()
 class DetectionConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    def __init__(self):
-        self.task_adapt_type = None
-        self.task_adapt_op = "REPLACE"
-        self.org_model_classes = []
-        self.model_classes = []
-        self.data_classes = []
-        self.task = "detection"
-
     # pylint: disable=too-many-arguments
     def configure(
         self,
@@ -49,7 +41,6 @@ class DetectionConfigurer(BaseConfigurer):
         train_dataset,
         model_ckpt,
         data_cfg,
-        training=True,
         subset="train",
         ir_options=None,
         data_classes=None,
@@ -57,15 +48,15 @@ class DetectionConfigurer(BaseConfigurer):
         input_size: InputSizePreset = InputSizePreset.DEFAULT,
     ):
         """Create MMCV-consumable config from given inputs."""
-        logger.info(f"configure!: training={training}")
+        logger.info(f"configure!: training={self.training}")
 
         self.configure_base(cfg, data_cfg, data_classes, model_classes)
-        self.configure_device(cfg, training)
+        self.configure_device(cfg)
         self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
-        self.configure_data(cfg, training, data_cfg)
-        self.configure_regularization(cfg, training)
-        self.configure_task(cfg, train_dataset, training)
+        self.configure_data(cfg, data_cfg)
+        self.configure_regularization(cfg)
+        self.configure_task(cfg, train_dataset)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg, subset)
         self.configure_fp16(cfg)
@@ -79,9 +70,9 @@ class DetectionConfigurer(BaseConfigurer):
         patch_datasets(cfg, **options_for_patch_datasets)
         patch_evaluation(cfg)
 
-    def configure_regularization(self, cfg, training):  # noqa: C901
+    def configure_regularization(self, cfg):  # noqa: C901
         """Patch regularization parameters."""
-        if training:
+        if self.training:
             if cfg.model.get("l2sp_weight", 0.0) > 0.0:
                 logger.info("regularization config!!!!")
 
@@ -98,9 +89,9 @@ class DetectionConfigurer(BaseConfigurer):
                 if "weight_decay" in cfg.optimizer:
                     cfg.optimizer.weight_decay = 0.0
 
-    def configure_task(self, cfg, train_dataset, training):
+    def configure_task(self, cfg, train_dataset):
         """Patch config to support training algorithm."""
-        super().configure_task(cfg, training)
+        super().configure_task(cfg)
         if "task_adapt" in cfg:
             if self.data_classes != self.model_classes:
                 self.configure_task_data_pipeline(cfg)
@@ -277,9 +268,9 @@ class DetectionConfigurer(BaseConfigurer):
 class IncrDetectionConfigurer(DetectionConfigurer):
     """Patch config to support incremental learning for object detection."""
 
-    def configure_task(self, cfg, train_dataset, training):
+    def configure_task(self, cfg, train_dataset):
         """Patch config to support incremental learning."""
-        super().configure_task(cfg, train_dataset, training)
+        super().configure_task(cfg, train_dataset)
         if "task_adapt" in cfg and self.task_adapt_type == "mpa":
             self.configure_task_adapt_hook(cfg)
 
@@ -306,19 +297,19 @@ class IncrDetectionConfigurer(DetectionConfigurer):
 class SemiSLDetectionConfigurer(DetectionConfigurer):
     """Patch config to support semi supervised learning for object detection."""
 
-    def configure_data(self, cfg, training, data_cfg):
+    def configure_data(self, cfg, data_cfg):
         """Patch cfg.data."""
-        super().configure_data(cfg, training, data_cfg)
+        super().configure_data(cfg, data_cfg)
         # Set unlabeled data hook
-        if training:
+        if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 if len(cfg.data.unlabeled.get("pipeline", [])) == 0:
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
                 self.configure_unlabeled_dataloader(cfg)
 
-    def configure_task(self, cfg, train_dataset, training):
+    def configure_task(self, cfg, train_dataset):
         """Patch config to support training algorithm."""
-        logger.info(f"Semi-SL task config!!!!: training={training}")
+        logger.info(f"Semi-SL task config!!!!: training={self.training}")
         if "task_adapt" in cfg:
             self.task_adapt_type = cfg["task_adapt"].get("type", None)
             self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")

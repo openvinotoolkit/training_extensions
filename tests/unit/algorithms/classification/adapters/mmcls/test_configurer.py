@@ -21,7 +21,7 @@ from tests.unit.algorithms.classification.test_helper import DEFAULT_CLS_TEMPLAT
 class TestClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = ClassificationConfigurer()
+        self.configurer = ClassificationConfigurer("classification", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
@@ -56,13 +56,13 @@ class TestClassificationConfigurer:
 
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg)
-        returned_value = self.configurer.configure(model_cfg, "", data_cfg, True)
+        returned_value = self.configurer.configure(model_cfg, "", data_cfg)
         mock_cfg_base.assert_called_once_with(model_cfg, data_cfg, None, None)
-        mock_cfg_device.assert_called_once_with(model_cfg, True)
+        mock_cfg_device.assert_called_once_with(model_cfg)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_model.assert_called_once_with(model_cfg, None)
-        mock_cfg_data.assert_called_once_with(model_cfg, True, data_cfg)
-        mock_cfg_task.assert_called_once_with(model_cfg, True)
+        mock_cfg_data.assert_called_once_with(model_cfg, data_cfg)
+        mock_cfg_task.assert_called_once_with(model_cfg)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
         mock_cfg_fp16.assert_called_once_with(model_cfg)
@@ -90,7 +90,7 @@ class TestClassificationConfigurer:
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
         origin_lr = config.optimizer.lr
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is True
         assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
 
@@ -103,7 +103,7 @@ class TestClassificationConfigurer:
             return_value=False,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is False
         assert config.device == "cpu"
 
@@ -116,7 +116,7 @@ class TestClassificationConfigurer:
             return_value=True,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is False
         assert config.device == "cuda"
 
@@ -177,7 +177,7 @@ class TestClassificationConfigurer:
                 ],
             ),
         )
-        self.configurer.configure_data(self.model_cfg, True, data_cfg)
+        self.configurer.configure_data(self.model_cfg, data_cfg)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
         assert self.model_cfg.data.val
@@ -187,11 +187,11 @@ class TestClassificationConfigurer:
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.update(self.data_cfg)
         model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg)
 
         self.configurer.model_classes = []
         self.configurer.data_classes = ["red", "green"]
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg)
 
     @e2e_pytest_unit
     def test_configure_hook(self):
@@ -267,7 +267,7 @@ class TestClassificationConfigurer:
 class TestIncrClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = IncrClassificationConfigurer()
+        self.configurer = IncrClassificationConfigurer("classification", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
 
@@ -276,14 +276,14 @@ class TestIncrClassificationConfigurer:
         self.model_cfg.update(self.data_cfg)
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg)
         assert "TaskAdaptHook" in [i.type for i in self.model_cfg.custom_hooks]
 
 
 class TestSemiSLClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = SemiSLClassificationConfigurer()
+        self.configurer = SemiSLClassificationConfigurer("classification", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
 
@@ -295,12 +295,12 @@ class TestSemiSLClassificationConfigurer:
         self.model_cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
         self.model_cfg.model_task = "detection"
         self.model_cfg.distributed = False
-        self.configurer.configure_data(self.model_cfg, True, self.data_cfg)
+        self.configurer.configure_data(self.model_cfg, self.data_cfg)
 
     def test_configure_task(self):
         self.model_cfg.update(self.data_cfg)
         self.model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg)
 
         self.model_cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg)
