@@ -9,6 +9,7 @@ from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.task_adapt import unwrap_dataset
 
 logger = get_logger()
 
@@ -50,7 +51,8 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         coef: float = -0.7,
         min_repeat: float = 1.0,
     ):
-        self.dataset = dataset
+        
+        self.dataset, _ = unwrap_dataset(dataset)
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
