@@ -348,7 +348,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         annotations = [
             Annotation(
                 Rectangle.generate_full_box(),
-                labels=[ScoredLabel(label=label, probability=predictions.pred_score)],
+                labels=[ScoredLabel(label=label, probability=float(predictions.pred_score))],
             )
         ]
         return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
