@@ -30,7 +30,6 @@ from anomalib.deploy import OpenVINOInferencer
 from nncf.common.quantization.structs import QuantizationPreset
 from omegaconf import OmegaConf
 
-import otx.algorithms.anomaly.adapters.anomalib.exportable_code
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
@@ -380,9 +379,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             raise Exception("task_environment.model is None. Cannot get configuration.")
 
         configuration = {
-            "metadata": self.get_metadata(),
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
-            "threshold": 0.5,
         }
 
         if "transforms" not in self.config.keys():
@@ -413,7 +410,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
         task_type = str(self.task_type).lower()
 
-        parameters["type_of_model"] = task_type
+        parameters["type_of_model"] = "AnomalyDetection"
         parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()
         zip_buffer = io.BytesIO()
@@ -422,17 +419,6 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
-            # model_wrappers files
-            for root, _, files in os.walk(
-                os.path.dirname(otx.algorithms.anomaly.adapters.anomalib.exportable_code.__file__)
-            ):
-                if "__pycache__" in root:
-                    continue
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arch.write(
-                        file_path, os.path.join("python", "model_wrappers", file_path.split("exportable_code/")[1])
-                    )
             # other python files
             arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
