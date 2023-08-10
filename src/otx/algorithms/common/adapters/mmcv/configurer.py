@@ -163,12 +163,14 @@ class BaseConfigurer:
 
         logger.info("configure_data()")
         if data_cfg:
-            for subset in cfg.data:
-                if subset in data_cfg.data:
+            for subset in data_cfg.data:
+                if subset in cfg.data:
                     src_data_cfg = self.get_data_cfg(cfg, subset)
                     new_data_cfg = self.get_data_cfg(data_cfg, subset)
                     for key in new_data_cfg:
                         src_data_cfg[key] = new_data_cfg[key]
+                else:
+                    raise Exception(f"{subset} of data_cfg is not in cfg")
 
     def configure_task(self, cfg):
         """Patch config to support training algorithm."""
