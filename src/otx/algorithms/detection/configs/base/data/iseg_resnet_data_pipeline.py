@@ -61,26 +61,18 @@ test_pipeline = [
 __dataset_type = "OTXDetDataset"
 
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
     train=dict(
         type=__dataset_type,
-        ann_file="data/coco/annotations/instances_train2017.json",
-        img_prefix="data/coco/train2017",
         pipeline=train_pipeline,
     ),
     val=dict(
         type=__dataset_type,
         test_mode=True,
-        ann_file="data/coco/annotations/instances_val2017.json",
-        img_prefix="data/coco/val2017",
         pipeline=test_pipeline,
     ),
     test=dict(
         type=__dataset_type,
         test_mode=True,
-        ann_file="data/coco/annotations/instances_val2017.json",
-        img_prefix="data/coco/val2017",
         pipeline=test_pipeline,
     ),
 )

@@ -156,25 +156,6 @@ class TestDetectionConfigurer:
     @e2e_pytest_unit
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
-        data_cfg.data.pipeline_options = dict(
-            MinIouRandomCrop=dict(min_crop_size=0.1),
-            Resize=dict(
-                img_scale=[(1344, 480), (1344, 960)],
-                multiscale_mode="range",
-            ),
-            Normalize=dict(),
-            MultiScaleFlipAug=dict(
-                img_scale=(1344, 800),
-                flip=False,
-                transforms=[
-                    dict(type="Resize", keep_ratio=False),
-                    dict(type="Normalize"),
-                    dict(type="Pad", size_divisor=32),
-                    dict(type="ImageToTensor", keys=["img"]),
-                    dict(type="Collect", keys=["img"]),
-                ],
-            ),
-        )
         self.configurer.configure_data(self.model_cfg, data_cfg)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
@@ -222,6 +203,7 @@ class TestDetectionConfigurer:
     @e2e_pytest_unit
     def test_configure_samples_per_gpu(self):
         model_cfg = copy.deepcopy(self.model_cfg)
+        model_cfg.data.train_dataloader = ConfigDict({"samples_per_gpu": 2})
         model_cfg.data.train.otx_dataset = range(1)
         self.configurer.configure_samples_per_gpu(model_cfg)
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}

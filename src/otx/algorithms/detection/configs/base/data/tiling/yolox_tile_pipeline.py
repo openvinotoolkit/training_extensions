@@ -7,8 +7,6 @@
 
 # NOTE: SKIP MOSAIC AND MultiImageMixDataset in tiling
 
-dataset_type = "OTXDetDataset"
-
 img_scale = (640, 640)
 
 tile_cfg = dict(
@@ -65,16 +63,11 @@ test_pipeline = [
 ]
 
 __dataset_type = "OTXDetDataset"
-__data_root = "data/coco/"
-
-__samples_per_gpu = 2
 
 train_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_train.json",
-        img_prefix=__data_root + "images/train",
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
             dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
@@ -88,8 +81,6 @@ val_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_val.json",
-        img_prefix=__data_root + "images/val",
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
             dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
@@ -103,8 +94,6 @@ test_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_test.json",
-        img_prefix=__data_root + "images/test",
         test_mode=True,
         pipeline=[dict(type="LoadImageFromOTXDataset")],
     ),
@@ -113,6 +102,4 @@ test_dataset = dict(
 )
 
 
-data = dict(
-    samples_per_gpu=__samples_per_gpu, workers_per_gpu=4, train=train_dataset, val=val_dataset, test=test_dataset
-)
+data = dict(train=train_dataset, val=val_dataset, test=test_dataset)

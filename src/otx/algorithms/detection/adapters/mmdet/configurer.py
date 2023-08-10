@@ -242,24 +242,6 @@ class SemiSLDetectionConfigurer(DetectionConfigurer):
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
                 self.configure_unlabeled_dataloader(cfg)
 
-    def configure_task(self, cfg, train_dataset):
-        """Patch config to support training algorithm."""
-        logger.info(f"Semi-SL task config!!!!: training={self.training}")
-        if "task_adapt" in cfg:
-            self.task_adapt_type = cfg["task_adapt"].get("type", None)
-            self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
-            self.configure_classes(cfg)
-
-            if self.data_classes != self.model_classes:
-                self.configure_task_data_pipeline(cfg)
-            if cfg["task_adapt"].get("use_mpa_anchor", False):
-                self.configure_anchor(cfg, train_dataset)
-            if self.task_adapt_type == "mpa":
-                self.configure_bbox_head(cfg)
-            else:
-                src_data_cfg = self.get_data_cfg(cfg, "train")
-                src_data_cfg.pop("old_new_indices", None)
-
     @staticmethod
     def configure_unlabeled_dataloader(cfg: Config):
         """Patch for unlabled dataloader."""

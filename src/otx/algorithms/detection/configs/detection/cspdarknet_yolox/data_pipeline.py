@@ -75,18 +75,12 @@ test_pipeline = [
 ]
 
 __dataset_type = "OTXDetDataset"
-__data_root = "data/coco/"
-__samples_per_gpu = 2
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu,
-    workers_per_gpu=4,
     train=dict(
         type="MultiImageMixDataset",
         dataset=dict(
             type=__dataset_type,
-            ann_file=__data_root + "annotations/instances_train2017.json",
-            img_prefix=__data_root + "train2017/",
             pipeline=[
                 dict(type="LoadImageFromOTXDataset", to_float32=False, enable_memcache=True),
                 dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
@@ -96,15 +90,11 @@ data = dict(
     ),
     val=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_val2017.json",
-        img_prefix=__data_root + "val2017/",
         test_mode=True,
         pipeline=test_pipeline,
     ),
     test=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_val2017.json",
-        img_prefix=__data_root + "val2017/",
         test_mode=True,
         pipeline=test_pipeline,
     ),

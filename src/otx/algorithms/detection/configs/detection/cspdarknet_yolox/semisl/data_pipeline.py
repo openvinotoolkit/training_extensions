@@ -158,8 +158,6 @@ test_pipeline = [
     ),
 ]
 data = dict(
-    samples_per_gpu=10,
-    workers_per_gpu=2,
     train=dict(
         type="OTXDetDataset",
         pipeline=train_pipeline,

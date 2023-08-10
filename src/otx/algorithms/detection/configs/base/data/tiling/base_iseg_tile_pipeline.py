@@ -5,8 +5,6 @@
 
 # pylint: disable=invalid-name
 
-dataset_type = "OTXDetDataset"
-
 img_size = (512, 512)
 
 tile_cfg = dict(
@@ -55,16 +53,11 @@ test_pipeline = [
 ]
 
 __dataset_type = "OTXDetDataset"
-__data_root = "data/coco/"
-
-__samples_per_gpu = 4
 
 train_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_train.json",
-        img_prefix=__data_root + "images/train",
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
             dict(type="LoadAnnotationFromOTXDataset", domain="instance_segmentation", with_bbox=True, with_mask=True),
@@ -78,8 +71,6 @@ val_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_val.json",
-        img_prefix=__data_root + "images/val",
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
             dict(type="LoadAnnotationFromOTXDataset", domain="instance_segmentation", with_bbox=True, with_mask=True),
@@ -93,8 +84,6 @@ test_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_test.json",
-        img_prefix=__data_root + "images/test",
         test_mode=True,
         pipeline=[dict(type="LoadImageFromOTXDataset")],
     ),
@@ -103,6 +92,4 @@ test_dataset = dict(
 )
 
 
-data = dict(
-    samples_per_gpu=__samples_per_gpu, workers_per_gpu=2, train=train_dataset, val=val_dataset, test=test_dataset
-)
+data = dict(train=train_dataset, val=val_dataset, test=test_dataset)
