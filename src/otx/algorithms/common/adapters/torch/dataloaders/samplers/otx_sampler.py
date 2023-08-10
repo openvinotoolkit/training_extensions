@@ -51,7 +51,7 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         coef: float = -0.7,
         min_repeat: float = 1.0,
     ):
-        
+
         self.dataset, _ = unwrap_dataset(dataset)
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
