@@ -7,7 +7,7 @@
 
 dataset_type = "OTXDetDataset"
 
-img_size = (1024, 1024)
+img_size = (512, 512)
 
 tile_cfg = dict(
     tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True

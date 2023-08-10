@@ -2,15 +2,11 @@
 # Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
-
 from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     InputSizeManager,
     get_configs_by_pairs,
-    get_dataset_configs,
-    patch_color_conversion,
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -21,7 +17,6 @@ from otx.algorithms.detection.utils.data import (
     get_sizes_from_dataset_entity,
 )
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
-from otx.api.entities.label import Domain
 from otx.api.entities.subset import Subset
 
 try:
@@ -35,34 +30,6 @@ except ImportError:
 
 
 logger = get_logger()
-
-
-def patch_datasets(
-    config: Config,
-    domain: Domain = Domain.DETECTION,
-    subsets: Optional[List[str]] = None,
-    **kwargs,
-):
-    """Update dataset configs."""
-    assert "data" in config
-    assert "type" in kwargs
-
-    # This code is for nncf, if we don't consider nncf, this code could be
-    # domain = config.get("domain", Domain.DETECTION)
-    domain = config.get("domain", domain)
-
-    if subsets is None:
-        subsets = ["train", "val", "test", "unlabeled"]
-
-    for subset in subsets:
-        if subset not in config.data:
-            continue
-
-        cfgs = get_dataset_configs(config, subset)
-        for cfg in cfgs:
-            cfg.domain = domain
-
-    patch_color_conversion(config)
 
 
 def should_cluster_anchors(model_cfg: Config):

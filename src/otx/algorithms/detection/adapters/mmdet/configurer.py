@@ -16,13 +16,13 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
     get_configured_input_size,
+    patch_color_conversion,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
-    patch_datasets,
     should_cluster_anchors,
 )
 
@@ -64,8 +64,7 @@ class DetectionConfigurer(BaseConfigurer):
 
     def configure_compatibility(self, cfg, **kwargs):
         """Configure for OTX compatibility with mmdet."""
-        options_for_patch_datasets = {"type": "OTXDetDataset"}
-        patch_datasets(cfg, **options_for_patch_datasets)
+        patch_color_conversion(cfg)
 
     def configure_regularization(self, cfg):  # noqa: C901
         """Patch regularization parameters."""
