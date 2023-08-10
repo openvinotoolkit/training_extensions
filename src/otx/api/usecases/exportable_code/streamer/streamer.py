@@ -161,7 +161,7 @@ class VideoStreamer(BaseStreamer):
         while True:
             status, image = self.cap.read()
             if status:
-                yield image
+                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             else:
                 if self.loop:
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -211,6 +211,7 @@ class CameraStreamer(BaseStreamer):
             frame_available, frame = self.stream.read()
             if not frame_available:
                 break
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             yield frame
 
         self.stream.release()
@@ -242,6 +243,7 @@ class ImageStreamer(BaseStreamer):
         self.image = cv2.imread(input_path, cv2.IMREAD_COLOR)
         if self.image is None:
             raise OpenError(f"Can't open the image from {input_path}")
+        self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
     def __iter__(self) -> Iterator[np.ndarray]:
         """If loop is True, yield the image again and again."""
@@ -299,7 +301,7 @@ class DirStreamer(BaseStreamer):
             else:
                 self.file_id = self.file_id + 1 if not self.loop else 0
             if image is not None:
-                yield image
+                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     def get_type(self) -> MediaType:
         """Returns the type of the streamer."""
