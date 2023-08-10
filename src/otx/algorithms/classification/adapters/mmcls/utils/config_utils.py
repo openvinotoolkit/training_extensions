@@ -23,14 +23,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_color_conversion,
 )
 from otx.algorithms.common.utils.logger import get_logger
-from otx.api.entities.label import Domain
 
 logger = get_logger()
 
 
 def patch_datasets(
     config: Config,
-    domain: Domain = Domain.CLASSIFICATION,
     subsets: List[str] = ["train", "val", "test", "unlabeled"],
     **kwargs,
 ):
