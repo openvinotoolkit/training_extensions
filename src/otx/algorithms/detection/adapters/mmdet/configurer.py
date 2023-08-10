@@ -171,7 +171,7 @@ class DetectionConfigurer(BaseConfigurer):
                 use_sigmoid=True,
                 num_classes=len(self.model_classes),
                 alpha=bbox_head.loss_cls.get("alpha", 0.25),
-                gamma=bbox_head.loss_csl.get("gamma", 2.0),
+                gamma=bbox_head.loss_cls.get("gamma", 2.0),
             )
 
     @staticmethod

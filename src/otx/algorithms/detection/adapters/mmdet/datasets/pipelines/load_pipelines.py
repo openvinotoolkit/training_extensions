@@ -48,15 +48,20 @@ class LoadAnnotationFromOTXDataset:
         with_seg: bool = False,
         poly2mask: bool = True,
         with_text: bool = False,
-        domain: Optional[Domain] = None,
+        domain: Optional[str] = "detection",
     ):
+        self._domain_dict = {
+            "detection": Domain.DETECTION,
+            "instance_segmentation": Domain.INSTANCE_SEGMENTATION,
+            "rotated_detection": Domain.ROTATED_DETECTION,
+        }
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
         self.poly2mask = poly2mask
         self.with_text = with_text
-        self.domain = domain
+        self.domain = self._domain_dict[domain]
         self.min_size = min_size
 
     @staticmethod

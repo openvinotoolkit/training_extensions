@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-dataset_type = "CocoDataset"
+dataset_type = "OTXDetDataset"
 
 img_size = (864, 864)
 
@@ -31,7 +31,21 @@ train_pipeline = [
     dict(type="Normalize", **img_norm_cfg),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_bboxes", "gt_labels"],
+        meta_keys=[
+            "filename",
+            "ori_filename",
+            "ori_shape",
+            "img_shape",
+            "pad_shape",
+            "scale_factor",
+            "flip",
+            "flip_direction",
+            "img_norm_cfg",
+        ],
+    ),
 ]
 
 test_pipeline = [
@@ -48,7 +62,7 @@ test_pipeline = [
     )
 ]
 
-__dataset_type = "CocoDataset"
+__dataset_type = "OTXDetDataset"
 __data_root = "data/coco/"
 
 __samples_per_gpu = 10
@@ -61,8 +75,8 @@ train_dataset = dict(
         ann_file=__data_root + "annotations/instances_train.json",
         img_prefix=__data_root + "images/train",
         pipeline=[
-            dict(type="LoadImageFromFile"),
-            dict(type="LoadAnnotations", with_bbox=True),
+            dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
         ],
     ),
     pipeline=train_pipeline,
@@ -76,8 +90,8 @@ val_dataset = dict(
         ann_file=__data_root + "annotations/instances_val.json",
         img_prefix=__data_root + "images/val",
         pipeline=[
-            dict(type="LoadImageFromFile"),
-            dict(type="LoadAnnotations", with_bbox=True),
+            dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
         ],
     ),
     pipeline=test_pipeline,
@@ -91,7 +105,7 @@ test_dataset = dict(
         ann_file=__data_root + "annotations/instances_test.json",
         img_prefix=__data_root + "images/test",
         test_mode=True,
-        pipeline=[dict(type="LoadImageFromFile")],
+        pipeline=[dict(type="LoadImageFromOTXDataset")],
     ),
     pipeline=test_pipeline,
     **tile_cfg

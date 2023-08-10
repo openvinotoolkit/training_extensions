@@ -1,11 +1,11 @@
-"""Data Pipeline of ConvNeXt model for Instance-Seg Task."""
+"""Data Pipeline of Resnet model for Instance-Seg Task."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=invalid-name
 
-__img_size = (1024, 1024)
+__img_size = (1344, 800)
 
 # TODO: A comparison experiment is needed to determine which value is appropriate for to_rgb.
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -61,7 +61,7 @@ test_pipeline = [
 __dataset_type = "OTXDetDataset"
 
 data = dict(
-    samples_per_gpu=2,
+    samples_per_gpu=4,
     workers_per_gpu=2,
     train=dict(
         type=__dataset_type,

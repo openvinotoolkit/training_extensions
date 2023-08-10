@@ -1,50 +1,29 @@
-"""Tiling Pipeline of YOLOX model for Detection Task."""
+"""Tiling Pipeline of EfficientNetB2B model."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=invalid-name
 
-# NOTE: SKIP MOSAIC AND MultiImageMixDataset in tiling
-
 dataset_type = "OTXDetDataset"
 
-img_scale = (640, 640)
+img_size = (1024, 1024)
 
 tile_cfg = dict(
     tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
 )
 
-img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=True)
 
 train_pipeline = [
-    dict(type="RandomAffine", scaling_ratio_range=(0.5, 1.5), border=(-img_scale[0] // 2, -img_scale[1] // 2)),
-    dict(
-        type="PhotoMetricDistortion",
-        brightness_delta=32,
-        contrast_range=(0.5, 1.5),
-        saturation_range=(0.5, 1.5),
-        hue_delta=18,
-    ),
+    dict(type="Resize", img_scale=img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
-    dict(type="Resize", img_scale=img_scale, keep_ratio=False),
-    dict(type="Pad", pad_to_square=True, pad_val=114.0),
     dict(type="Normalize", **img_norm_cfg),
+    dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
     dict(
         type="Collect",
-        keys=["img", "gt_bboxes", "gt_labels"],
+        keys=["img", "gt_bboxes", "gt_labels", "gt_masks"],
         meta_keys=[
             "filename",
             "ori_filename",
@@ -62,13 +41,13 @@ train_pipeline = [
 test_pipeline = [
     dict(
         type="MultiScaleFlipAug",
-        img_scale=(416, 416),
+        img_scale=img_size,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),
             dict(type="RandomFlip"),
-            dict(type="Pad", size=(416, 416), pad_val=114.0),
             dict(type="Normalize", **img_norm_cfg),
+            dict(type="Pad", size_divisor=32),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),
         ],
@@ -78,7 +57,7 @@ test_pipeline = [
 __dataset_type = "OTXDetDataset"
 __data_root = "data/coco/"
 
-__samples_per_gpu = 2
+__samples_per_gpu = 4
 
 train_dataset = dict(
     type="ImageTilingDataset",
@@ -88,7 +67,7 @@ train_dataset = dict(
         img_prefix=__data_root + "images/train",
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+            dict(type="LoadAnnotationFromOTXDataset", domain="instance_segmentation", with_bbox=True, with_mask=True),
         ],
     ),
     pipeline=train_pipeline,
@@ -103,7 +82,7 @@ val_dataset = dict(
         img_prefix=__data_root + "images/val",
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+            dict(type="LoadAnnotationFromOTXDataset", domain="instance_segmentation", with_bbox=True, with_mask=True),
         ],
     ),
     pipeline=test_pipeline,
@@ -125,5 +104,5 @@ test_dataset = dict(
 
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu, workers_per_gpu=4, train=train_dataset, val=val_dataset, test=test_dataset
+    samples_per_gpu=__samples_per_gpu, workers_per_gpu=2, train=train_dataset, val=val_dataset, test=test_dataset
 )

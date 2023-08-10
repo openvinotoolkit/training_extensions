@@ -16,13 +16,13 @@
 
 # pylint: disable=invalid-name
 
-__dataset_type = "CocoDataset"
+__dataset_type = "OTXDetDataset"
 __img_size = (864, 864)
 __img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 
 train_pipeline = [
-    dict(type="LoadImageFromFile", to_float32=True),
-    dict(type="LoadAnnotations", with_bbox=True),
+    dict(type="LoadImageFromOTXDataset", to_float32=True, enable_memcache=True),
+    dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
     dict(
         type="PhotoMetricDistortion",
         brightness_delta=32,
@@ -35,10 +35,26 @@ train_pipeline = [
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_bboxes", "gt_labels"],
+        meta_keys=[
+            "ori_filename",
+            "flip_direction",
+            "scale_factor",
+            "img_norm_cfg",
+            "gt_ann_ids",
+            "flip",
+            "ignored_labels",
+            "ori_shape",
+            "filename",
+            "img_shape",
+            "pad_shape",
+        ],
+    ),
 ]
 test_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
         img_scale=__img_size,

@@ -10,7 +10,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     InputSizeManager,
     get_configs_by_pairs,
     get_dataset_configs,
-    get_meta_keys,
     patch_color_conversion,
 )
 from otx.algorithms.common.utils.logger import get_logger
@@ -55,18 +54,6 @@ def patch_datasets(
     if subsets is None:
         subsets = ["train", "val", "test", "unlabeled"]
 
-    def update_pipeline(cfg, subset):
-        if subset == "train":
-            for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
-                get_meta_keys(collect_cfg, ["gt_ann_ids"])
-        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
-            cfg_.type = "LoadImageFromOTXDataset"
-            if subset != "test":
-                cfg_.enable_memcache = True
-        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
-            cfg_.type = "LoadAnnotationFromOTXDataset"
-            cfg_.domain = domain
-
     for subset in subsets:
         if subset not in config.data:
             continue
@@ -74,8 +61,6 @@ def patch_datasets(
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
             cfg.domain = domain
-
-            update_pipeline(cfg, subset)
 
     patch_color_conversion(config)
 
