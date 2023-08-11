@@ -651,6 +651,7 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
             sampler_type=sampler_type,
             efficient_mode=efficient_mode,
             use_adaptive_repeat=True if is_multiclass else False,
+            priority="NORMAL",
         )
         update_or_add_custom_hook(cfg, task_adapt_hook)
 

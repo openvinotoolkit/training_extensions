@@ -18,4 +18,4 @@ model = dict(
 
 fp16 = dict(loss_scale=512.0)
 
-custom_hooks = [dict(type="AdaptiveRepeatDataHook")]
+custom_hooks = [dict(type="AdaptiveRepeatDataHook", priority="ABOVE_NORMAL")]

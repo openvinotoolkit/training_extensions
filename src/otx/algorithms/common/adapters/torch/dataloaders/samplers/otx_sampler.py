@@ -22,7 +22,7 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     OTXSampler repeats the dataset to enlarge the iterations per epoch.
 
     In the large dataset, the useful information is not totally linear relationship with the number of datasets.
-    It closes to the log scale relationship, rather.
+    It is close to the log scale relationship, rather.
 
     So, this sampler samples or repeats the datasets acoording to the statistics of dataset.
 
@@ -37,7 +37,8 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             By default, :attr:`rank` is retrieved from the current distributed
             group.
         shuffle (bool, optional): Flag about shuffling
-        seed (int, optional): controls the randomness
+        coef (int, optional): controls the repeat value
+        min_repeat (float, optional): minimum value of the repeat dataset
     """
 
     def __init__(
@@ -59,7 +60,7 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         self.shuffle = shuffle
         self.repeat = self._get_proper_repeats(use_adaptive_repeats, coef, min_repeat)
 
-        self.num_samples = int(math.ceil(len(self.dataset) * self.repeat / self.num_replicas))
+        self.num_samples = math.ceil(len(self.dataset) * self.repeat / self.num_replicas)
         self.total_size = self.num_samples * self.num_replicas
 
     def _get_proper_repeats(self, use_adaptive_repeats: bool, coef: float, min_repeat: float):

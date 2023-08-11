@@ -20,4 +20,4 @@ model = dict(
     ),
 )
 
-custom_hooks = [dict(type="AdaptiveRepeatDataHook")]
+custom_hooks = [dict(type="AdaptiveRepeatDataHook", priority="ABOVE_NORMAL")]

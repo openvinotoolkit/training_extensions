@@ -17,9 +17,9 @@ class AdaptiveRepeatDataHook(Hook):
     """Hook that adaptively repeats the dataset to control the number of iterations.
 
     Args:
-        coef (float) : coefficient that effects to number of repeats
+        coef (float, optional) : coefficient that effects to number of repeats
                        (coef * math.sqrt(num_iters-1)) +5
-        min_repeat (float) : minimum repeats
+        min_repeat (float, optional) : minimum repeats
     """
 
     def __init__(self, coef: float = -0.7, min_repeat: float = 1.0):
