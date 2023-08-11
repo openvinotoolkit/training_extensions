@@ -61,7 +61,7 @@ class LoadAnnotationFromOTXDataset:
         self.with_seg = with_seg
         self.poly2mask = poly2mask
         self.with_text = with_text
-        self.domain = self._domain_dict[domain]
+        self.domain = self._domain_dict[domain.lower()]
         self.min_size = min_size
 
     @staticmethod
