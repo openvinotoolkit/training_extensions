@@ -19,13 +19,13 @@ You can use this feature using the following command:
 
 The available input sizes are currently as follows:
 
-64x64 (exclusively for classification)
-128x128 (exclusively for classificatio)
-256x256
-384x384
-512x512
-1024x1024
+- 64x64 (exclusively for classification)
+- 128x128 (exclusively for classificatio)
+- 256x256
+- 384x384
+- 512x512
+- 1024x1024
 
 .. Note::
-    Using smaller input resolutions with datasets having lower image resolutions or larger objects can yield a speed advantage with minimal impact on model performance.
-    But please note that the choice of small input size can potentially influence model performance based on the task, model architecture, and dataset characteristics.
+    Using smaller input size with datasets having lower image resolutions or larger objects can yield a speed advantage with minimal impact on model performance.
+    But note that the choice of small input size can potentially influence model performance based on the task, model architecture, and dataset characteristics.
