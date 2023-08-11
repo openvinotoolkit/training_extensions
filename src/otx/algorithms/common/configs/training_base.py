@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme
+from .configuration_enums import BatchSizeAdaptType, InputSizePreset, POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
@@ -198,6 +198,17 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        input_size = selectable(
+            default_value=InputSizePreset.DEFAULT,
+            header="Configure model input size.",
+            description="The input size of the given model could be configured to one of the predefined resolutions."
+            "Reduced training and inference time could be expected by using smaller input size."
+            "Defaults to per-model default resolution.",
+            warning="Modifying input size may decrease model performance.",
+            affects_outcome_of=ModelLifecycle.NONE,
+            visible_in_ui=False,
+        )
+
     @attrs
     class BasePostprocessing(ParameterGroup):
         """BasePostprocessing for OTX Algorithms."""
@@ -268,7 +279,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize,
+            max_value=100000,
         )
 
         stat_requests_number = configurable_integer(
@@ -276,7 +287,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of requests during statistics collection",
             default_value=0,
             min_value=0,
-            max_value=maxsize,
+            max_value=200,
         )
 
         preset = selectable(

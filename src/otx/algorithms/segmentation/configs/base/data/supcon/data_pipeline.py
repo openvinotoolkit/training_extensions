@@ -21,8 +21,8 @@ __img_scale = (544, 544)
 __resize_target_size = (512, 512)
 
 __train_pipeline = [
-    dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations"),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(type="LoadAnnotationFromOTXDataset"),
     dict(
         type="TwoCropTransform",
         view0=[
@@ -62,11 +62,26 @@ __train_pipeline = [
         ],
     ),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_semantic_seg"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_semantic_seg"],
+        meta_keys=[
+            "ori_shape",
+            "pad_shape",
+            "ori_filename",
+            "filename",
+            "scale_factor",
+            "flip",
+            "img_norm_cfg",
+            "flip_direction",
+            "ignored_labels",
+            "img_shape",
+        ],
+    ),
 ]
 
 __test_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
         img_scale=__img_scale,
@@ -76,15 +91,16 @@ __test_pipeline = [
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
-            dict(type="Collect", keys=["img"]),
+            dict(
+                type="Collect",
+                keys=["img"],
+            ),
         ],
     ),
 ]
 
-# TODO (Sungchul, Soobee) : Remove Repeatdataset in data config
-# when src/otx/algorithms/segmentation/configs/base/data/data_pipeline.py is updated.
 data = dict(
-    train=dict(dataset=dict(pipeline=__train_pipeline)),
-    val=dict(pipeline=__test_pipeline),
-    test=dict(pipeline=__test_pipeline),
+    train=dict(type="MPASegDataset", pipeline=__train_pipeline),
+    val=dict(type="MPASegDataset", pipeline=__test_pipeline),
+    test=dict(type="MPASegDataset", pipeline=__test_pipeline),
 )

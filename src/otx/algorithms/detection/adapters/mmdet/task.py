@@ -192,21 +192,21 @@ class MMDetectionTask(OTXDetectionTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrDetectionConfigurer()
+            configurer = IncrDetectionConfigurer("detection", training)
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLDetectionConfigurer()
+            configurer = SemiSLDetectionConfigurer("detection", training)
         else:
-            configurer = DetectionConfigurer()
+            configurer = DetectionConfigurer("detection", training)
         cfg = configurer.configure(
             recipe_cfg,
             train_dataset,
             self._model_ckpt,
             self._data_cfg,
-            training,
             subset,
             ir_options,
             data_classes,
             model_classes,
+            self._hyperparams.learning_parameters.input_size,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
@@ -214,6 +214,7 @@ class MMDetectionTask(OTXDetectionTask):
             elif self._anchors is not None:
                 self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
+
         return cfg
 
     # pylint: disable=too-many-branches, too-many-statements

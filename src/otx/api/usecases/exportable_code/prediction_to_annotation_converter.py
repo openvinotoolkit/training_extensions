@@ -10,7 +10,12 @@ from typing import Any, Dict, List, Optional, Union
 import cv2
 import numpy as np
 from openvino.model_api.models import utils
-from openvino.model_api.models.utils import ClassificationResult, InstanceSegmentationResult, DetectionResult
+from openvino.model_api.models.utils import (
+    ClassificationResult,
+    ImageResultWithSoftPrediction,
+    InstanceSegmentationResult,
+    DetectionResult,
+)
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -250,7 +255,9 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
         labels = label_schema.get_labels(include_empty=False)
         self.label_map = dict(enumerate(labels, 1))
 
-    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+    def convert_to_annotation(
+        self, predictions: ImageResultWithSoftPrediction, metadata: Optional[Dict[str, Any]] = None
+    ) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
@@ -260,10 +267,9 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
-        soft_prediction = metadata.get("soft_prediction", np.ones(predictions.shape))
         annotations = create_annotation_from_segmentation_map(
-            hard_prediction=predictions,
-            soft_prediction=soft_prediction,
+            hard_prediction=predictions.resultImage,
+            soft_prediction=predictions.soft_prediction,
             label_map=self.label_map,
         )
 

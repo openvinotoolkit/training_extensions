@@ -3,6 +3,7 @@ import os
 
 import pytest
 import tempfile
+from mmcv.runner import CheckpointLoader
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
@@ -12,6 +13,7 @@ from otx.algorithms.classification.adapters.mmcls.configurer import (
     IncrClassificationConfigurer,
     SemiSLClassificationConfigurer,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import DEFAULT_CLS_TEMPLATE_DIR
 
@@ -19,9 +21,19 @@ from tests.unit.algorithms.classification.test_helper import DEFAULT_CLS_TEMPLAT
 class TestClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = ClassificationConfigurer()
+        self.configurer = ClassificationConfigurer("classification", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
+        self.data_cfg = MPAConfig(
+            {
+                "data": {
+                    "train": {"otx_dataset": [], "labels": []},
+                    "val": {"otx_dataset": [], "labels": []},
+                    "test": {"otx_dataset": [], "labels": []},
+                }
+            }
+        )
 
         self.multilabel_model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_multilabel.py"))
         self.hierarchical_model_cfg = MPAConfig.fromfile(
@@ -38,39 +50,28 @@ class TestClassificationConfigurer:
         mock_cfg_task = mocker.patch.object(ClassificationConfigurer, "configure_task")
         mock_cfg_hook = mocker.patch.object(ClassificationConfigurer, "configure_hook")
         mock_cfg_gpu = mocker.patch.object(ClassificationConfigurer, "configure_samples_per_gpu")
-        mock_cfg_fp16_optimizer = mocker.patch.object(ClassificationConfigurer, "configure_fp16_optimizer")
+        mock_cfg_fp16 = mocker.patch.object(ClassificationConfigurer, "configure_fp16")
         mock_cfg_compat_cfg = mocker.patch.object(ClassificationConfigurer, "configure_compat_cfg")
+        mock_cfg_input_size = mocker.patch.object(ClassificationConfigurer, "configure_input_size")
 
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg)
-        returned_value = self.configurer.configure(model_cfg, "", data_cfg, True)
+        returned_value = self.configurer.configure(model_cfg, "", data_cfg)
         mock_cfg_base.assert_called_once_with(model_cfg, data_cfg, None, None)
-        mock_cfg_device.assert_called_once_with(model_cfg, True)
+        mock_cfg_device.assert_called_once_with(model_cfg)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_model.assert_called_once_with(model_cfg, None)
-        mock_cfg_data.assert_called_once_with(model_cfg, True, data_cfg)
-        mock_cfg_task.assert_called_once_with(model_cfg, True)
+        mock_cfg_data.assert_called_once_with(model_cfg, data_cfg)
+        mock_cfg_task.assert_called_once_with(model_cfg)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
-        mock_cfg_fp16_optimizer.assert_called_once_with(model_cfg)
+        mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
+        mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
         assert returned_value == model_cfg
 
     @e2e_pytest_unit
     def test_configure_base(self, mocker):
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.align_data_config_with_recipe",
-            return_value=True,
-        )
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.patch_datasets",
-            return_value=True,
-        )
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.patch_persistent_workers",
-            return_value=True,
-        )
-
         model_cfg = copy.deepcopy(self.model_cfg)
         data_cfg = copy.deepcopy(self.data_cfg._cfg_dict)
         self.configurer.configure_base(model_cfg, data_cfg, [], [])
@@ -81,12 +82,15 @@ class TestClassificationConfigurer:
             "torch.distributed.is_initialized",
             return_value=True,
         )
+        mocker.patch(
+            "torch.distributed.get_world_size",
+            return_value=2,
+        )
         world_size = 2
-        mocker.patch.object(configurer, "dist").get_world_size.return_value = world_size
         mocker.patch("os.environ", return_value={"LOCAL_RANK": 2})
         config = copy.deepcopy(self.model_cfg)
         origin_lr = config.optimizer.lr
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is True
         assert config.optimizer.lr == pytest.approx(origin_lr * world_size)
 
@@ -99,7 +103,7 @@ class TestClassificationConfigurer:
             return_value=False,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is False
         assert config.device == "cpu"
 
@@ -112,7 +116,7 @@ class TestClassificationConfigurer:
             return_value=True,
         )
         config = copy.deepcopy(self.model_cfg)
-        self.configurer.configure_device(config, True)
+        self.configurer.configure_device(config)
         assert config.distributed is False
         assert config.device == "cuda"
 
@@ -143,8 +147,9 @@ class TestClassificationConfigurer:
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.resume = True
 
-        mocker.patch(
-            "otx.algorithms.classification.adapters.mmcls.configurer.CheckpointLoader.load_checkpoint",
+        mocker.patch.object(
+            CheckpointLoader,
+            "load_checkpoint",
             return_value={"model": None},
         )
         with tempfile.TemporaryDirectory() as tempdir:
@@ -172,7 +177,7 @@ class TestClassificationConfigurer:
                 ],
             ),
         )
-        self.configurer.configure_data(self.model_cfg, True, data_cfg)
+        self.configurer.configure_data(self.model_cfg, data_cfg)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
         assert self.model_cfg.data.val
@@ -182,11 +187,11 @@ class TestClassificationConfigurer:
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.update(self.data_cfg)
         model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg)
 
         self.configurer.model_classes = []
         self.configurer.data_classes = ["red", "green"]
-        self.configurer.configure_task(model_cfg, True)
+        self.configurer.configure_task(model_cfg)
 
     @e2e_pytest_unit
     def test_configure_hook(self):
@@ -205,21 +210,21 @@ class TestClassificationConfigurer:
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
-    def test_configure_fp16_optimizer(self):
+    def test_configure_fp16(self):
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "OptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16OptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "SAMOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "Fp16SAMOptimizerHook"
 
         model_cfg.fp16 = {}
         model_cfg.optimizer_config.type = "DummyOptimizerHook"
-        self.configurer.configure_fp16_optimizer(model_cfg)
+        self.configurer.configure_fp16(model_cfg)
         assert model_cfg.optimizer_config.type == "DummyOptimizerHook"
 
     @e2e_pytest_unit
@@ -238,11 +243,31 @@ class TestClassificationConfigurer:
         config.data.train.dataset = ConfigDict({"dataset": [1, 2, 3]})
         assert [1, 2, 3] == self.configurer.get_data_cfg(config, "train")
 
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("input_size", [None, (128, 128)])
+    def test_configure_input_size(self, mocker, input_size):
+        # prepare
+        mock_cfg = mocker.MagicMock()
+        mocker.patch.object(configurer, "get_configured_input_size", return_value=input_size)
+        mock_input_manager = mocker.MagicMock()
+        mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
+        mock_input_manager_cls.return_value = mock_input_manager
+
+        # excute
+        self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
+
+        # check
+        if input_size is not None:
+            mock_input_manager_cls.assert_called_once_with(mock_cfg.data)
+            mock_input_manager.set_input_size.assert_called_once_with(input_size)
+        else:
+            mock_input_manager_cls.assert_not_called()
+
 
 class TestIncrClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = IncrClassificationConfigurer()
+        self.configurer = IncrClassificationConfigurer("classification", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
 
@@ -251,14 +276,14 @@ class TestIncrClassificationConfigurer:
         self.model_cfg.update(self.data_cfg)
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg)
         assert "TaskAdaptHook" in [i.type for i in self.model_cfg.custom_hooks]
 
 
 class TestSemiSLClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = SemiSLClassificationConfigurer()
+        self.configurer = SemiSLClassificationConfigurer("classification", True)
         self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
 
@@ -270,12 +295,12 @@ class TestSemiSLClassificationConfigurer:
         self.model_cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
         self.model_cfg.model_task = "detection"
         self.model_cfg.distributed = False
-        self.configurer.configure_data(self.model_cfg, True, self.data_cfg)
+        self.configurer.configure_data(self.model_cfg, self.data_cfg)
 
     def test_configure_task(self):
         self.model_cfg.update(self.data_cfg)
         self.model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg)
 
         self.model_cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, True)
+        self.configurer.configure_task(self.model_cfg)

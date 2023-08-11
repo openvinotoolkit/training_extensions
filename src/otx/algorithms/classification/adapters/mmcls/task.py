@@ -54,8 +54,11 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
 )
-from otx.algorithms.common.adapters.mmcv.utils import build_dataset as otx_build_dataset
+from otx.algorithms.common.adapters.mmcv.utils import (
+    build_dataset as otx_build_dataset,
+)
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
     MPAConfig,
     update_or_add_custom_hook,
 )
@@ -179,11 +182,11 @@ class MMClassificationTask(OTXClassificationTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrClassificationConfigurer()
+            configurer = IncrClassificationConfigurer("classification", training)
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLClassificationConfigurer()
+            configurer = SemiSLClassificationConfigurer("classification", training)
         else:
-            configurer = ClassificationConfigurer()
+            configurer = ClassificationConfigurer("classification", training)
 
         options_for_patch_datasets = {"type": "OTXClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
@@ -201,11 +204,11 @@ class MMClassificationTask(OTXClassificationTask):
             recipe_cfg,
             self._model_ckpt,
             self._data_cfg,
-            training,
             subset,
             ir_options,
             data_classes,
             model_classes,
+            self._hyperparams.learning_parameters.input_size,
             options_for_patch_datasets=options_for_patch_datasets,
             options_for_patch_evaluation=options_for_patch_evaluation,
         )
@@ -675,23 +678,15 @@ class MMClassificationTask(OTXClassificationTask):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_pairs(
-                    cfg.data.test.pipeline,
-                    dict(type="Resize"),
-                )
-                assert len(resize_cfg) == 1
-                resize_cfg = resize_cfg[0]
-                size = resize_cfg.size
-                if isinstance(size, int):
-                    size = (size, size)
+                input_size_manager = InputSizeManager(cfg.data)
+                size = input_size_manager.get_input_size_from_cfg("test")
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error
                 # when converting to OpenVINO IR
                 deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
             patch_input_preprocessing(deploy_cfg)
-            if not deploy_cfg.backend_config.get("model_inputs", []):
-                patch_input_shape(deploy_cfg)
+            patch_input_shape(deploy_cfg)
 
         return deploy_cfg
 
