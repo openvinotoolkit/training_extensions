@@ -182,11 +182,11 @@ class MMClassificationTask(OTXClassificationTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrClassificationConfigurer()
+            configurer = IncrClassificationConfigurer("classification", training)
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLClassificationConfigurer()
+            configurer = SemiSLClassificationConfigurer("classification", training)
         else:
-            configurer = ClassificationConfigurer()
+            configurer = ClassificationConfigurer("classification", training)
 
         options_for_patch_datasets = {"type": "OTXClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
@@ -204,7 +204,6 @@ class MMClassificationTask(OTXClassificationTask):
             recipe_cfg,
             self._model_ckpt,
             self._data_cfg,
-            training,
             subset,
             ir_options,
             data_classes,
