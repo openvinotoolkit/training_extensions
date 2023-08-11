@@ -48,7 +48,7 @@ class LoadAnnotationFromOTXDataset:
         with_seg: bool = False,
         poly2mask: bool = True,
         with_text: bool = False,
-        domain: Optional[str] = "detection",
+        domain: str = "detection",
     ):
         self._domain_dict = {
             "detection": Domain.DETECTION,
