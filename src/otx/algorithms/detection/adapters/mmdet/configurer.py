@@ -3,16 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import importlib
 from typing import Optional
 
-from mmcv.utils import Config, ConfigDict
+from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
-from otx.algorithms.common.adapters.mmcv.utils import (
-    build_dataloader,
-    build_dataset,
-)
+from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
     get_configured_input_size,
@@ -230,50 +226,5 @@ class IncrDetectionConfigurer(DetectionConfigurer):
         )
 
 
-class SemiSLDetectionConfigurer(DetectionConfigurer):
+class SemiSLDetectionConfigurer(SemiSLConfigurerMixin, DetectionConfigurer):
     """Patch config to support semi supervised learning for object detection."""
-
-    def configure_hook(self, cfg):
-        """Update cfg.custom_hooks."""
-        super().configure_hook(cfg)
-        # Set unlabeled data hook
-        if self.training:
-            if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
-                if len(cfg.data.unlabeled.get("pipeline", [])) == 0:
-                    cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
-                self.configure_unlabeled_dataloader(cfg)
-
-    @staticmethod
-    def configure_unlabeled_dataloader(cfg: Config):
-        """Patch for unlabled dataloader."""
-
-        model_task = {"classification": "mmcls", "detection": "mmdet", "segmentation": "mmseg"}
-        if "unlabeled" in cfg.data:
-            task_lib_module = importlib.import_module(f"{model_task[cfg.model_task]}.datasets")
-            dataset_builder = getattr(task_lib_module, "build_dataset")
-            dataloader_builder = getattr(task_lib_module, "build_dataloader")
-
-            dataset = build_dataset(cfg, "unlabeled", dataset_builder, consume=True)
-            unlabeled_dataloader = build_dataloader(
-                dataset,
-                cfg,
-                "unlabeled",
-                dataloader_builder,
-                distributed=cfg.distributed,
-                consume=True,
-            )
-
-            custom_hooks = cfg.get("custom_hooks", [])
-            updated = False
-            for custom_hook in custom_hooks:
-                if custom_hook["type"] == "ComposedDataLoadersHook":
-                    custom_hook["data_loaders"] = [*custom_hook["data_loaders"], unlabeled_dataloader]
-                    updated = True
-            if not updated:
-                custom_hooks.append(
-                    ConfigDict(
-                        type="ComposedDataLoadersHook",
-                        data_loaders=unlabeled_dataloader,
-                    )
-                )
-            cfg.custom_hooks = custom_hooks
