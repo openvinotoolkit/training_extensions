@@ -11,6 +11,7 @@ import torch
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 
+from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
@@ -18,7 +19,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     get_configured_input_size,
     patch_color_conversion,
     remove_custom_hook,
-    update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
@@ -198,13 +198,11 @@ class SegmentationConfigurer(BaseConfigurer):
         logger.info("Input size is changed to {}".format(input_size))
 
 
-class IncrSegmentationConfigurer(SegmentationConfigurer):
+class IncrSegmentationConfigurer(IncrConfigurerMixin, SegmentationConfigurer):
     """Patch config to support incremental learning for semantic segmentation."""
 
-    def configure_task(self, cfg: ConfigDict) -> None:
-        """Patch config to support incremental learning."""
-        super().configure_task(cfg)
-
+    def is_incremental(self) -> bool:
+        """Return whether current model classes is increased from original model classes."""
         # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
         if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
             self.model_classes
@@ -212,17 +210,7 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
             is_cls_incr = False
         else:
             is_cls_incr = True
-
-        # Update TaskAdaptHook (use incremental sampler)
-        task_adapt_hook = ConfigDict(
-            type="TaskAdaptHook",
-            src_classes=self.org_model_classes,
-            dst_classes=self.model_classes,
-            model_type=cfg.model.type,
-            sampler_flag=is_cls_incr,
-            efficient_mode=cfg["task_adapt"].get("efficient_mode", False),
-        )
-        update_or_add_custom_hook(cfg, task_adapt_hook)
+        return is_cls_incr
 
 
 class SemiSLSegmentationConfigurer(SemiSLConfigurerMixin, SegmentationConfigurer):
