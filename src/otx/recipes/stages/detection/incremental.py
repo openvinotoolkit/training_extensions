@@ -24,7 +24,6 @@ custom_hooks = [
     dict(
         type="EMAHook",
         priority="ABOVE_NORMAL",
-        resume_from=None,
         momentum=0.1,
     ),
 ]

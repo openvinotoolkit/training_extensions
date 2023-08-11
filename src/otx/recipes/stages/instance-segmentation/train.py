@@ -46,7 +46,6 @@ custom_hooks = [
     dict(
         type="CustomModelEMAHook",
         priority="ABOVE_NORMAL",
-        resume_from=None,
         epoch_momentum=0.4,
     ),
 ]
