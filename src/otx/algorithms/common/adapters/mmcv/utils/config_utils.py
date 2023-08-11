@@ -650,7 +650,7 @@ class InputSizeManager:
         "randomaffine": ["border"],
         "multiscaleflipaug": ["img_scale"],
     }
-    SUBSET_TYPES: Tuple[str, str, str] = ("train", "val", "test")
+    SUBSET_TYPES: Tuple[str, str, str] = ("train", "val", "test", "unlabeled")
 
     def __init__(
         self,
@@ -803,11 +803,15 @@ class InputSizeManager:
         raise RuntimeError("Failed to find pipeline.")
 
     def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
+        updated = False
         for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
             if pipeline_name in pipeline["type"].lower():
                 for pipeline_attr in pipeline_attrs:
                     if pipeline_attr in pipeline:
                         self._set_size_value(pipeline, pipeline_attr, scale)
+                        updated = True
+                if updated:
+                    break
 
         if pipeline["type"] == "MultiScaleFlipAug":
             for sub_pipeline in pipeline["transforms"]:
