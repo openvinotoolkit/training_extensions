@@ -55,7 +55,6 @@ class ClassificationConfigurer(BaseConfigurer):
         self.configure_data(cfg, data_cfg)
         self.configure_input_size(cfg, input_size, model_ckpt)
         self.configure_task(cfg)
-        self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
