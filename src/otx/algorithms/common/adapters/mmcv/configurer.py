@@ -37,6 +37,7 @@ class BaseConfigurer:
         self.data_classes = []
         self.task = task
         self.training = training
+        self.ema_hooks = ["EMAHook", "CustomModelEMAHook"]  # EMA hooks supporting resume
 
     def configure_base(self, cfg, data_cfg, data_classes, model_classes, **kwargs):
         """Basic configuration work for recipe.
@@ -103,6 +104,9 @@ class BaseConfigurer:
             cfg.load_from = self.get_model_ckpt(model_ckpt)
         if cfg.get("resume", False):
             cfg.resume_from = cfg.load_from
+            for hook in cfg.custom_hooks:
+                if hook.type in self.ema_hooks:
+                    hook.resume_from = cfg.resume_from
         if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
             cfg.model.backbone.pretrained = None
 

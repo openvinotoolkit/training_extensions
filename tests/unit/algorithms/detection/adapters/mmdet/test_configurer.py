@@ -136,6 +136,9 @@ class TestDetectionConfigurer:
         )
         with tempfile.TemporaryDirectory() as tempdir:
             self.configurer.configure_ckpt(model_cfg, os.path.join(tempdir, "dummy.pth"))
+        for hook in model_cfg.custom_hooks:
+            if hook.type in self.configurer.ema_hooks:
+                assert hook.resume_from == model_cfg.resume_from
 
     @e2e_pytest_unit
     def test_configure_model_without_model(self):
