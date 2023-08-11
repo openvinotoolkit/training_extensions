@@ -170,7 +170,7 @@ class BaseConfigurer:
                     for key in new_data_cfg:
                         src_data_cfg[key] = new_data_cfg[key]
                 else:
-                    raise Exception(f"{subset} of data_cfg is not in cfg")
+                    raise ValueError(f"{subset} of data_cfg is not in cfg")
 
     def configure_task(self, cfg):
         """Patch config to support training algorithm."""
