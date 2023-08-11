@@ -213,9 +213,8 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
     def get_metadata(self) -> Dict:
         """Get Meta Data."""
-        metadata = {}
+        metadata: Dict[str, Any] = {}
         if self.task_environment.model is not None:
-            metadata = json.loads(self.task_environment.model.get_data("metadata").decode())
             metadata["image_threshold"] = np.array(metadata["image_threshold"], dtype=np.float32).item()
             metadata["pixel_threshold"] = np.array(metadata["pixel_threshold"], dtype=np.float32).item()
             metadata["min"] = np.array(metadata["min"], dtype=np.float32).item()
