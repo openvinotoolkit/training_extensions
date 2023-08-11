@@ -4,7 +4,7 @@
 #
 
 import os
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import numpy as np
 import torch
@@ -37,6 +37,7 @@ class BaseConfigurer:
         self.data_classes = []
         self.task = task
         self.training = training
+        self.ema_hooks = ["EMAHook", "CustomModelEMAHook"]  # EMA hooks supporting resume
 
     def configure_base(self, cfg, data_cfg, data_classes, model_classes, **kwargs):
         """Basic configuration work for recipe.
@@ -103,6 +104,9 @@ class BaseConfigurer:
             cfg.load_from = self.get_model_ckpt(model_ckpt)
         if cfg.get("resume", False):
             cfg.resume_from = cfg.load_from
+            for hook in cfg.custom_hooks:
+                if hook.type in self.ema_hooks:
+                    hook.resume_from = cfg.resume_from
         if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
             cfg.model.backbone.pretrained = None
 
@@ -163,12 +167,14 @@ class BaseConfigurer:
 
         logger.info("configure_data()")
         if data_cfg:
-            for subset in cfg.data:
-                if subset in data_cfg.data:
+            for subset in data_cfg.data:
+                if subset in cfg.data:
                     src_data_cfg = self.get_data_cfg(cfg, subset)
                     new_data_cfg = self.get_data_cfg(data_cfg, subset)
                     for key in new_data_cfg:
                         src_data_cfg[key] = new_data_cfg[key]
+                else:
+                    raise ValueError(f"{subset} of data_cfg is not in cfg")
 
     def configure_task(self, cfg):
         """Patch config to support training algorithm."""
@@ -234,34 +240,37 @@ class BaseConfigurer:
     def configure_samples_per_gpu(
         self,
         cfg: Config,
-        subset: str,
+        subsets: List[str] = ["train", "val", "test", "unlabeled"],
     ):
-        """Settings samples_per_gpu for training and inference in case of corner cases."""
+        """Settings samples_per_gpu for each dataloader.
 
-        dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
-        samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
+        samples_per_gpu can be changed if it is larger than length of datset
+        """
 
-        data_cfg = self.get_data_cfg(cfg, subset)
-        if data_cfg.get("otx_dataset") is not None:
-            dataset_len = len(data_cfg.otx_dataset)
+        for subset in subsets:
+            if cfg.data.get(subset, None):
+                dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
+                samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
 
-            if getattr(cfg, "distributed", False):
-                dataset_len = dataset_len // dist.get_world_size()
+                data_cfg = self.get_data_cfg(cfg, subset)
+                if data_cfg.get("otx_dataset") is not None:
+                    dataset_len = len(data_cfg.otx_dataset)
 
-            # set batch size as a total dataset
-            # if it is smaller than total dataset
-            if dataset_len < samples_per_gpu:
-                dataloader_cfg.samples_per_gpu = dataset_len
-                logger.info(
-                    f"configure_samples_per_gpu: samples_per_gpu is changed from {samples_per_gpu} to {dataset_len}"
-                )
+                    if getattr(cfg, "distributed", False):
+                        dataset_len = dataset_len // dist.get_world_size()
 
-            # drop the last batch if the last batch size is 1
-            # batch size of 1 is a runtime error for training batch normalization layer
-            if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
-                dataloader_cfg["drop_last"] = True
+                    # set batch size as a total dataset
+                    # if it is smaller than total dataset
+                    if dataset_len < samples_per_gpu:
+                        dataloader_cfg.samples_per_gpu = dataset_len
+                        logger.info(f"{subset}'s samples_per_gpu: {samples_per_gpu} --> {dataset_len}")
 
-            cfg.data[f"{subset}_dataloader"] = dataloader_cfg
+                    # drop the last batch if the last batch size is 1
+                    # batch size of 1 is a runtime error for training batch normalization layer
+                    if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
+                        dataloader_cfg["drop_last"] = True
+
+                    cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
     @staticmethod
     def configure_fp16(cfg: Config):

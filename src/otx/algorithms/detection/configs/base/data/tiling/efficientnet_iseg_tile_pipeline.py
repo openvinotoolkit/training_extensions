@@ -1,37 +1,27 @@
-"""Tiling Pipeline of SSD model for Detection Task."""
+"""Tiling Pipeline of EfficientNetB2B model."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=invalid-name
 
-img_size = (864, 864)
+img_size = (512, 512)
 
 tile_cfg = dict(
     tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
 )
 
-img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
+img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=True)
 
 train_pipeline = [
     dict(type="Resize", img_scale=img_size, keep_ratio=False),
-    dict(type="Normalize", **img_norm_cfg),
     dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type="Normalize", **img_norm_cfg),
+    dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
     dict(
         type="Collect",
-        keys=["img", "gt_bboxes", "gt_labels"],
+        keys=["img", "gt_bboxes", "gt_labels", "gt_masks"],
         meta_keys=[
             "filename",
             "ori_filename",
@@ -53,7 +43,9 @@ test_pipeline = [
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),
+            dict(type="RandomFlip"),
             dict(type="Normalize", **img_norm_cfg),
+            dict(type="Pad", size_divisor=32),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),
         ],
@@ -68,7 +60,7 @@ train_dataset = dict(
         type=__dataset_type,
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+            dict(type="LoadAnnotationFromOTXDataset", domain="instance_segmentation", with_bbox=True, with_mask=True),
         ],
     ),
     pipeline=train_pipeline,
@@ -81,7 +73,7 @@ val_dataset = dict(
         type=__dataset_type,
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+            dict(type="LoadAnnotationFromOTXDataset", domain="instance_segmentation", with_bbox=True, with_mask=True),
         ],
     ),
     pipeline=test_pipeline,
@@ -100,8 +92,4 @@ test_dataset = dict(
 )
 
 
-data = dict(
-    train=train_dataset,
-    val=val_dataset,
-    test=test_dataset,
-)
+data = dict(train=train_dataset, val=val_dataset, test=test_dataset)

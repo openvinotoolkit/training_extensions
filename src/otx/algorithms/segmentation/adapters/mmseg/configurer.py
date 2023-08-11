@@ -42,7 +42,6 @@ class SegmentationConfigurer(BaseConfigurer):
         cfg: Config,
         model_ckpt: str,
         data_cfg: Config,
-        subset: str = "train",
         ir_options: Optional[Config] = None,
         data_classes: Optional[List[str]] = None,
         model_classes: Optional[List[str]] = None,
@@ -58,7 +57,7 @@ class SegmentationConfigurer(BaseConfigurer):
         self.configure_data(cfg, data_cfg)
         self.configure_task(cfg)
         self.configure_hook(cfg)
-        self.configure_samples_per_gpu(cfg, subset)
+        self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
         self.configure_input_size(cfg, input_size, model_ckpt)

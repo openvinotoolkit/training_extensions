@@ -174,7 +174,7 @@ class MMDetectionTask(OTXDetectionTask):
         return model
 
     # pylint: disable=too-many-arguments
-    def configure(self, training=True, subset="train", ir_options=None, train_dataset=None):
+    def configure(self, training=True, ir_options=None, train_dataset=None):
         """Patch mmcv configs for OTX detection settings."""
 
         # deepcopy all configs to make sure
@@ -202,7 +202,6 @@ class MMDetectionTask(OTXDetectionTask):
             train_dataset,
             self._model_ckpt,
             self._data_cfg,
-            subset,
             ir_options,
             data_classes,
             model_classes,
@@ -241,7 +240,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task(dataset)
 
-        cfg = self.configure(True, "train", None, get_dataset(dataset, Subset.TRAINING))
+        cfg = self.configure(True, None, get_dataset(dataset, Subset.TRAINING))
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -340,7 +339,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task(dataset)
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
         logger.info("infer!")
 
         # Data loader
@@ -507,7 +506,7 @@ class MMDetectionTask(OTXDetectionTask):
         )
         self._init_task(export=True)
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
@@ -581,7 +580,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
 
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
         if samples_per_gpu > 1:

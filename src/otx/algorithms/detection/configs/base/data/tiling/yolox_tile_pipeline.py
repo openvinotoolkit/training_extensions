@@ -1,33 +1,32 @@
-"""Tiling Pipeline of SSD model for Detection Task."""
+"""Tiling Pipeline of YOLOX variants for Detection Task."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=invalid-name
 
-img_size = (864, 864)
+# NOTE: SKIP MOSAIC AND MultiImageMixDataset in tiling
+
+img_scale = (640, 640)
 
 tile_cfg = dict(
     tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
 )
 
-img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
+img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], to_rgb=False)
 
 train_pipeline = [
-    dict(type="Resize", img_scale=img_size, keep_ratio=False),
-    dict(type="Normalize", **img_norm_cfg),
+    dict(
+        type="RandomAffine",
+        scaling_ratio_range=(0.1, 2),
+        border=(-img_scale[0] // 2, -img_scale[1] // 2),
+    ),
+    dict(type="MixUp", img_scale=img_scale, ratio_range=(0.8, 1.6), pad_val=114.0),
+    dict(type="YOLOXHSVRandomAug"),
     dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type="Resize", img_scale=img_scale, keep_ratio=True),
+    dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
+    dict(type="Normalize", **img_norm_cfg),
     dict(type="DefaultFormatBundle"),
     dict(
         type="Collect",
@@ -47,17 +46,20 @@ train_pipeline = [
 ]
 
 test_pipeline = [
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
-        img_scale=img_size,
+        img_scale=img_scale,
         flip=False,
         transforms=[
-            dict(type="Resize", keep_ratio=False),
+            dict(type="Resize", keep_ratio=True),
+            dict(type="RandomFlip"),
+            dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
             dict(type="Normalize", **img_norm_cfg),
-            dict(type="ImageToTensor", keys=["img"]),
+            dict(type="DefaultFormatBundle"),
             dict(type="Collect", keys=["img"]),
         ],
-    )
+    ),
 ]
 
 __dataset_type = "OTXDetDataset"
@@ -100,8 +102,4 @@ test_dataset = dict(
 )
 
 
-data = dict(
-    train=train_dataset,
-    val=val_dataset,
-    test=test_dataset,
-)
+data = dict(train=train_dataset, val=val_dataset, test=test_dataset)
