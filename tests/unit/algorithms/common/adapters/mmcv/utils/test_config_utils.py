@@ -204,8 +204,8 @@ mock_data_pipeline_to_estimate = {
         ],
         "input_size": (500, 500),
     },
-    "two_crop_transform" : {
-        "pipeline" : [
+    "two_crop_transform": {
+        "pipeline": [
             dict(type="Resize", img_scale=(300, 300), keep_ratio=True),
             dict(type="crop", size=(200, 200)),
             dict(type="Pad", size=(400, 400)),
@@ -219,8 +219,8 @@ mock_data_pipeline_to_estimate = {
                 ],
             ),
         ],
-        "input_size" : (600, 600)
-    }
+        "input_size": (600, 600),
+    },
 }
 
 

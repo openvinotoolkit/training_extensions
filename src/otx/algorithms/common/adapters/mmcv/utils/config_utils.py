@@ -651,11 +651,11 @@ class InputSizeManager:
         "multiscaleflipaug": ["img_scale"],
     }
     PIPELINE_WRAPPER: Dict[str, List[str]] = {
-        "MultiScaleFlipAug" : ["transforms"],
-        "AutoAugment" : ["policies"],
-        "TwoCropTransform" : ["view0", "view1", "pipeline"],
+        "MultiScaleFlipAug": ["transforms"],
+        "AutoAugment": ["policies"],
+        "TwoCropTransform": ["view0", "view1", "pipeline"],
     }
-    SUBSET_TYPES: Tuple[str, str, str] = ("train", "val", "test", "unlabeled")
+    SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
 
     def __init__(
         self,
@@ -837,8 +837,10 @@ class InputSizeManager:
                                 for sub_pipeline in sub_pipelines:
                                     self._set_pipeline_size_value(sub_pipeline, scale)
                         else:
-                            raise ValueError("Dataset pipeline in pipeline wrapper type should be"
-                                             "either list[dict] or list[list[dict]].")
+                            raise ValueError(
+                                "Dataset pipeline in pipeline wrapper type should be"
+                                "either list[dict] or list[list[dict]]."
+                            )
 
     @staticmethod
     def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]):
