@@ -11,7 +11,6 @@ from .config_utils import (
     patch_input_preprocessing,
     patch_input_shape,
     patch_ir_scale_factor,
-    patch_samples_per_gpu,
     patch_tiling,
     should_cluster_anchors,
 )
@@ -21,7 +20,6 @@ __all__ = [
     "patch_datasets",
     "patch_evaluation",
     "build_detector",
-    "patch_samples_per_gpu",
     "patch_tiling",
     "patch_input_preprocessing",
     "patch_input_shape",
