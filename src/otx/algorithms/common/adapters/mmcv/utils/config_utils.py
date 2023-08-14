@@ -565,7 +565,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
 
     # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
     # as `samples_per_gpu might`` not be a valid argument for certain algorithms.
-    if config.task == 'instance-segmentation' or config.task == 'detection':
+    if config.task == "instance-segmentation" or config.task == "detection":
         hparams.update(
             ConfigDict(
                 data=ConfigDict(
