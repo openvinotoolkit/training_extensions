@@ -564,16 +564,17 @@ def patch_from_hyperparams(config: Config, hyperparams):
     )
 
     # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
-    # as `samples_per_gpu might`` not be a valid argument for certain algorithms.
-    if config.task == "instance-segmentation" or config.task == "detection":
-        hparams.update(
-            ConfigDict(
-                data=ConfigDict(
-                    val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
-                    test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
-                ),
+    # as `samples_per_gpu might` not be a valid argument for certain algorithms.
+    if hasattr(config, "task"):
+        if config.task == "instance-segmentation" or config.task == "detection":
+            hparams.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                        test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                    ),
+                )
             )
-        )
 
     if hyperparams.learning_parameters.auto_num_workers:
         adapted_num_worker = get_adaptive_num_workers()
