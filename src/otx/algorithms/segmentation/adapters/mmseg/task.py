@@ -143,7 +143,6 @@ class MMSegmentationTask(OTXSegmentationTask):
     def configure(
         self,
         training=True,
-        subset="train",
         ir_options=None,
     ):
         """Patch mmcv configs for OTX segmentation settings."""
@@ -172,7 +171,6 @@ class MMSegmentationTask(OTXSegmentationTask):
             recipe_cfg,
             self._model_ckpt,
             self._data_cfg,
-            subset,
             ir_options,
             data_classes,
             model_classes,
@@ -218,7 +216,7 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
         logger.info("infer!")
 
         # FIXME: Currently segmentor does not support multi batch inference.
@@ -327,7 +325,7 @@ class MMSegmentationTask(OTXSegmentationTask):
 
         self._init_task()
 
-        cfg = self.configure(True, "train", None)
+        cfg = self.configure(True, None)
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -440,7 +438,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         )
         self._init_task(export=True)
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}

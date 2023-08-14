@@ -116,13 +116,12 @@ class TestTilingDetection:
                             type="LoadAnnotationFromOTXDataset",
                             with_bbox=True,
                             with_mask=False,
-                            domain=Domain.DETECTION,
+                            domain="detection",
                             min_size=-1,
                         ),
                     ],
                     otx_dataset=self.otx_dataset,
                     labels=self.labels,
-                    domain=Domain.DETECTION,
                 ),
                 **self.tile_cfg
             )
@@ -150,7 +149,6 @@ class TestTilingDetection:
                     pipeline=[dict(type="LoadImageFromOTXDataset")],
                     otx_dataset=self.otx_dataset.with_empty_annotations(),
                     labels=list(self.labels),
-                    domain=Domain.DETECTION,
                 ),
                 test_mode=True,
                 **self.tile_cfg
@@ -305,6 +303,8 @@ class TestTilingDetection:
     def test_patch_tiling_func(self):
         """Test that patch_tiling function works correctly."""
         cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "data_pipeline.py"))
+        cfg.merge_from_dict(data_pipeline_cfg)
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.tiling_parameters.enable_tiling = True
@@ -408,13 +408,12 @@ class TestTilingDetection:
                             type="LoadAnnotationFromOTXDataset",
                             with_bbox=True,
                             with_mask=True,
-                            domain=Domain.INSTANCE_SEGMENTATION,
+                            domain="instance_segmentation",
                             min_size=-1,
                         ),
                     ],
                     otx_dataset=otx_dataset,
                     labels=labels,
-                    domain=Domain.INSTANCE_SEGMENTATION,
                 ),
                 **tile_cfg
             )

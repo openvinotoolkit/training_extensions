@@ -21,6 +21,11 @@ custom_hooks = [
         interval=1,
         priority=75,
     ),
+    dict(
+        type="EMAHook",
+        priority="ABOVE_NORMAL",
+        momentum=0.1,
+    ),
 ]
 
 lr_config = dict(

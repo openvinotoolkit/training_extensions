@@ -18,7 +18,7 @@
 
 # NOTE: SKIP MOSAIC AND MultiImageMixDataset in tiling
 
-dataset_type = "CocoDataset"
+dataset_type = "OTXDetDataset"
 
 img_scale = (640, 640)
 
@@ -42,7 +42,21 @@ train_pipeline = [
     dict(type="Pad", pad_to_square=True, pad_val=114.0),
     dict(type="Normalize", **img_norm_cfg),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_bboxes", "gt_labels"],
+        meta_keys=[
+            "filename",
+            "ori_filename",
+            "ori_shape",
+            "img_shape",
+            "pad_shape",
+            "scale_factor",
+            "flip",
+            "flip_direction",
+            "img_norm_cfg",
+        ],
+    ),
 ]
 
 test_pipeline = [
@@ -61,20 +75,15 @@ test_pipeline = [
     )
 ]
 
-__dataset_type = "CocoDataset"
-__data_root = "data/coco/"
-
-__samples_per_gpu = 2
+__dataset_type = "OTXDetDataset"
 
 train_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_train.json",
-        img_prefix=__data_root + "images/train",
         pipeline=[
-            dict(type="LoadImageFromFile", to_float32=True),
-            dict(type="LoadAnnotations", with_bbox=True),
+            dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
         ],
     ),
     pipeline=train_pipeline,
@@ -85,11 +94,9 @@ val_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_val.json",
-        img_prefix=__data_root + "images/val",
         pipeline=[
-            dict(type="LoadImageFromFile"),
-            dict(type="LoadAnnotations", with_bbox=True),
+            dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+            dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
         ],
     ),
     pipeline=test_pipeline,
@@ -100,16 +107,12 @@ test_dataset = dict(
     type="ImageTilingDataset",
     dataset=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_test.json",
-        img_prefix=__data_root + "images/test",
         test_mode=True,
-        pipeline=[dict(type="LoadImageFromFile")],
+        pipeline=[dict(type="LoadImageFromOTXDataset")],
     ),
     pipeline=test_pipeline,
     **tile_cfg
 )
 
 
-data = dict(
-    samples_per_gpu=__samples_per_gpu, workers_per_gpu=4, train=train_dataset, val=val_dataset, test=test_dataset
-)
+data = dict(train=train_dataset, val=val_dataset, test=test_dataset)
