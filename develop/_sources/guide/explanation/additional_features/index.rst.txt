@@ -9,6 +9,7 @@ Additional Features
    models_optimization
    hpo
    auto_configuration
+   adaptive_training
    xai
    noisy_label_detection
    fast_data_loading
