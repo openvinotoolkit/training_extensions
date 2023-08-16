@@ -19,8 +19,8 @@ You can use this feature using the following command:
 
 The available input sizes are currently as follows:
 
-- 64x64 (exclusively for classification)
-- 128x128 (exclusively for classification)
+- 64x64 (only for classification)
+- 128x128 (only for classification)
 - 256x256
 - 384x384
 - 512x512
