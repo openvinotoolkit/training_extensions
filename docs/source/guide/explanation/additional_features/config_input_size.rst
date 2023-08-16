@@ -1,4 +1,4 @@
-Configurable Input size
+Configurable Input Size
 =======================
 
 You have the option to work with smaller input resolutions to expedite training and inference times,
