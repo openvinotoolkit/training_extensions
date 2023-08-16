@@ -42,6 +42,10 @@ custom_hooks: [
     start: 3,
     min_delta_ratio: 0.01,
     priority: 75,
+  },
+  {
+    type: AdaptiveRepeatDataHook, 
+    priority: ABOVE_NORMAL
   }
 ]
 
@@ -50,11 +54,3 @@ adaptive_validation_interval:
   max_interval: 5
   enable_adaptive_interval_hook: True
   enable_eval_before_run: True
-
-
-custom_hooks: [
-  {
-    type:"AdaptiveRepeatDataHook", 
-    priority:"ABOVE_NORMAL"
-  }
-]
