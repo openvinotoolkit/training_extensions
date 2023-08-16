@@ -3,7 +3,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import copy
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 from mmcls.datasets import PIPELINES
@@ -21,6 +21,21 @@ import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset
 @PIPELINES.register_module()
 class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
     """Pipeline element that loads an image from a OTX Dataset on the fly."""
+
+
+@PIPELINES.register_module()
+class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
+    """Load and resize image & annotation with cache support."""
+
+    def _create_load_img_op(self, cfg: Dict) -> Any:
+        """Creates image loading operation."""
+        return build_from_cfg(cfg, PIPELINES)
+
+    def _create_resize_op(self, cfg: Optional[Dict]) -> Optional[Any]:
+        """Creates resize operation."""
+        if cfg is None:
+            return None
+        return build_from_cfg(cfg, PIPELINES)
 
 
 @PIPELINES.register_module()

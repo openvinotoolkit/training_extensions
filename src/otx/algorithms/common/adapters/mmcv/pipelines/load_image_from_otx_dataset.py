@@ -153,10 +153,10 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         """Resize image and annotations if needed and fill the results dict."""
         if self._resize_op is None:
             return results
-        original_shape = results.get("ori_shape", self._resize_shape)
+        original_shape = results.get("img_shape", self._resize_shape)
         if original_shape is None:
             return results
-        if original_shape[0] * original_shape[1] >= self._resize_shape[0] * self._resize_shape[1]:
+        if original_shape[0] * original_shape[1] <= self._resize_shape[0] * self._resize_shape[1]:
             # No benfit of early resizing if resize_shape is larger than original_shape
             return results
         return self._resize_op(results)
