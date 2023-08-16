@@ -162,7 +162,6 @@ class MMClassificationTask(OTXClassificationTask):
     def configure(
         self,
         training=True,
-        subset="train",
         ir_options=None,
     ):
         """Patch mmcv configs for OTX classification settings."""
@@ -204,7 +203,6 @@ class MMClassificationTask(OTXClassificationTask):
             recipe_cfg,
             self._model_ckpt,
             self._data_cfg,
-            subset,
             ir_options,
             data_classes,
             model_classes,
@@ -254,7 +252,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
         logger.info("infer!")
 
         # Data loader
@@ -367,7 +365,7 @@ class MMClassificationTask(OTXClassificationTask):
 
         self._init_task()
 
-        cfg = self.configure(True, "train", None)
+        cfg = self.configure(True, None)
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -495,7 +493,7 @@ class MMClassificationTask(OTXClassificationTask):
         )
 
         self._init_task()
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
         # Data loader
         mm_dataset = otx_build_dataset(cfg, "test", build_dataset)
         dataloader = otx_build_dataloader(
@@ -576,7 +574,7 @@ class MMClassificationTask(OTXClassificationTask):
         )
         self._init_task(export=True)
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
 
         self._precision[0] = precision
         assert len(self._precision) == 1

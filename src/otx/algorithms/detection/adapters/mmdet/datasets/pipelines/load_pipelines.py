@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 import copy
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from mmdet.datasets.builder import PIPELINES
 
@@ -41,22 +41,27 @@ class LoadAnnotationFromOTXDataset:
 
     def __init__(
         self,
-        min_size: int,
+        min_size: int = -1,
         with_bbox: bool = True,
         with_label: bool = True,
         with_mask: bool = False,
         with_seg: bool = False,
         poly2mask: bool = True,
         with_text: bool = False,
-        domain: Optional[Domain] = None,
+        domain: str = "detection",
     ):
+        self._domain_dict = {
+            "detection": Domain.DETECTION,
+            "instance_segmentation": Domain.INSTANCE_SEGMENTATION,
+            "rotated_detection": Domain.ROTATED_DETECTION,
+        }
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_mask = with_mask
         self.with_seg = with_seg
         self.poly2mask = poly2mask
         self.with_text = with_text
-        self.domain = domain
+        self.domain = self._domain_dict[domain.lower()]
         self.min_size = min_size
 
     @staticmethod

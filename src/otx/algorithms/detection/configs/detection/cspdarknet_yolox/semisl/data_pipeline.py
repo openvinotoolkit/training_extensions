@@ -19,7 +19,7 @@
 # This is from otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
 __img_scale = (992, 736)
-__img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
+__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 common_pipeline = [
     dict(
@@ -90,8 +90,8 @@ common_pipeline = [
 ]
 
 train_pipeline = [
-    dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations", with_bbox=True),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
     *common_pipeline,
     dict(type="ToTensor", keys=["gt_bboxes", "gt_labels"]),
@@ -107,11 +107,24 @@ train_pipeline = [
     dict(
         type="Collect",
         keys=["img", "img0", "gt_bboxes", "gt_labels"],
+        meta_keys=[
+            "ori_filename",
+            "flip_direction",
+            "scale_factor",
+            "img_norm_cfg",
+            "gt_ann_ids",
+            "flip",
+            "ignored_labels",
+            "ori_shape",
+            "filename",
+            "img_shape",
+            "pad_shape",
+        ],
     ),
 ]
 
 unlabeled_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     *common_pipeline,
     dict(
         type="ToDataContainer",
@@ -130,7 +143,7 @@ unlabeled_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
         img_scale=__img_scale,
@@ -145,18 +158,20 @@ test_pipeline = [
     ),
 ]
 data = dict(
-    samples_per_gpu=10,
-    workers_per_gpu=2,
     train=dict(
+        type="OTXDetDataset",
         pipeline=train_pipeline,
     ),
     val=dict(
+        type="OTXDetDataset",
         pipeline=test_pipeline,
     ),
     test=dict(
+        type="OTXDetDataset",
         pipeline=test_pipeline,
     ),
     unlabeled=dict(
+        type="OTXDetDataset",
         pipeline=unlabeled_pipeline,
     ),
 )

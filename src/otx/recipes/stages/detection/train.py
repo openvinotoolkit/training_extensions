@@ -6,12 +6,6 @@ _base_ = [
     "../_base_/schedules/plateau.py",
 ]
 
-# Disabling until evaluation bug resolved
-# data = dict(
-#     val=dict(samples_per_gpu=2),
-#     test=dict(samples_per_gpu=2),
-# )
-
 optimizer = dict(
     lr=0.001,
     momentum=0.9,
@@ -27,7 +21,8 @@ optimizer_config = dict(
 
 lr_config = dict(min_lr=1e-06)
 
-evaluation = dict(interval=1, metric="bbox", classwise=True, save_best="bbox_mAP")
+evaluation = dict(interval=1, metric="mAP", save_best="mAP")
+early_stop_metric = "mAP"
 
 custom_hooks = [
     dict(
