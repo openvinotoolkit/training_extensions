@@ -51,6 +51,13 @@ def regression_eval_testing(
         if trained_performance[k] < modified_criteria:
             regression_result["passed"] = False
             regression_result["log"] = f"Performance: ({trained_performance[k]}) < Criteria: ({modified_criteria})."
+            regression_result["raw"] = {
+                "metric": k,
+                "performance": trained_performance[k],
+                "template": template.name,
+                "criteria": model_criteria,
+                "threshold": threshold,
+            }
 
     result_dict["Model size (MB)"] = round(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth") / 1e6, 2
