@@ -7,12 +7,12 @@ import math
 import random
 
 import numpy as np
-from torch.utils.data.sampler import Sampler
+from torch.utils.data import Dataset
 
-from otx.algorithms.common.utils.task_adapt import unwrap_dataset
+from .otx_sampler import OTXSampler
 
 
-class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
+class ClsIncrSampler(OTXSampler):  # pylint: disable=too-many-instance-attributes
     """Sampler for Class-Incremental Task.
 
     This sampler is a sampler that creates an effective batch
@@ -25,16 +25,35 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
+        num_replicas (int, optional): Number of processes participating in
+            distributed training. By default, :attr:`world_size` is retrieved from the
+            current distributed group.
+        rank (int, optional): Rank of the current process within :attr:`num_replicas`.
+            By default, :attr:`rank` is retrieved from the current distributed
+            group.
+        drop_last (bool, optional): if ``True``, then the sampler will drop the
+            tail of the data to make it evenly divisible across the number of
+            replicas. If ``False``, the sampler will add extra indices to make
+            the data evenly divisible across the replicas. Default: ``False``.
+        use_adaptive_repeats (bool, optional): Flag about using adaptive repeats
     """
 
-    def __init__(self, dataset, samples_per_gpu, efficient_mode=False, num_replicas=1, rank=0, drop_last=False):
+    def __init__(
+        self,
+        dataset: Dataset,
+        samples_per_gpu: int,
+        efficient_mode: bool = False,
+        num_replicas: int = 1,
+        rank: int = 0,
+        drop_last: bool = False,
+        use_adaptive_repeats: bool = False,
+    ):
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
 
-        # Dataset Wrapping remove & repeat for RepeatDataset
-        self.dataset, self.repeat = unwrap_dataset(dataset)
+        super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
 
         if hasattr(self.dataset, "img_indices"):
             self.new_indices = self.dataset.img_indices["new"]
