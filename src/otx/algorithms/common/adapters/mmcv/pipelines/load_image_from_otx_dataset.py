@@ -120,6 +120,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         self._load_img_cfg["enable_memcache"] = False  # will use outer cache
         self._load_img_op = self._create_load_img_op(self._load_img_cfg)
         self._load_ann_op = self._create_load_ann_op(load_ann_cfg)
+        self._downscale_only = resize_cfg.pop("downscale_only", False) if resize_cfg else False
         self._resize_op = self._create_resize_op(resize_cfg)
         if self._resize_op is not None:
             self._resize_shape = resize_cfg.get("size", resize_cfg.get("img_scale"))
@@ -156,9 +157,10 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         original_shape = results.get("img_shape", self._resize_shape)
         if original_shape is None:
             return results
-        if original_shape[0] * original_shape[1] <= self._resize_shape[0] * self._resize_shape[1]:
-            # No benfit of early resizing if resize_shape is larger than original_shape
-            return results
+        if self._downscale_only:
+            if original_shape[0] * original_shape[1] <= self._resize_shape[0] * self._resize_shape[1]:
+                # No benfit of early resizing if resize_shape is larger than original_shape
+                return results
         return self._resize_op(results)
 
     def _load_cache(self, results: Dict[str, Any]) -> Optional[Dict[str, Any]]:
