@@ -265,23 +265,28 @@ class TestSemiSLClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLClassificationConfigurer("classification", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
+        data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.cfg.merge_from_dict(data_cfg)
 
-    def test_configure_data(self, mocker):
-        mocker.patch.object(ClassificationConfigurer, "configure_data")
-        mocker.patch("mmdet.datasets.build_dataset", return_value=[])
-        mocker.patch("otx.algorithms.classification.adapters.mmcls.configurer.build_dataloader", return_value=[])
-        self.model_cfg.update(self.data_cfg)
-        self.model_cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
-        self.model_cfg.model_task = "detection"
-        self.model_cfg.distributed = False
-        self.configurer.configure_data(self.model_cfg, self.data_cfg)
+    def test_configure_hook(self, mocker):
+        mock_super_configure_hook = mocker.patch.object(ClassificationConfigurer, "configure_hook")
+        mock_build_dataset = mocker.patch("mmdet.datasets.build_dataset", return_value=[])
+        mock_build_dataloader = mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.configurer.build_dataloader", return_value=[]
+        )
+        self.cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
+        self.cfg.model_task = "detection"
+        self.cfg.distributed = False
+        self.configurer.configure_hook(self.cfg)
+
+        mock_super_configure_hook.assert_called_once_with(self.cfg)
+        mock_build_dataset.assert_called_once()
+        mock_build_dataloader.assert_called_once()
 
     def test_configure_task(self):
-        self.model_cfg.update(self.data_cfg)
-        self.model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg)
+        self.cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        self.configurer.configure_task(self.cfg)
 
-        self.model_cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg)
+        self.cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        self.configurer.configure_task(self.cfg)
