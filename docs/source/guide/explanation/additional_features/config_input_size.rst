@@ -1,7 +1,7 @@
 Configurable Input Size
 =======================
 
-You have the option to work with smaller input resolutions to expedite training and inference times,
+This feature makes OTX use smaller input resolutions to expedite training and inference times,
 or opt for larger input size to enhance overall model capabilities.
 
 Rather than manually modifying values within the data pipeline, a streamlined approach is provided.
