@@ -20,15 +20,34 @@ __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375
 __resize_target_size = 224
 
 __train_pipeline = [
+    dict(type="LoadImageFromOTXDataset"),
     dict(type="RandomResizedCrop", size=__resize_target_size, efficientnet_style=True),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="ToTensor", keys=["gt_label"]),
-    dict(type="Collect", keys=["img", "gt_label"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_label"],
+        meta_keys=[
+            "flip_direction",
+            "entity_id",
+            "ori_filename",
+            "filename",
+            "img_norm_cfg",
+            "img_shape",
+            "label_id",
+            "pad_shape",
+            "scale_factor",
+            "flip",
+            "ori_shape",
+            "ignored_labels",
+        ],
+    ),
 ]
 
 __test_pipeline = [
+    dict(type="LoadImageFromOTXDataset"),
     dict(type="Resize", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),

@@ -1,5 +1,4 @@
 _base_ = [
-    "../_base_/data/seg_semisl.py",
     "../_base_/models/segmentors/segmentor.py",
     "./train.py",
 ]
@@ -32,7 +31,8 @@ checkpoint_config = dict(
     interval=1,
 )
 
-evaluation = dict(interval=1, metric=["mDice", "mIoU"], show_log=True)
+evaluation = dict(interval=1, metric="mDice", save_best="mDice", rule="greater", show_log=True)
+early_stop_metric = "mDice"
 
 task_adapt = dict(
     op="REPLACE",
