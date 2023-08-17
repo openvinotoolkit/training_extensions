@@ -743,7 +743,7 @@ class InputSizeManager:
         return None
 
     def _estimate_post_img_size(
-        self, pipelines: Dict, default_size: Optional[List[int]] = None
+        self, pipelines: List[Dict], default_size: Optional[List[int]] = None
     ) -> Union[List[int], None]:
         # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
@@ -777,6 +777,10 @@ class InputSizeManager:
                 post_img_size = self._estimate_post_img_size(pipeline["transforms"], post_img_size)
             elif pipeline["type"] == "AutoAugment":
                 post_img_size = self._estimate_post_img_size(pipeline["policies"][0], post_img_size)
+
+            if pipeline["type"] == "LoadResizeDataFromOTXDataset":  # Separate condition due to 'resize' in type name
+                if "resize_cfg" in pipeline:
+                    post_img_size = self._estimate_post_img_size([pipeline["resize_cfg"]], post_img_size)
 
         return post_img_size
 
@@ -813,10 +817,14 @@ class InputSizeManager:
             for sub_pipeline in pipeline["transforms"]:
                 self._set_pipeline_size_value(sub_pipeline, scale)
 
-        if pipeline["type"] == "AutoAugment":
+        elif pipeline["type"] == "AutoAugment":
             for sub_pipelines in pipeline["policies"]:
                 for sub_pipeline in sub_pipelines:
                     self._set_pipeline_size_value(sub_pipeline, scale)
+
+        elif pipeline["type"] == "LoadResizeDataFromOTXDataset":
+            if "resize_cfg" in pipeline:
+                self._set_pipeline_size_value(pipeline["resize_cfg"], scale)
 
     @staticmethod
     def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]):
