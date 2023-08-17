@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from mmcls.datasets import PIPELINES
-from mmcls.datasets.pipelines import Compose
+from mmcls.datasets.pipelines import Compose, Resize
 from mmcv.utils.registry import build_from_cfg
 from PIL import Image, ImageFilter
 from torchvision import transforms as T
@@ -36,6 +36,29 @@ class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset)
         if cfg is None:
             return None
         return build_from_cfg(cfg, PIPELINES)
+
+
+@PIPELINES.register_module()
+class ResizeTo(Resize):
+    """Resize to specific size.
+
+    This operation works if the input is not in desired shape.
+    If it's already in the shape, it just returns input dict for efficiency.
+
+    Args:
+        size (tuple): Images scales for resizing (h, w).
+    """
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of ResizeTo.
+
+        Args:
+            results: Inputs to be transformed.
+        """
+        img_shape = results.get("img_shape", (0, 0))
+        if img_shape[0] == self.size[0] and img_shape[1] == self.size[1]:
+            return results
+        return super().__call__(results)
 
 
 @PIPELINES.register_module()
