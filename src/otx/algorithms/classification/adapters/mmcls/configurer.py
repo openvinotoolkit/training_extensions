@@ -56,12 +56,12 @@ class ClassificationConfigurer(BaseConfigurer):
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_model(cfg, ir_options)
         self.configure_data(cfg, data_cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         self.configure_task(cfg)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_compatibility(self, cfg, **kwargs):
@@ -237,7 +237,8 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
 
             train_data_cfg.classes = self.model_classes
 
-        if not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False):
+        is_multiclass = not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False)
+        if is_multiclass:
             efficient_mode = cfg["task_adapt"].get("efficient_mode", True)
             sampler_type = "balanced"
             self.configure_loss(cfg)
@@ -251,6 +252,7 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
             sampler_flag = False
         else:
             sampler_flag = True
+
         # Update Task Adapt Hook
         task_adapt_hook = ConfigDict(
             type="TaskAdaptHook",
@@ -260,6 +262,8 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
             sampler_flag=sampler_flag,
             sampler_type=sampler_type,
             efficient_mode=efficient_mode,
+            use_adaptive_repeat=is_multiclass,
+            priority="NORMAL",
         )
         update_or_add_custom_hook(cfg, task_adapt_hook)
 
@@ -284,9 +288,9 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
 class SemiSLClassificationConfigurer(ClassificationConfigurer):
     """Patch config to support semi supervised learning for classification."""
 
-    def configure_data(self, cfg, data_cfg):
-        """Patch cfg.data."""
-        super().configure_data(cfg, data_cfg)
+    def configure_hook(self, cfg):
+        """Update cfg.custom_hooks."""
+        super().configure_hook(cfg)
         # Set unlabeled data hook
         if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
