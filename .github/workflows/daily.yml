@@ -35,3 +35,4 @@ jobs:
       tests-dir: ${{ matrix.test_dir }}
       timeout-minutes: 360
       upload-artifact: true
+      artifact-prefix: "daily-test-results"

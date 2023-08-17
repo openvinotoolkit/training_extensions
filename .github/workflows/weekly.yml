@@ -51,3 +51,4 @@ jobs:
       task: ${{ matrix.task }}
       timeout-minutes: 8640
       upload-artifact: true
+      artifact-prefix: "weekly-test-results"

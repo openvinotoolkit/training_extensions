@@ -27,6 +27,9 @@ on:
       task:
         type: string
         default: "undefined"
+      artifact-prefix:
+        type: string
+        default: "test-results"
 jobs:
   run_tests_in_tox:
     # tricky workaround to pass list from the string input type
@@ -47,7 +50,7 @@ jobs:
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
-          name: test-results-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}
+          name: ${{ inputs.artifact-prefix }}-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}
           path: |
             .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.csv
             .tox/tests-reg_${{ inputs.task }}_*.csv
