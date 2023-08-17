@@ -136,8 +136,8 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         if classes.shape[0] == 1:
             classes = classes.squeeze(0)
 
-        scale_x = meta["resized_shape"][1] / meta["original_shape"][1]
-        scale_y = meta["resized_shape"][0] / meta["original_shape"][0]
+        scale_x = meta["resized_shape"][0] / meta["original_shape"][1]
+        scale_y = meta["resized_shape"][1] / meta["original_shape"][0]
         boxes[:, 0::2] /= scale_x
         boxes[:, 1::2] /= scale_y
 
