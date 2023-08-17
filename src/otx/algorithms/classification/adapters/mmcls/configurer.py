@@ -237,7 +237,8 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
 
             train_data_cfg.classes = self.model_classes
 
-        if not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False):
+        is_multiclass = not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False)
+        if is_multiclass:
             efficient_mode = cfg["task_adapt"].get("efficient_mode", True)
             sampler_type = "balanced"
             self.configure_loss(cfg)
@@ -251,6 +252,7 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
             sampler_flag = False
         else:
             sampler_flag = True
+
         # Update Task Adapt Hook
         task_adapt_hook = ConfigDict(
             type="TaskAdaptHook",
@@ -260,6 +262,8 @@ class IncrClassificationConfigurer(ClassificationConfigurer):
             sampler_flag=sampler_flag,
             sampler_type=sampler_type,
             efficient_mode=efficient_mode,
+            use_adaptive_repeat=is_multiclass,
+            priority="NORMAL",
         )
         update_or_add_custom_hook(cfg, task_adapt_hook)
 
