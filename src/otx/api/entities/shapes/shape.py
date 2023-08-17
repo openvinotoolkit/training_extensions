@@ -175,7 +175,7 @@ class Shape(ShapeEntity):
         Returns:
             bool: ``True`` if coordinates are within expected range, ``False`` otherwise
         """
-        if not ((0.0 <= x <= 1.0) and (0.0 <= y <= 1.0)):
+        if not ((0.0 <= round(x,1) <= 1.0) and (0.0 <= round(y,1) <= 1.0)):
             warnings.warn(
                 f"{type(self).__name__} coordinates (x={x}, y={y}) are out of bounds, a normalized "
                 f"coordinate system is assumed. All coordinates are expected to be in range (0,1).",
