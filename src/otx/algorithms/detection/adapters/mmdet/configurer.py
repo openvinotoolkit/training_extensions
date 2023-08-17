@@ -53,13 +53,13 @@ class DetectionConfigurer(BaseConfigurer):
         self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, data_cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         self.configure_regularization(cfg)
         self.configure_task(cfg, train_dataset)
         self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_compatibility(self, cfg, **kwargs):
@@ -191,9 +191,10 @@ class DetectionConfigurer(BaseConfigurer):
                     # YOLOX tiny has a different input size in train and val data pipeline
                     cfg.model.input_size = (input_size[0], input_size[1])
                     base_input_size = {
-                        "train": 640,
-                        "val": 416,
-                        "test": 416,
+                        "train": (640, 640),
+                        "val": (416, 416),
+                        "test": (416, 416),
+                        "unlabeled": (992, 736),
                     }
 
         InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
@@ -232,9 +233,9 @@ class IncrDetectionConfigurer(DetectionConfigurer):
 class SemiSLDetectionConfigurer(DetectionConfigurer):
     """Patch config to support semi supervised learning for object detection."""
 
-    def configure_data(self, cfg, data_cfg):
-        """Patch cfg.data."""
-        super().configure_data(cfg, data_cfg)
+    def configure_hook(self, cfg):
+        """Update cfg.custom_hooks."""
+        super().configure_hook(cfg)
         # Set unlabeled data hook
         if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):

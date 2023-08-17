@@ -97,6 +97,18 @@ def mock_data_pipeline():
                 ],
             ],
         ),
+        dict(
+            type="TwoCropTransform",
+            view0=[
+                dict(type="RandomResizedCrop", size=image_size),
+            ],
+            view1=[
+                dict(type="RandomResizedCrop", size=image_size),
+            ],
+            pipeline=[
+                dict(type="Resize", size=image_size),
+            ],
+        ),
     ]
 
 
@@ -192,6 +204,23 @@ mock_data_pipeline_to_estimate = {
         ],
         "input_size": (500, 500),
     },
+    "two_crop_transform": {
+        "pipeline": [
+            dict(type="Resize", img_scale=(300, 300), keep_ratio=True),
+            dict(type="crop", size=(200, 200)),
+            dict(type="Pad", size=(400, 400)),
+            dict(
+                type="TwoCropTransform",
+                view0=[
+                    dict(type="RandomResizedCrop", size=(600, 600)),
+                ],
+                view1=[
+                    dict(type="RandomResizedCrop", size=(500, 500)),
+                ],
+            ),
+        ],
+        "input_size": (600, 600),
+    },
     "load_resize_data_from_otxdataset": {
         "pipeline": [
             dict(
@@ -210,7 +239,7 @@ mock_data_pipeline_to_estimate = {
             dict(type="ResizeTo", size=(100, 100)),
         ],
         "input_size": (100, 100),
-    },
+    }
 }
 
 

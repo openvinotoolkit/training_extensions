@@ -14,3 +14,4 @@ Additional Features
    noisy_label_detection
    fast_data_loading
    tiling
+   config_input_size
