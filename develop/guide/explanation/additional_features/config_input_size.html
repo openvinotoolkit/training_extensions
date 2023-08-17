@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Fast Data Loading &#8212; OpenVINO™ Training Extensions 1.5.0 documentation</title>
+    <title>Configurable Input Size &#8212; OpenVINO™ Training Extensions 1.5.0 documentation</title>
   
   
   
@@ -42,11 +42,11 @@
     <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/fast_data_loading';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/explanation/additional_features/config_input_size';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Improve Small Object Detection with Image Tiling" href="tiling.html" />
-    <link rel="prev" title="Noisy Label Detection" href="noisy_label_detection.html" />
+    <link rel="next" title="API" href="../../reference/api/index.html" />
+    <link rel="prev" title="Improve Small Object Detection with Image Tiling" href="tiling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="docsearch:language" content="en">
   </head>
@@ -286,9 +286,9 @@
 <li class="toctree-l2"><a class="reference internal" href="adaptive_training.html">Adaptive Training</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xai.html">Explainable AI (XAI)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="noisy_label_detection.html">Noisy Label Detection</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Fast Data Loading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fast_data_loading.html">Fast Data Loading</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tiling.html">Improve Small Object Detection with Image Tiling</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config_input_size.html">Configurable Input Size</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Configurable Input Size</a></li>
 </ul>
 </li>
 </ul>
@@ -458,59 +458,34 @@
             
             <article class="bd-article" role="main">
               
-  <section id="fast-data-loading">
-<h1>Fast Data Loading<a class="headerlink" href="#fast-data-loading" title="Permalink to this heading">#</a></h1>
-<p>OpenVINO™ Training Extensions provides several ways to boost model training speed,
-one of which is fast data loading.</p>
-<section id="faster-augmentation">
-<h2>Faster Augmentation<a class="headerlink" href="#faster-augmentation" title="Permalink to this heading">#</a></h2>
-<section id="augmix">
-<h3>AugMix<a class="headerlink" href="#augmix" title="Permalink to this heading">#</a></h3>
-<p>AugMix <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> is a simple yet powerful augmentation technique
-to improve robustness and uncertainty estimates of image classification task.
-OpenVINO™ Training Extensions implemented it in <a class="reference external" href="https://cython.org/">Cython</a> for faster augmentation.
-Users do not need to configure anything as cythonized AugMix is used by default.</p>
-</section>
-</section>
-<section id="caching">
-<h2>Caching<a class="headerlink" href="#caching" title="Permalink to this heading">#</a></h2>
-<section id="in-memory-caching">
-<h3>In-Memory Caching<a class="headerlink" href="#in-memory-caching" title="Permalink to this heading">#</a></h3>
-<p>OpenVINO™ Training Extensions provides in-memory caching for decoded images in main memory.
-If the batch size is large, such as for classification tasks, or if dataset contains
-high-resolution images, image decoding can account for a non-negligible overhead
-in data pre-processing.
-One can enable in-memory caching for maximizing GPU utilization and reducing model
-training time in those cases.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train --mem-cache-size=8GB ..
+  <section id="configurable-input-size">
+<h1>Configurable Input Size<a class="headerlink" href="#configurable-input-size" title="Permalink to this heading">#</a></h1>
+<p>This feature makes OTX use smaller input resolutions to expedite training and inference times,
+or opt for larger input size to enhance overall model capabilities.</p>
+<p>Rather than manually modifying values within the data pipeline, a streamlined approach is provided.
+You can change the model’s input size by simply adding an argument during <cite>train</cite>, <cite>eval</cite>, or <cite>export</cite>.
+Furthermore, when using a model weight trained on an input size other than the default,
+OTX automatically aligns data pipelines to input size during <cite>eval`</cite> and <cite>export</cite> processes.</p>
+<p>You can use this feature using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train \
+      ... \
+      params --learning_parameters.input_size input_size
 </pre></div>
 </div>
-</section>
-<section id="storage-caching">
-<h3>Storage Caching<a class="headerlink" href="#storage-caching" title="Permalink to this heading">#</a></h3>
-<p>OpenVINO™ Training Extensions uses <a class="reference external" href="https://github.com/openvinotoolkit/datumaro">Datumaro</a>
-under the hood for dataset managements.
-Since Datumaro <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html">supports</a>
-<a class="reference external" href="https://arrow.apache.org/overview/">Apache Arrow</a>, OpenVINO™ Training Extensions
-can exploit fast data loading using memory-mapped arrow file at the expanse of storage consumtion.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ otx train .. params --algo_backend.storage_cache_scheme JPEG/75
-</pre></div>
+<p>The available input sizes are currently as follows:</p>
+<ul class="simple">
+<li><p>64x64 (only for classification)</p></li>
+<li><p>128x128 (only for classification)</p></li>
+<li><p>256x256</p></li>
+<li><p>384x384</p></li>
+<li><p>512x512</p></li>
+<li><p>1024x1024</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Using smaller input size with datasets having lower image resolutions or larger objects can yield a speed advantage with minimal impact on model performance.
+But note that the choice of small input size can potentially influence model performance based on the task, model architecture, and dataset characteristics.</p>
 </div>
-<p>The cache would be saved in <code class="docutils literal notranslate"><span class="pre">$HOME/.cache/otx</span></code> by default.
-One could change it by modifying <code class="docutils literal notranslate"><span class="pre">OTX_CACHE</span></code> environment variable.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ OTX_CACHE=/path/to/cache otx train .. params --algo_backend.storage_cache_scheme JPEG/75
-</pre></div>
-</div>
-<p>Please refere <a class="reference external" href="https://openvinotoolkit.github.io/datumaro/stable/docs/data-formats/formats/arrow.html#export-to-arrow">Datumaro document</a>
-for available schemes to choose but we recommend <code class="docutils literal notranslate"><span class="pre">JPEG/75</span></code> for fast data loaidng.</p>
-<aside class="footnote-list brackets">
-<aside class="footnote brackets" id="id2" role="note">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
-<p>Dan Hendrycks, Norman Mu, Ekin D. Cubuk, Barret Zoph, Justin Gilmer, and Balaji Lakshminarayanan. “AugMix: A Simple Data Processing Method to Improve Robustness and Uncertainty” International Conference on Learning Representations. 2020.</p>
-</aside>
-</aside>
-</section>
-</section>
 </section>
 
 
@@ -521,17 +496,17 @@ for available schemes to choose but we recommend <code class="docutils literal n
             <footer class="bd-footer-article">
                 <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-  <a class='left-prev' id="prev-link" href="noisy_label_detection.html" title="previous page">
+  <a class='left-prev' id="prev-link" href="tiling.html" title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
           <p class="prev-next-subtitle">previous</p>
-          <p class="prev-next-title">Noisy Label Detection</p>
+          <p class="prev-next-title">Improve Small Object Detection with Image Tiling</p>
       </div>
   </a>
-  <a class='right-next' id="next-link" href="tiling.html" title="next page">
+  <a class='right-next' id="next-link" href="../../reference/api/index.html" title="next page">
   <div class="prev-next-info">
       <p class="prev-next-subtitle">next</p>
-      <p class="prev-next-title">Improve Small Object Detection with Image Tiling</p>
+      <p class="prev-next-title">API</p>
   </div>
   <i class="fa-solid fa-angle-right"></i>
   </a>
@@ -546,47 +521,6 @@ for available schemes to choose but we recommend <code class="docutils literal n
               
 <div class="toc-item">
   
-<div class="tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-</div>
-<nav id="bd-toc-nav" class="page-toc">
-    <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#faster-augmentation">
-   Faster Augmentation
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#augmix">
-     AugMix
-    </a>
-   </li>
-  </ul>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#caching">
-   Caching
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#in-memory-caching">
-     In-Memory Caching
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#storage-caching">
-     Storage Caching
-    </a>
-   </li>
-  </ul>
- </li>
-</ul>
-
-</nav>
-</div>
-
-<div class="toc-item">
-  
 <div id="searchbox"></div>
 </div>
 
@@ -597,7 +531,7 @@ for available schemes to choose but we recommend <code class="docutils literal n
 <div class="toc-item">
   
 <div class="tocsection sourcelink">
-    <a href="../../../_sources/guide/explanation/additional_features/fast_data_loading.rst.txt">
+    <a href="../../../_sources/guide/explanation/additional_features/config_input_size.rst.txt">
         <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
 </div>
