@@ -1,0 +1,227 @@
+{
+  "info": {},
+  "categories": {
+    "label": {
+      "label_groups": [
+        {
+          "name": "animal",
+          "group_type": "exclusive",
+          "labels": ["support animal", "person"]
+        },
+        {
+          "name": "animal___pet",
+          "group_type": "exclusive",
+          "labels": ["cat", "dog"]
+        },
+        {
+          "name": "animal___gender",
+          "group_type": "exclusive",
+          "labels": ["woman", "man"]
+        }
+      ],
+      "labels": [
+        {
+          "name": "support animal",
+          "parent": "",
+          "attribute": []
+        },
+        {
+          "name": "cat",
+          "parent": "animal",
+          "attribute": []
+        },
+        {
+          "name": "dog",
+          "parent": "animal",
+          "attributes": []
+        },
+        {
+          "name": "person",
+          "parent": "",
+          "attributes": []
+        },
+        {
+          "name": "woman",
+          "parent": "person",
+          "attributes": []
+        },
+        {
+          "name": "man",
+          "parent": "person",
+          "attributes": []
+        }
+      ],
+      "attributes": []
+    }
+  },
+  "items": [
+    {
+      "id": "00",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 4
+        }
+      ],
+      "image": {
+        "path": "1.jpg"
+      }
+    },
+    {
+      "id": "01",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 4
+        }
+      ],
+      "image": {
+        "path": "2.jpg"
+      }
+    },
+    {
+      "id": "02",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 4
+        }
+      ],
+      "image": {
+        "path": "3.jpg"
+      }
+    },
+    {
+      "id": "03",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 4
+        }
+      ],
+      "image": {
+        "path": "4.jpg"
+      }
+    },
+    {
+      "id": "04",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 4
+        }
+      ],
+      "image": {
+        "path": "5.jpg"
+      }
+    },
+    {
+      "id": "05",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 4
+        }
+      ],
+      "image": {
+        "path": "6.jpg"
+      }
+    },
+    {
+      "id": "09",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 5
+        }
+      ],
+      "image": {
+        "path": "man1.jpg"
+      }
+    },
+    {
+      "id": "10",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 5
+        }
+      ],
+      "image": {
+        "path": "man2.jpg"
+      }
+    },
+    {
+      "id": "11",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 5
+        }
+      ],
+      "image": {
+        "path": "man3.jpg"
+      }
+    },
+    {
+      "id": "12",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 5
+        }
+      ],
+      "image": {
+        "path": "man4.jpg"
+      }
+    },
+    {
+      "id": "13",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 5
+        }
+      ],
+      "image": {
+        "path": "man5.jpg"
+      }
+    },
+    {
+      "id": "14",
+      "annotations": [
+        {
+          "id": 0,
+          "type": "label",
+          "group": 2,
+          "label_id": 5
+        }
+      ],
+      "image": {
+        "path": "man6.jpg"
+      }
+    }
+  ]
+}

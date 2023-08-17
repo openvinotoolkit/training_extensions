@@ -203,7 +203,7 @@ class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_train_selfsl(self, template, tmp_dir_path):
-        if template.name == "SegNext-s":
+        if "SegNext" in template.name:
             pytest.skip(reason="Segnext model doesn't support Self-SL.")
         tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
@@ -212,7 +212,7 @@ class TestSegmentationCLI:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
-        if template.name == "SegNext-s":
+        if "SegNext" in template.name:
             pytest.skip(reason="Segnext model doesn't support Self-SL.")
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)

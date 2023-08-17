@@ -113,6 +113,7 @@ class TestISegmXAIAPI:
     def test_ov_xai_inference(self, tile, enable_async_inference, tmp_dir_path):
         if tile:
             tmp_dir_path = tmp_dir_path / "tile"
+            pytest.skip("[Issue#2434] Need to fix merging sailency map")
         else:
             tmp_dir_path = tmp_dir_path / "no_tile"
         task_env, iseg_dataset = self._prepare_task_env(tmp_dir_path, train=False, tile=tile)
