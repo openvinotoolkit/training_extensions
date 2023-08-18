@@ -239,7 +239,7 @@ mock_data_pipeline_to_estimate = {
             dict(type="ResizeTo", size=(100, 100)),
         ],
         "input_size": (100, 100),
-    }
+    },
 }
 
 
