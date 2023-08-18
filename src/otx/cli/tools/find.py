@@ -62,7 +62,7 @@ def parse_args():
 def generate_backbone_rows(index: int, backbone_type: str, meta_data: dict):
     """Generate table row for backbone json format.
 
-    It expects a json file format from otx/cli/builder/supported_backbone.
+    It expects a json file format from src/otx/cli/builder/supported_backbone.
     index: The index of each backbone (int)
     backbone_type: The backbone type want to add (str)
     meta_data: This is the metadata of the backbone type (dict)
