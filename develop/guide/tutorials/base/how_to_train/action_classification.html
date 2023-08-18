@@ -525,7 +525,7 @@ environment:</p>
 </div>
 <p>Once you have the dataset structured properly, copy <code class="docutils literal notranslate"><span class="pre">mmaction2/data</span></code> folder, which contains hmdb51 dataset, to <code class="docutils literal notranslate"><span class="pre">training_extensions/data</span></code>.
 Then, you can now convert it to the <a class="reference external" href="https://www.cvat.ai/">CVAT</a> format using the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ python3 otx/algorithms/action/utils/convert_public_data_to_cvat.py \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(otx) ...$ python3 src/otx/algorithms/action/utils/convert_public_data_to_cvat.py \
                    --task action_classification \
                    --src_path ./data/hmdb51/rawframes \
                    --dst_path ./data/hmdb51/CVAT/train \
