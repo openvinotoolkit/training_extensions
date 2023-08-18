@@ -272,3 +272,15 @@ def non_linear_normalization(saliency_map: np.ndarray) -> np.ndarray:
     saliency_map = 255.0 / (max_soft_score + 1e-12) * saliency_map
 
     return np.uint8(np.floor(saliency_map))
+
+
+def get_hierarchical_label_list(hierarchical_info, labels):
+    """Return hierarchical labels list which is adjusted to model outputs classes."""
+    hierarchical_labels = []
+    for head_idx in range(hierarchical_info["num_multiclass_heads"]):
+        logits_begin, logits_end = hierarchical_info["head_idx_to_logits_range"][str(head_idx)]
+        for logit in range(0, logits_end - logits_begin):
+            label_str = hierarchical_info["all_groups"][head_idx][logit]
+            otx_label = next(x for x in labels if x.name == label_str)
+            hierarchical_labels.append(otx_label)
+    return hierarchical_labels
