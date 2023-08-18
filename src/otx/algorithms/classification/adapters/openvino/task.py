@@ -36,6 +36,7 @@ from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
+    get_hierarchical_label_list,
 )
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
@@ -76,7 +77,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item, get_hierarchical_label_list
+from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 
 logger = logging.getLogger(__name__)
 

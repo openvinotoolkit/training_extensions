@@ -28,6 +28,7 @@ from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
     get_cls_model_api_configuration,
+    get_hierarchical_label_list,
 )
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
@@ -75,7 +76,7 @@ from otx.api.entities.train_parameters import (
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item, get_hierarchical_label_list
+from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
 
