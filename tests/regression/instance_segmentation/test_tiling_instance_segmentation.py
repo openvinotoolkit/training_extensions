@@ -73,6 +73,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")
     def test_otx_train(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
@@ -100,6 +101,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")
     def test_otx_train_kpi_test(self, template):
         results = result_dict[TASK_TYPE][self.label_type][TRAIN_TYPE]["train"]
         performance = get_template_performance(results, template)
@@ -121,7 +123,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
+    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")
     def test_otx_export_eval_openvino(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
@@ -151,6 +153,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")
     def test_otx_deploy_eval_deployment(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
@@ -180,6 +183,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")
     def test_nncf_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 
@@ -212,6 +216,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")
     def test_ptq_optimize_eval(self, template, tmp_dir_path):
         self.performance[template.name] = {}
 

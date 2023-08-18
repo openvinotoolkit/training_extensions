@@ -317,7 +317,7 @@ class TestToolsMPASelfSLSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path_1 = tmp_dir_path / "segmentation/test_selfsl"
-        if not (Path(templates[0].model_template_path).parent / "selfsl").is_dir():
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
             pytest.skip("Self-SL training type isn't available for this template")
         otx_train_testing(template, tmp_dir_path_1, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path_1)
@@ -331,7 +331,7 @@ class TestToolsMPASelfSLSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
-        if not (Path(templates[0].model_template_path).parent / "selfsl").is_dir():
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
             pytest.skip("Self-SL training type isn't available for this template")
         tmp_dir_path = tmp_dir_path / "segmentation/test_selfsl_sl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
@@ -341,7 +341,7 @@ class TestToolsMPASelfSLSegmentation:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_selfsl(self, template, tmp_dir_path):
-        if not (Path(templates[0].model_template_path).parent / "selfsl").is_dir():
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
             pytest.skip("Self-SL training type isn't available for this template")
         tmp_dir_path = tmp_dir_path / "segmentation/test_multi_gpu_selfsl"
         args_selfsl_multigpu = copy.deepcopy(args_selfsl)
