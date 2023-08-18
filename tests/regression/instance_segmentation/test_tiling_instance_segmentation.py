@@ -79,7 +79,7 @@ class TestRegressionTilingInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")  
+    @pytest.mark.skip(reason="Issue#2381: Tiling isn't available at class incremental/deremental learning scenario")
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
         self.performance[template.name] = {}
 
