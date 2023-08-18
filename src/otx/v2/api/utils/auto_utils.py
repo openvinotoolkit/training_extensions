@@ -84,10 +84,7 @@ def configure_train_type(train_data_roots: str, unlabeled_data_roots: str):
         )
 
     if train_data_roots is None or not Path(train_data_roots).is_dir() or not Path(train_data_roots).iterdir():
-        raise ValueError(
-            "train-data-roots isn't a directory, it doesn't exist or it is empty. "
-            "Please, check command line and directory path."
-        )
+        return None
 
     if _count_imgs_in_dir(train_data_roots):
         # If train folder with images only was passed to args

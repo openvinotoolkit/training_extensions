@@ -104,7 +104,7 @@ def get_model(
         model = Config(cfg_dict=Config.merge_cfg_dict(base_model, model))
 
     if isinstance(model, Config):
-        model = configure_in_channels(model)
+        model = configure_in_channels(model)  # TODO: more clearly
         if not hasattr(model, "model"):
             model["_scope_"] = "mmpretrain"
             model = Config(cfg_dict={"model": model})

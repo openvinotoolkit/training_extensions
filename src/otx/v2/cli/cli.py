@@ -13,7 +13,7 @@ from jsonargparse import (
 )
 from omegaconf import OmegaConf
 
-from otx.v2.api.core import AutoEngine, BaseDataset, Engine
+from otx.v2.api.core import AutoRunner, BaseDataset, Engine
 from otx.v2.api.utils.importing import get_otx_root_path
 from otx.v2.cli import cli_otx_logo
 
@@ -222,7 +222,7 @@ class OTXCLIv2:
         self.error = None
         self.engine_defaults = {}
         self.pre_args = {}
-        self.auto_engine_class = AutoEngine
+        self.auto_runner_class = AutoRunner
 
         # Checks to see if the user's command enables auto-configuration.
         self.auto_engine = self.get_auto_engine()
@@ -314,7 +314,6 @@ class OTXCLIv2:
             "test": {"model", "test_dataloader"},
             "predict": {"model"},
             "export": {"model"},
-            "list": {},
         }
 
     def _add_engine_subcommands(self, parser: OTXArgumentParser, **kwargs: Any) -> None:
@@ -357,6 +356,11 @@ class OTXCLIv2:
         # List
         subcommand_parser = self.init_parser(default_config_files=self.default_config_files, **kwargs)
         subcommand_parser.add_argument(
+            "--task",
+            help="Select Task: {classification, detection, segmentation}.",
+            type=str,
+        )
+        subcommand_parser.add_argument(
             "--model",
             type=Optional[Union[str, bool]],
             help="List model.",
@@ -373,9 +377,10 @@ class OTXCLIv2:
             if config_candidate.exists():
                 pre_args["config"] = str(config_candidate)
         try:
-            temp_engine = self.auto_engine_class(
+            data_task = pre_args.get("data.task", None)
+            temp_engine = self.auto_runner_class(
                 framework=pre_args.get("framework", None),
-                task=pre_args.get("data.task", None),
+                task=pre_args.get("task", None) if data_task is None else data_task,
                 train_type=pre_args.get("data.train_type", None),
                 work_dir=pre_args.get("work_dir", None),  # FIXME
                 train_data_roots=pre_args.get("data.train_data_roots", None),
@@ -506,10 +511,6 @@ class OTXCLIv2:
             self.instantiate_classes()
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.export(model=self.model, **subcommand_kwargs)
-            print(results)
-        elif subcommand == "list":
-            model = self._pop(self.config, "model")
-            results = self.auto_engine.list_models(model)
             print(results)
         else:
             for key, val in self.config[subcommand].items():

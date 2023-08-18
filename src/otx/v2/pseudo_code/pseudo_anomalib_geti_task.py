@@ -22,7 +22,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.v2.adapters.torch.anomalib import Dataset, get_model
 
 # OTX V2 API
-from otx.v2.api.core import AutoEngine
+from otx.v2.api.core import AutoRunner
 
 # Pseudo GetiTask
 from .pseudo_geti_task import GetiTask
@@ -45,8 +45,8 @@ class GetiAnomalibTask(GetiTask):
         # Model API
         self.model = self.load_model(model=task_environment.model)
 
-        # AutoEngine Settings
-        self.auto_engine = AutoEngine(
+        # AutoRunner Settings
+        self.auto_runner = AutoRunner(
             framework="anomalib",
             task=self.task_type,
             train_type=self.train_type,
@@ -134,7 +134,7 @@ class GetiAnomalibTask(GetiTask):
         params = GetiTask.covert_parameter(train_parameters)
 
         # Update Model
-        results = self.auto_engine.train(
+        results = self.auto_runner.train(
             model=self.model,
             train_dataloader=train_dataloader,
             val_dataloader=val_dataloader,
@@ -169,7 +169,7 @@ class GetiAnomalibTask(GetiTask):
         params = GetiTask.covert_parameter(inference_parameters)
 
         # Update Model
-        results = self.auto_engine.predict(model=self.model, img=dataloader, **params)
+        results = self.auto_runner.predict(model=self.model, img=dataloader, **params)
 
         # Update result to DatasetEntity
         dataset_entity = GetiTask.get_dataset_entity_from_result(dataset_entity, results)
@@ -197,8 +197,8 @@ class GetiAnomalibTask(GetiTask):
         self.precision[0] = precision
         output_model.has_xai = dump_features
 
-        # Run Exporting with AutoEngine
-        results = self.auto_engine.export(model=self.model)
+        # Run Exporting with AutoRunner
+        results = self.auto_runner.export(model=self.model)
 
         # Update output_model with results
         if export_type == ExportType.ONNX:

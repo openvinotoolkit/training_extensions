@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from mmpretrain import ImageClassificationInferencer
+from mmpretrain import ImageClassificationInferencer, inference_model
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
@@ -26,18 +26,22 @@ class MMPTEngine(MMXEngine):
     def predict(
         self,
         model: Optional[Union[torch.nn.Module, Dict, str]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
+        checkpoint: Union[bool, str, Path] = True,
         img: Optional[Union[str, np.ndarray, list]] = None,
         pipeline: Optional[List[Dict]] = None,
         device: Union[str, torch.device, None] = None,
+        # task: Optional[str] = None,
+        batch_size: int = 1,
     ) -> List[Dict]:
+        from mmpretrain import inference_model
+        from mmengine.model import BaseModel
+
+        # Model config need data_pipeline of test_dataloader
         # Update pipelines
         if pipeline is None:
             from otx.v2.adapters.torch.mmengine.mmpretrain.dataset import get_default_pipeline
 
             pipeline = get_default_pipeline()
-
-        # Model config need data_pipeline of test_dataloader
         config = Config({})
         if hasattr(model, "_config"):
             config = model._config
@@ -48,13 +52,27 @@ class MMPTEngine(MMXEngine):
             model.setdefault("_config", config)
         elif isinstance(model, torch.nn.Module):
             model._config = config
+
+        # # Check if the model can use mmpretrain's inference api.
+        # if isinstance(checkpoint, Path):
+        #     checkpoint = str(checkpoint)
+        # if isinstance(model, BaseModel) and hasattr(model, "_metainfo") and model._metainfo.results is not None:
+        #     return inference_model(
+        #         model=model,
+        #         pretrained=checkpoint,
+        #         device=device,
+        #         inputs=img,
+        #         batch_size=batch_size
+        #     )
+        # elif task is not None and task != "Image Classification":
+        #     raise NotImplementedError()
         inferencer = ImageClassificationInferencer(
             model=model,
-            pretrained=str(checkpoint) if checkpoint is not None else None,
+            pretrained=checkpoint,
             device=device,
         )
 
-        return inferencer(img)
+        return inferencer(img, batch_size)
 
     def export(
         self,

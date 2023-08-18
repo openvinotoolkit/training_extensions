@@ -75,7 +75,7 @@ class MMXEngine(Engine):
             kwargs["model"] = model
             if isinstance(model, torch.nn.Module):
                 head = model.head if hasattr(model, "head") else None
-                num_classes = head.num_classes if head else -1
+                num_classes = head.num_classes if hasattr(head, "num_classes") else -1
             else:
                 head = model.get("head", {})
                 num_classes = head.get("num_classes", -1)
