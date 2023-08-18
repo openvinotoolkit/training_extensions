@@ -65,7 +65,6 @@ def test_load_resize_data_from_otx_dataset_call(mocker):
     op = LoadResizeDataFromOTXDataset(
         load_img_cfg=dict(type="LoadImageFromOTXDataset"),
         resize_cfg=dict(type="Resize", size=(4, 4)),  # 8x8 -> 4x4
-        enable_memcache=True,
     )
     src_dict = dict(
         dataset_item=otx_dataset[0],
@@ -93,7 +92,6 @@ def test_load_resize_data_from_otx_dataset_downscale_only(mocker):
     op = LoadResizeDataFromOTXDataset(
         load_img_cfg=dict(type="LoadImageFromOTXDataset"),
         resize_cfg=dict(type="Resize", size=(12, 12), downscale_only=True),  # 8x8 -> 12x12
-        enable_memcache=True,
     )
     src_dict = dict(
         dataset_item=otx_dataset[0],

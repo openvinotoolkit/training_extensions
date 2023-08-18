@@ -654,6 +654,7 @@ class InputSizeManager:
         "MultiScaleFlipAug": ["transforms"],
         "AutoAugment": ["policies"],
         "TwoCropTransform": ["view0", "view1", "pipeline"],
+        "LoadResizeDataFromOTXDataset": ["resize_cfg"],
     }
     SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
 
@@ -785,14 +786,12 @@ class InputSizeManager:
                 for sub_pipeline_name in sub_pipeline_names:
                     if sub_pipeline_name in pipeline:
                         sub_pipeline = pipeline[sub_pipeline_name]
-                        if isinstance(sub_pipeline[0], list):
+                        if isinstance(sub_pipeline, dict):
+                            sub_pipeline = [sub_pipeline]
+                        elif isinstance(sub_pipeline[0], list):
                             sub_pipeline = sub_pipeline[0]
                         post_img_size = self._estimate_post_img_size(sub_pipeline, post_img_size)
                         break
-
-            if pipeline["type"] == "LoadResizeDataFromOTXDataset":  # Separate condition due to 'resize' in type name
-                if "resize_cfg" in pipeline:
-                    post_img_size = self._estimate_post_img_size([pipeline["resize_cfg"]], post_img_size)
 
         return post_img_size
 
@@ -833,7 +832,9 @@ class InputSizeManager:
             if pipeline_name == pipeline["type"]:
                 for sub_pipeline_name in sub_pipeline_names:
                     if sub_pipeline_name in pipeline:
-                        if isinstance(pipeline[sub_pipeline_name][0], dict):
+                        if isinstance(pipeline[sub_pipeline_name], dict):
+                            self._set_pipeline_size_value(pipeline[sub_pipeline_name], scale)
+                        elif isinstance(pipeline[sub_pipeline_name][0], dict):
                             for sub_pipeline in pipeline[sub_pipeline_name]:
                                 self._set_pipeline_size_value(sub_pipeline, scale)
                         elif isinstance(pipeline[sub_pipeline_name][0], list):
@@ -843,7 +844,7 @@ class InputSizeManager:
                         else:
                             raise ValueError(
                                 "Dataset pipeline in pipeline wrapper type should be"
-                                "either list[dict] or list[list[dict]]."
+                                "either dict, list[dict] or list[list[dict]]."
                             )
 
     @staticmethod

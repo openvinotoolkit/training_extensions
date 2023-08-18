@@ -22,7 +22,7 @@ __resize_target_size = 224
 __train_pipeline = [
     dict(
         type="LoadResizeDataFromOTXDataset",
-        load_img_cfg=dict(type="LoadImageFromOTXDataset"),
+        load_img_cfg=dict(type="LoadImageFromOTXDataset", enable_memcache=False),  # To be cached after resize
         resize_cfg=dict(type="Resize", size=__resize_target_size, downscale_only=True),
         # To be resized in this op only if input is larger than expected size
         # for speed & cache memory efficiency.

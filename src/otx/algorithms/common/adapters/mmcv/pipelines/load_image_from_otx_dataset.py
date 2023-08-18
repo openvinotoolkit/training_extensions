@@ -26,10 +26,10 @@ class LoadImageFromOTXDataset:
 
     Args:
         to_float32 (bool, optional): True to convert images to fp32. defaults to False.
-        enable_memcache (bool, optional): True to enable in-memory cache. defaults to False.
+        enable_memcache (bool, optional): True to enable in-memory cache. defaults to True.
     """
 
-    def __init__(self, to_float32: bool = False, enable_memcache: bool = False):
+    def __init__(self, to_float32: bool = False, enable_memcache: bool = True):
         self._to_float32 = to_float32
         self._enable_memcache = enable_memcache
         try:
@@ -105,7 +105,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         load_ann_cfg (Dict, optional): Optionally creates annotation loading operation based on the config.
             Defaults to None.
         resize_cfg (Dict, optional): Optionally creates resize operation based on the config. Defaults to None.
-        enable_memcache (bool, optional): True to enable in-memory cache. Defaults to False.
+        enable_memcache (bool, optional): True to enable in-memory cache. Defaults to True.
     """
 
     def __init__(
@@ -116,9 +116,9 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self._load_img_cfg = load_img_cfg.copy()
-        self._load_img_cfg["enable_memcache"] = False  # will use outer cache
-        self._load_img_op = self._create_load_img_op(self._load_img_cfg)
+        load_img_cfg = load_img_cfg.copy()
+        load_img_cfg["enable_memcache"] = False  # will use outer cache
+        self._load_img_op = self._create_load_img_op(load_img_cfg)
         self._load_ann_op = self._create_load_ann_op(load_ann_cfg)
         self._downscale_only = resize_cfg.pop("downscale_only", False) if resize_cfg else False
         self._resize_op = self._create_resize_op(resize_cfg)
@@ -183,6 +183,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
             return
         key = self._get_unique_key(results)
         meta = results.copy()
+        meta.pop("dataset_item")  # remove irrlevant info
         img = meta.pop("img")
         self._mem_cache_handler.put(key, img, meta)
 
