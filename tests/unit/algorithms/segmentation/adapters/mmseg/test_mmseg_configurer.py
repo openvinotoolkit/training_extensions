@@ -234,6 +234,7 @@ class TestSegmentationConfigurer:
             "train": 512,
             "val": 544,
             "test": 544,
+            "unlabeled": 512,
         }
 
         # excute
@@ -276,27 +277,28 @@ class TestSemiSLSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLSegmentationConfigurer("segmentation", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
+        self.cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
         data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
-        self.model_cfg.merge_from_dict(data_pipeline_cfg)
-        self.model_cfg.model_task = "segmentation"
-        self.model_cfg.distributed = False
-        self.data_cfg = MPAConfig(
-            {
-                "data": {
-                    "train": {"otx_dataset": [], "labels": []},
-                    "val": {"otx_dataset": [], "labels": []},
-                    "test": {"otx_dataset": [], "labels": []},
-                    "unlabeled": {"otx_dataset": [0], "labels": []},
+        self.cfg.merge_from_dict(data_pipeline_cfg)
+        self.cfg.model_task = "segmentation"
+        self.cfg.distributed = False
+        self.cfg.merge_from_dict(
+            MPAConfig(
+                {
+                    "data": {
+                        "train": {"otx_dataset": [], "labels": []},
+                        "val": {"otx_dataset": [], "labels": []},
+                        "test": {"otx_dataset": [], "labels": []},
+                        "unlabeled": {"otx_dataset": [0], "labels": []},
+                    }
                 }
-            }
+            )
         )
 
     @e2e_pytest_unit
-    def test_configure_data(self, mocker):
-        data_cfg = copy.deepcopy(self.data_cfg)
+    def test_configure_hook(self, mocker):
         mock_ul_dataloader = mocker.patch.object(SemiSLSegmentationConfigurer, "configure_unlabeled_dataloader")
-        self.configurer.configure_data(self.model_cfg, data_cfg)
+        self.configurer.configure_hook(self.cfg)
         mock_ul_dataloader.assert_called_once()
 
     @e2e_pytest_unit
@@ -308,13 +310,10 @@ class TestSemiSLSegmentationConfigurer:
 
     @e2e_pytest_unit
     def test_configure_unlabeled_dataloader(self, mocker):
-        data_cfg = copy.deepcopy(self.data_cfg)
-        data_cfg.model_task = "segmentation"
-        data_cfg.distributed = False
         mocker_build_dataset = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataset")
         mocker_build_dataloader = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataloader")
-        self.configurer.configure_data(self.model_cfg, data_cfg)
+        self.configurer.configure_hook(self.cfg)
 
         mocker_build_dataset.assert_called_once()
         mocker_build_dataloader.assert_called_once()
-        assert "ComposedDataLoadersHook" in [hook["type"] for hook in self.model_cfg.custom_hooks]
+        assert "ComposedDataLoadersHook" in [hook["type"] for hook in self.cfg.custom_hooks]
