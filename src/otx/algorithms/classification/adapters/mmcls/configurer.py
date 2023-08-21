@@ -196,15 +196,6 @@ class ClassificationConfigurer(BaseConfigurer):
         logger.info("Input size is changed to {}".format(input_size))
 
 
-CLASS_INC_DATASET = [
-    "OTXClsDataset",
-    "OTXMultilabelClsDataset",
-    "MPAHierarchicalClsDataset",
-    "ClsTVDataset",
-]
-WEIGHT_MIX_CLASSIFIER = ["CustomImageClassifier"]
-
-
 class IncrClassificationConfigurer(IncrConfigurerMixin, ClassificationConfigurer):
     """Patch config to support incremental learning for classification."""
 
