@@ -36,6 +36,7 @@ from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
+    get_hierarchical_label_list,
 )
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
@@ -228,12 +229,18 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                 if saliency_map is not None and repr_vector is not None:
                     feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
                     dataset_item.append_metadata_item(feature_vec_media, model=self.model)
+                    label_list = self.task_environment.get_labels()
+                    # Fix the order for hierarchical labels to adjust classes with model outputs
+                    if self.inferencer.model.hierarchical:
+                        label_list = get_hierarchical_label_list(
+                            self.inferencer.model.hierarchical_info["cls_heads_info"], label_list
+                        )
 
                     add_saliency_maps_to_dataset_item(
                         dataset_item=dataset_item,
                         saliency_map=saliency_map,
                         model=self.model,
-                        labels=self.task_environment.get_labels(),
+                        labels=label_list,
                         predicted_scored_labels=item_labels,
                         explain_predicted_classes=explain_predicted_classes,
                         process_saliency_maps=process_saliency_maps,
@@ -284,6 +291,12 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             explain_predicted_classes = explain_parameters.explain_predicted_classes
 
         dataset_size = len(dataset)
+        label_list = self.task_environment.get_labels()
+        # Fix the order for hierarchical labels to adjust classes with model outputs
+        if self.inferencer.model.hierarchical:
+            label_list = get_hierarchical_label_list(
+                self.inferencer.model.hierarchical_info["cls_heads_info"], label_list
+            )
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, _, saliency_map, _, _ = self.inferencer.predict(dataset_item.numpy)
             if saliency_map is None:
@@ -298,7 +311,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
                 model=self.model,
-                labels=self.task_environment.get_labels(),
+                labels=label_list,
                 predicted_scored_labels=item_labels,
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,
