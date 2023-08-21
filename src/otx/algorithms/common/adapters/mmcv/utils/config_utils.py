@@ -563,6 +563,19 @@ def patch_from_hyperparams(config: Config, hyperparams):
         runner=runner,
     )
 
+    # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
+    # as `samples_per_gpu might` not be a valid argument for certain algorithms.
+    if hasattr(config, "task"):
+        if config.task == "instance-segmentation" or config.task == "detection":
+            hparams.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                        test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                    ),
+                )
+            )
+
     if hyperparams.learning_parameters.auto_num_workers:
         adapted_num_worker = get_adaptive_num_workers()
         if adapted_num_worker is not None:
@@ -629,7 +642,7 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
 class InputSizeManager:
     """Class for changing input size and getting input size value by checking data pipeline.
 
-    NOTE: "resize", "pad", "crop", "mosaic", "randomaffine", "multiscaleflipaug" and "AutoAugment"
+    NOTE: "resize", "pad", "crop", "mosaic", "randomaffine", "multiscaleflipaug" , "AutoAugment" and "TwoCropTransform"
     are considered at now. If other data pipelines exist, it can work differently than expected.
 
     Args:
@@ -650,7 +663,12 @@ class InputSizeManager:
         "randomaffine": ["border"],
         "multiscaleflipaug": ["img_scale"],
     }
-    SUBSET_TYPES: Tuple[str, str, str] = ("train", "val", "test")
+    PIPELINE_WRAPPER: Dict[str, List[str]] = {
+        "MultiScaleFlipAug": ["transforms"],
+        "AutoAugment": ["policies"],
+        "TwoCropTransform": ["view0", "view1", "pipeline"],
+    }
+    SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
 
     def __init__(
         self,
@@ -743,7 +761,7 @@ class InputSizeManager:
         return None
 
     def _estimate_post_img_size(
-        self, pipelines: Dict, default_size: Optional[List[int]] = None
+        self, pipelines: List[Dict], default_size: Optional[List[int]] = None
     ) -> Union[List[int], None]:
         # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
@@ -774,9 +792,16 @@ class InputSizeManager:
                 img_size = self._get_size_value(pipeline, "multiscaleflipaug")
                 if img_size is not None:
                     post_img_size = img_size
-                post_img_size = self._estimate_post_img_size(pipeline["transforms"], post_img_size)
-            elif pipeline["type"] == "AutoAugment":
-                post_img_size = self._estimate_post_img_size(pipeline["policies"][0], post_img_size)
+
+        for pipeline_name, sub_pipeline_names in self.PIPELINE_WRAPPER.items():
+            if pipeline_name == pipeline["type"]:
+                for sub_pipeline_name in sub_pipeline_names:
+                    if sub_pipeline_name in pipeline:
+                        sub_pipeline = pipeline[sub_pipeline_name]
+                        if isinstance(sub_pipeline[0], list):
+                            sub_pipeline = sub_pipeline[0]
+                        post_img_size = self._estimate_post_img_size(sub_pipeline, post_img_size)
+                        break
 
         return post_img_size
 
@@ -803,20 +828,32 @@ class InputSizeManager:
         raise RuntimeError("Failed to find pipeline.")
 
     def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
+        updated = False
         for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
             if pipeline_name in pipeline["type"].lower():
                 for pipeline_attr in pipeline_attrs:
                     if pipeline_attr in pipeline:
                         self._set_size_value(pipeline, pipeline_attr, scale)
+                        updated = True
+                if updated:
+                    break
 
-        if pipeline["type"] == "MultiScaleFlipAug":
-            for sub_pipeline in pipeline["transforms"]:
-                self._set_pipeline_size_value(sub_pipeline, scale)
-
-        if pipeline["type"] == "AutoAugment":
-            for sub_pipelines in pipeline["policies"]:
-                for sub_pipeline in sub_pipelines:
-                    self._set_pipeline_size_value(sub_pipeline, scale)
+        for pipeline_name, sub_pipeline_names in self.PIPELINE_WRAPPER.items():
+            if pipeline_name == pipeline["type"]:
+                for sub_pipeline_name in sub_pipeline_names:
+                    if sub_pipeline_name in pipeline:
+                        if isinstance(pipeline[sub_pipeline_name][0], dict):
+                            for sub_pipeline in pipeline[sub_pipeline_name]:
+                                self._set_pipeline_size_value(sub_pipeline, scale)
+                        elif isinstance(pipeline[sub_pipeline_name][0], list):
+                            for sub_pipelines in pipeline[sub_pipeline_name]:
+                                for sub_pipeline in sub_pipelines:
+                                    self._set_pipeline_size_value(sub_pipeline, scale)
+                        else:
+                            raise ValueError(
+                                "Dataset pipeline in pipeline wrapper type should be"
+                                "either list[dict] or list[list[dict]]."
+                            )
 
     @staticmethod
     def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]):

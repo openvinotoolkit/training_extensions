@@ -65,7 +65,7 @@ class TestDetectionConfigurer:
         mock_cfg_regularization.assert_called_once_with(model_cfg)
         mock_cfg_task.assert_called_once_with(model_cfg, self.det_dataset)
         mock_cfg_hook.assert_called_once_with(model_cfg)
-        mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
+        mock_cfg_gpu.assert_called_once_with(model_cfg)
         mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
@@ -136,6 +136,9 @@ class TestDetectionConfigurer:
         )
         with tempfile.TemporaryDirectory() as tempdir:
             self.configurer.configure_ckpt(model_cfg, os.path.join(tempdir, "dummy.pth"))
+        for hook in model_cfg.custom_hooks:
+            if hook.type in self.configurer.ema_hooks:
+                assert hook.resume_from == model_cfg.resume_from
 
     @e2e_pytest_unit
     def test_configure_model_without_model(self):
@@ -156,25 +159,6 @@ class TestDetectionConfigurer:
     @e2e_pytest_unit
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
-        data_cfg.data.pipeline_options = dict(
-            MinIouRandomCrop=dict(min_crop_size=0.1),
-            Resize=dict(
-                img_scale=[(1344, 480), (1344, 960)],
-                multiscale_mode="range",
-            ),
-            Normalize=dict(),
-            MultiScaleFlipAug=dict(
-                img_scale=(1344, 800),
-                flip=False,
-                transforms=[
-                    dict(type="Resize", keep_ratio=False),
-                    dict(type="Normalize"),
-                    dict(type="Pad", size_divisor=32),
-                    dict(type="ImageToTensor", keys=["img"]),
-                    dict(type="Collect", keys=["img"]),
-                ],
-            ),
-        )
         self.configurer.configure_data(self.model_cfg, data_cfg)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
@@ -222,8 +206,9 @@ class TestDetectionConfigurer:
     @e2e_pytest_unit
     def test_configure_samples_per_gpu(self):
         model_cfg = copy.deepcopy(self.model_cfg)
+        model_cfg.data.train_dataloader = ConfigDict({"samples_per_gpu": 2})
         model_cfg.data.train.otx_dataset = range(1)
-        self.configurer.configure_samples_per_gpu(model_cfg, "train")
+        self.configurer.configure_samples_per_gpu(model_cfg)
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
@@ -295,9 +280,10 @@ class TestDetectionConfigurer:
         if is_yolox_tiny:
             mock_cfg.model.backbone.widen_factor = 0.375
             base_input_size = {
-                "train": 640,
-                "val": 416,
-                "test": 416,
+                "train": (640, 640),
+                "val": (416, 416),
+                "test": (416, 416),
+                "unlabeled": (992, 736),
             }
         else:
             base_input_size = None
@@ -333,8 +319,8 @@ class TestIncrDetectionConfigurer:
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "mpa"
         self.configurer.configure_task(self.model_cfg, self.det_dataset)
-        assert self.model_cfg.custom_hooks[1].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[1].sampler_flag is False
+        assert self.model_cfg.custom_hooks[2].type == "TaskAdaptHook"
+        assert self.model_cfg.custom_hooks[2].sampler_flag is False
 
 
 class TestSemiSLDetectionConfigurer:
@@ -346,14 +332,20 @@ class TestSemiSLDetectionConfigurer:
         self.model_cfg.merge_from_dict(self.data_cfg)
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
-    def test_configure_data(self, mocker):
-        mocker.patch.object(DetectionConfigurer, "configure_data")
-        mocker.patch("mmdet.datasets.build_dataset", return_value=[])
-        mocker.patch("otx.algorithms.detection.adapters.mmdet.configurer.build_dataloader", return_value=[])
+    def test_configure_hook(self, mocker):
+        mock_super_configure_hook = mocker.patch.object(DetectionConfigurer, "configure_hook")
+        mock_build_dataset = mocker.patch("mmdet.datasets.build_dataset", return_value=[])
+        mock_build_dataloader = mocker.patch(
+            "otx.algorithms.detection.adapters.mmdet.configurer.build_dataloader", return_value=[]
+        )
         self.model_cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
         self.model_cfg.model_task = "detection"
         self.model_cfg.distributed = False
-        self.configurer.configure_data(self.model_cfg, self.data_cfg)
+        self.configurer.configure_hook(self.model_cfg)
+
+        mock_super_configure_hook.assert_called_once_with(self.model_cfg)
+        mock_build_dataset.assert_called_once()
+        mock_build_dataloader.assert_called_once()
 
     def test_configure_task(self):
         self.model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}

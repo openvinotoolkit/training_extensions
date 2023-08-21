@@ -1,20 +1,20 @@
 # Description.
-model_template_id: Custom_Semantic_Segmentation_SegNext_s
-name: SegNext-s
-task_type: SEGMENTATION
+model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_ConvNeXt
+name: MaskRCNN-ConvNeXt
+task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Semantic Segmentation with medium-sized architecture which based on the MSCAN backbone for the balance between accuracy and fast inference.
+summary: Class-Incremental Instance Segmentation for MaskRCNN-ConvNeXt
 application: ~
 
 # Algo backend.
-framework: OTXSegmentation v0.14.0
+framework: OTXDetection v2.9.1
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask
-  openvino: otx.algorithms.segmentation.adapters.openvino.task.OpenVINOSegmentationTask
-  nncf: otx.algorithms.segmentation.adapters.mmseg.nncf.task.SegmentationNNCFTask
+  base: otx.algorithms.detection.adapters.mmdet.task.MMDetectionTask
+  openvino: otx.algorithms.detection.adapters.openvino.task.OpenVINODetectionTask
+  nncf: otx.algorithms.detection.adapters.mmdet.nncf.task.DetectionNNCFTask
 
 # Capabilities.
 capabilities:
@@ -26,15 +26,20 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 8
+        default_value: 2
         auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 2
       learning_rate:
-        default_value: 0.00008
+        default_value: 0.001
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 20
+        default_value: 100
       num_iters:
-        default_value: 170
+        default_value: 100
+    pot_parameters:
+      stat_requests_number:
+        default_value: 1
     nncf_optimization:
       enable_quantization:
         default_value: true
@@ -55,5 +60,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 15.35
-size: 13.9
+gigaflops: 266.78
+size: 192.4

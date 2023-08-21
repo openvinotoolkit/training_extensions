@@ -16,14 +16,13 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
     get_configured_input_size,
+    patch_color_conversion,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
-    patch_datasets,
-    patch_evaluation,
     should_cluster_anchors,
 )
 
@@ -41,7 +40,6 @@ class DetectionConfigurer(BaseConfigurer):
         train_dataset,
         model_ckpt,
         data_cfg,
-        subset="train",
         ir_options=None,
         data_classes=None,
         model_classes=None,
@@ -55,20 +53,18 @@ class DetectionConfigurer(BaseConfigurer):
         self.configure_model(cfg, ir_options)
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, data_cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
         self.configure_regularization(cfg)
         self.configure_task(cfg, train_dataset)
         self.configure_hook(cfg)
-        self.configure_samples_per_gpu(cfg, subset)
+        self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
         return cfg
 
     def configure_compatibility(self, cfg, **kwargs):
         """Configure for OTX compatibility with mmdet."""
-        options_for_patch_datasets = {"type": "OTXDetDataset"}
-        patch_datasets(cfg, **options_for_patch_datasets)
-        patch_evaluation(cfg)
+        patch_color_conversion(cfg)
 
     def configure_regularization(self, cfg):  # noqa: C901
         """Patch regularization parameters."""
@@ -99,10 +95,6 @@ class DetectionConfigurer(BaseConfigurer):
                 self.configure_anchor(cfg, train_dataset)
             if self.task_adapt_type == "mpa":
                 self.configure_bbox_head(cfg)
-                self.configure_ema(cfg)
-            else:
-                src_data_cfg = self.get_data_cfg(cfg, "train")
-                src_data_cfg.pop("old_new_indices", None)
 
     def configure_classes(self, cfg):
         """Patch classes for model and dataset."""
@@ -147,7 +139,7 @@ class DetectionConfigurer(BaseConfigurer):
         class_adapt_cfg = dict(type="AdaptClassLabels", src_classes=self.data_classes, dst_classes=self.model_classes)
         pipeline_cfg = tr_data_cfg.pipeline
         for i, operation in enumerate(pipeline_cfg):
-            if operation["type"] == "LoadAnnotations":  # insert just after this operation
+            if operation["type"] == "LoadAnnotationFromOTXDataset":  # insert just after this operation
                 op_next_ann = pipeline_cfg[i + 1] if i + 1 < len(pipeline_cfg) else {}
                 if op_next_ann.get("type", "") == class_adapt_cfg["type"]:
                     op_next_ann.update(class_adapt_cfg)
@@ -165,77 +157,20 @@ class DetectionConfigurer(BaseConfigurer):
             cluster_anchors(cfg, train_dataset)
 
     def configure_bbox_head(self, cfg):
-        """Patch bbox head in detector for class incremental learning.
-
-        Most of patching are related with hyper-params in focal loss
-        """
+        """Patch classification loss if there are ignore labels."""
         if cfg.get("task", "detection") == "detection":
             bbox_head = cfg.model.bbox_head
         else:
             bbox_head = cfg.model.roi_head.bbox_head
-
-        alpha, gamma = 0.25, 2.0
-        if bbox_head.type in ["ATSSHead"]:
-            gamma = 3 if cfg["task_adapt"].get("efficient_mode", False) else 4.5
-            bbox_head.loss_cls.gamma = gamma
-        elif bbox_head.type in ["VFNetHead", "CustomVFNetHead"]:
-            alpha = 0.75
-            gamma = 1 if cfg["task_adapt"].get("efficient_mode", False) else 2
-        # TODO Move this part
-        # This is not related with patching bbox head
-        elif bbox_head.type in ["YOLOXHead", "CustomYOLOXHead"]:
-            if cfg.data.train.type == "MultiImageMixDataset":
-                self.add_yolox_hooks(cfg)
 
         if cfg.get("ignore", False):
             bbox_head.loss_cls = ConfigDict(
                 type="CrossSigmoidFocalLoss",
                 use_sigmoid=True,
                 num_classes=len(self.model_classes),
-                alpha=alpha,
-                gamma=gamma,
+                alpha=bbox_head.loss_cls.get("alpha", 0.25),
+                gamma=bbox_head.loss_cls.get("gamma", 2.0),
             )
-
-    @staticmethod
-    def configure_ema(cfg):
-        """Patch ema settings."""
-        adaptive_ema = cfg.get("adaptive_ema", {})
-        if adaptive_ema:
-            update_or_add_custom_hook(
-                cfg,
-                ConfigDict(
-                    type="CustomModelEMAHook",
-                    priority="ABOVE_NORMAL",
-                    resume_from=cfg.get("resume_from"),
-                    **adaptive_ema,
-                ),
-            )
-        else:
-            update_or_add_custom_hook(
-                cfg,
-                ConfigDict(type="EMAHook", priority="ABOVE_NORMAL", resume_from=cfg.get("resume_from"), momentum=0.1),
-            )
-
-    @staticmethod
-    def add_yolox_hooks(cfg):
-        """Update yolox hooks."""
-        update_or_add_custom_hook(
-            cfg,
-            ConfigDict(
-                type="YOLOXModeSwitchHook",
-                num_last_epochs=15,
-                priority=48,
-            ),
-        )
-        update_or_add_custom_hook(
-            cfg,
-            ConfigDict(
-                type="SyncNormHook",
-                num_last_epochs=15,
-                interval=1,
-                priority=48,
-            ),
-        )
 
     @staticmethod
     def configure_input_size(
@@ -256,9 +191,10 @@ class DetectionConfigurer(BaseConfigurer):
                     # YOLOX tiny has a different input size in train and val data pipeline
                     cfg.model.input_size = (input_size[0], input_size[1])
                     base_input_size = {
-                        "train": 640,
-                        "val": 416,
-                        "test": 416,
+                        "train": (640, 640),
+                        "val": (416, 416),
+                        "test": (416, 416),
+                        "unlabeled": (992, 736),
                     }
 
         InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
@@ -297,33 +233,15 @@ class IncrDetectionConfigurer(DetectionConfigurer):
 class SemiSLDetectionConfigurer(DetectionConfigurer):
     """Patch config to support semi supervised learning for object detection."""
 
-    def configure_data(self, cfg, data_cfg):
-        """Patch cfg.data."""
-        super().configure_data(cfg, data_cfg)
+    def configure_hook(self, cfg):
+        """Update cfg.custom_hooks."""
+        super().configure_hook(cfg)
         # Set unlabeled data hook
         if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
                 if len(cfg.data.unlabeled.get("pipeline", [])) == 0:
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
                 self.configure_unlabeled_dataloader(cfg)
-
-    def configure_task(self, cfg, train_dataset):
-        """Patch config to support training algorithm."""
-        logger.info(f"Semi-SL task config!!!!: training={self.training}")
-        if "task_adapt" in cfg:
-            self.task_adapt_type = cfg["task_adapt"].get("type", None)
-            self.task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
-            self.configure_classes(cfg)
-
-            if self.data_classes != self.model_classes:
-                self.configure_task_data_pipeline(cfg)
-            if cfg["task_adapt"].get("use_mpa_anchor", False):
-                self.configure_anchor(cfg, train_dataset)
-            if self.task_adapt_type == "mpa":
-                self.configure_bbox_head(cfg)
-            else:
-                src_data_cfg = self.get_data_cfg(cfg, "train")
-                src_data_cfg.pop("old_new_indices", None)
 
     @staticmethod
     def configure_unlabeled_dataloader(cfg: Config):

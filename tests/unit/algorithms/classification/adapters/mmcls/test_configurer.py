@@ -64,7 +64,7 @@ class TestClassificationConfigurer:
         mock_cfg_data.assert_called_once_with(model_cfg, data_cfg)
         mock_cfg_task.assert_called_once_with(model_cfg)
         mock_cfg_hook.assert_called_once_with(model_cfg)
-        mock_cfg_gpu.assert_called_once_with(model_cfg, "train")
+        mock_cfg_gpu.assert_called_once_with(model_cfg)
         mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         mock_cfg_input_size.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
@@ -158,25 +158,6 @@ class TestClassificationConfigurer:
     @e2e_pytest_unit
     def test_configure_data(self, mocker):
         data_cfg = copy.deepcopy(self.data_cfg)
-        data_cfg.data.pipeline_options = dict(
-            MinIouRandomCrop=dict(min_crop_size=0.1),
-            Resize=dict(
-                img_scale=[(1344, 480), (1344, 960)],
-                multiscale_mode="range",
-            ),
-            Normalize=dict(),
-            MultiScaleFlipAug=dict(
-                img_scale=(1344, 800),
-                flip=False,
-                transforms=[
-                    dict(type="Resize", keep_ratio=False),
-                    dict(type="Normalize"),
-                    dict(type="Pad", size_divisor=32),
-                    dict(type="ImageToTensor", keys=["img"]),
-                    dict(type="Collect", keys=["img"]),
-                ],
-            ),
-        )
         self.configurer.configure_data(self.model_cfg, data_cfg)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
@@ -204,9 +185,9 @@ class TestClassificationConfigurer:
     @e2e_pytest_unit
     def test_configure_samples_per_gpu(self):
         model_cfg = copy.deepcopy(self.model_cfg)
-        model_cfg.update(self.data_cfg)
+        model_cfg.data.train_dataloader = ConfigDict({"samples_per_gpu": 2})
         model_cfg.data.train.otx_dataset = range(1)
-        self.configurer.configure_samples_per_gpu(model_cfg, "train")
+        self.configurer.configure_samples_per_gpu(model_cfg)
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
@@ -284,23 +265,28 @@ class TestSemiSLClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLClassificationConfigurer("classification", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
+        data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.cfg.merge_from_dict(data_cfg)
 
-    def test_configure_data(self, mocker):
-        mocker.patch.object(ClassificationConfigurer, "configure_data")
-        mocker.patch("mmdet.datasets.build_dataset", return_value=[])
-        mocker.patch("otx.algorithms.classification.adapters.mmcls.configurer.build_dataloader", return_value=[])
-        self.model_cfg.update(self.data_cfg)
-        self.model_cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
-        self.model_cfg.model_task = "detection"
-        self.model_cfg.distributed = False
-        self.configurer.configure_data(self.model_cfg, self.data_cfg)
+    def test_configure_hook(self, mocker):
+        mock_super_configure_hook = mocker.patch.object(ClassificationConfigurer, "configure_hook")
+        mock_build_dataset = mocker.patch("mmdet.datasets.build_dataset", return_value=[])
+        mock_build_dataloader = mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.configurer.build_dataloader", return_value=[]
+        )
+        self.cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
+        self.cfg.model_task = "detection"
+        self.cfg.distributed = False
+        self.configurer.configure_hook(self.cfg)
+
+        mock_super_configure_hook.assert_called_once_with(self.cfg)
+        mock_build_dataset.assert_called_once()
+        mock_build_dataloader.assert_called_once()
 
     def test_configure_task(self):
-        self.model_cfg.update(self.data_cfg)
-        self.model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg)
+        self.cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        self.configurer.configure_task(self.cfg)
 
-        self.model_cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg)
+        self.cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        self.configurer.configure_task(self.cfg)

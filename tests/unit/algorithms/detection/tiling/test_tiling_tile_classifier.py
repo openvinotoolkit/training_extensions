@@ -189,6 +189,8 @@ class TestTilingTileClassifier:
     def test_patch_tiling_func(self):
         """Test that patch_tiling function works correctly"""
         cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "tile_pipeline.py"))
+        cfg.merge_from_dict(data_pipeline_cfg)
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.tiling_parameters.enable_tiling = True

@@ -238,7 +238,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
                    For example, new_lr = current_lr * factor
     """
 
-    rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
+    rule_map = {"greater": lambda x, y: x >= y, "less": lambda x, y: x < y}
     init_value_map = {"greater": -inf, "less": inf}
     greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc", "MHAcc"]
     less_keys = ["loss"]
@@ -262,6 +262,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.iteration_patience = iteration_patience
         self.metric = metric
         self.bad_count = 0
+        self.bad_count_iter = 0
         self.last_iter = 0
         self.current_lr = -1.0
         self.base_lr: List[float] = []
@@ -321,7 +322,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         if self.current_lr < 0:
             self.current_lr = base_lr
 
-        if not self._is_check_timing(runner):
+        # NOTE: get_lr could be called multiple times in a list comprehensive fashion in LrUpdateHook
+        if not self._is_check_timing(runner) or self.current_lr == self.min_lr or self.bad_count_iter == runner.iter:
             return self.current_lr
 
         if hasattr(runner, "all_metrics"):
@@ -334,6 +336,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             self.bad_count = 0
             self.last_iter = runner.iter
         else:
+            self.bad_count_iter = runner.iter
             self.bad_count += 1
 
         print_log(
