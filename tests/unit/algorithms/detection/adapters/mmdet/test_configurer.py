@@ -49,7 +49,6 @@ class TestDetectionConfigurer:
         mock_cfg_ckpt = mocker.patch.object(DetectionConfigurer, "configure_ckpt")
         mock_cfg_regularization = mocker.patch.object(DetectionConfigurer, "configure_regularization")
         mock_cfg_task = mocker.patch.object(DetectionConfigurer, "configure_task")
-        mock_cfg_hook = mocker.patch.object(DetectionConfigurer, "configure_hook")
         mock_cfg_gpu = mocker.patch.object(DetectionConfigurer, "configure_samples_per_gpu")
         mock_cfg_fp16 = mocker.patch.object(DetectionConfigurer, "configure_fp16")
         mock_cfg_compat_cfg = mocker.patch.object(DetectionConfigurer, "configure_compat_cfg")
@@ -64,7 +63,6 @@ class TestDetectionConfigurer:
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_regularization.assert_called_once_with(model_cfg)
         mock_cfg_task.assert_called_once_with(model_cfg, self.det_dataset)
-        mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg)
         mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
@@ -197,13 +195,6 @@ class TestDetectionConfigurer:
         self.configurer.configure_task(model_cfg, self.det_dataset)
 
     @e2e_pytest_unit
-    def test_configure_hook(self):
-        model_cfg = copy.deepcopy(self.model_cfg)
-        model_cfg.custom_hook_options = {"LazyEarlyStoppingHook": {"start": 5}, "LoggerReplaceHook": {"_delete_": True}}
-        self.configurer.configure_hook(model_cfg)
-        assert model_cfg.custom_hooks[0]["start"] == 5
-
-    @e2e_pytest_unit
     def test_configure_samples_per_gpu(self):
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.data.train_dataloader = ConfigDict({"samples_per_gpu": 2})
@@ -327,29 +318,27 @@ class TestSemiSLDetectionConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLDetectionConfigurer("detection", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "semisl", "model.py"))
+        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
         self.model_cfg.merge_from_dict(self.data_cfg)
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
-    def test_configure_hook(self, mocker):
-        mock_super_configure_hook = mocker.patch.object(DetectionConfigurer, "configure_hook")
-        mock_build_dataset = mocker.patch("mmdet.datasets.build_dataset", return_value=[])
-        mock_build_dataloader = mocker.patch(
-            "otx.algorithms.detection.adapters.mmdet.configurer.build_dataloader", return_value=[]
+    @e2e_pytest_unit
+    def test_configure_data(self, mocker):
+        mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataset", return_value=True)
+        mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
+
+        data_cfg = MPAConfig(
+            {
+                "data": {
+                    "train": {"otx_dataset": [], "labels": []},
+                    "val": {"otx_dataset": [], "labels": []},
+                    "test": {"otx_dataset": [], "labels": []},
+                    "unlabeled": {"otx_dataset": self.det_dataset, "labels": []},
+                }
+            }
         )
-        self.model_cfg.data.unlabeled = ConfigDict({"type": "OTXDataset", "otx_dataset": range(10)})
         self.model_cfg.model_task = "detection"
         self.model_cfg.distributed = False
-        self.configurer.configure_hook(self.model_cfg)
-
-        mock_super_configure_hook.assert_called_once_with(self.model_cfg)
-        mock_build_dataset.assert_called_once()
-        mock_build_dataloader.assert_called_once()
-
-    def test_configure_task(self):
-        self.model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, self.det_dataset)
-
-        self.model_cfg.task_adapt = {"type": "not_mpa", "op": "REPLACE", "use_mpa_anchor": True}
-        self.configurer.configure_task(self.model_cfg, self.det_dataset)
+        self.configurer.configure_data(self.model_cfg, data_cfg)
+        assert self.model_cfg.custom_hooks[-1]["type"] == "ComposedDataLoadersHook"

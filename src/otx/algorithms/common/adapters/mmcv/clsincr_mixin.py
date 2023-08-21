@@ -36,7 +36,7 @@ class IncrConfigurerMixin:
                 sampler_flag=sampler_flag,
                 sampler_type=self.get_sampler_type(cfg),
                 efficient_mode=cfg["task_adapt"].get("efficient_mode", False),
-                use_adaptive_repeat=self.use_adaptive_repeat(cfg)
+                use_adaptive_repeat=self.use_adaptive_repeat(cfg),
                 priority="NORMAL",
             ),
         )
