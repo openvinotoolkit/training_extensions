@@ -141,7 +141,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
             dist.init_process_group(
                 backend="nccl",
                 init_method="env://",
-                timeout=timedelta(seconds=int(os.environ.get("TORCH_DIST_TIMEOUT", 30))),
+                timeout=timedelta(seconds=int(os.environ.get("TORCH_DIST_TIMEOUT", 60))),
             )
             rank = dist.get_rank()
             logger.info(f"Dist info: rank {rank} / {dist.get_world_size()} world_size")

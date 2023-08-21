@@ -154,7 +154,7 @@ class MultiGPUManager:
 
         if start_time is not None:
             elapsed_time = datetime.datetime.now() - start_time
-            if elapsed_time > datetime.timedelta(seconds=20):
+            if elapsed_time > datetime.timedelta(seconds=40):
                 os.environ["TORCH_DIST_TIMEOUT"] = str(int(elapsed_time.total_seconds() * 1.5))
 
     def is_available(self) -> bool:
