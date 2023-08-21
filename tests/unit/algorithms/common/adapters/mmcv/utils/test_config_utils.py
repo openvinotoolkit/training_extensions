@@ -18,7 +18,7 @@ def get_data_cfg(workers_per_gpu: int = 2) -> dict:
     data_cfg = {}
     for subset in ["train", "val", "test", "unlabeled"]:
         data_cfg[subset] = "fake"
-        data_cfg[f"{subset}_dataloader"] = {"persistent_workers" : True, "workers_per_gpu" : workers_per_gpu}
+        data_cfg[f"{subset}_dataloader"] = {"persistent_workers": True, "workers_per_gpu": workers_per_gpu}
 
     return data_cfg
 
