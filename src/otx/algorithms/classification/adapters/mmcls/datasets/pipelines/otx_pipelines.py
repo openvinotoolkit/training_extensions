@@ -26,6 +26,7 @@ class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
 @PIPELINES.register_module()
 class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
     """Load and resize image & annotation with cache support."""
+
     def _create_resize_op(self, cfg: Optional[Dict]) -> Optional[Any]:
         """Creates resize operation."""
         if cfg is None:
