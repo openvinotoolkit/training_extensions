@@ -267,7 +267,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         )
 
         logger.info("Starting PTQ optimization.")
-        data_loader = OTXOpenVINOAnomalyDataloader(dataset=dataset, inferencer=self.inferencer)
+        data_loader = OTXOpenVINOAnomalyDataloader(dataset=dataset)
         quantization_dataset = nncf.Dataset(data_loader, lambda data: data[1])
 
         with tempfile.TemporaryDirectory() as tempdir:
