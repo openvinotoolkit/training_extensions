@@ -101,25 +101,20 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
     Finally, if enabled, cache the result and use pre-computed ones from next iterations.
 
     Args:
-        load_img_cfg (Dict, optional): Optionally Creates image loading operation that replaces base loading
-            logic based on the config. Defaults to None.
         load_ann_cfg (Dict, optional): Optionally creates annotation loading operation based on the config.
             Defaults to None.
         resize_cfg (Dict, optional): Optionally creates resize operation based on the config. Defaults to None.
-        enable_memcache (bool, optional): True to enable in-memory cache. Defaults to True.
     """
 
     def __init__(
         self,
-        load_img_cfg: Optional[Dict] = None,
         load_ann_cfg: Optional[Dict] = None,
         resize_cfg: Optional[Dict] = None,
         **kwargs,
     ):
+        self._enable_outer_memcache = kwargs.get("enable_memcache", True)
+        kwargs["enable_memcache"] = False  # will use outer cache
         super().__init__(**kwargs)
-        load_img_cfg = load_img_cfg.copy()
-        load_img_cfg["enable_memcache"] = False  # will use outer cache
-        self._load_img_op = self._create_load_img_op(load_img_cfg)
         self._load_ann_op = self._create_load_ann_op(load_ann_cfg)
         self._downscale_only = resize_cfg.pop("downscale_only", False) if resize_cfg else False
         self._resize_op = self._create_resize_op(resize_cfg)
@@ -131,12 +126,6 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         else:
             self._resize_shape = None
 
-    def _create_load_img_op(self, cfg: Optional[Dict]) -> Any:
-        """Creates image loading operation."""
-        if cfg is None:
-            return self
-        return LoadImageFromOTXDataset(**cfg)  # Should be overrided in task-specific implementation if needed
-
     def _create_load_ann_op(self, cfg: Optional[Dict]) -> Optional[Any]:
         """Creates annotation loading operation."""
         return None  # Should be overrided in task-specific implementation
@@ -147,7 +136,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
 
     def _load_img(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Load image and fill the results dict."""
-        return self._load_img_op(results)
+        return super().__call__(results)  # Use image load logic from base class
 
     def _load_ann_if_any(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Load annotations and fill the results dict."""
@@ -170,19 +159,21 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
 
     def _load_cache(self, results: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Try to load pre-computed results from cache."""
-        if not self._enable_memcache:
+        if not self._enable_outer_memcache:
             return None
         key = self._get_unique_key(results)
         img, meta = self._mem_cache_handler.get(key)
         if img is None or meta is None:
             return None
+        dataset_item = results.pop("dataset_item")
         results = meta.copy()
         results["img"] = img
+        results["dataset_item"] = dataset_item
         return results
 
     def _save_cache(self, results: Dict[str, Any]):
         """Try to save pre-computed results to cache."""
-        if not self._enable_memcache:
+        if not self._enable_outer_memcache:
             return
         key = self._get_unique_key(results)
         meta = results.copy()

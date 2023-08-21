@@ -1,7 +1,7 @@
 """Collection Pipeline for classification task."""
-
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+
 import copy
 from typing import Any, Dict, List, Optional
 
@@ -26,13 +26,6 @@ class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
 @PIPELINES.register_module()
 class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
     """Load and resize image & annotation with cache support."""
-
-    def _create_load_img_op(self, cfg: Optional[Dict]) -> Any:
-        """Creates image loading operation."""
-        if cfg is None:
-            return self
-        return build_from_cfg(cfg, PIPELINES)
-
     def _create_resize_op(self, cfg: Optional[Dict]) -> Optional[Any]:
         """Creates resize operation."""
         if cfg is None:

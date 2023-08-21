@@ -63,7 +63,6 @@ def test_load_resize_data_from_otx_dataset_call(mocker):
     otx_dataset, labels = create_cls_dataset()
     MemCacheHandlerSingleton.create("singleprocessing", otx_dataset[0].numpy.size)
     op = LoadResizeDataFromOTXDataset(
-        load_img_cfg=dict(type="LoadImageFromOTXDataset"),
         resize_cfg=dict(type="Resize", size=(4, 4)),  # 8x8 -> 4x4
     )
     src_dict = dict(
@@ -90,7 +89,6 @@ def test_load_resize_data_from_otx_dataset_downscale_only(mocker):
     otx_dataset, labels = create_cls_dataset()
     MemCacheHandlerSingleton.create("singleprocessing", otx_dataset[0].numpy.size)
     op = LoadResizeDataFromOTXDataset(
-        load_img_cfg=dict(type="LoadImageFromOTXDataset"),
         resize_cfg=dict(type="Resize", size=(12, 12), downscale_only=True),  # 8x8 -> 12x12
     )
     src_dict = dict(

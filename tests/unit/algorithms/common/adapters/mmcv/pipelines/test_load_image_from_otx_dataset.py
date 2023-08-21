@@ -144,7 +144,6 @@ class TestLoadResizeDataFromOTXDataset:
         with patch.object(LoadResizeDataFromOTXDataset, "_create_resize_op", return_value={}):
             with pytest.raises(AssertionError):
                 op = LoadResizeDataFromOTXDataset(
-                    load_img_cfg={},
                     load_ann_cfg=None,
                     resize_cfg={"size": [(1, 1), (2, 2)]},
                 )
