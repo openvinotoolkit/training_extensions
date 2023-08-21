@@ -182,6 +182,7 @@ class TestOpenVINOClassificationTask:
                 self.fake_input,
             ),
         )
+        self.cls_ov_task.inferencer.model.hierarchical = False
         updpated_dataset = self.cls_ov_task.explain(self.dataset)
 
         assert updpated_dataset is not None

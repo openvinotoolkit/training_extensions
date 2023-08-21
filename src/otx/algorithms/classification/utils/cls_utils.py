@@ -117,3 +117,24 @@ def get_cls_model_api_configuration(label_schema: LabelSchemaEntity, inference_c
 
     mapi_config[("model_info", "hierarchical_config")] = json.dumps(hierarchical_config)
     return mapi_config
+
+
+def get_hierarchical_label_list(hierarchical_info, labels):
+    """Return hierarchical labels list which is adjusted to model outputs classes."""
+    hierarchical_labels = []
+    for head_idx in range(hierarchical_info["num_multiclass_heads"]):
+        logits_begin, logits_end = hierarchical_info["head_idx_to_logits_range"][str(head_idx)]
+        for logit in range(0, logits_end - logits_begin):
+            label_str = hierarchical_info["all_groups"][head_idx][logit]
+            label_idx = hierarchical_info["label_to_idx"][label_str]
+            hierarchical_labels.append(labels[label_idx])
+
+    if hierarchical_info["num_multilabel_classes"]:
+        logits_begin = hierarchical_info["num_single_label_classes"]
+        logits_end = len(labels)
+        for logit_idx, logit in enumerate(range(0, logits_end - logits_begin)):
+            label_str_idx = hierarchical_info["num_multiclass_heads"] + logit_idx
+            label_str = hierarchical_info["all_groups"][label_str_idx][0]
+            label_idx = hierarchical_info["label_to_idx"][label_str]
+            hierarchical_labels.append(labels[label_idx])
+    return hierarchical_labels
