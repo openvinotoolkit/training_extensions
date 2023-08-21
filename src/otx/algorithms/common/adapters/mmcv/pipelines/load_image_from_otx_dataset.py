@@ -101,7 +101,8 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
     Finally, if enabled, cache the result and use pre-computed ones from next iterations.
 
     Args:
-        load_img_cfg (Dict): Creates image loading operation based on the config
+        load_img_cfg (Dict, optional): Optionally Creates image loading operation that replaces base loading
+            logic based on the config. Defaults to None.
         load_ann_cfg (Dict, optional): Optionally creates annotation loading operation based on the config.
             Defaults to None.
         resize_cfg (Dict, optional): Optionally creates resize operation based on the config. Defaults to None.
@@ -110,7 +111,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
 
     def __init__(
         self,
-        load_img_cfg: Dict,
+        load_img_cfg: Optional[Dict] = None,
         load_ann_cfg: Optional[Dict] = None,
         resize_cfg: Optional[Dict] = None,
         **kwargs,
@@ -130,8 +131,10 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         else:
             self._resize_shape = None
 
-    def _create_load_img_op(self, cfg: Dict) -> Any:
+    def _create_load_img_op(self, cfg: Optional[Dict]) -> Any:
         """Creates image loading operation."""
+        if cfg is None:
+            return self
         return LoadImageFromOTXDataset(**cfg)  # Should be overrided in task-specific implementation if needed
 
     def _create_load_ann_op(self, cfg: Optional[Dict]) -> Optional[Any]:

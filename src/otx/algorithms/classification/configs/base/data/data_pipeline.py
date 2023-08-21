@@ -54,7 +54,7 @@ __train_pipeline = [
 
 __test_pipeline = [
     dict(type="LoadImageFromOTXDataset"),
-    dict(type="Resize", size=__resize_target_size),
+    dict(type="ResizeTo", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="Collect", keys=["img"]),
