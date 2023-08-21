@@ -494,7 +494,7 @@ def patch_early_stopping(config: Config):
 
 
 def patch_persistent_workers(config: Config):
-    """persistent_workers is turned off in some conditions.
+    """Set persistent_workers as False in some conditions.
 
     persistent_workers is set as 0 in two cases below:
     case 1) num_workers is 0
@@ -529,7 +529,7 @@ def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     if num_gpus == 0:
         logger.warning("There is no GPUs. Use existing num_worker value.")
         return None
-    return min(multiprocessing.cpu_count() // num_dataloader // num_gpus, 8)  # max available num_workers is 8
+    return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
 
 
 def patch_from_hyperparams(config: Config, hyperparams):
