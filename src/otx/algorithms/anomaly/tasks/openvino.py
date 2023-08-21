@@ -26,9 +26,9 @@ import nncf
 import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
-from anomalib.deploy import OpenVINOInferencer
 from nncf.common.quantization.structs import QuantizationPreset
 from omegaconf import OmegaConf
+from openvino.model_api.models import AnomalyDetection, AnomalyResult
 
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
@@ -78,17 +78,15 @@ class OTXOpenVINOAnomalyDataloader:
 
     Args:
         dataset (DatasetEntity): OTX dataset entity
-        inferencer (OpenVINOInferencer): OpenVINO Inferencer
+        shuffle (bool, optional): Shuffle dataset. Defaults to True.
     """
 
     def __init__(
         self,
         dataset: DatasetEntity,
-        inferencer: OpenVINOInferencer,
         shuffle: bool = True,
     ):
         self.dataset = dataset
-        self.inferencer = inferencer
         self.shuffler = None
         if shuffle:
             self.shuffler = list(range(len(dataset)))
@@ -108,9 +106,8 @@ class OTXOpenVINOAnomalyDataloader:
 
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
-        inputs = self.inferencer.pre_process(image)
 
-        return (index, annotation), inputs
+        return (index, annotation), image
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -133,7 +130,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         self.task_environment = task_environment
         self.task_type = self.task_environment.model_template.task_type
         self.config = self.get_config()
-        self.inferencer = self.load_inferencer()
+        self.inference_model = self.get_openvino_model()
 
         labels = self.task_environment.get_labels()
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
@@ -171,15 +168,13 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
-        # This always assumes that threshold is available in the task environment's model
-        meta_data = self.get_metadata()
         for idx, dataset_item in enumerate(dataset):
-            image_result = self.inferencer.predict(dataset_item.numpy, metadata=meta_data)
+            image_result: AnomalyResult = self.inference_model(dataset_item.numpy)
 
             # TODO: inferencer should return predicted label and mask
-            pred_label = image_result.pred_score >= 0.5
-            pred_mask = (image_result.anomaly_map >= 0.5).astype(np.uint8)
-            probability = image_result.pred_score if pred_label else 1 - image_result.pred_score
+            pred_label = image_result.pred_label
+            pred_mask = image_result.pred_mask
+            probability = image_result.pred_score if pred_label == "Anomaly" else 1 - image_result.pred_score
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
                 label = self.anomalous_label if image_result.pred_score >= 0.5 else self.normal_label
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
@@ -210,19 +205,6 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
 
         return dataset
-
-    def get_metadata(self) -> Dict:
-        """Get Meta Data."""
-        metadata: Dict[str, Any] = {}
-        if self.task_environment.model is not None:
-            metadata["image_threshold"] = np.array(metadata["image_threshold"], dtype=np.float32).item()
-            metadata["pixel_threshold"] = np.array(metadata["pixel_threshold"], dtype=np.float32).item()
-            metadata["min"] = np.array(metadata["min"], dtype=np.float32).item()
-            metadata["max"] = np.array(metadata["max"], dtype=np.float32).item()
-        else:
-            raise ValueError("Cannot access meta-data. self.task_environment.model is empty.")
-
-        return metadata
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate the performance of the model.
@@ -320,33 +302,29 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        output_model.set_data("metadata", self.task_environment.model.get_data("metadata"))
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
         output_model.precision = [ModelPrecision.INT8]
 
         self.task_environment.model = output_model
-        self.inferencer = self.load_inferencer()
+        self.inference_model = self.get_openvino_model()
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
         logger.info("PTQ optimization completed")
 
-    def load_inferencer(self) -> OpenVINOInferencer:
+    def get_openvino_model(self) -> AnomalyDetection:
         """Create the OpenVINO inferencer object.
 
         Returns:
-            OpenVINOInferencer object
+            AnomalyDetection model
         """
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
-        return OpenVINOInferencer(
-            path=(
-                self.task_environment.model.get_data("openvino.xml"),
-                self.task_environment.model.get_data("openvino.bin"),
-            ),
-            metadata=self.get_metadata(),
+        return AnomalyDetection.create_model(
+            model=self.task_environment.model.get_data("openvino.xml"),
+            weights_path=self.task_environment.model.get_data("openvino.bin"),
         )
 
     @staticmethod
@@ -380,13 +358,6 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         configuration: Dict[str, Any] = {
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
         }
-
-        if "transforms" not in self.config.keys():
-            configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)
-            configuration["scale_values"] = list(np.array([0.229, 0.224, 0.225]) * 255)
-        else:
-            configuration["mean_values"] = self.config.transforms.mean
-            configuration["scale_values"] = self.config.transforms.std
 
         return configuration
 
