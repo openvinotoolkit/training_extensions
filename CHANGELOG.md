@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.4.2\]
+
+### Enhancements
+
+- Add model category attributes to model template (<https://github.com/openvinotoolkit/training_extensions/pull/2439>)
+
+### Bug fixes
+
+- Add workaround for the incorrect meta info M-RCNN (used for XAI) (<https://github.com/openvinotoolkit/training_extensions/pull/2437>)
+
 ## \[v1.4.1\]
 
 ### Enhancements
@@ -255,7 +265,7 @@ All notable changes to this project will be documented in this file.
 - Enhance `find` command to find configurations of supported tasks / algorithms / models / backbones
 - Introduce `build` command to customize task or model configurations in isolated workspace
 - Auto-config feature to automatically select the right algorithm and default model for the `train` & `build` command by detecting the task type of given input dataset
-- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/1.4.1/guide/get_started/introduction.html)
+- Improve [documentation](https://openvinotoolkit.github.io/training_extensions/1.0.0/guide/get_started/introduction.html)
 - Improve training performance by introducing enhanced loss for the few-shot transfer
 
 ### Bug fixes
