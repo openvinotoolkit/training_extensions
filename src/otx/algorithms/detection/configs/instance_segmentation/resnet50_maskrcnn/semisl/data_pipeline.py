@@ -24,7 +24,7 @@ __dataset_type = "OTXDetDataset"
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 common_pipeline = [
-    dict(type='Resize', img_scale=__img_size, keep_ratio=False),
+    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="BranchImage", key_map=dict(img="img0")),
     dict(type="NDArrayToPILImage", keys=["img"]),
@@ -77,7 +77,7 @@ common_pipeline = [
         scale=[0.02, 0.2],
         ratio=[0.05, 8.0],
         value="random",
-    )
+    ),
 ]
 
 train_pipeline = [
@@ -134,13 +134,7 @@ test_pipeline = [
 data = dict(
     samples_per_gpu=4,
     workers_per_gpu=2,
-    train=dict(
-        type='RepeatDataset',
-        times=13,
-        dataset=dict(
-            type=__dataset_type,
-            pipeline=train_pipeline)
-    ),
+    train=dict(type="RepeatDataset", times=13, dataset=dict(type=__dataset_type, pipeline=train_pipeline)),
     val=dict(
         type=__dataset_type,
         test_mode=True,

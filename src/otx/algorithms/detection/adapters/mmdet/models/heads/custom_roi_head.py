@@ -4,15 +4,14 @@
 #
 
 import torch
-from torch import nn
-from torch.nn import functional as F
 from mmcv.runner import force_fp32
 from mmdet.core import bbox2roi, multi_apply
 from mmdet.models.builder import HEADS, build_head, build_roi_extractor
 from mmdet.models.losses import accuracy
 from mmdet.models.roi_heads.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from mmdet.models.roi_heads.standard_roi_head import StandardRoIHead
-from mmdet.models.roi_heads.mask_scoring_roi_head import MaskScoringRoIHead
+from torch import nn
+from torch.nn import functional as F
 
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import (
     CrossDatasetDetectorHead,
@@ -59,18 +58,13 @@ class CustomRoIHead(StandardRoIHead):
 
 
 @HEADS.register_module()
-class CustomMaskScoringRoIHead(MaskScoringRoIHead, CustomRoIHead):
-    pass
-
-
-@HEADS.register_module()
 class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
     """CustomConvFCBBoxHead class for OTX."""
+
     def __init__(self, *args, use_custom_focal=False, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.use_custom_focal = use_custom_focal
-
 
     def get_targets(self, sampling_results, gt_bboxes, gt_labels, img_metas, rcnn_train_cfg, concat=True):
         """Calculate the ground truth for all samples in a batch according to the sampling_results.
@@ -156,10 +150,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
         if cls_score is not None and cls_score.numel() > 0:
             avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
             if self.use_custom_focal:
-                losses["loss_cls"] = self.comput_focal_loss(
-                    cls_score,
-                    labels
-                )
+                losses["loss_cls"] = self._compute_focal_loss(cls_score, labels)
             elif isinstance(self.loss_cls, CrossSigmoidFocalLoss):
                 losses["loss_cls"] = self.loss_cls(
                     cls_score,
@@ -204,7 +195,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
                 losses["loss_bbox"] = bbox_pred[pos_inds].sum()
         return losses
 
-    def comput_focal_loss(self, pred_class_logits, gt_classes):
+    def _compute_focal_loss(self, pred_class_logits, gt_classes):
         if gt_classes.numel() == 0:
             return 0.0 * pred_class_logits.sum()
         else:
@@ -219,6 +210,8 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
 
 
 class FocalLoss(nn.Module):
+    """Focal loss."""
+
     def __init__(
         self,
         weight=None,
@@ -233,7 +226,7 @@ class FocalLoss(nn.Module):
         self.num_classes = num_classes
 
     def forward(self, input, target, confid=None):
-
+        """Forward function for focal loss."""
         # focal loss
         CE = F.cross_entropy(input, target, reduction="none")
         p = torch.exp(-CE)

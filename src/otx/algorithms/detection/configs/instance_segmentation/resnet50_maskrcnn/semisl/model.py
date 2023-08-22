@@ -26,7 +26,7 @@ task = "instance-segmentation"
 
 model = dict(
     super_type="MeanTeacher",
-    pseudo_conf_thresh=0.7 ,
+    pseudo_conf_thresh=0.7,
     unlabeled_cls_loss_weight=1.0,
     unlabeled_reg_loss_weight=1.0,
     type="CustomMaskRCNN",
@@ -76,7 +76,7 @@ model = dict(
             reg_class_agnostic=False,
             use_custom_focal=False,
             loss_cls=dict(type="CrossEntropyLoss", use_sigmoid=False, loss_weight=1.0),
-            loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0),
+            loss_bbox=dict(type="SmoothL1Loss", beta=1.0, loss_weight=1.0),
         ),
         mask_roi_extractor=dict(
             type="SingleRoIExtractor",
@@ -93,7 +93,7 @@ model = dict(
             loss_mask=dict(type="CrossEntropyLoss", use_mask=True, loss_weight=1.0),
         ),
     ),
-     train_cfg=dict(
+    train_cfg=dict(
         rpn=dict(
             assigner=dict(
                 type="CustomMaxIoUAssigner",

@@ -9,7 +9,7 @@ from .custom_atss_head import CustomATSSHead, CustomATSSHeadTrackingLossDynamics
 from .custom_dino_head import CustomDINOHead
 from .custom_fcn_mask_head import CustomFCNMaskHead
 from .custom_retina_head import CustomRetinaHead
-from .custom_roi_head import CustomRoIHead, CustomMaskScoringRoIHead
+from .custom_roi_head import CustomRoIHead
 from .custom_ssd_head import CustomSSDHead
 from .custom_vfnet_head import CustomVFNetHead
 from .custom_yolox_head import CustomYOLOXHead
@@ -29,5 +29,4 @@ __all__ = [
     "DETRHeadExtension",
     # Loss dynamics tracking
     "CustomATSSHeadTrackingLossDynamics",
-    "CustomMaskScoringRoIHead"
 ]

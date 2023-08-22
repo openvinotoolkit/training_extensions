@@ -8,7 +8,6 @@ import functools
 import torch
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.mask_rcnn import MaskRCNN
-from mmdet.core import bbox2result, bbox2roi
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,

@@ -8,11 +8,12 @@ import functools
 
 import numpy as np
 import torch
+from mmdet.core.mask.structures import BitmapMasks
 from mmdet.models import DETECTORS, build_detector
 from mmdet.models.detectors import BaseDetector
-from mmdet.core.mask.structures import BitmapMasks
 
 from otx.algorithms.common.utils.logger import get_logger
+
 from .sam_detector_mixin import SAMDetectorMixin
 
 logger = get_logger()
@@ -23,7 +24,8 @@ logger = get_logger()
 
 @DETECTORS.register_module()
 class MeanTeacher(SAMDetectorMixin, BaseDetector):
-    """ Mean teacher framework for detection and instance segmentation."""
+    """Mean teacher framework for detection and instance segmentation."""
+
     def __init__(
         self,
         arch_type,
@@ -84,7 +86,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             gt_bboxes,
             gt_labels,
             gt_bboxes_ignore=gt_bboxes_ignore if gt_bboxes_ignore else None,
-            gt_masks=gt_masks
+            gt_masks=gt_masks,
         )
         losses.update(sl_losses)
 
@@ -119,7 +121,9 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
             if self.model_t.with_mask:
-                ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)
+                ul_losses = self.model_s.forward_train(
+                    ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks
+                )
             else:
                 ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels)
 
@@ -132,13 +136,13 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                     if "_bbox" in ul_loss_name:
                         if self.unlabeled_reg_loss_weight == 0:
                             continue
-                        self.update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_reg_loss_weight)
+                        self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_reg_loss_weight)
                     elif "_cls" in ul_loss_name:
                         # cls loss
-                        self.update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_cls_loss_weight)
+                        self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_cls_loss_weight)
                     elif "_mask" in ul_loss_name:
                         # mask loss
-                        self.update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_mask_loss_weight)
+                        self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_mask_loss_weight)
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
@@ -210,7 +214,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         return recall
 
     @staticmethod
-    def update_unlabeled_loss(sum_loss, loss, loss_name, weight):
+    def _update_unlabeled_loss(sum_loss, loss, loss_name, weight):
         if isinstance(loss, list):
             sum_loss[loss_name + "_ul"] = [cur_loss * weight for cur_loss in loss]
         else:

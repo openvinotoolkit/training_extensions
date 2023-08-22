@@ -12,14 +12,7 @@ runner = dict(max_epochs=300)
 
 optimizer_config = dict(_delete_=True, grad_clip=None)
 
-custom_hooks = [
-    dict(
-        type="UnbiasedTeacherHook",
-        epoch_momentum=0.0,
-        start_epoch=0,
-        momentum=0.0004
-    )
-]
+custom_hooks = [dict(type="UnbiasedTeacherHook", epoch_momentum=0.0, start_epoch=0, momentum=0.0004)]
 adaptive_ema = dict(epoch_momentum=0.4)
 ignore = True
 find_unused_parameters = True
