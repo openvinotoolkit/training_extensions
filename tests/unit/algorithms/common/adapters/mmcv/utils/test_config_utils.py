@@ -269,6 +269,25 @@ mock_data_pipeline_to_estimate = {
         ],
         "input_size": (600, 600),
     },
+    "load_resize_data_from_otxdataset": {
+        "pipeline": [
+            dict(
+                type="LoadResizeDataFromOTXDataset",
+                resize_cfg=dict(type="Resize", size=(100, 100)),
+            ),
+        ],
+        "input_size": (100, 100),
+    },
+    "resize_to": {
+        "pipeline": [
+            dict(
+                type="LoadResizeDataFromOTXDataset",
+                resize_cfg=dict(type="Resize", size=(100, 100), downscale_only=True),
+            ),
+            dict(type="ResizeTo", size=(100, 100)),
+        ],
+        "input_size": (100, 100),
+    },
 }
 
 
