@@ -89,7 +89,7 @@ else:
 
 class TestToolsMPAInstanceSegmentation:
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_train_testing(template, tmp_dir_path, otx_dir, args0)
@@ -100,7 +100,7 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
@@ -114,7 +114,7 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "ins_seg"
@@ -122,21 +122,21 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
@@ -145,14 +145,14 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     def test_otx_explain(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_explain_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
@@ -160,14 +160,14 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     def test_otx_demo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_demo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
@@ -175,7 +175,7 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
@@ -183,7 +183,7 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
@@ -191,7 +191,7 @@ class TestToolsMPAInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_with_experimental)
+    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
     @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
