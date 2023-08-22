@@ -117,7 +117,7 @@ def get_model(
         if return_dict:
             return model.model._cfg_dict.to_dict()
 
-    model = get_mmpretrain_model(model, pretrained, **kwargs)
+    model = get_mmpretrain_model(model, pretrained=pretrained, **kwargs)
 
     if channel_last:
         model = model.to(memory_format=torch.channels_last)

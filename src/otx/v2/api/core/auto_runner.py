@@ -9,10 +9,10 @@ import yaml
 
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.auto_utils import configure_task_type, configure_train_type
-from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
 from otx.v2.api.utils.importing import get_impl_class, get_otx_root_path
-from .engine import Engine
+from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
 
+from .engine import Engine
 
 # TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"

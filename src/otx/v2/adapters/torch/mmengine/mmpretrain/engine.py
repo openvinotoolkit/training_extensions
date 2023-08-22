@@ -4,7 +4,6 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from mmpretrain import ImageClassificationInferencer, inference_model
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
@@ -30,10 +29,12 @@ class MMPTEngine(MMXEngine):
         img: Optional[Union[str, np.ndarray, list]] = None,
         pipeline: Optional[List[Dict]] = None,
         device: Union[str, torch.device, None] = None,
-        # task: Optional[str] = None,
+        task: Optional[str] = None,
         batch_size: int = 1,
+        **kwargs,
     ) -> List[Dict]:
-        from mmpretrain import inference_model
+        from mmpretrain import ImageClassificationInferencer, inference_model
+
         from mmengine.model import BaseModel
 
         # Model config need data_pipeline of test_dataloader
@@ -53,26 +54,35 @@ class MMPTEngine(MMXEngine):
         elif isinstance(model, torch.nn.Module):
             model._config = config
 
-        # # Check if the model can use mmpretrain's inference api.
-        # if isinstance(checkpoint, Path):
-        #     checkpoint = str(checkpoint)
-        # if isinstance(model, BaseModel) and hasattr(model, "_metainfo") and model._metainfo.results is not None:
-        #     return inference_model(
-        #         model=model,
-        #         pretrained=checkpoint,
-        #         device=device,
-        #         inputs=img,
-        #         batch_size=batch_size
-        #     )
-        # elif task is not None and task != "Image Classification":
-        #     raise NotImplementedError()
+        # Check if the model can use mmpretrain's inference api.
+        if isinstance(checkpoint, Path):
+            checkpoint = str(checkpoint)
+        if (
+            isinstance(model, BaseModel)
+            and getattr(model, "_metainfo") is not None
+            and getattr(model._metainfo, "results") is not None
+        ):
+            task = [result.task for result in model._metainfo.results][0]
+            inputs = {
+                "model": model,
+                "pretrained": checkpoint,
+                "device": device,
+                "inputs": img,
+                "batch_size": batch_size,
+            }
+            if task in ("Image Caption", "Visual Grounding", "Visual Question Answering"):
+                inputs["images"] = inputs.pop("inputs")
+            breakpoint()
+            return [inference_model(**inputs, **kwargs)]
+        elif task is not None and task != "Image Classification":
+            raise NotImplementedError()
         inferencer = ImageClassificationInferencer(
             model=model,
             pretrained=checkpoint,
             device=device,
         )
 
-        return inferencer(img, batch_size)
+        return inferencer(img, batch_size, **kwargs)
 
     def export(
         self,
