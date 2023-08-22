@@ -20,7 +20,7 @@ __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375
 __resize_target_size = 224
 
 __train_pipeline = [
-    dict(type="LoadImageFromOTXDataset"),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     dict(type="RandomResizedCrop", size=__resize_target_size, efficientnet_style=True),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
     dict(type="Normalize", **__img_norm_cfg),
