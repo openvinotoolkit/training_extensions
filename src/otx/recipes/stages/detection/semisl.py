@@ -11,13 +11,6 @@ custom_hooks = [
         type="UnbiasedTeacherHook",
         epoch_momentum=0.1,
         start_epoch=2,
-        # min_pseudo_label_ratio=0.1,
-        min_pseudo_label_ratio=0.0,
-    ),
-    dict(
-        type="DualModelEMAHook",
-        epoch_momentum=0.4,
-        start_epoch=2,
     ),
     dict(
         type="LazyEarlyStoppingHook",

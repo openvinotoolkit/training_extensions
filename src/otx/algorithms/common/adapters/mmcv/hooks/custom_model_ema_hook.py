@@ -31,9 +31,9 @@ class CustomModelEMAHook(EMAHook):
         Register ema parameter as ``named_buffer`` to model
         """
         if is_module_wrapper(runner.model):
-            model = runner.model.module.model_s
+            model = runner.model.module.model_s if hasattr(runner.model.module, "model_s") else runner.model.module
         else:
-            model = runner.model.model_s
+            model = runner.model.model_s if hasattr(runner.model, "model_s") else runner.model
         self.param_ema_buffer = {}
         self.model_parameters = dict(model.named_parameters(recurse=True))
         for name, value in self.model_parameters.items():

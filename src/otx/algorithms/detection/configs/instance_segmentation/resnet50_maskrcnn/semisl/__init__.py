@@ -1,4 +1,4 @@
-"""Initialization of SSD model for Semi-SL Detection Task."""
+"""Initialization of Mask-RCNN model for Semi-SL Instance Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

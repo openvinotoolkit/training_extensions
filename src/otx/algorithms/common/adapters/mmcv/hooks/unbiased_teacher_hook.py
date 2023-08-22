@@ -25,8 +25,6 @@ class UnbiasedTeacherHook(DualModelEMAHook):
         """Enable unlabeled loss if over start epoch."""
         if runner.epoch + 1 < self.start_epoch:
             return
-        if runner.epoch > self.start_epoch:
-            self._get_model(runner).turnoff_memory_bank()
         if self.unlabeled_loss_enabled:
             return
 
@@ -34,7 +32,7 @@ class UnbiasedTeacherHook(DualModelEMAHook):
 
         average_pseudo_label_ratio = self._get_average_pseudo_label_ratio(runner)
         logger.info(f"avr_ps_ratio: {average_pseudo_label_ratio}")
-        self._get_model(runner).enable_unlabeled_loss()
+        self._get_model(runner).enable_unlabeled_loss(True)
         self.unlabeled_loss_enabled = True
         logger.info("---------- Enabled unlabeled loss and EMA smoothing")
 

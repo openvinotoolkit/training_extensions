@@ -19,9 +19,8 @@
 _base_ = ["../../../../../../recipes/stages/detection/semisl.py", "../../../base/models/detector.py"]
 
 model = dict(
-    super_type="UnbiasedTeacher",
+    super_type="MeanTeacher",
     pseudo_conf_thresh=0.25,
-    unlabeled_loss_weight=1.0,
     type="CustomYOLOX",
     backbone=dict(type="CSPDarknet", deepen_factor=0.33, widen_factor=0.375, out_indices=(2, 3, 4)),
     neck=dict(type="YOLOXPAFPN", in_channels=[96, 192, 384], out_channels=96, num_csp_blocks=1),

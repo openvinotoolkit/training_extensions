@@ -88,37 +88,6 @@ class CustomMaskRCNN(SAMDetectorMixin, L2SPDetectorMixin, MaskRCNN):
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param
 
-    def forward_mask_soft_prediction(self, imgs, img_metas, proposals=None, rescale=False):
-        """Test without augmentation."""
-        assert self.with_bbox, 'Bbox head must be implemented.'
-        for img, img_meta in zip(imgs, img_metas):
-            batch_size = len(img_meta)
-            for img_id in range(batch_size):
-                img_meta[img_id]['batch_input_shape'] = tuple(img.size()[-2:])
-        img = imgs[0]
-        img_metas = img_metas[0]
-        x = self.extract_feat(img)
-        if proposals is None:
-            proposal_list = self.rpn_head.simple_test_rpn(x, img_metas)
-        else:
-            proposal_list = proposals
-
-        det_bboxes, det_labels = self.roi_head.simple_test_bboxes(
-            x, img_metas, proposal_list, self.roi_head.test_cfg, rescale=rescale)
-        bbox_results = [
-            bbox2result(det_bboxes[i], det_labels[i],
-                        self.roi_head.bbox_head.num_classes)
-            for i in range(len(det_bboxes))
-        ]
-        _bboxes = [det_bboxes[i][:, :4] for i in range(len(det_bboxes))]
-        mask_rois = bbox2roi(_bboxes)
-        mask_results = self.roi_head._mask_forward(x, mask_rois)
-        mask_pred = mask_results["mask_pred"]
-        num_mask_roi_per_img = [len(det_bbox) for det_bbox in det_bboxes]
-        mask_preds = mask_pred.split(num_mask_roi_per_img, 0)
-
-        return list(zip(bbox_results, mask_preds))
-
 
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER, mark

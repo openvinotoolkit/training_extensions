@@ -13,7 +13,6 @@ from mmdet.models.detectors import BaseDetector
 from mmdet.core.mask.structures import BitmapMasks
 
 from otx.algorithms.common.utils.logger import get_logger
-
 from .sam_detector_mixin import SAMDetectorMixin
 
 logger = get_logger()
@@ -24,41 +23,31 @@ logger = get_logger()
 
 @DETECTORS.register_module()
 class MeanTeacher(SAMDetectorMixin, BaseDetector):
-    """General mean teacher framework for instance segmentation."""
+    """ Mean teacher framework for detection and instance segmentation."""
     def __init__(
         self,
+        arch_type,
         unlabeled_cls_loss_weight=1.0,
         unlabeled_reg_loss_weight=1.0,
-        use_rpn_loss=True,
+        unlabeled_mask_loss_weight=1.0,
         pseudo_conf_thresh=0.7,
-        enable_unlabeled_loss=False,
         bg_loss_weight=-1.0,
         min_pseudo_label_ratio=0.0,
-        arch_type="CustomMaskRCNN",
-        unlabeled_memory_bank=False,
-        percentile=70,
         **kwargs
     ):
         super().__init__()
         self.unlabeled_cls_loss_weight = unlabeled_cls_loss_weight
         self.unlabeled_reg_loss_weight = unlabeled_reg_loss_weight
-        self.unlabeled_loss_enabled = enable_unlabeled_loss
-        self.unlabeled_memory_bank = unlabeled_memory_bank
+        self.unlabeled_mask_loss_weight = unlabeled_mask_loss_weight
+        self.pseudo_conf_thresh = pseudo_conf_thresh
         self.bg_loss_weight = bg_loss_weight
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
-        self.use_rpn_loss=use_rpn_loss
-        self.percentile = percentile
         cfg = kwargs.copy()
         cfg["type"] = arch_type
         self.model_s = build_detector(cfg)
         self.model_t = copy.deepcopy(self.model_s)
-        self.num_classes = cfg["roi_head"]["bbox_head"]["num_classes"]
-        if self.unlabeled_memory_bank:
-            self.memory_cat_bank = [[] for i in range(self.num_classes)]
-            self.all_num_cat = 0
-            self.pseudo_conf_thresh = None
-        else:
-            self.pseudo_conf_thresh = [pseudo_conf_thresh] * self.num_classes
+        # warmup for first epochs
+        self.enable_unlabeled_loss(False)
 
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
@@ -84,55 +73,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         """Enable function for UnbiasedTeacher unlabeled loss."""
         self.unlabeled_loss_enabled = mode
 
-    def turnoff_memory_bank(self):
-        """Enable function for UnbiasedTeacher unlabeled loss."""
-        self.unlabeled_memory_bank = False
-
-    def compute_dynamic_thrsh(self):
-        """Enable function for UnbiasedTeacher unlabeled loss."""
-        self.pseudo_conf_thresh = [0] * self.num_classes
-        mediana = np.median([x for y in self.memory_cat_bank for x in y])
-        for i, cat_scores in enumerate(self.memory_cat_bank):
-            if len(cat_scores):
-                coeff = np.percentile(np.array(cat_scores), self.percentile)
-            else:
-                coeff = mediana
-
-            self.pseudo_conf_thresh[i] = coeff
-
-        self.memory_cat_bank = None
-        # per_cat_num_obj = np.array(self.memory_cat_bank) / self.all_num_cat
-        # max_num_pbj = np.max(per_cat_num_obj)
-        # range_of_variation = (max_num_pbj - 0.01) / 2 # 1%
-        # # quadratic approximation. 0.01 -> 0.25, med -> 0.5, max -> 0.75
-        # koeffs = np.polyfit([0.01, range_of_variation, max_num_pbj], [0.3, 0.5, 0.7], 2)
-        # thrsh = [koeffs[0]*(x**2) + koeffs[1]*x + koeffs[2] for x in per_cat_num_obj]
-        print(f"[*] Computed per class thresholds: {self.pseudo_conf_thresh}")
-
-    def update_memory_bank(self, teacher_outputs, labeled_imgs, labeled_imgs_metas):
-
-        with torch.no_grad():
-            teacher_outputs_labeled = self.model_t.forward_test(
-                [labeled_imgs],
-                [labeled_imgs_metas],
-                rescale=False,  # easy augmentation
-            )
-
-        for teacher_bboxes_labels in teacher_outputs_labeled:
-            bboxes_l = teacher_bboxes_labels[0]
-            for l, bb in enumerate(bboxes_l):
-                confidences = bb[:, -1]
-                if len(confidences):
-                    self.memory_cat_bank[l].extend(confidences)
-
-        for teacher_bboxes_labels in teacher_outputs:
-            bboxes = teacher_bboxes_labels[0]
-            for l, bb in enumerate(bboxes):
-                confidences = bb[:, -1]
-                if len(confidences):
-                    self.memory_cat_bank[l].extend(confidences)
-
-    def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_masks, gt_bboxes_ignore=None, **kwargs):
+    def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_masks=None, gt_bboxes_ignore=None, **kwargs):
         """Forward function for UnbiasedTeacher."""
         losses = {}
         # Supervised loss
@@ -151,7 +92,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             return losses
 
         # Pseudo labels from teacher
-        ul_args = kwargs.get("extra_0", {})  # Supposing ComposedDL([labeled, unlabeled]) data loader
+        ul_args = kwargs.get("extra_0", {})
         ul_img = ul_args.get("img")
         ul_img0 = ul_args.get("img0")
         ul_img_metas = ul_args.get("img_metas")
@@ -177,36 +118,27 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         if pseudo_ratio >= self.min_pseudo_label_ratio:
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
-            ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)  # hard augmentation
+            if self.model_t.with_mask:
+                ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels, gt_masks=pseudo_masks)
+            else:
+                ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels)
+
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = -1.0
 
             for ul_loss_name in ul_losses.keys():
                 if ul_loss_name.startswith("loss_"):
-                    # skip regression rpn loss
-                    if not self.use_rpn_loss and ul_loss_name == "loss_rpn_bbox":
-                        # skip regression rpn loss
-                        continue
                     ul_loss = ul_losses[ul_loss_name]
                     if "_bbox" in ul_loss_name:
                         if self.unlabeled_reg_loss_weight == 0:
                             continue
-                        if isinstance(ul_loss, list):
-                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_reg_loss_weight for loss in ul_loss]
-                        else:
-                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_reg_loss_weight
+                        self.update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_reg_loss_weight)
                     elif "_cls" in ul_loss_name:
                         # cls loss
-                        if isinstance(ul_loss, list):
-                            losses[ul_loss_name + "_ul"] = [loss * self.unlabeled_cls_loss_weight for loss in ul_loss]
-                        else:
-                            losses[ul_loss_name + "_ul"] = ul_loss * self.unlabeled_cls_loss_weight
-                    else:
+                        self.update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_cls_loss_weight)
+                    elif "_mask" in ul_loss_name:
                         # mask loss
-                        if isinstance(ul_loss, list):
-                            losses[ul_loss_name + "_ul"] = [loss * 1.0 for loss in ul_loss]
-                        else:
-                            losses[ul_loss_name + "_ul"] = ul_loss * 1.0
+                        self.update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_mask_loss_weight)
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
@@ -222,20 +154,24 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             pseudo_bboxes = []
             pseudo_labels = []
             pseudo_masks = []
-            bboxes = teacher_bboxes_labels[0]
-            masks = teacher_bboxes_labels[1]
-            for label, teacher_bboxes_masks in enumerate(zip(bboxes, masks)):
-                teacher_bboxes = teacher_bboxes_masks[0]
-                teacher_masks = teacher_bboxes_masks[1]
+            if self.model_t.with_mask:
+                teacher_bboxes_labels = zip(*teacher_bboxes_labels)
+            for label, teacher_bboxes_masks in enumerate(teacher_bboxes_labels):
+                if self.model_t.with_mask:
+                    teacher_bboxes = teacher_bboxes_masks[0]
+                    teacher_masks = teacher_bboxes_masks[1]
+                else:
+                    teacher_bboxes = teacher_bboxes_masks
                 confidences = teacher_bboxes[:, -1]
-                pseudo_indices = confidences > self.pseudo_conf_thresh[label]
+                pseudo_indices = confidences > self.pseudo_conf_thresh
                 pseudo_bboxes.append(teacher_bboxes[pseudo_indices, :4])  # model output: [x y w h conf]
                 pseudo_labels.append(np.full([sum(pseudo_indices)], label))
-                if np.any(pseudo_indices):
-                    teacher_masks = [np.expand_dims(mask, 0) for mask in teacher_masks]
-                    pseudo_masks.append(np.concatenate(teacher_masks)[pseudo_indices])
-                else:
-                    pseudo_masks.append(np.array([]).reshape(0, *ori_image_shape))
+                if self.model_t.with_mask:
+                    if np.any(pseudo_indices):
+                        teacher_masks = [np.expand_dims(mask, 0) for mask in teacher_masks]
+                        pseudo_masks.append(np.concatenate(teacher_masks)[pseudo_indices])
+                    else:
+                        pseudo_masks.append(np.array([]).reshape(0, *ori_image_shape))
 
                 num_all_bboxes += teacher_bboxes.shape[0]
                 if len(pseudo_bboxes):
@@ -244,7 +180,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             if len(pseudo_bboxes) > 0:
                 all_pseudo_bboxes.append(torch.from_numpy(np.concatenate(pseudo_bboxes)).to(device))
                 all_pseudo_labels.append(torch.from_numpy(np.concatenate(pseudo_labels)).to(device))
-                all_pseudo_masks.append(BitmapMasks(np.concatenate(pseudo_masks), *ori_image_shape))
+                if self.model_t.with_mask:
+                    all_pseudo_masks.append(BitmapMasks(np.concatenate(pseudo_masks), *ori_image_shape))
 
         pseudo_ratio = float(num_all_pseudo) / num_all_bboxes if num_all_bboxes > 0 else 0.0
         return all_pseudo_bboxes, all_pseudo_labels, all_pseudo_masks, pseudo_ratio
@@ -271,6 +208,13 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             all_ious[i] = ious
         recall = _recalls(all_ious, np.array([100]), np.array([0.5]))
         return recall
+
+    @staticmethod
+    def update_unlabeled_loss(sum_loss, loss, loss_name, weight):
+        if isinstance(loss, list):
+            sum_loss[loss_name + "_ul"] = [cur_loss * weight for cur_loss in loss]
+        else:
+            sum_loss[loss_name + "_ul"] = loss * weight
 
     @staticmethod
     def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # pylint: disable=unused-argument
