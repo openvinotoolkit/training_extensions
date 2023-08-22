@@ -3,9 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .multi_scale_deformable_attn_pytorch import (
-    KeyAwareMultiScaleDeformableAttention,
-    multi_scale_deformable_attn_pytorch,
-)
+from .multi_scale_deformable_attn_pytorch import multi_scale_deformable_attn_pytorch
 
-__all__ = ["multi_scale_deformable_attn_pytorch", "KeyAwareMultiScaleDeformableAttention"]
+__all__ = ["multi_scale_deformable_attn_pytorch"]

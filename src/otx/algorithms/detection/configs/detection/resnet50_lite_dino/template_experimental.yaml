@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_DINO
-name: DINO
+model_template_id: Custom_Object_Detection_Gen3_Lite_DINO
+name: Lite-DINO
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for DINO
+summary: Class-Incremental Object Detection for Lite DINO
 application: ~
 
 # Algo backend.

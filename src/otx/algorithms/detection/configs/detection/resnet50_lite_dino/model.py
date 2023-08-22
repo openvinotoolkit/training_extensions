@@ -1,4 +1,4 @@
-"""Model config for DINO."""
+"""Model config for Lite DINO."""
 _base_ = [
     "../../../../../recipes/stages/detection/incremental.py",
 ]
