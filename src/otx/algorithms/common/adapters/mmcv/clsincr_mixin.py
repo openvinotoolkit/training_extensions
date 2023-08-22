@@ -19,7 +19,7 @@ class IncrConfigurerMixin:
     def configure_task(self, cfg):
         """Patch config to support incremental learning."""
         super().configure_task(cfg)
-        if "task_adapt" in cfg and self.task_adapt_type == "mpa":
+        if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
             self.configure_task_adapt_hook(cfg)
 
     def configure_task_adapt_hook(self, cfg):
@@ -43,20 +43,15 @@ class IncrConfigurerMixin:
 
     def is_incremental(self) -> bool:
         """Return whether current model classes is increased from original model classes."""
-        sampler_flag = True
-        if len(set(self.org_model_classes) & set(self.model_classes)) == 0 or set(self.org_model_classes) == set(
+        return len(set(self.org_model_classes) & set(self.model_classes)) > 0 and set(self.org_model_classes) != set(
             self.model_classes
-        ):
-            sampler_flag = False
-        return sampler_flag
+        )
 
-    @staticmethod
-    def get_sampler_type(cfg) -> str:
+    def get_sampler_type(self, cfg) -> str:
         """Return sampler type."""
         return "cls_incr"
 
-    @staticmethod
-    def use_adaptive_repeat(cfg) -> bool:
+    def use_adaptive_repeat(self, cfg) -> bool:
         """Return whether using adaptive repeat.
 
         Currently, only multi class classification supports adaptive repeat.

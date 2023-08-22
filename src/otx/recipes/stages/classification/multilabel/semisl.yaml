@@ -14,5 +14,5 @@ custom_hooks:
     priority: ABOVE_NORMAL
 
 task_adapt:
-  type: "mpa"
+  type: "default_task_adapt"
   op: "REPLACE"

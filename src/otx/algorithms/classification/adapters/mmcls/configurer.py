@@ -202,9 +202,9 @@ class IncrClassificationConfigurer(IncrConfigurerMixin, ClassificationConfigurer
     def configure_task(self, cfg):
         """Patch config to support incremental learning."""
         super().configure_task(cfg)
-        if "task_adapt" in cfg and self.task_adapt_type == "mpa":
+        if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
             self.configure_task_adapt_hook(cfg)
-            if not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False):
+            if self._is_multiclass(cfg):
                 self.configure_loss(cfg)
 
     def configure_loss(self, cfg):
@@ -222,23 +222,23 @@ class IncrClassificationConfigurer(IncrConfigurerMixin, ClassificationConfigurer
             )
             update_or_add_custom_hook(cfg, ib_loss_hook)
 
-    @staticmethod
-    def get_sampler_type(cfg):
+    def get_sampler_type(self, cfg):
         """Return sampler type."""
-        if not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False):
-            cfg["task_adapt"].get("efficient_mode", True)
+        if self._is_multiclass(cfg):
             sampler_type = "balanced"
         else:
-            cfg["task_adapt"].get("efficient_mode", False)
             sampler_type = "cls_incr"
         return sampler_type
 
-    @staticmethod
-    def use_adaptive_repeat(cfg) -> bool:
+    def use_adaptive_repeat(self, cfg) -> bool:
         """Return whether using adaptive repeat.
 
         Currently, only multi class classification supports adaptive repeat.
         """
+        return self._is_multiclass(cfg)
+
+    @staticmethod
+    def _is_multiclass(cfg) -> bool:
         return not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False)
 
 

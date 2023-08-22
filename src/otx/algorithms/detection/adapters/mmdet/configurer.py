@@ -86,9 +86,9 @@ class DetectionConfigurer(BaseConfigurer):
         if "task_adapt" in cfg:
             if self.data_classes != self.model_classes:
                 self.configure_task_data_pipeline(cfg)
-            if cfg["task_adapt"].get("use_mpa_anchor", False):
+            if cfg["task_adapt"].get("use_adaptive_anchor", False):
                 self.configure_anchor(cfg, train_dataset)
-            if self.task_adapt_type == "mpa":
+            if self.task_adapt_type == "default_task_adapt":
                 self.configure_bbox_head(cfg)
 
     def configure_classes(self, cfg):
