@@ -165,7 +165,7 @@ class TestClassificationConfigurer:
     def test_configure_task(self, mocker):
         model_cfg = copy.deepcopy(self.model_cfg)
         model_cfg.update(self.data_cfg)
-        model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        model_cfg.task_adapt = {"type": "default_task_adapt", "op": "REPLACE", "use_adaptive_anchor": True}
         self.configurer.configure_task(model_cfg)
 
         self.configurer.model_classes = []
@@ -246,7 +246,7 @@ class TestIncrClassificationConfigurer:
         mocker.patch.object(ClassificationConfigurer, "configure_task")
         self.model_cfg.update(self.data_cfg)
         self.model_cfg.task_adapt = {}
-        self.configurer.task_adapt_type = "mpa"
+        self.configurer.task_adapt_type = "default_task_adapt"
         self.configurer.configure_task(self.model_cfg)
         assert "TaskAdaptHook" in [i.type for i in self.model_cfg.custom_hooks]
 

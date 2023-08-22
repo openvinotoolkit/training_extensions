@@ -202,7 +202,7 @@ class IncrDetectionConfigurer(IncrConfigurerMixin, DetectionConfigurer):
     def configure_task(self, cfg, train_dataset):
         """Patch config to support incremental learning."""
         super(IncrConfigurerMixin, self).configure_task(cfg, train_dataset)
-        if "task_adapt" in cfg and self.task_adapt_type == "mpa":
+        if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
             self.configure_task_adapt_hook(cfg)
 
 

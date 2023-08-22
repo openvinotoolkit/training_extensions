@@ -259,7 +259,7 @@ class TestIncrSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
         mocker.patch.object(SegmentationConfigurer, "configure_task")
-        self.configurer.task_adapt_type = "mpa"
+        self.configurer.task_adapt_type = "default_task_adapt"
         self.configurer.configure_task(self.model_cfg)
         assert self.model_cfg.custom_hooks[3].type == "TaskAdaptHook"
         assert self.model_cfg.custom_hooks[3].sampler_flag is False

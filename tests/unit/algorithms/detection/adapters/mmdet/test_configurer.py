@@ -167,14 +167,14 @@ class TestDetectionConfigurer:
         ssd_dir = os.path.join("src/otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
         ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
         data_pipeline_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "data_pipeline.py"))
-        ssd_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        ssd_cfg.task_adapt = {"type": "default_task_adapt", "op": "REPLACE", "use_adaptive_anchor": True}
         model_cfg = copy.deepcopy(ssd_cfg)
         model_cfg.merge_from_dict(data_pipeline_cfg)
         self.configurer.configure_task(model_cfg, self.det_dataset)
         assert model_cfg.model.bbox_head.anchor_generator != ssd_cfg.model.bbox_head.anchor_generator
 
         model_cfg = copy.deepcopy(self.model_cfg)
-        model_cfg.task_adapt = {"type": "mpa", "op": "REPLACE", "use_mpa_anchor": True}
+        model_cfg.task_adapt = {"type": "default_task_adapt", "op": "REPLACE", "use_adaptive_anchor": True}
         model_cfg.model.bbox_head.type = "ATSSHead"
         self.configurer.configure_task(model_cfg, self.det_dataset)
 
@@ -308,7 +308,7 @@ class TestIncrDetectionConfigurer:
     def test_configure_task(self, mocker):
         mocker.patch.object(DetectionConfigurer, "configure_task")
         self.model_cfg.task_adapt = {}
-        self.configurer.task_adapt_type = "mpa"
+        self.configurer.task_adapt_type = "default_task_adapt"
         self.configurer.configure_task(self.model_cfg, self.det_dataset)
         assert self.model_cfg.custom_hooks[2].type == "TaskAdaptHook"
         assert self.model_cfg.custom_hooks[2].sampler_flag is False
