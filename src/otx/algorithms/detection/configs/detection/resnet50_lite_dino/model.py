@@ -114,6 +114,7 @@ optimizer = dict(
     weight_decay=0.0001,
 )
 optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
-load_from = "~/.cache/torch/hub/checkpoints/lite-dino-coco.pth"
+load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/\
+models/object_detection/v2/lite-dino-coco.pth"
 resume_from = None
 ignore = False
