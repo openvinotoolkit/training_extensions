@@ -215,28 +215,6 @@ class BaseConfigurer:
     def _configure_head(self, cfg):
         raise NotImplementedError
 
-    @staticmethod
-    def configure_hook(cfg):
-        """Update cfg.custom_hooks based on cfg.custom_hook_options."""
-
-        def update_hook(opt, custom_hooks, idx, hook):
-            """Delete of update a custom hook."""
-            if isinstance(opt, dict):
-                if opt.get("_delete_", False):
-                    # if option include _delete_=True, remove this hook from custom_hooks
-                    logger.info(f"configure_hook: {hook['type']} is deleted")
-                    del custom_hooks[idx]
-                else:
-                    logger.info(f"configure_hook: {hook['type']} is updated with {opt}")
-                    hook.update(**opt)
-
-        custom_hook_options = cfg.pop("custom_hook_options", {})
-        custom_hooks = cfg.get("custom_hooks", [])
-        for idx, hook in enumerate(custom_hooks):
-            for opt_key, opt in custom_hook_options.items():
-                if hook["type"] == opt_key:
-                    update_hook(opt, custom_hooks, idx, hook)
-
     def configure_samples_per_gpu(
         self,
         cfg: Config,

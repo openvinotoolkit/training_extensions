@@ -29,7 +29,7 @@ lr_config:
   warmup_ratio: 0.333
 
 task_adapt:
-  type: "mpa"
+  type: "default_task_adapt"
   op: "REPLACE"
 
 custom_hooks: [
