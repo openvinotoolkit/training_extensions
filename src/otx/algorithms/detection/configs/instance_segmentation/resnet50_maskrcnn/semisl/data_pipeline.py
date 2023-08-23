@@ -1,6 +1,6 @@
-"""Data Pipeline of SSD model for Semi-Supervised Learning Detection Task."""
+"""Data Pipeline of Mask-RCNN ResNet50 model for Semi-Supervised Learning Instance Segmentation Task."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
