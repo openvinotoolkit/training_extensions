@@ -72,7 +72,6 @@ class MMPTEngine(MMXEngine):
             }
             if task in ("Image Caption", "Visual Grounding", "Visual Question Answering"):
                 inputs["images"] = inputs.pop("inputs")
-            breakpoint()
             return [inference_model(**inputs, **kwargs)]
         elif task is not None and task != "Image Classification":
             raise NotImplementedError()
