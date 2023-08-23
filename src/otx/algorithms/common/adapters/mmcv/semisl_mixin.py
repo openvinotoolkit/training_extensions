@@ -22,7 +22,7 @@ class SemiSLConfigurerMixin:
         # Set unlabeled data hook
         if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
-                if cfg.data.unlabeled.get("pipeline", []):
+                if len(cfg.data.unlabeled.get("pipeline", [])) == 0:
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
                 self.configure_unlabeled_dataloader(cfg)
 
