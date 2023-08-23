@@ -9,6 +9,7 @@ import torch
 
 from otx.algorithms.detection.adapters.mmdet.models.losses.cross_focal_loss import (
     CrossSigmoidFocalLoss,
+    OrdinaryFocalLoss,
 )
 
 
@@ -43,3 +44,19 @@ class TestCrossFocalLoss:
         loss3 = self.loss(self.predictions, self.labels, reduction_override="sum")
         assert loss1.shape == (3, 3)
         assert loss2 != loss3
+
+
+class TestFocalLoss:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Create the loss object"""
+        self.predictions = torch.tensor([[0, 1, 0], [0, 1, 0], [0, 0, 1]], dtype=torch.float32)
+        self.labels = torch.tensor([1, 1, 2])
+        self.loss = OrdinaryFocalLoss(gamma=1.5)
+
+    def test_forward(self):
+        loss = self.loss(self.predictions, self.labels, reduction="none")
+        assert loss is not None
+        assert loss.shape == (3,)
+        loss = self.loss(self.predictions, self.labels, avg_factor=1, reduction="mean")
+        assert isinstance(loss.item(), float)

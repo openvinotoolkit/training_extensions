@@ -4,6 +4,7 @@
 #
 import copy
 import os
+from pathlib import Path
 
 import pytest
 import torch
@@ -52,6 +53,16 @@ args = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "5", "--learning_parameters.batch_size", "2"],
+}
+
+# Semi-SL
+args_semisl = {
+    "--train-data-roots": "tests/assets/car_tree_bug",
+    "--val-data-roots": "tests/assets/car_tree_bug",
+    "--test-data-roots": "tests/assets/car_tree_bug",
+    "--unlabeled-data-roots": "tests/assets/car_tree_bug",
+    "--input": "tests/assets/car_tree_bug/images/train",
+    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
 # Training params for resume, num_iters*2
@@ -296,3 +307,38 @@ class TestToolsMPAInstanceSegmentation:
         args1 = copy.deepcopy(args)
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+
+class TestToolsMPASemiSLInstanceSegmentation:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
+        tmp_dir_path = tmp_dir_path / "ins_seg/test_semisl"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert (Path(template_dir) / "semisl").is_dir()
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
+        tmp_dir_path = tmp_dir_path / "ins_seg/test_semisl"
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
+        tmp_dir_path = tmp_dir_path / "ins_seg/test_multi_gpu_semisl"
+        args_semisl_multigpu = copy.deepcopy(args_semisl)
+        args_semisl_multigpu["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert (Path(template_dir) / "semisl").is_dir()
