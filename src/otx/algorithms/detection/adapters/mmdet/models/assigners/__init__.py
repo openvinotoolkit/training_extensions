@@ -4,5 +4,6 @@
 #
 
 from .custom_max_iou_assigner import CustomMaxIoUAssigner
+from .dynamic_soft_label_assigner import DynamicSoftLabelAssigner
 
-__all__ = ["CustomMaxIoUAssigner"]
+__all__ = ["CustomMaxIoUAssigner", "DynamicSoftLabelAssigner"]

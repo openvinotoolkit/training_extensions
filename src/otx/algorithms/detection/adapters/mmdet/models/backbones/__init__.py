@@ -4,6 +4,7 @@
 #
 
 from . import imgclsmob
+from .cspnext import CSPNeXt
 from .mmov_backbone import MMOVBackbone
 
-__all__ = ["imgclsmob", "MMOVBackbone"]
+__all__ = ["imgclsmob", "MMOVBackbone", "CSPNeXt"]
