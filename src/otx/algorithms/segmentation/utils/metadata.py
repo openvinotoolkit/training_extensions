@@ -21,4 +21,5 @@ def get_seg_model_api_configuration(label_schema: LabelSchemaEntity, hyperparams
         ("model_info", "soft_threshold"): str(hyperparams.postprocessing.soft_threshold),
         ("model_info", "blur_strength"): str(hyperparams.postprocessing.blur_strength),
         ("model_info", "labels"): all_labels,
+        ("model_info", "return_soft_prediction"): "True",
     }

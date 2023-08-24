@@ -1,10 +1,10 @@
+import datetime
 import os
 import socket
 from contextlib import closing
 from copy import deepcopy
 
 import pytest
-import torch
 
 from otx.cli.utils import multi_gpu
 from otx.cli.utils.multi_gpu import (
@@ -193,7 +193,12 @@ class TestMultiGPUManager:
 
     @e2e_pytest_unit
     def test_init(self, mocker):
-        MultiGPUManager(mocker.MagicMock(), "0,1", "localhost:0")
+        elapsed_second = 180
+        start_time = datetime.datetime.now() - datetime.timedelta(seconds=elapsed_second)
+        MultiGPUManager(mocker.MagicMock(), "0,1", "localhost:0", start_time=start_time)
+
+        # check torch.dist.init_process_group timeout value is adapted if elapsed time is bigger than criteria.
+        assert int(self.mock_os.environ.get("TORCH_DIST_TIMEOUT", 60)) >= int(elapsed_second * 1.5)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("num_gpu", [4, 10])

@@ -59,7 +59,7 @@ class TestOTXDetDataset:
     def test_prepare_train_img(self, task_type, domain) -> None:
         """Test prepare_train_img method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=False)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, test_mode=False)
         img = dataset.prepare_train_img(0)
         assert isinstance(img, dict)
         assert "dataset_item" in img
@@ -75,7 +75,7 @@ class TestOTXDetDataset:
     def test_prepare_test_img(self, task_type, domain) -> None:
         """Test prepare_test_img method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=True)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, test_mode=True)
         img = dataset.prepare_test_img(0)
         assert isinstance(img, dict)
         assert "dataset_item" in img
@@ -91,7 +91,7 @@ class TestOTXDetDataset:
     def test_get_ann_info(self, task_type, domain) -> None:
         """Test get_ann_info method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()
         ann_info = dataset.get_ann_info(0)
         assert isinstance(ann_info, dict)
@@ -109,7 +109,7 @@ class TestOTXDetDataset:
     def test_evaluate(self, task_type, domain, metric, logger) -> None:
         """Test evaluate method for detection and instance segmentation"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()
         sample = dataset[0]
         if task_type == TaskType.DETECTION:
@@ -129,7 +129,7 @@ class TestOTXDetDataset:
     def test_mask_evaluate(self) -> None:
         """Test evaluate method for instance segmentation"""
         otx_dataset, labels = self.dataset[TaskType.INSTANCE_SEGMENTATION]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, Domain.INSTANCE_SEGMENTATION)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()
         sample = dataset[0]
 
@@ -153,7 +153,7 @@ class TestOTXDetDataset:
     def test_create_detection_shape(self, use_ellipse_shapes) -> None:
         """Test create_detection_shapes method"""
         otx_dataset, labels = self.dataset[TaskType.DETECTION]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, Domain.DETECTION)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()
         sample = dataset[0]
         h, w = sample["dataset_item"].height, sample["dataset_item"].width
@@ -194,7 +194,7 @@ class TestOTXDetDataset:
     def test_create_mask_shape(self, use_ellipse_shapes) -> None:
         """Test create_mask_shapes method"""
         otx_dataset, labels = self.dataset[TaskType.INSTANCE_SEGMENTATION]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, Domain.INSTANCE_SEGMENTATION)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()
         sample = dataset[0]
         h, w = sample["dataset_item"].height, sample["dataset_item"].width

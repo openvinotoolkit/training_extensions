@@ -98,6 +98,8 @@ class TestToolsOTXActionClassification:
         tmp_dir_path = tmp_dir_path / "action_cls"
         if template.model_template_id == "Custom_Action_Classification_MoViNet":
             pytest.xfail("Issue#2058: MoViNet inference fails in OV 2023.0")
+        if template.name == "X3D":
+            pytest.skip(reason="Issue#2435: exported X3D model showed 0.0 acc.")
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
 
     @e2e_pytest_component

@@ -15,17 +15,11 @@
 # and limitations under the License.
 
 from .builder import build_scalar_scheduler, build_segmentor
-from .config_utils import (
-    patch_datasets,
-    patch_evaluation,
-)
 from .data_utils import get_valid_label_mask_per_batch, load_dataset_items
 from .exporter import SegmentationExporter
 
 __all__ = [
     "SegmentationExporter",
-    "patch_datasets",
-    "patch_evaluation",
     "load_dataset_items",
     "build_scalar_scheduler",
     "build_segmentor",

@@ -38,11 +38,27 @@ train_pipeline = [
     dict(type="Pad", pad_to_square=True, pad_val=114.0),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_bboxes", "gt_labels"],
+        meta_keys=[
+            "ori_filename",
+            "flip_direction",
+            "scale_factor",
+            "img_norm_cfg",
+            "gt_ann_ids",
+            "flip",
+            "ignored_labels",
+            "ori_shape",
+            "filename",
+            "img_shape",
+            "pad_shape",
+        ],
+    ),
 ]
 
 test_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
         img_scale=(416, 416),
@@ -58,37 +74,27 @@ test_pipeline = [
     ),
 ]
 
-__dataset_type = "CocoDataset"
-__data_root = "data/coco/"
-__samples_per_gpu = 2
+__dataset_type = "OTXDetDataset"
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu,
-    workers_per_gpu=4,
     train=dict(
         type="MultiImageMixDataset",
         dataset=dict(
             type=__dataset_type,
-            ann_file=__data_root + "annotations/instances_train2017.json",
-            img_prefix=__data_root + "train2017/",
             pipeline=[
-                dict(type="LoadImageFromFile", to_float32=False),
-                dict(type="LoadAnnotations", with_bbox=True),
+                dict(type="LoadImageFromOTXDataset", to_float32=False, enable_memcache=True),
+                dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
             ],
         ),
         pipeline=train_pipeline,
     ),
     val=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_val2017.json",
-        img_prefix=__data_root + "val2017/",
         test_mode=True,
         pipeline=test_pipeline,
     ),
     test=dict(
         type=__dataset_type,
-        ann_file=__data_root + "annotations/instances_val2017.json",
-        img_prefix=__data_root + "val2017/",
         test_mode=True,
         pipeline=test_pipeline,
     ),

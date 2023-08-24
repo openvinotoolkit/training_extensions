@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 from openvino.model_api.models.utils import Detection
 from openvino.model_api.models.utils import ClassificationResult
+from openvino.model_api.models.utils import ImageResultWithSoftPrediction
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -627,7 +628,12 @@ class TestSegmentationToAnnotation:
                 ),
             ]
         )
-        hard_predictions = np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)])
+        result = ImageResultWithSoftPrediction(
+            np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)]),
+            soft_prediction,
+            np.array(0),
+            np.array(0),
+        )
 
         metadata = {
             "non-required key": 1,
@@ -635,7 +641,7 @@ class TestSegmentationToAnnotation:
             "soft_prediction": soft_prediction,
         }
 
-        predictions_to_annotations = converter.convert_to_annotation(predictions=hard_predictions, metadata=metadata)
+        predictions_to_annotations = converter.convert_to_annotation(predictions=result, metadata=metadata)
         check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=2)
         check_annotation(
             actual_annotation=predictions_to_annotations.annotations[0],

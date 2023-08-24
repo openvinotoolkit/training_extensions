@@ -4,7 +4,7 @@ _base_ = ["./base_instance_segmentation_static.py"]
 
 ir_config = dict(
     dynamic_axes={
-        "input": {
+        "image": {
             0: "batch",
             1: "channel",
             2: "height",
