@@ -527,8 +527,8 @@ class Tile:
 
         for orig_image in self.cached_results:
             img_idx = orig_image["index"]
-            ratios[img_idx] = np.array([feat_h, feat_w]) / self.tile_size
             image_h, image_w = orig_image["height"], orig_image["width"]
+            ratios[img_idx] = np.array([feat_h / min(self.tile_size, image_h), feat_w / min(self.tile_size, image_w)])
 
             image_map_h = int(image_h * ratios[img_idx][0])
             image_map_w = int(image_w * ratios[img_idx][1])
