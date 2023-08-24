@@ -47,7 +47,11 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         cfg = kwargs.copy()
         cfg["type"] = arch_type
         self.model_s = build_detector(cfg)
-        self.model_t = copy.deepcopy(self.model_s)
+        cfg_teacher = copy.deepcopy(cfg)
+        if cfg_teacher['roi_head']['mask_head']['type'] == "CustomFCNMaskHead":
+            cfg_teacher['roi_head']['mask_head']['type'] = "FCNMaskHead"
+        self.model_t = build_detector(cfg_teacher)
+        # self.model_t = copy.deepcopy(self.model_s)
         # warmup for first epochs
         self.enable_unlabeled_loss(False)
 
@@ -153,8 +157,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         all_pseudo_masks = []
         num_all_bboxes = 0
         num_all_pseudo = 0
-        ori_image_shape = img_meta[0]["img_shape"][:-1]
-        for teacher_bboxes_labels in teacher_outputs:
+        for i, teacher_bboxes_labels in enumerate(teacher_outputs):
+            image_shape = img_meta[i]["img_shape"][:-1]
             pseudo_bboxes = []
             pseudo_labels = []
             pseudo_masks = []
@@ -175,7 +179,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                         teacher_masks = [np.expand_dims(mask, 0) for mask in teacher_masks]
                         pseudo_masks.append(np.concatenate(teacher_masks)[pseudo_indices])
                     else:
-                        pseudo_masks.append(np.array([]).reshape(0, *ori_image_shape))
+                        pseudo_masks.append(np.array([]).reshape(0, *image_shape))
 
                 num_all_bboxes += teacher_bboxes.shape[0]
                 if len(pseudo_bboxes):
@@ -185,7 +189,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 all_pseudo_bboxes.append(torch.from_numpy(np.concatenate(pseudo_bboxes)).to(device))
                 all_pseudo_labels.append(torch.from_numpy(np.concatenate(pseudo_labels)).to(device))
                 if self.model_t.with_mask:
-                    all_pseudo_masks.append(BitmapMasks(np.concatenate(pseudo_masks), *ori_image_shape))
+                    all_pseudo_masks.append(BitmapMasks(np.concatenate(pseudo_masks), *image_shape))
 
         pseudo_ratio = float(num_all_pseudo) / num_all_bboxes if num_all_bboxes > 0 else 0.0
         return all_pseudo_bboxes, all_pseudo_labels, all_pseudo_masks, pseudo_ratio

@@ -1,4 +1,4 @@
-_base_ = ["./train.py", "../_base_/data/coco_inst_seg.py", "../_base_/models/detectors/detector.py"]
+_base_ = ["./train.py", "../_base_/models/detectors/detector.py"]
 
 task = "instance-segmentation"
 
@@ -19,6 +19,6 @@ find_unused_parameters = True
 
 adaptive_validation_interval = dict(
     max_interval=5,
-    enable_adaptive_interval_hook=True,
+    enable_adaptive_interval_hook=False,
     enable_eval_before_run=True,
 )
