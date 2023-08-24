@@ -221,7 +221,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 metadata = json.loads(self.task_environment.model.get_data("metadata").decode())
                 self._populate_metadata(metadata)
                 logger.info("Metadata loaded from model v1.4.")
-            except Exception:
+            except (KeyError, json.decoder.JSONDecodeError):
                 # model is from version 1.2.x
                 metadata = self._populate_metadata_legacy(self.task_environment.model)
                 logger.info("Metadata loaded from model v1.2.x.")
