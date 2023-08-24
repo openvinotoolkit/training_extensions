@@ -1,21 +1,12 @@
 """Collection Pipeline for detection task."""
-# Copyright (C) 2021 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
-import copy
-from typing import Any, Dict
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
-from mmdet.datasets.builder import PIPELINES
+import copy
+from typing import Any, Dict, Optional
+
+from mmdet.datasets.builder import PIPELINES, build_from_cfg
+from mmdet.datasets.pipelines import Resize
 
 import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset as load_image_base
 from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
@@ -28,6 +19,48 @@ from otx.api.entities.label import Domain
 @PIPELINES.register_module()
 class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
     """Pipeline element that loads an image from a OTX Dataset on the fly."""
+
+
+@PIPELINES.register_module()
+class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
+    """Load and resize image & annotation with cache support."""
+    def _create_load_ann_op(self, cfg: Optional[Dict]) -> Optional[Any]:
+        """Creates resize operation."""
+        if cfg is None:
+            return None
+        return build_from_cfg(cfg, PIPELINES)
+
+    def _create_resize_op(self, cfg: Optional[Dict]) -> Optional[Any]:
+        """Creates resize operation."""
+        if cfg is None:
+            return None
+        return build_from_cfg(cfg, PIPELINES)
+
+
+@PIPELINES.register_module()
+class ResizeTo(Resize):
+    """Resize to specific size.
+
+    This operation works if the input is not in desired shape.
+    If it's already in the shape, it just returns input dict for efficiency.
+
+    Args:
+        img_scale (tuple): Images scales for resizing (w, h).
+    """
+    def __init__(self, **kwargs):
+        super().__init__(override=True, **kwargs)  # Allow multiple calls
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of ResizeTo.
+
+        Args:
+            results: Inputs to be transformed.
+        """
+        img_shape = results.get("img_shape", (0, 0))
+        img_scale = self.img_scale[0]
+        if img_shape[0] == img_scale[0] and img_shape[1] == img_scale[1]:
+            return results
+        return super().__call__(results)
 
 
 @PIPELINES.register_module()
@@ -84,7 +117,7 @@ class LoadAnnotationFromOTXDataset:
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadAnnotationFromOTXDataset."""
-        dataset_item = results.pop("dataset_item")
+        dataset_item = results.get("dataset_item")
         label_list = results.pop("ann_info")["label_list"]
         ann_info = get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
         if self.with_bbox:
