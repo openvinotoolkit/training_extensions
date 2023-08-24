@@ -159,7 +159,10 @@ class TestInstanceSegmentationCLI:
         tmp_dir_path = tmp_dir_path / "ins_seg"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
-
+        if template.name.startswith("MaskRCNN"):
+            pytest.skip(
+                reason="Issue#2451: Torch2.0 CUDA runtime error during NNCF optimization of ROIAlign MMCV kernel for MaskRCNN"
+            )
         nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
