@@ -5,5 +5,4 @@
 
 from .csp_layer import CSPLayer
 
-
-__all__ = ['CSPLayer']
+__all__ = ["CSPLayer"]

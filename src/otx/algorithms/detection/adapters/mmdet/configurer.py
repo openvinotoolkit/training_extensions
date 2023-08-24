@@ -164,13 +164,23 @@ class DetectionConfigurer(BaseConfigurer):
             bbox_head = cfg.model.roi_head.bbox_head
 
         if cfg.get("ignore", False):
-            bbox_head.loss_cls = ConfigDict(
-                type="CrossSigmoidFocalLoss",
-                use_sigmoid=True,
-                num_classes=len(self.model_classes),
-                alpha=bbox_head.loss_cls.get("alpha", 0.25),
-                gamma=bbox_head.loss_cls.get("gamma", 2.0),
-            )
+            if isinstance(bbox_head, list):
+                for head in bbox_head:
+                    head.loss_cls = ConfigDict(
+                        type="CrossSigmoidFocalLoss",
+                        use_sigmoid=True,
+                        num_classes=len(self.model_classes),
+                        alpha=head.loss_cls.get("alpha", 0.25),
+                        gamma=head.loss_cls.get("gamma", 2.0),
+                    )
+            else:
+                bbox_head.loss_cls = ConfigDict(
+                    type="CrossSigmoidFocalLoss",
+                    use_sigmoid=True,
+                    num_classes=len(self.model_classes),
+                    alpha=bbox_head.loss_cls.get("alpha", 0.25),
+                    gamma=bbox_head.loss_cls.get("gamma", 2.0),
+                )
 
     @staticmethod
     def configure_input_size(

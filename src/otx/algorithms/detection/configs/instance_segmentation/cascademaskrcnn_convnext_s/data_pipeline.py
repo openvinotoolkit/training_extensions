@@ -1,4 +1,4 @@
-"""Data Pipeline of RTMDet-Inst model for Instance-Seg Task."""
+"""Data Pipeline of MaskRCNN-SwinT-FP16 model for Instance-Seg Task."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -18,7 +18,7 @@
 
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
-__img_size = (640, 640)
+__img_size = (1024, 1024)
 
 meta_keys = [
     "ori_filename",
@@ -43,9 +43,9 @@ train_pipeline = [
         with_mask=True,
         poly2mask=False,
     ),
-    dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Resize", img_scale=__img_size, keep_ratio=True),
-    dict(type="Pad", size=__img_size, pad_val=dict(img=(114, 114, 114))),
+    dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type='Pad', size=__img_size, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"], meta_keys=meta_keys),
@@ -60,7 +60,7 @@ test_pipeline = [
         transforms=[
             dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
-            dict(type="Pad", size=__img_size, pad_val=dict(img=(114, 114, 114))),
+            dict(type='Pad', size_divisor=32, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),

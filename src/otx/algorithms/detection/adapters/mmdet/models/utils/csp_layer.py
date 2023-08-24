@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-import torch.nn as nn
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from mmcv.runner import BaseModule
-from torch import Tensor
+from torch import Tensor, nn
 
 
 class DarknetBottleneck(BaseModule):
@@ -30,37 +29,26 @@ class DarknetBottleneck(BaseModule):
             Default: dict(type='Swish').
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 expansion=0.5,
-                 add_identity=True,
-                 use_depthwise=False,
-                 conv_cfg=None,
-                 norm_cfg=dict(type='BN', momentum=0.03, eps=0.001),
-                 act_cfg=dict(type='Swish'),
-                 init_cfg=None):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        expansion=0.5,
+        add_identity=True,
+        use_depthwise=False,
+        conv_cfg=None,
+        norm_cfg=dict(type="BN", momentum=0.03, eps=0.001),
+        act_cfg=dict(type="Swish"),
+        init_cfg=None,
+    ):
         super().__init__(init_cfg)
         hidden_channels = int(out_channels * expansion)
         conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
-        self.conv1 = ConvModule(
-            in_channels,
-            hidden_channels,
-            1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+        self.conv1 = ConvModule(in_channels, hidden_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
         self.conv2 = conv(
-            hidden_channels,
-            out_channels,
-            3,
-            stride=1,
-            padding=1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
-        self.add_identity = \
-            add_identity and in_channels == out_channels
+            hidden_channels, out_channels, 3, stride=1, padding=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+        )
+        self.add_identity = add_identity and in_channels == out_channels
 
     def forward(self, x):
         identity = x
@@ -121,28 +109,23 @@ class CSPNeXtBlock(BaseModule):
             Defaults to None.
     """
 
-    def __init__(self,
-                 in_channels: int,
-                 out_channels: int,
-                 expansion: float = 0.5,
-                 add_identity: bool = True,
-                 use_depthwise: bool = False,
-                 kernel_size: int = 5,
-                 conv_cfg: dict = None,
-                 norm_cfg: dict = dict(type='BN', momentum=0.03, eps=0.001),
-                 act_cfg: dict = dict(type='SiLU'),
-                 init_cfg: dict = None) -> None:
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        expansion: float = 0.5,
+        add_identity: bool = True,
+        use_depthwise: bool = False,
+        kernel_size: int = 5,
+        conv_cfg: dict = None,
+        norm_cfg: dict = dict(type="BN", momentum=0.03, eps=0.001),
+        act_cfg: dict = dict(type="SiLU"),
+        init_cfg: dict = None,
+    ) -> None:
         super().__init__(init_cfg=init_cfg)
         hidden_channels = int(out_channels * expansion)
         conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
-        self.conv1 = conv(
-            in_channels,
-            hidden_channels,
-            3,
-            stride=1,
-            padding=1,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+        self.conv1 = conv(in_channels, hidden_channels, 3, stride=1, padding=1, norm_cfg=norm_cfg, act_cfg=act_cfg)
         self.conv2 = DepthwiseSeparableConvModule(
             hidden_channels,
             out_channels,
@@ -151,9 +134,9 @@ class CSPNeXtBlock(BaseModule):
             padding=kernel_size // 2,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
-        self.add_identity = \
-            add_identity and in_channels == out_channels
+            act_cfg=act_cfg,
+        )
+        self.add_identity = add_identity and in_channels == out_channels
 
     def forward(self, x: Tensor) -> Tensor:
         """Forward function."""
@@ -188,56 +171,48 @@ class CSPLayer(BaseModule):
             Default: dict(type='Swish')
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 expand_ratio=0.5,
-                 num_blocks=1,
-                 add_identity=True,
-                 use_depthwise=False,
-                 use_cspnext_block: bool = False,
-                 channel_attention: bool = False,
-                 conv_cfg=None,
-                 norm_cfg=dict(type='BN', momentum=0.03, eps=0.001),
-                 act_cfg=dict(type='Swish'),
-                 init_cfg=None):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        expand_ratio=0.5,
+        num_blocks=1,
+        add_identity=True,
+        use_depthwise=False,
+        use_cspnext_block: bool = False,
+        channel_attention: bool = False,
+        conv_cfg=None,
+        norm_cfg=dict(type="BN", momentum=0.03, eps=0.001),
+        act_cfg=dict(type="Swish"),
+        init_cfg=None,
+    ):
         super().__init__(init_cfg)
         block = CSPNeXtBlock if use_cspnext_block else DarknetBottleneck
         mid_channels = int(out_channels * expand_ratio)
         self.channel_attention = channel_attention
-        self.main_conv = ConvModule(
-            in_channels,
-            mid_channels,
-            1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+        self.main_conv = ConvModule(in_channels, mid_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
         self.short_conv = ConvModule(
-            in_channels,
-            mid_channels,
-            1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+            in_channels, mid_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+        )
         self.final_conv = ConvModule(
-            2 * mid_channels,
-            out_channels,
-            1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+            2 * mid_channels, out_channels, 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+        )
 
-        self.blocks = nn.Sequential(*[
-            block(
-                mid_channels,
-                mid_channels,
-                1.0,
-                add_identity,
-                use_depthwise,
-                conv_cfg=conv_cfg,
-                norm_cfg=norm_cfg,
-                act_cfg=act_cfg) for _ in range(num_blocks)
-        ])
+        self.blocks = nn.Sequential(
+            *[
+                block(
+                    mid_channels,
+                    mid_channels,
+                    1.0,
+                    add_identity,
+                    use_depthwise,
+                    conv_cfg=conv_cfg,
+                    norm_cfg=norm_cfg,
+                    act_cfg=act_cfg,
+                )
+                for _ in range(num_blocks)
+            ]
+        )
         if channel_attention:
             self.attention = ChannelAttention(2 * mid_channels)
 

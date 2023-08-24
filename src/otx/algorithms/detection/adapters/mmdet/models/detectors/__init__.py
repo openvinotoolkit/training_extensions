@@ -4,6 +4,7 @@
 #
 
 from .custom_atss_detector import CustomATSS
+from .custom_cascade_maskrcnn import CustomCascadeRCNN
 from .custom_deformable_detr_detector import CustomDeformableDETR
 from .custom_dino_detector import CustomDINO
 from .custom_maskrcnn_detector import CustomMaskRCNN
@@ -31,4 +32,5 @@ __all__ = [
     "UnbiasedTeacher",
     "CustomMaskRCNNTileOptimized",
     "CustomRTMDetInst",
+    "CustomCascadeRCNN",
 ]

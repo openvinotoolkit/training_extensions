@@ -5,20 +5,21 @@
 
 import functools
 
-
-from mmdet.models.builder import DETECTORS
-from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.common.utils.task_adapt import map_class_names
-from mmdet.models.detectors.single_stage import SingleStageDetector
-from mmdet.core import bbox2result, InstanceData
 import numpy as np
 import torch
+from mmdet.core import InstanceData, bbox2result
+from mmdet.models.builder import DETECTORS
+from mmdet.models.detectors.single_stage import SingleStageDetector
+
+from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.common.utils.task_adapt import map_class_names
 
 logger = get_logger()
 
 
 # TODO: Need to fix pylint issues
 # pylint: disable=too-many-locals, unused-argument, protected-access, abstract-method
+
 
 def pack_gt_instances(gt_masks, gt_labels, gt_bboxes) -> list[InstanceData]:
     batch_gt_instances = []
@@ -85,18 +86,8 @@ class CustomRTMDetInst(SingleStageDetector):
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param
 
-    def forward_train(self,
-                      img,
-                      img_metas,
-                      gt_masks,
-                      gt_labels,
-                      gt_bboxes,
-                      gt_bboxes_ignore=None,
-                      **kwargs):
-        gt_masks = [
-            gt_mask.to_tensor(dtype=torch.bool, device=img.device)
-            for gt_mask in gt_masks
-        ]
+    def forward_train(self, img, img_metas, gt_masks, gt_labels, gt_bboxes, gt_bboxes_ignore=None, **kwargs):
+        gt_masks = [gt_mask.to_tensor(dtype=torch.bool, device=img.device) for gt_mask in gt_masks]
         x = self.extract_feat(img)
         bbox_head_preds = self.bbox_head(x)
 
@@ -106,7 +97,8 @@ class CustomRTMDetInst(SingleStageDetector):
             *bbox_head_preds,
             batch_gt_instances=batch_gt_instances,
             batch_img_metas=img_metas,
-            batch_gt_instances_ignore=gt_bboxes_ignore)
+            batch_gt_instances_ignore=gt_bboxes_ignore,
+        )
         return losses
 
     def simple_test(self, img, img_metas, rescale=False):
@@ -124,10 +116,9 @@ class CustomRTMDetInst(SingleStageDetector):
                 corresponds to each class.
         """
         feat = self.extract_feat(img)
-        results_list = self.bbox_head.simple_test(
-            feat, img_metas, rescale=rescale)
+        results_list = self.bbox_head.simple_test(feat, img_metas, rescale=rescale)
 
-        with_mask = True if 'masks' in results_list[0] else False
+        with_mask = True if "masks" in results_list[0] else False
 
         if with_mask:
             return [self.format_mask_results(results) for results in results_list]
@@ -135,8 +126,7 @@ class CustomRTMDetInst(SingleStageDetector):
 
     def format_bbox_results(self, results_list):
         bbox_results = [
-            bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
-            for det_bboxes, det_labels in results_list
+            bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes) for det_bboxes, det_labels in results_list
         ]
         return bbox_results
 
@@ -169,32 +159,23 @@ class CustomRTMDetInst(SingleStageDetector):
                   is the number of masks with this category.
         """
         data_keys = results.keys()
-        assert 'scores' in data_keys
-        assert 'labels' in data_keys
+        assert "scores" in data_keys
+        assert "labels" in data_keys
 
-        assert 'masks' in data_keys, \
-            'results should contain ' \
-            'masks when format the results '
+        assert "masks" in data_keys, "results should contain " "masks when format the results "
         mask_results = [[] for _ in range(self.bbox_head.num_classes)]
 
         num_masks = len(results)
 
         if num_masks == 0:
-            bbox_results = [
-                np.zeros((0, 5), dtype=np.float32)
-                for _ in range(self.bbox_head.num_classes)
-            ]
+            bbox_results = [np.zeros((0, 5), dtype=np.float32) for _ in range(self.bbox_head.num_classes)]
             return bbox_results, mask_results
 
         labels = results.labels.detach().cpu().numpy()
 
-        det_bboxes = torch.cat([results.bboxes, results.scores[:, None]],
-                               dim=-1)
+        det_bboxes = torch.cat([results.bboxes, results.scores[:, None]], dim=-1)
         det_bboxes = det_bboxes.detach().cpu().numpy()
-        bbox_results = [
-            det_bboxes[labels == i, :]
-            for i in range(self.bbox_head.num_classes)
-        ]
+        bbox_results = [det_bboxes[labels == i, :] for i in range(self.bbox_head.num_classes)]
 
         masks = results.masks.detach().cpu().numpy()
 

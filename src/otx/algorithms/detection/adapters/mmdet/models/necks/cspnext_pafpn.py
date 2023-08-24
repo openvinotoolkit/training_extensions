@@ -3,12 +3,11 @@ import math
 from typing import Sequence, Tuple
 
 import torch
-import torch.nn as nn
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from mmcv.runner import BaseModule
-from torch import Tensor
-
 from mmdet.models.builder import NECKS
+from torch import Tensor, nn
+
 from ..utils import CSPLayer
 
 
@@ -44,17 +43,18 @@ class CSPNeXtPAFPN(BaseModule):
         num_csp_blocks: int = 3,
         use_depthwise: bool = False,
         expand_ratio: float = 0.5,
-        upsample_cfg: dict = dict(scale_factor=2, mode='nearest'),
+        upsample_cfg: dict = dict(scale_factor=2, mode="nearest"),
         conv_cfg: bool = None,
-        norm_cfg: dict = dict(type='BN', momentum=0.03, eps=0.001),
-        act_cfg: dict = dict(type='Swish'),
+        norm_cfg: dict = dict(type="BN", momentum=0.03, eps=0.001),
+        act_cfg: dict = dict(type="Swish"),
         init_cfg: dict = dict(
-            type='Kaiming',
-            layer='Conv2d',
+            type="Kaiming",
+            layer="Conv2d",
             a=math.sqrt(5),
-            distribution='uniform',
-            mode='fan_in',
-            nonlinearity='leaky_relu')
+            distribution="uniform",
+            mode="fan_in",
+            nonlinearity="leaky_relu",
+        ),
     ) -> None:
         super().__init__(init_cfg)
         self.in_channels = in_channels
@@ -69,12 +69,9 @@ class CSPNeXtPAFPN(BaseModule):
         for idx in range(len(in_channels) - 1, 0, -1):
             self.reduce_layers.append(
                 ConvModule(
-                    in_channels[idx],
-                    in_channels[idx - 1],
-                    1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg=act_cfg))
+                    in_channels[idx], in_channels[idx - 1], 1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg
+                )
+            )
             self.top_down_blocks.append(
                 CSPLayer(
                     in_channels[idx - 1] * 2,
@@ -86,7 +83,9 @@ class CSPNeXtPAFPN(BaseModule):
                     expand_ratio=expand_ratio,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg))
+                    act_cfg=act_cfg,
+                )
+            )
 
         # build bottom-up blocks
         self.downsamples = nn.ModuleList()
@@ -101,7 +100,9 @@ class CSPNeXtPAFPN(BaseModule):
                     padding=1,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg))
+                    act_cfg=act_cfg,
+                )
+            )
             self.bottom_up_blocks.append(
                 CSPLayer(
                     in_channels[idx] * 2,
@@ -113,23 +114,18 @@ class CSPNeXtPAFPN(BaseModule):
                     expand_ratio=expand_ratio,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg))
+                    act_cfg=act_cfg,
+                )
+            )
 
         self.out_convs = nn.ModuleList()
         for i in range(len(in_channels)):
             self.out_convs.append(
-                conv(
-                    in_channels[i],
-                    out_channels,
-                    3,
-                    padding=1,
-                    conv_cfg=conv_cfg,
-                    norm_cfg=norm_cfg,
-                    act_cfg=act_cfg))
+                conv(in_channels[i], out_channels, 3, padding=1, conv_cfg=conv_cfg, norm_cfg=norm_cfg, act_cfg=act_cfg)
+            )
 
     def forward(self, inputs: Tuple[Tensor, ...]) -> Tuple[Tensor, ...]:
-        """
-        Args:
+        """Args:
             inputs (tuple[Tensor]): input features.
 
         Returns:
@@ -142,14 +138,12 @@ class CSPNeXtPAFPN(BaseModule):
         for idx in range(len(self.in_channels) - 1, 0, -1):
             feat_heigh = inner_outs[0]
             feat_low = inputs[idx - 1]
-            feat_heigh = self.reduce_layers[len(self.in_channels) - 1 - idx](
-                feat_heigh)
+            feat_heigh = self.reduce_layers[len(self.in_channels) - 1 - idx](feat_heigh)
             inner_outs[0] = feat_heigh
 
             upsample_feat = self.upsample(feat_heigh)
 
-            inner_out = self.top_down_blocks[len(self.in_channels) - 1 - idx](
-                torch.cat([upsample_feat, feat_low], 1))
+            inner_out = self.top_down_blocks[len(self.in_channels) - 1 - idx](torch.cat([upsample_feat, feat_low], 1))
             inner_outs.insert(0, inner_out)
 
         # bottom-up path
@@ -158,8 +152,7 @@ class CSPNeXtPAFPN(BaseModule):
             feat_low = outs[-1]
             feat_height = inner_outs[idx + 1]
             downsample_feat = self.downsamples[idx](feat_low)
-            out = self.bottom_up_blocks[idx](
-                torch.cat([downsample_feat, feat_height], 1))
+            out = self.bottom_up_blocks[idx](torch.cat([downsample_feat, feat_height], 1))
             outs.append(out)
 
         # out convs
