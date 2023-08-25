@@ -18,7 +18,7 @@ train_pipeline = [
             keep_ratio=True,
             downscale_only=True,
         ),  # Resize to intermediate size if org image is bigger
-        enable_memcache=True,  # Cache after resize img+an
+        enable_memcache=True,  # Cache after resizing image & annotations
     ),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
     dict(
