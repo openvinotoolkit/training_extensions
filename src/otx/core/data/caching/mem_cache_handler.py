@@ -63,9 +63,9 @@ class MemCacheHandlerBase:
 
         addr = self._cache_addr[key]
 
-        offset, count, shape, strides, meta = addr
+        offset, count, dtype, shape, strides, meta = addr
 
-        data = np.frombuffer(self._arr, dtype=np.uint8, count=count, offset=offset)
+        data = np.frombuffer(self._arr, dtype=dtype, count=count, offset=offset)
         return np.lib.stride_tricks.as_strided(data, shape, strides), meta
 
     def put(self, key: Any, data: np.ndarray, meta: Optional[Dict] = None) -> Optional[int]:
@@ -82,20 +82,21 @@ class MemCacheHandlerBase:
         if self._freeze.value:
             return None
 
-        assert data.dtype == np.uint8
+        data_bytes = data.size*data.itemsize
 
         with self._lock:
-            new_page = self._cur_page.value + data.size
+            new_page = self._cur_page.value + data_bytes
 
             if key in self._cache_addr or new_page > self.mem_size:
                 return None
 
             offset = ct.byref(self._arr, self._cur_page.value)
-            ct.memmove(offset, data.ctypes.data, data.size)
+            ct.memmove(offset, data.ctypes.data, data_bytes)
 
             self._cache_addr[key] = (
                 self._cur_page.value,
                 data.size,
+                data.dtype,
                 data.shape,
                 data.strides,
                 meta,
