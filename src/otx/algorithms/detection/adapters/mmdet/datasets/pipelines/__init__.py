@@ -3,7 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .load_pipelines import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset, LoadResizeDataFromOTXDataset, ResizeTo
+from .load_pipelines import (
+    LoadAnnotationFromOTXDataset,
+    LoadImageFromOTXDataset,
+    LoadResizeDataFromOTXDataset,
+    ResizeTo,
+)
 from .torchvision2mmdet import (
     BranchImage,
     ColorJitter,

@@ -189,16 +189,15 @@ class TestLoadResizeDataFromOTXDataset:
 
 @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
 def test_memcache_image_itemtype(mode):
-    img = (np.random.rand(10, 10, 3)*255).astype(np.uint8)
-    MemCacheHandlerSingleton.create(mode, img.size*img.itemsize)
+    img = (np.random.rand(10, 10, 3) * 255).astype(np.uint8)
+    MemCacheHandlerSingleton.create(mode, img.size * img.itemsize)
     cache = MemCacheHandlerSingleton.get()
     cache.put("img_u8", img)
     img_cached, _ = cache.get("img_u8")
     assert np.array_equal(img, img_cached)
     img = np.random.rand(10, 10, 3).astype(np.float)
-    MemCacheHandlerSingleton.create(mode, img.size*img.itemsize)
+    MemCacheHandlerSingleton.create(mode, img.size * img.itemsize)
     cache = MemCacheHandlerSingleton.get()
     cache.put("img_f32", img)
     img_cached, _ = cache.get("img_f32")
     assert np.array_equal(img, img_cached)
-

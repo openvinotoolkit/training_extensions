@@ -82,7 +82,7 @@ class MemCacheHandlerBase:
         if self._freeze.value:
             return None
 
-        data_bytes = data.size*data.itemsize
+        data_bytes = data.size * data.itemsize
 
         with self._lock:
             new_page = self._cur_page.value + data_bytes
