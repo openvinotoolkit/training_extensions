@@ -45,8 +45,8 @@ train_pipeline = [
     ),
     dict(type="Resize", img_scale=__img_size, keep_ratio=True),
     dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type='Pad', size=__img_size, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
     dict(type="Normalize", **__img_norm_cfg),
-    dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"], meta_keys=meta_keys),
 ]
@@ -60,6 +60,7 @@ test_pipeline = [
         transforms=[
             dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
+            dict(type='Pad', size_divisor=32, pad_val=dict(img=(128, 128, 128), masks=0, seg=255)),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),
