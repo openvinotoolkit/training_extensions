@@ -7,7 +7,7 @@ evaluation = dict(
 )
 
 task_adapt = dict(
-    type="mpa",
+    type="default_task_adapt",
     op="REPLACE",
     efficient_mode=False,
 )
