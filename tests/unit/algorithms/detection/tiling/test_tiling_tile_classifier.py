@@ -78,8 +78,12 @@ class TestTilingTileClassifier:
         mocked_model.return_value = mocker.MagicMock(spec=OTXMaskRCNNModel, model_adapter=adapter_mock)
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
+        original_shape = (self.dataset[0].media.width, self.dataset[0].media.height, 3)
         ov_mask_inferencer.model.resize_mask = False
-        ov_mask_inferencer.model.preprocess.return_value = ({"foo": "bar"}, {"baz": "qux"})
+        ov_mask_inferencer.model.preprocess.return_value = (
+            {"foo": "bar"},
+            {"baz": "qux", "original_shape": original_shape},
+        )
         ov_mask_inferencer.model.postprocess.return_value = (
             np.array([], dtype=np.float32),
             np.array([], dtype=np.uint32),
@@ -93,6 +97,10 @@ class TestTilingTileClassifier:
         mock_predict = mocker.patch.object(
             ov_inferencer.tiler.classifier, "infer_sync", return_value={"tile_prob": 0.5}
         )
+        ov_inferencer.tiler.model.infer_sync.return_value = {
+            "feature_vector": np.zeros((1, 5), dtype=np.float32),
+            "saliency_map": np.zeros((1, 1, 2, 2), dtype=np.float32),
+        }
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
         ov_task = OpenVINODetectionTask(self.task_env)
         ov_task.inferencer.predict = partial(ov_task.inferencer.predict, mode="sync")
