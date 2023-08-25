@@ -14,7 +14,7 @@ train_pipeline = [
         load_ann_cfg=dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
         resize_cfg=dict(
             type="Resize",
-            img_scale=(1088, 800),
+            img_scale=(1088, 800),  # max sizes in random image scales
             keep_ratio=True,
             downscale_only=True,
         ),  # Resize to intermediate size if org image is bigger
