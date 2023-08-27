@@ -20,11 +20,9 @@ All notable changes to this project will be documented in this file.
 
 ### Bug fixes
 
-- Fix F1 auto-threshold to choose best largest confidence (<https://github.com/openvinotoolkit/training_extensions/pull/2371>)
-
-### Known issues
-
-- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+- Add workaround for the incorrect meta info M-RCNN (used for XAI) (<https://github.com/openvinotoolkit/training_extensions/pull/2437>)
+- Fix label list order for h-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2440>)
+- Modified fq numbers for lite HRNET e2e tests (<https://github.com/openvinotoolkit/training_extensions/pull/2445>)
 
 ## \[v1.4.1\]
 
