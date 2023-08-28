@@ -49,6 +49,11 @@ def parse_args():
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("template", nargs="?", default=None)
+    parser.add_argument(
+        "--workspace",
+        help="Location where the intermediate output of the training will be stored.",
+        default=None,
+    )
 
     return parser.parse_known_args()
 
@@ -69,12 +74,17 @@ def main():
     """
 
     dataset_path = "/home/eunwoo/work/exp_resource/dataset/diopsis/12"
-    template = parse_args()[0].template
+    args = parse_args()[0]
+    template = args.template
 
     with open(template, "r") as f:
         template_file = yaml.safe_load(f)
     model_name = template_file["name"]
-    workspace_path = f"./{model_name}_{uuid.uuid4().hex}"
+
+    if args.workspace is None:
+        workspace_path = f"./{model_name}_{uuid.uuid4().hex}"
+    else:
+        workspace_path = args.workspace
 
     for opt in ["otx_train", "otx_eval", "otx_export", "otx_eval"]:
         argv_list = [
@@ -90,6 +100,7 @@ def main():
                 dataset_path,
                 "--workspace",
                 workspace_path,
+                "--track-resource-usage",
                 "params",
                 "--learning_parameters.num_iters",
                 "1"
