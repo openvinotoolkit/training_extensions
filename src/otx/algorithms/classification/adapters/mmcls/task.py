@@ -23,7 +23,7 @@ from functools import partial
 from typing import Any, Dict, Optional, Type, Union
 
 import torch
-from mmcls.apis import train_model
+from otx.algorithms.classification.adapters.mmcls.apis.train import train_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models.backbones.vision_transformer import VisionTransformer
 from mmcls.utils import collect_env
