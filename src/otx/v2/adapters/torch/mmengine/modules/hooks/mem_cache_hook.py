@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.v2.adapters.datumaro.caching.mem_cache_handler import MemCacheHandlerSingleton
-
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+
+from otx.v2.adapters.datumaro.caching.mem_cache_handler import MemCacheHandlerSingleton
 
 
 @HOOKS.register_module()

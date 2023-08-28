@@ -8,13 +8,13 @@ import re
 from copy import deepcopy
 
 import numpy as np
+from mmengine.config import ConfigDict
 from mmpretrain.datasets.transforms import TRANSFORMS
+from PIL import Image
+
 from otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.augments import (
     CythonAugments,
 )
-from PIL import Image
-
-from mmengine.config import ConfigDict
 
 _AUGMIX_TRANSFORMS_GREY = [
     "SharpnessIncreasing",  # not in paper

@@ -14,7 +14,17 @@ from difflib import get_close_matches
 from typing import Any, Dict, List, Optional, Union
 
 import cv2
+import datumaro
 import numpy as np
+from datumaro.components.annotation import Annotation as DatumAnnotation
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.components.annotation import Categories as DatumCategories
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.dataset import DatasetSubset as DatumDatasetSubset
+from datumaro.components.dataset import eager_mode
+from datumaro.components.media import Image as DatumImage
+from datumaro.components.media import MediaElement as DatumMediaElement
+
 from otx.v2.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -32,16 +42,6 @@ from otx.v2.api.entities.shapes.polygon import Point, Polygon
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
-
-import datumaro
-from datumaro.components.annotation import Annotation as DatumAnnotation
-from datumaro.components.annotation import AnnotationType as DatumAnnotationType
-from datumaro.components.annotation import Categories as DatumCategories
-from datumaro.components.dataset import Dataset as DatumDataset
-from datumaro.components.dataset import DatasetSubset as DatumDatasetSubset
-from datumaro.components.dataset import eager_mode
-from datumaro.components.media import Image as DatumImage
-from datumaro.components.media import MediaElement as DatumMediaElement
 
 from ..caching.storage_cache import init_arrow_cache
 

@@ -5,10 +5,10 @@
 
 from typing import List, Optional
 
+import datumaro as dm
+
 from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.v2.api.entities.datasets import DatasetEntity
-
-import datumaro as dm
 
 __all__ = ["LossDynamicsTracker", "LossDynamicsTrackingMixin"]
 

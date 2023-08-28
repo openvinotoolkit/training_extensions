@@ -6,10 +6,11 @@
 from dataclasses import dataclass, field
 from typing import Callable, List
 
+from torch.nn import functional as F
+
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.movements import get_torch_padding
 from otx.v2.adapters.openvino.ops.op import Attribute, Operation
-from torch.nn import functional as F
 
 # pylint: disable=too-many-instance-attributes
 

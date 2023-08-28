@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from mmengine.registry import HOOKS
+
 from otx.v2.adapters.torch.mmengine.modules.hooks.dual_model_ema_hook import (
     DualModelEMAHook,
 )
 from otx.v2.api.utils.logger import get_logger
-
-from mmengine.registry import HOOKS
 
 logger = get_logger()
 

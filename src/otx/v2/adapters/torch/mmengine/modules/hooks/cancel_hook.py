@@ -7,11 +7,11 @@
 import os
 from typing import Callable
 
-from otx.v2.api.utils.logger import get_logger
-
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
 from mmengine.runner import EpochBasedTrainLoop, Runner
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

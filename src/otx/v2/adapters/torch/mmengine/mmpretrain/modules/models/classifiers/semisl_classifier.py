@@ -6,6 +6,7 @@
 import torch
 from mmpretrain.models import ClsDataPreprocessor
 from mmpretrain.registry import MODELS
+
 from otx.v2.api.utils.logger import get_logger
 
 from .custom_image_classifier import CustomImageClassifier

@@ -5,11 +5,10 @@
 
 import torch
 import torch.nn.functional as F
+from mmengine.model import normal_init
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import MultiLabelClsHead
 from torch import nn
-
-from mmengine.model import normal_init
 
 from .mixin import OTXHeadMixin
 

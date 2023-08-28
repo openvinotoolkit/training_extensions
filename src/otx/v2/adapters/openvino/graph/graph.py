@@ -13,9 +13,9 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import _collections_abc
 import networkx as nx
-from otx.v2.api.utils.logger import get_logger
+from openvino.runtime import Model  # pylint: disable=no-name-in-module
 
-from openvino.pyopenvino import Model  # pylint: disable=no-name-in-module
+from otx.v2.api.utils.logger import get_logger
 
 from ..ops.op import Operation
 from ..ops.utils import convert_op_to_torch

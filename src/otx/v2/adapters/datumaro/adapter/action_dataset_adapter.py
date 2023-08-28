@@ -9,6 +9,10 @@ import os
 import os.path as osp
 from typing import Dict, List, Optional
 
+from datumaro.components.annotation import AnnotationType
+from datumaro.components.annotation import Bbox as DatumBbox
+from datumaro.components.dataset import Dataset as DatumDataset
+
 from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
@@ -16,10 +20,6 @@ from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.v2.api.entities.subset import Subset
-
-from datumaro.components.annotation import AnnotationType
-from datumaro.components.annotation import Bbox as DatumBbox
-from datumaro.components.dataset import Dataset as DatumDataset
 
 from .base_dataset_adapter import BaseDatasetAdapter
 

@@ -17,8 +17,9 @@ import torch
 import torch.distributed as dist
 from mmpretrain.models.builder import build_backbone, build_head, build_neck
 from mmpretrain.registry import MODELS
-from otx.v2.api.utils.logger import get_logger
 from torch import nn
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

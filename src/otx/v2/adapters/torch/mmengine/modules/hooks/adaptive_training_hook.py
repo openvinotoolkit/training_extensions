@@ -5,13 +5,13 @@
 
 import math
 
+from mmengine.hooks import CheckpointHook, Hook
+from mmengine.registry import HOOKS
+
 from otx.v2.adapters.torch.mmengine.modules.hooks.early_stopping_hook import (
     EarlyStoppingHook,
 )
 from otx.v2.api.utils.logger import get_logger
-
-from mmengine.hooks import CheckpointHook, Hook
-from mmengine.registry import HOOKS
 
 logger = get_logger()
 

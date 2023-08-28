@@ -7,13 +7,13 @@
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from typing import List
 
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+
 from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
-
-from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 
 from .base_dataset_adapter import BaseDatasetAdapter
 

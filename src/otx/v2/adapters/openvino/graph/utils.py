@@ -6,6 +6,7 @@
 from typing import Any, List
 
 import torch
+
 from otx.v2.adapters.openvino.graph import Graph
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.infrastructures import ConstantV0

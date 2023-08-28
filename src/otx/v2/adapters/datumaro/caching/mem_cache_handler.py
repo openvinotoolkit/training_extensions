@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional, Union
 
 import numpy as np
 from multiprocess.synchronize import Lock
+
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()

@@ -6,6 +6,7 @@
 from typing import Callable, Dict, Tuple
 
 import torch
+
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()

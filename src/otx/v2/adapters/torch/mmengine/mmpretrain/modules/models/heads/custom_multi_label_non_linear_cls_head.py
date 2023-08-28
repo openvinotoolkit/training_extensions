@@ -5,11 +5,10 @@
 
 import torch
 from mmcv.cnn import build_activation_layer
+from mmengine.model import constant_init, normal_init
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import MultiLabelClsHead
 from torch import nn
-
-from mmengine.model import constant_init, normal_init
 
 from .custom_multi_label_linear_cls_head import AnglularLinear
 from .mixin import OTXHeadMixin

@@ -9,6 +9,7 @@ import openvino.runtime as ov
 import torch.nn.functional as F
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import ClsHead
+
 from otx.v2.adapters.openvino.graph.parsers.cls import cls_base_parser
 from otx.v2.adapters.openvino.models.mmov_model import MMOVModel
 

@@ -6,6 +6,7 @@
 from typing import Dict, List, Union
 
 from mmpretrain.models.builder import NECKS
+
 from otx.v2.adapters.openvino.graph.parsers.cls import cls_base_parser
 from otx.v2.adapters.openvino.models.mmov_model import MMOVModel
 

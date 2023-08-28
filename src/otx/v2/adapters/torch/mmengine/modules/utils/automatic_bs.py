@@ -8,6 +8,7 @@ from math import sqrt
 from typing import Callable, Dict, List
 
 import numpy as np
+
 from otx.v2.adapters.torch.modules.utils import BsSearchAlgo
 from otx.v2.api.utils.logger import get_logger
 

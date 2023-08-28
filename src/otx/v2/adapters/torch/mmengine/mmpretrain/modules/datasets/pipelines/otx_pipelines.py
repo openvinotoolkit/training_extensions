@@ -6,12 +6,11 @@ import copy
 from typing import Any, Dict, List
 
 import numpy as np
+from mmengine.dataset import Compose
+from mmengine.registry import build_from_cfg
 from mmpretrain.datasets.transforms import TRANSFORMS
 from PIL import Image
 from torchvision import transforms as T
-
-from mmengine.dataset import Compose
-from mmengine.registry import build_from_cfg
 
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.

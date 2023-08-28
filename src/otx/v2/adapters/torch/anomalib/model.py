@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import torch
-from omegaconf import DictConfig, OmegaConf
-from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
-
 from anomalib.models import get_model as anomalib_get_model
+from omegaconf import DictConfig, OmegaConf
+
+from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 
 MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/anomaly_classification/models"
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)

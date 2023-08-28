@@ -1,0 +1,6 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Anomaly Requirements.
+torchvision<0.15.1
+torchtext<0.15.1
+anomalib==0.5.1
+kornia==0.6.9

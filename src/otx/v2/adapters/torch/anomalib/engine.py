@@ -5,9 +5,13 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 import yaml
+from anomalib.post_processing import NormalizationMethod, ThresholdMethod
+from anomalib.utils.callbacks import (
+    MetricsConfigurationCallback,
+    MinMaxNormalizationCallback,
+    PostProcessingConfigurationCallback,
+)
 from omegaconf import DictConfig
-from otx.v2.api.core.engine import Engine
-from otx.v2.api.utils.decorators import set_default_argument
 from pytorch_lightning import Trainer
 from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.trainer.connectors.accelerator_connector import (
@@ -15,12 +19,8 @@ from pytorch_lightning.trainer.connectors.accelerator_connector import (
 )
 from torch.utils.data import DataLoader
 
-from anomalib.post_processing import NormalizationMethod, ThresholdMethod
-from anomalib.utils.callbacks import (
-    MetricsConfigurationCallback,
-    MinMaxNormalizationCallback,
-    PostProcessingConfigurationCallback,
-)
+from otx.v2.api.core.engine import Engine
+from otx.v2.api.utils.decorators import set_default_argument
 
 from .registry import AnomalibRegistry
 

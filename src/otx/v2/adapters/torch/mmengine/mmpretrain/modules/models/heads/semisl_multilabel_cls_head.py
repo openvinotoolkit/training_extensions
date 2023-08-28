@@ -5,13 +5,14 @@
 
 import torch
 from mmpretrain.models.builder import HEADS, build_loss
+from torch import nn
+
 from otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.heads.custom_multi_label_linear_cls_head import (
     CustomMultiLabelLinearClsHead,
 )
 from otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.heads.custom_multi_label_non_linear_cls_head import (
     CustomMultiLabelNonLinearClsHead,
 )
-from torch import nn
 
 from .mixin import OTXHeadMixin
 

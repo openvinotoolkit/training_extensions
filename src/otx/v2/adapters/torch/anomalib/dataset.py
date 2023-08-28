@@ -1,7 +1,11 @@
 from typing import Any, Dict, Optional, Union
 
 import albumentations as A
+from anomalib.data.base.datamodule import collate_fn
 from omegaconf import DictConfig, OmegaConf
+from torch.utils.data import DataLoader as TorchDataLoader
+from torch.utils.data import Dataset as TorchDataset
+
 from otx.v2.adapters.torch.anomalib.modules.data.data import OTXAnomalyDataset
 from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
@@ -11,10 +15,6 @@ from otx.v2.api.utils.dataset_utils import (
 )
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type
-from torch.utils.data import DataLoader as TorchDataLoader
-from torch.utils.data import Dataset as TorchDataset
-
-from anomalib.data.base.datamodule import collate_fn
 
 SUBSET_LIST = ["train", "val", "test", "predict"]
 

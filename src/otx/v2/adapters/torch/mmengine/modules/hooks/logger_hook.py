@@ -6,12 +6,12 @@
 from collections import defaultdict
 from typing import Any, Dict, Optional
 
-from otx.v2.api.utils.logger import get_logger
-
 from mmengine.dist import master_only
 from mmengine.hooks import Hook, LoggerHook
 from mmengine.registry import HOOKS
 from mmengine.runner import Runner
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

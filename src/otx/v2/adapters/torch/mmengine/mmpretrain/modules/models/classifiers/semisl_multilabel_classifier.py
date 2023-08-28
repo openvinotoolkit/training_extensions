@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from mmpretrain.registry import MODELS
+
 from otx.v2.api.utils.logger import get_logger
 
 from .custom_image_classifier import CustomImageClassifier

@@ -30,13 +30,13 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
-from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.utils.logger import get_logger
-from torch.utils.data import DataLoader
-
 from mmengine.config import Config, ConfigDict
 from mmengine.config.config import BASE_KEY, DEPRECATION_KEY
 from mmengine.utils import check_file_exist, import_modules_from_strings
+from torch.utils.data import DataLoader
+
+from otx.v2.api.entities.datasets import DatasetEntity
+from otx.v2.api.utils.logger import get_logger
 
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs

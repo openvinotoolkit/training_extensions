@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
+
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
@@ -33,9 +34,8 @@ class MMPTEngine(MMXEngine):
         batch_size: int = 1,
         **kwargs,
     ) -> List[Dict]:
-        from mmpretrain import ImageClassificationInferencer, inference_model
-
         from mmengine.model import BaseModel
+        from mmpretrain import ImageClassificationInferencer, inference_model
 
         # Model config need data_pipeline of test_dataloader
         # Update pipelines

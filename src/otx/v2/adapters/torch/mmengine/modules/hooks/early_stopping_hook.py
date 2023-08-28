@@ -6,12 +6,12 @@
 from math import inf, isnan
 from typing import List, Optional
 
-from otx.v2.api.utils.logger import get_logger
-
 from mmengine import print_log
 from mmengine.hooks import EarlyStoppingHook, Hook, ParamSchedulerHook
 from mmengine.registry import HOOKS
 from mmengine.runner import Runner
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

@@ -36,6 +36,9 @@ from typing import List, Union
 
 import cv2
 import numpy as np
+from anomalib.data.mvtec import make_mvtec_dataset
+from pandas.core.frame import DataFrame
+
 from otx.v2.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -52,9 +55,6 @@ from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils.segmentation_utils import create_annotation_from_segmentation_map
-from pandas.core.frame import DataFrame
-
-from anomalib.data.mvtec import make_mvtec_dataset
 
 
 class OtxMvtecDataset:

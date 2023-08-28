@@ -5,9 +5,8 @@
 
 from typing import Dict, List, Optional, Union
 
-import torch
-
 import openvino.runtime as ov
+import torch
 
 # TODO: Need to remove line 1 (ignore mypy) and fix mypy issues
 from .ov_model import OVModel  # type: ignore[attr-defined]

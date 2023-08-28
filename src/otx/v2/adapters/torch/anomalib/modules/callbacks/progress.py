@@ -19,10 +19,11 @@ TODO Since only one progressbar callback is supported HPO is combined into one c
 
 from typing import Optional, Union
 
+from pytorch_lightning.callbacks.progress import TQDMProgressBar
+
 from otx.v2.api.entities.inference_parameters import InferenceParameters
 from otx.v2.api.entities.optimization_parameters import OptimizationParameters
 from otx.v2.api.entities.train_parameters import TrainParameters, default_progress_callback
-from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 
 class ProgressCallback(TQDMProgressBar):

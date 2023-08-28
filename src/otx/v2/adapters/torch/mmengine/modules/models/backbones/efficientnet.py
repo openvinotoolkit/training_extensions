@@ -17,12 +17,12 @@ import os
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import ConvModule
-from otx.v2.api.utils.logger import get_logger
+from mmengine.runner import load_checkpoint
 from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import init
 
-from mmengine.runner import load_checkpoint
+from otx.v2.api.utils.logger import get_logger
 
 from ..builder import BACKBONES
 

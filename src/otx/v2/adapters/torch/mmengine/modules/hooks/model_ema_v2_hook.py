@@ -6,11 +6,11 @@
 from copy import deepcopy
 
 import torch
-from otx.v2.api.utils.logger import get_logger
-from torch import nn
-
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from torch import nn
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

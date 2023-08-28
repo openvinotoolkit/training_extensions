@@ -49,7 +49,6 @@ from typing import Any, Dict, List, Optional
 
 import cv2
 import pandas as pd
-
 from anomalib.data.mvtec import make_mvtec_dataset
 from anomalib.data.utils import Split
 

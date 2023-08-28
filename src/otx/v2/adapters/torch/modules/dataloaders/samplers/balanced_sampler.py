@@ -2,8 +2,9 @@
 import math
 
 import numpy as np
-from otx.v2.api.utils.logger import get_logger
 from torch.utils.data.sampler import Sampler
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

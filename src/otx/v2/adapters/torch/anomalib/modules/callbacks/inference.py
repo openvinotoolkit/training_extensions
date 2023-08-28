@@ -19,6 +19,10 @@ from typing import Any, List
 import numpy as np
 import pytorch_lightning as pl
 import torch
+from anomalib.models import AnomalyModule
+from pytorch_lightning.callbacks import Callback
+from torch import Tensor
+
 from otx.v2.adapters.torch.anomalib.modules.logger import get_logger
 from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.datasets import DatasetEntity
@@ -28,10 +32,6 @@ from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils.segmentation_utils import create_annotation_from_segmentation_map
-from pytorch_lightning.callbacks import Callback
-from torch import Tensor
-
-from anomalib.models import AnomalyModule
 
 logger = get_logger(__name__)
 

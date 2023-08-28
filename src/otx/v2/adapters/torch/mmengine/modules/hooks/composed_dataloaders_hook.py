@@ -5,12 +5,12 @@
 
 from typing import List, Sequence, Union
 
-from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
-from otx.v2.api.utils.logger import get_logger
-from torch.utils.data import DataLoader
-
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from torch.utils.data import DataLoader
+
+from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

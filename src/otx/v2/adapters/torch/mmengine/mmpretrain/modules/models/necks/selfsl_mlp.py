@@ -11,10 +11,9 @@ from typing import Any, Dict, List, Tuple, Union
 
 import torch
 from mmcv.cnn import build_norm_layer
+from mmengine.model import kaiming_init, normal_init
 from mmpretrain.models.builder import NECKS
 from torch import nn
-
-from mmengine.model import kaiming_init, normal_init
 
 
 @NECKS.register_module()

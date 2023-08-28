@@ -1,6 +1,4 @@
 # Regist OTX custom mmengine modules
-from otx.v2.api.core.registry import BaseRegistry
-
 from mmengine.registry import (
     DATA_SAMPLERS,
     DATASETS,
@@ -25,6 +23,8 @@ from mmengine.registry import (
     VISUALIZERS,
     WEIGHT_INITIALIZERS,
 )
+
+from otx.v2.api.core.registry import BaseRegistry
 
 from .modules import *
 

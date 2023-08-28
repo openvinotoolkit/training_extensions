@@ -4,18 +4,18 @@
 #
 import os.path as osp
 
+from mmengine.config import Config, ConfigDict
+from mmengine.hooks import Hook
+from mmengine.registry import HOOKS
+from mmengine.runner import Runner
+from torch.nn.parallel import DataParallel
+
 from otx.v2.adapters.datumaro.noisy_label_detection.base import LossDynamicsTracker, LossDynamicsTrackingMixin
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.utils.logger import get_logger
-from torch.nn.parallel import DataParallel
-
-from mmengine.config import Config, ConfigDict
-from mmengine.hooks import Hook
-from mmengine.registry import HOOKS
-from mmengine.runner import Runner
 
 logger = get_logger()
 

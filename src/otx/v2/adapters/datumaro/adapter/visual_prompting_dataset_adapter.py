@@ -7,12 +7,12 @@
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from typing import Dict, List
 
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.plugins.transforms import MasksToPolygons
+
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
-
-from datumaro.components.annotation import AnnotationType as DatumAnnotationType
-from datumaro.plugins.transforms import MasksToPolygons
 
 from .segmentation_dataset_adapter import SegmentationDatasetAdapter
 

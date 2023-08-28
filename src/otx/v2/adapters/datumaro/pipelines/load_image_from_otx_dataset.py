@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, Dict, Tuple
 
 import numpy as np
+
 from otx.v2.api.utils.data_utils import get_image
 
 from ..caching import MemCacheHandlerError, MemCacheHandlerSingleton

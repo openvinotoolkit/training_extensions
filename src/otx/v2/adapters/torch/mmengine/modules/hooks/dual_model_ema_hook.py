@@ -6,10 +6,10 @@
 import math
 
 import torch
-from otx.v2.api.utils.logger import get_logger
-
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

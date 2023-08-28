@@ -9,20 +9,20 @@
 from typing import Any, Dict, List, Union
 
 import numpy as np
+from mmengine.dataset import Compose
+from mmengine.registry import build_from_cfg
 from mmpretrain.datasets.base_dataset import BaseDataset
 from mmpretrain.datasets.builder import DATASETS
 from mmpretrain.evaluation import AveragePrecision, MultiLabelMetric
+from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
+from torch.utils.data import Dataset
+
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import TRANSFORMS
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
 from otx.v2.api.utils.logger import get_logger
-from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
-from torch.utils.data import Dataset
-
-from mmengine.dataset import Compose
-from mmengine.registry import build_from_cfg
 
 logger = get_logger()
 

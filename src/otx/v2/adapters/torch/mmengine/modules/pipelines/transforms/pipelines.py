@@ -1,6 +1,6 @@
-import otx.v2.adapters.datumaro.pipelines.load_image_from_otx_dataset as load_image_base
-
 from mmengine.registry import TRANSFORMS
+
+import otx.v2.adapters.datumaro.pipelines.load_image_from_otx_dataset as load_image_base
 
 
 @TRANSFORMS.register_module()

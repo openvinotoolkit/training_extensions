@@ -2,9 +2,16 @@ from functools import partial
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 import torch
+from mmengine.dataset import default_collate, worker_init_fn
+from mmengine.dist import get_dist_info
+from mmengine.utils import digit_version
 from mmpretrain.datasets import (
     build_dataset as mmpretrain_build_dataset,
 )
+from torch.utils.data import DataLoader as TorchDataLoader
+from torch.utils.data import Dataset as TorchDataset
+from torch.utils.data import Sampler
+
 from otx.v2.adapters.torch.mmengine.mmpretrain.modules.datasets import (
     OTXClsDataset,
     OTXHierarchicalClsDataset,
@@ -17,13 +24,6 @@ from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type
-from torch.utils.data import DataLoader as TorchDataLoader
-from torch.utils.data import Dataset as TorchDataset
-from torch.utils.data import Sampler
-
-from mmengine.dataset import default_collate, worker_init_fn
-from mmengine.dist import get_dist_info
-from mmengine.utils import digit_version
 
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 

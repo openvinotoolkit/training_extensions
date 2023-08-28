@@ -1,9 +1,9 @@
 # Regist OTX custom mmengine modules
 from importlib import import_module
 
-from otx.v2.api.core.registry import BaseRegistry
-
 from anomalib.models import _snake_to_pascal_case
+
+from otx.v2.api.core.registry import BaseRegistry
 
 # COPY from anomalib.models.__init__.py
 model_list = [

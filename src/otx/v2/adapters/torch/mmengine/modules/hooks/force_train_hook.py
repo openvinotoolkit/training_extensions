@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.v2.api.utils.logger import get_logger
-
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

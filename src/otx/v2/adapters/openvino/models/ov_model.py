@@ -12,11 +12,11 @@ from collections import OrderedDict
 from copy import deepcopy
 from typing import Callable, List, Optional, Union
 
+import openvino.runtime as ov
 import torch
-from otx.v2.api.utils.logger import get_logger
 from torch.nn import init
 
-import openvino.runtime as ov
+from otx.v2.api.utils.logger import get_logger
 
 from ..graph import Graph
 from ..graph.utils import (

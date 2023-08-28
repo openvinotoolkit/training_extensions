@@ -5,21 +5,21 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from otx.v2.adapters.torch.mmengine.mmdeploy import is_mmdeploy_enabled
+from mmengine.evaluator import Evaluator
+from mmengine.hooks import Hook
+from mmengine.optim import _ParamScheduler
+from mmengine.runner import Runner
+from mmengine.visualization import Visualizer
+from torch.optim import Optimizer
+from torch.utils.data import DataLoader
+
+from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE as mmdeploy_enabled
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils.importing import get_all_args, get_non_default_args
 from otx.v2.api.utils.logger import get_logger
-from torch.optim import Optimizer
-from torch.utils.data import DataLoader
-
-from mmengine.evaluator import Evaluator
-from mmengine.hooks import Hook
-from mmengine.optim import _ParamScheduler
-from mmengine.runner import Runner
-from mmengine.visualization import Visualizer
 
 logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
@@ -433,9 +433,10 @@ class MMXEngine(Engine):
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
     ):  # Output: IR Models
-        if not is_mmdeploy_enabled():
+        if not mmdeploy_enabled:
             raise ModuleNotFoundError("MMXEngine's export is dependent on mmdeploy.")
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
+
         from otx.v2.adapters.torch.mmengine.mmdeploy.exporter import Exporter
         from otx.v2.adapters.torch.mmengine.mmdeploy.utils.deploy_cfg_utils import (
             patch_input_preprocessing,

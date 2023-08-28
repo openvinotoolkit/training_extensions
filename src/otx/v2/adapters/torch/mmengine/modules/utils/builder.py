@@ -5,9 +5,8 @@
 
 from typing import Callable
 
-from torch.utils.data import DataLoader, Dataset
-
 from mmengine.config import Config
+from torch.utils.data import DataLoader, Dataset
 
 # pylint: disable-next=unused-import
 from ._builder_build_data_parallel import build_data_parallel  # noqa: F401

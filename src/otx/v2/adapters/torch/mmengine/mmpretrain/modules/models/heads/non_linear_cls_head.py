@@ -6,11 +6,10 @@
 import torch
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
+from mmengine.model import constant_init, normal_init
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads.cls_head import ClsHead
 from torch import nn
-
-from mmengine.model import constant_init, normal_init
 
 
 @HEADS.register_module()

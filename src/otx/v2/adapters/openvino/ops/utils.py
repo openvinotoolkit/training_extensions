@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
+from openvino.runtime import Node  # pylint: disable=no-name-in-module
 
 from .builder import OPS
 

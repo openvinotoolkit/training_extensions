@@ -1,213 +1,29 @@
-import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
-import docstring_parser
-import yaml
 from jsonargparse import (
     ActionConfigFile,
-    ArgumentParser,
     Namespace,
     class_from_function,
     namespace_to_dict,
 )
-from omegaconf import OmegaConf
-
-from otx.v2.api.core import AutoRunner, BaseDataset, Engine
-from otx.v2.api.utils.importing import get_otx_root_path
-from otx.v2.cli import cli_otx_logo
-
-
-# Custom Constructor for Python tuples
-def tuple_constructor(loader, node):
-    if isinstance(node, yaml.SequenceNode):
-        # Load the elements as a list
-        elements = loader.construct_sequence(node)
-        # Return the tuple
-        return tuple(elements)
-    return None
-
 
 # Add the constructor to the YAML loader
 from jsonargparse._loaders_dumpers import DefaultLoader
 
+from otx.v2.api.core import AutoRunner, BaseDataset, Engine
+from otx.v2.api.utils.importing import get_otx_root_path
+from otx.v2.cli import print_otx_logo
+
+from .extensions import CLI_EXTENSIONS
+from .utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments, tuple_constructor
+from .utils.env import get_environment_table
+from .utils.workspace import Workspace
+
 DefaultLoader.add_constructor("tag:yaml.org,2002:python/tuple", tuple_constructor)
 
 
-def pre_parse_arguments():
-    arguments = {}
-    i = 1
-    while i < len(sys.argv):
-        if sys.argv[i].startswith("--"):
-            key = sys.argv[i][2:]
-            value = None
-            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--"):
-                value = sys.argv[i + 1]
-                i += 1
-            arguments[key] = value
-        i += 1
-    return arguments
-
-
-def get_short_docstring(component: object) -> Optional[str]:
-    """Gets the short description from the docstring.
-
-    Args:
-        component (object): The component to get the docstring from
-
-    Returns:
-        Optional[str]: The short description
-    """
-    if component.__doc__ is None:
-        return None
-    docstring = docstring_parser.parse(component.__doc__)
-    return docstring.short_description
-
-
-import dataclasses
-
-
-def create_dynamic_data_class_from_dict(class_name: str, input_dict: Dict):
-    """Creates a dynamic data class with attributes based on the input dictionary.
-
-    Args:
-        class_name (str): The name of the class for the dynamically created data class
-        input_dict (dict): The dictionary containing keys to be used as attributes
-
-    Returns:
-        type: The dynamically created data class
-    """
-    # Extract the fields from the input_dict keys
-    fields = [(key, value) for key, value in input_dict.items()]
-
-    # Create the data class dynamically using dataclasses.make_dataclass
-    DynamicModelClass = dataclasses.make_dataclass(class_name, fields)
-
-    return DynamicModelClass
-
-
-class OTXArgumentParser(ArgumentParser):
-    """Extension of jsonargparse's ArgumentParser for OTX."""
-
-    def __init__(
-        self,
-        *args: Any,
-        description: str = "OpenVINO Training-Extension command line tool",
-        env_prefix: str = "otx",
-        default_env: bool = False,
-        default_config_files: Optional[List[str]] = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            *args,
-            description=description,
-            env_prefix=env_prefix,
-            default_env=default_env,
-            default_config_files=default_config_files,
-            **kwargs,
-        )
-
-    def add_core_class_args(
-        self,
-        api_class,
-        nested_key: str,
-        subclass_mode: bool = False,
-        required: bool = True,
-        instantiate: bool = False,
-        dataclass_mode: bool = False,
-    ) -> List[str]:
-        """Adds arguments from a class to a nested key of the parser.
-
-        Args:
-            api_class: A callable or any subclass.
-            nested_key: Name of the nested namespace to store arguments.
-            subclass_mode: Whether allow any subclass of the given class.
-            required: Whether the argument group is required.
-
-        Returns:
-            A list with the names of the class arguments added.
-        """
-        if callable(api_class) and not isinstance(api_class, type):
-            api_class = class_from_function(api_class)
-
-        if isinstance(api_class, type):
-            if subclass_mode:
-                return self.add_subclass_arguments(api_class, nested_key, fail_untyped=False, required=required)
-            if dataclass_mode:
-                return self.add_dataclass_arguments(
-                    api_class,
-                    nested_key,
-                    fail_untyped=False,
-                )
-            return self.add_class_arguments(
-                api_class,
-                nested_key,
-                fail_untyped=False,
-                instantiate=instantiate,
-                sub_configs=True,
-            )
-        raise NotImplementedError()
-
-    def check_config(
-        self,
-        cfg: Namespace,
-        skip_none: bool = True,
-        skip_required: bool = True,
-        branch: Optional[str] = None,
-    ):
-        # Skip This one for Flexible Configuration
-        pass
-
-
 ArgsType = Optional[Union[List[str], Dict[str, Any], Namespace]]
-
-
-def set_workspace(root: str = None, name: str = "otx-workspace"):
-    """Set workspace path according to arguments."""
-    path = f"{root}/{name}" if root else f"./{name}"
-    return path
-
-
-class OTXWorkspace:
-    def __init__(self, work_dir: Optional[str] = None) -> None:
-        self.otx_root = get_otx_root_path()
-        self.work_dir = Path(work_dir) if work_dir is not None else None
-        self.mkdir_or_exist()
-        self._config = {}
-        self._config_path = self.work_dir / "configs.yaml"
-
-    @property
-    def config_path(self):
-        return self._config_path
-
-    def check_workspace(self) -> bool:
-        """Check that the class's work_dir is an actual workspace folder.
-
-        Returns:
-            bool: true for workspace else false
-        """
-        return (self.work_dir / "configs.yaml").exists()
-
-    def mkdir_or_exist(self):
-        if self.work_dir is None:
-            self.work_dir = Path(set_workspace()).resolve()
-        self.work_dir.mkdir(exist_ok=True, parents=True)
-        print(f"[*] Workspace Path: {self.work_dir}")
-
-    def dump_config(self, config: Optional[Union[str, Path, Dict]] = None, filename: Optional[Union[str, Path]] = None):
-        if config is None:
-            config = self._config
-        if isinstance(config, (str, Path)):
-            if not Path(config).is_file():
-                raise FileNotFoundError(config)
-            config = OmegaConf.load(str(config))
-        if filename is None:
-            (self.work_dir / "configs.yaml").write_text(OmegaConf.to_yaml(config))
-        else:
-            Path(filename).write_text(OmegaConf.to_yaml(config))
-
-    def add_config(self, config: Dict):
-        self._config.update(config)
 
 
 class OTXCLIv2:
@@ -218,13 +34,14 @@ class OTXCLIv2:
         args: ArgsType = None,
         parser_kwargs: Dict[str, Any] = {},
     ):
-        cli_otx_logo()
+        print_otx_logo()
         self.error = None
         self.engine_defaults = {}
         self.pre_args = {}
         self.auto_runner_class = AutoRunner
 
         # Checks to see if the user's command enables auto-configuration.
+        self.pre_args = pre_parse_arguments()
         self.auto_engine = self.get_auto_engine()
         self.model_class, self.default_config_files = self.get_model_class()
         if self.auto_engine is not None:
@@ -234,8 +51,8 @@ class OTXCLIv2:
             self.framework_engine = Engine
             self.data_class = BaseDataset
 
-        main_kwargs, subparser_kwargs = self._setup_parser_kwargs(parser_kwargs)
-        self.setup_parser(True, main_kwargs, subparser_kwargs)
+        main_kwargs, subcommand_kwargs = self._setup_parser_kwargs(parser_kwargs)
+        self.setup_parser(main_kwargs, subcommand_kwargs)
 
         # Main Parse Arguments
         self.parse_arguments(self.parser, args)
@@ -243,10 +60,15 @@ class OTXCLIv2:
         self.subcommand = self.config["subcommand"]
 
         if self.subcommand is not None:
-            self.run(self.subcommand)
+            try:
+                self.run(self.subcommand)
+            except ImportError as e:
+                print(f"[X] ImportError: {e}")
+                print(get_environment_table())
+                print("[] Run the 'otx doctor' or 'otx install --help' command to perform the required installation.")
 
     def _setup_parser_kwargs(self, parser_kwargs: Dict[str, Any] = {}) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        subcommand_names = self.subcommands().keys()
+        subcommand_names = self.engine_subcommands().keys()
         main_kwargs = {k: v for k, v in parser_kwargs.items() if k not in subcommand_names}
         subparser_kwargs = {k: v for k, v in parser_kwargs.items() if k in subcommand_names}
         return main_kwargs, subparser_kwargs
@@ -273,40 +95,17 @@ class OTXCLIv2:
 
     def setup_parser(
         self,
-        add_subcommands: bool,
         main_kwargs: Dict[str, Any],
         subparser_kwargs: Dict[str, Any],
     ) -> None:
         """Initialize and setup the parser, subcommands, and arguments."""
         self.parser = self.init_parser(**main_kwargs)
-        if add_subcommands:
-            self._subcommand_method_arguments: Dict[str, List[str]] = {}
-            self._add_engine_subcommands(self.parser, **subparser_kwargs)
-        else:
-            self._add_arguments(self.parser)
-
-    def _add_arguments(self, parser: OTXArgumentParser, subcommand: str) -> None:
-        """Adds arguments from the core classes to the parser."""
-
-        if self.model_class is not None:
-            parser.add_core_class_args(self.model_class, "model", subclass_mode=False)
-
-        parser.add_argument(
-            "--model.name",
-            help="Enter the name of model.",
-        )
-
-        if subcommand not in ("predict", "export", "list"):
-            parser.add_core_class_args(self.data_class, "data", subclass_mode=False)
-
-        for sub_command_arg in self.subcommands()[subcommand]:
-            if "_dataloader" in sub_command_arg:
-                subset = sub_command_arg.split("_")[0]
-                parser.add_core_class_args(self.data_class.subset_dataloader, sub_command_arg, subclass_mode=False)
-                parser.set_defaults({f"{sub_command_arg}.subset": subset})
+        self._subcommand_method_arguments: Dict[str, List[str]] = {}
+        self._set_engine_subcommands_parser(self.parser, **subparser_kwargs)
+        self._set_extension_subcommands_parser(self.parser)
 
     @staticmethod
-    def subcommands() -> Dict[str, Set[str]]:
+    def engine_subcommands() -> Dict[str, Set[str]]:
         """Defines the list of available subcommands and the arguments to skip."""
         return {
             "train": {"model", "train_dataloader", "val_dataloader"},
@@ -316,9 +115,8 @@ class OTXCLIv2:
             "export": {"model"},
         }
 
-    def _add_engine_subcommands(self, parser: OTXArgumentParser, **kwargs: Any) -> None:
+    def _set_engine_subcommands_parser(self, parser: OTXArgumentParser, **kwargs) -> None:
         """Adds subcommands to the input parser."""
-        self._subcommand_parsers: Dict[str, OTXArgumentParser] = {}
         parser_subcommands = parser.add_subcommands()
         # the user might have passed a builder function
         self._engine_class = (
@@ -328,79 +126,79 @@ class OTXCLIv2:
         )
 
         # register all subcommands in separate subcommand parsers under the main parser
-        for subcommand in self.subcommands():
-            if not hasattr(self._engine_class, subcommand):
-                subparser_kwargs = kwargs.get(subcommand, {})
-                self._add_other_subcommands(parser_subcommands, subcommand, **subparser_kwargs)
-                continue
+        for subcommand in self.engine_subcommands().keys():
             fn = getattr(self._engine_class, subcommand)
             # extract the first line description in the docstring for the subcommand help message
             description = get_short_docstring(fn)
             subparser_kwargs = kwargs.get(subcommand, {})
             subparser_kwargs.setdefault("description", description)
             subcommand_parser = self._prepare_subcommand_parser(self._engine_class, subcommand, **subparser_kwargs)
-            self._subcommand_parsers[subcommand] = subcommand_parser
             parser_subcommands.add_subcommand(subcommand, subcommand_parser, help=description)
 
     def _prepare_subcommand_parser(self, klass: Type, subcommand: str, **kwargs: Any) -> OTXArgumentParser:
         parser = self.init_parser(default_config_files=self.default_config_files, **kwargs)
-        self._add_arguments(parser, subcommand)
+        if self.model_class is not None:
+            parser.add_core_class_args(self.model_class, "model", subclass_mode=False)
+
+        parser.add_argument(
+            "--model.name",
+            help="Enter the name of model.",
+        )
+
+        if subcommand not in ("predict", "export"):
+            parser.add_core_class_args(self.data_class, "data", subclass_mode=False)
+
+        for sub_command_arg in self.engine_subcommands()[subcommand]:
+            if "_dataloader" in sub_command_arg:
+                subset = sub_command_arg.split("_")[0]
+                parser.add_core_class_args(self.data_class.subset_dataloader, sub_command_arg, subclass_mode=False)
+                parser.set_defaults({f"{sub_command_arg}.subset": subset})
+
         # subcommand arguments
-        skip: Set[Union[str, int]] = set(self.subcommands()[subcommand])
+        skip: Set[Union[str, int]] = set(self.engine_subcommands()[subcommand])
         added = parser.add_method_arguments(klass, subcommand, skip=skip)
         # need to save which arguments were added to pass them to the method later
         self._subcommand_method_arguments[subcommand] = added
         return parser
 
-    def _add_other_subcommands(self, parser: OTXArgumentParser, subcommand: str, **kwargs: Any) -> None:
-        # List
-        subcommand_parser = self.init_parser(default_config_files=self.default_config_files, **kwargs)
-        subcommand_parser.add_argument(
-            "--task",
-            help="Select Task: {classification, detection, segmentation}.",
-            type=str,
-        )
-        subcommand_parser.add_argument(
-            "--model",
-            type=Optional[Union[str, bool]],
-            help="List model.",
-        )
-        parser.add_subcommand("list", subcommand_parser)
+    def _set_extension_subcommands_parser(self, parser: OTXArgumentParser, **kwargs) -> None:
+        for _, functions in CLI_EXTENSIONS.items():
+            functions["add_parser"](parser)
 
     def get_auto_engine(self):
-        pre_args = pre_parse_arguments()
         # If the user puts --checkpoint in the command and doesn't put --config,
         # will use those configs as the default if they exist in the checkpoint folder location.
-        if "checkpoint" in pre_args and pre_args.get("config", None) is None:
-            checkpoint_path = Path(pre_args["checkpoint"])
+        if "checkpoint" in self.pre_args and self.pre_args.get("config", None) is None:
+            checkpoint_path = Path(self.pre_args["checkpoint"])
             config_candidate = checkpoint_path.parent / "configs.yaml"
             if config_candidate.exists():
-                pre_args["config"] = str(config_candidate)
+                self.pre_args["config"] = str(config_candidate)
         try:
-            data_task = pre_args.get("data.task", None)
-            temp_engine = self.auto_runner_class(
-                framework=pre_args.get("framework", None),
-                task=pre_args.get("task", None) if data_task is None else data_task,
-                train_type=pre_args.get("data.train_type", None),
-                work_dir=pre_args.get("work_dir", None),  # FIXME
-                train_data_roots=pre_args.get("data.train_data_roots", None),
-                train_ann_files=pre_args.get("data.train_ann_files", None),
-                val_data_roots=pre_args.get("data.val_data_roots", None),
-                val_ann_files=pre_args.get("data.val_ann_files", None),
-                test_data_roots=pre_args.get("data.test_data_roots", None),
-                test_ann_files=pre_args.get("data.test_ann_files", None),
-                unlabeled_data_roots=pre_args.get("data.unlabeled_data_roots", None),
-                unlabeled_file_list=pre_args.get("data.unlabeled_file_list", None),
-                data_format=pre_args.get("data.data_format", None),
-                config=pre_args.get("config", None),
+            data_task = self.pre_args.get("data.task", None)
+            auto_runner = self.auto_runner_class(
+                framework=self.pre_args.get("framework", None),
+                task=self.pre_args.get("task", None) if data_task is None else data_task,
+                train_type=self.pre_args.get("data.train_type", None),
+                work_dir=self.pre_args.get("work_dir", None),  # FIXME
+                train_data_roots=self.pre_args.get("data.train_data_roots", None),
+                train_ann_files=self.pre_args.get("data.train_ann_files", None),
+                val_data_roots=self.pre_args.get("data.val_data_roots", None),
+                val_ann_files=self.pre_args.get("data.val_ann_files", None),
+                test_data_roots=self.pre_args.get("data.test_data_roots", None),
+                test_ann_files=self.pre_args.get("data.test_ann_files", None),
+                unlabeled_data_roots=self.pre_args.get("data.unlabeled_data_roots", None),
+                unlabeled_file_list=self.pre_args.get("data.unlabeled_file_list", None),
+                data_format=self.pre_args.get("data.data_format", None),
+                config=self.pre_args.get("config", None),
             )
-            self.pre_args = pre_args
-            return temp_engine
+            return auto_runner
         except Exception as e:
             self.error = e
             return None
 
     def get_model_class(self):
+        model_class = None
+        default_configs = None
         if self.auto_engine is not None:
             framework_engine = self.auto_engine.build_framework_engine()
             default_configs = [self.auto_engine.config_path]
@@ -419,8 +217,8 @@ class OTXCLIv2:
             if model_name in self.auto_engine.config_list:
                 default_configs.append(self.auto_engine.config_list[model_name])
             # TODO: Need more flexible way for Model API
-            return model.__class__, default_configs
-        return None, None
+            model_class = model.__class__
+        return model_class, default_configs
 
     def parse_arguments(self, parser: OTXArgumentParser, args: ArgsType) -> None:
         """Parses command line arguments and stores it in ``self.config``."""
@@ -451,7 +249,7 @@ class OTXCLIv2:
         work_dir = self._pop(self.config_init, "work_dir")
 
         # Workspace
-        self.workspace = OTXWorkspace(work_dir=work_dir)
+        self.workspace = Workspace(work_dir=work_dir)
         self.engine = self.framework_engine(
             work_dir=str(self.workspace.work_dir),
             config=config,
@@ -468,9 +266,9 @@ class OTXCLIv2:
 
     def run(self, subcommand: str):
         """Runs the subcommand."""
-
-        if subcommand == "install":
-            pass
+        if subcommand in CLI_EXTENSIONS:
+            config = namespace_to_dict(self.config[subcommand])
+            CLI_EXTENSIONS[subcommand]["main"](**config)
         elif subcommand == "train":
             self.instantiate_classes()
             # Prepare Dataloader kwargs

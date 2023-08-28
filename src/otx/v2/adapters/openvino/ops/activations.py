@@ -7,9 +7,10 @@ import math
 from dataclasses import dataclass, field
 
 import torch
+from torch.nn import functional as F
+
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.op import Attribute, Operation
-from torch.nn import functional as F
 
 
 @dataclass

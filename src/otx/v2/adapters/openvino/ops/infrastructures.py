@@ -9,6 +9,7 @@ from typing import Optional, Tuple
 
 import numpy as np
 import torch
+
 from otx.v2.api.utils.logger import get_logger
 
 from ..utils import get_op_name  # type: ignore[attr-defined]

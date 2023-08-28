@@ -15,11 +15,11 @@ import math
 import os
 
 import torch.nn.functional as F
+from mmengine.runner import load_checkpoint
 from mmpretrain.models.utils import make_divisible
-from otx.v2.api.utils.logger import get_logger
 from torch import nn
 
-from mmengine.runner import load_checkpoint
+from otx.v2.api.utils.logger import get_logger
 
 from ..builder import BACKBONES
 

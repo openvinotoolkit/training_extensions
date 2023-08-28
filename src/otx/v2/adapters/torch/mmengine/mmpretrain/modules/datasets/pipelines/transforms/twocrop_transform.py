@@ -5,11 +5,10 @@
 from copy import deepcopy
 
 import numpy as np
-from mmpretrain.datasets.transforms import TRANSFORMS
-from mmpretrain.datasets.transforms.formatting import to_tensor
-
 from mmengine.dataset import Compose
 from mmengine.registry import build_from_cfg
+from mmpretrain.datasets.transforms import TRANSFORMS
+from mmpretrain.datasets.transforms.formatting import to_tensor
 
 
 @TRANSFORMS.register_module()

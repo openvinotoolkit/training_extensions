@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from mmengine.dist import get_dist_info
+from mmengine.hooks import Hook
+from mmengine.registry import HOOKS
+from torch.utils.data import DataLoader
+
 from otx.v2.adapters.torch.modules.dataloaders.samplers import (
     BalancedSampler,
     ClsIncrSampler,
 )
 from otx.v2.api.utils.logger import get_logger
-from torch.utils.data import DataLoader
-
-from mmengine.dist import get_dist_info
-from mmengine.hooks import Hook
-from mmengine.registry import HOOKS
 
 logger = get_logger()
 

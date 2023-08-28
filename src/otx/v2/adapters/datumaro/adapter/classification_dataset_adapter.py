@@ -7,6 +7,9 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 from typing import List, Union
 
+from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.components.annotation import LabelCategories as DatumLabelCategories
+
 from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.v2.api.entities.datasets import DatasetEntity
@@ -17,9 +20,6 @@ from otx.v2.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSc
 from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
-
-from datumaro.components.annotation import AnnotationType as DatumAnnotationType
-from datumaro.components.annotation import LabelCategories as DatumLabelCategories
 
 from .base_dataset_adapter import BaseDatasetAdapter
 

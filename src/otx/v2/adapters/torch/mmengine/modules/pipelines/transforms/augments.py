@@ -6,13 +6,14 @@
 import random
 from typing import Union
 
-# type: ignore[attr-defined]
-# pylint: disable = no-name-in-module
-import otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.cython_augments.pil_augment as pil_aug
 from numpy import ndarray as CvImage
 from PIL import Image, ImageEnhance, ImageOps
 from PIL.Image import Image as PILImage
 from PIL.Image import Resampling
+
+# type: ignore[attr-defined]
+# pylint: disable = no-name-in-module
+import otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.cython_augments.pil_augment as pil_aug
 
 ImgTypes = Union[PILImage, CvImage]
 

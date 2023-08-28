@@ -10,6 +10,8 @@ from typing import Dict, List, Optional
 
 import cv2
 import numpy as np
+from datumaro.components.dataset import Dataset as DatumaroDataset
+
 from otx.v2.adapters.torch.modules.utils.mask_to_bbox import mask2bbox
 from otx.v2.api.entities.annotation import (
     Annotation,
@@ -26,8 +28,6 @@ from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.utils.segmentation_utils import create_annotation_from_segmentation_map
-
-from datumaro.components.dataset import Dataset as DatumaroDataset
 
 from .base_dataset_adapter import BaseDatasetAdapter
 

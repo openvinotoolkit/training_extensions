@@ -12,15 +12,6 @@ from typing import Dict, List, Optional
 import cv2
 import numpy as np
 import tqdm
-from otx.v2.api.entities.annotation import Annotation
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
-from otx.v2.api.entities.subset import Subset
-from otx.v2.api.utils.logger import get_logger
-from skimage.segmentation import felzenszwalb
-
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import Mask
 from datumaro.components.dataset import Dataset as DatumDataset
@@ -30,6 +21,15 @@ from datumaro.plugins.data_formats.common_semantic_segmentation import (
 )
 from datumaro.plugins.transforms import MasksToPolygons
 from datumaro.util.meta_file_util import parse_meta_file
+from skimage.segmentation import felzenszwalb
+
+from otx.v2.api.entities.annotation import Annotation
+from otx.v2.api.entities.dataset_item import DatasetItemEntity
+from otx.v2.api.entities.datasets import DatasetEntity
+from otx.v2.api.entities.id import ID
+from otx.v2.api.entities.image import Image
+from otx.v2.api.entities.subset import Subset
+from otx.v2.api.utils.logger import get_logger
 
 from .base_dataset_adapter import BaseDatasetAdapter
 

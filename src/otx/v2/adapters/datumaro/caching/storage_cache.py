@@ -9,10 +9,10 @@ import shutil
 import stat
 from typing import List, Optional
 
-from otx.v2.api.utils.cache import OTX_CACHE
-
 from datumaro.components.dataset import Dataset as DatumDataset
 from datumaro.components.progress_reporting import SimpleProgressReporter
+
+from otx.v2.api.utils.cache import OTX_CACHE
 
 DATASET_CACHE = os.path.join(OTX_CACHE, "dataset")
 

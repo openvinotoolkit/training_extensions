@@ -13,14 +13,14 @@ from pathlib import Path
 from typing import Dict, List
 
 import requests
-from otx.v2.api.utils.cache import OTX_CACHE
-from requests.exceptions import HTTPError
-
 from openvino.model_zoo import _common, _reporting
 from openvino.model_zoo._configuration import load_models
 from openvino.model_zoo.download_engine.downloader import Downloader
 from openvino.model_zoo.download_engine.postprocessing import PostprocUnpackArchive
 from openvino.model_zoo.omz_converter import ModelOptimizerProperties, convert_to_onnx
+from requests.exceptions import HTTPError
+
+from otx.v2.api.utils.cache import OTX_CACHE
 
 # pylint: disable=too-many-locals, too-many-branches
 OMZ_CACHE = os.path.join(OTX_CACHE, "omz")

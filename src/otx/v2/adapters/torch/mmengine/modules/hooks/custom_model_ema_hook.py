@@ -6,12 +6,12 @@
 import math
 from math import cos, pi
 
-from otx.v2.api.utils.logger import get_logger
-
 from mmengine.hooks import EMAHook, Hook
 from mmengine.model import is_model_wrapper
 from mmengine.registry import HOOKS
 from mmengine.runner import Runner
+
+from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 

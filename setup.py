@@ -90,7 +90,7 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 
     requirements: List[str] = []
     for requirement_file in requirement_files:
-        with open(f"requirements/{requirement_file}.txt", "r", encoding="UTF-8") as file:
+        with open(f"requirements/v2/{requirement_file}.txt", "r", encoding="UTF-8") as file:
             for line in file:
                 package = line.strip()
                 if package and not package.startswith(("#", "-f")):
@@ -127,12 +127,12 @@ def get_extensions():
     return extensions
 
 
-REQUIRED_PACKAGES = get_requirements(requirement_files="api")
+REQUIRED_PACKAGES = get_requirements(requirement_files=["api", "cli"])
 EXTRAS_REQUIRE = {
-    "action": get_requirements(requirement_files=[
-            "base", "openvino", "action",
-        ]
-    ),
+    # "action": get_requirements(requirement_files=[
+    #         "base", "openvino", "action",
+    #     ]
+    # ),
     "anomaly": get_requirements(requirement_files=[
             "base", "openvino", "anomaly",
         ]
@@ -141,27 +141,27 @@ EXTRAS_REQUIRE = {
             "base", "openvino", "classification",
         ]
     ),
-    "detection": get_requirements(requirement_files=[
-            "base", "openvino", "detection",
-        ]
-    ),
-    "segmentation": get_requirements(requirement_files=[
-            "base", "openvino", "segmentation",
-        ]
-    ),
-    "visual_prompting": get_requirements(requirement_files=[
-            "base", "openvino", "visual_prompting",
-        ]
-    ),
+    # "detection": get_requirements(requirement_files=[
+    #         "base", "openvino", "detection",
+    #     ]
+    # ),
+    # "segmentation": get_requirements(requirement_files=[
+    #         "base", "openvino", "segmentation",
+    #     ]
+    # ),
+    # "visual_prompting": get_requirements(requirement_files=[
+    #         "base", "openvino", "visual_prompting",
+    #     ]
+    # ),
     "full": get_requirements(requirement_files=[
             "base",
             "openvino",
             "anomaly",
             "classification",
-            "detection",
-            "segmentation",
-            "visual_prompting",
-            "action",
+            # "detection",
+            # "segmentation",
+            # "visual_prompting",
+            # "action",
         ]
     ),
 }

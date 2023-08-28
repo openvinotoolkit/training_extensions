@@ -18,7 +18,13 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
+from anomalib.data.base.datamodule import collate_fn
+from anomalib.data.utils.transform import get_transforms
 from omegaconf import DictConfig, ListConfig
+from pytorch_lightning.core.datamodule import LightningDataModule
+from torch import Tensor
+from torch.utils.data import DataLoader, Dataset
+
 from otx.v2.adapters.torch.anomalib.modules.logger import get_logger
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.shapes.polygon import Polygon
@@ -30,12 +36,6 @@ from otx.v2.api.utils.dataset_utils import (
     split_local_global_dataset,
 )
 from otx.v2.api.utils.segmentation_utils import mask_from_dataset_item
-from pytorch_lightning.core.datamodule import LightningDataModule
-from torch import Tensor
-from torch.utils.data import DataLoader, Dataset
-
-from anomalib.data.base.datamodule import collate_fn
-from anomalib.data.utils.transform import get_transforms
 
 logger = get_logger(__name__)
 

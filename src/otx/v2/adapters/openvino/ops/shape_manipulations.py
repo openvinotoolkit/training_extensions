@@ -6,6 +6,7 @@
 from dataclasses import dataclass, field
 
 import torch
+
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.op import Attribute, Operation
 from otx.v2.adapters.openvino.ops.type_conversions import ConvertV0

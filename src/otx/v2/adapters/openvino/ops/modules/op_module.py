@@ -7,8 +7,7 @@ import inspect
 from typing import Dict, List, Optional, Union
 
 import torch
-
-from openvino.pyopenvino import Node  # pylint: disable=no-name-in-module
+from openvino.runtime import Node  # pylint: disable=no-name-in-module
 
 from ..op import Operation
 from ..utils import convert_op_to_torch

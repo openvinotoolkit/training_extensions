@@ -14,10 +14,10 @@ Original papers:
 import os
 
 import timm
-from otx.v2.api.utils.logger import get_logger
+from mmengine.runner import load_checkpoint
 from torch import nn
 
-from mmengine.runner import load_checkpoint
+from otx.v2.api.utils.logger import get_logger
 
 from ..builder import BACKBONES
 

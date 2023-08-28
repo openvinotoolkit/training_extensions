@@ -3,13 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .utils.mmdeploy import is_mmdeploy_enabled
+__all__ = []
 
-__all__ = [
-    "is_mmdeploy_enabled",
-]
+AVAILABLE = True
+VERSION = None
+try:
+    import mmdeploy  # noqa: F401
 
-if is_mmdeploy_enabled():
     from .ops import squeeze__default
 
     __all__.append("squeeze__default")
+    VERSION = mmdeploy.__version__
+except ImportError:
+    AVAILABLE = False
