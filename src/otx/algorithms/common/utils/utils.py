@@ -25,6 +25,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
 import onnx
+import torch
 import yaml
 from addict import Dict as adict
 
@@ -167,3 +168,7 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
         meta.value = str(extra_model_data[item])
 
     onnx.save(model, onnx_file)
+
+
+def is_xpu_available():
+    return hasattr(torch, "xpu") and torch.xpu.is_available()
