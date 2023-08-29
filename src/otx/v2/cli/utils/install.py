@@ -157,10 +157,10 @@ def get_cuda_version() -> str | None:
         str | None: CUDA version installed on the system.
     """
     # 1. Check CUDA_HOME Environment variable
-    cuda_home = os.environ.get("CUDA_HOME")
+    cuda_home = os.environ.get("CUDA_HOME", "/usr/local/cuda")
 
-    if cuda_home:
-        # CUDA uses version.json file.
+    if Path(cuda_home).exists():
+        # Check $CUDA_HOME/version.json file.
         version_file = Path(cuda_home) / "version.json"
         if version_file.is_file():
             with open(version_file, "r") as file:
