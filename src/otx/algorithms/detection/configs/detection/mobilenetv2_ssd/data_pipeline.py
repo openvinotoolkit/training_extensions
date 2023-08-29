@@ -21,8 +21,18 @@ __img_size = (864, 864)
 __img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset", to_float32=True, enable_memcache=True),
-    dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        load_ann_cfg=dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_size,
+            keep_ratio=True,
+            downscale_only=True,
+        ),  # Resize to intermediate size if org image is bigger
+        to_float32=True,
+        enable_memcache=True,  # Cache after resizing image & annotations
+    ),
     dict(
         type="PhotoMetricDistortion",
         brightness_delta=32,
@@ -31,7 +41,7 @@ train_pipeline = [
         hue_delta=18,
     ),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.1),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
+    dict(type="Resize", img_scale=__img_size, keep_ratio=False, override=True),  # Allow multiple resize
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="DefaultFormatBundle"),

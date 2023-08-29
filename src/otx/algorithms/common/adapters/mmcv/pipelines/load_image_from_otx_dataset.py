@@ -45,8 +45,11 @@ class LoadImageFromOTXDataset:
         # TODO: We should improve it by assigning an unique id to DatasetItemEntity.
         # This is because there is a case which
         # d_item.media.path is None, but d_item.media.data is not None
+        if "cache_key" in results:
+            return results["cache_key"]
         d_item = results["dataset_item"]
-        return d_item.media.path, d_item.roi.id
+        results["cache_key"] = d_item.media.path, d_item.roi.id
+        return results["cache_key"]
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
@@ -177,12 +180,12 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
             return
         key = self._get_unique_key(results)
         meta = results.copy()
-        meta.pop("dataset_item")  # remove irrlevant info
         img = meta.pop("img")
         self._mem_cache_handler.put(key, img, meta)
 
     def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Callback function."""
+        results = results.copy()
         cached_results = self._load_cache(results)
         if cached_results:
             return cached_results

@@ -11,15 +11,22 @@ __img_size = (1344, 800)
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     dict(
-        type="LoadAnnotationFromOTXDataset",
-        domain="instance_segmentation",
-        with_bbox=True,
-        with_mask=True,
-        poly2mask=False,
+        type="LoadResizeDataFromOTXDataset",
+        load_ann_cfg=dict(
+            type="LoadAnnotationFromOTXDataset",
+            domain="instance_segmentation",
+            with_bbox=True,
+            with_mask=True,
+            poly2mask=False,
+        ),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_size,
+            keep_ratio=False,
+        ),
+        enable_memcache=True,  # Cache after resizing image & annotations
     ),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
