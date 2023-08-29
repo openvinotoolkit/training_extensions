@@ -24,12 +24,12 @@ class TestMeanTeacher:
             return {"loss_bbox": 1.0, "loss_cls": 1.0, "loss_mask": 1.0}
 
         def mock_generate_pseudo_labels(*args, **kwargs):
-            return (gt_bboxes,gt_labels,gt_masks,0.0)
+            return (gt_bboxes, gt_labels, gt_masks, 0.0)
 
         img = torch.rand(4, 3, 300, 300)
         img_metas = dict()
         gt_bboxes = torch.rand(4, 4)
-        gt_labels = torch.randint(20, (4,1))
+        gt_labels = torch.randint(20, (4, 1))
         gt_masks = torch.rand(4, 3, 300, 300)
         monkeypatch.setattr(self.mt.model_s, "forward_train", mock_forward_train)
         # mocker.patch(mt.model_s, "forward_train", losses)
@@ -39,11 +39,18 @@ class TestMeanTeacher:
         self.mt.enable_unlabeled_loss(True)
         monkeypatch.setattr(MeanTeacher, "generate_pseudo_labels", mock_generate_pseudo_labels)
         # mocker.patch.object(MeanTeacher, "generate_pseudo_labels")
-        monkeypatch.setattr(MeanTeacher, "eval_pseudo_label_recall", lambda s,x,y: 0.0)
-        kwargs = {"extra_0" : {"img0" : img, "img" : img, "img_metas": img_metas}}
+        monkeypatch.setattr(MeanTeacher, "eval_pseudo_label_recall", lambda s, x, y: 0.0)
+        kwargs = {"extra_0": {"img0": img, "img": img, "img_metas": img_metas}}
         loss = self.mt.forward_train(img, img_metas, gt_bboxes, gt_labels, **kwargs)
-        gt_loss.update({'ps_recall': torch.tensor(0.), 'ps_ratio': torch.tensor([0.]),
-                        'loss_bbox_ul': 1.0, 'loss_cls_ul': 1.0, 'loss_mask_ul': 1.0})
+        gt_loss.update(
+            {
+                "ps_recall": torch.tensor(0.0),
+                "ps_ratio": torch.tensor([0.0]),
+                "loss_bbox_ul": 1.0,
+                "loss_cls_ul": 1.0,
+                "loss_mask_ul": 1.0,
+            }
+        )
         assert loss == gt_loss
 
     @e2e_pytest_unit
@@ -51,7 +58,7 @@ class TestMeanTeacher:
         gt_bboxes = np.random.rand(1, 1, 5)
         gt_masks = np.random.rand(1, 1, 300, 300) > 0.5
         teacher_output = [([gt_bboxes, gt_masks])]
-        img_metas = [{"img_shape": (300,300,3)}]
+        img_metas = [{"img_shape": (300, 300, 3)}]
         monkeypatch.setattr(self.mt.model_t, "with_mask", True)
         out = self.mt.generate_pseudo_labels(teacher_output, img_metas, **{"device": "cpu"})
         assert len(out) == 4

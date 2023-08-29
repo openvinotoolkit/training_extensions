@@ -8,6 +8,7 @@ import functools
 
 import numpy as np
 import torch
+from mmdet.core import bbox2result, bbox2roi
 from mmdet.core.mask.structures import BitmapMasks
 from mmdet.models import DETECTORS, build_detector
 from mmdet.models.detectors import BaseDetector
@@ -47,11 +48,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         cfg = kwargs.copy()
         cfg["type"] = arch_type
         self.model_s = build_detector(cfg)
-        cfg_teacher = copy.deepcopy(cfg)
-        if cfg_teacher['roi_head']['mask_head']['type'] == "CustomFCNMaskHead":
-            cfg_teacher['roi_head']['mask_head']['type'] = "FCNMaskHead"
-        self.model_t = build_detector(cfg_teacher)
-        # self.model_t = copy.deepcopy(self.model_s)
+        self.model_t = copy.deepcopy(self.model_s)
         # warmup for first epochs
         self.enable_unlabeled_loss(False)
 
@@ -79,6 +76,59 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         """Enable function for UnbiasedTeacher unlabeled loss."""
         self.unlabeled_loss_enabled = mode
 
+    def forward_teacher(self, img, img_metas):
+        """Method to extract predictions (pseudo labeles) from teacher."""
+        x = self.model_t.extract_feat(img)
+        proposal_list = self.model_t.rpn_head.simple_test_rpn(x, img_metas)
+
+        det_bboxes, det_labels = self.model_t.roi_head.simple_test_bboxes(
+            x, img_metas, proposal_list, self.model_t.test_cfg.rcnn, rescale=False
+        )
+
+        bbox_results = [
+            bbox2result(det_bboxes[i], det_labels[i], self.model_t.roi_head.bbox_head.num_classes)
+            for i in range(len(det_bboxes))
+        ]
+
+        if not self.model_t.with_mask:
+            return bbox_results
+        else:
+            ori_shapes = tuple(meta["ori_shape"] for meta in img_metas)
+            scale_factors = tuple(meta["scale_factor"] for meta in img_metas)
+
+            num_imgs = len(det_bboxes)
+            if all(det_bbox.shape[0] == 0 for det_bbox in det_bboxes):
+                segm_results = [
+                    [[] for _ in range(self.model_t.roi_head.mask_head.num_classes)] for _ in range(num_imgs)
+                ]
+            else:
+                _bboxes = [det_bboxes[i][:, :4] for i in range(len(det_bboxes))]
+                mask_rois = bbox2roi(_bboxes)
+                mask_results = self.model_t.roi_head._mask_forward(x, mask_rois)
+                mask_pred = mask_results["mask_pred"]
+                # split batch mask prediction back to each image
+                num_mask_roi_per_img = [len(det_bbox) for det_bbox in det_bboxes]
+                mask_preds = mask_pred.split(num_mask_roi_per_img, 0)
+
+                # apply mask post-processing to each image individually
+                segm_results = []
+                for i in range(num_imgs):
+                    if det_bboxes[i].shape[0] == 0:
+                        segm_results.append([[] for _ in range(self.model_t.roi_head.mask_head.num_classes)])
+                    else:
+                        segm_result = self.model_t.roi_head.mask_head.get_scaled_seg_masks(
+                            mask_preds[i],
+                            _bboxes[i],
+                            det_labels[i],
+                            self.model_t.test_cfg.rcnn,
+                            ori_shapes[i],
+                            scale_factors[i],
+                            rescale=False,
+                        )
+                        segm_results.append(segm_result)
+
+        return list(zip(bbox_results, segm_results))
+
     def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_masks=None, gt_bboxes_ignore=None, **kwargs):
         """Forward function for UnbiasedTeacher."""
         losses = {}
@@ -105,12 +155,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         if ul_img is None:
             return losses
         with torch.no_grad():
-            teacher_outputs = self.model_t.forward_test(
-                [ul_img0],
-                [ul_img_metas],
-                rescale=False,  # easy augmentation
-            )
-
+            teacher_outputs = self.forward_teacher(ul_img0, ul_img_metas)
         current_device = ul_img0[0].device
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs

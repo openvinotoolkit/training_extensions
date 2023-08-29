@@ -113,23 +113,6 @@ train_pipeline = [
     ),
 ]
 
-# train_pipeline = [
-#     dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-#     dict(
-#         type="LoadAnnotationFromOTXDataset",
-#         domain="instance_segmentation",
-#         with_bbox=True,
-#         with_mask=True,
-#         poly2mask=False,
-#     ),
-#     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
-#     dict(type="Resize", img_scale=[(1024, 560), (1024, 960)], keep_ratio=False),
-#     dict(type="RandomFlip", flip_ratio=0.5),
-#     dict(type="Normalize", **__img_norm_cfg),
-#     dict(type="DefaultFormatBundle"),
-#     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"]),
-# ]
-
 unlabeled_pipeline = [
     dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     *common_pipeline,
@@ -164,31 +147,11 @@ test_pipeline = [
         ],
     ),
 ]
-# data = dict(
-#     samples_per_gpu=4,
-#     workers_per_gpu=2,
-#     train=dict(type="RepeatDataset", times=13, dataset=dict(type=__dataset_type, pipeline=train_pipeline)),
-#     val=dict(
-#         type=__dataset_type,
-#         test_mode=True,
-#         pipeline=test_pipeline,
-#     ),
-#     test=dict(
-#         type=__dataset_type,
-#         test_mode=True,
-#         pipeline=test_pipeline,
-#     ),
-#     unlabeled=dict(
-#         type=__dataset_type,
-#         pipeline=unlabeled_pipeline,
-#     ),
-# )
 
 data = dict(
-    train=dict(
-        type=__dataset_type,
-        pipeline=train_pipeline,
-    ),
+    samples_per_gpu=4,
+    workers_per_gpu=2,
+    train=dict(type="RepeatDataset", times=13, dataset=dict(type=__dataset_type, pipeline=train_pipeline)),
     val=dict(
         type=__dataset_type,
         test_mode=True,
