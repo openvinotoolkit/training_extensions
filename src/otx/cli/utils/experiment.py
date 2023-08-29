@@ -67,9 +67,9 @@ def check_resource(queue: mp.Queue):
 
     with open(output_path, "w") as f:
         f.write(
-            f"max_cpu_mem\t{max_cpu_mem} GiB\n"
-            f"avg_cpu_util\t{avg_cpu_util / num_counts} %\n"
-            f"max_gpu_mem\t{max_gpu_mem} GiB\n"
-            f"avg_gpu_util\t{avg_gpu_util / num_counts} %\n"
+            f"max_cpu_mem\t{round(max_cpu_mem, 2)} GiB\n"
+            f"avg_cpu_util\t{round(avg_cpu_util / num_counts, 2)} %\n"
+            f"max_gpu_mem\t{round(max_gpu_mem, 2)} GiB\n"
+            f"avg_gpu_util\t{round(avg_gpu_util / num_counts, 2)} %\n"
         )
 

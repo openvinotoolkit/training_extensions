@@ -17,13 +17,18 @@
 import argparse
 import yaml
 import re
+from datetime import datetime
 import os
 import sys
 import json
 import statistics
 from pathlib import Path
+from collections import OrderedDict
 from itertools import product
-from typing import Union
+from typing import Union, Dict, List
+
+from rich.console import Console
+from rich.table import Table
 
 from .build import main as otx_build
 from .demo import main as otx_demo
@@ -36,13 +41,39 @@ from .optimize import main as otx_optimize
 from .train import main as otx_train
 from .run import main as otx_run
 
-def parse_args():
+
+__all__ = [
+    "otx_demo",
+    "otx_deploy",
+    "otx_eval",
+    "otx_explain",
+    "otx_export",
+    "otx_find",
+    "otx_train",
+    "otx_optimize",
+    "otx_build",
+    "otx_run",
+]
+
+def get_args() -> str:
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("-f", "--file", type=str)
+    parser.add_argument("-f", "--file", type=str, required=True)
+    return parser.parse_args()
 
-    return parser.parse_known_args()
+
+def get_exp_recipe() -> Dict:
+    args = get_args() 
+    file_path = args.file
+
+    if not os.path.exists(file_path):
+        raise RuntimeError(f"{file_path} doesn't exist.")
+
+    with open(file_path, "r") as f:
+        exp_recipe = yaml.safe_load(f)
+
+    return exp_recipe
 
 
 def parse_eval_score(output_dir: Path):
@@ -117,8 +148,11 @@ def aggregate_exp_result(exp_dir: Union[str, Path]):
     if isinstance(exp_dir, str):
         exp_dir = Path(exp_dir)
 
+    table = Table(title="Experiment Summary")
+
     output_file = (exp_dir / "exp_table.txt").open("w")
     output_file.write("name\t")
+    table.add_column("name", justify="center")
     write_type = False
 
     for each_exp in exp_dir.iterdir():
@@ -128,76 +162,118 @@ def aggregate_exp_result(exp_dir: Union[str, Path]):
                 lines = f.readlines()
                 if not write_type:
                     for line in lines:
-                        output_file.write(line.split()[0] + '\t')
+                        header = line.split()[0]
+                        table.add_column(header, justify="center")
+                        output_file.write(header + '\t')
                     output_file.write('\n')
+                    write_type = True
 
-                output_file.write(each_exp.name + '\t')
+                row = [each_exp.name]
                 for line in lines:
-                    output_file.write(line.split()[1] + '\t')
+                    row.append(line.split()[1])
+                output_file.write("\t".join(row))
                 output_file.write('\n')
+                table.add_row(*row)
+
+    console = Console()
+    console.print(table)
+
+
+def replace_var_in_str(
+    variable: Dict[str, Union[str, List[str]]],
+    target: str,
+    keep_key: bool = False,
+) -> Union[str, List[str], Dict[str, str]]:
+    replace_pat = re.compile(r"\$\{(\w+)\}")
+    key_found = [x for x in set(replace_pat.findall(target)) if x in variable]
+    if not key_found:
+        return target
+
+    ret = OrderedDict() if keep_key else []
+    values_of_key_found = []
+    for key in key_found:
+        if isinstance(variable[key], list):
+            values_of_key_found.append(variable[key])
+        else:
+            values_of_key_found.append([variable[key]])
+
+    for value_of_key_found in product(*values_of_key_found):
+        for key, val in zip(key_found, value_of_key_found):
+            target = target.replace(f"${{{key}}}", val)
+
+        if keep_key:
+            ret["_".join(value_of_key_found)] = target
+        else:
+            ret.append(target)
+
+    if not keep_key and len(ret) == 1:
+        return ret[0]
+    return ret
+
+
+def map_variable(
+    variable: Dict[str, Union[str, List[str]]],
+    target_dict: Dict[str, Union[str, List[str]]],
+    target_key: str,
+    keep_key: bool = False,
+):
+    target = target_dict[target_key]
+    if isinstance(target, list):
+        new_arr = []
+        for each_str in target:
+            str_replaced = replace_var_in_str(variable, each_str, keep_key)
+            if isinstance(str_replaced, str):
+                new_arr.append(str_replaced)
+            else:
+                new_arr.extend(str_replaced)
+            
+        target_dict[target_key] = new_arr
+    elif isinstance(target, str):
+        target_dict[target_key] = replace_var_in_str(variable, target, keep_key)
+
+
+def get_command_list(exp_recipe: Dict) -> Dict[str, str]:
+    constants: Dict = exp_recipe.get("constants", {})
+    variables: Dict = exp_recipe.get("variables", {})
+
+    for key in variables.keys():
+        map_variable(constants, variables, key)
+    map_variable(constants, exp_recipe, "command")
+    map_variable(variables, exp_recipe, "command", True)
+
+    return exp_recipe["command"]
+
+
+def run_experiment_recipe(exp_recipe: Dict):
+    output_path = Path(exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"))
+    output_path.mkdir(exist_ok=True)
+    repeat = exp_recipe.get("repeat", 1)
+
+    command_list = get_command_list(exp_recipe)
+
+    current_dir = os.getcwd()
+    os.chdir(output_path)
+    for exp_name, command in command_list.items():
+        exp_name = exp_name.replace('/', '_')
+
+        command_split = command.split()
+        command_split.insert(2, f"--workspace {exp_name}")
+        command = " ".join(command_split)
+
+        sys.argv = [" ".join(command.split()[:2])] + command.split()[2:]
+        for _ in range(repeat):
+            globals()["_".join(sys.argv[0].split())]()
+    os.chdir(current_dir)
+
+    for exp_dir in output_path.iterdir():
+        organize_exp_result(exp_dir)
+
+    aggregate_exp_result(output_path)
 
 
 def main():
-    exp_file = parse_args()[0].file
-    with open(exp_file, "r") as f:
-        exp_recipe = yaml.safe_load(f)
-
-    output_path = Path(exp_recipe["output_path"])
-    output_path.mkdir(exist_ok=True)
-    variable = exp_recipe["variable"]
-    command = exp_recipe["command"]
-    repeat = exp_recipe["repeat"]
-
-    replace_pat = re.compile(r"\$\{(\S+)\}")
-
-    # for val in variable.values():
-    #     if isinstance(val, list):
-    #         for idx in range(len(val)):
-    #             pat_ret = replace_pat.search(val[idx])
-    #             if pat_ret is not None:
-    #                 pat_word = pat_ret.groups()[0]
-    #                 val[idx] = val[idx].replace(f"${{{pat_word}}}", variable[pat_word])
-
-    # command_arr = []
-    # pat_ret = set(replace_pat.findall(command))
-    # if pat_ret:
-    #     temp = []
-    #     for val in pat_ret:
-    #         if isinstance(variable[val], list):
-    #             temp.append(variable[val])
-    #         else:
-    #             temp.append([variable[val]])
-    #     comb = list(product(*temp))
-    #     for each in comb:
-    #         new_command = command
-    #         exp_name = ""
-    #         for key, val in zip(pat_ret, each):
-    #             new_command = new_command.replace(f"${{{key}}}", val)
-
-    #             if exp_name:
-    #                 exp_name += "_" + val.replace('/', '_')
-    #             else:
-    #                 exp_name += val.replace('/', '_')
-
-    #         new_command_split = new_command.split()
-    #         new_command_split.insert(2, f"--workspace {exp_name}")
-    #         new_command = " ".join(new_command_split)
-    #         command_arr.append(new_command)
-    # else:
-    #     command_arr = [command]
-
-    # current_dir = os.getcwd()
-    # os.chdir(output_path)
-    # for command in command_arr:
-    #     sys.argv = [" ".join(command.split()[:2])] + command.split()[2:]
-    #     for _ in range(repeat):
-    #         globals()["_".join(sys.argv[0].split())]()
-    # os.chdir(current_dir)
-
-    # for exp_dir in output_path.iterdir():
-    #     organize_exp_result(exp_dir)
-
-    aggregate_exp_result(output_path)
+    exp_recipe = get_exp_recipe()
+    run_experiment_recipe(exp_recipe)
 
     return dict(retcode=0)
 
