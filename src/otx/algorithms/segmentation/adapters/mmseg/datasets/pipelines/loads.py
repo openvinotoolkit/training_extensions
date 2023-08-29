@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Any, Dict, Optional
+import numpy as np
 
 from mmseg.datasets.builder import PIPELINES, build_from_cfg
 
@@ -41,6 +42,32 @@ class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset)
         if cfg is None:
             return None
         return build_from_cfg(cfg, PIPELINES)
+
+    def _load_cache(self, results: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Try to load pre-computed results from cache."""
+        results = super()._load_cache(results)
+        if results is None:
+            return None
+        # Split image & mask from cached 4D map
+        img = results["img"]
+        if img.shape[-1] == 4:
+            results["img"] = img[:,:,:-1]
+            results["gt_semantic_seg"] = img[:,:,-1]
+        return results
+
+    def _save_cache(self, results: Dict[str, Any]):
+        """Try to save pre-computed results to cache."""
+        if not self._enable_outer_memcache:
+            return
+        key = self._get_unique_key(results)
+        meta = results.copy()
+        img = meta.pop("img")
+        mask = meta.pop("gt_semantic_seg", None)
+        if mask is not None:
+            # Concat mask to image if size matches
+            if mask.dtype == img.dtype and mask.shape[:2] == img.shape[:2]:
+                img = np.concatenate((img, mask[:, :, np.newaxis]), axis=-1)
+        self._mem_cache_handler.put(key, img, meta)
 
 
 @PIPELINES.register_module()
