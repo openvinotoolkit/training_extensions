@@ -61,7 +61,7 @@ resume_params = [
     "--learning_parameters.num_iters",
     "8",
     "--learning_parameters.batch_size",
-    "4",
+    "2",
 ]
 
 otx_dir = os.getcwd()
