@@ -185,6 +185,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
 
     def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Callback function."""
+        results = results.copy()
         cached_results = self._load_cache(results)
         if cached_results:
             return cached_results
