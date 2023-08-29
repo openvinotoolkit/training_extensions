@@ -14,6 +14,7 @@ from jsonargparse import (
     Namespace,
     class_from_function,
 )
+from rich_argparse import RichHelpFormatter
 
 
 # Custom Constructor for Python tuples
@@ -74,6 +75,7 @@ class OTXArgumentParser(ArgumentParser):
             env_prefix=env_prefix,
             default_env=default_env,
             default_config_files=default_config_files,
+            formatter_class=RichHelpFormatter,
             **kwargs,
         )
 

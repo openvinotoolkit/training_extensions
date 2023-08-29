@@ -6,9 +6,12 @@
 from __future__ import annotations
 
 import importlib
+import json
+import os
 import platform
 import re
 import subprocess
+from pathlib import Path
 from warnings import warn
 
 import pkg_resources
@@ -148,11 +151,27 @@ def get_cuda_version() -> str | None:
 
         >>> # Assume that CUDA is not installed on the system
         >>> get_cuda_version()
-        Non
+        None
 
     Returns:
         str | None: CUDA version installed on the system.
     """
+    # 1. Check CUDA_HOME Environment variable
+    cuda_home = os.environ.get("CUDA_HOME")
+
+    if cuda_home:
+        # CUDA uses version.json file.
+        version_file = Path(cuda_home) / "version.json"
+        if version_file.is_file():
+            with open(version_file, "r") as file:
+                data = json.load(file)
+                cuda_version = data.get("cuda", {}).get("version", None)
+                if cuda_version is not None:
+                    cuda_version_parts = cuda_version.split(".")
+                    cuda_version = ".".join(cuda_version_parts[:2])
+                    return cuda_version
+
+    # 2. 'nvcc --version' check
     try:
         result = subprocess.run(["nvcc", "--version"], capture_output=True, text=True)
         output = result.stdout

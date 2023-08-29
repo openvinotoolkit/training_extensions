@@ -5,12 +5,17 @@
 
 
 import importlib
+from typing import Optional
 
 from rich.console import Console
 from rich.table import Table
 
-from otx.v2 import __version__ as otx_version
 from otx.v2.adapters import ADAPTERS
+
+REQUIREMENT_PER_TASK = {
+    "anomaly": ["datumaro", "torch.anomalib"],
+    "classification": ["datumaro", "torch.mmengine.mmpretrain"],
+}
 
 
 def get_adapters_status():
@@ -22,11 +27,11 @@ def get_adapters_status():
     return adapters_status
 
 
-def get_environment_table():
+def get_environment_table() -> str:
     table = Table(title="Current Evironment Status of OTX")
-    table.add_column("Framework", justify="left", style="yellow")
+    table.add_column("Adapters", justify="left", style="yellow")
     table.add_column("Version", justify="left", style="cyan")
-    table.add_column("Status", justify="left", style="green")
+    table.add_column("Available", justify="center", style="green")
 
     adapter = get_adapters_status()
     for name, value in adapter.items():
@@ -41,17 +46,16 @@ def get_environment_table():
     return capture.get()
 
 
-def print_task_status():
-    console = Console()
-    task_status = {
-        "anomaly": ["datumaro", "torch.anomalib"],
-        "classification": ["datumaro", "torch.mmengine.mmpretrain"],
-        "detection": ["datumaro", "torch.mmengine.mmdetection"],
-    }
+def get_task_status(task: Optional[str] = None) -> dict[str, bool]:
     adapter_status = get_adapters_status()
-    console.log(f":white_heavy_check_mark: OTX Version: {otx_version}")
 
-    for task, adapters in task_status.items():
+    task_status = {}
+    target_req = {}
+    if task is not None:
+        target_req[task] = REQUIREMENT_PER_TASK[task]
+    else:
+        target_req = REQUIREMENT_PER_TASK
+    for req, adapters in target_req.items():
         available = True
         for adapter in adapters:
             name = f"otx.v2.adapters.{adapter}"
@@ -62,12 +66,16 @@ def print_task_status():
             else:
                 available = False
                 break
-        if available:
-            console.log(f":white_heavy_check_mark: {task}: Ready!")
-        else:
-            console.log(f":x: {task}: :warning:")
-            console.log(f"\t - Try command: 'otx install {task}' or 'otx install full'\n")
-    print()
+        task_status[req] = available
+    return task_status
+
+
+def check_torch_cuda():
+    has_torch = importlib.util.find_spec("torch")
+    if not has_torch:
+        return None, False
+    torch_module = importlib.import_module("torch")
+    return torch_module.__version__, torch_module.cuda.is_available()
 
 
 if __name__ == "__main__":
