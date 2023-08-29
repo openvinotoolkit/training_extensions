@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Add ONNX metadata to detection, instance segmantation, and segmentation models (<https://github.com/openvinotoolkit/training_extensions/pull/2418>)
 - Add a new feature to configure input size(<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
 - Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
+- Add a new object detector Lite-DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
 
 ### Enhancements
 
