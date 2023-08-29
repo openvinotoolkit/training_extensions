@@ -1,21 +1,10 @@
 """Collection of load pipelines for segmentation task."""
+# Copyright (C) 2021-23 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
-# Copyright (C) 2021 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from mmseg.datasets.builder import PIPELINES
+from mmseg.datasets.builder import PIPELINES, build_from_cfg
 
 import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset as load_image_base
 from otx.algorithms.segmentation.adapters.mmseg.datasets.dataset import (
@@ -34,6 +23,27 @@ class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
 
 
 @PIPELINES.register_module()
+class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
+    """Load and resize image & annotation with cache support."""
+
+    def __init__(self, use_otx_adapter: bool = True, **kwargs):
+        self.use_otx_adapter = use_otx_adapter
+        super().__init__(**kwargs)
+
+    def _create_load_ann_op(self, cfg: Optional[Dict]) -> Optional[Any]:
+        """Creates resize operation."""
+        if cfg is None:
+            return None
+        return build_from_cfg(cfg, PIPELINES)
+
+    def _create_resize_op(self, cfg: Optional[Dict]) -> Optional[Any]:
+        """Creates resize operation."""
+        if cfg is None:
+            return None
+        return build_from_cfg(cfg, PIPELINES)
+
+
+@PIPELINES.register_module()
 class LoadAnnotationFromOTXDataset:
     """Pipeline element that loads an annotation from a OTX Dataset on the fly.
 
@@ -48,7 +58,7 @@ class LoadAnnotationFromOTXDataset:
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadAnnotationFromOTXDataset."""
-        dataset_item = results["dataset_item"]
+        dataset_item = results.pop("dataset_item")  # Prevent unnessary deepcopy
         labels = results["ann_info"]["labels"]
 
         ann_info = get_annotation_mmseg_format(dataset_item, labels, self.use_otx_adapter)
