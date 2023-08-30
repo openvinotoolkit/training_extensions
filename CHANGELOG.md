@@ -18,6 +18,12 @@ All notable changes to this project will be documented in this file.
 - Refine input data in-memory caching (<https://github.com/openvinotoolkit/training_extensions/pull/2416>)
 - Adapt timeout value of initialization for distributed training (<https://github.com/openvinotoolkit/training_extensions/pull/2422>)
 
+## \[v1.4.2\]
+
+### Enhancements
+
+- Add model category attributes to model template (<https://github.com/openvinotoolkit/training_extensions/pull/2439>)
+
 ### Bug fixes
 
 - Add workaround for the incorrect meta info M-RCNN (used for XAI) (<https://github.com/openvinotoolkit/training_extensions/pull/2437>)
