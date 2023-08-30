@@ -126,7 +126,7 @@ class CrossSigmoidFocalLoss(nn.Module):
 
 @LOSSES.register_module()
 class OrdinaryFocalLoss(nn.Module):
-    """Focal loss."""
+    """Focal loss without balancing"""
 
     def __init__(self, gamma=1.5, **kwargs):
         super(OrdinaryFocalLoss, self).__init__()
@@ -135,7 +135,6 @@ class OrdinaryFocalLoss(nn.Module):
 
     def forward(self, input, target, label_weights=None, avg_factor=None, reduction="mean", **kwars):
         """Forward function for focal loss."""
-        # focal loss
         if target.numel() == 0:
             return 0.0 * input.sum()
 

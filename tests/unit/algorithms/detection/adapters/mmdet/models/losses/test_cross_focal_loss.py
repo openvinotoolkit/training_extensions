@@ -60,3 +60,4 @@ class TestFocalLoss:
         assert loss.shape == (3,)
         loss = self.loss(self.predictions, self.labels, avg_factor=1, reduction="mean")
         assert isinstance(loss.item(), float)
+        assert loss > 0
