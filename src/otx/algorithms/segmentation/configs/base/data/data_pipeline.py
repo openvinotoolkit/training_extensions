@@ -54,6 +54,29 @@ train_pipeline = [
     ),
 ]
 
+val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", img_scale=__img_scale, keep_ratio=False),
+        enable_memcache=True,  # Cache after resizing image
+        use_otx_adapter=True,
+    ),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=__img_scale,
+        flip=False,
+        transforms=[
+            dict(type="RandomFlip"),
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(
+                type="Collect",
+                keys=["img"],
+            ),
+        ],
+    ),
+]
+
 test_pipeline = [
     dict(type="LoadImageFromOTXDataset", use_otx_adapter=True),
     dict(
@@ -75,6 +98,6 @@ test_pipeline = [
 
 data = dict(
     train=dict(type="MPASegDataset", pipeline=train_pipeline),
-    val=dict(type="MPASegDataset", pipeline=test_pipeline),
+    val=dict(type="MPASegDataset", pipeline=val_pipeline),
     test=dict(type="MPASegDataset", pipeline=test_pipeline),
 )
