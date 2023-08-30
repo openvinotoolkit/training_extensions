@@ -30,18 +30,14 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
     def __init__(
         self,
         arch_type,
-        unlabeled_cls_loss_weight=1.0,
-        unlabeled_reg_loss_weight=1.0,
-        unlabeled_mask_loss_weight=1.0,
+        unlabeled_loss_weights={"cls": 1.0, "bbox": 1.0, "mask": 1.0},
         pseudo_conf_thresh=0.7,
         bg_loss_weight=-1.0,
         min_pseudo_label_ratio=0.0,
         **kwargs
     ):
         super().__init__()
-        self.unlabeled_cls_loss_weight = unlabeled_cls_loss_weight
-        self.unlabeled_reg_loss_weight = unlabeled_reg_loss_weight
-        self.unlabeled_mask_loss_weight = unlabeled_mask_loss_weight
+        self.unlabeled_loss_weights = unlabeled_loss_weights
         self.pseudo_conf_thresh = pseudo_conf_thresh
         self.bg_loss_weight = bg_loss_weight
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
@@ -160,8 +156,6 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
         )
-        ps_recall = self.eval_pseudo_label_recall(pseudo_bboxes, ul_args.get("gt_bboxes", []))
-        losses.update(ps_recall=torch.tensor(ps_recall, device=current_device))
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         # Unsupervised loss
@@ -182,16 +176,10 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             for ul_loss_name in ul_losses.keys():
                 if ul_loss_name.startswith("loss_"):
                     ul_loss = ul_losses[ul_loss_name]
-                    if "_bbox" in ul_loss_name:
-                        if self.unlabeled_reg_loss_weight == 0:
-                            continue
-                        self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_reg_loss_weight)
-                    elif "_cls" in ul_loss_name:
-                        # cls loss
-                        self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_cls_loss_weight)
-                    elif "_mask" in ul_loss_name:
-                        # mask loss
-                        self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_mask_loss_weight)
+                    target_loss = ul_loss_name.split("_")[-1]
+                    if self.unlabeled_loss_weights[target_loss] == 0:
+                        continue
+                    self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_loss_weights[target_loss])
         return losses
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
@@ -238,29 +226,6 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
 
         pseudo_ratio = float(num_all_pseudo) / num_all_bboxes if num_all_bboxes > 0 else 0.0
         return all_pseudo_bboxes, all_pseudo_labels, all_pseudo_masks, pseudo_ratio
-
-    def eval_pseudo_label_recall(self, all_pseudo_bboxes, all_gt_bboxes):
-        """Eval pseudo label recall for test only."""
-        from mmdet.core.evaluation.recall import _recalls, bbox_overlaps
-
-        img_num = len(all_gt_bboxes)
-        if img_num == 0:
-            return [0.0]
-        all_ious = np.ndarray((img_num,), dtype=object)
-        for i in range(img_num):
-            ps_bboxes = all_pseudo_bboxes[i]
-            gt_bboxes = all_gt_bboxes[i]
-            # prop_num = min(ps_bboxes.shape[0], 100)
-            prop_num = ps_bboxes.shape[0]
-            if gt_bboxes is None or gt_bboxes.shape[0] == 0:
-                ious = np.zeros((0, ps_bboxes.shape[0]), dtype=np.float32)
-            elif ps_bboxes is None or ps_bboxes.shape[0] == 0:
-                ious = np.zeros((gt_bboxes.shape[0], 0), dtype=np.float32)
-            else:
-                ious = bbox_overlaps(gt_bboxes.detach().cpu().numpy(), ps_bboxes.detach().cpu().numpy()[:prop_num, :4])
-            all_ious[i] = ious
-        recall = _recalls(all_ious, np.array([100]), np.array([0.5]))
-        return recall
 
     @staticmethod
     def _update_unlabeled_loss(sum_loss, loss, loss_name, weight):

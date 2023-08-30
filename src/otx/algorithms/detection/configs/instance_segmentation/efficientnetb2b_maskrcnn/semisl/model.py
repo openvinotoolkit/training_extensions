@@ -27,8 +27,7 @@ task = "instance-segmentation"
 model = dict(
     super_type="MeanTeacher",
     pseudo_conf_thresh=0.7,
-    unlabeled_cls_loss_weight=1.0,
-    unlabeled_reg_loss_weight=1.0,
+    unlabeled_loss_weights={"cls": 1.0, "bbox": 1.0, "mask": 1.0},
     type="CustomMaskRCNN",
     neck=dict(type="FPN", in_channels=[24, 48, 120, 352], out_channels=80, num_outs=5),
     rpn_head=dict(
