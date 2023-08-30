@@ -14,7 +14,7 @@ import subprocess
 from pathlib import Path
 from warnings import warn
 
-import pkg_resources
+import pkg_resources  # type: ignore[import]
 from pkg_resources import Requirement
 
 AVAILABLE_TORCH_VERSIONS = {
@@ -25,10 +25,7 @@ AVAILABLE_TORCH_VERSIONS = {
 }
 
 MM_REQUIREMENTS = [
-    # "mmaction2",
     "mmpretrain",
-    # "mmdet",
-    # "mmsegmentation",
     "mmdeploy",
 ]
 
@@ -182,6 +179,7 @@ def get_cuda_version() -> str | None:
         if cuda_version_match is not None:
             cuda_version = cuda_version_match.group(1)
             return cuda_version
+        return None
 
     except Exception:
         return None
@@ -498,6 +496,14 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
 
 
 def mim_installation(requirements: list[str]):
+    """Installing libraries with mim api.
+
+    Args:
+        requirements (list[str]): List of MMCV-related libraries.
+
+    Raises:
+        ModuleNotFoundError: Raise an error if mim import is not possible.
+    """
     if not importlib.util.find_spec("mim"):
         raise ModuleNotFoundError("The mmX library installation requires mim." "mim is not currently installed.")
     from mim import install

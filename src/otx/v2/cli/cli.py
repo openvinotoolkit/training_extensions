@@ -1,3 +1,9 @@
+"""OTX CLI."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
@@ -12,7 +18,6 @@ from jsonargparse import (
 from jsonargparse._loaders_dumpers import DefaultLoader
 
 from otx.v2.api.core import AutoRunner, BaseDataset, Engine
-from otx.v2.api.utils.importing import get_otx_root_path
 from otx.v2.cli import print_otx_logo
 
 from .extensions import CLI_EXTENSIONS
@@ -36,17 +41,16 @@ class OTXCLIv2:
     ):
         print_otx_logo()
         self.error = None
-        self.engine_defaults = {}
         self.pre_args = {}
         self.auto_runner_class = AutoRunner
 
         # Checks to see if the user's command enables auto-configuration.
         self.pre_args = pre_parse_arguments()
-        self.auto_engine = self.get_auto_engine()
+        self.auto_runner = self.get_auto_runner()
         self.model_class, self.default_config_files = self.get_model_class()
-        if self.auto_engine is not None:
-            self.framework_engine = self.auto_engine.framework_engine
-            self.data_class = self.auto_engine.dataset
+        if self.auto_runner is not None:
+            self.framework_engine = self.auto_runner.framework_engine
+            self.data_class = self.auto_runner.dataset
         else:
             self.framework_engine = Engine
             self.data_class = BaseDataset
@@ -156,16 +160,20 @@ class OTXCLIv2:
 
         # subcommand arguments
         skip: Set[Union[str, int]] = set(self.engine_subcommands()[subcommand])
-        added = parser.add_method_arguments(klass, subcommand, skip=skip)
+        added = parser.add_method_arguments(klass, subcommand, skip=skip, fail_untyped=False)
         # need to save which arguments were added to pass them to the method later
         self._subcommand_method_arguments[subcommand] = added
         return parser
 
     def _set_extension_subcommands_parser(self, parser: OTXArgumentParser, **kwargs) -> None:
-        for _, functions in CLI_EXTENSIONS.items():
-            functions["add_parser"](parser)
+        for sub_command, functions in CLI_EXTENSIONS.items():
+            add_parser_function = functions.get("add_parser", None)
+            if add_parser_function is None:
+                raise NotImplementedError(f"The sub-parser function of {sub_command} was not found.")
+            else:
+                add_parser_function(parser)
 
-    def get_auto_engine(self):
+    def get_auto_runner(self):
         # If the user puts --checkpoint in the command and doesn't put --config,
         # will use those configs as the default if they exist in the checkpoint folder location.
         if "checkpoint" in self.pre_args and self.pre_args.get("config", None) is None:
@@ -199,9 +207,10 @@ class OTXCLIv2:
     def get_model_class(self):
         model_class = None
         default_configs = None
-        if self.auto_engine is not None:
-            framework_engine = self.auto_engine.build_framework_engine()
-            default_configs = [self.auto_engine.config_path]
+        if self.auto_runner is not None:
+            self.auto_runner.build_framework_engine()
+            framework_engine = self.auto_runner.engine
+            default_configs = [self.auto_runner.config_path]
             # Find Model
             model_name = None
             if "model.name" in self.pre_args:
@@ -211,11 +220,11 @@ class OTXCLIv2:
                 model_name = model_cfg.get("name", model_cfg.get("type", None))
             if model_name is None:
                 raise ValueError("The appropriate model was not found in config..")
-            model = self.auto_engine.get_model(model=model_name)
+            model = self.auto_runner.get_model(model=model_name)
             if model is None:
                 raise ValueError()
-            if model_name in self.auto_engine.config_list:
-                default_configs.append(self.auto_engine.config_list[model_name])
+            if model_name in self.auto_runner.config_list:
+                default_configs.append(self.auto_runner.config_list[model_name])
             # TODO: Need more flexible way for Model API
             model_class = model.__class__
         return model_class, default_configs
@@ -229,7 +238,7 @@ class OTXCLIv2:
 
     def instantiate_classes(self) -> None:
         """Instantiates the classes and sets their attributes."""
-        if self.auto_engine is None and self.error is not None:
+        if self.auto_runner is None and self.error is not None:
             # Raise an existing raised exception only when the actual command is executed.
             raise self.error
         self.config_init = self.parser.instantiate_classes(self.config)
@@ -238,7 +247,7 @@ class OTXCLIv2:
 
         # Build Dataset
         self.data = self.data_class(**data_cfg)
-        self.model = self.auto_engine.get_model(model={**model_cfg}, num_classes=self.data.num_classes)
+        self.model = self.auto_runner.get_model(model={**model_cfg}, num_classes=self.data.num_classes)
         # For prediction class
         if hasattr(model_cfg.get("head", None), "num_classes"):
             model_cfg["head"]["num_classes"] = self.data.num_classes
@@ -268,7 +277,10 @@ class OTXCLIv2:
         """Runs the subcommand."""
         if subcommand in CLI_EXTENSIONS:
             config = namespace_to_dict(self.config[subcommand])
-            CLI_EXTENSIONS[subcommand]["main"](**config)
+            extension_function = CLI_EXTENSIONS[subcommand].get("main", None)
+            if extension_function is None:
+                raise NotImplementedError(f"The main function of {subcommand} is not implemented.")
+            extension_function(**config)
         elif subcommand == "train":
             self.instantiate_classes()
             # Prepare Dataloader kwargs
@@ -277,7 +289,7 @@ class OTXCLIv2:
             # Prepare subcommand kwargs
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.train(
-                self.model,
+                model=self.model,
                 train_dataloader=self.data.train_dataloader(**train_dl_kwargs),
                 val_dataloader=self.data.val_dataloader(**val_dl_kwargs),
                 **subcommand_kwargs,
@@ -314,7 +326,7 @@ class OTXCLIv2:
             for key, val in self.config[subcommand].items():
                 print(f"{key}: {val}")
 
-    def _prepare_subcommand_kwargs(self, subcommand: str) -> Dict[str, Any]:
+    def _prepare_subcommand_kwargs(self, subcommand: str) -> Tuple[Dict, Dict]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
         config = namespace_to_dict(self.config_init[subcommand])
         subcommand_kwargs = {}

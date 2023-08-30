@@ -1,4 +1,9 @@
-# Regist OTX custom mmengine modules
+"""OTX adapters.torch.mmengine.Registry module."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from mmengine.registry import (
     DATA_SAMPLERS,
     DATASETS,

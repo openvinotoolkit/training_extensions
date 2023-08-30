@@ -14,10 +14,13 @@ from otx.v2.cli.utils.install import SUPPORTED_TASKS, get_cuda_version
 
 
 def add_doctor_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
-    """_summary_.
+    """Add subparser for doctor command.
 
     Args:
-        parser (ArgumentParser): _description_
+        parser (OTXArgumentParser): Main ArgumentParser in CLI.
+
+    Returns:
+        OTXArgumentParser: Main parser with subparsers merged.
     """
     sub_parser = prepare_parser()
     parser._subcommands_action.add_subcommand(
@@ -28,7 +31,11 @@ def add_doctor_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
 
 
 def prepare_parser() -> OTXArgumentParser:
-    """Parses command line arguments."""
+    """Parses command line arguments.
+
+    Returns:
+        OTXArgumentParser: Sub-parser for doctor command.
+    """
 
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default=None, type=str)
@@ -36,11 +43,11 @@ def prepare_parser() -> OTXArgumentParser:
     return parser
 
 
-def doctor(task: Optional[str] = None):
-    """Get diagnostic information about the current environment.
+def doctor(task: Optional[str] = None) -> None:
+    """Print diagnostic information about the current environment.
 
     Args:
-        task (str): _description_
+        task (Optional[str], optional): Task available in OTX. Defaults to None.
     """
     issue_count = 0
     console = Console()

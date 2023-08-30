@@ -5,7 +5,8 @@
 
 import importlib
 import os
-from typing import Dict, List, Optional, Union
+from abc import abstractmethod
+from typing import Any, Optional, Union
 
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
@@ -240,18 +241,13 @@ class BaseDataset:
         self.dataset_entity: DatasetEntity = self.dataset_adapter.get_otx_dataset()
         self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
 
+    @abstractmethod
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: Optional[Union[List, Dict]] = None,
-        config: Optional[Union[str, Dict]] = None,
+        pipeline: Any = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
-        shuffle: bool = True,
-        pin_memory: bool = False,
-        drop_last: bool = False,
-        sampler=None,
-        persistent_workers: bool = False,
         distributed: bool = False,
         **kwargs,
     ):
@@ -261,10 +257,11 @@ class BaseDataset:
         It needs to be implemented to use a decorator called @add_subset_dataloader.
 
         Args:
-            subset (str): Subset of a dataset.
-
-        Raises:
-            NotImplementedError: Must be implemented to use the subset dataloader.
+            subset (str): Subset of dataloader.
+            pipeline (Optional[Union[List, Dict]], optional): The data pipe to apply to that dataset. Defaults to None.
+            batch_size (Optional[int], optional): Batch size of this dataloader. Defaults to None.
+            num_workers (Optional[int], optional): Number of workers for this dataloader. Defaults to None.
+            distributed (bool, optional): Distributed value for sampler. Defaults to False.
 
         How to use:
             1) Implement this function to return the dataloader of each subset.
@@ -272,7 +269,6 @@ class BaseDataset:
             3) BaseDataset.{subset}_dataloader() will call that function.
                 BaseDataset.{subset}_dataloader() == BaseDataset.subset_dataloader(subset)
         """
-        raise NotImplementedError()
 
     @property
     def num_classes(self) -> int:

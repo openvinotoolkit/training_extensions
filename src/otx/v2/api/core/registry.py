@@ -8,8 +8,8 @@ from rich.table import Table
 class BaseRegistry:
     def __init__(self, name: str):
         self._name = name
-        self._module_dict = dict()
-        self._registry_dict = dict()
+        self._module_dict: Dict[str, Any] = dict()
+        self._registry_dict: Dict[str, Any] = dict()
 
     def get(self, module_type: str):
         # Return Registry
@@ -71,7 +71,7 @@ class BaseRegistry:
     def register_module(self, type: Optional[str] = None, name: Optional[str] = None, module=None, force=False):
         # Copy from mmcv.utils.registry.Registry
         if not inspect.isclass(module) and not inspect.isfunction(module):
-            raise TypeError("module must be a class or a function, " f"but got {type(module)}")
+            raise TypeError("module must be a class or a function, " f"but got {str(module)}")
 
         if type is not None:
             if type not in self._registry_dict:
@@ -80,9 +80,8 @@ class BaseRegistry:
         else:
             if name is None:
                 name = module.__name__
-            if isinstance(name, str):
-                name = [name]
-            for key in name:
+            name_lst = [name]
+            for key in name_lst:
                 if not force and key in self._module_dict:
                     raise KeyError(f"{key} is already registered " f"in {self.name}")
                 self._module_dict[key] = module

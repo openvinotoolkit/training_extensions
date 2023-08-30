@@ -1,3 +1,9 @@
+"""OTX adapters.torch.anomalib.Dataset API."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from typing import Any, Dict, Optional, Union
 
 import albumentations as A
@@ -14,7 +20,7 @@ from otx.v2.api.utils.dataset_utils import (
     split_local_global_dataset,
 )
 from otx.v2.api.utils.decorators import add_subset_dataloader
-from otx.v2.api.utils.type_utils import str_to_subset_type
+from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type
 
 SUBSET_LIST = ["train", "val", "test", "predict"]
 
@@ -81,7 +87,8 @@ class Dataset(BaseDataset):
                 otx_dataset = local_dataset
             else:
                 otx_dataset = global_dataset
-        return OTXAnomalyDataset(config=config, dataset=otx_dataset, task_type=self.task)
+        task_type = str_to_task_type(self.task) if isinstance(self.task, str) else self.task
+        return OTXAnomalyDataset(config=config, dataset=otx_dataset, task_type=task_type)
 
     def build_dataloader(
         self,
@@ -121,18 +128,25 @@ class Dataset(BaseDataset):
         self,
         subset: str,
         pipeline: Optional[Union[str, A.Compose]] = None,
-        config: Optional[Union[str, Dict[str, Any]]] = None,
         batch_size: int = 1,
         num_workers: int = 0,
+        distributed: bool = False,
+        config: Optional[Union[str, Dict[str, Any]]] = None,
         num_gpus: int = 1,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
         sampler=None,
         persistent_workers: bool = False,
-        distributed: bool = False,
         **kwargs,
     ):
+        super().subset_dataloader(
+            subset,
+            pipeline,
+            batch_size,
+            num_workers,
+            distributed,
+        )
         if subset == "predict":
             pass
         dataset = self.build_dataset(subset=subset, pipeline=pipeline, config=config)
@@ -156,12 +170,3 @@ class Dataset(BaseDataset):
         if not self.initialize:
             self._initialize()
         return len(self.label_schema.get_labels(include_empty=False))
-
-
-if __name__ == "__main__":
-    dataset = Dataset(
-        train_data_roots="/home/harimkan/workspace/repo/otx-fork/tests/assets/anomaly/hazelnut/train",
-        val_data_roots="/home/harimkan/workspace/repo/otx-fork/tests/assets/anomaly/hazelnut/test",
-        test_data_roots="/home/harimkan/workspace/repo/otx-fork/tests/assets/anomaly/hazelnut/test",
-    )
-    train_dataloader = dataset.train_dataloader()

@@ -1,3 +1,9 @@
+"""OTX CLI module."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from otx import OTX_LOGO
 
 

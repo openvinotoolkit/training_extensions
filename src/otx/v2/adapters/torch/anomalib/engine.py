@@ -1,3 +1,9 @@
+"""OTX adapters.torch.anomalib.Engine API."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -20,7 +26,6 @@ from pytorch_lightning.trainer.connectors.accelerator_connector import (
 from torch.utils.data import DataLoader
 
 from otx.v2.api.core.engine import Engine
-from otx.v2.api.utils.decorators import set_default_argument
 
 from .registry import AnomalibRegistry
 
@@ -49,20 +54,33 @@ class AnomalibEngine(Engine):
         self,
         model: Union[torch.nn.Module, pl.LightningModule],
         train_dataloader: Union[DataLoader, LightningDataModule],
-        checkpoint: Optional[Union[str, Path]] = None,
         val_dataloader: Optional[DataLoader] = None,
         optimizer: Optional[List[torch.optim.Optimizer]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
         max_epochs: Optional[int] = None,
         distributed: Optional[bool] = None,
         seed: Optional[int] = None,
-        deterministric: Optional[bool] = None,
+        deterministic: Optional[bool] = None,
         precision: Optional[_PRECISION_INPUT] = None,
         val_interval: Optional[int] = None,
         metrics: Optional[Dict] = None,
-        trainer: Optional[Dict] = None,
         **kwargs,  # Trainer.__init__ arguments
     ):
+        super().train(
+            model,
+            train_dataloader,
+            val_dataloader,
+            optimizer,
+            checkpoint,
+            max_iters,
+            max_epochs,
+            distributed,
+            seed,
+            deterministic,
+            precision,
+            val_interval,
+        )
         # FIXME: Modify to work with the config file fill + kwargs
         trainer_config = self.config.get("trainer", {})
         for key, value in kwargs.items():
@@ -77,8 +95,8 @@ class AnomalibEngine(Engine):
         elif max_iters is not None:
             trainer_config["max_epochs"] = None
             trainer_config["max_steps"] = max_iters
-        if deterministric is not None:
-            trainer_config["deterministric"] = deterministric
+        if deterministic is not None:
+            trainer_config["deterministic"] = deterministic
         if val_interval is not None:
             # Validation Interval in Trainer -> val_check_interval
             trainer_config["val_check_interval"] = val_interval
@@ -126,30 +144,49 @@ class AnomalibEngine(Engine):
     def validate(
         self,
         model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
         val_dataloader: Optional[Union[DataLoader, Dict]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         precision: _PRECISION_INPUT = 32,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
-        pass
+        super().validate(
+            model,
+            val_dataloader,
+            checkpoint,
+            precision,
+        )
+        raise NotImplementedError()
 
     def test(
         self,
         model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
         test_dataloader: Optional[DataLoader] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         precision: _PRECISION_INPUT = 32,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
-        pass
+        super().test(
+            model,
+            test_dataloader,
+            checkpoint,
+            precision,
+        )
+        raise NotImplementedError()
 
     def predict(
         self,
         model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
         img: Optional[Union[str, np.ndarray, list]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         pipeline: Optional[List[Dict]] = None,
+        **kwargs,
     ) -> List[Dict]:
+        super().predict(
+            model,
+            img,
+            checkpoint,
+            pipeline,
+        )
         raise NotImplementedError()
 
     def export(
@@ -157,10 +194,10 @@ class AnomalibEngine(Engine):
         model: Optional[
             Union[torch.nn.Module, pl.LightningModule]
         ] = None,  # Module with _config OR Model Config OR config-file
-        checkpoint: Optional[str] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        precision: _PRECISION_INPUT = 32,
         task: Optional[str] = None,
         codebase: Optional[str] = None,
-        precision: _PRECISION_INPUT = 32,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: Optional[str] = None,  # File path only?
         dump_features: bool = False,  # TODO
@@ -168,4 +205,9 @@ class AnomalibEngine(Engine):
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
     ):  # Output: IR Models
-        pass
+        super().export(
+            model,
+            checkpoint,
+            precision,
+        )
+        raise NotImplementedError()

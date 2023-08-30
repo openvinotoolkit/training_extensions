@@ -1,3 +1,9 @@
+"""OTX adapters.torch.mmengine.Engine module."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 import copy
 import glob
 from pathlib import Path
@@ -32,7 +38,7 @@ class MMXEngine(Engine):
         config: Optional[Union[Dict, Config, str]] = None,
     ) -> None:
         super().__init__(work_dir=work_dir)
-        self.runner = None
+        self.runner: Runner
         self.latest_model = {"model": None, "checkpoint": None}
         self.registry = MMEngineRegistry()
         # self.base_runner = self.registry.get("RUNNER")
@@ -248,10 +254,10 @@ class MMXEngine(Engine):
     def train(
         self,
         model: Optional[Union[torch.nn.Module, Dict]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
         train_dataloader: Optional[Union[DataLoader, Dict]] = None,
         val_dataloader: Optional[Union[DataLoader, Dict]] = None,
         optimizer: Optional[Union[dict, Optimizer]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
         max_epochs: Optional[int] = None,
         distributed: Optional[bool] = None,
@@ -270,6 +276,7 @@ class MMXEngine(Engine):
 
         Args:
             model (Optional[Union[torch.nn.Module, Dict]], optional): The models available in Engine. Defaults to None.
+            checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
             train_dataloader (Optional[Union[DataLoader, Dict]], optional): Training Dataset's pipeline. Defaults to None.
             val_dataloader (Optional[Union[DataLoader, Dict]], optional): Validation Dataset's pipeline. Defaults to None.
             optimizer (Optional[Union[dict, Optimizer]], optional): _description_. Defaults to None.
@@ -301,6 +308,20 @@ class MMXEngine(Engine):
         Returns:
             _type_: Output of training.
         """
+        super().train(
+            model,
+            train_dataloader,
+            val_dataloader,
+            optimizer,
+            checkpoint,
+            max_iters,
+            max_epochs,
+            distributed,
+            seed,
+            deterministic,
+            precision,
+            val_interval,
+        )
         train_args = {
             "model": model,
             "train_dataloader": train_dataloader,
@@ -320,13 +341,12 @@ class MMXEngine(Engine):
             "visualizer": visualizer,
         }
         update_check = self._update_config(func_args=train_args, **kwargs)
-        if self.runner is None or update_check:
+        if not hasattr(self, "runner") or update_check:
             base_runner = self.registry.get("Runner")
             self.runner = base_runner(experiment_name="otx_train", **self.config)
         # TODO: Need to align outputs
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
-        # config_path = Path(self.work_dir) / f"{self.runner.timestamp}" / "configs.py"
         self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
         output_model = self.runner.train()
 
@@ -345,12 +365,18 @@ class MMXEngine(Engine):
     def validate(
         self,
         model: Optional[Union[torch.nn.Module, Dict]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
         val_dataloader: Optional[Union[DataLoader, Dict]] = None,
-        val_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
+        val_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
+        super().validate(
+            model,
+            val_dataloader,
+            checkpoint,
+            precision,
+        )
         val_args = {
             "model": model,
             "val_dataloader": val_dataloader,
@@ -358,7 +384,7 @@ class MMXEngine(Engine):
             "precision": precision,
         }
         update_check = self._update_config(func_args=val_args, **kwargs)
-        if self.runner is None:
+        if not hasattr(self, "runner"):
             base_runner = self.registry.get("Runner")
             self.runner = base_runner(experiment_name="otx_validate", **self.config)
         elif update_check:
@@ -377,12 +403,18 @@ class MMXEngine(Engine):
     def test(
         self,
         model: Optional[Union[torch.nn.Module, Dict]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
         test_dataloader: Optional[DataLoader] = None,
-        test_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
+        test_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
+        super().test(
+            model,
+            test_dataloader,
+            checkpoint,
+            precision,
+        )
         test_args = {
             "model": model,
             "test_dataloader": test_dataloader,
@@ -391,7 +423,7 @@ class MMXEngine(Engine):
         }
         update_check = self._update_config(func_args=test_args, **kwargs)
         # self.config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
-        if self.runner is None:
+        if not hasattr(self, "runner"):
             base_runner = self.registry.get("Runner")
             # self.runner = base_runner.from_cfg(self.config)
             self.runner = base_runner(experiment_name="otx_test", **self.config)
@@ -411,21 +443,27 @@ class MMXEngine(Engine):
     def predict(
         self,
         model: Optional[Union[torch.nn.Module, Dict, str]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
         img: Optional[Union[str, np.ndarray, list]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
         pipeline: Optional[List[Dict]] = None,
-    ) -> List[Dict]:
-        raise NotImplementedError()
+        **kwargs,
+    ):
+        super().predict(
+            model,
+            img,
+            checkpoint,
+            pipeline,
+        )
 
     def export(
         self,
         model: Optional[
             Union[torch.nn.Module, str, Config]
         ] = None,  # Module with _config OR Model Config OR config-file
-        checkpoint: Optional[str] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        precision: str = "float32",  # ["float16", "fp16", "float32", "fp32"]
         task: Optional[str] = None,
         codebase: Optional[str] = None,
-        precision: str = "float32",  # ["float16", "fp16", "float32", "fp32"]
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: Optional[str] = None,  # File path only?
         dump_features: bool = False,  # TODO
@@ -433,6 +471,11 @@ class MMXEngine(Engine):
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
     ):  # Output: IR Models
+        super().export(
+            model,
+            checkpoint,
+            precision,
+        )
         if not mmdeploy_enabled:
             raise ModuleNotFoundError("MMXEngine's export is dependent on mmdeploy.")
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
@@ -474,18 +517,18 @@ class MMXEngine(Engine):
         ir_config = None
         backend_config = None
         if deploy_config is not None:
-            deploy_config = load_config(deploy_config)[0]
-            ir_config = get_ir_config(deploy_config)
-            backend_config = get_backend_config(deploy_config)
-            codebase_config = get_codebase_config(deploy_config)
+            deploy_config_dict = load_config(deploy_config)[0]
+            ir_config = get_ir_config(deploy_config_dict)
+            backend_config = get_backend_config(deploy_config_dict)
+            codebase_config = get_codebase_config(deploy_config_dict)
         else:
-            deploy_config = {}
+            deploy_config_dict = {}
 
         # CODEBASE_COFIG Update
         if codebase_config is None:
             codebase = codebase if codebase is not None else self.registry.name
             codebase_config = dict(type=codebase, task=task)
-            deploy_config["codebase_config"] = codebase_config
+            deploy_config_dict["codebase_config"] = codebase_config
         # IR_COFIG Update
         if ir_config is None:
             ir_config = dict(
@@ -500,30 +543,30 @@ class MMXEngine(Engine):
                 optimize=True,
                 dynamic_axes={"input": {0: "batch", 2: "height", 3: "width"}, "output": {0: "batch"}},
             )
-            deploy_config["ir_config"] = ir_config
+            deploy_config_dict["ir_config"] = ir_config
         # BACKEND_CONFIG Update
         if backend_config is None:
             backend_config = dict(type="openvino", model_inputs=[dict(opt_shapes=dict(input=[1, 3, 224, 224]))])
-            deploy_config["backend_config"] = backend_config
+            deploy_config_dict["backend_config"] = backend_config
 
         # Patch input's configuration
-        if isinstance(deploy_config, dict):
-            deploy_config = Config(deploy_config)
+        if isinstance(deploy_config_dict, dict):
+            deploy_config_dict = Config(deploy_config_dict)
         data_preprocessor = self.dumped_config.get("data_preprocessor", None)
         mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
         std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
         to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
-        patch_input_preprocessing(deploy_cfg=deploy_config, mean=mean, std=std, to_rgb=to_rgb)
-        if not deploy_config.backend_config.get("model_inputs", []):
+        patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
+        if not deploy_config_dict.backend_config.get("model_inputs", []):
             if input_shape is None:
                 # TODO: Patch From self.config's test pipeline
                 pass
-            patch_input_shape(deploy_config, input_shape=input_shape)
+            patch_input_shape(deploy_config_dict, input_shape=input_shape)
 
         exporter = Exporter(
             config=self.dumped_config,
-            checkpoint=checkpoint,
-            deploy_config=deploy_config,
+            checkpoint=str(checkpoint),
+            deploy_config=deploy_config_dict,
             work_dir=f"{self.work_dir}/openvino",
             precision=precision,
             export_type=export_type,

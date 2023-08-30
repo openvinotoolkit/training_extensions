@@ -130,9 +130,12 @@ class AutoRunner:
         Raises:
             TypeError: _description_
         """
-        self.framework, self.task, self.train_type = None, None, None
+        self.engine: Engine
+        self.task: TaskType
+        self.train_type: TrainType
+        self.framework: Optional[str] = None
         self.work_dir = work_dir
-        self.config_path = None
+        self.config_path: Optional[str] = None
         config = self._initial_config(config)
         self.config = set_dataset_paths(
             config,
@@ -166,17 +169,16 @@ class AutoRunner:
         dataset_kwargs["train_type"] = self.task
         dataset_kwargs["data_format"] = data_format
         self.dataset_obj = self.dataset(**dataset_kwargs)
-        self.engine = None
 
-    def _initial_config(self, config: Optional[Union[Dict, str]]):
+    def _initial_config(self, config: Optional[Union[Dict, str]]) -> Dict[str, Any]:
         if config is not None:
             if isinstance(config, str):
                 self.config_path = config
                 config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
-            elif not isinstance(config, dict):
-                raise TypeError("Config sould file path of yaml or dictionary")
         else:
             config = {}
+        if not isinstance(config, dict):
+            raise TypeError("Config sould file path of yaml or dictionary")
         if "data" not in config:
             config["data"] = {}
         if "model" not in config:
@@ -186,53 +188,44 @@ class AutoRunner:
     def auto_configuration(
         self,
         framework: Optional[str],
-        task: Optional[str],
-        train_type: Optional[str],
+        task: Union[str, TaskType, None],
+        train_type: Union[str, TrainType, None],
     ):
         """A function to automatically detect when framework, task, and train_type are None. This uses data_roots.
 
         Args:
             framework (Optional[str]): Training frameworks. Refer to otx.v2.adapters.
-            task (Optional[str]): Task of training. Refer to otx.v2.api.entities.task_type.TaskType.
-            train_type (Optional[str]): Training Type. Refer to otx.v2.api.entities.task_type.TrainType.
+            task (Optional[Union[str, TaskType]]): Task of training. Refer to otx.v2.api.entities.task_type.TaskType.
+            train_type (Optional[Union[str, TrainType]]): Training Type. Refer to otx.v2.api.entities.task_type.TrainType.
         """
+
         if framework is not None:
             self.framework = framework
         elif hasattr(self.config, "framework"):
             self.framework = self.config.framework
 
-        if task is not None:
-            self.task = task
-        elif "task" in self.config:
-            self.task = self.config["task"]
-        if train_type is not None:
-            self.train_type = train_type
-        elif "train_type" in self.config:
-            self.train_type = self.config["train_type"]
+        if task is None and "task" in self.config:
+            task = self.config["task"]
+        if train_type is None and "train_type" in self.config:
+            train_type = self.config["train_type"]
 
         data_config = self.config.get("data", {})
         data_roots = data_config.get("train_data_roots", data_config.get("test_data_roots", None))
-        if self.task is None:
-            self.task, self.data_format = configure_task_type(data_roots, self.data_format)
-        if self.train_type is None:
-            self.train_type: str = configure_train_type(data_roots, data_config.get("unlabeled_data_roots", None))
-        if isinstance(self.task, str):
-            self.task: TaskType = str_to_task_type(self.task)
-        if isinstance(self.train_type, str):
-            self.train_type: TrainType = str_to_train_type(self.train_type)
+        if task is None:
+            task, self.data_format = configure_task_type(data_roots, self.data_format)
+        if train_type is None:
+            train_type = configure_train_type(data_roots, data_config.get("unlabeled_data_roots", None))
+        self.task = str_to_task_type(task) if isinstance(task, str) else task
+        self.train_type = str_to_train_type(train_type) if isinstance(train_type, str) else train_type
         if self.framework is None:
             self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["adapter"]
         if self.config_path is None:
             self.config_path = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["default_config"]
             self.config = self._initial_config(self.config_path)
 
-    def build_framework_engine(self) -> Engine:
-        """Create the selected framework.
-
-        Returns:
-            Engine: The Engine of the selected framework.
-        """
-        return self.framework_engine(work_dir=self.work_dir, config=self.config)
+    def build_framework_engine(self) -> None:
+        """Create the selected framework Engine."""
+        self.engine = self.framework_engine(work_dir=self.work_dir, config=self.config)
 
     def train(
         self,
@@ -294,8 +287,8 @@ class AutoRunner:
             model = self.get_model(model=model)
 
         # Training
-        if self.engine is None:
-            self.engine = self.build_framework_engine()
+        if not hasattr(self, "engine"):
+            self.build_framework_engine()
         # TODO: config + args merge for sub-engine
         return self.engine.train(
             model=model,

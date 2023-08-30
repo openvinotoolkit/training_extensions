@@ -1,3 +1,9 @@
+"""OTX adapters.torch.anomalib Model APIs."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -45,9 +51,9 @@ def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
 
     if pattern is not None:
         # Always match keys with any postfix.
-        model_list = set(fnmatch.filter(model_list, pattern + "*"))
+        model_list = list(set(fnmatch.filter(model_list, pattern + "*")))
 
-    return sorted(list(model_list))
+    return sorted(model_list)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,9 @@
-# Common mmpretrain modules
+"""OTX adapters.torch.mmengine.mmpretrain.Registry module."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from mmpretrain.datasets import *
 from mmpretrain.engine import *
 from mmpretrain.evaluation import *

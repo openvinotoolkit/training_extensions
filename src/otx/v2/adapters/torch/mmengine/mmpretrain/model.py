@@ -1,3 +1,9 @@
+"""OTX adapters.torch.mmengine.mmpretrain Model APIs."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -19,7 +25,7 @@ MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/classification/model
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
-def configure_in_channels(config, input_shape=[3, 224, 224]):
+def configure_in_channels(config: Config, input_shape: List[int] = [3, 224, 224]) -> Config:
     # COPY from otx.algorithms.classification.adapters.mmpretrain.configurer.ClassificationConfigurer::configure_in_channel
     configure_required = False
     wrap_model = hasattr(config, "model")
@@ -82,7 +88,6 @@ def get_model(
     num_classes: Optional[int] = None,
     channel_last: bool = False,
     return_dict: bool = False,
-    return_config_path: bool = False,
     **kwargs,
 ):
     model_name = None
@@ -93,10 +98,11 @@ def get_model(
             model = Config.fromfile(filename=model)
         else:
             model_name = model
-    if hasattr(model, "model"):
-        model = Config(model["model"])
-    if hasattr(model, "name"):
-        model_name = model.pop("name")
+    if isinstance(model, (dict, Config)):
+        if hasattr(model, "model"):
+            model = Config(model.get("model"))
+        if hasattr(model, "name"):
+            model_name = model.pop("name")
     if isinstance(model_name, str) and model_name in MODEL_CONFIGS:
         base_model = Config.fromfile(filename=MODEL_CONFIGS[model_name])
         base_model = base_model.get("model", base_model)
@@ -112,7 +118,7 @@ def get_model(
         else:
             model["model"]["_scope_"] = "mmpretrain"
         if num_classes is not None:
-            head = model["model"].get("head", {})
+            head = model.model.get("head", {})
             if head and hasattr(head, "num_classes"):
                 model["model"]["head"]["num_classes"] = num_classes
         if return_dict:
@@ -120,7 +126,7 @@ def get_model(
 
     model = get_mmpretrain_model(model, pretrained=pretrained, **kwargs)
 
-    if channel_last:
+    if channel_last and isinstance(model, torch.nn.Module):
         model = model.to(memory_format=torch.channels_last)
     return model
 

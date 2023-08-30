@@ -22,10 +22,13 @@ from otx.v2.cli.utils.install import (
 
 
 def add_install_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
-    """_summary_.
+    """Add subparser for install command.
 
     Args:
-        parser (ArgumentParser): _description_
+        parser (OTXArgumentParser): Main ArgumentParser in CLI.
+
+    Returns:
+        OTXArgumentParser: Main parser with subparsers merged.
     """
     sub_parser = prepare_parser()
     parser._subcommands_action.add_subcommand("install", sub_parser, help="Install OTX requirements.")

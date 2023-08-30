@@ -5,7 +5,7 @@
 
 
 import sys
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import docstring_parser
 import yaml
@@ -17,8 +17,8 @@ from jsonargparse import (
 from rich_argparse import RichHelpFormatter
 
 
-# Custom Constructor for Python tuples
 def tuple_constructor(loader, node):
+    """Custom Constructor for Python tuples."""
     if isinstance(node, yaml.SequenceNode):
         # Load the elements as a list
         elements = loader.construct_sequence(node)
@@ -27,7 +27,12 @@ def tuple_constructor(loader, node):
     return None
 
 
-def pre_parse_arguments():
+def pre_parse_arguments() -> Dict[str, str]:
+    """Pre-parse arguments for Auto-Runner.
+
+    Returns:
+        dict[str, str]: Pased arguments.
+    """
     arguments = {}
     i = 1
     while i < len(sys.argv):
@@ -92,12 +97,14 @@ class OTXArgumentParser(ArgumentParser):
 
         Args:
             api_class: A callable or any subclass.
-            nested_key: Name of the nested namespace to store arguments.
-            subclass_mode: Whether allow any subclass of the given class.
-            required: Whether the argument group is required.
+            nested_key (str): Name of the nested namespace to store arguments.
+            subclass_mode (bool): Whether allow any subclass of the given class. Default to False.
+            required (bool): Whether the argument group is required. Default to True.
+            instantiate (bool): Whether api_class for instantiate. Default to False.
+            dataclass_mode (bool):  Whether api_class is dataclass_mode. Default to False.
 
         Returns:
-            A list with the names of the class arguments added.
+            List[str]: A list with the names of the class arguments added.
         """
         if callable(api_class) and not isinstance(api_class, type):
             api_class = class_from_function(api_class)

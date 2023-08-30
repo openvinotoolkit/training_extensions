@@ -1,3 +1,9 @@
+"""OTX adapters.torch.mmengine.mmpretrain.Dataset API."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from functools import partial
 from typing import Any, Dict, Iterable, List, Optional, Union
 
@@ -139,12 +145,6 @@ class Dataset(BaseDataset):
         if subset not in SUBSET_LIST:
             raise ValueError(f"{subset} is not supported subset")
 
-        # Config Setting
-        if isinstance(config, str):
-            config = Config.fromfile(filename=config)
-        elif isinstance(config, dict):
-            config = Config(cfg_dict=config)
-
         otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
         labels = self.label_schema.get_labels(include_empty=False)
         if len(otx_dataset) < 1:
@@ -162,8 +162,15 @@ class Dataset(BaseDataset):
             }
             return dataset
 
+        # Config Setting
+        if isinstance(config, str):
+            _config = Config.fromfile(filename=config)
+        elif isinstance(config, dict):
+            _config = Config(cfg_dict=config)
+        else:
+            _config = config
         # Case with Config
-        dataset_config = config.get("dataset", config)
+        dataset_config = _config.get("dataset", _config)
         init_config = dataset_config.copy()
         dataset_config["otx_dataset"] = otx_dataset
         dataset_config["labels"] = labels
@@ -240,15 +247,15 @@ class Dataset(BaseDataset):
         self,
         subset: str,
         pipeline: Optional[Union[List[Union[Dict, Any]], Dict[str, List[Union[Dict, Any]]]]] = None,
-        config: Optional[Union[str, Dict[str, Any]]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
+        distributed: bool = False,
+        config: Optional[Union[str, Dict[str, Any]]] = None,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
         sampler: Optional[Union[Sampler, Iterable, Dict]] = None,
         persistent_workers: bool = False,
-        distributed: bool = False,
         **kwargs,
     ) -> TorchDataLoader:
         r"""MMPretrain's Dataset.subset_dataloader.
@@ -256,10 +263,11 @@ class Dataset(BaseDataset):
         Args:
             subset (str): Enter an available subset of that dataset.
             pipeline (Optional[Union[List[Union[Dict, Any]], Dict[str, List[Union[Dict, Any]]]]], optional): Dataset Pipeline. Defaults to None.
-            config (Optional[Union[str, Dict[str, Any]]], optional): Path to configuration file or Config. Defaults to None.
             batch_size (Optional[int], optional): How many samples per batch to load. Defaults to None.
             num_workers (Optional[int], optional): How many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process. Defaults to None.
+            distributed (bool, optional): Distributed value for sampler. Defaults to False.
+            config (Optional[Union[str, Dict[str, Any]]], optional): Path to configuration file or Config. Defaults to None.
             shuffle (bool, optional): Set to ``True`` to have the data reshuffled at every epoch. Defaults to True.
             pin_memory (bool, optional): If ``True``, the data loader will copy Tensors
                 into device/CUDA pinned memory before returning them.  If your data elements
@@ -272,31 +280,39 @@ class Dataset(BaseDataset):
             persistent_workers (bool, optional): If ``True``, the data loader will not shutdown
                 the worker processes after a dataset has been consumed once. This allows to
                 maintain the workers `Dataset` instances alive. Defaults to False.
-            distributed (bool, optional): _description_. Defaults to False.
 
         Returns:
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
         """
+        super().subset_dataloader(
+            subset,
+            pipeline,
+            batch_size,
+            num_workers,
+            distributed,
+        )
         # Config Setting
         if isinstance(config, str):
-            config = Config.fromfile(filename=config)
+            _config = Config.fromfile(filename=config)
         elif isinstance(config, dict):
-            config = Config(cfg_dict=config)
+            _config = Config(cfg_dict=config)
         elif config is None:
-            config = Config(cfg_dict={})
-        dataloader_config = config.get(f"{subset}_dataloader", None)
+            _config = Config(cfg_dict={})
+        else:
+            _config = config
+        dataloader_config = _config.get(f"{subset}_dataloader", None)
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
         subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
         # TODO: argument update with configuration (config is not None case)
         if batch_size is None:
-            batch_size = config.get("batch_size", 1)
+            batch_size = _config.get("batch_size", 1)
         if num_workers is None:
-            num_workers = config.get("num_workers", 0)
+            num_workers = _config.get("num_workers", 0)
 
         # kwargs conflict
-        unlabeled_batch_size = kwargs.pop("unlabeled_batch_size", config.get("unlabeled_batch_size", batch_size))
+        unlabeled_batch_size = kwargs.pop("unlabeled_batch_size", _config.get("unlabeled_batch_size", batch_size))
         subset_dataloader = self.build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
@@ -311,9 +327,9 @@ class Dataset(BaseDataset):
         )
         if subset == "train" and self.train_type == TrainType.Semisupervised:
             unlabeled_pipeline = None
-            if pipeline is not None:
+            if pipeline is not None and isinstance(pipeline, dict):
                 unlabeled_pipeline = pipeline.get("unlabeled", get_default_pipeline(semisl=True)["unlabeled"])
-            unlabeled_dataset = self.build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=config)
+            unlabeled_dataset = self.build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=_config)
             unlabeled_dataloader = self.build_dataloader(
                 dataset=unlabeled_dataset,
                 batch_size=unlabeled_batch_size,
@@ -334,12 +350,3 @@ class Dataset(BaseDataset):
         if not self.initialize:
             self._initialize()
         return len(self.label_schema.get_labels(include_empty=False))
-
-
-if __name__ == "__main__":
-    dataset = Dataset(
-        train_data_roots="/home/harimkan/workspace/datasets/otx_cls_dataset/otx_dataset/svhn@4_0/train_data",
-        val_data_roots="/home/harimkan/workspace/datasets/otx_cls_dataset/otx_dataset/svhn@4_0/val_data",
-        test_data_roots="/home/harimkan/workspace/datasets/otx_cls_dataset/otx_dataset/svhn@4_0/val_data",
-    )
-    dataloader = dataset.train_dataloader()

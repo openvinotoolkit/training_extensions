@@ -1,4 +1,9 @@
-# Regist OTX custom mmengine modules
+"""OTX adapters.torch.anomalib.Registry module."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from importlib import import_module
 
 from anomalib.models import _snake_to_pascal_case

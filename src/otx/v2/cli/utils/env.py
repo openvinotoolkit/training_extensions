@@ -5,7 +5,7 @@
 
 
 import importlib
-from typing import Optional
+from typing import Dict, Optional, Tuple, Union
 
 from rich.console import Console
 from rich.table import Table
@@ -18,7 +18,12 @@ REQUIREMENT_PER_TASK = {
 }
 
 
-def get_adapters_status():
+def get_adapters_status() -> Dict[str, Dict[str, Union[bool, float]]]:
+    """Returns the available and version information for each adapter.
+
+    Returns:
+        dict[str, dict[str, Union[bool, float]]]: the available and version information.
+    """
     adapters_status = {}
     for adapter in ADAPTERS:
         name = f"otx.v2.adapters.{adapter}"
@@ -28,6 +33,11 @@ def get_adapters_status():
 
 
 def get_environment_table() -> str:
+    """A table provides the availability of each adapter.
+
+    Returns:
+        str: String of rich.table.Table.
+    """
     table = Table(title="Current Evironment Status of OTX")
     table.add_column("Adapters", justify="left", style="yellow")
     table.add_column("Version", justify="left", style="cyan")
@@ -46,7 +56,15 @@ def get_environment_table() -> str:
     return capture.get()
 
 
-def get_task_status(task: Optional[str] = None) -> dict[str, bool]:
+def get_task_status(task: Optional[str] = None) -> Dict[str, bool]:
+    """Check if the requirement for each task is currently available.
+
+    Args:
+        task (Optional[str], optional): Task available in OTX. Defaults to None.
+
+    Returns:
+        dict[str, bool]: Information about availability by task.
+    """
     adapter_status = get_adapters_status()
 
     task_status = {}
@@ -70,14 +88,14 @@ def get_task_status(task: Optional[str] = None) -> dict[str, bool]:
     return task_status
 
 
-def check_torch_cuda():
+def check_torch_cuda() -> Tuple[Optional[float], bool]:
+    """Information about whether or not TORCH is available.
+
+    Returns:
+        tuple[Optional[float], bool]: The version of torch and the value of cuda.is_available().
+    """
     has_torch = importlib.util.find_spec("torch")
     if not has_torch:
         return None, False
     torch_module = importlib.import_module("torch")
     return torch_module.__version__, torch_module.cuda.is_available()
-
-
-if __name__ == "__main__":
-    table = get_environment_table()
-    print(table)

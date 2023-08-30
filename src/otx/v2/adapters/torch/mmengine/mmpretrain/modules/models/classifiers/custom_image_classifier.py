@@ -4,7 +4,6 @@
 #
 from functools import partial
 
-import torch
 from mmpretrain.models.classifiers.image import ImageClassifier
 from mmpretrain.registry import MODELS
 

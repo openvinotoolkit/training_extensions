@@ -1,4 +1,9 @@
-import copy
+"""OTX adapters.torch.mmengine.mmpretrain.Engine API."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -26,14 +31,15 @@ class MMPTEngine(MMXEngine):
     def predict(
         self,
         model: Optional[Union[torch.nn.Module, Dict, str]] = None,
-        checkpoint: Union[bool, str, Path] = True,
         img: Optional[Union[str, np.ndarray, list]] = None,
+        checkpoint: Union[bool, str, Path] = True,
         pipeline: Optional[List[Dict]] = None,
         device: Union[str, torch.device, None] = None,
         task: Optional[str] = None,
         batch_size: int = 1,
         **kwargs,
     ) -> List[Dict]:
+        super().predict(model, img, checkpoint if isinstance(checkpoint, (str, Path)) else None, pipeline)
         from mmengine.model import BaseModel
         from mmpretrain import ImageClassificationInferencer, inference_model
 
@@ -46,7 +52,7 @@ class MMPTEngine(MMXEngine):
         config = Config({})
         if hasattr(model, "_config"):
             config = model._config
-        elif "_config" in model:
+        elif isinstance(model, dict) and "_config" in model:
             config = model["_config"]
         config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}
         if isinstance(model, dict):
@@ -86,10 +92,10 @@ class MMPTEngine(MMXEngine):
     def export(
         self,
         model: Optional[Union[torch.nn.Module, str, Config]] = None,
-        checkpoint: Optional[str] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        precision: str = "float32",  # ["float16", "fp16", "float32", "fp32"]
         task: str = "Classification",
         codebase: str = "mmpretrain",
-        precision: str = "float32",  # ["float16", "fp16", "float32", "fp32"]
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: Optional[str] = None,  # File path only?
         dump_features: bool = False,  # TODO
@@ -100,12 +106,13 @@ class MMPTEngine(MMXEngine):
         return super().export(
             model=model,
             checkpoint=checkpoint,
+            precision=precision,
             task=task,
             codebase=codebase,
-            precision=precision,
             export_type=export_type,
             deploy_config=deploy_config,
             dump_features=dump_features,
             device=device,
             input_shape=input_shape,
+            **kwargs,
         )
