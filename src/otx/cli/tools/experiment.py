@@ -17,11 +17,12 @@
 import argparse
 import yaml
 import re
-from datetime import datetime
 import os
 import sys
 import json
 import statistics
+import uuid
+from datetime import datetime
 from pathlib import Path
 from collections import OrderedDict
 from itertools import product
@@ -122,9 +123,10 @@ def organize_exp_result(workspace: Union[str, Path]):
                 with resource_file.open("r") as f:
                     lines = f.readlines()
             
-                max_cpu_mem = lines[0]
-                max_gpu_mem = lines[1]
-                avg_gpu_util = lines[2]
+                max_cpu_mem = " ".join(lines[0].split()[1:])
+                avg_cpu_util = " ".join(lines[1].split()[1:])
+                max_gpu_mem = " ".join(lines[2].split()[1:])
+                avg_gpu_util = " ".join(lines[3].split()[1:])
 
         elif "export" in str(task_dir):
             export_model_score = parse_eval_score(task_dir)
@@ -138,13 +140,14 @@ def organize_exp_result(workspace: Union[str, Path]):
             f"var_iter_time\t{statistics.variance(iter_time_arr)}\n"
             f"avg_data_time\t{statistics.mean(data_time_arr)}\n"
             f"var_data_time\t{statistics.variance(data_time_arr)}\n"
-            f"{max_cpu_mem}"
-            f"{max_gpu_mem}"
-            f"{avg_gpu_util}"
+            f"max_cpu_mem\t{max_cpu_mem}\n"
+            f"avg_cpu_util\t{avg_cpu_util}\n"
+            f"max_gpu_mem\t{max_gpu_mem}\n"
+            f"avg_gpu_util\t{avg_gpu_util}\n"
         )
     
     
-def aggregate_exp_result(exp_dir: Union[str, Path]):
+def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     if isinstance(exp_dir, str):
         exp_dir = Path(exp_dir)
 
@@ -254,7 +257,7 @@ def run_experiment_recipe(exp_recipe: Dict):
     current_dir = os.getcwd()
     os.chdir(output_path)
     for exp_name, command in command_list.items():
-        exp_name = exp_name.replace('/', '_')
+        exp_name = exp_name.replace('/', '_') + uuid.uuid4().hex
 
         command_split = command.split()
         command_split.insert(2, f"--workspace {exp_name}")
@@ -268,7 +271,7 @@ def run_experiment_recipe(exp_recipe: Dict):
     for exp_dir in output_path.iterdir():
         organize_exp_result(exp_dir)
 
-    aggregate_exp_result(output_path)
+    aggregate_all_exp_result(output_path)
 
 
 def main():

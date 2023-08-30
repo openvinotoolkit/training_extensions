@@ -19,6 +19,7 @@ import sys
 import uuid
 import yaml
 from pathlib import Path
+from typing import List, Tuple
 
 
 from .build import main as otx_build
@@ -48,11 +49,10 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("template", nargs="?", default=None)
+    parser.add_argument("template", nargs="?")
     parser.add_argument(
         "--workspace",
         help="Location where the intermediate output of the training will be stored.",
-        default=None,
     )
 
     return parser.parse_known_args()
@@ -73,64 +73,53 @@ def main():
       - optimize
     """
 
-    dataset_path = "/home/eunwoo/work/exp_resource/dataset/diopsis/12"
-    args = parse_args()[0]
+    otx_cli_entry = [val.split('_')[1] for val in __all__]
+    args, what_to_run = parse_args()
     template = args.template
 
-    with open(template, "r") as f:
-        template_file = yaml.safe_load(f)
-    model_name = template_file["name"]
-
     if args.workspace is None:
-        workspace_path = f"./{model_name}_{uuid.uuid4().hex}"
+        with open(template, "r") as f:
+            template_file = yaml.safe_load(f)
+        model_name = template_file["name"]
+        workspace_path = Path(f"./{model_name}_{uuid.uuid4().hex}")
     else:
-        workspace_path = args.workspace
+        workspace_path = Path(args.workspace)
 
-    for opt in ["otx_train", "otx_eval", "otx_export", "otx_eval"]:
-        argv_list = [
-            " ".join(opt.split("_")),
-            template,
-        ]
+    cmd_list: List[Tuple[str, List[str]]] = []
+    cmd = None
+    for arg in what_to_run:
+        if arg in otx_cli_entry:
+            if cmd is not None:
+                cmd_list.append((cmd, arg_for_cmd))
+            cmd = arg
+            arg_for_cmd = []
+        else:
+            arg_for_cmd.append(arg)
+    if cmd is not None:
+        cmd_list.append((cmd, arg_for_cmd))
 
-        if opt == "otx_train":
-            argv_list.extend([
-                "--train-data-roots",
-                dataset_path,
-                "--val-data-roots",
-                dataset_path,
-                "--workspace",
-                workspace_path,
-                "--track-resource-usage",
-                "params",
-                "--learning_parameters.num_iters",
-                "1"
-            ])
-        elif opt == "otx_eval":
-            ov_path = list(Path(workspace_path).rglob("openvino.bin"))
-            if ov_path:
-                ov_path = ov_path[0]
-                weight_args = ["--load-weights", str(ov_path)]
-                output_path = str(ov_path.parents[1])
-            else:
-                weight_args = ["--workspace", workspace_path]
-                output_path = str(Path(workspace_path) / "outputs" / "latest_trained_model")
+    previous_cmd = None
+    for cmd, cmd_args in cmd_list:
+        if cmd == "eval":
+            output_path = str(workspace_path / "outputs" / "latest_trained_model")
+            if previous_cmd == "export":
+                ov_path = list(workspace_path.rglob("openvino.bin"))
+                if ov_path:
+                    ov_path = ov_path[0]
+                    cmd_args = ["--load-weights", str(ov_path)] + cmd_args
+                    output_path = str(ov_path.parents[1])
+            cmd_args = ["--output", output_path] + cmd_args
 
-            argv_list.extend(weight_args)
-            argv_list.extend([
-                "--test-data-roots",
-                dataset_path,
-                "--output",
-                output_path
-            ])
-        elif opt == "otx_export":
-            argv_list.extend([
-                "--workspace",
-                workspace_path,
-            ])
+        if "--load-weights" not in cmd_args:
+            cmd_args = ["--workspace", str(workspace_path)] + cmd_args
 
-        sys.argv = argv_list
-        globals()[opt]()
-    
+        cmd_args.insert(0, template)
+        sys.argv = [f"otx {cmd}"] + cmd_args
+        previous_cmd = cmd
+
+        print("*"*100, sys.argv)
+        globals()[f"otx_{cmd}"]()
+
     return dict(retcode=0)
 
 
