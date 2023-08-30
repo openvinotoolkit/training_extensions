@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Any, Dict, Optional
-import numpy as np
 
+import numpy as np
 from mmseg.datasets.builder import PIPELINES, build_from_cfg
 
 import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset as load_image_base
@@ -51,8 +51,8 @@ class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset)
         # Split image & mask from cached 4D map
         img = results["img"]
         if img.shape[-1] == 4:
-            results["img"] = img[:,:,:-1]
-            results["gt_semantic_seg"] = img[:,:,-1]
+            results["img"] = img[:, :, :-1]
+            results["gt_semantic_seg"] = img[:, :, -1]
         return results
 
     def _save_cache(self, results: Dict[str, Any]):
