@@ -191,6 +191,7 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
             return cached_results
         results = self._load_img(results)
         results = self._load_ann_if_any(results)
+        results.pop("dataset_item", None)  # Prevent deepcopy or caching
         results = self._resize_img_ann_if_any(results)
         self._save_cache(results)
         return results
