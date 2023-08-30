@@ -12,7 +12,9 @@ _base_ = [
 
 task = "instance-segmentation"
 
-pretrained = 'https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth'  # noqa
+pretrained = (
+    "https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth"  # noqa
+)
 
 model = dict(
     type="CustomMaskRCNN",
@@ -32,7 +34,7 @@ model = dict(
         out_indices=(0, 1, 2, 3),
         with_cp=False,
         convert_weights=True,
-        init_cfg=dict(type='Pretrained', checkpoint=pretrained)
+        init_cfg=dict(type="Pretrained", checkpoint=pretrained),
     ),
     neck=dict(type="FPN", in_channels=[96, 192, 384, 768], out_channels=256, num_outs=5),
     rpn_head=dict(
