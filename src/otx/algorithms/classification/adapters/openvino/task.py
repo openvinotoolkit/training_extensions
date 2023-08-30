@@ -36,7 +36,6 @@ from openvino.model_api.models.utils import ClassificationResult
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
-    get_cls_inferencer_configuration,
     get_hierarchical_label_list,
 )
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
