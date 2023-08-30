@@ -21,7 +21,8 @@ import os
 import sys
 import json
 import statistics
-import uuid
+import shutil
+from copy import copy
 from datetime import datetime
 from pathlib import Path
 from collections import OrderedDict
@@ -77,13 +78,16 @@ def get_exp_recipe() -> Dict:
     return exp_recipe
 
 
-def parse_eval_score(output_dir: Path):
+def parse_performance(output_dir: Path, with_fps: bool = False):
     performance_file = output_dir / "performance.json"
-    if performance_file.exists():
-        with performance_file.open("r") as f:
-            temp = json.load(f)
-        return temp["f-measure"]
-    return 0
+    if not performance_file.exists():
+        raise RuntimeError(f"{performance_file} doesn't exist.")
+
+    with performance_file.open("r") as f:
+        temp = json.load(f)
+    if with_fps:
+        return temp["f-measure"], temp["avg_time_per_image"]
+    return temp["f-measure"]
 
 
 def organize_exp_result(workspace: Union[str, Path]):
@@ -99,10 +103,11 @@ def organize_exp_result(workspace: Union[str, Path]):
     max_cpu_mem = None
     max_gpu_mem = None
     avg_gpu_util = None
+    exported_model_fps = None
     for task_dir in (workspace / "outputs").iterdir():
         if "train" in str(task_dir.name):
             # test score
-            test_score = parse_eval_score(task_dir)
+            test_score = parse_performance(task_dir)
 
             # best eval score & iter, data time
             train_history_file = list((task_dir / "logs").glob("*.log.json"))[0]
@@ -129,17 +134,18 @@ def organize_exp_result(workspace: Union[str, Path]):
                 avg_gpu_util = " ".join(lines[3].split()[1:])
 
         elif "export" in str(task_dir):
-            export_model_score = parse_eval_score(task_dir)
+            export_model_score, exported_model_fps = parse_performance(task_dir, True)
 
     with (workspace / "exp_result.txt").open("w") as f:
         f.write(
             f"best_eval_score\t{val_score}\n"
             f"test_score\t{test_score}\n"
-            f"export_score\t{export_model_score}\n"
-            f"avg_iter_time\t{statistics.mean(iter_time_arr)}\n"
-            f"var_iter_time\t{statistics.variance(iter_time_arr)}\n"
-            f"avg_data_time\t{statistics.mean(data_time_arr)}\n"
-            f"var_data_time\t{statistics.variance(data_time_arr)}\n"
+            f"export_score\t{round(export_model_score, 4)}\n"
+            f"export_infer_speed\t{exported_model_fps}\n"
+            f"avg_iter_time\t{round(statistics.mean(iter_time_arr), 4)}\n"
+            f"std_iter_time\t{round(statistics.stdev(iter_time_arr), 4)}\n"
+            f"avg_data_time\t{round(statistics.mean(data_time_arr), 4)}\n"
+            f"std_data_time\t{round(statistics.stdev(data_time_arr), 4)}\n"
             f"max_cpu_mem\t{max_cpu_mem}\n"
             f"avg_cpu_util\t{avg_cpu_util}\n"
             f"max_gpu_mem\t{max_gpu_mem}\n"
@@ -157,6 +163,9 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     output_file.write("name\t")
     table.add_column("name", justify="center")
     write_type = False
+
+    tensorboard_dir = exp_dir / "tensorboard"
+    tensorboard_dir.mkdir(exist_ok=True)
 
     for each_exp in exp_dir.iterdir():
         exp_result = each_exp / "exp_result.txt"
@@ -177,6 +186,11 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
                 output_file.write("\t".join(row))
                 output_file.write('\n')
                 table.add_row(*row)
+
+        exp_tb_dir = list(each_exp.rglob("tf_logs"))
+        if exp_tb_dir:
+            temp = tensorboard_dir / each_exp.name
+            shutil.copytree(exp_tb_dir[0], temp, dirs_exist_ok=True)
 
     console = Console()
     console.print(table)
@@ -201,13 +215,14 @@ def replace_var_in_str(
             values_of_key_found.append([variable[key]])
 
     for value_of_key_found in product(*values_of_key_found):
+        replaced_target = copy(target)
         for key, val in zip(key_found, value_of_key_found):
-            target = target.replace(f"${{{key}}}", val)
+            replaced_target = replaced_target.replace(f"${{{key}}}", val)
 
         if keep_key:
-            ret["_".join(value_of_key_found)] = target
+            ret["_".join(value_of_key_found)] = replaced_target
         else:
-            ret.append(target)
+            ret.append(replaced_target)
 
     if not keep_key and len(ret) == 1:
         return ret[0]
@@ -256,15 +271,15 @@ def run_experiment_recipe(exp_recipe: Dict):
 
     current_dir = os.getcwd()
     os.chdir(output_path)
-    for exp_name, command in command_list.items():
-        exp_name = exp_name.replace('/', '_') + uuid.uuid4().hex
+    for repeat_idx in range(repeat):
+        for exp_name, command in command_list.items():
+            exp_name = exp_name.replace('/', '_') + f"_repeat{repeat_idx}"
 
-        command_split = command.split()
-        command_split.insert(2, f"--workspace {exp_name}")
-        command = " ".join(command_split)
+            command_split = command.split()
+            command_split.insert(2, f"--workspace {exp_name}")
+            command = " ".join(command_split)
 
-        sys.argv = [" ".join(command.split()[:2])] + command.split()[2:]
-        for _ in range(repeat):
+            sys.argv = [" ".join(command.split()[:2])] + command.split()[2:]
             globals()["_".join(sys.argv[0].split())]()
     os.chdir(current_dir)
 
