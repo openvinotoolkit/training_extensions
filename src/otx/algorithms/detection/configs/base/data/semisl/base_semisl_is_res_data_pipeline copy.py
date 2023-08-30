@@ -7,17 +7,12 @@
 
 # This is from otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
-__img_scale = (992, 736)
-
-__img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
+__img_size = (1344, 800)
+__dataset_type = "OTXDetDataset"
+__img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 common_pipeline = [
-    dict(
-        type="Resize",
-        img_scale=__img_scale,
-        multiscale_mode="value",
-        keep_ratio=False,
-    ),
+    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="BranchImage", key_map=dict(img="img0")),
     dict(type="NDArrayToPILImage", keys=["img"]),
@@ -74,14 +69,20 @@ common_pipeline = [
 ]
 
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset"),
-    dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(
+        type="LoadAnnotationFromOTXDataset",
+        domain="instance_segmentation",
+        with_bbox=True,
+        with_mask=True,
+        poly2mask=False,
+    ),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
-    dict(type="Resize", img_scale=__img_scale, keep_ratio=False),
+    dict(type="Resize", img_scale=[(1333, 400), (1333, 1200)], keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"]),
 ]
 
 unlabeled_pipeline = [
@@ -104,10 +105,10 @@ unlabeled_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type="LoadImageFromOTXDataset"),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     dict(
         type="MultiScaleFlipAug",
-        img_scale=__img_scale,
+        img_scale=__img_size,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),
@@ -119,20 +120,21 @@ test_pipeline = [
     ),
 ]
 data = dict(
-    train=dict(
-        type="OTXDetDataset",
-        pipeline=train_pipeline,
-    ),
+    samples_per_gpu=4,
+    workers_per_gpu=2,
+    train=dict(type="RepeatDataset", times=13, dataset=dict(type=__dataset_type, pipeline=train_pipeline)),
     val=dict(
-        type="OTXDetDataset",
+        type=__dataset_type,
+        test_mode=True,
         pipeline=test_pipeline,
     ),
     test=dict(
-        type="OTXDetDataset",
+        type=__dataset_type,
+        test_mode=True,
         pipeline=test_pipeline,
     ),
     unlabeled=dict(
-        type="OTXDetDataset",
+        type=__dataset_type,
         pipeline=unlabeled_pipeline,
     ),
 )

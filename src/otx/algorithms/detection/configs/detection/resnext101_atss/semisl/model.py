@@ -13,6 +13,7 @@ _base_ = [
 model = dict(
     super_type="MeanTeacher",
     pseudo_conf_thresh=0.25,
+    unlabeled_loss_weights={"cls": 1.0, "bbox": 1.0, "obj": 1.0, "centerness": 1.0},
     type="CustomATSS",
     backbone=dict(
         type="ResNeXt",

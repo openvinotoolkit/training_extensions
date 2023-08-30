@@ -130,14 +130,18 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         losses = {}
         # Supervised loss
         # TODO: check img0 only option (which is common for mean teacher method)
-        sl_losses = self.model_s.forward_train(
+        forward_train = functools.partial(
+            self.model_s.forward_train,
             img,
             img_metas,
             gt_bboxes,
             gt_labels,
-            gt_bboxes_ignore=gt_bboxes_ignore if gt_bboxes_ignore else None,
-            gt_masks=gt_masks,
+            gt_bboxes_ignore=(gt_bboxes_ignore if gt_bboxes_ignore else None),
         )
+        if self.model_s.with_mask:
+            sl_losses = forward_train(gt_masks=gt_masks)
+        else:
+            sl_losses = forward_train()
         losses.update(sl_losses)
 
         if not self.unlabeled_loss_enabled:
@@ -151,7 +155,10 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         if ul_img is None:
             return losses
         with torch.no_grad():
-            teacher_outputs = self.forward_teacher(ul_img0, ul_img_metas)
+            if self.model_t.with_mask:
+                teacher_outputs = self.forward_teacher(ul_img0, ul_img_metas)
+            else:
+                teacher_outputs = self.model_t.forward_test([ul_img0], [ul_img_metas], rescale=False)
         current_device = ul_img0[0].device
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
