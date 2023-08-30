@@ -245,7 +245,7 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
 
         if is_export:
             compression_ctrl.prepare_for_export()
-            model.disable_dynamic_graph_building()
+            model.nncf.disable_dynamic_graph_building()
 
         if return_compression_ctrl:
             return compression_ctrl, model
