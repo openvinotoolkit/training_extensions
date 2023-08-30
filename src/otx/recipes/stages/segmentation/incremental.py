@@ -29,7 +29,7 @@ seed = 42
 find_unused_parameters = False
 
 task_adapt = dict(
-    type="mpa",
+    type="default_task_adapt",
     op="REPLACE",
 )
 
