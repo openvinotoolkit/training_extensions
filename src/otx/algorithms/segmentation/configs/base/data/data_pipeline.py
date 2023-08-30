@@ -20,8 +20,16 @@ __img_scale = (544, 544)
 __crop_size = (512, 512)
 
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-    dict(type="LoadAnnotationFromOTXDataset", use_otx_adapter=True),
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        load_ann_cfg=dict(type="LoadAnnotationFromOTXDataset", use_otx_adapter=True),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_scale,
+            downscale_only=True,
+        ),  # Resize to intermediate size if org image is bigger
+        enable_memcache=True,  # Cache after resizing image & annotations
+    ),
     dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0)),
     dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type="RandomFlip", prob=0.5, direction="horizontal"),

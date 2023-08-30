@@ -18,6 +18,7 @@ from .dataset import MPASegDataset, get_annotation_mmseg_format
 from .pipelines import (
     LoadAnnotationFromOTXDataset,
     LoadImageFromOTXDataset,
+    LoadResizeDataFromOTXDataset,
     MaskCompose,
     ProbCompose,
     TwoCropTransform,
@@ -26,6 +27,7 @@ from .pipelines import (
 __all__ = [
     "LoadAnnotationFromOTXDataset",
     "LoadImageFromOTXDataset",
+    "LoadResizeDataFromOTXDataset",
     "MaskCompose",
     "ProbCompose",
     "TwoCropTransform",
