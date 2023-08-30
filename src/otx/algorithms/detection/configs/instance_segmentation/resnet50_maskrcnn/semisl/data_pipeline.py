@@ -19,4 +19,4 @@
 # This is from otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
 
-_base_ = ["../../../base/data/semisl/base_semisl_is_res_data_pipeline.py"]
+_base_ = ["../../../base/data/semisl/semisl_is_res_data_pipeline.py"]
