@@ -452,9 +452,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
-            args.append({"resize_type": "fit_to_window"})
             if self.config.tiling_parameters.enable_tiling:
-                args['resize_type'] = "fit_to_window_letterbox"
+                args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 114})
+            else:
+                args.append({"resize_type": "fit_to_window"})
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
