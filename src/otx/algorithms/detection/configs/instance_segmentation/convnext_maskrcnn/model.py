@@ -12,8 +12,6 @@ _base_ = [
 
 task = "instance-segmentation"
 
-checkpoint_file = "https://download.openmmlab.com/mmclassification/v0/convnext/downstream/convnext-tiny_3rdparty_32xb128-noema_in1k_20220301-795e9634.pth"  # noqa
-
 model = dict(
     type="CustomMaskRCNN",
     backbone=dict(
@@ -23,7 +21,6 @@ model = dict(
         drop_path_rate=0.4,
         layer_scale_init_value=1.0,
         gap_before_final_norm=False,
-        init_cfg=dict(type="Pretrained", checkpoint=checkpoint_file, prefix="backbone."),
     ),
     neck=dict(type="FPN", in_channels=[96, 192, 384, 768], out_channels=256, num_outs=5),
     rpn_head=dict(

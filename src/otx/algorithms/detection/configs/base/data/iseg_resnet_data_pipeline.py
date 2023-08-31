@@ -29,6 +29,7 @@ train_pipeline = [
     ),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
+    dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
     dict(
         type="Collect",
@@ -52,7 +53,7 @@ train_pipeline = [
 val_pipeline = [
     dict(
         type="LoadResizeDataFromOTXDataset",
-        resize_cfg=dict(type="Resize", img_scale=__img_size, keep_ratio=False),
+        resize_cfg=dict(type="Resize", img_scale=__img_size, keep_ratio=True),
         enable_memcache=True,  # Cache after resizing image
     ),
     dict(
@@ -62,6 +63,7 @@ val_pipeline = [
         transforms=[
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
+            dict(type="Pad", size_divisor=32),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),
         ],
