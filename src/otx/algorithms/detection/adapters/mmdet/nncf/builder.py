@@ -73,7 +73,6 @@ def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
 
     init_dataloader = None
     model_eval_fn = None
-
     if "meta" in state_dict and NNCF_META_KEY in state_dict["meta"]:
         # NNCF ckpt
         nncf_meta_state = state_dict["meta"][NNCF_META_KEY]

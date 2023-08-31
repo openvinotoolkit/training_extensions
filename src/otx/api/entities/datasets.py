@@ -335,7 +335,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
     def get_combined_subset(self, subsets: List) -> "DatasetEntity":
         """Returns a new DatasetEntity with just the dataset items matching the subsets.
 
-        This subsets are also a DatasetEntity. The dataset items in the subset datasets are the same dataset items as
+        These subsets are DatasetEntity. The dataset items in the subset datasets are the same dataset items as
         in the original dataset.
         Altering one of the objects in the output of this function, will also alter them in the original.
 

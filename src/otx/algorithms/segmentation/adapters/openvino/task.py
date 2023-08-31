@@ -323,7 +323,6 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.UNLABELED])
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
-        breakpoint()
         quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])
 
         with tempfile.TemporaryDirectory() as tempdir:
