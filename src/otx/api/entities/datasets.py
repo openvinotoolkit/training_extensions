@@ -332,6 +332,29 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
                 new_dataset.append(new_dataset_item)
         return new_dataset
 
+    def get_combined_subset(self, subsets: List) -> "DatasetEntity":
+        """Returns a new DatasetEntity with just the dataset items matching the subsets.
+
+        This subsets are also a DatasetEntity. The dataset items in the subset datasets are the same dataset items as
+        in the original dataset.
+        Altering one of the objects in the output of this function, will also alter them in the original.
+
+        Example:
+            >>> dataset = DatasetEntity()
+            >>> training_subset = dataset.get_combined_subset([Subset.TRAINING, Subset.UNLABELED])
+
+        Args:
+            subsets (List): List of subsets to return.
+
+        Returns:
+            DatasetEntity: DatasetEntity with items matching subsets
+        """
+        dataset = DatasetEntity(
+            items=[item for item in self._items if item.subset in subsets],
+            purpose=self.purpose,
+        )
+        return dataset
+
     def get_subset(self, subset: Subset) -> "DatasetEntity":
         """Returns a new DatasetEntity with just the dataset items matching the subset.
 
