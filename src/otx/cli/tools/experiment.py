@@ -153,45 +153,84 @@ def organize_exp_result(workspace: Union[str, Path]):
         )
     
     
-def aggregate_all_exp_result(exp_dir: Union[str, Path]):
+def aggregate_all_exp_result(exp_dir: Union[str, Path], avg_exp_result: Dict[str, Dict[str, List]]):
     if isinstance(exp_dir, str):
         exp_dir = Path(exp_dir)
 
     table = Table(title="Experiment Summary")
 
     output_file = (exp_dir / "exp_table.txt").open("w")
-    output_file.write("name\t")
-    table.add_column("name", justify="center")
-    write_type = False
+    output_file.write("experiment detail\n")
+    write_headers = False
+    headers = []
 
     tensorboard_dir = exp_dir / "tensorboard"
     tensorboard_dir.mkdir(exist_ok=True)
 
-    for each_exp in exp_dir.iterdir():
+    exp_dir_arr = []
+    for exp_history in avg_exp_result.values():
+        exp_dir_arr.extend(exp_history["exp_name"])
+
+    # for each_exp in exp_dir.iterdir():
+    for each_exp in exp_dir_arr:
+        each_exp = exp_dir / each_exp
+        with (each_exp / "exp_info.json").open("r") as f:
+            exp_info = json.load(f)
         exp_result = each_exp / "exp_result.txt"
         if exp_result.exists():
             with exp_result.open("r") as f:
                 lines = f.readlines()
-                if not write_type:
-                    for line in lines:
-                        header = line.split()[0]
-                        table.add_column(header, justify="center")
-                        output_file.write(header + '\t')
-                    output_file.write('\n')
-                    write_type = True
-
-                row = [each_exp.name]
+            # write a head
+            if not write_headers:
+                for key in exp_info.keys():
+                    headers.append(key)
                 for line in lines:
-                    row.append(line.split()[1])
-                output_file.write("\t".join(row))
-                output_file.write('\n')
-                table.add_row(*row)
+                    header = line.split()[0]
+                    headers.append(header)
+                output_file.write("\t".join(headers) + '\n')
+                write_headers = True
 
+            # write a experiment result
+            row = [val for val in exp_info.values()]
+            for line in lines:
+                row.append(line.split()[1])
+            output_file.write("\t".join(row))
+            output_file.write('\n')
+
+            # sum all repeated experiment results
+            for exp_info in avg_exp_result.values():
+                if each_exp.name in exp_info["exp_name"]:
+                    for idx, val in enumerate(row[len(exp_info):]):
+                        val = float(val)
+                        if len(exp_info["value"]) <= idx:
+                            exp_info["value"].append(val)
+                        else:
+                            exp_info["value"][idx] += val
+                    break
+
+        # copy tensorboard log into tensorboard dir
         exp_tb_dir = list(each_exp.rglob("tf_logs"))
         if exp_tb_dir:
             temp = tensorboard_dir / each_exp.name
             shutil.copytree(exp_tb_dir[0], temp, dirs_exist_ok=True)
 
+    headers.remove("repeat")
+    output_file.write("\nexperiment summary\n")
+    for header in headers:
+        table.add_column(header, justify="center")
+        output_file.write(f"{header}\t")
+    output_file.write("\n")
+    for exp_info in avg_exp_result.values():
+        variable = exp_info["variable"]
+        output_file.write('\t'.join(variable.values()) + "\t")
+        num_exp = len(exp_info["exp_name"])
+        for i in range(len(exp_info["value"])):
+            exp_info["value"][i] = round(exp_info["value"][i] / num_exp, 4)
+            output_file.write(f"{exp_info['value'][i]}\t")
+        output_file.write('\n')
+        table.add_row(*[val for val in variable.values()], *[str(val) for val in exp_info["value"]])
+
+    output_file.close()
     console = Console()
     console.print(table)
 
@@ -206,7 +245,7 @@ def replace_var_in_str(
     if not key_found:
         return target
 
-    ret = OrderedDict() if keep_key else []
+    ret = []
     values_of_key_found = []
     for key in key_found:
         if isinstance(variable[key], list):
@@ -220,7 +259,10 @@ def replace_var_in_str(
             replaced_target = replaced_target.replace(f"${{{key}}}", val)
 
         if keep_key:
-            ret["_".join(value_of_key_found)] = replaced_target
+            ret.append({
+                "variable" : {key_found[i] : val for i, val in enumerate(value_of_key_found)},
+                "command" : replaced_target
+            })
         else:
             ret.append(replaced_target)
 
@@ -269,24 +311,39 @@ def run_experiment_recipe(exp_recipe: Dict):
 
     command_list = get_command_list(exp_recipe)
 
+    avg_exp_result = {}
     current_dir = os.getcwd()
     os.chdir(output_path)
-    for repeat_idx in range(repeat):
-        for exp_name, command in command_list.items():
-            exp_name = exp_name.replace('/', '_') + f"_repeat{repeat_idx}"
+    for command_info in command_list:
+        original_command = command_info["command"]
+        command_var = command_info["variable"]
+        exp_name = "_".join(command_var.values())
 
-            command_split = command.split()
-            command_split.insert(2, f"--workspace {exp_name}")
-            command = " ".join(command_split)
+        for repeat_idx in range(repeat):
+            workspace = exp_name.replace('/', '_') + f"_repeat{repeat_idx}"
+            if exp_name not in avg_exp_result:
+                avg_exp_result[exp_name] = {"exp_name" : [], "value" : [], "variable" : copy(command_var)}
+            avg_exp_result[exp_name]["exp_name"].append(workspace)
+            command_var["repeat"] = str(repeat_idx)
 
-            sys.argv = [" ".join(command.split()[:2])] + command.split()[2:]
+            command = copy(original_command).split()
+            command = command[:3] + ["--workspace", workspace] + command[3:]
+
+            if "train" in command:
+                train_idx = command.index("train")
+                command = command[:train_idx+1] + ["--seed", str(repeat_idx)] + command[train_idx+1:]
+
+            sys.argv = [" ".join(command[:2])] + command[2:]
             globals()["_".join(sys.argv[0].split())]()
+
+            workspace = Path(workspace)
+            with (workspace / "exp_info.json").open("w") as f:
+                json.dump(command_var, f)
+
+            organize_exp_result(workspace)
     os.chdir(current_dir)
 
-    for exp_dir in output_path.iterdir():
-        organize_exp_result(exp_dir)
-
-    aggregate_all_exp_result(output_path)
+    aggregate_all_exp_result(output_path, avg_exp_result)
 
 
 def main():
