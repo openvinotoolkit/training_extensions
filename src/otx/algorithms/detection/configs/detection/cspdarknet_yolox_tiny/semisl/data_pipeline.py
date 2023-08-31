@@ -1,4 +1,4 @@
-"""Data Pipeline of YOLOX model for Semi-Supervised Learning Detection Task."""
+"""Data Pipeline of YOLOX Tiny model for Semi-Supervised Learning Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

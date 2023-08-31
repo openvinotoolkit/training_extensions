@@ -1,10 +1,10 @@
 # Description.
 model_template_id: Custom_Object_Detection_YOLOX
-name: YOLOX
+name: YOLOX-TINY
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for YOLOX
+summary: Class-Incremental Object Detection for YOLOX-TINY
 application: ~
 
 # Algo backend.
