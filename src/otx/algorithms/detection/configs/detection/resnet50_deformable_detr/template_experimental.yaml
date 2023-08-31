@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_Deformable_DETR
+model_template_id: Object_Detection_Deformable_DETR
 name: Deformable_DETR
 task_type: DETECTION
 task_family: VISION

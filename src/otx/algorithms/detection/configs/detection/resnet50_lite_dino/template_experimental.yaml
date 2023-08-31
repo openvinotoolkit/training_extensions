@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_Lite_DINO
+model_template_id: Object_Detection_Lite_DINO
 name: Lite-DINO
 task_type: DETECTION
 task_family: VISION

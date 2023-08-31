@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_ResNeXt101_ATSS
+model_template_id: Object_Detection_ResNeXt101_ATSS
 name: ResNeXt101-ATSS
 task_type: DETECTION
 task_family: VISION
