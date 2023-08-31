@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Refine input data in-memory caching (<https://github.com/openvinotoolkit/training_extensions/pull/2416>)
 - Adapt timeout value of initialization for distributed training (<https://github.com/openvinotoolkit/training_extensions/pull/2422>)
 - Optimize data loading by merging load & resize operations w/ caching support for cls/det/iseg/sseg (<https://github.com/openvinotoolkit/training_extensions/pull/2438>, <https://github.com/openvinotoolkit/training_extensions/pull/2453>, <https://github.com/openvinotoolkit/training_extensions/pull/2460>)
+- Upgrade torch==2.0.1 (<https://github.com/openvinotoolkit/training_extensions/pull/2465>)
 
 ### Bug fixes
 
@@ -26,7 +27,8 @@ All notable changes to this project will be documented in this file.
 
 ### Known issues
 
-- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch>=1.13.1
+- NNCF QAT optimization is disabled for MaskRCNN models due to CUDA runtime error in ROIAlign kernel on torch==2.0.1
 
 ## \[v1.4.1\]
 
