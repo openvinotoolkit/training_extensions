@@ -1,6 +1,6 @@
 # Description.
 model_template_id: Object_Detection_YOLOX_L
-name: YOLOX_L
+name: YOLOX-L
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
