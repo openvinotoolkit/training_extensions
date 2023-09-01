@@ -74,11 +74,13 @@ class TestTilingTileClassifier:
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
         adapter_mock = mocker.Mock(
-            set_callback=mocker.Mock(return_value=None), get_rt_info=mocker.Mock(return_value={})
+            set_callback=mocker.Mock(return_value=None), get_rt_info=mocker.Mock(return_value=np.array([1]))
         )
         mocker.patch.object(ImageModel, "__init__", return_value=None)
         mocker.patch.object(Model, "__init__", return_value=None)
-        mocked_model.return_value = mocker.MagicMock(spec=MaskRCNNModel, model_adapter=adapter_mock)
+        mocked_model.return_value = mocker.MagicMock(
+            spec=MaskRCNNModel, inference_adapter=adapter_mock, postprocess_semantic_masks=False
+        )
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
         original_shape = (self.dataset[0].media.width, self.dataset[0].media.height, 3)
