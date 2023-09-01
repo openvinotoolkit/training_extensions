@@ -332,7 +332,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
                 new_dataset.append(new_dataset_item)
         return new_dataset
 
-    def get_combined_subset(self, subsets: List) -> "DatasetEntity":
+    def get_combined_subset(self, subsets: List[Subset]) -> "DatasetEntity":
         """Returns a new DatasetEntity with just the dataset items matching the subsets.
 
         These subsets are DatasetEntity. The dataset items in the subset datasets are the same dataset items as
@@ -350,7 +350,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
             DatasetEntity: DatasetEntity with items matching subsets
         """
         dataset = DatasetEntity(
-            items=[item for item in self._items if item.subset in subsets],
+            items=[item for item in self._items if item.subset in set(subsets)],
             purpose=self.purpose,
         )
         return dataset
