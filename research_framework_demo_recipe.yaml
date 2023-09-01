@@ -1,0 +1,24 @@
+output_path: research_framework_demo/demo
+constants: # value in constant can't have other constant or variable.
+  det_model_dir: src/otx/algorithms/detection/configs/detection
+  dataset_path: dataset_path
+variables:
+  model:
+    - cspdarknet_yolox
+    - mobilenetv2_atss
+  dataset: 
+    - diopsis/12
+repeat: 2
+command: >
+  otx run ${det_model_dir}/${model}/template.yaml
+    train
+      --train-data-roots ${dataset_path}/${dataset}
+      --val-data-roots ${dataset_path}/${dataset}
+      --track-resource-usage
+      params
+        --learning_parameters.num_iters 20
+    eval
+      --test-data-roots ${dataset_path}/${dataset}
+    export
+    eval
+      --test-data-roots ${dataset_path}/${dataset}
