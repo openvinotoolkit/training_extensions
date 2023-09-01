@@ -14,8 +14,8 @@ logger = get_logger()
 
 
 @HOOKS.register_module()
-class UnbiasedTeacherHook(DualModelEMAHook):
-    """UnbiasedTeacherHook for semi-supervised learnings."""
+class MeanTeacherHook(DualModelEMAHook):
+    """MeanTeacherHook for semi-supervised learnings."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

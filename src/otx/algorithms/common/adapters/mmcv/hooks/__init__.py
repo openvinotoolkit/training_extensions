@@ -51,7 +51,7 @@ from .sam_optimizer_hook import SAMOptimizerHook
 from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
 from .two_crop_transform_hook import TwoCropTransformHook
-from .unbiased_teacher_hook import UnbiasedTeacherHook
+from .mean_teacher_hook import MeanTeacherHook
 
 __all__ = [
     "AdaptiveRepeatDataHook",
@@ -87,7 +87,7 @@ __all__ = [
     "SemiSLClsHook",
     "TaskAdaptHook",
     "TwoCropTransformHook",
-    "UnbiasedTeacherHook",
+    "MeanTeacherHook",
     "MemCacheHook",
     "LossDynamicsTrackingHook",
 ]

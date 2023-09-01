@@ -26,5 +26,5 @@ custom_hooks = [
         priority="ABOVE_NORMAL",
         epoch_momentum=0.1,
     ),
-    dict(type="UnbiasedTeacherHook", epoch_momentum=0.0, start_epoch=8, momentum=0.0004),
+    dict(type="MeanTeacherHook", epoch_momentum=0.0, start_epoch=8, momentum=0.0004),
 ]

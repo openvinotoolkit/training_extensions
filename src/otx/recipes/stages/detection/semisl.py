@@ -8,7 +8,7 @@ task_adapt = dict(
 
 custom_hooks = [
     dict(
-        type="UnbiasedTeacherHook",
+        type="MeanTeacherHook",
         epoch_momentum=0.1,
         start_epoch=2,
     ),
