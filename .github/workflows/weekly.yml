@@ -43,7 +43,7 @@ jobs:
     name: Regression-Test-py310-${{ matrix.toxenv_task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
-      python-version: "3.10"
+      python-version: "3.10.12"
       toxenv-pyver: "py310"
       toxenv-task: ${{ matrix.toxenv_task }}
       tests-dir: ${{ matrix.test_dir }}

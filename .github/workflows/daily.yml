@@ -29,7 +29,7 @@ jobs:
     name: E2E-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
-      python-version: "3.10"
+      python-version: "3.10.12"
       toxenv-pyver: "py310"
       toxenv-task: ${{ matrix.task }}
       tests-dir: ${{ matrix.test_dir }}

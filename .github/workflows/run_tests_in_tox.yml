@@ -3,7 +3,7 @@ on:
     inputs:
       python-version:
         type: string
-        default: "3.10"
+        default: "3.10.12"
       toxenv-pyver:
         description: "[py38, py39, py310]"
         type: string
@@ -45,7 +45,7 @@ jobs:
           python-version: ${{ inputs.python-version }}
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: E2E Tests
+      - name: Run Tests
         run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }} -- ${{ inputs.tests-dir }}
       - name: Upload test results
         uses: actions/upload-artifact@v3
