@@ -3,6 +3,7 @@
 import multiprocessing as mp
 import pynvml
 import psutil
+import yaml
 from contextlib import ExitStack
 from typing import Union
 from pathlib import Path
@@ -20,7 +21,7 @@ def run_process_to_check_resource(output_dir: Union[str, Path], exit_stack: Exit
 
 
 def mem_check_proc_callback(mem_check_p, queue, output_dir):
-    queue.put(output_dir / "resource.txt")
+    queue.put(output_dir)
     mem_check_p.join(10)
     if mem_check_p.exitcode is None:
         mem_check_p.terminate()
@@ -63,13 +64,17 @@ def check_resource(queue: mp.Queue):
             break
 
     pynvml.nvmlShutdown()
-    output_path = queue.get()
+    output_path = Path(queue.get())
 
-    with open(output_path, "w") as f:
-        f.write(
-            f"max_cpu_mem\t{round(max_cpu_mem, 2)} GiB\n"
-            f"avg_cpu_util\t{round(avg_cpu_util / num_counts, 2)} %\n"
-            f"max_gpu_mem\t{round(max_gpu_mem, 2)} GiB\n"
-            f"avg_gpu_util\t{round(avg_gpu_util / num_counts, 2)} %\n"
+    with (output_path / "resource_usage.yaml").open("w") as f:
+        yaml.dump(
+            {
+                "max_cpu_mem(GiB)" : round(max_cpu_mem, 2),
+                "avg_cpu_util(%)" : round(avg_cpu_util / num_counts, 2),
+                "max_gpu_mem(GiB)" : round(max_gpu_mem, 2),
+                "avg_gpu_util(%)" : round(avg_gpu_util / num_counts, 2),
+            },
+            f,
+            default_flow_style=False
         )
 
