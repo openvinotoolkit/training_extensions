@@ -15,12 +15,12 @@ optimizer = dict(
 lr_config = dict(
     policy="ReduceLROnPlateau",
     metric="mAP",
-    patience=3,
+    patience=5,
     iteration_patience=0,
     interval=1,
-    min_lr=0.00001,
+    min_lr=0.000001,
     warmup="linear",
-    warmup_iters=300,
+    warmup_iters=200,
     warmup_ratio=1.0 / 3,
 )
 
@@ -30,8 +30,8 @@ early_stop_metric = "mAP"
 custom_hooks = [
     dict(
         type="LazyEarlyStoppingHook",
-        start=16,
-        patience=20,
+        start=3,
+        patience=10,
         iteration_patience=0,
         metric="mAP",
         interval=1,
