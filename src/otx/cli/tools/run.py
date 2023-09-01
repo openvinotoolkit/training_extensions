@@ -117,7 +117,6 @@ def main():
         sys.argv = [f"otx {cmd}"] + cmd_args
         previous_cmd = cmd
 
-        print("*"*100, sys.argv)
         globals()[f"otx_{cmd}"]()
 
     return dict(retcode=0)

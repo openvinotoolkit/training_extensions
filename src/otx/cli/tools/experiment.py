@@ -236,10 +236,11 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     # process for experiment summary
     header.remove("repeat")
     for each_exp_result_summary in exp_result_summary.values():
-        for key in each_exp_result_summary["result"].keys():
+        for key, val in each_exp_result_summary["result"].items():
+            if val is None:
+                continue
             if key in stdev_field:
-                each_exp_result_summary["result"][key] = sqrt(
-                    each_exp_result_summary["result"][key] / each_exp_result_summary["num"])
+                each_exp_result_summary["result"][key] = sqrt(val / each_exp_result_summary["num"])
             else:
                 each_exp_result_summary["result"][key] /= each_exp_result_summary["num"]
 
@@ -337,6 +338,33 @@ def get_command_list(exp_recipe: Dict) -> Dict[str, str]:
     return exp_recipe["command"]
 
 
+def set_arguments_to_cmd(command: List[str], keys: Union[str, List[str]], value: str = None, start_idx: int = 0):
+    """Add arguments at proper position in `sys.argv`.
+
+    Args:
+        keys (str or List[str]): arguement keys.
+        value (str or None): argument value.
+        after_params (bool): whether argument should be after `param` or not.
+    """
+    if not isinstance(keys, list):
+        keys = [keys]
+    for key in keys:
+        if key in command:
+            if value is not None:
+                command[command.index(key) + 1] = value
+            return
+
+    delimiters = [val.split("_")[1] for val in __all__] + ["params"]
+
+    key = keys[0]
+    for i in range(start_idx, len(command)):
+        if command[i] in delimiters:
+            if value is not None:
+                command.insert(i, value)
+            command.insert(i, key)
+            return
+
+
 def run_experiment_recipe(exp_recipe: Dict):
     output_path = Path(exp_recipe.get("output_path", f"experiment_{datetime.now().strftime('%Y%m%d_%H%M%S')}"))
     output_path.mkdir(exist_ok=True)
@@ -344,7 +372,6 @@ def run_experiment_recipe(exp_recipe: Dict):
 
     command_list = get_command_list(exp_recipe)
 
-    # avg_exp_result = {}
     current_dir = os.getcwd()
     os.chdir(output_path)
     for command_info in command_list:
@@ -353,21 +380,20 @@ def run_experiment_recipe(exp_recipe: Dict):
         exp_name = "_".join(command_var.values())
 
         for repeat_idx in range(repeat):
-            workspace = exp_name.replace('/', '_') + f"_repeat{repeat_idx}"
+            workspace = Path(exp_name.replace('/', '_') + f"_repeat{repeat_idx}")
             command_var["repeat"] = str(repeat_idx)
 
             command = copy(original_command).split()
-            command = command[:3] + ["--workspace", workspace] + command[3:]
-
-            if "train" in command:
-                train_idx = command.index("train")
-                command = command[:train_idx+1] + ["--seed", str(repeat_idx)] + command[train_idx+1:]
+            if command[1] in ["train", "run"]:
+                set_arguments_to_cmd(command, "--workspace", str(workspace), 2)
+                if "train" in command:
+                    set_arguments_to_cmd(command, "--seed", str(repeat_idx), command.index("train")+1)
 
             sys.argv = [" ".join(command[:2])] + command[2:]
             globals()["_".join(sys.argv[0].split())]()
 
-            workspace = Path(workspace)
-            organize_exp_result(workspace, command_var)
+            if command[1] in ["train", "run"]:
+                organize_exp_result(workspace, command_var)
     os.chdir(current_dir)
 
     aggregate_all_exp_result(output_path)
