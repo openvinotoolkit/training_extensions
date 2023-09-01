@@ -1,6 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # OpenVINO Requirements.                                                      #
-nncf @ git+https://github.com/openvinotoolkit/nncf.git@release_v260
+nncf @ git+https://github.com/openvinotoolkit/nncf.git@b4d72b4ae4ff121da5a63be9580704ec447337b2
 onnx==1.13.0
 openvino-model-api==0.1.3
 openvino==2023.0
