@@ -1229,6 +1229,26 @@ purpose (DatasetPurpose): Purpose for dataset. Refer to <a class="reference inte
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.datasets.DatasetEntity.get_combined_subset">
+<span class="sig-name descname"><span class="pre">get_combined_subset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subsets</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.subset.Subset" title="otx.api.entities.subset.Subset"><span class="pre">Subset</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">DatasetEntity</span></a></span></span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity.get_combined_subset" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns a new DatasetEntity with just the dataset items matching the subsets.</p>
+<p>These subsets are DatasetEntity. The dataset items in the subset datasets are the same dataset items as
+in the original dataset.
+Altering one of the objects in the output of this function, will also alter them in the original.</p>
+<dl>
+<dt>Example:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">DatasetEntity</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">training_subset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_combined_subset</span><span class="p">([</span><span class="n">Subset</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">,</span> <span class="n">Subset</span><span class="o">.</span><span class="n">UNLABELED</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd>
+<dt>Args:</dt><dd><p>subsets (List): List of subsets to return.</p>
+</dd>
+<dt>Returns:</dt><dd><p>DatasetEntity: DatasetEntity with items matching subsets</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="otx.api.entities.datasets.DatasetEntity.get_labels">
 <span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.entities.datasets.DatasetEntity.get_labels" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns the list of all unique labels that are in the dataset.</p>
@@ -5221,6 +5241,15 @@ training if for some reason training was suspended.</p>
      <code class="docutils literal notranslate">
       <span class="pre">
        DatasetEntity.append()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#otx.api.entities.datasets.DatasetEntity.get_combined_subset">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DatasetEntity.get_combined_subset()
       </span>
      </code>
     </a>
