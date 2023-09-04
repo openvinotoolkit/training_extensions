@@ -911,6 +911,8 @@ def get_configured_input_size(
             return None
 
         logger.info("Given model weight was trained with {} input size.".format(input_size))
+    elif input_size_config == InputSizePreset.AUTO:
+        return (0, 0)
     else:
         input_size = input_size_config.value
 

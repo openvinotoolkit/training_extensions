@@ -192,6 +192,9 @@ class ClassificationConfigurer(BaseConfigurer):
         if input_size is None:
             return
 
+        if input_size == (0, 0):
+            # Auto-adapt
+
         InputSizeManager(cfg.data).set_input_size(input_size)
         logger.info("Input size is changed to {}".format(input_size))
 
