@@ -13,6 +13,7 @@ from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import (auto_select_device, get_root_logger,
                          wrap_distributed_model, wrap_non_distributed_model)
 from mmcv.parallel import MMDataParallel
+from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
 
 def init_random_seed(seed=None, device=None):
@@ -66,21 +67,6 @@ def set_random_seed(seed, deterministic=False):
     if deterministic:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
-
-
-class XPUDataParallel(MMDataParallel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def scatter(self, inputs, kwargs,
-                device_ids):
-        for x in inputs:
-            if isinstance(x, dict):
-                for k in x:
-                    if isinstance(x[k], torch.Tensor):
-                        x[k] = x[k].to("xpu")
-
-        return (inputs,), (kwargs, )
 
 
 def train_model(model,

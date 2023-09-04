@@ -62,7 +62,7 @@ def build_data_parallel(
     if is_xpu_available() and config.get("gpu_ids", []):
         model = model.xpu()
         model = XPUDataParallel(model, device_ids=config.gpu_ids)
-    else if torch.cuda.is_available() and config.get("gpu_ids", []):
+    elif torch.cuda.is_available() and config.get("gpu_ids", []):
         if distributed:
             model = model.cuda()
             # put model on gpus
