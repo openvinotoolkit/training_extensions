@@ -132,3 +132,7 @@ v2/efficientnet_b2b-mask_rcnn-576x576.pth"
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 fp16 = dict(loss_scale=512.0)
 ignore = True
+
+custom_hooks = [
+    dict(type="MeanTeacherHook", epoch_momentum=0.0, start_epoch=8, momentum=0.0004)
+]
