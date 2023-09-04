@@ -27,7 +27,8 @@ import torch
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmdet import __version__
-from mmdet.apis import single_gpu_test, train_detector
+from mmdet.apis import single_gpu_test
+from otx.algorithms.detection.adapters.mmdet.apis.train import train_detector
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
 from mmdet.models.detectors import DETR, TwoStageDetector
 from mmdet.utils import collect_env
