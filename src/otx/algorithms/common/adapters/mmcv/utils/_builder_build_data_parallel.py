@@ -12,6 +12,7 @@ import torch
 from mmcv import Config
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
+from otx.algorithms.common.utils import is_xpu_available
 
 @overload
 def build_data_parallel(
@@ -58,7 +59,10 @@ def build_data_parallel(
     :param distributed: Enable distributed training mode.
     :return:
     """
-    if torch.cuda.is_available() and config.get("gpu_ids", []):
+    if is_xpu_available() and config.get("gpu_ids", []):
+        model = model.xpu()
+        model = XPUDataParallel(model, device_ids=config.gpu_ids)
+    else if torch.cuda.is_available() and config.get("gpu_ids", []):
         if distributed:
             model = model.cuda()
             # put model on gpus
@@ -81,3 +85,18 @@ def build_data_parallel(
         model = MMDataParallel(model, device_ids=[])
         torch.cuda.is_available = bak
     return model
+
+
+class XPUDataParallel(MMDataParallel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def scatter(self, inputs, kwargs,
+                device_ids):
+        for x in inputs:
+            if isinstance(x, dict):
+                for k in x:
+                    if isinstance(x[k], torch.Tensor):
+                        x[k] = x[k].to("xpu")
+
+        return (inputs,), (kwargs, )
