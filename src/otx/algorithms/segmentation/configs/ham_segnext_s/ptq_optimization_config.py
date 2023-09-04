@@ -3,13 +3,11 @@ from nncf import IgnoredScope
 
 
 ignored_scope = IgnoredScope(
-    patterns=[
-        "/hamburger/"
-    ],
+    patterns=["/hamburger/"],
     types=[
         "Add",
         "MVN",
         "Divide",
         "Multiply",
-    ]
+    ],
 )
