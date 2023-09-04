@@ -434,9 +434,9 @@ class TestMMClassificationTask:
             process_saliency_maps=False,
             explain_predicted_classes=True,
         )
-        outputs = self.mc_cls_task.explain(self.mc_cls_dataset, explain_parameters)
+        outputs = self.hl_cls_task.explain(self.hl_cls_dataset, explain_parameters)
         assert isinstance(outputs, DatasetEntity)
-        assert len(outputs) == 200
+        assert len(outputs) == 500
 
     @e2e_pytest_unit
     def test_geti_scenario(self, mocker):
