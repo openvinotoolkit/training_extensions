@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from otx import OTX_LOGO
+from otx.v2 import OTX_LOGO
 
 
 def print_otx_logo() -> None:

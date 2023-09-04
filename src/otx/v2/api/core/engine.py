@@ -3,7 +3,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+
 from abc import abstractmethod
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -12,8 +14,10 @@ from otx.v2.api.core.registry import BaseRegistry
 
 class Engine:
     def __init__(self, work_dir: str) -> None:
-        self.work_dir = work_dir
+        self.work_dir = Path(work_dir).resolve()
+        self.work_dir.mkdir(exist_ok=True, parents=True)
         self.registry = BaseRegistry(name="base")
+        self.timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     @abstractmethod
     def train(

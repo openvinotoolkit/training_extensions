@@ -6,6 +6,18 @@
 __version__ = "2.0.0"
 
 
+OTX_LOGO: str = """
+
+ ██████╗     ████████╗    ██╗  ██╗
+██╔═══██╗    ╚══██╔══╝    ╚██╗██╔╝
+██║   ██║       ██║        ╚███╔╝
+██║   ██║       ██║        ██╔██╗
+╚██████╔╝       ██║       ██╔╝ ██╗
+ ╚═════╝        ╚═╝       ╚═╝  ╚═╝
+
+"""
+
+
 # FIXME: Issue with setuptools - https://github.com/Madoshakalaka/pipenv-setup/issues/101
 import os
 

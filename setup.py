@@ -65,7 +65,7 @@ def get_otx_version() -> str:
     Returns:
         str: `otx` version.
     """
-    otx = load_module(name="src/otx/__init__.py")
+    otx = load_module(name="src/otx/v2/__init__.py")
     return otx.__version__
 
 
