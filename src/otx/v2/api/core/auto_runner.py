@@ -130,13 +130,14 @@ class AutoRunner:
         Raises:
             TypeError: _description_
         """
+        self.config_path: Optional[str] = None
+        config = self._initial_config(config)
         self.engine: Engine
         self.task: TaskType
         self.train_type: TrainType
-        self.framework: Optional[str] = None
         self.work_dir = work_dir
-        self.config_path: Optional[str] = None
-        config = self._initial_config(config)
+        self.framework: Optional[str] = config.get("framework", None)
+
         self.config = set_dataset_paths(
             config,
             {
@@ -154,6 +155,11 @@ class AutoRunner:
 
         # Auto-Configuration
         dataset_kwargs = self.config.get("data", None)
+        if dataset_kwargs is not None:
+            if task is None and dataset_kwargs.get("task", None) is not None:
+                task = str_to_task_type(dataset_kwargs.get("task"))
+            if train_type is None and dataset_kwargs.get("train_type", None) is not None:
+                train_type = str_to_train_type(dataset_kwargs.get("train_type"))
         self.auto_configuration(framework, task, train_type)
 
         (

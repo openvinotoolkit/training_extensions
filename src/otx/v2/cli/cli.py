@@ -181,6 +181,10 @@ class OTXCLIv2:
             config_candidate = checkpoint_path.parent / "configs.yaml"
             if config_candidate.exists():
                 self.pre_args["config"] = str(config_candidate)
+            elif checkpoint_path.exists():
+                raise FileNotFoundError(f"{config_candidate} not found. Please include --config.")
+            else:
+                raise FileNotFoundError(f"{checkpoint_path} not found. Double-check your checkpoint file.")
         try:
             data_task = self.pre_args.get("data.task", None)
             auto_runner = self.auto_runner_class(
@@ -258,7 +262,7 @@ class OTXCLIv2:
         work_dir = self._pop(self.config_init, "work_dir")
 
         # Workspace
-        self.workspace = Workspace(work_dir=work_dir)
+        self.workspace = Workspace(work_dir=work_dir, task=str(self.auto_runner.task.name).lower())
         self.engine = self.framework_engine(
             work_dir=str(self.workspace.work_dir),
             config=config,
@@ -302,7 +306,9 @@ class OTXCLIv2:
                     **left_kwargs,
                 }
             )
-            self.workspace.dump_config()
+            # The configuration dump is saved next to the checkpoint file.
+            model_base_dir = Path(results["checkpoint"]).parent
+            self.workspace.dump_config(filename=str(model_base_dir / "configs.yaml"))
             print(results["checkpoint"])
         elif subcommand == "test":
             self.instantiate_classes()

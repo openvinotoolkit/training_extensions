@@ -34,7 +34,7 @@ MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
 class MMXEngine(Engine):
     def __init__(
         self,
-        work_dir: Optional[str] = None,
+        work_dir: Optional[Union[str, Path]] = None,
         config: Optional[Union[Dict, Config, str]] = None,
     ) -> None:
         super().__init__(work_dir=work_dir)

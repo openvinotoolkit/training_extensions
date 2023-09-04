@@ -40,7 +40,7 @@ PREDICT_FORMAT = Union[str, Path, np.ndarray]
 class AnomalibEngine(Engine):
     def __init__(
         self,
-        work_dir: str,
+        work_dir: Optional[Union[str, Path]] = None,
         config: Optional[Union[str, Dict]] = None,
         task: str = "classification",
     ) -> None:
@@ -368,7 +368,7 @@ class AnomalibEngine(Engine):
         if device is None:
             device = model.device
 
-        export_dir = Path(self.work_dir) / f"otx_export_{self.timestamp}"
+        export_dir = Path(self.work_dir) / f"{self.timestamp}_export"
         export_dir.mkdir(exist_ok=True, parents=True)
 
         # Torch to onnx

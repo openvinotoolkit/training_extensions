@@ -27,7 +27,7 @@ def set_workspace(root: str = None, name: str = "otx-workspace") -> str:
 
 
 class Workspace:
-    def __init__(self, work_dir: Optional[str] = None) -> None:
+    def __init__(self, work_dir: Optional[str] = None, task: Optional[str] = None) -> None:
         """The workspace responsible for the input and output of the OTX.
 
         Args:
@@ -35,6 +35,7 @@ class Workspace:
         """
         self.otx_root = get_otx_root_path()
         self.work_dir = Path(work_dir) if work_dir is not None else None
+        self.task = task
         self.mkdir_or_exist()
         self._config: Dict[str, Any] = {}
         self._config_path = self.work_dir / "configs.yaml"
@@ -60,6 +61,8 @@ class Workspace:
         """If the workspace doesn't exist, create it."""
         if self.work_dir is None:
             self.work_dir = Path(set_workspace()).resolve()
+        if self.task is not None:
+            self.work_dir = self.work_dir / self.task
         self.work_dir.mkdir(exist_ok=True, parents=True)
         print(f"[*] Workspace Path: {self.work_dir}")
 

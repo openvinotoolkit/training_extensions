@@ -1,3 +1,6 @@
+framework: anomalib
+data:
+  task: anomaly_classification
 dataset:
   name: mvtec
   format: mvtec
