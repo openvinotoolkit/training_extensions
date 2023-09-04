@@ -17,9 +17,9 @@ class TestMeanTeacher:
         mocker.patch.object(MeanTeacher, "_register_state_dict_hook")
         mocker.patch.object(MeanTeacher, "_register_load_state_dict_pre_hook")
         self.mt_is = MeanTeacher("CustomMaskRCNN")
-        self.mt_det = MeanTeacher("CustomATSS", unlabeled_loss_weights={"cls": 1,"bbox": 1,"obj": 1 })
+        self.mt_det = MeanTeacher("CustomATSS", unlabeled_loss_weights={"cls": 1, "bbox": 1, "obj": 1})
         self.img = torch.rand(4, 3, 300, 300)
-        self.img_metas = [dict(ori_shape=(300,300), scale_factor=1.0)]*4
+        self.img_metas = [dict(ori_shape=(300, 300), scale_factor=1.0)] * 4
         self.gt_bboxes = torch.rand(4, 4)
         self.gt_labels = torch.randint(20, (4, 1))
         self.gt_masks = torch.rand(4, 3, 300, 300)
@@ -40,7 +40,9 @@ class TestMeanTeacher:
         monkeypatch.setattr(MeanTeacher, "generate_pseudo_labels", mock_generate_pseudo_labels)
         mocker.patch.object(MeanTeacher, "forward_teacher")
         kwargs = {"extra_0": {"img0": self.img, "img": self.img, "img_metas": self.img_metas}}
-        loss_mask = self.mt_is.forward_train(self.img, self.img_metas, self.gt_bboxes, self.gt_labels, self.gt_masks, **kwargs)
+        loss_mask = self.mt_is.forward_train(
+            self.img, self.img_metas, self.gt_bboxes, self.gt_labels, self.gt_masks, **kwargs
+        )
         gt_loss.update(
             {
                 "ps_ratio": torch.tensor([0.0]),
@@ -54,7 +56,7 @@ class TestMeanTeacher:
     @e2e_pytest_unit
     def test_forward_train_detection(self, mocker, monkeypatch):
         def mock_forward_train(*args, **kwargs):
-            return {"loss_bbox": 1.0, "loss_cls": 1.0, "loss_obj":1.0}
+            return {"loss_bbox": 1.0, "loss_cls": 1.0, "loss_obj": 1.0}
 
         def mock_generate_pseudo_labels(*args, **kwargs):
             return (self.gt_bboxes, self.gt_labels, [], 0.0)
@@ -77,7 +79,6 @@ class TestMeanTeacher:
             }
         )
         assert loss_det == gt_loss
-
 
     @e2e_pytest_unit
     def test_generate_pseudo_labels(self, mocker, monkeypatch):
