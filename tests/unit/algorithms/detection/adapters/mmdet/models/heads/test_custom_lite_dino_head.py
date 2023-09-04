@@ -30,15 +30,37 @@ class TestCustomDINOHead:
                 transformer=dict(
                     type="CustomDINOTransformer",
                     encoder=dict(
-                        type="DetrTransformerEncoder",
+                        type="EfficientTransformerEncoder",
+                        num_expansion=3,
+                        enc_scale=1,
                         num_layers=6,
-                        transformerlayers=dict(
-                            type="BaseTransformerLayer",
-                            attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
-                            feedforward_channels=2048,
-                            ffn_dropout=0.0,
-                            operation_order=("self_attn", "norm", "ffn", "norm"),
-                        ),
+                        transformerlayers=[
+                            dict(
+                                type="EfficientTransformerLayer",
+                                enc_scale=1,
+                                attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
+                                feedforward_channels=2048,
+                                ffn_dropout=0.0,
+                                operation_order=("self_attn", "norm", "ffn", "norm"),
+                            ),
+                            dict(
+                                type="EfficientTransformerLayer",
+                                enc_scale=1,
+                                small_expand=True,
+                                attn_cfgs=dict(type="MultiScaleDeformableAttention", embed_dims=256, dropout=0.0),
+                                ffn_cfgs=dict(
+                                    type="SmallExpandFFN",
+                                    embed_dims=256,
+                                    feedforward_channels=1024,
+                                    num_fcs=2,
+                                    ffn_drop=0.0,
+                                    act_cfg=dict(type="ReLU", inplace=True),
+                                ),
+                                feedforward_channels=2048,
+                                ffn_dropout=0.0,
+                                operation_order=("self_attn", "norm", "ffn"),
+                            ),
+                        ],
                     ),
                     decoder=dict(
                         type="DINOTransformerDecoder",
