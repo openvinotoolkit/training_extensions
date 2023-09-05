@@ -38,12 +38,12 @@ jobs:
     # tricky workaround to pass list from the string input type
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
+    container:
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-16c64edc291402051363d7ae5806fd1b4e2106c6
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v2
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

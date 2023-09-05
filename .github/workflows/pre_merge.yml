@@ -32,6 +32,8 @@ jobs:
         run: tox -vv -e pre-commit-all-py310-pt1
   Unit-Test:
     runs-on: [otx-gpu-t4-1]
+    container:
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-16c64edc291402051363d7ae5806fd1b4e2106c6
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
@@ -52,8 +54,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v2
       - name: Install Python
         uses: actions/setup-python@v4
         with:
