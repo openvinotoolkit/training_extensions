@@ -48,6 +48,9 @@ hyper_parameters:
         default_value: false
       maximal_accuracy_degradation:
         default_value: 1.0
+    pot_parameters:
+      preset:
+        default_value: Mixed
     algo_backend:
       train_type:
         default_value: Incremental
