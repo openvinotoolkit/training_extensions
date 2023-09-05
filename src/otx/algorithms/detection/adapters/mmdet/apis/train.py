@@ -16,7 +16,6 @@ from mmdet.utils import (build_ddp, compat_cfg,
                          find_latest_checkpoint, get_root_logger)
 
 from mmdet.utils.util_distribution import dp_factory
-from mmcv.parallel import MMDataParallel
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
 dp_factory['xpu'] = XPUDataParallel

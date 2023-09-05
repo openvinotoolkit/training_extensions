@@ -10,7 +10,7 @@ from typing import Literal, Union, overload
 
 import torch
 from mmcv import Config
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
+from mmcv.parallel import MMDataParallel, MMDistributedDataParallel, DataContainer
 
 from otx.algorithms.common.utils import is_xpu_available
 
@@ -93,6 +93,15 @@ class XPUDataParallel(MMDataParallel):
 
     def scatter(self, inputs, kwargs,
                 device_ids):
+        for k in kwargs:
+            if k == 'img_metas':
+                if isinstance(kwargs[k], list):
+                    kwargs[k] = kwargs[k][0].data
+                else:
+                    kwargs[k] = kwargs[k].data
+            if k == 'img':
+                kwargs[k][0] = kwargs[k][0].xpu()
+
         for x in inputs:
             if isinstance(x, dict):
                 for k in x:
