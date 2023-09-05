@@ -4,7 +4,7 @@
 #
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -18,8 +18,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    patch_color_conversion,
     recursively_update_cfg,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 
@@ -39,30 +41,61 @@ class BaseConfigurer:
         self.training = training
         self.ema_hooks = ["EMAHook", "CustomModelEMAHook"]  # EMA hooks supporting resume
 
-    def configure_base(self, cfg, data_cfg, data_classes, model_classes, **kwargs):
-        """Basic configuration work for recipe.
+    def configure(
+        self,
+        cfg: Config,
+        model_ckpt: str,
+        data_cfg: Config,
+        ir_options: Optional[Config] = None,
+        data_classes: Optional[List[str]] = None,
+        model_classes: Optional[List[str]] = None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
+        **kwargs: Dict[Any, Any],
+    ) -> Config:
+        """Create MMCV-consumable config from given inputs."""
+        logger.info(f"configure!: training={self.training}")
 
-        Patchings in this function are handled task level previously
-        This function might need to be re-orgianized
-        """
+        self.configure_ckpt(cfg, model_ckpt)
+        self.configure_data(cfg, data_cfg)
+        self.configure_env(cfg)
+        self.configure_data_pipeline(cfg, input_size, model_ckpt)
+        self.configure_recipe(cfg)
+        self.configure_model(cfg, data_classes, model_classes, ir_options, **kwargs)
+        self.configure_compat_cfg(cfg)
+        return cfg
 
-        self.configure_compatibility(cfg, **kwargs)
+    def configure_env(self, cfg):
+        """Configuration for environment settings."""
+
+        patch_persistent_workers(cfg)
+        self.configure_device(cfg)
+        self.configure_samples_per_gpu(cfg)
+
+    def configure_data_pipeline(self, cfg, input_size, model_ckpt):
+        """Configuration data pipeline settings."""
+
+        patch_color_conversion(cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
+
+    def configure_recipe(self, cfg):
+        """Configuration training recipe settings."""
+
         patch_adaptive_interval_training(cfg)
         patch_early_stopping(cfg)
-        patch_persistent_workers(cfg)
+        self.configure_fp16(cfg)
 
-        # update model config -> model label schema
+    def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
+        """Configuration model config settings."""
+
         self.model_classes = model_classes
         self.data_classes = data_classes
         if data_classes is not None:
-            train_data_cfg = self.get_data_cfg(data_cfg, "train")
+            train_data_cfg = self.get_data_cfg(cfg, "train")
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
-
-    def configure_compatibilty(self, cfg, **kwargs):
-        """Patch for compatibilty with mmX config."""
-        raise NotImplementedError
+        self.configure_backbone(cfg, ir_options)
+        self.configure_task(cfg, **kwargs)
 
     def configure_device(self, cfg):
         """Setting device for training and inference."""
@@ -123,7 +156,7 @@ class BaseConfigurer:
             return new_path
         return ckpt_path
 
-    def configure_model(self, cfg, ir_options):
+    def configure_backbone(self, cfg, ir_options):
         """Patch config's model.
 
         Change model type to super type
@@ -176,7 +209,7 @@ class BaseConfigurer:
                 else:
                     raise ValueError(f"{subset} of data_cfg is not in cfg")
 
-    def configure_task(self, cfg):
+    def configure_task(self, cfg, **kwargs):
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
             logger.info(f"task config!!!!: training={self.training}")
