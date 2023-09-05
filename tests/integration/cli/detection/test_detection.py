@@ -74,6 +74,9 @@ experimental_templates = [
         "src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml"
     ),
     parse_model_template("src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
+    parse_model_template(
+        "src/otx/algorithms/detection/configs/detection/resnet50_lite_dino/template_experimental.yaml"
+    ),
     parse_model_template("src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml"),
     parse_model_template(
         "src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template_experimental.yaml"

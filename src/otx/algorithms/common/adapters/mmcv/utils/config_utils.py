@@ -494,7 +494,15 @@ def patch_early_stopping(config: Config):
 
 
 def patch_persistent_workers(config: Config):
-    """If num_workers is 0, persistent_workers must be False."""
+    """Set persistent_workers as False in some conditions.
+
+    persistent_workers is set as 0 in two cases below:
+    case 1) num_workers is 0
+    case 2) semi-SL with distributed training. Because it uses two data loaders in each processes,
+            it makes workers for data loaders unstable, which makes errors during training.
+
+    """
+    dist_semi_sl = "unlabeled" in config.data and torch.distributed.is_initialized()
     data_cfg = config.data
     for subset in ["train", "val", "test", "unlabeled"]:
         if subset not in data_cfg:
@@ -504,7 +512,7 @@ def patch_persistent_workers(config: Config):
             "workers_per_gpu",
             data_cfg.get("workers_per_gpu", 0),
         )
-        if workers_per_gpu == 0:
+        if workers_per_gpu == 0 or dist_semi_sl:
             dataloader_cfg["persistent_workers"] = False
         elif "persistent_workers" not in dataloader_cfg:
             dataloader_cfg["persistent_workers"] = True
@@ -515,13 +523,13 @@ def patch_persistent_workers(config: Config):
         data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
 
-def get_adaptive_num_workers() -> Union[int, None]:
+def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     """Measure appropriate num_workers value and return it."""
     num_gpus = torch.cuda.device_count()
     if num_gpus == 0:
         logger.warning("There is no GPUs. Use existing num_worker value.")
         return None
-    return min(multiprocessing.cpu_count() // num_gpus, 8)  # max available num_workers is 8
+    return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
 
 
 def patch_from_hyperparams(config: Config, hyperparams):
@@ -563,12 +571,26 @@ def patch_from_hyperparams(config: Config, hyperparams):
         runner=runner,
     )
 
+    # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
+    # as `samples_per_gpu might` not be a valid argument for certain algorithms.
+    if hasattr(config, "task"):
+        if config.task == "instance-segmentation" or config.task == "detection":
+            hparams.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                        test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                    ),
+                )
+            )
+    is_semi_sl = hyperparams.algo_backend.train_type.name == "Semisupervised"
+
     if hyperparams.learning_parameters.auto_num_workers:
-        adapted_num_worker = get_adaptive_num_workers()
+        adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
         if adapted_num_worker is not None:
             hparams.data.workers_per_gpu = adapted_num_worker
 
-    if hyperparams.algo_backend.train_type.name == "Semisupervised":
+    if is_semi_sl:
         unlabeled_config = ConfigDict(
             data=ConfigDict(
                 unlabeled_dataloader=ConfigDict(
@@ -654,6 +676,7 @@ class InputSizeManager:
         "MultiScaleFlipAug": ["transforms"],
         "AutoAugment": ["policies"],
         "TwoCropTransform": ["view0", "view1", "pipeline"],
+        "LoadResizeDataFromOTXDataset": ["resize_cfg"],
     }
     SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
 
@@ -785,7 +808,9 @@ class InputSizeManager:
                 for sub_pipeline_name in sub_pipeline_names:
                     if sub_pipeline_name in pipeline:
                         sub_pipeline = pipeline[sub_pipeline_name]
-                        if isinstance(sub_pipeline[0], list):
+                        if isinstance(sub_pipeline, dict):
+                            sub_pipeline = [sub_pipeline]
+                        elif isinstance(sub_pipeline[0], list):
                             sub_pipeline = sub_pipeline[0]
                         post_img_size = self._estimate_post_img_size(sub_pipeline, post_img_size)
                         break
@@ -829,7 +854,9 @@ class InputSizeManager:
             if pipeline_name == pipeline["type"]:
                 for sub_pipeline_name in sub_pipeline_names:
                     if sub_pipeline_name in pipeline:
-                        if isinstance(pipeline[sub_pipeline_name][0], dict):
+                        if isinstance(pipeline[sub_pipeline_name], dict):
+                            self._set_pipeline_size_value(pipeline[sub_pipeline_name], scale)
+                        elif isinstance(pipeline[sub_pipeline_name][0], dict):
                             for sub_pipeline in pipeline[sub_pipeline_name]:
                                 self._set_pipeline_size_value(sub_pipeline, scale)
                         elif isinstance(pipeline[sub_pipeline_name][0], list):
@@ -839,7 +866,7 @@ class InputSizeManager:
                         else:
                             raise ValueError(
                                 "Dataset pipeline in pipeline wrapper type should be"
-                                "either list[dict] or list[list[dict]]."
+                                "either dict, list[dict] or list[list[dict]]."
                             )
 
     @staticmethod

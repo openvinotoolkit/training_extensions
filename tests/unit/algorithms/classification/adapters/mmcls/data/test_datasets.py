@@ -35,7 +35,7 @@ from tests.unit.api.parameters_validation.validation_helper import (
 
 
 def create_cls_dataset():
-    image = Image(data=np.random.randint(low=0, high=255, size=(8, 8, 3)))
+    image = Image(data=np.random.randint(low=0, high=255, size=(8, 8, 3)).astype(np.uint8))
     annotation = Annotation(
         shape=Rectangle.generate_full_box(),
         labels=[ScoredLabel(LabelEntity(name="test_selfsl_dataset", domain=Domain.CLASSIFICATION))],

@@ -4,6 +4,7 @@ import pytest
 
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    patch_persistent_workers,
     get_adaptive_num_workers,
     InputSizeManager,
     get_configured_input_size,
@@ -13,8 +14,55 @@ from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
+def get_data_cfg(workers_per_gpu: int = 2) -> dict:
+    data_cfg = {}
+    for subset in ["train", "val", "test", "unlabeled"]:
+        data_cfg[subset] = "fake"
+        data_cfg[f"{subset}_dataloader"] = {"persistent_workers": True, "workers_per_gpu": workers_per_gpu}
+
+    return data_cfg
+
+
 @e2e_pytest_unit
-def test_get_adaptive_num_workers(mocker):
+@pytest.mark.parametrize("workers_per_gpu", [0, 2])
+def test_patch_persistent_workers(mocker, workers_per_gpu):
+    data_cfg = get_data_cfg(workers_per_gpu)
+    config = mocker.MagicMock()
+    config.data = data_cfg
+
+    mock_torch = mocker.patch.object(config_utils, "torch")
+    mock_torch.distributed.is_initialized.return_value = False
+
+    patch_persistent_workers(config)
+
+    for subset in ["train", "val", "test", "unlabeled"]:
+        # check persistent_workers is turned off if workers_per_gpu is 0
+        assert data_cfg[f"{subset}_dataloader"]["persistent_workers"] is (workers_per_gpu != 0)
+        # check pin_memory is automatically set if it doesn't exist
+        assert data_cfg[f"{subset}_dataloader"]["pin_memory"] is True
+
+
+@e2e_pytest_unit
+def test_patch_persistent_workers_dist_semisl(mocker):
+    data_cfg = get_data_cfg()
+    config = mocker.MagicMock()
+    config.data = data_cfg
+
+    mock_torch = mocker.patch.object(config_utils, "torch")
+    mock_torch.distributed.is_initialized.return_value = True
+
+    patch_persistent_workers(config)
+
+    for subset in ["train", "val", "test", "unlabeled"]:
+        # check persistent_workers is turned off in distributed training semi-SL case
+        assert data_cfg[f"{subset}_dataloader"]["persistent_workers"] is False
+        # check pin_memory is automatically set if it doesn't exist
+        assert data_cfg[f"{subset}_dataloader"]["pin_memory"] is True
+
+
+@e2e_pytest_unit
+@pytest.mark.parametrize("num_dataloader", [1, 2, 4])
+def test_get_adaptive_num_workers(mocker, num_dataloader):
     num_gpu = 5
     mock_torch = mocker.patch.object(config_utils, "torch")
     mock_torch.cuda.device_count.return_value = num_gpu
@@ -23,7 +71,7 @@ def test_get_adaptive_num_workers(mocker):
     mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
     mock_multiprocessing.cpu_count.return_value = num_cpu
 
-    assert get_adaptive_num_workers() == num_cpu // num_gpu
+    assert get_adaptive_num_workers(num_dataloader) == num_cpu // (num_gpu * num_dataloader)
 
 
 @e2e_pytest_unit
@@ -220,6 +268,25 @@ mock_data_pipeline_to_estimate = {
             ),
         ],
         "input_size": (600, 600),
+    },
+    "load_resize_data_from_otxdataset": {
+        "pipeline": [
+            dict(
+                type="LoadResizeDataFromOTXDataset",
+                resize_cfg=dict(type="Resize", size=(100, 100)),
+            ),
+        ],
+        "input_size": (100, 100),
+    },
+    "resize_to": {
+        "pipeline": [
+            dict(
+                type="LoadResizeDataFromOTXDataset",
+                resize_cfg=dict(type="Resize", size=(100, 100), downscale_only=True),
+            ),
+            dict(type="ResizeTo", size=(100, 100)),
+        ],
+        "input_size": (100, 100),
     },
 }
 

@@ -57,12 +57,8 @@ __test_pipeline = [
 ]
 
 __dataset_type = "OTXClsDataset"
-__samples_per_gpu = 32
-__workers_per_gpu = 2
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu,
-    workers_per_gpu=__workers_per_gpu,
     train=dict(type=__dataset_type, pipeline=__train_pipeline),
     unlabeled=dict(
         type=__dataset_type,

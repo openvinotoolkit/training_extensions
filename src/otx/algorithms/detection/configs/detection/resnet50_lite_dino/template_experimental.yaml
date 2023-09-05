@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_ConvNeXt
-name: MaskRCNN-ConvNeXt
-task_type: INSTANCE_SEGMENTATION
+model_template_id: Custom_Object_Detection_Gen3_Lite_DINO
+name: Lite-DINO
+task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for MaskRCNN-ConvNeXt
+summary: Class-Incremental Object Detection for Lite DINO
 application: ~
 
 # Algo backend.
@@ -26,25 +26,22 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 2
+        default_value: 4
         auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.001
+        default_value: 0.0001
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 0
       num_iters:
-        default_value: 100
-    pot_parameters:
-      stat_requests_number:
-        default_value: 1
+        default_value: 200
     nncf_optimization:
       enable_quantization:
         default_value: true
       enable_pruning:
         default_value: false
       pruning_supported:
-        default_value: false
+        default_value: true
       maximal_accuracy_degradation:
         default_value: 1.0
     algo_backend:
@@ -58,5 +55,10 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 266.78
-size: 192.4
+gigaflops: 140
+size: 192.0
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

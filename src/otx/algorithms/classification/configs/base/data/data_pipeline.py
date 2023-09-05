@@ -20,7 +20,13 @@ __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375
 __resize_target_size = 224
 
 __train_pipeline = [
-    dict(type="LoadImageFromOTXDataset"),
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", size=__resize_target_size, downscale_only=True),
+        # To be resized in this op only if input is larger than expected size
+        # for speed & cache memory efficiency.
+        enable_memcache=True,  # Cache after resizing image
+    ),
     dict(type="RandomResizedCrop", size=__resize_target_size, efficientnet_style=True),
     dict(type="RandomFlip", flip_prob=0.5, direction="horizontal"),
     dict(type="Normalize", **__img_norm_cfg),
@@ -46,22 +52,29 @@ __train_pipeline = [
     ),
 ]
 
+__val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", size=__resize_target_size),
+        enable_memcache=True,  # Cache after resizing image
+    ),
+    dict(type="Normalize", **__img_norm_cfg),
+    dict(type="ImageToTensor", keys=["img"]),
+    dict(type="Collect", keys=["img"]),
+]
+
 __test_pipeline = [
     dict(type="LoadImageFromOTXDataset"),
-    dict(type="Resize", size=__resize_target_size),
+    dict(type="ResizeTo", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="Collect", keys=["img"]),
 ]
 
 __dataset_type = "OTXClsDataset"
-__samples_per_gpu = 32
-__workers_per_gpu = 2
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu,
-    workers_per_gpu=__workers_per_gpu,
     train=dict(type=__dataset_type, pipeline=__train_pipeline),
-    val=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
+    val=dict(type=__dataset_type, test_mode=True, pipeline=__val_pipeline),
     test=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
 )
