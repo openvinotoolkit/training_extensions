@@ -306,10 +306,12 @@ class OTXCLIv2:
                     **left_kwargs,
                 }
             )
+            # TODO: Cleanup for output
             # The configuration dump is saved next to the checkpoint file.
             model_base_dir = Path(results["checkpoint"]).parent
             self.workspace.dump_config(filename=str(model_base_dir / "configs.yaml"))
-            print(results["checkpoint"])
+            print(f"[*] OTX Model Weight: {results['checkpoint']}")
+            print(f"[*] The OTX configuration used in the training: {str(model_base_dir / 'configs.yaml')}")
         elif subcommand == "test":
             self.instantiate_classes()
             test_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "test")
@@ -317,17 +319,20 @@ class OTXCLIv2:
             results = self.engine.test(
                 self.model, test_dataloader=self.data.test_dataloader(**test_dl_kwargs), **subcommand_kwargs
             )
+             # TODO: Cleanup for output
             print(results)
         elif subcommand == "predict":
             self.instantiate_classes()
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.predict(model=self.model, **subcommand_kwargs)
+             # TODO: Cleanup for output
             print(results)
         elif subcommand == "export":
             self.instantiate_classes()
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.export(model=self.model, **subcommand_kwargs)
-            print(results)
+             # TODO: Cleanup for output
+            print(f"[*] Model exporting ended successfully.")
         else:
             for key, val in self.config[subcommand].items():
                 print(f"{key}: {val}")
