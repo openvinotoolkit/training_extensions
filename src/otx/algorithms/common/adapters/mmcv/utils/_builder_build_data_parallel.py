@@ -93,19 +93,28 @@ class XPUDataParallel(MMDataParallel):
 
     def scatter(self, inputs, kwargs,
                 device_ids):
-        for k in kwargs:
-            if k == 'img_metas':
-                if isinstance(kwargs[k], list):
-                    kwargs[k] = kwargs[k][0].data
-                else:
-                    kwargs[k] = kwargs[k].data
-            if k == 'img':
-                kwargs[k][0] = kwargs[k][0].xpu()
+        inputs, kwargs = super().scatter(inputs, kwargs, [-1])
 
         for x in inputs:
+            if isinstance(x, tuple):
+                for val in x:
+                    if isinstance(val, dict):
+                        for k in val:
+                            if isinstance(val[k], torch.Tensor):
+                                val[k] = val[k].to(torch.device(f'xpu:{device_ids[0]}'))
+                            elif isinstance(val[k], list):
+                                for i, item in enumerate(val[k]):
+                                    if isinstance(item, torch.Tensor):
+                                        val[k][i] = item.to(torch.device(f'xpu:{device_ids[0]}'))
+
+        for x in kwargs:
             if isinstance(x, dict):
                 for k in x:
                     if isinstance(x[k], torch.Tensor):
                         x[k] = x[k].to("xpu")
+                    elif isinstance(x[k], list):
+                        for i, item in enumerate(x[k]):
+                            if isinstance(item, torch.Tensor):
+                                x[k][i] = item.to(torch.device(f'xpu:{device_ids[0]}'))
 
-        return (inputs,), (kwargs, )
+        return inputs, kwargs
