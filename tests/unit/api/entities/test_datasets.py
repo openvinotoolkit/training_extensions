@@ -495,6 +495,47 @@ class TestDatasetEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
+    def test_dataset_entity_get_combined_subset(self):
+        """
+        <b>Description:</b>
+        Check DatasetEntity class "get_combined_subset" method
+
+        <b>Input data:</b>
+        DatasetEntity class object with specified "items" and "purpose" parameters
+
+        <b>Expected results:</b>
+        Test passes if DatasetEntity returned by "get_combined_subset" method is equal to expected
+
+        <b>Steps</b>
+        1. Check DatasetEntity object returned by "get_combined_subset" method with list of subsets that in items of
+        base dataset
+        2. Check DatasetEntity object returned by "get_combined_subset" method with list of subsets that partialy in
+        items of base dataset
+        3. Check DatasetEntity object returned by "get_combined_subset" method with list of only one subset that in
+        items of base dataset
+        """
+        validation_item = self.dataset_item()
+        validation_item.subset = Subset.VALIDATION
+        training_item = self.dataset_item()
+        training_item.subset = Subset.TRAINING
+        dataset = self.dataset()
+        dataset._items.append(training_item)
+        dataset._items.append(validation_item)
+        # Checking DatasetEntity object returned by "get_combined_subset" method with list of subsets
+        # TRAINING + VALIDATION
+        mixed_items_dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.VALIDATION])
+        assert mixed_items_dataset.purpose is dataset.purpose
+        assert mixed_items_dataset._items == [dataset._items[2]] + [training_item] + [validation_item]
+        # TRAINING + UNLABELED (which is not in items of the base dataset)
+        mixed_items_dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.UNLABELED])
+        assert mixed_items_dataset._items == [training_item]
+        # VALIDATION only
+        mixed_items_dataset = dataset.get_combined_subset([Subset.VALIDATION])
+        assert mixed_items_dataset._items == [dataset._items[2]] + [validation_item]
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
     def test_dataset_entity_remove(self):
         """
         <b>Description:</b>

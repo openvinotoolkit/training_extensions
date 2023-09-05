@@ -51,6 +51,10 @@ model_adapter_keys = (
     "visual_prompting_image_encoder.bin",
     "visual_prompting_decoder.xml",
     "visual_prompting_decoder.bin",
+    "image_threshold",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
+    "pixel_threshold",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
+    "min",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
+    "max",  # NOTE: used for compatibility with with OTX 1.2.x. Remove when all Geti projects are upgraded.
 )
 
 
