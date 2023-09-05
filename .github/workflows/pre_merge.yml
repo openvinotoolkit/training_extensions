@@ -32,8 +32,6 @@ jobs:
         run: tox -vv -e pre-commit-all-py310-pt1
   Unit-Test:
     runs-on: [otx-gpu-t4-1]
-    container:
-      image: registry.toolbox.iotg.sclab.intel.com/ote/ci/test-env:latest
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
@@ -54,6 +52,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Setup ffmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v2
       - name: Install Python
         uses: actions/setup-python@v4
         with:
