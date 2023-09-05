@@ -38,6 +38,8 @@ jobs:
     # tricky workaround to pass list from the string input type
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
+    container:
+      image: registry.toolbox.iotg.sclab.intel.com/ote/ci/test-env:latest
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository

@@ -32,6 +32,8 @@ jobs:
         run: tox -vv -e pre-commit-all-py310-pt1
   Unit-Test:
     runs-on: [otx-gpu-t4-1]
+    container:
+      image: registry.toolbox.iotg.sclab.intel.com/ote/ci/test-env:latest
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
