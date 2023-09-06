@@ -14,8 +14,8 @@ from .custom_two_stage_detector import CustomTwoStageDetector
 from .custom_vfnet_detector import CustomVFNet
 from .custom_yolox_detector import CustomYOLOX
 from .l2sp_detector_mixin import L2SPDetectorMixin
+from .mean_teacher import MeanTeacher
 from .sam_detector_mixin import SAMDetectorMixin
-from .unbiased_teacher import UnbiasedTeacher
 
 __all__ = [
     "CustomATSS",
@@ -29,6 +29,6 @@ __all__ = [
     "CustomYOLOX",
     "L2SPDetectorMixin",
     "SAMDetectorMixin",
-    "UnbiasedTeacher",
     "CustomMaskRCNNTileOptimized",
+    "MeanTeacher",
 ]
