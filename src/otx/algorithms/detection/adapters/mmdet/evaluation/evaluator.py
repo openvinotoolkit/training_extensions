@@ -158,6 +158,7 @@ def mask_iou(det: Tuple[np.ndarray, BitmapMasks], gt_masks: PolygonMasks, iou_th
         min_y1 = min(det_bbox[1], gt_bbox[1])
         max_x2 = max(det_bbox[2], gt_bbox[2])
         max_y2 = max(det_bbox[3], gt_bbox[3])
+
         det_bbox_h, det_bbox_w = det_bbox[3] - det_bbox[1], det_bbox[2] - det_bbox[0]
         det_mask = det_mask.resize((det_bbox_h, det_bbox_w))
         det_mask = det_mask.expand(max_y2 - min_y1, max_x2 - min_x1, det_bbox[1] - min_y1, det_bbox[0] - min_x1)

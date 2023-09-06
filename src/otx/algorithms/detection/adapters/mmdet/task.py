@@ -274,14 +274,13 @@ class MMDetectionTask(OTXDetectionTask):
         else:
             target_classes = datasets[0].CLASSES
 
-        self.record_info_to_checkpoint_meta(cfg, target_classes)
-
         # Metadata
         meta = dict()
         meta["env_info"] = env_info
         # meta['config'] = cfg.pretty_text
         meta["seed"] = cfg.seed
         meta["exp_name"] = cfg.work_dir
+        self.record_info_to_checkpoint_meta(cfg, target_classes)
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
