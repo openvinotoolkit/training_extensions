@@ -10,8 +10,11 @@ img_scale = (992, 736)
 angle_version = "le135"
 
 train_pipeline = [
-    dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations", with_bbox=True, with_angle=True, angle_version=angle_version),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(type="LoadAnnotationFromOTXDataset",
+         with_bbox=True,
+         with_angle=True,
+         angle_version=angle_version),
     dict(
         type="RResize",
         img_scale=[(992, 736), (896, 736), (1088, 736), (992, 672), (992, 800)],

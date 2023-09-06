@@ -4,7 +4,7 @@ name: Rotated_ATSS_OBB_MobileNet
 task_type: ROTATED_DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Rotated object detection for RotatedATSS-OBB-MobileNet
+summary: Class-Incremental Rotated object detection for RotatedATSS OBB MobileNet
 application: ~
 
 # Algo backend.
@@ -28,6 +28,8 @@ hyper_parameters:
       batch_size:
         default_value: 8
         auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 8
       learning_rate:
         default_value: 0.004
         auto_hpo_state: POSSIBLE
@@ -57,8 +59,3 @@ training_targets:
 # Stats.
 gigaflops: 20.6
 size: 9.1
-# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-# inference_targets:
-#   - CPU
-#   - GPU
-#   - VPU
