@@ -388,7 +388,7 @@ class Evaluator:
         elif self.domain == Domain.ROTATED_DETECTION:
             return eval_rbbox_map(
                 results,
-                self.annotations,
+                self.annotation,
                 scale_ranges=scale_ranges,
                 iou_thr=iou_thr,
                 dataset=self.classes,
