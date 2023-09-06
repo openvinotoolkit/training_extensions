@@ -106,6 +106,7 @@ class Tile:
             self.tiles = sample(self.tiles_all, self.sample_num)
         else:
             self.tiles = self.tiles_all
+        breakpoint()
 
     @timeit
     def gen_tile_ann(self, include_full_img) -> Tuple[List[Dict], List[Dict]]:

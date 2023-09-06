@@ -26,10 +26,10 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 8
+        default_value: 4
         auto_hpo_state: POSSIBLE
       inference_batch_size:
-        default_value: 8
+        default_value: 4
       learning_rate:
         default_value: 0.004
         auto_hpo_state: POSSIBLE

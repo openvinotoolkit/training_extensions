@@ -508,6 +508,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         if self.config.tiling_parameters.enable_tiling:
             enable_async_inference = False
+        enable_async_inference = False
 
         def add_prediction(id: int, predicted_scene: AnnotationSceneEntity, aux_data: tuple):
             dataset_item = dataset[id]

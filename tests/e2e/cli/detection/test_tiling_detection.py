@@ -45,7 +45,7 @@ args = {
         "--learning_parameters.num_iters",
         "10",
         "--learning_parameters.batch_size",
-        "4",
+        "2",
         "--tiling_parameters.enable_tiling",
         "1",
         "--tiling_parameters.enable_adaptive_params",
