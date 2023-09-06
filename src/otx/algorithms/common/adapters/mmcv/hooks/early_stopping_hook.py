@@ -147,11 +147,6 @@ class EarlyStoppingHook(Hook):
                 self.last_iter = runner.iter
             else:
                 self.wait_count += 1
-                print_log(
-                    f"\nEarlyStopping. Best Score: {self.best_score:.4f}, Current Score: {key_score:.4f}, "
-                    f"Patience: {self.patience}, Count: {self.wait_count}",
-                    logger=runner.logger,
-                )
                 if self.wait_count >= self.patience:
                     if runner.iter - self.last_iter < self.iteration_patience:
                         print_log(
@@ -345,7 +340,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             self.bad_count += 1
 
         print_log(
-            f"\nReduceLROnPlateau. Best Score: {self.best_score}, Current Score: {score}, Patience: {self.patience} "
+            f"\nBest Score: {self.best_score}, Current Score: {score}, Patience: {self.patience} "
             f"Count: {self.bad_count}",
             logger=runner.logger,
         )
