@@ -33,7 +33,7 @@ jobs:
   Unit-Test:
     runs-on: [otx-gpu-t4-1]
     container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-16c64edc291402051363d7ae5806fd1b4e2106c6
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-fd766830e39c6dad1e55019558528cf20817bbf2
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
