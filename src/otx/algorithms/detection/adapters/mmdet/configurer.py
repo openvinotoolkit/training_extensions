@@ -134,7 +134,10 @@ class DetectionConfigurer(BaseConfigurer):
         class_adapt_cfg = dict(type="AdaptClassLabels", src_classes=self.data_classes, dst_classes=self.model_classes)
         pipeline_cfg = tr_data_cfg.pipeline
         for i, operation in enumerate(pipeline_cfg):
-            if operation["type"] == "LoadAnnotationFromOTXDataset":  # insert just after this operation
+            if operation["type"] in [
+                "LoadAnnotationFromOTXDataset",
+                "LoadResizeDataFromOTXDataset",
+            ]:  # insert just after this operation
                 op_next_ann = pipeline_cfg[i + 1] if i + 1 < len(pipeline_cfg) else {}
                 if op_next_ann.get("type", "") == class_adapt_cfg["type"]:
                     op_next_ann.update(class_adapt_cfg)

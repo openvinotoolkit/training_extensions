@@ -1,23 +1,13 @@
 """Data Pipeline of YOLOX model for Detection Task."""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=invalid-name
 
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 __img_size = (640, 640)
+__img_size_test = (416, 416)
 
 train_pipeline = [
     dict(type="Mosaic", img_scale=__img_size, pad_val=114.0),
@@ -34,7 +24,7 @@ train_pipeline = [
         hue_delta=18,
     ),
     dict(type="RandomFlip", flip_ratio=0.5),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=True),
+    dict(type="Resize", img_scale=__img_size, keep_ratio=True, override=True),  # Allow multiple resize
     dict(type="Pad", pad_to_square=True, pad_val=114.0),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
@@ -57,16 +47,36 @@ train_pipeline = [
     ),
 ]
 
+val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", img_scale=__img_size_test, keep_ratio=True),
+        enable_memcache=True,  # Cache after resizing image
+    ),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=__img_size_test,
+        flip=False,
+        transforms=[
+            dict(type="RandomFlip"),
+            dict(type="Pad", size=__img_size_test, pad_val=114.0),
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="DefaultFormatBundle"),
+            dict(type="Collect", keys=["img"]),
+        ],
+    ),
+]
+
 test_pipeline = [
     dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
-        img_scale=(416, 416),
+        img_scale=__img_size_test,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
-            dict(type="Pad", size=(416, 416), pad_val=114.0),
+            dict(type="Pad", size=__img_size_test, pad_val=114.0),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="DefaultFormatBundle"),
             dict(type="Collect", keys=["img"]),
@@ -82,8 +92,18 @@ data = dict(
         dataset=dict(
             type=__dataset_type,
             pipeline=[
-                dict(type="LoadImageFromOTXDataset", to_float32=False, enable_memcache=True),
-                dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+                dict(
+                    type="LoadResizeDataFromOTXDataset",
+                    load_ann_cfg=dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+                    resize_cfg=dict(
+                        type="Resize",
+                        img_scale=__img_size,
+                        keep_ratio=True,
+                        downscale_only=True,
+                    ),  # Resize to intermediate size if org image is bigger
+                    to_float32=False,
+                    enable_memcache=True,  # Cache after resizing image & annotations
+                ),
             ],
         ),
         pipeline=train_pipeline,
@@ -91,7 +111,7 @@ data = dict(
     val=dict(
         type=__dataset_type,
         test_mode=True,
-        pipeline=test_pipeline,
+        pipeline=val_pipeline,
     ),
     test=dict(
         type=__dataset_type,

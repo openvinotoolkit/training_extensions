@@ -26,6 +26,7 @@ import nncf
 import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
+from anomalib.data.utils.transform import get_transforms
 from nncf.common.quantization.structs import QuantizationPreset
 from omegaconf import OmegaConf
 from openvino.model_api.models import AnomalyDetection, AnomalyResult
@@ -205,6 +206,51 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             update_progress_callback(int((idx + 1) / len(dataset) * 100))
 
         return dataset
+
+    def get_metadata(self) -> Dict:
+        """Get Meta Data."""
+        metadata = {}
+        if self.task_environment.model is not None:
+            try:
+                metadata = json.loads(self.task_environment.model.get_data("metadata").decode())
+                self._populate_metadata(metadata)
+                logger.info("Metadata loaded from model v1.4.")
+            except (KeyError, json.decoder.JSONDecodeError):
+                # model is from version 1.2.x
+                metadata = self._populate_metadata_legacy(self.task_environment.model)
+                logger.info("Metadata loaded from model v1.2.x.")
+        else:
+            raise ValueError("Cannot access meta-data. self.task_environment.model is empty.")
+
+        return metadata
+
+    def _populate_metadata_legacy(self, model: ModelEntity) -> Dict[str, Any]:
+        """Populates metadata for models for version 1.2.x."""
+        image_threshold = np.frombuffer(model.get_data("image_threshold"), dtype=np.float32)
+        pixel_threshold = np.frombuffer(model.get_data("pixel_threshold"), dtype=np.float32)
+        min_value = np.frombuffer(model.get_data("min"), dtype=np.float32)
+        max_value = np.frombuffer(model.get_data("max"), dtype=np.float32)
+        transform = get_transforms(
+            config=self.config.dataset.transform_config.train,
+            image_size=tuple(self.config.dataset.image_size),
+            to_tensor=True,
+        )
+        metadata = {
+            "transform": transform.to_dict(),
+            "image_threshold": image_threshold,
+            "pixel_threshold": pixel_threshold,
+            "min": min_value,
+            "max": max_value,
+            "task": str(self.task_type).lower().split("_")[-1],
+        }
+        return metadata
+
+    def _populate_metadata(self, metadata: Dict[str, Any]):
+        """Populates metadata for models from version 1.4 onwards."""
+        metadata["image_threshold"] = np.array(metadata["image_threshold"], dtype=np.float32).item()
+        metadata["pixel_threshold"] = np.array(metadata["pixel_threshold"], dtype=np.float32).item()
+        metadata["min"] = np.array(metadata["min"], dtype=np.float32).item()
+        metadata["max"] = np.array(metadata["max"], dtype=np.float32).item()
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate the performance of the model.
