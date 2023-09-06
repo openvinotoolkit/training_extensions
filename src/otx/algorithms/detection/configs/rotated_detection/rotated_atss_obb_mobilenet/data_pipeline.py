@@ -1,20 +1,35 @@
 """Data Pipeline of rotated_atss_obb_mobilenet for Rotated-Detection Task."""
 dataset_type = "OTXRotatedDataset"
 
-data_root = "dota-coco/"
-
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 
 img_scale = (992, 736)
 
 angle_version = "le135"
 
+meta_keys = [
+    "ori_filename",
+    "flip_direction",
+    "scale_factor",
+    "img_norm_cfg",
+    "gt_ann_ids",
+    "flip",
+    "ignored_labels",
+    "ori_shape",
+    "filename",
+    "img_shape",
+    "pad_shape",
+]
+
 train_pipeline = [
     dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-    dict(type="LoadAnnotationFromOTXDataset",
-         with_bbox=True,
-         with_angle=True,
-         angle_version=angle_version),
+    dict(
+        type="LoadAnnotationFromOTXDataset",
+        domain="rotated_detection",
+        with_bbox=True,
+        with_angle=True,
+        angle_version=angle_version,
+    ),
     dict(
         type="RResize",
         img_scale=[(992, 736), (896, 736), (1088, 736), (992, 672), (992, 800)],
@@ -29,11 +44,11 @@ train_pipeline = [
     dict(type="Normalize", **img_norm_cfg),
     dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"], meta_keys=meta_keys),
 ]
 
 test_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
         img_scale=img_scale,
@@ -54,22 +69,16 @@ data = dict(
     train=dict(
         type=dataset_type,
         angle_version=angle_version,
-        ann_file=data_root + "anno/DOTA_train.json",
-        img_prefix=data_root + "train/images-jpeg/",
         pipeline=train_pipeline,
     ),
     val=dict(
         type=dataset_type,
         angle_version=angle_version,
-        ann_file=data_root + "anno/DOTA_val.json",
-        img_prefix=data_root + "val/images-jpeg/",
         pipeline=test_pipeline,
     ),
     test=dict(
         type=dataset_type,
         angle_version=angle_version,
-        ann_file=data_root + "anno/DOTA_val.json",
-        img_prefix=data_root + "val/images-jpeg/",
         pipeline=test_pipeline,
     ),
 )

@@ -25,6 +25,7 @@ from mmdet.core import BitmapMasks, PolygonMasks, eval_map
 from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
 from mmdet.core.evaluation.class_names import get_classes
 from mmdet.core.evaluation.mean_ap import average_precision
+from mmrotate.core import eval_rbbox_map
 from terminaltables import AsciiTable
 
 from otx.api.entities.label import Domain
@@ -240,7 +241,7 @@ class Evaluator:
         self.domain = domain
         self.classes = classes
         self.num_classes = len(classes)
-        if domain != Domain.DETECTION:
+        if domain == Domain.INSTANCE_SEGMENTATION:
             self.annotation = self.get_gt_instance_masks(annotation)
         else:
             self.annotation = annotation
@@ -379,6 +380,15 @@ class Evaluator:
             return eval_map(
                 results,
                 self.annotation,
+                scale_ranges=scale_ranges,
+                iou_thr=iou_thr,
+                dataset=self.classes,
+                logger=logger,
+            )
+        elif self.domain == Domain.ROTATED_DETECTION:
+            return eval_rbbox_map(
+                results,
+                self.annotations,
                 scale_ranges=scale_ranges,
                 iou_thr=iou_thr,
                 dataset=self.classes,
