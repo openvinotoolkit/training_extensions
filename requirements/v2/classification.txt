@@ -1,7 +1,0 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Classification Requirements.
-mmpretrain>=1.0.0rc8
-mmdeploy
-timm==0.6.12
-pytorchcv
-yapf<0.40.0

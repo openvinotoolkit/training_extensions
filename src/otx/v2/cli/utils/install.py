@@ -11,7 +11,9 @@ import os
 import platform
 import re
 import subprocess
+from importlib.metadata import requires
 from pathlib import Path
+from typing import Dict, List
 from warnings import warn
 
 import pkg_resources  # type: ignore[import]
@@ -35,7 +37,7 @@ MM_REQUIREMENTS = [
 SUPPORTED_TASKS = ["classification", "anomaly"]
 
 
-def get_requirements(filenames: str | list[str]) -> list[Requirement]:
+def get_requirements_from_file(filenames: str | list[str]) -> list[Requirement]:
     """Get requirements from requirements.txt file.
 
     This function returns list of required packages from requirement files.
@@ -45,7 +47,7 @@ def get_requirements(filenames: str | list[str]) -> list[Requirement]:
             packages.
 
     Example:
-        >>> get_requirements(filename="requirements.txt")
+        >>> get_requirements_from_file(filename="requirements.txt")
         [<Requirement: "mmcv-full==1.7.0", <Requirement: "onnx>=1.8.1", ...]
 
     Returns:
@@ -61,6 +63,38 @@ def get_requirements(filenames: str | list[str]) -> list[Requirement]:
             requirements.extend(reqs)
 
     return requirements
+
+
+def get_requirements(module: str = "otx") -> Dict[str, List[Requirement]]:
+    """Get requirements of module from importlib.metadata.
+
+    This function returns list of required packages from importlib_metadata.
+
+    Example:
+        >>> get_requirements("otx")
+        {
+            "api": ["attrs>=21.2.0", ...],
+            "anomaly": ["anomalib==0.5.1", ...],
+            ...
+        }
+
+    Returns:
+        Dict[str, List[Requirement]]: List of required packages for each optional-extras.
+    """
+    requirement_list: List[str] = requires(module)
+    extra_requirement: Dict[str, List[Requirement]] = {}
+    for requirement in requirement_list:
+        extra = "api"
+        requirement_extra: List[str] = requirement.replace(" ", "").split(";")
+        if isinstance(requirement_extra, list) and len(requirement_extra) > 1:
+            extra = requirement_extra[-1].split("==")[-1].strip("'")
+        requirement = requirement_extra[0]
+        requirement = Requirement.parse(requirement)
+        if extra in extra_requirement:
+            extra_requirement[extra].append(requirement)
+        else:
+            extra_requirement[extra] = [requirement]
+    return extra_requirement
 
 
 def parse_requirements(

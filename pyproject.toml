@@ -1,19 +1,124 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # SETUP CONFIGURATION.                                                        #
 [build-system]
-# FIXME: specified torch wheel to build torch cpp extension should be fixed in some
-# different way instead of using static link url
 requires = [
-    "setuptools>=42",
+    "setuptools>=61",
     "wheel",
     "Cython~=0.29.32",
-    "numpy~=1.21.0"
+    "numpy~=1.21.0",
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "otx"
+dynamic = ["version"]
+description = "OpenVINO™ Training Extensions: Train, Evaluate, Optimize, Deploy Computer Vision Models via OpenVINO™"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    { name = "OpenVINO™ Training Extensions Contributors" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "attrs>=21.2.0",
+    "dill>=0.3.6",
+    "docstring_parser",
+    "imagesize==1.4.1",
+    "jsonargparse==4.22.0",
+    "networkx>=2.6,<=2.8.0",
+    "numpy>=1.21.0,<=1.23.4",
+    "omegaconf>=2.1.1",
+    "opencv-python>=4.5",
+    "pymongo",
+    "rich",
+    "rich-argparse",
+    "scikit-learn>=1.0.2",
+    "Shapely>=1.7.1,<=1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "tox==4.4.5",
+    "pre-commit==2.20.0",
+    "pylint",
+    "pytest",
+    "coverage",
+    "pytest-timeout",
+    "pytest-mock",
+    "onnx==1.13.0",
+    "onnxruntime==1.14.1",
+    "pytest-csv",
+]
+docs = [
+    "furo",
+    "myst-parser",
+    "sphinx==5.3.0",
+    "pydata-sphinx-theme==0.12.0",
+    "sphinx-tabs",
+    "sphinx-panels",
+    "sphinx-copybutton==0.5.0",
+    "sphinx-autoapi",
+    "sphinxemoji",
+    "nbsphinx",
+]
+base = [
+    "natsort>=6.0.0",
+    "prettytable",
+    "protobuf>=3.20.0",
+    "pyyaml",
+    "datumaro~=1.4.0",
+    "psutil",
+    "scipy>=1.8",
+    "bayesian-optimization>=1.2.0",
+    "tensorboard>=2.11.0",
+    "multiprocess",
+    "torch==2.0.0",
+]
+openvino = [
+    "nncf==2.5.0",
+    "onnx==1.13.0",
+    "openvino-model-api==0.1.5",
+    "openvino==2023.0",
+    "openvino-dev==2023.0",
+    "openvino-telemetry>=2022.1.0",
+]
+anomaly = [
+    "anomalib==0.5.1",
+    "kornia==0.6.9",
+]
+classification = [
+    "mmpretrain==1.0.*",
+    "mmdeploy",
+    "timm==0.6.12",
+    "pytorchcv",
+    "yapf<0.40.0",
+]
+
+[project.scripts]
+otx = "otx.v2.cli.cli:main"
+
+[project.urls]
+Documentation = "https://openvinotoolkit.github.io/training_extensions/"
+Repository = "https://github.com/openvinotoolkit/training_extensions/"
+
+[tool.setuptools.dynamic]
+version = {attr = "otx.v2.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["otx*"]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# CIBUILDWHEEL CONFIGURATION.                                                 #
+# CI CONFIGURATION.                                                        #
 [tool.cibuildwheel]
 build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310-manylinux_x86_64"
 
@@ -22,16 +127,13 @@ build = "cp37-manylinux_x86_64 cp38-manylinux_x86_64 cp39-manylinux_x86_64 cp310
 # COVERAGE CONFIGURATION.                                                     #
 [tool.coverage.run]
 source = [
-    "src/otx/",
+    "src/otx/v2",
 ]
 omit = [
-    "src/otx/algorithms/*/configs/**/*pipeline*.py",
-    "src/otx/algorithms/*/configs/**/model*.py",
-    "src/otx/algorithms/*/configs/**/deployment.py",
-    "src/otx/algorithms/**/configs/**/backbones/*",
-    "src/otx/algorithms/**/*sample*.py",
     "**/__init__.py",
-    "src/otx/recipes/*",
+    "src/otx/v2/configs/*",
+    "src/otx/v2/demo/*",
+    "src/otx/v2/pseudo_code/*",
 ]
 
 

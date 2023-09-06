@@ -1,4 +1,0 @@
-
-jsonargparse==4.22.0
-docstring_parser
-rich-argparse

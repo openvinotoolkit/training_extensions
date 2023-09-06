@@ -57,20 +57,21 @@ def install(task: str) -> int:
     Returns:
         int: Status code of the pip install command.
     """
+    requirements_dict = get_requirements("otx")
+    # Add base and openvino requirements.
+    requirements = requirements_dict["base"]
+    requirements.extend(requirements_dict["openvino"])
     if task == "full":
-        requirement_filenames = [f"requirements/v2/{t}.txt" for t in SUPPORTED_TASKS]
+        for extra in SUPPORTED_TASKS:
+            requirements.extend(requirements_dict[extra])
     elif task in SUPPORTED_TASKS:
-        requirement_filenames = [f"requirements/v2/{task}.txt"]
+        requirements.extend(requirements_dict[task])
     else:
         raise ValueError(f"Invalid subcommand: {task}" f"Supported tasks: {SUPPORTED_TASKS}")
 
-    # Add base and openvino requirements.
-    requirement_filenames += ["requirements/v2/base.txt", "requirements/v2/openvino.txt"]
-
-    # Get requirements from requirement.txt files
-    requirements = get_requirements(requirement_filenames)
     # Parse requirements into torch, mmcv and other requirements.
     # This is done to parse the correct version of torch (cpu/cuda) and mmcv (mmcv/mmcv-full).
+    # TODO: Check pre-installed torch with Intel-Device (eg. torch with IPEX).
     torch_requirement, mmcv_requirements, other_requirements = parse_requirements(requirements)
 
     # Get install args for torch to install it from a specific index-url

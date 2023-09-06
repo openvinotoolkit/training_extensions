@@ -81,18 +81,17 @@ def doctor(task: Optional[str] = None, debug: bool = False) -> None:
     task_status = get_task_status(task=task)
     for target, status in task_status.items():
         available = status.get("AVAILABLE", None)
+        exception_lst: List = status.get("EXCEPTIONS", [])
         if available:
             console.log(f"{green_mark} {target}: [bold green]Ready![/bold green]")
         else:
-            console.log(f"{red_mark} {target}: {warning_mark}")
+            for exception in exception_lst:
+                if exception is not None:
+                    console.log(f"{red_mark} {target}: [bold red]{warning_mark} {exception}[/bold red]")
+                if debug and isinstance(exception, Exception):
+                    traceback.print_tb(exception.__traceback__)
             console.log(f"\t - Please try this command: 'otx install {target}' or 'otx install full'\n")
             issue_count += 1
-        exception_lst: List = status.get("EXCEPTIONS", [])
-        for exception in exception_lst:
-            if exception is not None:
-                console.log(f"\t[bold red]{warning_mark} {exception}[/bold red]")
-            if debug and isinstance(exception, Exception):
-                traceback.print_tb(exception.__traceback__)
     print()
 
     if issue_count > 0:
