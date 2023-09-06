@@ -11,6 +11,7 @@ import datetime
 import warnings
 from operator import attrgetter
 from typing import List, Optional
+import numpy as np
 
 from shapely.geometry import Polygon as shapely_polygon
 
@@ -28,8 +29,8 @@ class Point:
     __slots__ = ["x", "y"]
 
     def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
+        self.x = np.clip(x, a_min=0.0, a_max=1.0)
+        self.y = np.clip(y, a_min=0.0, a_max=1.0)
 
     def __repr__(self):
         """String representation of the point."""

@@ -192,88 +192,104 @@
           "train": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-B0": 0.806,
+            "Deti-Tiny": 0.0
           },
           "export": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-B0": 0.806,
+            "Deti-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-B0": 0.806,
+            "Deti-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.764,
             "MobileNet-V3-large-1x": 0.733,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-B0": 0.742,
+            "Deti-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.711,
             "MobileNet-V3-large-1x": 0.692,
-            "EfficientNet-B0": 0.725
+            "EfficientNet-B0": 0.725,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.966,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "export": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.967,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.964
+            "EfficientNet-B0": 0.964,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-B0": 0.636,
+            "Deti-Tiny": 0.0
           },
           "export": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-B0": 0.636,
+            "Deti-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-B0": 0.636,
+            "Deti-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.594,
             "MobileNet-V3-large-1x": 0.622,
-            "EfficientNet-B0": 0.638
+            "EfficientNet-B0": 0.638,
+            "Deti-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.577,
             "MobileNet-V3-large-1x": 0.472,
-            "EfficientNet-B0": 0.605
+            "EfficientNet-B0": 0.605,
+            "Deti-Tiny": 0.0
           }
         },
         "supcon": {
           "train": {
             "EfficientNet-V2-S": 0.783,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.772
+            "EfficientNet-B0": 0.772,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -282,21 +298,24 @@
           "train": {
             "EfficientNet-V2-S": 0.79,
             "MobileNet-V3-large-1x": 0.76,
-            "EfficientNet-B0": 0.81
+            "EfficientNet-B0": 0.81,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 0.97,
             "MobileNet-V3-large-1x": 0.97,
-            "EfficientNet-B0": 0.964
+            "EfficientNet-B0": 0.964,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
+            "EfficientNet-B0": 0.0,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -305,7 +324,8 @@
           "train": {
             "EfficientNet-V2-S": 0.822,
             "MobileNet-V3-large-1x": 0.764,
-            "EfficientNet-B0": 0.797
+            "EfficientNet-B0": 0.797,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -314,7 +334,8 @@
           "train": {
             "EfficientNet-V2-S": 0.767,
             "MobileNet-V3-large-1x": 0.744,
-            "EfficientNet-B0": 0.794
+            "EfficientNet-B0": 0.794,
+            "Deti-Tiny": 0.0
           }
         }
       }
@@ -559,36 +580,36 @@
     "anomaly_classification": {
       "train": {
         "bottle": {
-          "STFPM": 0.771,
-          "PADIM": 0.952
+          "STFPM": 0.759,
+          "PADIM": 0.94
         },
         "cable": {
-          "STFPM": 0.627,
-          "PADIM": 0.64
+          "STFPM": 0.613,
+          "PADIM": 0.68
         },
         "capsule": {
           "STFPM": 0.826,
-          "PADIM": 0.871
+          "PADIM": 0.856
         },
         "carpet": {
-          "STFPM": 0.821,
-          "PADIM": 0.769
+          "STFPM": 0.829,
+          "PADIM": 0.761
         },
         "grid": {
-          "STFPM": 0.731,
+          "STFPM": 0.756,
           "PADIM": 0.744
         },
         "hazelnut": {
-          "STFPM": 0.664,
-          "PADIM": 0.873
+          "STFPM": 0.827,
+          "PADIM": 0.891
         },
         "leather": {
-          "STFPM": 0.871,
-          "PADIM": 0.863
+          "STFPM": 0.887,
+          "PADIM": 0.815
         },
         "metal_nut": {
-          "STFPM": 0.817,
-          "PADIM": 0.843
+          "STFPM": 0.809,
+          "PADIM": 0.835
         },
         "pill": {
           "STFPM": 0.844,
@@ -596,185 +617,61 @@
         },
         "screw": {
           "STFPM": 0.762,
-          "PADIM": 0.75
+          "PADIM": 0.744
         },
         "tile": {
-          "STFPM": 0.872,
-          "PADIM": 0.752
+          "STFPM": 0.829,
+          "PADIM": 0.761
         },
         "toothbrush": {
           "STFPM": 0.714,
-          "PADIM": 0.81
+          "PADIM": 0.762
         },
         "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.69
+          "STFPM": 0.53,
+          "PADIM": 0.66
         },
         "wood": {
-          "STFPM": 0.949,
-          "PADIM": 0.937
+          "STFPM": 0.899,
+          "PADIM": 0.949
         },
         "zipper": {
-          "STFPM": 0.815,
-          "PADIM": 0.841
+          "STFPM": 0.854,
+          "PADIM": 0.848
         }
       },
       "export": {
         "bottle": {
           "STFPM": 0.759,
-          "PADIM": 0.823
-        },
-        "cable": {
-          "STFPM": 0.613,
-          "PADIM": 0.615
-        },
-        "capsule": {
-          "STFPM": 0.826,
-          "PADIM": 0.848
-        },
-        "carpet": {
-          "STFPM": 0.771,
-          "PADIM": 0.786
-        },
-        "grid": {
-          "STFPM": 0.745,
-          "PADIM": 0.731
-        },
-        "hazelnut": {
-          "STFPM": 0.642,
-          "PADIM": 0.727
-        },
-        "leather": {
-          "STFPM": 0.795,
-          "PADIM": 0.847
-        },
-        "metal_nut": {
-          "STFPM": 0.809,
-          "PADIM": 0.812
-        },
-        "pill": {
-          "STFPM": 0.844,
-          "PADIM": 0.844
-        },
-        "screw": {
-          "STFPM": 0.761,
-          "PADIM": 0.746
-        },
-        "tile": {
-          "STFPM": 0.74,
-          "PADIM": 0.718
-        },
-        "toothbrush": {
-          "STFPM": 0.714,
-          "PADIM": 0.718
-        },
-        "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.424
-        },
-        "wood": {
-          "STFPM": 0.832,
-          "PADIM": 0.825
-        },
-        "zipper": {
-          "STFPM": 0.815,
-          "PADIM": 0.834
-        }
-      },
-      "deploy": {
-        "bottle": {
-          "STFPM": 0.759,
-          "PADIM": 0.823
-        },
-        "cable": {
-          "STFPM": 0.613,
-          "PADIM": 0.615
-        },
-        "capsule": {
-          "STFPM": 0.826,
-          "PADIM": 0.848
-        },
-        "carpet": {
-          "STFPM": 0.771,
-          "PADIM": 0.786
-        },
-        "grid": {
-          "STFPM": 0.745,
-          "PADIM": 0.731
-        },
-        "hazelnut": {
-          "STFPM": 0.642,
-          "PADIM": 0.727
-        },
-        "leather": {
-          "STFPM": 0.795,
-          "PADIM": 0.847
-        },
-        "metal_nut": {
-          "STFPM": 0.809,
-          "PADIM": 0.812
-        },
-        "pill": {
-          "STFPM": 0.844,
-          "PADIM": 0.844
-        },
-        "screw": {
-          "STFPM": 0.761,
-          "PADIM": 0.746
-        },
-        "tile": {
-          "STFPM": 0.74,
-          "PADIM": 0.718
-        },
-        "toothbrush": {
-          "STFPM": 0.714,
-          "PADIM": 0.718
-        },
-        "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.424
-        },
-        "wood": {
-          "STFPM": 0.832,
-          "PADIM": 0.825
-        },
-        "zipper": {
-          "STFPM": 0.815,
-          "PADIM": 0.834
-        }
-      },
-      "nncf": {
-        "bottle": {
-          "STFPM": 0.867,
           "PADIM": 0.94
         },
         "cable": {
-          "STFPM": 0.636,
-          "PADIM": 0.673
+          "STFPM": 0.613,
+          "PADIM": 0.68
         },
         "capsule": {
-          "STFPM": 0.871,
+          "STFPM": 0.826,
           "PADIM": 0.856
         },
         "carpet": {
-          "STFPM": 0.846,
-          "PADIM": 0.812
+          "STFPM": 0.829,
+          "PADIM": 0.761
         },
         "grid": {
           "STFPM": 0.756,
-          "PADIM": 0.731
+          "PADIM": 0.744
         },
         "hazelnut": {
-          "STFPM": 0.764,
-          "PADIM": 0.909
+          "STFPM": 0.827,
+          "PADIM": 0.891
         },
         "leather": {
-          "STFPM": 0.944,
-          "PADIM": 0.911
+          "STFPM": 0.887,
+          "PADIM": 0.815
         },
         "metal_nut": {
-          "STFPM": 0.826,
-          "PADIM": 0.817
+          "STFPM": 0.809,
+          "PADIM": 0.835
         },
         "pill": {
           "STFPM": 0.844,
@@ -785,710 +682,834 @@
           "PADIM": 0.744
         },
         "tile": {
-          "STFPM": 0.872,
-          "PADIM": 0.786
+          "STFPM": 0.829,
+          "PADIM": 0.761
         },
         "toothbrush": {
           "STFPM": 0.714,
-          "PADIM": 0.857
+          "PADIM": 0.762
         },
         "transistor": {
-          "STFPM": 0.39,
-          "PADIM": 0.81
+          "STFPM": 0.53,
+          "PADIM": 0.66
         },
         "wood": {
-          "STFPM": 0.937,
-          "PADIM": 0.937
+          "STFPM": 0.899,
+          "PADIM": 0.949
         },
         "zipper": {
-          "STFPM": 0.821,
-          "PADIM": 0.834
+          "STFPM": 0.854,
+          "PADIM": 0.848
         }
       },
-      "ptq": {
+      "deploy": {
         "bottle": {
           "STFPM": 0.759,
-          "PADIM": 0.781
+          "PADIM": 0.94
         },
         "cable": {
           "STFPM": 0.613,
-          "PADIM": 0.626
+          "PADIM": 0.68
         },
         "capsule": {
           "STFPM": 0.826,
-          "PADIM": 0.833
+          "PADIM": 0.856
         },
         "carpet": {
-          "STFPM": 0.761,
-          "PADIM": 0.812
+          "STFPM": 0.829,
+          "PADIM": 0.761
         },
         "grid": {
-          "STFPM": 0.742,
-          "PADIM": 0.731
+          "STFPM": 0.756,
+          "PADIM": 0.744
         },
         "hazelnut": {
-          "STFPM": 0.636,
-          "PADIM": 0.73
+          "STFPM": 0.827,
+          "PADIM": 0.891
         },
         "leather": {
-          "STFPM": 0.776,
-          "PADIM": 0.903
+          "STFPM": 0.887,
+          "PADIM": 0.815
         },
         "metal_nut": {
           "STFPM": 0.809,
-          "PADIM": 0.809
+          "PADIM": 0.835
         },
         "pill": {
           "STFPM": 0.844,
           "PADIM": 0.844
         },
         "screw": {
-          "STFPM": 0.744,
+          "STFPM": 0.762,
           "PADIM": 0.744
         },
         "tile": {
-          "STFPM": 0.739,
-          "PADIM": 0.721
+          "STFPM": 0.829,
+          "PADIM": 0.761
         },
         "toothbrush": {
           "STFPM": 0.714,
-          "PADIM": 0.75
+          "PADIM": 0.762
         },
         "transistor": {
-          "STFPM": 0.4,
-          "PADIM": 0.436
+          "STFPM": 0.53,
+          "PADIM": 0.66
         },
         "wood": {
-          "STFPM": 0.822,
-          "PADIM": 0.835
+          "STFPM": 0.899,
+          "PADIM": 0.949
         },
         "zipper": {
-          "STFPM": 0.788,
-          "PADIM": 0.755
+          "STFPM": 0.854,
+          "PADIM": 0.848
+        }
+      },
+      "nncf": {
+        "bottle": {
+          "STFPM": 0.759,
+          "PADIM": 0.94
+        },
+        "cable": {
+          "STFPM": 0.613,
+          "PADIM": 0.68
+        },
+        "capsule": {
+          "STFPM": 0.826,
+          "PADIM": 0.856
+        },
+        "carpet": {
+          "STFPM": 0.829,
+          "PADIM": 0.761
+        },
+        "grid": {
+          "STFPM": 0.756,
+          "PADIM": 0.744
+        },
+        "hazelnut": {
+          "STFPM": 0.827,
+          "PADIM": 0.891
+        },
+        "leather": {
+          "STFPM": 0.887,
+          "PADIM": 0.815
+        },
+        "metal_nut": {
+          "STFPM": 0.809,
+          "PADIM": 0.835
+        },
+        "pill": {
+          "STFPM": 0.844,
+          "PADIM": 0.844
+        },
+        "screw": {
+          "STFPM": 0.762,
+          "PADIM": 0.744
+        },
+        "tile": {
+          "STFPM": 0.829,
+          "PADIM": 0.761
+        },
+        "toothbrush": {
+          "STFPM": 0.714,
+          "PADIM": 0.762
+        },
+        "transistor": {
+          "STFPM": 0.53,
+          "PADIM": 0.66
+        },
+        "wood": {
+          "STFPM": 0.899,
+          "PADIM": 0.949
+        },
+        "zipper": {
+          "STFPM": 0.854,
+          "PADIM": 0.848
+        }
+      },
+      "ptq": {
+        "bottle": {
+          "STFPM": 0.759,
+          "PADIM": 0.94
+        },
+        "cable": {
+          "STFPM": 0.613,
+          "PADIM": 0.68
+        },
+        "capsule": {
+          "STFPM": 0.826,
+          "PADIM": 0.856
+        },
+        "carpet": {
+          "STFPM": 0.829,
+          "PADIM": 0.761
+        },
+        "grid": {
+          "STFPM": 0.756,
+          "PADIM": 0.744
+        },
+        "hazelnut": {
+          "STFPM": 0.827,
+          "PADIM": 0.891
+        },
+        "leather": {
+          "STFPM": 0.887,
+          "PADIM": 0.815
+        },
+        "metal_nut": {
+          "STFPM": 0.809,
+          "PADIM": 0.835
+        },
+        "pill": {
+          "STFPM": 0.844,
+          "PADIM": 0.844
+        },
+        "screw": {
+          "STFPM": 0.762,
+          "PADIM": 0.744
+        },
+        "tile": {
+          "STFPM": 0.829,
+          "PADIM": 0.761
+        },
+        "toothbrush": {
+          "STFPM": 0.714,
+          "PADIM": 0.762
+        },
+        "transistor": {
+          "STFPM": 0.53,
+          "PADIM": 0.66
+        },
+        "wood": {
+          "STFPM": 0.899,
+          "PADIM": 0.949
+        },
+        "zipper": {
+          "STFPM": 0.854,
+          "PADIM": 0.848
         }
       }
     },
     "anomaly_detection": {
       "train": {
         "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.12
+          "STFPM": 0.029,
+          "PADIM": 0.156
         },
         "cable": {
           "STFPM": 0.0,
-          "PADIM": 0.104
+          "PADIM": 0.061
         },
         "capsule": {
-          "STFPM": 0.015,
-          "PADIM": 0.108
+          "STFPM": 0.004,
+          "PADIM": 0.127
         },
         "carpet": {
-          "STFPM": 0.113,
-          "PADIM": 0.241
+          "STFPM": 0.185,
+          "PADIM": 0.244
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.009
+          "PADIM": 0.012
         },
         "hazelnut": {
           "STFPM": 0.0,
-          "PADIM": 0.106
+          "PADIM": 0.116
         },
         "leather": {
-          "STFPM": 0.092,
-          "PADIM": 0.145
-        },
-        "metal_nut": {
-          "STFPM": 0.043,
+          "STFPM": 0.049,
           "PADIM": 0.18
         },
+        "metal_nut": {
+          "STFPM": 0.021,
+          "PADIM": 0.129
+        },
         "pill": {
-          "STFPM": 0.058,
-          "PADIM": 0.023
+          "STFPM": 0.032,
+          "PADIM": 0.028
         },
         "screw": {
           "STFPM": 0.0,
-          "PADIM": 0.019
+          "PADIM": 0.023
         },
         "tile": {
-          "STFPM": 0.0,
-          "PADIM": 0.015
+          "STFPM": 0.016,
+          "PADIM": 0.125
         },
         "toothbrush": {
-          "STFPM": 0.0,
-          "PADIM": 0.178
+          "STFPM": 0.015,
+          "PADIM": 0.176
         },
         "transistor": {
-          "STFPM": 0.048,
-          "PADIM": 0.051
+          "STFPM": 0.0,
+          "PADIM": 0.116
         },
         "wood": {
-          "STFPM": 0.137,
-          "PADIM": 0.18
+          "STFPM": 0.062,
+          "PADIM": 0.152
         },
         "zipper": {
-          "STFPM": 0.183,
-          "PADIM": 0.078
+          "STFPM": 0.191,
+          "PADIM": 0.08
         }
       },
       "export": {
         "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.404
+          "STFPM": 0.029,
+          "PADIM": 0.156
         },
         "cable": {
           "STFPM": 0.0,
-          "PADIM": 0.053
+          "PADIM": 0.061
         },
         "capsule": {
-          "STFPM": 0.015,
-          "PADIM": 0.088
+          "STFPM": 0.004,
+          "PADIM": 0.127
         },
         "carpet": {
-          "STFPM": 0.019,
-          "PADIM": 0.221
+          "STFPM": 0.185,
+          "PADIM": 0.244
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.011
+          "PADIM": 0.012
         },
         "hazelnut": {
           "STFPM": 0.0,
-          "PADIM": 0.22
+          "PADIM": 0.116
         },
         "leather": {
-          "STFPM": 0.039,
-          "PADIM": 0.108
+          "STFPM": 0.049,
+          "PADIM": 0.18
         },
         "metal_nut": {
-          "STFPM": 0.0,
-          "PADIM": 0.089
+          "STFPM": 0.021,
+          "PADIM": 0.129
         },
         "pill": {
-          "STFPM": 0.051,
-          "PADIM": 0.047
+          "STFPM": 0.032,
+          "PADIM": 0.028
         },
         "screw": {
           "STFPM": 0.0,
-          "PADIM": 0.0
+          "PADIM": 0.023
         },
         "tile": {
-          "STFPM": 0.014,
-          "PADIM": 0.08
+          "STFPM": 0.016,
+          "PADIM": 0.125
         },
         "toothbrush": {
-          "STFPM": 0.059,
-          "PADIM": 0.11
+          "STFPM": 0.015,
+          "PADIM": 0.176
         },
         "transistor": {
           "STFPM": 0.0,
-          "PADIM": 0.184
+          "PADIM": 0.116
         },
         "wood": {
-          "STFPM": 0.022,
-          "PADIM": 0.139
+          "STFPM": 0.062,
+          "PADIM": 0.152
         },
         "zipper": {
-          "STFPM": 0.0,
-          "PADIM": 0.127
+          "STFPM": 0.191,
+          "PADIM": 0.08
         }
       },
       "deploy": {
         "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.404
+          "STFPM": 0.029,
+          "PADIM": 0.156
         },
         "cable": {
           "STFPM": 0.0,
-          "PADIM": 0.053
+          "PADIM": 0.061
         },
         "capsule": {
-          "STFPM": 0.015,
-          "PADIM": 0.088
+          "STFPM": 0.004,
+          "PADIM": 0.127
         },
         "carpet": {
-          "STFPM": 0.019,
-          "PADIM": 0.221
+          "STFPM": 0.185,
+          "PADIM": 0.244
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.011
+          "PADIM": 0.012
         },
         "hazelnut": {
           "STFPM": 0.0,
-          "PADIM": 0.22
+          "PADIM": 0.116
         },
         "leather": {
-          "STFPM": 0.039,
-          "PADIM": 0.108
+          "STFPM": 0.049,
+          "PADIM": 0.18
         },
         "metal_nut": {
-          "STFPM": 0.0,
-          "PADIM": 0.089
+          "STFPM": 0.021,
+          "PADIM": 0.129
         },
         "pill": {
-          "STFPM": 0.051,
-          "PADIM": 0.047
+          "STFPM": 0.032,
+          "PADIM": 0.028
         },
         "screw": {
           "STFPM": 0.0,
-          "PADIM": 0.0
+          "PADIM": 0.023
         },
         "tile": {
-          "STFPM": 0.014,
-          "PADIM": 0.08
+          "STFPM": 0.016,
+          "PADIM": 0.125
         },
         "toothbrush": {
-          "STFPM": 0.059,
-          "PADIM": 0.11
+          "STFPM": 0.015,
+          "PADIM": 0.176
         },
         "transistor": {
           "STFPM": 0.0,
-          "PADIM": 0.184
+          "PADIM": 0.116
         },
         "wood": {
-          "STFPM": 0.022,
-          "PADIM": 0.139
+          "STFPM": 0.062,
+          "PADIM": 0.152
         },
         "zipper": {
-          "STFPM": 0.0,
-          "PADIM": 0.127
+          "STFPM": 0.191,
+          "PADIM": 0.08
         }
       },
       "nncf": {
         "bottle": {
-          "STFPM": 0.056,
-          "PADIM": 0.276
+          "STFPM": 0.029,
+          "PADIM": 0.156
         },
         "cable": {
-          "STFPM": 0.05,
-          "PADIM": 0.05
+          "STFPM": 0.0,
+          "PADIM": 0.061
         },
         "capsule": {
-          "STFPM": 0.017,
-          "PADIM": 0.146
+          "STFPM": 0.004,
+          "PADIM": 0.127
         },
         "carpet": {
-          "STFPM": 0.155,
-          "PADIM": 0.238
+          "STFPM": 0.185,
+          "PADIM": 0.244
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.0
+          "PADIM": 0.012
         },
         "hazelnut": {
           "STFPM": 0.0,
-          "PADIM": 0.192
+          "PADIM": 0.116
         },
         "leather": {
-          "STFPM": 0.121,
-          "PADIM": 0.131
+          "STFPM": 0.049,
+          "PADIM": 0.18
         },
         "metal_nut": {
           "STFPM": 0.021,
-          "PADIM": 0.103
+          "PADIM": 0.129
         },
         "pill": {
-          "STFPM": 0.044,
-          "PADIM": 0.094
+          "STFPM": 0.032,
+          "PADIM": 0.028
         },
         "screw": {
-          "STFPM": 0.014,
-          "PADIM": 0.029
+          "STFPM": 0.0,
+          "PADIM": 0.023
         },
         "tile": {
-          "STFPM": 0.02,
-          "PADIM": 0.07
+          "STFPM": 0.016,
+          "PADIM": 0.125
         },
         "toothbrush": {
-          "STFPM": 0.066,
-          "PADIM": 0.125
+          "STFPM": 0.015,
+          "PADIM": 0.176
         },
         "transistor": {
           "STFPM": 0.0,
-          "PADIM": 0.038
+          "PADIM": 0.116
         },
         "wood": {
-          "STFPM": 0.075,
-          "PADIM": 0.181
+          "STFPM": 0.062,
+          "PADIM": 0.152
         },
         "zipper": {
-          "STFPM": 0.195,
-          "PADIM": 0.123
+          "STFPM": 0.191,
+          "PADIM": 0.08
         }
       },
       "ptq": {
         "bottle": {
-          "STFPM": 0.0,
-          "PADIM": 0.306
+          "STFPM": 0.029,
+          "PADIM": 0.156
         },
         "cable": {
           "STFPM": 0.0,
-          "PADIM": 0.038
+          "PADIM": 0.061
         },
         "capsule": {
-          "STFPM": 0.012,
+          "STFPM": 0.004,
           "PADIM": 0.127
         },
         "carpet": {
-          "STFPM": 0.026,
-          "PADIM": 0.202
+          "STFPM": 0.185,
+          "PADIM": 0.244
         },
         "grid": {
           "STFPM": 0.0,
-          "PADIM": 0.01
+          "PADIM": 0.012
         },
         "hazelnut": {
-          "STFPM": 0.007,
-          "PADIM": 0.24
+          "STFPM": 0.0,
+          "PADIM": 0.116
         },
         "leather": {
-          "STFPM": 0.038,
-          "PADIM": 0.101
+          "STFPM": 0.049,
+          "PADIM": 0.18
         },
         "metal_nut": {
-          "STFPM": 0.0,
-          "PADIM": 0.147
+          "STFPM": 0.021,
+          "PADIM": 0.129
         },
         "pill": {
-          "STFPM": 0.041,
-          "PADIM": 0.085
+          "STFPM": 0.032,
+          "PADIM": 0.028
         },
         "screw": {
           "STFPM": 0.0,
-          "PADIM": 0.004
+          "PADIM": 0.023
         },
         "tile": {
-          "STFPM": 0.0,
-          "PADIM": 0.0
+          "STFPM": 0.016,
+          "PADIM": 0.125
         },
         "toothbrush": {
           "STFPM": 0.015,
-          "PADIM": 0.184
+          "PADIM": 0.176
         },
         "transistor": {
           "STFPM": 0.0,
-          "PADIM": 0.209
+          "PADIM": 0.116
         },
         "wood": {
-          "STFPM": 0.031,
-          "PADIM": 0.201
+          "STFPM": 0.062,
+          "PADIM": 0.152
         },
         "zipper": {
-          "STFPM": 0.0,
-          "PADIM": 0.158
+          "STFPM": 0.191,
+          "PADIM": 0.08
         }
       }
     },
     "anomaly_segmentation": {
       "train": {
         "bottle": {
-          "STFPM": 0.323,
-          "PADIM": 0.598
+          "STFPM": 0.281,
+          "PADIM": 0.614
         },
         "cable": {
-          "STFPM": 0.15,
-          "PADIM": 0.228
+          "STFPM": 0.189,
+          "PADIM": 0.212
         },
         "capsule": {
-          "STFPM": 0.121,
-          "PADIM": 0.294
+          "STFPM": 0.131,
+          "PADIM": 0.307
         },
         "carpet": {
-          "STFPM": 0.455,
-          "PADIM": 0.367
+          "STFPM": 0.225,
+          "PADIM": 0.348
         },
         "grid": {
-          "STFPM": 0.068,
-          "PADIM": 0.014
+          "STFPM": 0.045,
+          "PADIM": 0.037
         },
         "hazelnut": {
-          "STFPM": 0.098,
-          "PADIM": 0.452
+          "STFPM": 0.453,
+          "PADIM": 0.515
         },
         "leather": {
-          "STFPM": 0.307,
-          "PADIM": 0.379
-        },
-        "metal_nut": {
-          "STFPM": 0.367,
-          "PADIM": 0.386
-        },
-        "pill": {
-          "STFPM": 0.203,
-          "PADIM": 0.255
-        },
-        "screw": {
-          "STFPM": 0.038,
-          "PADIM": 0.06
-        },
-        "tile": {
-          "STFPM": 0.449,
-          "PADIM": 0.232
-        },
-        "toothbrush": {
-          "STFPM": 0.203,
-          "PADIM": 0.478
-        },
-        "transistor": {
-          "STFPM": 0.179,
+          "STFPM": 0.262,
           "PADIM": 0.417
         },
+        "metal_nut": {
+          "STFPM": 0.389,
+          "PADIM": 0.428
+        },
+        "pill": {
+          "STFPM": 0.166,
+          "PADIM": 0.262
+        },
+        "screw": {
+          "STFPM": 0.029,
+          "PADIM": 0.11
+        },
+        "tile": {
+          "STFPM": 0.304,
+          "PADIM": 0.223
+        },
+        "toothbrush": {
+          "STFPM": 0.166,
+          "PADIM": 0.379
+        },
+        "transistor": {
+          "STFPM": 0.158,
+          "PADIM": 0.412
+        },
         "wood": {
-          "STFPM": 0.561,
-          "PADIM": 0.35
+          "STFPM": 0.275,
+          "PADIM": 0.389
         },
         "zipper": {
-          "STFPM": 0.259,
-          "PADIM": 0.328
+          "STFPM": 0.352,
+          "PADIM": 0.235
         }
       },
       "export": {
         "bottle": {
-          "STFPM": 0.26,
-          "PADIM": 0.573
+          "STFPM": 0.281,
+          "PADIM": 0.614
         },
         "cable": {
-          "STFPM": 0.094,
-          "PADIM": 0.126
+          "STFPM": 0.189,
+          "PADIM": 0.212
         },
         "capsule": {
-          "STFPM": 0.077,
-          "PADIM": 0.31
+          "STFPM": 0.131,
+          "PADIM": 0.307
         },
         "carpet": {
-          "STFPM": 0.262,
-          "PADIM": 0.328
+          "STFPM": 0.225,
+          "PADIM": 0.348
         },
         "grid": {
-          "STFPM": 0.019,
-          "PADIM": 0.014
+          "STFPM": 0.045,
+          "PADIM": 0.037
         },
         "hazelnut": {
-          "STFPM": 0.077,
-          "PADIM": 0.371
+          "STFPM": 0.453,
+          "PADIM": 0.515
         },
         "leather": {
-          "STFPM": 0.158,
-          "PADIM": 0.308
+          "STFPM": 0.262,
+          "PADIM": 0.417
         },
         "metal_nut": {
-          "STFPM": 0.386,
-          "PADIM": 0.358
+          "STFPM": 0.389,
+          "PADIM": 0.428
         },
         "pill": {
-          "STFPM": 0.154,
-          "PADIM": 0.223
+          "STFPM": 0.166,
+          "PADIM": 0.262
         },
         "screw": {
-          "STFPM": 0.036,
-          "PADIM": 0.033
+          "STFPM": 0.029,
+          "PADIM": 0.11
         },
         "tile": {
-          "STFPM": 0.393,
-          "PADIM": 0.181
+          "STFPM": 0.304,
+          "PADIM": 0.223
         },
         "toothbrush": {
-          "STFPM": 0.088,
-          "PADIM": 0.147
+          "STFPM": 0.166,
+          "PADIM": 0.379
         },
         "transistor": {
-          "STFPM": 0.15,
-          "PADIM": 0.285
+          "STFPM": 0.158,
+          "PADIM": 0.412
         },
         "wood": {
-          "STFPM": 0.559,
-          "PADIM": 0.349
+          "STFPM": 0.275,
+          "PADIM": 0.389
         },
         "zipper": {
-          "STFPM": 0.118,
-          "PADIM": 0.165
+          "STFPM": 0.352,
+          "PADIM": 0.235
         }
       },
       "deploy": {
         "bottle": {
-          "STFPM": 0.26,
-          "PADIM": 0.573
+          "STFPM": 0.281,
+          "PADIM": 0.614
         },
         "cable": {
-          "STFPM": 0.094,
-          "PADIM": 0.126
+          "STFPM": 0.189,
+          "PADIM": 0.212
         },
         "capsule": {
-          "STFPM": 0.077,
-          "PADIM": 0.31
+          "STFPM": 0.131,
+          "PADIM": 0.307
         },
         "carpet": {
-          "STFPM": 0.262,
-          "PADIM": 0.328
+          "STFPM": 0.225,
+          "PADIM": 0.348
         },
         "grid": {
-          "STFPM": 0.019,
-          "PADIM": 0.014
+          "STFPM": 0.045,
+          "PADIM": 0.037
         },
         "hazelnut": {
-          "STFPM": 0.077,
-          "PADIM": 0.371
+          "STFPM": 0.453,
+          "PADIM": 0.515
         },
         "leather": {
-          "STFPM": 0.158,
-          "PADIM": 0.308
+          "STFPM": 0.262,
+          "PADIM": 0.417
         },
         "metal_nut": {
-          "STFPM": 0.386,
-          "PADIM": 0.358
+          "STFPM": 0.389,
+          "PADIM": 0.428
         },
         "pill": {
-          "STFPM": 0.154,
-          "PADIM": 0.223
+          "STFPM": 0.166,
+          "PADIM": 0.262
         },
         "screw": {
-          "STFPM": 0.036,
-          "PADIM": 0.033
+          "STFPM": 0.029,
+          "PADIM": 0.11
         },
         "tile": {
-          "STFPM": 0.393,
-          "PADIM": 0.181
+          "STFPM": 0.304,
+          "PADIM": 0.223
         },
         "toothbrush": {
-          "STFPM": 0.088,
-          "PADIM": 0.147
+          "STFPM": 0.166,
+          "PADIM": 0.379
         },
         "transistor": {
-          "STFPM": 0.15,
-          "PADIM": 0.285
+          "STFPM": 0.158,
+          "PADIM": 0.412
         },
         "wood": {
-          "STFPM": 0.559,
-          "PADIM": 0.349
+          "STFPM": 0.275,
+          "PADIM": 0.389
         },
         "zipper": {
-          "STFPM": 0.118,
-          "PADIM": 0.165
+          "STFPM": 0.352,
+          "PADIM": 0.235
         }
       },
       "nncf": {
         "bottle": {
-          "STFPM": 0.309,
-          "PADIM": 0.616
+          "STFPM": 0.281,
+          "PADIM": 0.614
         },
         "cable": {
-          "STFPM": 0.215,
-          "PADIM": 0.264
+          "STFPM": 0.189,
+          "PADIM": 0.212
         },
         "capsule": {
-          "STFPM": 0.14,
-          "PADIM": 0.317
+          "STFPM": 0.131,
+          "PADIM": 0.307
         },
         "carpet": {
-          "STFPM": 0.463,
-          "PADIM": 0.344
+          "STFPM": 0.225,
+          "PADIM": 0.348
         },
         "grid": {
-          "STFPM": 0.091,
-          "PADIM": 0.015
+          "STFPM": 0.045,
+          "PADIM": 0.037
         },
         "hazelnut": {
-          "STFPM": 0.292,
-          "PADIM": 0.513
+          "STFPM": 0.453,
+          "PADIM": 0.515
         },
         "leather": {
-          "STFPM": 0.395,
-          "PADIM": 0.394
+          "STFPM": 0.262,
+          "PADIM": 0.417
         },
         "metal_nut": {
-          "STFPM": 0.358,
-          "PADIM": 0.41
+          "STFPM": 0.389,
+          "PADIM": 0.428
         },
         "pill": {
-          "STFPM": 0.228,
-          "PADIM": 0.281
+          "STFPM": 0.166,
+          "PADIM": 0.262
         },
         "screw": {
-          "STFPM": 0.03,
-          "PADIM": 0.051
+          "STFPM": 0.029,
+          "PADIM": 0.11
         },
         "tile": {
-          "STFPM": 0.467,
-          "PADIM": 0.181
+          "STFPM": 0.304,
+          "PADIM": 0.223
         },
         "toothbrush": {
-          "STFPM": 0.282,
-          "PADIM": 0.464
+          "STFPM": 0.166,
+          "PADIM": 0.379
         },
         "transistor": {
-          "STFPM": 0.187,
-          "PADIM": 0.351
+          "STFPM": 0.158,
+          "PADIM": 0.412
         },
         "wood": {
-          "STFPM": 0.517,
-          "PADIM": 0.355
+          "STFPM": 0.275,
+          "PADIM": 0.389
         },
         "zipper": {
-          "STFPM": 0.289,
-          "PADIM": 0.273
+          "STFPM": 0.352,
+          "PADIM": 0.235
         }
       },
       "ptq": {
         "bottle": {
-          "STFPM": 0.253,
-          "PADIM": 0.555
+          "STFPM": 0.281,
+          "PADIM": 0.614
         },
         "cable": {
-          "STFPM": 0.096,
-          "PADIM": 0.141
+          "STFPM": 0.189,
+          "PADIM": 0.212
         },
         "capsule": {
-          "STFPM": 0.072,
-          "PADIM": 0.296
-        },
-        "carpet": {
-          "STFPM": 0.247,
+          "STFPM": 0.131,
           "PADIM": 0.307
         },
+        "carpet": {
+          "STFPM": 0.225,
+          "PADIM": 0.348
+        },
         "grid": {
-          "STFPM": 0.02,
-          "PADIM": 0.014
-        },
-        "hazelnut": {
-          "STFPM": 0.073,
-          "PADIM": 0.383
-        },
-        "leather": {
-          "STFPM": 0.141,
-          "PADIM": 0.347
-        },
-        "metal_nut": {
-          "STFPM": 0.006,
-          "PADIM": 0.105
-        },
-        "pill": {
-          "STFPM": 0.135,
-          "PADIM": 0.241
-        },
-        "screw": {
-          "STFPM": 0.011,
+          "STFPM": 0.045,
           "PADIM": 0.037
         },
+        "hazelnut": {
+          "STFPM": 0.453,
+          "PADIM": 0.515
+        },
+        "leather": {
+          "STFPM": 0.262,
+          "PADIM": 0.417
+        },
+        "metal_nut": {
+          "STFPM": 0.389,
+          "PADIM": 0.428
+        },
+        "pill": {
+          "STFPM": 0.166,
+          "PADIM": 0.262
+        },
+        "screw": {
+          "STFPM": 0.029,
+          "PADIM": 0.11
+        },
         "tile": {
-          "STFPM": 0.382,
-          "PADIM": 0.184
+          "STFPM": 0.304,
+          "PADIM": 0.223
         },
         "toothbrush": {
-          "STFPM": 0.084,
-          "PADIM": 0.198
+          "STFPM": 0.166,
+          "PADIM": 0.379
         },
         "transistor": {
-          "STFPM": 0.148,
-          "PADIM": 0.34
+          "STFPM": 0.158,
+          "PADIM": 0.412
         },
         "wood": {
-          "STFPM": 0.556,
-          "PADIM": 0.349
+          "STFPM": 0.275,
+          "PADIM": 0.389
         },
         "zipper": {
-          "STFPM": 0.128,
-          "PADIM": 0.141
+          "STFPM": 0.352,
+          "PADIM": 0.235
         }
       }
     }
@@ -1500,28 +1521,32 @@
           "train": {
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.732,
-            "EfficientNet-B0": 82.521
+            "EfficientNet-B0": 82.521,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 214.508,
             "MobileNet-V3-large-1x": 185.442,
-            "EfficientNet-B0": 187.332
+            "EfficientNet-B0": 187.332,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 149.627,
             "MobileNet-V3-large-1x": 76.041,
-            "EfficientNet-B0": 87.159
+            "EfficientNet-B0": 87.159,
+            "Deti-Tiny": 0.0
           }
         },
         "supcon": {
           "train": {
             "EfficientNet-V2-S": 136.036,
             "MobileNet-V3-large-1x": 134.635,
-            "EfficientNet-B0": 124.474
+            "EfficientNet-B0": 124.474,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1530,21 +1555,24 @@
           "train": {
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 80.603,
-            "EfficientNet-B0": 82.521
+            "EfficientNet-B0": 82.521,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 214.508,
             "MobileNet-V3-large-1x": 185.442,
-            "EfficientNet-B0": 187.332
+            "EfficientNet-B0": 187.332,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
+            "EfficientNet-B0": 0.0,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1553,7 +1581,8 @@
           "train": {
             "EfficientNet-V2-S": 423.184,
             "MobileNet-V3-large-1x": 227.445,
-            "EfficientNet-B0": 230.227
+            "EfficientNet-B0": 230.227,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1562,7 +1591,8 @@
           "train": {
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.239,
-            "EfficientNet-B0": 82.521
+            "EfficientNet-B0": 82.521,
+            "Deti-Tiny": 0.0
           }
         }
       }
@@ -1703,192 +1733,192 @@
     "anomaly_classification": {
       "train": {
         "bottle": {
-          "STFPM": 719.611,
-          "PADIM": 113.547
+          "STFPM": 473.916,
+          "PADIM": 94.682
         },
         "cable": {
-          "STFPM": 777.212,
-          "PADIM": 81.765
+          "STFPM": 782.332,
+          "PADIM": 91.326
         },
         "capsule": {
-          "STFPM": 737.924,
-          "PADIM": 74.779
+          "STFPM": 485.159,
+          "PADIM": 91.746
         },
         "carpet": {
-          "STFPM": 915.018,
-          "PADIM": 115.933
+          "STFPM": 903.789,
+          "PADIM": 92.068
         },
         "grid": {
-          "STFPM": 880.849,
-          "PADIM": 78.714
+          "STFPM": 473.575,
+          "PADIM": 90.083
         },
         "hazelnut": {
-          "STFPM": 612.339,
-          "PADIM": 444.225
+          "STFPM": 1070.262,
+          "PADIM": 92.554
         },
         "leather": {
-          "STFPM": 976.283,
-          "PADIM": 130.234
+          "STFPM": 1632.646,
+          "PADIM": 91.489
         },
         "metal_nut": {
-          "STFPM": 602.296,
-          "PADIM": 133.969
+          "STFPM": 471.863,
+          "PADIM": 83.262
         },
         "pill": {
-          "STFPM": 1612.218,
-          "PADIM": 349.457
+          "STFPM": 474.212,
+          "PADIM": 97.604
         },
         "screw": {
-          "STFPM": 479.455,
-          "PADIM": 89.838
+          "STFPM": 1435.737,
+          "PADIM": 93.66
         },
         "tile": {
-          "STFPM": 812.539,
-          "PADIM": 90.505
+          "STFPM": 1282.178,
+          "PADIM": 95.382
         },
         "toothbrush": {
-          "STFPM": 729.418,
-          "PADIM": 103.921
+          "STFPM": 798.572,
+          "PADIM": 77.555
         },
         "transistor": {
-          "STFPM": 559.613,
-          "PADIM": 100.966
+          "STFPM": 844.123,
+          "PADIM": 80.574
         },
         "wood": {
-          "STFPM": 645.307,
-          "PADIM": 120.205
+          "STFPM": 472.098,
+          "PADIM": 86.524
         },
         "zipper": {
-          "STFPM": 1094.092,
-          "PADIM": 85.425
+          "STFPM": 1176.295,
+          "PADIM": 82.333
         }
       }
     },
     "anomaly_detection": {
       "train": {
         "bottle": {
-          "STFPM": 616.724,
-          "PADIM": 70.212
+          "STFPM": 471.13,
+          "PADIM": 91.643
         },
         "cable": {
-          "STFPM": 1099.243,
-          "PADIM": 97.758
+          "STFPM": 412.08,
+          "PADIM": 95.515
         },
         "capsule": {
-          "STFPM": 442.791,
-          "PADIM": 79.647
+          "STFPM": 409.549,
+          "PADIM": 91.765
         },
         "carpet": {
-          "STFPM": 672.606,
-          "PADIM": 76.309
+          "STFPM": 1007.763,
+          "PADIM": 93.797
         },
         "grid": {
-          "STFPM": 606.42,
-          "PADIM": 98.1
+          "STFPM": 639.249,
+          "PADIM": 95.983
         },
         "hazelnut": {
-          "STFPM": 442.13,
-          "PADIM": 75.02
+          "STFPM": 397.998,
+          "PADIM": 91.448
         },
         "leather": {
-          "STFPM": 665.451,
-          "PADIM": 78.943
+          "STFPM": 418.21,
+          "PADIM": 92.509
         },
         "metal_nut": {
-          "STFPM": 841.626,
-          "PADIM": 72.459
+          "STFPM": 435.304,
+          "PADIM": 85.566
         },
         "pill": {
-          "STFPM": 1048.111,
-          "PADIM": 77.902
+          "STFPM": 419.626,
+          "PADIM": 92.345
         },
         "screw": {
-          "STFPM": 916.603,
-          "PADIM": 80.394
+          "STFPM": 736.772,
+          "PADIM": 89.448
         },
         "tile": {
-          "STFPM": 967.902,
-          "PADIM": 83.676
+          "STFPM": 584.306,
+          "PADIM": 83.021
         },
         "toothbrush": {
-          "STFPM": 552.189,
-          "PADIM": 70.768
+          "STFPM": 602.712,
+          "PADIM": 88.732
         },
         "transistor": {
-          "STFPM": 556.002,
-          "PADIM": 74.005
+          "STFPM": 413.1,
+          "PADIM": 89.572
         },
         "wood": {
-          "STFPM": 897.382,
-          "PADIM": 74.659
+          "STFPM": 963.139,
+          "PADIM": 95.301
         },
         "zipper": {
-          "STFPM": 1778.595,
-          "PADIM": 79.349
+          "STFPM": 1313.441,
+          "PADIM": 91.329
         }
       }
     },
     "anomaly_segmentation": {
       "train": {
         "bottle": {
-          "STFPM": 1604.738,
-          "PADIM": 162.997
+          "STFPM": 2423.196,
+          "PADIM": 122.496
         },
         "cable": {
-          "STFPM": 966.757,
-          "PADIM": 192.818
+          "STFPM": 1061.665,
+          "PADIM": 134.752
         },
         "capsule": {
-          "STFPM": 1468.992,
-          "PADIM": 181.064
+          "STFPM": 673.885,
+          "PADIM": 126.904
         },
         "carpet": {
-          "STFPM": 1609.069,
-          "PADIM": 147.889
+          "STFPM": 1053.201,
+          "PADIM": 126.328
         },
         "grid": {
-          "STFPM": 1080.058,
-          "PADIM": 152.668
+          "STFPM": 946.958,
+          "PADIM": 115.046
         },
         "hazelnut": {
-          "STFPM": 1083.441,
-          "PADIM": 312.687
+          "STFPM": 1362.821,
+          "PADIM": 129.905
         },
         "leather": {
-          "STFPM": 2060.551,
-          "PADIM": 166.385
+          "STFPM": 1317.973,
+          "PADIM": 117.569
         },
         "metal_nut": {
-          "STFPM": 1124.054,
-          "PADIM": 163.375
+          "STFPM": 1420.045,
+          "PADIM": 120.641
         },
         "pill": {
-          "STFPM": 2116.461,
-          "PADIM": 445.256
+          "STFPM": 682.699,
+          "PADIM": 113.66
         },
         "screw": {
-          "STFPM": 3076.376,
-          "PADIM": 209.651
+          "STFPM": 1298.055,
+          "PADIM": 98.299
         },
         "tile": {
-          "STFPM": 2123.952,
-          "PADIM": 205.008
+          "STFPM": 942.646,
+          "PADIM": 124.92
         },
         "toothbrush": {
-          "STFPM": 1351.298,
-          "PADIM": 198.668
+          "STFPM": 1180.837,
+          "PADIM": 105.42
         },
         "transistor": {
-          "STFPM": 1619.98,
-          "PADIM": 169.985
+          "STFPM": 710.488,
+          "PADIM": 107.729
         },
         "wood": {
-          "STFPM": 1040.837,
-          "PADIM": 191.44
+          "STFPM": 1202.055,
+          "PADIM": 117.939
         },
         "zipper": {
-          "STFPM": 2514.32,
-          "PADIM": 186.099
+          "STFPM": 1456.587,
+          "PADIM": 108.119
         }
       }
     }
@@ -1900,28 +1930,32 @@
           "train": {
             "EfficientNet-V2-S": 17.8,
             "MobileNet-V3-large-1x": 16.453,
-            "EfficientNet-B0": 15.145
+            "EfficientNet-B0": 15.145,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 18.706,
             "MobileNet-V3-large-1x": 20.311,
-            "EfficientNet-B0": 19.497
+            "EfficientNet-B0": 19.497,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 17.99,
             "MobileNet-V3-large-1x": 18.068,
-            "EfficientNet-B0": 13.558
+            "EfficientNet-B0": 13.558,
+            "Deti-Tiny": 0.0
           }
         },
         "supcon": {
           "train": {
             "EfficientNet-V2-S": 17.1,
             "MobileNet-V3-large-1x": 17.988,
-            "EfficientNet-B0": 14.586
+            "EfficientNet-B0": 14.586,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1930,21 +1964,24 @@
           "train": {
             "EfficientNet-V2-S": 16.715,
             "MobileNet-V3-large-1x": 16.722,
-            "EfficientNet-B0": 15.488
+            "EfficientNet-B0": 15.488,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 19.618,
             "MobileNet-V3-large-1x": 20.686,
-            "EfficientNet-B0": 17.046
+            "EfficientNet-B0": 17.046,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
+            "EfficientNet-B0": 0.0,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1953,7 +1990,8 @@
           "train": {
             "EfficientNet-V2-S": 16.885,
             "MobileNet-V3-large-1x": 17.905,
-            "EfficientNet-B0": 15.107
+            "EfficientNet-B0": 15.107,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1962,7 +2000,8 @@
           "train": {
             "EfficientNet-V2-S": 15.552,
             "MobileNet-V3-large-1x": 14.267,
-            "EfficientNet-B0": 15.179
+            "EfficientNet-B0": 15.179,
+            "Deti-Tiny": 0.0
           }
         }
       }
@@ -2103,192 +2142,192 @@
     "anomaly_classification": {
       "train": {
         "bottle": {
-          "STFPM": 15.642,
-          "PADIM": 18.455
+          "STFPM": 13.302,
+          "PADIM": 14.602
         },
         "cable": {
-          "STFPM": 20.231,
-          "PADIM": 20.494
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "capsule": {
-          "STFPM": 17.804,
-          "PADIM": 16.181
+          "STFPM": 13.433,
+          "PADIM": 14.363
         },
         "carpet": {
-          "STFPM": 17.077,
-          "PADIM": 22.427
+          "STFPM": 13.341,
+          "PADIM": 14.946
         },
         "grid": {
-          "STFPM": 25.84,
-          "PADIM": 24.198
+          "STFPM": 13.273,
+          "PADIM": 15.915
         },
         "hazelnut": {
-          "STFPM": 23.11,
-          "PADIM": 23.72
+          "STFPM": 13.385,
+          "PADIM": 15.577
         },
         "leather": {
-          "STFPM": 18.26,
-          "PADIM": 19.211
+          "STFPM": 12.521,
+          "PADIM": 15.257
         },
         "metal_nut": {
-          "STFPM": 21.384,
-          "PADIM": 20.524
+          "STFPM": 12.02,
+          "PADIM": 13.63
         },
         "pill": {
-          "STFPM": 22.02,
-          "PADIM": 15.948
+          "STFPM": 11.368,
+          "PADIM": 15.067
         },
         "screw": {
-          "STFPM": 16.735,
-          "PADIM": 16.325
+          "STFPM": 13.29,
+          "PADIM": 15.839
         },
         "tile": {
-          "STFPM": 19.721,
-          "PADIM": 17.233
+          "STFPM": 12.391,
+          "PADIM": 15.928
         },
         "toothbrush": {
-          "STFPM": 19.855,
-          "PADIM": 16.595
+          "STFPM": 11.391,
+          "PADIM": 14.91
         },
         "transistor": {
-          "STFPM": 18.758,
-          "PADIM": 19.858
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "wood": {
-          "STFPM": 19.183,
-          "PADIM": 23.046
+          "STFPM": 12.308,
+          "PADIM": 13.998
         },
         "zipper": {
-          "STFPM": 17.853,
-          "PADIM": 15.467
+          "STFPM": 12.046,
+          "PADIM": 14.165
         }
       }
     },
     "anomaly_detection": {
       "train": {
         "bottle": {
-          "STFPM": 15.482,
-          "PADIM": 17.691
+          "STFPM": 12.329,
+          "PADIM": 15.616
         },
         "cable": {
-          "STFPM": 28.371,
-          "PADIM": 27.715
+          "STFPM": 11.788,
+          "PADIM": 15.858
         },
         "capsule": {
-          "STFPM": 21.189,
-          "PADIM": 20.122
+          "STFPM": 12.491,
+          "PADIM": 14.235
         },
         "carpet": {
-          "STFPM": 22.601,
-          "PADIM": 19.355
+          "STFPM": 12.582,
+          "PADIM": 14.774
         },
         "grid": {
-          "STFPM": 17.123,
-          "PADIM": 16.811
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "hazelnut": {
-          "STFPM": 18.379,
-          "PADIM": 20.818
+          "STFPM": 12.366,
+          "PADIM": 14.574
         },
         "leather": {
-          "STFPM": 19.115,
-          "PADIM": 19.309
+          "STFPM": 12.924,
+          "PADIM": 13.225
         },
         "metal_nut": {
-          "STFPM": 16.946,
-          "PADIM": 18.315
+          "STFPM": 11.543,
+          "PADIM": 16.109
         },
         "pill": {
-          "STFPM": 22.808,
-          "PADIM": 21.151
+          "STFPM": 14.454,
+          "PADIM": 13.279
         },
         "screw": {
-          "STFPM": 20.324,
-          "PADIM": 24.962
+          "STFPM": 13.163,
+          "PADIM": 15.934
         },
         "tile": {
-          "STFPM": 26.288,
-          "PADIM": 23.913
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "toothbrush": {
-          "STFPM": 17.988,
-          "PADIM": 16.785
+          "STFPM": 13.33,
+          "PADIM": 15.593
         },
         "transistor": {
-          "STFPM": 19.241,
-          "PADIM": 17.293
+          "STFPM": 13.294,
+          "PADIM": 14.333
         },
         "wood": {
-          "STFPM": 20.676,
-          "PADIM": 18.066
+          "STFPM": 13.265,
+          "PADIM": 15.228
         },
         "zipper": {
-          "STFPM": 19.993,
-          "PADIM": 22.77
+          "STFPM": 13.609,
+          "PADIM": 14.914
         }
       }
     },
     "anomaly_segmentation": {
       "train": {
         "bottle": {
-          "STFPM": 39.449,
-          "PADIM": 31.495
+          "STFPM": 11.796,
+          "PADIM": 14.88
         },
         "cable": {
-          "STFPM": 48.302,
-          "PADIM": 40.103
+          "STFPM": 12.265,
+          "PADIM": 13.511
         },
         "capsule": {
-          "STFPM": 41.977,
-          "PADIM": 38.647
+          "STFPM": 11.977,
+          "PADIM": 15.504
         },
         "carpet": {
-          "STFPM": 27.533,
-          "PADIM": 30.966
+          "STFPM": 13.315,
+          "PADIM": 14.945
         },
         "grid": {
-          "STFPM": 28.542,
-          "PADIM": 36.005
+          "STFPM": 12.072,
+          "PADIM": 15.049
         },
         "hazelnut": {
-          "STFPM": 49.986,
-          "PADIM": 40.583
+          "STFPM": 12.515,
+          "PADIM": 15.165
         },
         "leather": {
-          "STFPM": 32.621,
-          "PADIM": 32.192
+          "STFPM": 12.547,
+          "PADIM": 13.179
         },
         "metal_nut": {
-          "STFPM": 62.213,
-          "PADIM": 49.135
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "pill": {
-          "STFPM": 51.913,
-          "PADIM": 51.866
+          "STFPM": 12.404,
+          "PADIM": 17.594
         },
         "screw": {
-          "STFPM": 46.137,
-          "PADIM": 28.663
+          "STFPM": 0.0,
+          "PADIM": 0.0
         },
         "tile": {
-          "STFPM": 51.027,
-          "PADIM": 52.074
+          "STFPM": 11.851,
+          "PADIM": 15.183
         },
         "toothbrush": {
-          "STFPM": 31.896,
-          "PADIM": 28.637
+          "STFPM": 13.301,
+          "PADIM": 14.932
         },
         "transistor": {
-          "STFPM": 42.772,
-          "PADIM": 38.587
+          "STFPM": 13.137,
+          "PADIM": 15.278
         },
         "wood": {
-          "STFPM": 43.555,
-          "PADIM": 40.225
+          "STFPM": 14.124,
+          "PADIM": 13.865
         },
         "zipper": {
-          "STFPM": 42.113,
-          "PADIM": 39.517
+          "STFPM": 11.624,
+          "PADIM": 13.555
         }
       }
     }
