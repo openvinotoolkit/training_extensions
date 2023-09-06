@@ -20,6 +20,7 @@ from typing import Any, List, Optional, Sequence, Tuple
 import cv2
 import numpy as np
 import pycocotools.mask as mask_util
+from mmrotate.core import obb2poly_np
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.color import Color
@@ -31,7 +32,6 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from mmrotate.core import obb2poly_np
 
 # pylint: disable=invalid-name
 
@@ -318,20 +318,22 @@ def create_mask_shapes(
 
 
 def create_rbox_shapes(
-        pred_results: List,
-        width: int,
-        height: int,
-        confidence_threshold: float,
-        labels: List,
-        angle_version: str,
+    pred_results: List,
+    width: int,
+    height: int,
+    confidence_threshold: float,
+    labels: List,
+    angle_version: str,
 ) -> List[Annotation]:
     """Convert rotated bounding box to polygon shape.
 
     Args:
-        all_results (list): list of predicted detection results
+        pred_results (list): list of predicted detection results
         width (int): image width
         height (int): image height
         confidence_threshold (float): confidence threshold
+        labels (list): dataset labels
+        angle_version (str): oc, le135, le90
 
     Returns:
         list: list of polygon shapes

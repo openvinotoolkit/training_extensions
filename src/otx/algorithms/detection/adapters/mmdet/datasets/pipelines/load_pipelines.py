@@ -97,8 +97,10 @@ class LoadAnnotationFromOTXDataset:
         self.with_seg = with_seg
         self.poly2mask = poly2mask
         self.with_text = with_text
+        self.with_angle = with_angle
         self.angle_version = angle_version
-        self.domain = domain
+        self.domain = self._domain_dict[domain.lower()]
+        self.min_size = min_size
 
     @staticmethod
     def _load_bboxes(results, ann_info):

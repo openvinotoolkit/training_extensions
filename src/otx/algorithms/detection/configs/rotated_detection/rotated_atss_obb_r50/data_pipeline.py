@@ -1,3 +1,5 @@
+"""Data pipeline of rotated_atss_obb_r50 for Rotated-Detection Task."""
+
 dataset_type = "OTXRotatedDataset"
 
 data_root = "dota-coco/"

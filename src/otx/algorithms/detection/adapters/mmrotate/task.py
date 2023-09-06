@@ -15,10 +15,9 @@
 # and limitations under the License.
 
 from contextlib import nullcontext
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from mmcv.utils import Config, ConfigDict, get_git_hash
-from mmdet import __version__
 from mmdet.apis import single_gpu_test
 from mmdet.datasets import build_dataloader, build_dataset
 from mmrotate import __version__
@@ -41,15 +40,14 @@ logger = get_logger()
 
 
 class MMRotateTask(MMDetectionTask):
-    def record_info_to_checkpoint_meta(self, cfg: Config, classes: List[str]) -> Dict[str, Any]:
+    """Task of OTX Detection using mmrotate training backend."""
+
+    def record_info_to_checkpoint_meta(self, cfg: Config, classes: List[str]):
         """Record info to checkpoint meta.
 
         Args:
             cfg (Config): detection configuration
             classes (list): list of dataset classes
-
-        Returns:
-            meta: meta information
         """
         if cfg.checkpoint_config is not None:
             cfg.checkpoint_config.meta = dict(

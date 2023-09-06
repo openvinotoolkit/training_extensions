@@ -23,7 +23,6 @@ import numpy as np
 import psutil
 import torch
 from mmcv.utils import ConfigDict
-from mmrotate.core import obb2poly_np
 
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
@@ -38,7 +37,7 @@ from otx.algorithms.detection.utils import (
     create_detection_shapes,
     create_mask_shapes,
     create_rbox_shapes,
-    get_det_model_api_configuration
+    get_det_model_api_configuration,
 )
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
@@ -500,12 +499,7 @@ class OTXDetectionTask(OTXTask, ABC):
         }:
             if self._config.task == "mmrotate":
                 shapes = create_rbox_shapes(
-                    all_results,
-                    width,
-                    height,
-                    confidence_threshold,
-                    self._labels,
-                    self._config.angle_version
+                    all_results, width, height, confidence_threshold, self._labels, self._config.angle_version
                 )
             else:
                 shapes = create_mask_shapes(

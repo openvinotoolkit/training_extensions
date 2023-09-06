@@ -1,3 +1,4 @@
+"""Rotated FCOS Data pipeline."""
 dataset_type = "OTXRotatedDataset"
 
 data_root = "dota-coco/"

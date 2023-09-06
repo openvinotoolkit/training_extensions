@@ -1,3 +1,4 @@
+"""OTX Adapters - mmrotate."""
 from . import models
 from .datasets.dataset import OTXRotatedDataset
 

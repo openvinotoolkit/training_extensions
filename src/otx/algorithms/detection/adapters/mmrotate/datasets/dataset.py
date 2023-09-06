@@ -1,6 +1,6 @@
-"""Base MMDataset for Detection Task."""
+"""Base MMRotate Dataset for Rotated Detection Task."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -95,6 +95,8 @@ def get_annotation_mmrotate_format(
 
 @DATASETS.register_module()
 class OTXRotatedDataset(OTXDetDataset):
+    """Wrapper that allows using a OTX dataset to train mmrotate models."""
+
     def __init__(self, angle_version: str = "oc", **kwargs):
         """Initialize OTXDataset.
 

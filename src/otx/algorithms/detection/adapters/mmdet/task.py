@@ -216,15 +216,12 @@ class MMDetectionTask(OTXDetectionTask):
 
         return cfg
 
-    def record_info_to_checkpoint_meta(self, cfg: Config, classes: List[str]) -> Dict[str, Any]:
+    def record_info_to_checkpoint_meta(self, cfg: Config, classes: List[str]):
         """Record info to checkpoint meta.
 
         Args:
             cfg (Config): detection configuration
             classes (list): list of dataset classes
-
-        Returns:
-            meta: meta information
         """
         if cfg.checkpoint_config is not None:
             cfg.checkpoint_config.meta = dict(

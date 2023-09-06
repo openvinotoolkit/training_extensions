@@ -1,3 +1,4 @@
+"""Rotated FCOS R50."""
 _base_ = [
     "../../../../../recipes/stages/detection/incremental.py",
     "../../../../common/adapters/mmcv/configs/backbones/resnet50.yaml",
@@ -42,5 +43,8 @@ model = dict(
     test_cfg=dict(nms_pre=2000, min_bbox_size=0, score_thr=0.05, nms=dict(iou_thr=0.1), max_per_img=2000),
 )
 
-load_from = "https://download.openmmlab.com/mmrotate/v0.1.0/rotated_fcos/rotated_fcos_sep_angle_r50_fpn_1x_dota_le90/rotated_fcos_sep_angle_r50_fpn_1x_dota_le90-0be71a0c.pth"
+load_from = "https://download.openmmlab.com/mmrotate/\
+v0.1.0/rotated_fcos/rotated_fcos_sep_angle_r50_fpn_1x_dota_le90/\
+rotated_fcos_sep_angle_r50_fpn_1x_dota_le90-0be71a0c.pth"
+
 optimizer = dict(type="SGD", lr=0.0025, momentum=0.9, weight_decay=0.0001)

@@ -1,3 +1,4 @@
+"""Model of rotated_atss_obb_mobilenet for Rotated-Detection Task."""
 _base_ = [
     "../../../../../recipes/stages/detection/incremental.py",
     "../../../../common/adapters/mmcv/configs/backbones/mobilenet_v2_w1.yaml",
