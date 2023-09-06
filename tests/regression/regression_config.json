@@ -78,9 +78,9 @@
       },
       "tiling": {
         "multi_class": {
-          "--train-data-roots": "detection/coco_subset_cls_decr",
-          "--val-data-roots": "detection/coco_subset_cls_decr",
-          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--train-data-roots": "detection/coco_subset",
+          "--val-data-roots": "detection/coco_subset",
+          "--test-data-roots": "detection/coco_subset",
           "--input": "detection/coco_subset/images/test"
         }
       }
@@ -1659,8 +1659,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 5857.729,
-            "MaskRCNN-EfficientNetB2B": 4869.547
+            "MaskRCNN-ResNet50": 7234.698,
+            "MaskRCNN-EfficientNetB2B": 3450.991
           }
         }
       },
@@ -2059,8 +2059,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 142.759,
-            "MaskRCNN-EfficientNetB2B": 119.753
+            "MaskRCNN-ResNet50": 443.869,
+            "MaskRCNN-EfficientNetB2B": 451.211
           }
         }
       },
