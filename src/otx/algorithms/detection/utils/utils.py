@@ -31,6 +31,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from mmrotate.core import obb2poly_np
 
 # pylint: disable=invalid-name
 
@@ -313,4 +314,39 @@ def create_mask_shapes(
             else:
                 ellipse = Ellipse((box[0]) / width, (box[1]) / height, (box[2]) / width, (box[3]) / height)
                 shapes.append(Annotation(ellipse, labels=assigned_label, id=ID(f"{label_idx:08}")))
+    return shapes
+
+
+def create_rbox_shapes(
+        pred_results: List,
+        width: int,
+        height: int,
+        confidence_threshold: float,
+        labels: List,
+        angle_version: str,
+) -> List[Annotation]:
+    """Convert rotated bounding box to polygon shape.
+
+    Args:
+        all_results (list): list of predicted detection results
+        width (int): image width
+        height (int): image height
+        confidence_threshold (float): confidence threshold
+
+    Returns:
+        list: list of polygon shapes
+    """
+    shapes = []
+    for label_idx, detections in enumerate(pred_results):
+        polygons = obb2poly_np(detections, angle_version)
+        for polygon in polygons:
+            probability = float(polygon[-1])
+            if probability < confidence_threshold:
+                continue
+            points = polygon[:-1].reshape(-1, 2)
+            points = [Point(x=point[0] / width, y=point[1] / height) for point in points]
+            labels = [ScoredLabel(labels[label_idx], probability=probability)]
+            polygon = Polygon(points=points)
+            if polygon.get_area() > 1e-12:
+                shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
     return shapes

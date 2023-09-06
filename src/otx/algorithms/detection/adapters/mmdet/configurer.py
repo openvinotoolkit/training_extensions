@@ -156,7 +156,8 @@ class DetectionConfigurer(BaseConfigurer):
 
     def configure_bbox_head(self, cfg):
         """Patch classification loss if there are ignore labels."""
-        if cfg.get("task", "detection") == "detection":
+        task_type = cfg.get("task", "detection")
+        if task_type == "detection" or task_type == "mmrotate":
             bbox_head = cfg.model.bbox_head
         else:
             bbox_head = cfg.model.roi_head.bbox_head

@@ -1,4 +1,4 @@
-dataset_type = "CocoDataset"
+dataset_type = "OTXRotatedDataset"
 
 data_root = "dota-coco/"
 
@@ -49,18 +49,21 @@ data = dict(
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
+        angle_version=angle_version,
         ann_file=data_root + "anno/DOTA_train.json",
         img_prefix=data_root + "train/images-jpeg/",
         pipeline=train_pipeline,
     ),
     val=dict(
         type=dataset_type,
+        angle_version=angle_version,
         ann_file=data_root + "anno/DOTA_val.json",
         img_prefix=data_root + "val/images-jpeg/",
         pipeline=test_pipeline,
     ),
     test=dict(
         type=dataset_type,
+        angle_version=angle_version,
         ann_file=data_root + "anno/DOTA_val.json",
         img_prefix=data_root + "val/images-jpeg/",
         pipeline=test_pipeline,
