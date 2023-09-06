@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
 import importlib
 import inspect
 import os
@@ -31,8 +30,12 @@ def get_impl_class(impl_path):
         task_impl_class = getattr(task_impl_module, task_impl_class_name)
 
         return task_impl_class
-    except Exception:
-        raise ImportError(task_impl_module_name)
+    except Exception as e:
+        if hasattr(task_impl_module, "DEBUG"):
+            exception = getattr(task_impl_module, "DEBUG")
+            if isinstance(exception, Exception):
+                raise exception
+        raise e
 
 
 def get_non_default_args(func):

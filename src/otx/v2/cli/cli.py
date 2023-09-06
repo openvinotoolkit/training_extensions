@@ -64,12 +64,7 @@ class OTXCLIv2:
         self.subcommand = self.config["subcommand"]
 
         if self.subcommand is not None:
-            try:
-                self.run(self.subcommand)
-            except ImportError as e:
-                print(f"[X] ImportError: {e}")
-                print(get_environment_table())
-                print("[] Run the 'otx doctor' or 'otx install --help' command to perform the required installation.")
+            self.run(self.subcommand)
 
     def _setup_parser_kwargs(self, parser_kwargs: Dict[str, Any] = {}) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         subcommand_names = self.engine_subcommands().keys()
@@ -319,20 +314,20 @@ class OTXCLIv2:
             results = self.engine.test(
                 self.model, test_dataloader=self.data.test_dataloader(**test_dl_kwargs), **subcommand_kwargs
             )
-             # TODO: Cleanup for output
+            # TODO: Cleanup for output
             print(results)
         elif subcommand == "predict":
             self.instantiate_classes()
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.predict(model=self.model, **subcommand_kwargs)
-             # TODO: Cleanup for output
+            # TODO: Cleanup for output
             print(results)
         elif subcommand == "export":
             self.instantiate_classes()
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.export(model=self.model, **subcommand_kwargs)
-             # TODO: Cleanup for output
-            print(f"[*] Model exporting ended successfully.")
+            # TODO: Cleanup for output
+            print("[*] Model exporting ended successfully.")
         else:
             for key, val in self.config[subcommand].items():
                 print(f"{key}: {val}")

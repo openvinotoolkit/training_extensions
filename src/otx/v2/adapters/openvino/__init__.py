@@ -5,6 +5,7 @@
 
 AVAILABLE = True
 VERSION = None
+DEBUG = None
 
 try:
     import openvino  # noqa: F401
@@ -14,5 +15,6 @@ try:
     from .models import *
     from .ops import *
 
-except ImportError:
+except ImportError as e:
     AVAILABLE = False
+    DEBUG = e

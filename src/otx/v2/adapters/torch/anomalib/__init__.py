@@ -5,6 +5,7 @@
 
 AVAILABLE = True
 VERSION = None
+DEBUG = None
 
 try:
     import anomalib  # noqa: F401
@@ -17,5 +18,6 @@ try:
 
     __all__ = ["Dataset", "Engine", "get_model"]
 
-except ImportError:
+except ImportError as e:
     AVAILABLE = False
+    DEBUG = e

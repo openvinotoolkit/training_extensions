@@ -6,10 +6,12 @@
 
 AVAILABLE = True
 VERSION = None
+DEBUG = None
 
 try:
     import mmengine  # noqa: F401
 
     VERSION = mmengine.__version__
-except ImportError:
+except ImportError as e:
     AVAILABLE = False
+    DEBUG = e

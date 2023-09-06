@@ -7,6 +7,7 @@ __all__ = []
 
 AVAILABLE = True
 VERSION = None
+DEBUG = None
 try:
     import mmdeploy  # noqa: F401
 
@@ -14,5 +15,6 @@ try:
 
     __all__.append("squeeze__default")
     VERSION = mmdeploy.__version__
-except ImportError:
+except ImportError as e:
     AVAILABLE = False
+    DEBUG = e

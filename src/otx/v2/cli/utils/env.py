@@ -5,7 +5,7 @@
 
 
 import importlib
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from rich.console import Console
 from rich.table import Table
@@ -18,17 +18,20 @@ REQUIREMENT_PER_TASK = {
 }
 
 
-def get_adapters_status() -> Dict[str, Dict[str, Union[bool, float]]]:
+def get_adapters_status() -> Dict[str, Dict]:
     """Returns the available and version information for each adapter.
 
     Returns:
         dict[str, dict[str, Union[bool, float]]]: the available and version information.
     """
-    adapters_status = {}
+    adapters_status: Dict[str, Dict] = {}
     for adapter in ADAPTERS:
         name = f"otx.v2.adapters.{adapter}"
         module = importlib.import_module(name)
-        adapters_status[name] = {"available": module.AVAILABLE, "version": module.VERSION}
+        adapters_status[name] = {}
+        for var in ("AVAILABLE", "VERSION", "DEBUG"):
+            if hasattr(module, var):
+                adapters_status[name][var] = getattr(module, var)
     return adapters_status
 
 
@@ -45,10 +48,10 @@ def get_environment_table() -> str:
 
     adapter = get_adapters_status()
     for name, value in adapter.items():
-        if value["available"]:
-            table.add_row(name, value["version"], "O")
+        if value["AVAILABLE"]:
+            table.add_row(name, value["VERSION"], "O")
         else:
-            table.add_row(name, value["version"], "X", style="red")
+            table.add_row(name, value["VERSION"], "X", style="red")
 
     console = Console()
     with console.capture() as capture:
@@ -56,35 +59,38 @@ def get_environment_table() -> str:
     return capture.get()
 
 
-def get_task_status(task: Optional[str] = None) -> Dict[str, bool]:
+def get_task_status(task: Optional[str] = None) -> Dict[str, Dict]:
     """Check if the requirement for each task is currently available.
 
     Args:
         task (Optional[str], optional): Task available in OTX. Defaults to None.
 
     Returns:
-        dict[str, bool]: Information about availability by task.
+        Dict[str, Dict[str, Optional[Union[bool, str, List]]]]: Information about availability by task.
     """
     adapter_status = get_adapters_status()
 
-    task_status = {}
-    target_req = {}
+    task_status: Dict[str, Dict[str, Union[List, bool]]] = {}
+    target_req: Dict[str, List[str]] = {}
     if task is not None:
         target_req[task] = REQUIREMENT_PER_TASK[task]
     else:
         target_req = REQUIREMENT_PER_TASK
     for req, adapters in target_req.items():
         available = True
+        exception_lst: List = []
         for adapter in adapters:
             name = f"otx.v2.adapters.{adapter}"
             if name in adapter_status:
-                if not adapter_status[name]["available"]:
+                if not adapter_status[name]["AVAILABLE"]:
                     available = False
+                    exception_lst.append(adapter_status[name].get("DEBUG", None))
                     break
             else:
                 available = False
+                exception_lst.append(ModuleNotFoundError(f"{name} not in {list(adapter_status.keys())}"))
                 break
-        task_status[req] = available
+        task_status[req] = {"AVAILABLE": available, "EXCEPTIONS": exception_lst}
     return task_status
 
 

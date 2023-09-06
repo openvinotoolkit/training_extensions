@@ -3,7 +3,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Optional
+
+import traceback
+from typing import List, Optional
 
 from rich.console import Console
 
@@ -39,11 +41,12 @@ def prepare_parser() -> OTXArgumentParser:
 
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default=None, type=str)
+    parser.add_argument("--debug", help="Print Traceback of Exception for more details.", action="store_true")
 
     return parser
 
 
-def doctor(task: Optional[str] = None) -> None:
+def doctor(task: Optional[str] = None, debug: bool = False) -> None:
     """Print diagnostic information about the current environment.
 
     Args:
@@ -76,13 +79,20 @@ def doctor(task: Optional[str] = None) -> None:
 
     # 3. Check if each task is available
     task_status = get_task_status(task=task)
-    for target, available in task_status.items():
+    for target, status in task_status.items():
+        available = status.get("AVAILABLE", None)
         if available:
             console.log(f"{green_mark} {target}: [bold green]Ready![/bold green]")
         else:
             console.log(f"{red_mark} {target}: {warning_mark}")
             console.log(f"\t - Please try this command: 'otx install {target}' or 'otx install full'\n")
             issue_count += 1
+        exception_lst: List = status.get("EXCEPTIONS", [])
+        for exception in exception_lst:
+            if exception is not None:
+                console.log(f"\t[bold red]{warning_mark} {exception}[/bold red]")
+            if debug and isinstance(exception, Exception):
+                traceback.print_tb(exception.__traceback__)
     print()
 
     if issue_count > 0:

@@ -6,6 +6,7 @@
 
 AVAILABLE = True
 VERSION = None
+DEBUG = None
 
 try:
     import mmpretrain  # noqa: F401
@@ -21,5 +22,6 @@ try:
 
     __all__ = ["get_model", "Dataset", "Engine", "list_models"]
 
-except ImportError:
+except ImportError as e:
     AVAILABLE = False
+    DEBUG = e
