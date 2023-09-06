@@ -39,7 +39,12 @@ rebuild_args = {
         "--model": "MobileNet-V3-large-1x",
         "--train-type": "Semisupervised",
     },
-    "detection": {"default": "ATSS", "--task": "detection", "--model": "SSD", "--train-type": "Semisupervised"},
+    "detection": {
+        "default": "MobileNetV2-ATSS",
+        "--task": "detection",
+        "--model": "SSD",
+        "--train-type": "Semisupervised",
+    },
 }
 
 
@@ -99,12 +104,12 @@ class TestToolsOTXBuildAutoConfig:
 train_auto_config_args = {
     "classification": {"--train-data-roots": "tests/assets/classification_dataset"},
     "classification_with_template": {
-        "template": "otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
+        "template": "src/otx/algorithms/classification/configs/mobilenet_v3_large_1_cls_incr/template.yaml",
         "--train-data-roots": "tests/assets/classification_dataset",
     },
     "detection": {"--train-data-roots": "tests/assets/car_tree_bug"},
     "detection_with_template": {
-        "template": "otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml",
+        "template": "src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml",
         "--train-data-roots": "tests/assets/car_tree_bug",
     },
 }

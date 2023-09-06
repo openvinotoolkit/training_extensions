@@ -11,6 +11,7 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.classification_dataset_adapter import (
     ClassificationDatasetAdapter,
+    SelfSLClassificationDatasetAdapter,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.core.data.test_helpers import (
@@ -137,3 +138,36 @@ class TestOTXClassificationDatasetAdapter:
             assert [i.parent for i in hlabel_test_dataset_adapter.category_items if i.name == label.name][
                 0
             ] == parent_name
+
+
+class TestSelfSLClassificationDatasetAdapter:
+    def setup_method(self):
+        self.root_path = os.getcwd()
+        task = "classification"
+
+        self.task_type: TaskType = TASK_NAME_TO_TASK_TYPE[task]
+        self.data_root_dict: dict = TASK_NAME_TO_DATA_ROOT[task]
+
+        self.train_data_roots: str = os.path.join(self.root_path, self.data_root_dict["train"])
+        self.train_data_roots_images: str = os.path.join(self.root_path, self.data_root_dict["train"], "0")
+
+        self.train_dataset_adapter_imagenet = SelfSLClassificationDatasetAdapter(
+            task_type=self.task_type,
+            train_data_roots=self.train_data_roots,
+        )
+
+        self.train_dataset_adapter_images_only = SelfSLClassificationDatasetAdapter(
+            task_type=self.task_type,
+            train_data_roots=self.train_data_roots_images,
+        )
+
+    @e2e_pytest_unit
+    def test_get_otx_dataset(self):
+        dataset_imagenet = self.train_dataset_adapter_imagenet.get_otx_dataset()
+        assert isinstance(dataset_imagenet, DatasetEntity)
+        assert len(self.train_dataset_adapter_imagenet.get_label_schema().get_labels(False)) == 2
+        dataset_only_images = self.train_dataset_adapter_images_only.get_otx_dataset()
+        assert isinstance(dataset_only_images, DatasetEntity)
+        lables = self.train_dataset_adapter_images_only.get_label_schema().get_labels(False)
+        assert len(lables) == 1
+        assert lables[0].name == "fake_label"

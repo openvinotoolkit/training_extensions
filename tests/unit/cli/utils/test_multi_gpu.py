@@ -1,10 +1,10 @@
+import datetime
 import os
 import socket
 from contextlib import closing
 from copy import deepcopy
 
 import pytest
-import torch
 
 from otx.cli.utils import multi_gpu
 from otx.cli.utils.multi_gpu import (
@@ -16,7 +16,13 @@ from otx.cli.utils.multi_gpu import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
-NUM_AVAILABLE_GPU = torch.cuda.device_count()
+NUM_AVAILABLE_GPU = 4
+
+
+@pytest.fixture(autouse=True)
+def mocking_torch_device_count(mocker):
+    mock_torch = mocker.patch.object(multi_gpu, "torch")
+    mock_torch.cuda.device_count.return_value = NUM_AVAILABLE_GPU
 
 
 @e2e_pytest_unit
@@ -163,10 +169,10 @@ class TestMultiGPUManager:
         self.mock_mp = mocker.patch.object(multi_gpu, "mp")
         self.mock_process = mocker.MagicMock()
         self.mock_mp.get_context.return_value.Process = self.mock_process
-        self.num_gpu = 4
-
-        mock_torch = mocker.patch.object(multi_gpu, "torch")
-        mock_torch.cuda.device_count.return_value = self.num_gpu
+        self.num_gpu = NUM_AVAILABLE_GPU
+        self.mock_os = mocker.patch.object(multi_gpu, "os")
+        self.mock_os.environ = {}
+        self.mock_os.getpid.return_value = os.getpid()
 
         self.multigpu_manager = MultiGPUManager(self.mock_train_func, ",".join([str(i) for i in range(self.num_gpu)]))
 
@@ -187,7 +193,12 @@ class TestMultiGPUManager:
 
     @e2e_pytest_unit
     def test_init(self, mocker):
-        MultiGPUManager(mocker.MagicMock(), "0,1", "localhost:0")
+        elapsed_second = 180
+        start_time = datetime.datetime.now() - datetime.timedelta(seconds=elapsed_second)
+        MultiGPUManager(mocker.MagicMock(), "0,1", "localhost:0", start_time=start_time)
+
+        # check torch.dist.init_process_group timeout value is adapted if elapsed time is bigger than criteria.
+        assert int(self.mock_os.environ.get("TORCH_DIST_TIMEOUT", 60)) >= int(elapsed_second * 1.5)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("num_gpu", [4, 10])
@@ -208,8 +219,7 @@ class TestMultiGPUManager:
 
     @e2e_pytest_unit
     def test_is_unavailable_by_torchrun(self, mocker):
-        mock_os = mocker.patch.object(multi_gpu, "os")
-        mock_os.environ = {"TORCHELASTIC_RUN_ID": "1234"}
+        self.mock_os.environ = {"TORCHELASTIC_RUN_ID": "1234"}
         multigpu_manager = MultiGPUManager(mocker.MagicMock(), ",".join([str(i) for i in range(4)]), "localhost:0")
 
         assert not multigpu_manager.is_available()
@@ -274,7 +284,7 @@ class TestMultiGPUManager:
         # check
         for p in process_arr[: self.num_gpu - 2]:
             p.kill.assert_called_once()
-        mock_kill.assert_called_once_with(os.getpid(), self.mock_singal.SIGKILL)
+        self.mock_os.kill.assert_called_once_with(os.getpid(), self.mock_singal.SIGKILL)
 
     @e2e_pytest_unit
     def test_terminate_signal_handler(self, mocker, process_arr):
@@ -358,8 +368,6 @@ class TestMultiGPUManager:
     @e2e_pytest_unit
     def test_initialize_multigpu_train(self, mocker):
         # prepare
-        mock_os = mocker.patch.object(multi_gpu, "os")
-        mock_os.environ = {}
         mocker.patch.object(multi_gpu.dist, "get_world_size", return_value=2)
         mocker.patch.object(multi_gpu.dist, "get_rank", return_value=0)
 
@@ -373,12 +381,12 @@ class TestMultiGPUManager:
         )
 
         # check
-        assert mock_os.environ["MASTER_ADDR"] == "localhost"
-        assert mock_os.environ["MASTER_PORT"] == "1234"
-        assert mock_os.environ["LOCAL_WORLD_SIZE"] == "2"
-        assert mock_os.environ["WORLD_SIZE"] == "2"
-        assert mock_os.environ["LOCAL_RANK"] == "0"
-        assert mock_os.environ["RANK"] == "0"
+        assert self.mock_os.environ["MASTER_ADDR"] == "localhost"
+        assert self.mock_os.environ["MASTER_PORT"] == "1234"
+        assert self.mock_os.environ["LOCAL_WORLD_SIZE"] == "2"
+        assert self.mock_os.environ["WORLD_SIZE"] == "2"
+        assert self.mock_os.environ["LOCAL_RANK"] == "0"
+        assert self.mock_os.environ["RANK"] == "0"
 
     @e2e_pytest_unit
     def test_run_child_process(self, mocker):

@@ -4,10 +4,11 @@
 
 import copy
 import os
+import pathlib
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.models import Model
+from openvino.model_api.models import Model
 
 import otx.algorithms.segmentation.adapters.openvino
 
@@ -40,6 +41,7 @@ from tests.unit.algorithms.segmentation.test_helpers import (
     generate_otx_label_schema,
     init_environment,
 )
+from openvino.model_api.models.utils import ImageResultWithSoftPrediction
 
 
 class TestOpenVINOSegmentationInferencer:
@@ -52,48 +54,19 @@ class TestOpenVINOSegmentationInferencer:
         mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.OpenvinoAdapter")
         mocker.patch.object(Model, "create_model")
         self.seg_ov_inferencer = OpenVINOSegmentationInferencer(seg_params, label_schema, "")
-        self.seg_ov_inferencer.model = mocker.patch("openvino.model_zoo.model_api.models.Model", autospec=True)
+        self.seg_ov_inferencer.model = mocker.patch("openvino.model_api.models.Model", autospec=True)
 
         self.fake_input = np.full((5, 1), 0.1)
 
     @e2e_pytest_unit
-    def test_pre_process(self):
-        self.seg_ov_inferencer.model.preprocess.return_value = {"foo": "bar"}
-        returned_value = self.seg_ov_inferencer.pre_process(self.fake_input)
-
-        assert returned_value == {"foo": "bar"}
-
-    @e2e_pytest_unit
-    def test_post_process(self):
-        fake_prediction = {"pred": self.fake_input}
-        fake_metadata = {"soft_prediction": self.fake_input, "feature_vector": None}
-        self.seg_ov_inferencer.model.postprocess.return_value = np.ones((5, 1))
-        returned_value = self.seg_ov_inferencer.post_process(fake_prediction, fake_metadata)
-
-        assert len(returned_value) == 3
-        assert np.array_equal(returned_value[2], self.fake_input)
-
-    @e2e_pytest_unit
     def test_predict(self, mocker):
         fake_output = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=[])
-        mock_pre_process = mocker.patch.object(OpenVINOSegmentationInferencer, "pre_process", return_value=("", ""))
-        mock_forward = mocker.patch.object(OpenVINOSegmentationInferencer, "forward")
-        mock_post_process = mocker.patch.object(
-            OpenVINOSegmentationInferencer, "post_process", return_value=fake_output
+        mock_converter = mocker.patch.object(
+            self.seg_ov_inferencer.converter, "convert_to_annotation", return_value=fake_output
         )
-        returned_value = self.seg_ov_inferencer.predict(self.fake_input)
+        _, returned_value = self.seg_ov_inferencer.predict(self.fake_input)
 
-        mock_pre_process.assert_called_once()
-        mock_forward.assert_called_once()
-        mock_post_process.assert_called_once()
-        assert returned_value == fake_output
-
-    @e2e_pytest_unit
-    def test_forward(self):
-        fake_output = {"pred": np.full((5, 1), 0.9)}
-        self.seg_ov_inferencer.model.infer_sync.return_value = fake_output
-        returned_value = self.seg_ov_inferencer.forward({"image": self.fake_input})
-
+        mock_converter.assert_called_once()
         assert returned_value == fake_output
 
 
@@ -124,9 +97,13 @@ class TestOpenVINOSegmentationTask:
             )
         ]
         fake_ann_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=fake_annotation)
-        fake_input = mocker.MagicMock()
         mock_predict = mocker.patch.object(
-            OpenVINOSegmentationInferencer, "predict", return_value=(fake_ann_scene, None, fake_input)
+            OpenVINOSegmentationInferencer,
+            "predict",
+            return_value=(
+                ImageResultWithSoftPrediction(np.array(0), np.array(0), np.array(0), np.array(0)),
+                fake_ann_scene,
+            ),
         )
         mocker.patch(
             "otx.algorithms.segmentation.adapters.openvino.task.get_activation_map", return_value=np.zeros((5, 1))
@@ -194,22 +171,23 @@ class TestOpenVINOSegmentationTask:
 
     @e2e_pytest_unit
     def test_optimize(self, mocker, otx_model):
-        def patch_save_model(model, dir_path, model_name):
-            with open(f"{dir_path}/{model_name}.xml", "wb") as f:
+        def patch_save_model(model, output_xml):
+            with open(output_xml, "wb") as f:
                 f.write(b"foo")
-            with open(f"{dir_path}/{model_name}.bin", "wb") as f:
+            bin_path = pathlib.Path(output_xml).parent / pathlib.Path(str(pathlib.Path(output_xml).stem) + ".bin")
+            with open(bin_path, "wb") as f:
                 f.write(b"bar")
 
         dataset = generate_otx_dataset()
         output_model = copy.deepcopy(otx_model)
         self.seg_ov_task.model.set_data("openvino.bin", b"foo")
         self.seg_ov_task.model.set_data("openvino.xml", b"bar")
-        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.load_model", autospec=True)
-        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.create_pipeline", autospec=True)
-        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.save_model", new=patch_save_model)
-        spy_compress = mocker.spy(otx.algorithms.segmentation.adapters.openvino.task, "compress_model_weights")
+
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.ov.Core.read_model", autospec=True)
+        mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.ov.serialize", new=patch_save_model)
+        fake_quantize = mocker.patch("otx.algorithms.segmentation.adapters.openvino.task.nncf.quantize", autospec=True)
         self.seg_ov_task.optimize(OptimizationType.POT, dataset=dataset, output_model=output_model)
 
-        spy_compress.assert_called_once()
+        fake_quantize.assert_called_once()
         assert self.seg_ov_task.model.get_data("openvino.bin")
         assert self.seg_ov_task.model.get_data("openvino.xml")

@@ -1,0 +1,213 @@
+"""Base configurer for mmdet config."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
+from typing import Optional
+
+from mmcv.utils import ConfigDict
+
+from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
+from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
+from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    get_configured_input_size,
+    patch_color_conversion,
+)
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
+from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.detection.adapters.mmdet.utils import (
+    cluster_anchors,
+    should_cluster_anchors,
+)
+
+logger = get_logger()
+
+
+# pylint: disable=too-many-public-methods
+class DetectionConfigurer(BaseConfigurer):
+    """Patch config to support otx train."""
+
+    # pylint: disable=too-many-arguments
+    def configure(
+        self,
+        cfg,
+        train_dataset,
+        model_ckpt,
+        data_cfg,
+        ir_options=None,
+        data_classes=None,
+        model_classes=None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
+    ):
+        """Create MMCV-consumable config from given inputs."""
+        logger.info(f"configure!: training={self.training}")
+
+        self.configure_base(cfg, data_cfg, data_classes, model_classes)
+        self.configure_device(cfg)
+        self.configure_ckpt(cfg, model_ckpt)
+        self.configure_model(cfg, ir_options)
+        self.configure_data(cfg, data_cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt)
+        self.configure_regularization(cfg)
+        self.configure_task(cfg, train_dataset)
+        self.configure_samples_per_gpu(cfg)
+        self.configure_fp16(cfg)
+        self.configure_compat_cfg(cfg)
+        return cfg
+
+    def configure_compatibility(self, cfg, **kwargs):
+        """Configure for OTX compatibility with mmdet."""
+        patch_color_conversion(cfg)
+
+    def configure_regularization(self, cfg):  # noqa: C901
+        """Patch regularization parameters."""
+        if self.training:
+            if cfg.model.get("l2sp_weight", 0.0) > 0.0:
+                logger.info("regularization config!!!!")
+
+                # Checkpoint
+                l2sp_ckpt = cfg.model.get("l2sp_ckpt", None)
+                if l2sp_ckpt is None:
+                    if "pretrained" in cfg.model:
+                        l2sp_ckpt = cfg.model.pretrained
+                    if cfg.load_from:
+                        l2sp_ckpt = cfg.load_from
+                cfg.model.l2sp_ckpt = l2sp_ckpt
+
+                # Disable weight decay
+                if "weight_decay" in cfg.optimizer:
+                    cfg.optimizer.weight_decay = 0.0
+
+    def configure_task(self, cfg, train_dataset):
+        """Patch config to support training algorithm."""
+        super().configure_task(cfg)
+        if "task_adapt" in cfg:
+            if self.data_classes != self.model_classes:
+                self.configure_task_data_pipeline(cfg)
+            if cfg["task_adapt"].get("use_adaptive_anchor", False):
+                self.configure_anchor(cfg, train_dataset)
+            if self.task_adapt_type == "default_task_adapt":
+                self.configure_bbox_head(cfg)
+
+    def configure_classes(self, cfg):
+        """Patch classes for model and dataset."""
+        super().configure_classes(cfg)
+        self._configure_eval_dataset(cfg)
+
+    def _configure_head(self, cfg):
+        """Patch number of classes of head."""
+        head_names = ("mask_head", "bbox_head", "segm_head")
+        num_classes = len(self.model_classes)
+        if "roi_head" in cfg.model:
+            # For Faster-RCNNs
+            for head_name in head_names:
+                if head_name in cfg.model.roi_head:
+                    if isinstance(cfg.model.roi_head[head_name], list):
+                        for head in cfg.model.roi_head[head_name]:
+                            head.num_classes = num_classes
+                    else:
+                        cfg.model.roi_head[head_name].num_classes = num_classes
+        else:
+            # For other architectures (including SSD)
+            for head_name in head_names:
+                if head_name in cfg.model:
+                    cfg.model[head_name].num_classes = num_classes
+
+    def _configure_eval_dataset(self, cfg):
+        if cfg.get("task", "detection") == "detection":
+            eval_types = ["val", "test"]
+            for eval_type in eval_types:
+                if cfg.data[eval_type]["type"] == "TaskAdaptEvalDataset":
+                    cfg.data[eval_type]["model_classes"] = self.model_classes
+                else:
+                    # Wrap original dataset config
+                    org_type = cfg.data[eval_type]["type"]
+                    cfg.data[eval_type]["type"] = "TaskAdaptEvalDataset"
+                    cfg.data[eval_type]["org_type"] = org_type
+                    cfg.data[eval_type]["model_classes"] = self.model_classes
+
+    def configure_task_data_pipeline(self, cfg):
+        """Trying to alter class indices of training data according to model class order."""
+        tr_data_cfg = self.get_data_cfg(cfg, "train")
+        class_adapt_cfg = dict(type="AdaptClassLabels", src_classes=self.data_classes, dst_classes=self.model_classes)
+        pipeline_cfg = tr_data_cfg.pipeline
+        for i, operation in enumerate(pipeline_cfg):
+            if operation["type"] in [
+                "LoadAnnotationFromOTXDataset",
+                "LoadResizeDataFromOTXDataset",
+            ]:  # insert just after this operation
+                op_next_ann = pipeline_cfg[i + 1] if i + 1 < len(pipeline_cfg) else {}
+                if op_next_ann.get("type", "") == class_adapt_cfg["type"]:
+                    op_next_ann.update(class_adapt_cfg)
+                else:
+                    pipeline_cfg.insert(i + 1, class_adapt_cfg)
+                break
+
+    def configure_anchor(self, cfg, train_dataset):
+        """Patch anchor settings for single stage detector."""
+        if cfg.model.type in ["SingleStageDetector", "CustomSingleStageDetector"]:
+            anchor_cfg = cfg.model.bbox_head.anchor_generator
+            if anchor_cfg.type == "SSDAnchorGeneratorClustered":
+                cfg.model.bbox_head.anchor_generator.pop("input_size", None)
+        if should_cluster_anchors(cfg) and train_dataset is not None:
+            cluster_anchors(cfg, train_dataset)
+
+    def configure_bbox_head(self, cfg):
+        """Patch classification loss if there are ignore labels."""
+        if cfg.get("task", "detection") == "detection":
+            bbox_head = cfg.model.bbox_head
+        else:
+            bbox_head = cfg.model.roi_head.bbox_head
+
+        if cfg.get("ignore", False):
+            bbox_head.loss_cls = ConfigDict(
+                type="CrossSigmoidFocalLoss",
+                use_sigmoid=True,
+                num_classes=len(self.model_classes),
+                alpha=bbox_head.loss_cls.get("alpha", 0.25),
+                gamma=bbox_head.loss_cls.get("gamma", 2.0),
+            )
+
+    @staticmethod
+    def configure_input_size(
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+    ):
+        """Change input size if necessary."""
+        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        if input_size is None:
+            return
+
+        base_input_size = None
+        model_cfg = cfg.get("model")
+        if model_cfg is not None:
+            if cfg.model.type == "CustomYOLOX":
+                if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
+                    raise ValueError("YOLOX should have input size being multiple of 32.")
+                if cfg.model.backbone.widen_factor == 0.375:  # YOLOX tiny case
+                    # YOLOX tiny has a different input size in train and val data pipeline
+                    cfg.model.input_size = (input_size[0], input_size[1])
+                    base_input_size = {
+                        "train": (640, 640),
+                        "val": (416, 416),
+                        "test": (416, 416),
+                        "unlabeled": (992, 736),
+                    }
+
+        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        logger.info("Input size is changed to {}".format(input_size))
+
+
+class IncrDetectionConfigurer(IncrConfigurerMixin, DetectionConfigurer):
+    """Patch config to support incremental learning for object detection."""
+
+    def configure_task(self, cfg, train_dataset):
+        """Patch config to support incremental learning."""
+        super(IncrConfigurerMixin, self).configure_task(cfg, train_dataset)
+        if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
+            self.configure_task_adapt_hook(cfg)
+
+
+class SemiSLDetectionConfigurer(SemiSLConfigurerMixin, DetectionConfigurer):
+    """Patch config to support semi supervised learning for object detection."""

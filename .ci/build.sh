@@ -1,7 +1,8 @@
 #!/bin/bash
 
 VER_CUDA="11.7.1"
-ACTIONS_RUNNER_URL="https://github.com/actions/runner/releases/download/v2.304.0/actions-runner-linux-x64-2.304.0.tar.gz"
+ACTIONS_RUNNER_URL="https://github.com/actions/runner/releases/download/v2.305.0/actions-runner-linux-x64-2.305.0.tar.gz"
+DOCKER_REG_ADDR="local"
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -18,6 +19,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -c|--cuda)
       VER_CUDA="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -r|--reg)
+      DOCKER_REG_ADDR="$2"
       shift # past argument
       shift # past value
       ;;
@@ -38,10 +44,13 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 if [ "$#" -lt 1 ] || [ "$DEFAULT" == "yes" ]; then
 cat << EndofMessage
     USAGE: $0 <tag> [Options]
+    Positional args
+        <tag>               Tag name to be tagged to newly built image
     Options
         -p|--push           Push built image(s) to registry
         -u|--url            url to get Github actions-runner package
         -c|--cuda           Specify CUDA version
+        -r|--reg            Specify docker registry URL <default: local>
         -h|--help           Print this message
 EndofMessage
 exit 0

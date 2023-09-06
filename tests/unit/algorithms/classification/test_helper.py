@@ -27,7 +27,9 @@ from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 
-DEFAULT_CLS_TEMPLATE_DIR = Path("otx") / "algorithms" / "classification" / "configs" / "mobilenet_v3_large_1_cls_incr"
+DEFAULT_CLS_TEMPLATE_DIR = (
+    Path("src") / "otx" / "algorithms" / "classification" / "configs" / "mobilenet_v3_large_1_cls_incr"
+)
 DEFAULT_CLS_TEMPLATE = DEFAULT_CLS_TEMPLATE_DIR / "template.yaml"
 
 
@@ -41,7 +43,7 @@ def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False
         for label in not_empty_labels:
             label_schema.add_group(
                 LabelGroup(
-                    name=label.name,
+                    name="___" + label.name,
                     labels=[label],
                     group_type=LabelGroupType.EXCLUSIVE,
                 )
@@ -160,9 +162,9 @@ def setup_configurable_parameters(template_dir, num_iters=10):
 
 def setup_mpa_task_parameters(task_type, create_val=False, create_test=False):
     if task_type == "semisl":
-        recipie_path = "otx/recipes/stages/classification/semisl.yaml"
+        recipie_path = "src/otx/recipes/stages/classification/semisl.yaml"
     elif task_type == "incremental":
-        recipie_path = "otx/recipes/stages/classification/incremental.yaml"
+        recipie_path = "src/otx/recipes/stages/classification/incremental.yaml"
     recipie_cfg = MPAConfig.fromfile(recipie_path)
     model_cfg = MPAConfig.fromfile(DEFAULT_CLS_TEMPLATE_DIR / "model.py")
     model_cfg.model.multilabel = False

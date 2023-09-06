@@ -6,7 +6,9 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from openvino.model_zoo.model_api.models.utils import Detection
+from openvino.model_api.models.utils import Detection
+from openvino.model_api.models.utils import ClassificationResult
+from openvino.model_api.models.utils import ImageResultWithSoftPrediction
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -626,7 +628,12 @@ class TestSegmentationToAnnotation:
                 ),
             ]
         )
-        hard_predictions = np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)])
+        result = ImageResultWithSoftPrediction(
+            np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)]),
+            soft_prediction,
+            np.array(0),
+            np.array(0),
+        )
 
         metadata = {
             "non-required key": 1,
@@ -634,7 +641,7 @@ class TestSegmentationToAnnotation:
             "soft_prediction": soft_prediction,
         }
 
-        predictions_to_annotations = converter.convert_to_annotation(predictions=hard_predictions, metadata=metadata)
+        predictions_to_annotations = converter.convert_to_annotation(predictions=result, metadata=metadata)
         check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=2)
         check_annotation(
             actual_annotation=predictions_to_annotations.annotations[0],
@@ -750,7 +757,6 @@ class TestSegmentationToAnnotation:
             )
             label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            assert converter.labels == non_empty_labels + other_non_empty_labels
             assert not converter.empty_label
             assert converter.label_schema == label_schema
             assert converter.hierarchical
@@ -809,7 +815,7 @@ class TestSegmentationToAnnotation:
             label_schema.add_child(parent=label_0, child=label_0_2)
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = [(0, 0.9), (1, 0.8), (2, 0.94), (3, 0.86)]
+            predictions = ClassificationResult([(0, 0.9), (1, 0.8), (2, 0.94), (3, 0.86)], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
@@ -824,7 +830,7 @@ class TestSegmentationToAnnotation:
             # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" method with
             # "predictions" equal to empty list
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = []
+            predictions = ClassificationResult([], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
@@ -842,12 +848,15 @@ class TestSegmentationToAnnotation:
 
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = [(2, 0.9), (1, 0.8)]
+            predictions = ClassificationResult([(2, 0.9), (1, 0.8)], None, None, None)
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
                 predictions_to_annotations.annotations[0],
-                expected_labels=[ScoredLabel(label=label_0_2, probability=0.9)],
+                expected_labels=[
+                    ScoredLabel(label=label_0_2, probability=0.9),
+                    ScoredLabel(label=label_0_1_1, probability=0.8),
+                ],
             )
 
     @pytest.mark.components(OtxSdkComponent.OTX_API)

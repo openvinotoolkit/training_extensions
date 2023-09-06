@@ -6,5 +6,7 @@ pytorchcv
 mmcls==0.25.0
 timm==0.6.12
 mmdeploy==0.14.0
+mmengine==0.7.4
 scikit-image
 mmrotate==0.3.4
+yapf<0.40.0  # it should be removed after https://github.com/google/yapf/issues/1118 is solved 

@@ -45,7 +45,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.test_helpers import generate_random_annotated_image
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-DEFAULT_SEG_TEMPLATE_DIR = osp.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
+DEFAULT_SEG_TEMPLATE_DIR = osp.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -72,7 +72,7 @@ class TestMPASegAPI:
             "ocr_lite_hrnet_x_mod3",
         ]
         for model_template in segmentation_template:
-            parse_model_template(osp.join("otx/algorithms/segmentation/configs", model_template, "template.yaml"))
+            parse_model_template(osp.join("src/otx/algorithms/segmentation/configs", model_template, "template.yaml"))
 
     @staticmethod
     def generate_label_schema(label_names):
@@ -167,7 +167,6 @@ class TestMPASegAPI:
         model_template = parse_model_template(osp.join(template_dir, "template.yaml"))
 
         hyper_parameters = create(model_template.hyper_parameters.data)
-        hyper_parameters.learning_parameters.learning_rate_fixed_iters = 0
         hyper_parameters.learning_parameters.learning_rate_warmup_iters = 1
         hyper_parameters.learning_parameters.num_iters = num_iters
         hyper_parameters.learning_parameters.num_checkpoints = 1

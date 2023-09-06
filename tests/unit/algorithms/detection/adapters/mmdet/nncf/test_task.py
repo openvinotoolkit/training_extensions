@@ -49,6 +49,7 @@ class TestOTXDetTaskNNCF:
                 }
             }
         )
+        self.det_nncf_task.config = self.det_nncf_task._recipe_cfg
         self.det_nncf_task.save_model(self.model)
 
         assert self.model.get_data("weights.pth")

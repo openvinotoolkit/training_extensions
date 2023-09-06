@@ -14,17 +14,20 @@ from typing import List, Union
 
 import numpy
 from Cython.Build import cythonize
+from Cython.Distutils import build_ext
+from distutils.extension import Extension
 from pkg_resources import Requirement
-from setuptools import Extension, find_packages, setup
+from setuptools import find_packages, setup
 
 try:
     from torch.utils.cpp_extension import BuildExtension
 
-    cmd_class = {"build_ext": BuildExtension}
+    cmd_class = {"build_ext_torch_cpp_ext": BuildExtension}
 except ModuleNotFoundError:
     cmd_class = {}
     print("Skip building ext ops due to the absence of torch.")
 
+cmd_class["build_ext_cythonized"] = build_ext
 
 def readme():
     with open('README.md', encoding='utf-8') as f:
@@ -32,12 +35,12 @@ def readme():
     return content
 
 
-def load_module(name: str = "otx/__init__.py"):
+def load_module(name: str = "src/otx/__init__.py"):
     """Load Python Module.
 
     Args:
         name (str, optional): Name of the module to load.
-            Defaults to "otx/__init__.py".
+            Defaults to "src/otx/__init__.py".
     """
     location = str(Path(__file__).parent / name)
     spec = spec_from_file_location(name=name, location=location)
@@ -62,7 +65,7 @@ def get_otx_version() -> str:
     Returns:
         str: `otx` version.
     """
-    otx = load_module(name="otx/__init__.py")
+    otx = load_module(name="src/otx/__init__.py")
     return otx.__version__
 
 
@@ -103,13 +106,13 @@ def get_extensions():
 
     def _cython_modules():
         cython_files = [
-            "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/pil_augment.pyx",
-            "otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/cv_augment.pyx"
+            "src/otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/pil_augment.pyx",
+            "src/otx/algorithms/common/adapters/mmcv/pipelines/transforms/cython_augments/cv_augment.pyx"
         ]
 
         ext_modules = [
             Extension(
-                cython_file.rstrip(".pyx").replace("/", "."),
+                cython_file.rstrip(".pyx").lstrip("src/").replace("/", "."),
                 [cython_file],
                 include_dirs=[numpy.get_include()],
                 extra_compile_args=["-O3"],
@@ -146,6 +149,10 @@ EXTRAS_REQUIRE = {
             "base", "openvino", "segmentation",
         ]
     ),
+    "visual_prompting": get_requirements(requirement_files=[
+            "base", "openvino", "visual_prompting",
+        ]
+    ),
     "full": get_requirements(requirement_files=[
             "base",
             "openvino",
@@ -153,6 +160,7 @@ EXTRAS_REQUIRE = {
             "classification",
             "detection",
             "segmentation",
+            "visual_prompting",
             "action",
         ]
     ),
@@ -163,7 +171,7 @@ def find_yaml_recipes():
     """Find YAML recipe files in the package."""
     results = defaultdict(list)
 
-    for root, _, files in os.walk("otx"):
+    for root, _, files in os.walk("src/otx"):
         module = ".".join(root.split(os.sep))
         for file in files:
             _, ext = os.path.splitext(file)
@@ -173,7 +181,7 @@ def find_yaml_recipes():
     return results
 
 
-package_data = {"": ["requirements.txt", "README.md", "LICENSE", "py.typed"]}
+package_data = {"": ["README.md", "LICENSE", "py.typed"]}
 package_data.update(find_yaml_recipes())
 
 setup(
@@ -195,8 +203,10 @@ setup(
         "Programming Language :: Cython",
     ],
     license="Apache License 2.0",
-    packages=find_packages(exclude=("tests",)),
+    packages=find_packages(where="src", include=["otx*"]),
+    package_dir={"": "src"},
     package_data=package_data,
+    include_package_data=True,
     ext_modules=get_extensions(),
     cmdclass=cmd_class,
     install_requires=REQUIRED_PACKAGES,

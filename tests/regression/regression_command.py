@@ -51,6 +51,13 @@ def regression_eval_testing(
         if trained_performance[k] < modified_criteria:
             regression_result["passed"] = False
             regression_result["log"] = f"Performance: ({trained_performance[k]}) < Criteria: ({modified_criteria})."
+            regression_result["raw"] = {
+                "metric": k,
+                "performance": trained_performance[k],
+                "template": template.name,
+                "criteria": model_criteria,
+                "threshold": threshold,
+            }
 
     result_dict["Model size (MB)"] = round(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth") / 1e6, 2
@@ -227,7 +234,7 @@ def regression_nncf_eval_testing(
     return regression_result
 
 
-def regression_pot_eval_testing(template, root, otx_dir, args, criteria=None, reg_threshold=0.10, result_dict=None):
+def regression_ptq_eval_testing(template, root, otx_dir, args, criteria=None, reg_threshold=0.10, result_dict=None):
     regression_result = {
         "passed": True,
         "log": "",
@@ -241,27 +248,27 @@ def regression_pot_eval_testing(template, root, otx_dir, args, criteria=None, re
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
-        f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
+        f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml",
         "--output",
-        f"{template_work_dir}/pot_{template.model_template_id}",
+        f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json")
 
-    with open(f"{template_work_dir}/pot_{template.model_template_id}/performance.json") as read_file:
-        pot_performance = json.load(read_file)
+    with open(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json") as read_file:
+        ptq_performance = json.load(read_file)
 
     if isinstance(criteria, dict) and template.name in criteria.keys():
         model_criteria = criteria[template.name]
         modified_criteria = model_criteria - (model_criteria * reg_threshold)
 
-    for k in pot_performance.keys():
+    for k in ptq_performance.keys():
         if isinstance(criteria, dict) and template.name in criteria.keys():
-            result_dict[k] = round(pot_performance[k], 3)
-            if pot_performance[k] < modified_criteria:
+            result_dict[k] = round(ptq_performance[k], 3)
+            if ptq_performance[k] < modified_criteria:
                 regression_result["passed"] = False
-                regression_result["log"] = f"POT performance: ({pot_performance[k]}) < Criteria: ({modified_criteria})."
+                regression_result["log"] = f"POT performance: ({ptq_performance[k]}) < Criteria: ({modified_criteria})."
 
     return regression_result
 

@@ -107,12 +107,12 @@ anomaly detection tasks
 
 ::
 
-    +-------------------+-----------------------------+-------+--------------------------------------------------------------+
-    |        TASK       |              ID             |  NAME |                          BASE PATH                           |
-    +-------------------+-----------------------------+-------+--------------------------------------------------------------+
-    | ANOMALY_DETECTION | ote_anomaly_detection_stfpm | STFPM | otx/algorithms/anomaly/configs/detection/stfpm/template.yaml |
-    | ANOMALY_DETECTION | ote_anomaly_detection_padim | PADIM | otx/algorithms/anomaly/configs/detection/padim/template.yaml |
-    +-------------------+-----------------------------+-------+--------------------------------------------------------------+
+    +-------------------+-----------------------------+-------+------------------------------------------------------------------+
+    |        TASK       |              ID             |  NAME |                            BASE PATH                             |
+    +-------------------+-----------------------------+-------+------------------------------------------------------------------+
+    | ANOMALY_DETECTION | ote_anomaly_detection_stfpm | STFPM | src/otx/algorithms/anomaly/configs/detection/stfpm/template.yaml |
+    | ANOMALY_DETECTION | ote_anomaly_detection_padim | PADIM | src/otx/algorithms/anomaly/configs/detection/padim/template.yaml |
+    +-------------------+-----------------------------+-------+------------------------------------------------------------------+
 
 You can see two anomaly detection models, STFPM and PADIM. For more detail on each model, refer to Anomalib's `STFPM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/stfpm.html>`_ and `PADIM <https://openvinotoolkit.github.io/anomalib/reference_guide/algorithms/padim.html>`_ documentation.
 

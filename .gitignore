@@ -17,6 +17,7 @@ results/
 
 build/
 dist/
+!src/otx/recipes/**
 *egg-info
 
 *.pth
@@ -37,9 +38,9 @@ dmypy.json
 .python-version
 
 # Cython generated C-code & html
-otx/**/*.c
-otx/**/*.html
-otx/**/*.so
+src/**/*.c
+src/**/*.html
+src/**/*.so
 
 
 # Dataset made by unit-test

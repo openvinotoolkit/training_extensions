@@ -24,6 +24,8 @@ jobs:
             test_dir: "tests/e2e/cli/instance_segmentation"
           - task: "seg"
             test_dir: "tests/e2e/cli/semantic_segmentation"
+          - task: "visprompt"
+            test_dir: "tests/e2e/cli/visual_prompting"
     name: E2E-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
@@ -33,3 +35,4 @@ jobs:
       tests-dir: ${{ matrix.test_dir }}
       timeout-minutes: 360
       upload-artifact: true
+      artifact-prefix: "daily-test-results"

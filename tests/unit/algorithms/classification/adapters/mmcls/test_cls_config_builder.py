@@ -11,7 +11,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 @pytest.fixture
 def otx_default_cls_config():
-    config_name = "otx/algorithms/classification/configs/efficientnet_b0_cls_incr/model.py"
+    config_name = "src/otx/algorithms/classification/configs/efficientnet_b0_cls_incr/model.py"
     conf = MPAConfig.fromfile(config_name)
     conf.checkpoint_config = {}
     conf.evaluation = {"metric": "None"}

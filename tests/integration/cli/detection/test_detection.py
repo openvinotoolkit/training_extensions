@@ -1,5 +1,5 @@
 """Tests for Class-Incremental Learning for object detection with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
@@ -28,6 +28,7 @@ from tests.test_suite.run_test_command import (
     otx_hpo_testing,
     otx_resume_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 args = {
@@ -44,15 +45,7 @@ args_semisl = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--unlabeled-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": [
-        "params",
-        "--learning_parameters.num_iters",
-        "1",
-        "--learning_parameters.batch_size",
-        "4",
-        "--algo_backend.train_type",
-        "Semisupervised",
-    ],
+    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
 }
 
 # Training params for resume, num_iters*2
@@ -68,24 +61,51 @@ otx_dir = os.getcwd()
 
 MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 default_template = parse_model_template(
-    os.path.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
+    os.path.join("src/otx/algorithms/detection/configs", "detection", "mobilenetv2_atss", "template.yaml")
 )
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
+templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
+
+experimental_templates = [
+    parse_model_template(
+        "src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml"
+    ),
+    parse_model_template("src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
+    parse_model_template(
+        "src/otx/algorithms/detection/configs/detection/resnet50_lite_dino/template_experimental.yaml"
+    ),
+    parse_model_template("src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml"),
+    parse_model_template(
+        "src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template_experimental.yaml"
+    ),
+    parse_model_template(
+        "src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template_experimental.yaml"
+    ),
+    parse_model_template(
+        "src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template_experimental.yaml"
+    ),
+]
+experimental_template_ids = [template.model_template_id for template in experimental_templates]
+
+templates_w_experimental = templates + experimental_templates
+templates_ids_w_experimental = templates_ids + experimental_template_ids
+
+
+TestDetectionModelTemplates = generate_model_template_testing(templates)
 
 
 class TestDetectionCLI:
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
@@ -98,32 +118,32 @@ class TestDetectionCLI:
         otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_export_testing(template, tmp_dir_path, dump_features, check_ir_meta=True)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_export_onnx(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True, check_ir_meta=True)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
+    @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "detection"
@@ -206,6 +226,8 @@ class TestDetectionCLI:
     def test_otx_train_semisl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_semisl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/semisl")
 
     @e2e_pytest_component
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
@@ -215,6 +237,8 @@ class TestDetectionCLI:
         args_semisl_multigpu = copy.deepcopy(args_semisl)
         args_semisl_multigpu["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl_multigpu)
+        template_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_dir}/semisl")
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)

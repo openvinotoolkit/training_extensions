@@ -32,13 +32,13 @@ Example to find ready-to-use templates for the detection task:
 .. code-block::
 
     (otx) ...$ otx find --task detection
-    +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
-    |    TASK   |                 ID                |  NAME |                                 BASE PATH                                 |
-    +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
-    | DETECTION | Custom_Object_Detection_Gen3_ATSS |  ATSS | otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
-    | DETECTION |  Custom_Object_Detection_Gen3_SSD |  SSD  |  otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
-    | DETECTION |   Custom_Object_Detection_YOLOX   | YOLOX | otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-    +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
+    +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
+    |    TASK   |                       ID                      |       NAME       |                                   BASE PATH                                   |
+    +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
+    | DETECTION |        Custom_Object_Detection_Gen3_SSD       |       SSD        |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
+    | DETECTION |         Custom_Object_Detection_YOLOX         |      YOLOX       | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
+    | DETECTION |        Custom_Object_Detection_Gen3_ATSS      | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
+    +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
 
 
 Example to find supported torchvision backbones for the detection task:

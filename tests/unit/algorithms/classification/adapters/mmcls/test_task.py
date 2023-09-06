@@ -5,30 +5,26 @@
 #
 
 import os
-import json
 from contextlib import nullcontext
-from copy import deepcopy
 from typing import Any, Dict
 
 import numpy as np
 import pytest
 import torch
-from mmcv.utils import Config
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
-from otx.algorithms.classification.adapters.mmcls.models.classifiers.sam_classifier import SAMImageClassifier
+from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import (
+    CustomImageClassifier,
+)
 from otx.algorithms.classification.configs.base import ClassificationConfig
-from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model import (
     ModelConfiguration,
     ModelEntity,
@@ -36,14 +32,13 @@ from otx.api.entities.model import (
     ModelOptimizationType,
     ModelPrecision,
 )
-from otx.api.entities.model_template import InstantiationType, parse_model_template, TaskFamily, TaskType
+from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.classification.test_helper import (
     DEFAULT_CLS_TEMPLATE_DIR,
     init_environment,
-    generate_cls_dataset,
     generate_label_schema,
 )
 
@@ -112,7 +107,8 @@ class MockExporter:
     def __init__(self, task):
         self._output_path = task._output_path
 
-    def run(self, *args, **kwargs):
+    def run(self, cfg, *args, **kwargs):
+        assert cfg.model.head.num_classes == 2
         with open(os.path.join(self._output_path, "openvino.bin"), "wb") as f:
             f.write(np.ndarray([0]))
         with open(os.path.join(self._output_path, "openvino.xml"), "wb") as f:
@@ -147,7 +143,7 @@ class TestMMClassificationTask:
 
         ml_task_env, self.ml_cls_dataset = init_environment(hyper_parameters, model_template, True, False, 100)
         self.ml_cls_task = MMClassificationTask(ml_task_env)
-        self.ml_cls_label_schema = generate_label_schema(self.ml_cls_dataset.get_labels(), False, False)
+        self.ml_cls_label_schema = generate_label_schema(self.ml_cls_dataset.get_labels(), True, False)
 
         hl_task_env, self.hl_cls_dataset = init_environment(hyper_parameters, model_template, False, True, 100)
         self.hl_cls_task = MMClassificationTask(hl_task_env)
@@ -160,7 +156,7 @@ class TestMMClassificationTask:
         _mock_recipe_cfg.model.pop("task")
         _mock_recipe_cfg["channel_last"] = False
         model = self.mc_cls_task.build_model(_mock_recipe_cfg, True)
-        assert isinstance(model, SAMImageClassifier)
+        assert isinstance(model, CustomImageClassifier)
 
         _mock_recipe_cfg["channel_last"] = True
         new_model = self.mc_cls_task.build_model(_mock_recipe_cfg, True)
@@ -365,7 +361,7 @@ class TestMMClassificationTask:
         inference_parameters = InferenceParameters(is_evaluation=True)
         outputs = self.hl_cls_task.infer(self.hl_cls_dataset.with_empty_annotations(), inference_parameters)
         for output in outputs:
-            assert output.get_annotations()[-1].get_labels()[0].probability == 0.7
+            assert output.get_annotations()[-1].get_labels()[0].probability == 0.0
 
     @e2e_pytest_unit
     def test_cls_evaluate(self) -> None:
@@ -441,3 +437,85 @@ class TestMMClassificationTask:
         outputs = self.mc_cls_task.explain(self.mc_cls_dataset, explain_parameters)
         assert isinstance(outputs, DatasetEntity)
         assert len(outputs) == 200
+
+    @e2e_pytest_unit
+    def test_geti_scenario(self, mocker):
+        """Test Geti scenario.
+
+        Train -> Eval -> Export
+        """
+
+        def _mock_train_model(*args, **kwargs):
+            with open(os.path.join(self.mc_cls_task._output_path, "latest.pth"), "wb") as f:
+                torch.save({"dummy": torch.randn(1, 3, 3, 3)}, f)
+
+        # TRAIN
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataset",
+            return_value=MockDataset(self.mc_cls_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataloader",
+            return_value=MockDataLoader(self.mc_cls_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.train_model",
+            side_effect=_mock_train_model,
+        )
+        mocker.patch.object(MMClassificationTask, "build_model", return_value=MockModel())
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_data_parallel",
+            return_value=MockModel(),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+
+        # mock for testing num_workers
+        num_cpu = 20
+        mock_multiprocessing = mocker.patch.object(config_utils, "multiprocessing")
+        mock_multiprocessing.cpu_count.return_value = num_cpu
+        num_gpu = 5
+        mock_torch = mocker.patch.object(config_utils, "torch")
+        mock_torch.cuda.device_count.return_value = num_gpu
+
+        _config = ModelConfiguration(ClassificationConfig("header"), self.mc_cls_label_schema)
+        output_model = ModelEntity(self.mc_cls_dataset, _config)
+        self.mc_cls_task.train(self.mc_cls_dataset, output_model)
+
+        # INFERENCE
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataset",
+            return_value=MockDataset(self.mc_cls_dataset),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_dataloader",
+            return_value=MockDataLoader(self.mc_cls_dataset),
+        )
+        mocker.patch.object(MMClassificationTask, "build_model", return_value=MockModel())
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.build_data_parallel",
+            return_value=MockModel(),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.FeatureVectorHook",
+            return_value=nullcontext(),
+        )
+
+        inference_parameters = InferenceParameters(is_evaluation=True)
+        outputs = self.mc_cls_task.infer(self.mc_cls_dataset.with_empty_annotations(), inference_parameters)
+
+        # EXPORT
+        mocker.patch(
+            "otx.algorithms.classification.adapters.mmcls.task.ClassificationExporter",
+            return_value=MockExporter(self.mc_cls_task),
+        )
+        mocker.patch(
+            "otx.algorithms.classification.task.embed_ir_model_data",
+            return_value=True,
+        )
+
+        export_type = ExportType.OPENVINO
+        precision = ModelPrecision.FP32
+        self.mc_cls_task.export(export_type, output_model, precision, False)

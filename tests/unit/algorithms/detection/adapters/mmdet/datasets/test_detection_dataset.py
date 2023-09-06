@@ -6,7 +6,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.detection.adapters.mmdet.datasets.dataset import OTXDetDataset
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import OTXDetDataset, get_annotation_mmdet_format
 from otx.api.entities.label import Domain
 from otx.api.entities.model_template import TaskType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -14,6 +14,10 @@ from tests.unit.algorithms.detection.test_helpers import (
     MockPipeline,
     generate_det_dataset,
 )
+from mmdet.core.mask.structures import BitmapMasks
+import pycocotools.mask as mask_util
+
+from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes
 
 
 class TestOTXDetDataset:
@@ -55,7 +59,7 @@ class TestOTXDetDataset:
     def test_prepare_train_img(self, task_type, domain) -> None:
         """Test prepare_train_img method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=False)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, test_mode=False)
         img = dataset.prepare_train_img(0)
         assert isinstance(img, dict)
         assert "dataset_item" in img
@@ -71,7 +75,7 @@ class TestOTXDetDataset:
     def test_prepare_test_img(self, task_type, domain) -> None:
         """Test prepare_test_img method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain, test_mode=True)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, test_mode=True)
         img = dataset.prepare_test_img(0)
         assert isinstance(img, dict)
         assert "dataset_item" in img
@@ -87,7 +91,7 @@ class TestOTXDetDataset:
     def test_get_ann_info(self, task_type, domain) -> None:
         """Test get_ann_info method"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()
         ann_info = dataset.get_ann_info(0)
         assert isinstance(ann_info, dict)
@@ -105,7 +109,7 @@ class TestOTXDetDataset:
     def test_evaluate(self, task_type, domain, metric, logger) -> None:
         """Test evaluate method for detection and instance segmentation"""
         otx_dataset, labels = self.dataset[task_type]
-        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline, domain)
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
         dataset.pipeline = MockPipeline()
         sample = dataset[0]
         if task_type == TaskType.DETECTION:
@@ -113,10 +117,115 @@ class TestOTXDetDataset:
         elif task_type == TaskType.INSTANCE_SEGMENTATION:
             results = [
                 (
-                    [np.random.rand(1, 5)],
-                    [[{"size": [sample["width"], sample["height"]], "counts": "some counts"}]],
+                    [np.random.rand(1, 5)] * len(otx_dataset.get_labels()),
+                    [[{"size": [sample["width"], sample["height"]], "counts": b"1"}]] * len(otx_dataset.get_labels()),
                 )
             ]
         eval_results = dataset.evaluate(results, metric, logger)
         assert isinstance(eval_results, dict)
         assert metric in eval_results
+
+    @e2e_pytest_unit
+    def test_mask_evaluate(self) -> None:
+        """Test evaluate method for instance segmentation"""
+        otx_dataset, labels = self.dataset[TaskType.INSTANCE_SEGMENTATION]
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
+        dataset.pipeline = MockPipeline()
+        sample = dataset[0]
+
+        num_classes = len(dataset.labels)
+        anno = get_annotation_mmdet_format(sample["dataset_item"], dataset.labels, Domain.INSTANCE_SEGMENTATION)
+        bboxes = anno["bboxes"]
+        scores = np.random.random((len(bboxes), 1))
+        bboxes = np.hstack((bboxes, scores))
+        labels = anno["labels"]
+        masks = mask_util.encode(np.full((28, 28, len(bboxes)), 1, dtype=np.uint8, order="F"))
+
+        bbox_results = [bboxes[labels == i, :] for i in range(num_classes)]
+        mask_results = [list(np.array(masks)[labels == i]) for i in range(num_classes)]
+        results = [(bbox_results, mask_results)]
+        eval_results = dataset.evaluate(results, "mAP", None)
+        assert isinstance(eval_results, dict)
+        assert eval_results["mAP"] >= 0.0
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("use_ellipse_shapes", [True, False])
+    def test_create_detection_shape(self, use_ellipse_shapes) -> None:
+        """Test create_detection_shapes method"""
+        otx_dataset, labels = self.dataset[TaskType.DETECTION]
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
+        dataset.pipeline = MockPipeline()
+        sample = dataset[0]
+        h, w = sample["dataset_item"].height, sample["dataset_item"].width
+
+        num_classes = len(dataset.labels)
+        anno = get_annotation_mmdet_format(sample["dataset_item"], dataset.labels, Domain.DETECTION)
+        bboxes = anno["bboxes"]
+        scores = np.full((len(bboxes), 1), 0.5, dtype=np.float32)
+        bboxes = np.hstack((bboxes, scores))
+        labels = anno["labels"]
+        pred_results = []
+        for i in range(num_classes):
+            bboxes_i = bboxes[labels == i, :]
+            pred_results.append(bboxes_i)
+
+        shapes = create_detection_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.0,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) > 0, "Shapes should be created for confidence_threshold=1.0"
+
+        shapes = create_detection_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.6,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) == 0, "No shapes should be created for confidence_threshold=0.0"
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("use_ellipse_shapes", [True, False])
+    def test_create_mask_shape(self, use_ellipse_shapes) -> None:
+        """Test create_mask_shapes method"""
+        otx_dataset, labels = self.dataset[TaskType.INSTANCE_SEGMENTATION]
+        dataset = OTXDetDataset(otx_dataset, labels, self.pipeline)
+        dataset.pipeline = MockPipeline()
+        sample = dataset[0]
+        h, w = sample["dataset_item"].height, sample["dataset_item"].width
+
+        num_classes = len(dataset.labels)
+        anno = get_annotation_mmdet_format(sample["dataset_item"], dataset.labels, Domain.INSTANCE_SEGMENTATION)
+        bboxes = anno["bboxes"]
+        scores = np.full((len(bboxes), 1), 0.5, dtype=np.float32)
+        bboxes = np.hstack((bboxes, scores))
+        labels = anno["labels"]
+        masks = mask_util.encode(np.full((28, 28, len(bboxes)), 1, dtype=np.uint8, order="F"))
+
+        bbox_results = [bboxes[labels == i, :] for i in range(num_classes)]
+        mask_results = [list(np.array(masks)[labels == i]) for i in range(num_classes)]
+        pred_results = (bbox_results, mask_results)
+        shapes = create_mask_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.0,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) > 0, "Shapes should be created for confidence_threshold=1.0"
+
+        shapes = create_mask_shapes(
+            pred_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.6,
+            use_ellipse_shapes=use_ellipse_shapes,
+            labels=dataset.labels,
+        )
+        assert len(shapes) == 0, "No shapes should be created for confidence_threshold=0.0"

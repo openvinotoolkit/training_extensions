@@ -42,7 +42,7 @@ Dataset Format
 
 For the dataset handling inside OpenVINO™ Training Extensions, we use `Dataset Management Framework (Datumaro) <https://github.com/openvinotoolkit/datumaro>`_.
 
-At this end we support `Common Semantic Segmentation <https://openvinotoolkit.github.io/datumaro/docs/formats/common_semantic_segmentation/>`_ data format.
+At this end we support `Common Semantic Segmentation <https://github.com/openvinotoolkit/datumaro/blob/develop/docs/source/docs/data-formats/formats/common_semantic_segmentation.md>`_ data format.
 If you organized supported dataset format, starting training will be very simple. We just need to pass a path to the root folder and desired model template to start training:
 
 .. code-block::
@@ -69,11 +69,11 @@ We support the following ready-to-use model templates:
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFLOPs) | Model size (MB) |
 +==============================================================================================================================================================================================================================+========================+=====================+=================+
-| `Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml>`_                          | Lite-HRNet-s-mod2      | 1.44                | 3.2             |
+| `Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml>`_                      | Lite-HRNet-s-mod2      | 1.44                | 3.2             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml>`_                        | Lite-HRNet-18-mod2     | 2.82                | 4.3             |
+| `Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_18_mod2/template.yaml>`_                    | Lite-HRNet-18-mod2     | 2.82                | 4.3             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml>`_                          | Lite-HRNet-x-mod3      | 9.20                | 5.7             |
+| `Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ocr_lite_hrnet_x_mod3/template.yaml>`_                      | Lite-HRNet-x-mod3      | 9.20                | 5.7             |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 
 All of these models are members of the same `Lite-HRNet <https://arxiv.org/abs/2104.06403>`_ backbones family. They differ in the trade-off between accuracy and inference/training speed. ``Lite-HRNet-x-mod3`` is the template with heavy-size architecture for accurate predictions but it requires long training.
@@ -84,11 +84,11 @@ Besides this, we added new templates in experimental phase. For now, they suppor
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFLOPs) | Model size (MB) |
 +==============================================================================================================================================================================================================================+========================+=====================+=================+
-| `Custom_Semantic_Segmentation_SegNext_T <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ham_segnext_t/template_experimental.yaml>`_                                 | SegNext-t              | 6.07                | 4.23            |
+| `Custom_Semantic_Segmentation_SegNext_T <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ham_segnext_t/template_experimental.yaml>`_                             | SegNext-t              | 6.07                | 4.23            |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Semantic_Segmentation_SegNext_S <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ham_segnext_s/template_experimental.yaml>`_                                 | SegNext-s              | 15.35               | 13.9            |
+| `Custom_Semantic_Segmentation_SegNext_S <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ham_segnext_s/template_experimental.yaml>`_                             | SegNext-s              | 15.35               | 13.9            |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
-| `Custom_Semantic_Segmentation_SegNext_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/otx/algorithms/segmentation/configs/ham_segnext_b/template_experimental.yaml>`_                                 | SegNext-b              |   32.08             | 27.56           |
+| `Custom_Semantic_Segmentation_SegNext_B <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/segmentation/configs/ham_segnext_b/template_experimental.yaml>`_                             | SegNext-b              |   32.08             | 27.56           |
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 
 New templates use `SegNext <https://arxiv.org/abs/2209.08575>`_ model which can achieve superior perfomance while preserving fast inference and fast training.
@@ -114,10 +114,6 @@ In the table below the `Dice score <https://en.wikipedia.org/wiki/S%C3%B8rensen%
 .. note::
 
     Please, refer to our :doc:`dedicated tutorial <../../../tutorials/base/how_to_train/semantic_segmentation>` for more information on how to train, validate and optimize the semantic segmentation model.
-
-************************
-Semi-supervised Learning
-************************
 
 ************************
 Semi-supervised Learning
@@ -191,6 +187,7 @@ General self-supervised Learning in academia is commonly used to obtain well-pre
 However, in real-world industries, it is difficult to apply because of small datasets, limited resources, or training in minutes.
 
 For these cases, OpenVINO™ Training Extensions provides improved self-supervised learning recipes that can be applied to the above harsh environments.
+OpenVINO™ Training Extensions allows to perform a pre-training phase on any images to further use obtained weights on the target dataset.
 We adapted `DetCon <https://arxiv.org/abs/2103.10957>`_ as our self-supervised method.
 It takes some time to use these self-supervised learning recipes, but you can expect improved performance, especially in small-data regimes.
 
@@ -225,18 +222,16 @@ To enable self-supervised training, the command below can be executed:
 
 .. code-block::
 
-  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train/images \
-              params \
-              --algo_backend.train_type=Selfsupervised
+  $ otx train Lite-HRNet-18-mod2 \
+              --train-data-roots path/to/images \
 
 After self-supervised training, pretrained weights can be use for supervised (incremental) learning like the below command:
 
 .. code-block::
 
-  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
-              --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+  $ otx train Lite-HRNet-18-mod2 \
+              --train-data-roots path/to/train/subset \
+              --val-data-roots path/to/validation/subset \
               --load-weights={PATH/PRETRAINED/WEIGHTS}
 
 .. note::
@@ -270,9 +265,9 @@ It can be launched only with supervised (incremental) training type.
 
 .. code-block::
 
-  $ otx train otx/algorithms/segmentation/configs/ocr_lite_hrnet_s_mod2/template.yaml \
-              --train-data-roots=tests/assets/common_semantic_segmentation_dataset/train \
-              --val-data-roots=tests/assets/common_semantic_segmentation_dataset/val \
+  $ otx train Lite-HRNet-18-mod2 \
+              --train-data-roots path/to/train/subset \
+              --val-data-roots path/to/validation/subset \
               params \
               --learning_parameters.enable_supcon=True
 

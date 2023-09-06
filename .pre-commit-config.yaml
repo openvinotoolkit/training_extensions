@@ -9,20 +9,20 @@ repos:
     hooks:
       - id: black
         args: [--line-length, "120"]
-        files: '^(otx|tests)/.*\.py'
+        files: '^(src|tests)/.*\.py'
 
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
     hooks:
       - id: prettier
-        exclude: "otx/recipes"
+        exclude: "src/otx/recipes"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v1.1.1"
     hooks:
       - id: mypy
-        files: '^(otx)/.*\.py'
+        files: '^(src)/.*\.py'
         additional_dependencies: [
             # numpy==1.19.5,
             types-PyYAML,
@@ -35,7 +35,7 @@ repos:
             tokenize-rt==3.2.0,
           ]
         args: [--no-strict-optional, --ignore-missing-imports]
-        exclude: "^otx/recipes"
+        exclude: "^src/otx/recipes"
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.10.0
@@ -61,7 +61,7 @@ repos:
     rev: "v0.0.258"
     hooks:
       - id: ruff
-        exclude: "tests|otx/recipes"
+        exclude: "tests|src/otx/recipes"
         args: [--fix]
 
   # # Git conflict marker

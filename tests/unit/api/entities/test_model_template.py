@@ -1,17 +1,7 @@
-# Copyright (C) 2020-2021 Intel Corporation
+"""Tests for model template entity"""
+# Copyright (C) 2020-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
-
 import copy
 import itertools
 from os import remove
@@ -31,6 +21,8 @@ from otx.api.entities.model_template import (
     HyperParameterData,
     InstantiationType,
     ModelOptimizationMethod,
+    ModelCategory,
+    ModelStatus,
     ModelTemplate,
     NullModelTemplate,
     TargetDevice,
@@ -97,6 +89,9 @@ class CommonMethods:
         assert model.task_type_sort_priority == expected_values.get("task_type_sort_priority", -1)
         assert model.gigaflops == expected_values.get("gigaflops", 0)
         assert model.size == expected_values.get("size", 0)
+        assert model.model_category == expected_values.get("model_category", ModelCategory.OTHER)
+        assert model.model_status == expected_values.get("model_status", ModelStatus.ACTIVE)
+        assert model.is_default_for_task == expected_values.get("is_default_for_task", False)
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -226,7 +221,7 @@ class TestTaskType:
         2. Check TaskType elements value attribute
         3. Check TaskType str method
         """
-        assert len(TaskType) == 15
+        assert len(TaskType) == 16
         assert TaskType.NULL.value == 1
         assert TaskType.DATASET.value == 2
         assert TaskType.CLASSIFICATION.value == 3
@@ -242,6 +237,7 @@ class TestTaskType:
         assert TaskType.ROTATED_DETECTION.value == 13
         assert TaskType.ACTION_CLASSIFICATION.value == 14
         assert TaskType.ACTION_DETECTION.value == 15
+        assert TaskType.VISUAL_PROMPTING.value == 16
         assert str(TaskType.NULL) == "NULL"
         assert str(TaskType.DATASET) == "DATASET"
         assert str(TaskType.CLASSIFICATION) == "CLASSIFICATION"
@@ -257,6 +253,7 @@ class TestTaskType:
         assert str(TaskType.ROTATED_DETECTION) == "ROTATED_DETECTION"
         assert str(TaskType.ACTION_CLASSIFICATION) == "ACTION_CLASSIFICATION"
         assert str(TaskType.ACTION_DETECTION) == "ACTION_DETECTION"
+        assert str(TaskType.VISUAL_PROMPTING) == "VISUAL_PROMPTING"
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -725,6 +722,56 @@ class TestEntryPoints:
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
+class TestModelCategory:
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_model_category(self):
+        """
+        <b>Description:</b>
+        Check ModelCategory Enum class elements
+        <b>Expected results:</b>
+        Test passes if ModelCategory Enum class length, attributes and methods return expected values
+        <b>Steps</b>
+        1. Check ModelCategory length
+        2. Check ModelCategory elements value attribute
+        3. Check ModelCategory str method
+        """
+        assert len(ModelCategory) == 4
+        assert ModelCategory.SPEED.value == 1
+        assert ModelCategory.BALANCE.value == 2
+        assert ModelCategory.ACCURACY.value == 3
+        assert ModelCategory.OTHER.value == 4
+        assert str(ModelCategory.SPEED) == "SPEED"
+        assert str(ModelCategory.BALANCE) == "BALANCE"
+        assert str(ModelCategory.ACCURACY) == "ACCURACY"
+        assert str(ModelCategory.OTHER) == "OTHER"
+
+
+@pytest.mark.components(OtxSdkComponent.OTX_API)
+class TestModelStatus:
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_model_category(self):
+        """
+        <b>Description:</b>
+        Check ModelStatus Enum class elements
+        <b>Expected results:</b>
+        Test passes if ModelStatus Enum class length, attributes and methods return expected values
+        <b>Steps</b>
+        1. Check ModelStatus length
+        2. Check ModelStatus elements value attribute
+        3. Check ModelStatus str method
+        """
+        assert len(ModelStatus) == 2
+        assert ModelStatus.ACTIVE.value == 1
+        assert ModelStatus.DEPRECATED.value == 2
+        assert str(ModelStatus.ACTIVE) == "ACTIVE"
+        assert str(ModelStatus.DEPRECATED) == "DEPRECATED"
+
+
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelTemplate:
     @staticmethod
     def default_model_parameters() -> dict:
@@ -786,6 +833,9 @@ class TestModelTemplate:
         optional_parameters["task_type_sort_priority"] = 0
         optional_parameters["gigaflops"] = 1
         optional_parameters["size"] = 1024
+        optional_parameters["model_category"] = ModelCategory.SPEED
+        optional_parameters["model_status"] = ModelStatus.ACTIVE
+        optional_parameters["is_default_for_task"] = False
         return optional_parameters
 
     @pytest.mark.priority_medium
@@ -990,6 +1040,7 @@ class TestTaskTypesConstants:
             TaskType.ROTATED_DETECTION,
             TaskType.ACTION_CLASSIFICATION,
             TaskType.ACTION_DETECTION,
+            TaskType.VISUAL_PROMPTING,
         )
 
 

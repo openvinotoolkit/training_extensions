@@ -20,8 +20,8 @@ from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.task_environment import TaskEnvironment
 from tests.test_helpers import generate_random_annotated_image
 
-DEFAULT_SEG_TEMPLATE_DIR = os.path.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
-DEFAULT_RECIPE_CONFIG_PATH = "otx/recipes/stages/segmentation/incremental.py"
+DEFAULT_SEG_TEMPLATE_DIR = os.path.join("src/otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2")
+DEFAULT_RECIPE_CONFIG_PATH = "src/otx/recipes/stages/segmentation/incremental.py"
 
 labels_names = ("rectangle", "ellipse", "triangle")
 

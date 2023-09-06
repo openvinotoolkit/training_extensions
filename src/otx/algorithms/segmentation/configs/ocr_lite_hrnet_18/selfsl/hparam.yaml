@@ -1,0 +1,17 @@
+# Hyperparameters.
+hyper_parameters:
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 16
+      learning_rate:
+        default_value: 0.001
+      learning_rate_warmup_iters:
+        default_value: 0
+      num_iters:
+        default_value: 10
+      enable_early_stopping:
+        default_value: false
+    algo_backend:
+      train_type:
+        default_value: Selfsupervised

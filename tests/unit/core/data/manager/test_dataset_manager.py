@@ -6,9 +6,9 @@ import shutil
 from typing import List
 from tempfile import TemporaryDirectory
 
-import datumaro as dm
 import pytest
 
+from datumaro.components.dataset import DatasetSubset
 from otx.cli.manager.config_manager import TASK_TYPE_TO_SUPPORTED_FORMAT
 from otx.core.data.manager.dataset_manager import DatasetManager
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -35,7 +35,7 @@ DATA_ROOTS2FORMAT = {
 
 
 class TestOTXDatasetManager:
-    def setup(self) -> None:
+    def setup_method(self) -> None:
         self.dataset = {}
         for subset in AVAILABLE_SUBSETS:
             self.dataset[subset] = {}
@@ -51,7 +51,7 @@ class TestOTXDatasetManager:
                 DatasetManager.get_train_dataset(self.dataset[subset][task])
         else:
             train_dataset = DatasetManager.get_train_dataset(self.dataset[subset][task])
-            assert isinstance(train_dataset, dm.DatasetSubset)
+            assert isinstance(train_dataset, DatasetSubset)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("task", AVAILABLE_TASKS)
@@ -61,7 +61,7 @@ class TestOTXDatasetManager:
             assert DatasetManager.get_val_dataset(self.dataset[subset][task]) is None
         else:
             val_dataset = DatasetManager.get_val_dataset(self.dataset[subset][task])
-            assert isinstance(val_dataset, dm.DatasetSubset)
+            assert isinstance(val_dataset, DatasetSubset)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("data_root", AVAILABLE_DATA_ROOTS)
@@ -106,7 +106,7 @@ class TestOTXDatasetManager:
 
         ann_files = "tests/assets/car_tree_bug/annotations/instances_train_5_imgs.json"
         train_dataset = DatasetManager.import_dataset(ann_files, data_format=data_format, subset="train")
-        assert train_dataset.get_subset("train").get_annotated_items() == 5
+        assert train_dataset.get_subset("train_5_imgs").get_annotated_items() == 5
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("task", AVAILABLE_TASKS)

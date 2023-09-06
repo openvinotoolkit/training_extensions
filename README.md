@@ -15,7 +15,7 @@
 
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![pytorch](https://img.shields.io/badge/pytorch-1.13.1%2B-orange)]()
-[![openvino](https://img.shields.io/badge/openvino-2022.3.0-purple)]()
+[![openvino](https://img.shields.io/badge/openvino-2023.0-purple)]()
 
 <!-- markdownlint-enable  MD042 -->
 
@@ -74,23 +74,7 @@ OpenVINO™ Training Extensions will provide the following features in coming re
 
 ### Installation
 
-Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html) for installing it using Python venv (virtual environment), or use the following steps to run it in a containerised environment:
-
-```bash
-$ docker build \
-    -t trainer \ # image tag, required
-    --build-arg UBUNTU_VER=20.04 \ # default Ubunutu version, optional
-    --build-arg PYTHON_VER=3.9 \ # default Python version, optional
-    --build-arg SOURCE=https://download.pytorch.org/whl/cpu \ # default (CPU) deps, optional
-    . # training_extensions/
-$ docker run \
-    -it \ # enter interactive terminal
-    --rm \ # remove container after use
-    -v "$(pwd)/shared:/mnt/shared:rw" \ # shared volume to host machine
-    --shm-size=4g \ # increase mounted shared memory
-    trainer
-trainer$ otx # ... installed on Ubuntu 20.04 with /mnt/shared as shared directory
-```
+Please refer to the [installation guide](https://openvinotoolkit.github.io/training_extensions/latest/guide/get_started/installation.html).
 
 Note: Python 3.8 and 3.9 were tested, along with Ubuntu 18.04 and 20.04.
 
@@ -112,14 +96,16 @@ You can find more details with examples in the [CLI command intro](https://openv
 
 ## Updates
 
-### v1.3.0 (2Q23)
+### v1.4.0 (3Q23)
 
-- Support direct annotation input for COCO format (<https://github.com/openvinotoolkit/training_extensions/pull/1921>)
-- Action task supports multi GPU training. (<https://github.com/openvinotoolkit/training_extensions/pull/2057>)
-- Support storage cache in Apache Arrow using Datumaro for action tasks (<https://github.com/openvinotoolkit/training_extensions/pull/2087>)
-- Add a simplified greedy labels postprocessing for hierarchical classification (<https://github.com/openvinotoolkit/training_extensions/pull/2064>).
-- Support auto adapting batch size (<https://github.com/openvinotoolkit/training_extensions/pull/2119>)
-- Support auto adapting num_workers (<https://github.com/openvinotoolkit/training_extensions/pull/2165>)
+- Support encrypted dataset training (<https://github.com/openvinotoolkit/training_extensions/pull/2209>)
+- Add custom max iou assigner to prevent CPU OOM when large annotations are used (<https://github.com/openvinotoolkit/training_extensions/pull/2228>)
+- Auto train type detection for Semi-SL, Self-SL and Incremental: "--train-type" now is optional (<https://github.com/openvinotoolkit/training_extensions/pull/2195>)
+- Add per-class XAI saliency maps for Mask R-CNN model (<https://github.com/openvinotoolkit/training_extensions/pull/2227>)
+- Add new object detector Deformable DETR (<https://github.com/openvinotoolkit/training_extensions/pull/2249>)
+- Add new object detector DINO (<https://github.com/openvinotoolkit/training_extensions/pull/2266>)
+- Add new visual prompting task (<https://github.com/openvinotoolkit/training_extensions/pull/2203>, <https://github.com/openvinotoolkit/training_extensions/pull/2274>, <https://github.com/openvinotoolkit/training_extensions/pull/2311>, <https://github.com/openvinotoolkit/training_extensions/pull/2354>, <https://github.com/openvinotoolkit/training_extensions/pull/2318>)
+- Add new object detector ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2309>)
 
 ### Release History
 

@@ -1,6 +1,6 @@
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 import os
 from typing import List
@@ -11,7 +11,7 @@ import torch
 from mmcv import Config, ConfigDict
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import DETECTORS
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_api.adapters import OpenvinoAdapter, create_core
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
@@ -35,6 +35,7 @@ from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_ISEG_TEMPLATE_DIR,
     init_environment,
 )
+from otx.algorithms.detection.utils.data import adaptive_tile_params
 
 
 @DETECTORS.register_module(force=True)
@@ -115,13 +116,12 @@ class TestTilingDetection:
                             type="LoadAnnotationFromOTXDataset",
                             with_bbox=True,
                             with_mask=False,
-                            domain=Domain.DETECTION,
+                            domain="detection",
                             min_size=-1,
                         ),
                     ],
                     otx_dataset=self.otx_dataset,
                     labels=self.labels,
-                    domain=Domain.DETECTION,
                 ),
                 **self.tile_cfg
             )
@@ -149,7 +149,6 @@ class TestTilingDetection:
                     pipeline=[dict(type="LoadImageFromOTXDataset")],
                     otx_dataset=self.otx_dataset.with_empty_annotations(),
                     labels=list(self.labels),
-                    domain=Domain.DETECTION,
                 ),
                 test_mode=True,
                 **self.tile_cfg
@@ -230,6 +229,45 @@ class TestTilingDetection:
         assert len(merged_bbox_results) == dataset.num_samples
 
     @e2e_pytest_unit
+    def test_merge_feature_vectors(self):
+        """Test that the merge feature vectors works correctly."""
+        dataset = build_dataset(self.test_data_cfg)
+
+        # create simulated vectors results
+        feature_vectors: List[np.ndarray] = []
+        vectors_per_image = 5
+        vector_length = 10
+        feature_vectors = [np.zeros((vectors_per_image, vector_length), dtype=np.float32) for _ in range(len(dataset))]
+
+        # Test merge_vectors if vectors are to be returned
+        merged_vectors = dataset.merge_vectors(feature_vectors, dump_vectors=True)
+        assert len(merged_vectors) == dataset.num_samples
+
+        # Test merge_vectors if merged vectors should be a list of None
+        merged_vectors = dataset.merge_vectors(feature_vectors, dump_vectors=False)
+        assert len(merged_vectors) == dataset.num_samples
+
+    @e2e_pytest_unit
+    def test_merge_saliency_maps(self):
+        """Test that the inference merge works correctly."""
+        dataset = build_dataset(self.test_data_cfg)
+
+        # create simulated maps results
+        saliency_maps: List[np.ndarray] = []
+        num_classes = len(dataset.CLASSES)
+        feature_map_size = (num_classes, 2, 2)
+        features_per_image = 5
+        saliency_maps = [np.zeros(feature_map_size, dtype=np.float32) for _ in range(len(dataset) * features_per_image)]
+
+        # Test merge_maps if maps are to be processed
+        merged_maps = dataset.merge_maps(saliency_maps, dump_maps=True)
+        assert len(merged_maps) == dataset.num_samples
+
+        # Test merge_maps if maps should be a list of None
+        merged_maps = dataset.merge_maps(saliency_maps, dump_maps=False)
+        assert len(merged_maps) == dataset.num_samples
+
+    @e2e_pytest_unit
     def test_load_tiling_parameters(self, tmp_dir_path):
         maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
@@ -265,6 +303,8 @@ class TestTilingDetection:
     def test_patch_tiling_func(self):
         """Test that patch_tiling function works correctly."""
         cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "data_pipeline.py"))
+        cfg.merge_from_dict(data_pipeline_cfg)
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.tiling_parameters.enable_tiling = True
@@ -348,6 +388,7 @@ class TestTilingDetection:
             overlap_ratio=np.random.uniform(low=0.0, high=0.5),
             max_per_img=np.random.randint(low=1, high=10000),
             max_annotation=max_annotation,
+            include_full_img=True,
         )
         train_data_cfg = ConfigDict(
             dict(
@@ -367,13 +408,12 @@ class TestTilingDetection:
                             type="LoadAnnotationFromOTXDataset",
                             with_bbox=True,
                             with_mask=True,
-                            domain=Domain.INSTANCE_SEGMENTATION,
+                            domain="instance_segmentation",
                             min_size=-1,
                         ),
                     ],
                     otx_dataset=otx_dataset,
                     labels=labels,
-                    domain=Domain.INSTANCE_SEGMENTATION,
                 ),
                 **tile_cfg
             )
@@ -388,3 +428,23 @@ class TestTilingDetection:
             assert len(data["gt_bboxes"].data[0][0]) <= max_annotation
             assert len(data["gt_labels"].data[0][0]) <= max_annotation
             assert len(data["gt_masks"].data[0][0]) <= max_annotation
+
+    @e2e_pytest_unit
+    def test_adaptive_tile_parameters(self):
+        model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
+        hp = create(model_template.hyper_parameters.data)
+
+        default_tile_size = hp.tiling_parameters.tile_size
+        default_tile_overlap = hp.tiling_parameters.tile_overlap
+        default_tile_max_number = hp.tiling_parameters.tile_max_number
+
+        adaptive_tile_params(hp.tiling_parameters, self.otx_dataset)
+
+        # check tile size is changed
+        assert hp.tiling_parameters.tile_size != default_tile_size
+
+        # check tile overlap is changed
+        assert hp.tiling_parameters.tile_overlap != default_tile_overlap
+
+        # check max output prediction size is changed
+        assert hp.tiling_parameters.tile_max_number != default_tile_max_number

@@ -41,11 +41,11 @@ class TestColorMapper:
         This test serializes Color and checks serialized representation.
         Then it compares deserialized Color with original one.
         """
-
-        red = randint(0, 255)  # nosec
-        green = randint(0, 255)  # nosec
-        blue = randint(0, 255)  # nosec
-        alpha = randint(0, 255)  # nosec
+        # disable B311 random - used for the random sampling not for security/crypto
+        red = randint(0, 255)  # nosec B311
+        green = randint(0, 255)  # nosec B311
+        blue = randint(0, 255)  # nosec B311
+        alpha = randint(0, 255)  # nosec B311
         color = Color(red, green, blue, alpha)
         serialized = ColorMapper.forward(color)
         assert serialized == {"red": red, "green": green, "blue": blue, "alpha": alpha}
@@ -66,10 +66,11 @@ class TestLabelEntityMapper:
         """
 
         cur_date = now()
-        red = randint(0, 255)  # nosec
-        green = randint(0, 255)  # nosec
-        blue = randint(0, 255)  # nosec
-        alpha = randint(0, 255)  # nosec
+        # disable B311 random - used for the random sampling not for security/crypto
+        red = randint(0, 255)  # nosec B311
+        green = randint(0, 255)  # nosec B311
+        blue = randint(0, 255)  # nosec B311
+        alpha = randint(0, 255)  # nosec B311
 
         label = LabelEntity(
             name="my_label",
@@ -112,10 +113,11 @@ class TestLabelSchemaEntityMapper:
         names = ["cat", "dog", "mouse"]
         colors = [
             Color(
-                randint(0, 255),  # nosec
-                randint(0, 255),  # nosec
-                randint(0, 255),  # nosec
-                randint(0, 255),  # nosec
+                # disable B311 random - used for the random sampling not for security/crypto
+                randint(0, 255),  # nosec B311
+                randint(0, 255),  # nosec B311
+                randint(0, 255),  # nosec B311
+                randint(0, 255),  # nosec B311
             )  # nosec  # noqa
             for _ in range(3)
         ]
@@ -323,3 +325,30 @@ class TestLabelTreeMapper:
         }
         with pytest.raises(ValueError):
             LabelTreeMapper.backward(instance=forward, all_labels=labels)
+        # Checking label deletion case
+        forward = {
+            "type": "tree",
+            "directed": True,
+            "nodes": ["0", "0_1", "0_2", "0_1_1", "0_2_1"],
+            "edges": [("0_1", "0"), ("0_2", "0"), ("0_1_1", "0_1"), ("0_2_1", "0_2")],
+        }
+        labels = {
+            ID("0"): self.label_0,
+            ID("0_1"): self.label_0_1,
+            # ID("0_2"): self.label_0_2,
+            ID("0_1_1"): self.label_0_1_1,
+            # ID("0_1_2"): self.label_0_1_2,
+            ID("0_2_1"): self.label_0_2_1,
+        }
+        expected_backward = LabelTree()
+        for node in labels.values():
+            expected_backward.add_node(node)
+        for parent, child in [
+            (self.label_0, self.label_0_1),
+            # (self.label_0, self.label_0_2),
+            (self.label_0_1, self.label_0_1_1),
+            # (self.label_0_2, self.label_0_2_1),
+        ]:
+            expected_backward.add_child(parent, child)
+        actual_backward = LabelTreeMapper.backward(instance=forward, all_labels=labels)
+        assert LabelTreeMapper.forward(actual_backward) == LabelTreeMapper.forward(expected_backward)

@@ -17,7 +17,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 
 
 def get_model_template(model_name: str, task_type: str = "classification") -> ModelTemplate:
-    template_file_root = Path("otx", "algorithms", "anomaly", "configs", task_type, model_name)
+    template_file_root = Path("src", "otx", "algorithms", "anomaly", "configs", task_type, model_name)
     template_file_path = (
         template_file_root / "template.yaml"
         if (template_file_root / "template.yaml").exists()

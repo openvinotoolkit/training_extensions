@@ -1,0 +1,65 @@
+# Description.
+model_template_id: Custom_Object_Detection_Gen3_ATSS
+name: MobileNetV2-ATSS
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Object Detection for MobileNetV2-ATSS
+application: ~
+
+# Algo backend.
+framework: OTXDetection v2.9.1
+
+# Task implementations.
+entrypoints:
+  base: otx.algorithms.detection.adapters.mmdet.task.MMDetectionTask
+  openvino: otx.algorithms.detection.adapters.openvino.task.OpenVINODetectionTask
+  nncf: otx.algorithms.detection.adapters.mmdet.nncf.task.DetectionNNCFTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 8
+        auto_hpo_state: POSSIBLE
+      inference_batch_size:
+        default_value: 8
+      learning_rate:
+        default_value: 0.004
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 3
+      num_iters:
+        default_value: 200
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      pruning_supported:
+        default_value: true
+      maximal_accuracy_degradation:
+        default_value: 1.0
+    algo_backend:
+      train_type:
+        default_value: Incremental
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 20.6
+size: 9.1
+
+# Model spec
+model_category: ACCURACY
+is_default_for_task: true
