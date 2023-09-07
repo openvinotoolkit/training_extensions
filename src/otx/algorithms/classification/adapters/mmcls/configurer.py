@@ -53,7 +53,7 @@ class ClassificationConfigurer(BaseConfigurer):
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_model(cfg, ir_options)
         self.configure_data(cfg, data_cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
+        self.configure_input_size(cfg, data_cfg, input_size, model_ckpt)
         self.configure_task(cfg)
         self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
@@ -185,7 +185,7 @@ class ClassificationConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+        cfg, data_cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
     ):
         """Change input size if necessary."""
         input_size = get_configured_input_size(input_size_config, model_ckpt)
