@@ -39,8 +39,8 @@ jobs:
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
     container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-fd766830e39c6dad1e55019558528cf20817bbf2
-      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=private --shm-size=10g"
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f019b59612a36a1e264ccbbc46fabb96f1e33114
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=private --shm-size=5g"
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository

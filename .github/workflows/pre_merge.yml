@@ -33,8 +33,8 @@ jobs:
   Unit-Test:
     runs-on: [otx-gpu-t4-1]
     container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-fd766830e39c6dad1e55019558528cf20817bbf2
-      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=private --shm-size=10g"
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f019b59612a36a1e264ccbbc46fabb96f1e33114
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=private --shm-size=5g"
     needs: Code-Quality-Checks
     timeout-minutes: 120
     strategy:
