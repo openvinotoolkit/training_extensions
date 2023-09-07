@@ -17,6 +17,11 @@ from mmdet.utils import (build_ddp, compat_cfg,
 
 from mmdet.utils.util_distribution import dp_factory
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
+from mmcv.ops.nms import NMSop
+from mmcv.utils import ext_loader
+from mmcv.ops.roi_align import RoIAlign
+ext_module = ext_loader.load_ext(
+    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated', 'nms_quadri'])
 
 dp_factory['xpu'] = XPUDataParallel
 
@@ -204,6 +209,9 @@ def train_detector(model,
 
     if cfg.device == "xpu":
         fp16_cfg = cfg.get('fp16', None)
+        # dinamic patch for nms and roi_align
+        NMSop.forward = monkey_patched_xpu_nms
+        RoIAlign.forward = monkey_patched_xpu_roi_align
         if fp16_cfg is not None:
             dtype = torch.bfloat16
         else:
@@ -223,6 +231,7 @@ def train_detector(model,
 
     # an ugly workaround to make .log and .log.json filenames the same
     runner.timestamp = timestamp
+
 
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
@@ -290,3 +299,43 @@ def train_detector(model,
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
     runner.run(data_loaders, cfg.workflow)
+
+def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold,
+            offset, score_threshold, max_num):
+    is_filtering_by_score = score_threshold > 0
+    if is_filtering_by_score:
+        valid_mask = scores > score_threshold
+        bboxes, scores = bboxes[valid_mask], scores[valid_mask]
+        valid_inds = torch.nonzero(
+            valid_mask, as_tuple=False).squeeze(dim=1)
+    device = bboxes.device
+    bboxes = bboxes.to("cpu")
+    scores = scores.to("cpu")
+    inds = ext_module.nms(
+        bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
+    bboxes = bboxes.to(device)
+    scores = scores.to(device)
+    if max_num > 0:
+        inds = inds[:max_num]
+    if is_filtering_by_score:
+        inds = valid_inds[inds]
+    return inds
+
+def monkey_patched_xpu_roi_align(self, input, rois):
+        """
+        Args:
+            input: NCHW images
+            rois: Bx5 boxes. First column is the index into N.\
+                The other 4 columns are xyxy.
+        """
+        from torchvision.ops import roi_align as tv_roi_align
+        if 'aligned' in tv_roi_align.__code__.co_varnames:
+            return tv_roi_align(input, rois, self.output_size,
+                                self.spatial_scale, self.sampling_ratio,
+                                self.aligned)
+        else:
+            if self.aligned:
+                rois -= rois.new_tensor([0.] +
+                                        [0.5 / self.spatial_scale] * 4)
+            return tv_roi_align(input, rois, self.output_size,
+                                self.spatial_scale, self.sampling_ratio)

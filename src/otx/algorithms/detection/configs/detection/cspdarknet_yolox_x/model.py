@@ -20,5 +20,5 @@ model = dict(
 load_from = "https://download.openmmlab.com/mmdetection/v2.0/yolox\
 /yolox_x_8x8_300e_coco/yolox_x_8x8_300e_coco_20211126_140254-1ef88d67.pth"
 
-fp16 = dict(loss_scale=512.0)
+# fp16 = dict(loss_scale=512.0)
 ignore = False
