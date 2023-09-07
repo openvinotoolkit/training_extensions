@@ -5,7 +5,7 @@ data_root = "dota-coco/"
 
 img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 
-img_scale = (992, 736)
+img_scale = (1024, 1024)
 
 angle_version = "le90"
 
@@ -35,8 +35,7 @@ train_pipeline = [
     ),
     dict(
         type="RResize",
-        img_scale=[(992, 736), (896, 736), (1088, 736), (992, 672), (992, 800)],
-        multiscale_mode="value",
+        img_scale=img_scale,
     ),
     dict(
         type="RRandomFlip",
