@@ -7,7 +7,7 @@ from mmcv.runner import CheckpointLoader
 from mmcv.utils import ConfigDict
 
 from otx.api.entities.model_template import TaskType
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet import configurer
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,
@@ -26,8 +26,8 @@ class TestDetectionConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = DetectionConfigurer("detection", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
 
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
@@ -165,8 +165,8 @@ class TestDetectionConfigurer:
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
         ssd_dir = os.path.join("src/otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
-        ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "data_pipeline.py"))
+        ssd_cfg = OTXConfig.fromfile(os.path.join(ssd_dir, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(ssd_dir, "data_pipeline.py"))
         ssd_cfg.task_adapt = {"type": "default_task_adapt", "op": "REPLACE", "use_adaptive_anchor": True}
         model_cfg = copy.deepcopy(ssd_cfg)
         model_cfg.merge_from_dict(data_pipeline_cfg)
@@ -301,8 +301,8 @@ class TestIncrDetectionConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = IncrDetectionConfigurer("detection", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
+        self.data_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "data_pipeline.py"))
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
     def test_configure_task(self, mocker):
@@ -318,8 +318,8 @@ class TestSemiSLDetectionConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLDetectionConfigurer("detection", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "semisl", "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
+        self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "semisl", "model.py"))
+        self.data_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
         self.model_cfg.merge_from_dict(self.data_cfg)
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
@@ -328,7 +328,7 @@ class TestSemiSLDetectionConfigurer:
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataset", return_value=True)
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
 
-        data_cfg = MPAConfig(
+        data_cfg = OTXConfig(
             {
                 "data": {
                     "train": {"otx_dataset": [], "labels": []},
