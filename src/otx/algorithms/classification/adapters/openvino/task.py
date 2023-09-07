@@ -114,6 +114,16 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
             plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
         self.configuration = get_cls_inferencer_configuration(self.label_schema)
+
+        # create a dummy hierarchical config for backward compatibility, which is not actually used
+        if self.configuration["hierarchical"]:
+            try:
+                model_adapter.get_rt_info(["model_info", "hierarchical_config"])
+            except RuntimeError:
+                self.configuration["hierarchical_config"] = json.dumps(
+                    {"cls_heads_info": {"label_to_idx": [], "all_groups": []}, "label_tree_edges": []}
+                )
+
         self.model = Model.create_model(model_adapter, "otx_classification", self.configuration, preload=True)
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
