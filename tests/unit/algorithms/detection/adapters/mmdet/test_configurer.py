@@ -224,7 +224,7 @@ class TestDetectionConfigurer:
         ir_options = {"ir_model_path": {"ir_weight_path": "", "ir_weight_init": ""}}
         self.model_cfg.merge_from_dict(self.data_cfg)
         self.configurer.configure_model(self.model_cfg, [], self.det_labels, ir_options, train_dataset=self.det_dataset)
-        assert self.model_cfg.model_task
+        assert len(self.configurer.model_classes) == 3
 
     @e2e_pytest_unit
     def test_configure_model_without_model(self):
@@ -234,17 +234,6 @@ class TestDetectionConfigurer:
         model_cfg.pop("model")
         with pytest.raises(AttributeError):
             self.configurer.configure_model(model_cfg, [], self.det_labels, ir_options, train_dataset=self.det_dataset)
-
-    @e2e_pytest_unit
-    def test_configure_model_not_detection_task(self):
-        ir_options = {"ir_model_path": {"ir_weight_path": "", "ir_weight_init": ""}}
-        self.model_cfg.merge_from_dict(self.data_cfg)
-        configure_cfg = copy.deepcopy(self.model_cfg)
-        configure_cfg.model.task = "classification"
-        with pytest.raises(ValueError):
-            self.configurer.configure_model(
-                configure_cfg, [], self.det_labels, ir_options, train_dataset=self.det_dataset
-            )
 
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
@@ -328,9 +317,10 @@ class TestSemiSLDetectionConfigurer:
         self.det_dataset, self.det_labels = generate_det_dataset(TaskType.DETECTION, 100)
 
     @e2e_pytest_unit
-    def test_configure_data(self, mocker):
+    def test_configure_data_pipeline(self, mocker):
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataset", return_value=True)
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
+        mocker.patch.object(DetectionConfigurer, "configure_input_size", return_value=True)
 
         data_cfg = MPAConfig(
             {
@@ -342,7 +332,8 @@ class TestSemiSLDetectionConfigurer:
                 }
             }
         )
+        self.model_cfg.merge_from_dict(data_cfg)
         self.model_cfg.model_task = "detection"
         self.model_cfg.distributed = False
-        self.configurer.configure_data(self.model_cfg, data_cfg)
+        self.configurer.configure_data_pipeline(self.model_cfg, InputSizePreset.DEFAULT, "")
         assert self.model_cfg.custom_hooks[-1]["type"] == "ComposedDataLoadersHook"

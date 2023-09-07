@@ -55,6 +55,10 @@ class BaseConfigurer:
         """Create MMCV-consumable config from given inputs."""
         logger.info(f"configure!: training={self.training}")
 
+        cfg.model_task = cfg.model.pop("task", self.task)
+        if cfg.model_task != self.task:
+            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {self.task} recipe")
+
         self.configure_ckpt(cfg, model_ckpt)
         self.configure_data(cfg, data_cfg)
         self.configure_env(cfg)
@@ -247,10 +251,6 @@ class BaseConfigurer:
 
         if ir_options is None:
             ir_options = {"ir_model_path": None, "ir_weight_path": None, "ir_weight_init": False}
-
-        cfg.model_task = cfg.model.pop("task", self.task)
-        if cfg.model_task != self.task:
-            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {self.task} recipe")
 
         super_type = cfg.model.pop("super_type", None)
         if super_type:

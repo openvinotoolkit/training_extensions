@@ -256,9 +256,10 @@ class TestSemiSLClassificationConfigurer:
         self.cfg.merge_from_dict(data_cfg)
 
     @e2e_pytest_unit
-    def test_configure_data(self, mocker):
+    def test_configure_data_pipeline(self, mocker):
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataset", return_value=True)
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
+        mocker.patch.object(ClassificationConfigurer, "configure_input_size", return_value=True)
 
         data_cfg = MPAConfig(
             {
@@ -270,7 +271,8 @@ class TestSemiSLClassificationConfigurer:
                 }
             }
         )
+        self.cfg.merge_from_dict(data_cfg)
         self.cfg.model_task = "classification"
         self.cfg.distributed = False
-        self.configurer.configure_data(self.cfg, data_cfg)
+        self.configurer.configure_data_pipeline(self.cfg, InputSizePreset.DEFAULT, "")
         assert self.cfg.custom_hooks[-1]["type"] == "ComposedDataLoadersHook"

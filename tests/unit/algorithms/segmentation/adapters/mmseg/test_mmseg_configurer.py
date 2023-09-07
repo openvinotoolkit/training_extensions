@@ -186,7 +186,8 @@ class TestSegmentationConfigurer:
     def test_configure_model(self):
         ir_options = {"ir_model_path": {"ir_weight_path": "", "ir_weight_init": ""}}
         self.configurer.configure_model(self.model_cfg, [], [], ir_options)
-        assert self.model_cfg.model_task
+        assert len(self.configurer.model_classes) == 1001
+        assert len(self.configurer.data_classes) == 1
 
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
@@ -268,9 +269,10 @@ class TestSemiSLSegmentationConfigurer:
         self.cfg.merge_from_dict(data_pipeline_cfg)
 
     @e2e_pytest_unit
-    def test_configure_data(self, mocker):
+    def test_configure_data_pipeline(self, mocker):
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataset", return_value=True)
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
+        mocker.patch.object(SegmentationConfigurer, "configure_input_size", return_value=True)
 
         data_cfg = MPAConfig(
             {
@@ -282,7 +284,8 @@ class TestSemiSLSegmentationConfigurer:
                 }
             }
         )
+        self.cfg.merge_from_dict(data_cfg)
         self.cfg.model_task = "classification"
         self.cfg.distributed = False
-        self.configurer.configure_data(self.cfg, data_cfg)
+        self.configurer.configure_data_pipeline(self.cfg, InputSizePreset.DEFAULT, "")
         assert self.cfg.custom_hooks[-1]["type"] == "ComposedDataLoadersHook"
