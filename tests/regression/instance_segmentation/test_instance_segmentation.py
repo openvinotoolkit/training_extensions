@@ -118,19 +118,20 @@ class TestRegressionInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr(self, reg_cfg, template, tmp_dir_path):
+        train_type = "class_incr"
         self.performance[template.name] = {}
 
         sl_template_work_dir = get_template_dir(template, tmp_dir_path / reg_cfg.task_type)
 
         tmp_dir_path = tmp_dir_path / "inst_seg_incr"
-        config_cls_incr = load_regression_configuration(
-            reg_cfg.otx_dir, reg_cfg.task_type, "class_incr", reg_cfg.label_type
-        )
+        config_cls_incr = reg_cfg.load_config(train_type=train_type)
         args_cls_incr = config_cls_incr["data_path"]
         args_cls_incr[
             "--load-weights"
         ] = f"{sl_template_work_dir}/trained_{template.model_template_id}/models/weights.pth"
         args_cls_incr["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
+
+        reg_cfg.update_gpu_args(args_cls_incr)
 
         train_start_time = timer()
         otx_train_testing(template, tmp_dir_path, reg_cfg.otx_dir, args_cls_incr)
@@ -149,7 +150,7 @@ class TestRegressionInstanceSegmentation:
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type]["class_incr"]["train"].append(self.performance)
+        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][train_type]["train"].append(self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -177,7 +178,7 @@ class TestRegressionInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
+    # @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_export_eval_openvino(self, reg_cfg, template, tmp_dir_path):
         self.performance[template.name] = {}
 
@@ -209,6 +210,7 @@ class TestRegressionInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    # @pytest.mark.skip(reason="Issue#2290: MaskRCNN shows degraded performance when inferencing in OpenVINO")
     def test_otx_deploy_eval_deployment(self, reg_cfg, template, tmp_dir_path):
         self.performance[template.name] = {}
 

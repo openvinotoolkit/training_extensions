@@ -21,5 +21,5 @@ evaluation:
   metric: ["accuracy", "class_accuracy"]
 
 task_adapt:
-  type: "mpa"
+  type: "default_task_adapt"
   op: "REPLACE"

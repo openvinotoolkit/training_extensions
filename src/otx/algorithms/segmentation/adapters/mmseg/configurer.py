@@ -3,26 +3,22 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import importlib
 import os
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 import torch
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 
+from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
-from otx.algorithms.common.adapters.mmcv.utils import (
-    build_dataloader,
-    build_dataset,
-)
+from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
     get_configured_input_size,
     patch_color_conversion,
     remove_custom_hook,
-    update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
@@ -57,7 +53,6 @@ class SegmentationConfigurer(BaseConfigurer):
         self.configure_data(cfg, data_cfg)
         self.configure_input_size(cfg, input_size, model_ckpt)
         self.configure_task(cfg)
-        self.configure_hook(cfg)
         self.configure_samples_per_gpu(cfg)
         self.configure_fp16(cfg)
         self.configure_compat_cfg(cfg)
@@ -202,13 +197,11 @@ class SegmentationConfigurer(BaseConfigurer):
         logger.info("Input size is changed to {}".format(input_size))
 
 
-class IncrSegmentationConfigurer(SegmentationConfigurer):
+class IncrSegmentationConfigurer(IncrConfigurerMixin, SegmentationConfigurer):
     """Patch config to support incremental learning for semantic segmentation."""
 
-    def configure_task(self, cfg: ConfigDict) -> None:
-        """Patch config to support incremental learning."""
-        super().configure_task(cfg)
-
+    def is_incremental(self) -> bool:
+        """Return whether current model classes is increased from original model classes."""
         # TODO: Revisit this part when removing bg label -> it should be 1 because of 'background' label
         if len(set(self.org_model_classes) & set(self.model_classes)) == 1 or set(self.org_model_classes) == set(
             self.model_classes
@@ -216,29 +209,11 @@ class IncrSegmentationConfigurer(SegmentationConfigurer):
             is_cls_incr = False
         else:
             is_cls_incr = True
-
-        # Update TaskAdaptHook (use incremental sampler)
-        task_adapt_hook = ConfigDict(
-            type="TaskAdaptHook",
-            src_classes=self.org_model_classes,
-            dst_classes=self.model_classes,
-            model_type=cfg.model.type,
-            sampler_flag=is_cls_incr,
-            efficient_mode=cfg["task_adapt"].get("efficient_mode", False),
-        )
-        update_or_add_custom_hook(cfg, task_adapt_hook)
+        return is_cls_incr
 
 
-class SemiSLSegmentationConfigurer(SegmentationConfigurer):
+class SemiSLSegmentationConfigurer(SemiSLConfigurerMixin, SegmentationConfigurer):
     """Patch config to support semi supervised learning for semantic segmentation."""
-
-    def configure_hook(self, cfg):
-        """Update cfg.custom_hooks."""
-        super().configure_hook(cfg)
-        # Set unlabeled data hook
-        if self.training:
-            if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
-                self.configure_unlabeled_dataloader(cfg)
 
     def configure_task(self, cfg: ConfigDict, **kwargs: Any) -> None:
         """Adjust settings for task adaptation."""
@@ -246,45 +221,3 @@ class SemiSLSegmentationConfigurer(SegmentationConfigurer):
 
         # Remove task adapt hook (set default torch random sampler)
         remove_custom_hook(cfg, "TaskAdaptHook")
-
-    @staticmethod
-    def configure_unlabeled_dataloader(cfg: ConfigDict) -> None:
-        """Patch for unlabled dataloader."""
-
-        model_task: Dict[str, str] = {
-            "classification": "mmcls",
-            "detection": "mmdet",
-            "segmentation": "mmseg",
-        }  # noqa
-        if "unlabeled" in cfg.data:
-            task_lib_module = importlib.import_module(f"{model_task[cfg.model_task]}.datasets")
-            dataset_builder = getattr(task_lib_module, "build_dataset")
-            dataloader_builder = getattr(task_lib_module, "build_dataloader")
-
-            dataset = build_dataset(cfg, "unlabeled", dataset_builder, consume=True)
-            unlabeled_dataloader = build_dataloader(
-                dataset,
-                cfg,
-                "unlabeled",
-                dataloader_builder,
-                distributed=cfg.distributed,
-                consume=True,
-            )
-
-            custom_hooks = cfg.get("custom_hooks", [])
-            updated = False
-            for custom_hook in custom_hooks:
-                if custom_hook["type"] == "ComposedDataLoadersHook":
-                    custom_hook["data_loaders"] = [
-                        *custom_hook["data_loaders"],
-                        unlabeled_dataloader,
-                    ]
-                    updated = True
-            if not updated:
-                custom_hooks.append(
-                    ConfigDict(
-                        type="ComposedDataLoadersHook",
-                        data_loaders=unlabeled_dataloader,
-                    )
-                )
-            cfg.custom_hooks = custom_hooks

@@ -48,7 +48,6 @@ class TestSegmentationConfigurer:
         mock_cfg_ckpt = mocker.patch.object(SegmentationConfigurer, "configure_ckpt")
         mock_cfg_model = mocker.patch.object(SegmentationConfigurer, "configure_model")
         mock_cfg_task = mocker.patch.object(SegmentationConfigurer, "configure_task")
-        mock_cfg_hook = mocker.patch.object(SegmentationConfigurer, "configure_hook")
         mock_cfg_gpu = mocker.patch.object(SegmentationConfigurer, "configure_samples_per_gpu")
         mock_cfg_fp16 = mocker.patch.object(SegmentationConfigurer, "configure_fp16")
         mock_cfg_compat_cfg = mocker.patch.object(SegmentationConfigurer, "configure_compat_cfg")
@@ -62,7 +61,6 @@ class TestSegmentationConfigurer:
         mock_cfg_model.assert_called_once_with(model_cfg, None)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_task.assert_called_once_with(model_cfg)
-        mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_gpu.assert_called_once_with(model_cfg)
         mock_cfg_fp16.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
@@ -215,13 +213,6 @@ class TestSegmentationConfigurer:
         self.configurer.configure_compat_cfg(model_cfg)
 
     @e2e_pytest_unit
-    def test_configure_hook(self):
-        model_cfg = copy.deepcopy(self.model_cfg)
-        model_cfg.custom_hook_options = {"LazyEarlyStoppingHook": {"start": 5}, "LoggerReplaceHook": {"_delete_": True}}
-        self.configurer.configure_hook(model_cfg)
-        assert model_cfg.custom_hooks[0]["start"] == 5
-
-    @e2e_pytest_unit
     @pytest.mark.parametrize("input_size", [None, (256, 256)])
     def test_configure_input_size(self, mocker, input_size):
         # prepare
@@ -268,6 +259,7 @@ class TestIncrSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_task(self, mocker):
         mocker.patch.object(SegmentationConfigurer, "configure_task")
+        self.configurer.task_adapt_type = "default_task_adapt"
         self.configurer.configure_task(self.model_cfg)
         assert self.model_cfg.custom_hooks[3].type == "TaskAdaptHook"
         assert self.model_cfg.custom_hooks[3].sampler_flag is False
@@ -280,40 +272,23 @@ class TestSemiSLSegmentationConfigurer:
         self.cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
         data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
         self.cfg.merge_from_dict(data_pipeline_cfg)
-        self.cfg.model_task = "segmentation"
-        self.cfg.distributed = False
-        self.cfg.merge_from_dict(
-            MPAConfig(
-                {
-                    "data": {
-                        "train": {"otx_dataset": [], "labels": []},
-                        "val": {"otx_dataset": [], "labels": []},
-                        "test": {"otx_dataset": [], "labels": []},
-                        "unlabeled": {"otx_dataset": [0], "labels": []},
-                    }
+
+    @e2e_pytest_unit
+    def test_configure_data(self, mocker):
+        mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataset", return_value=True)
+        mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
+
+        data_cfg = MPAConfig(
+            {
+                "data": {
+                    "train": {"otx_dataset": [], "labels": []},
+                    "val": {"otx_dataset": [], "labels": []},
+                    "test": {"otx_dataset": [], "labels": []},
+                    "unlabeled": {"otx_dataset": [0, 1, 2, 3], "labels": []},
                 }
-            )
+            }
         )
-
-    @e2e_pytest_unit
-    def test_configure_hook(self, mocker):
-        mock_ul_dataloader = mocker.patch.object(SemiSLSegmentationConfigurer, "configure_unlabeled_dataloader")
-        self.configurer.configure_hook(self.cfg)
-        mock_ul_dataloader.assert_called_once()
-
-    @e2e_pytest_unit
-    def test_configure_task(self, mocker):
-        model_cfg = ConfigDict(dict(model=dict(type="", task_adapt=True)))
-        mock_remove_hook = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.remove_custom_hook")
-        self.configurer.configure_task(model_cfg)
-        mock_remove_hook.assert_called_once()
-
-    @e2e_pytest_unit
-    def test_configure_unlabeled_dataloader(self, mocker):
-        mocker_build_dataset = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataset")
-        mocker_build_dataloader = mocker.patch("otx.algorithms.segmentation.adapters.mmseg.configurer.build_dataloader")
-        self.configurer.configure_hook(self.cfg)
-
-        mocker_build_dataset.assert_called_once()
-        mocker_build_dataloader.assert_called_once()
-        assert "ComposedDataLoadersHook" in [hook["type"] for hook in self.cfg.custom_hooks]
+        self.cfg.model_task = "classification"
+        self.cfg.distributed = False
+        self.configurer.configure_data(self.cfg, data_cfg)
+        assert self.cfg.custom_hooks[-1]["type"] == "ComposedDataLoadersHook"

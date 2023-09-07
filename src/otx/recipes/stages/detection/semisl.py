@@ -1,22 +1,16 @@
 _base_ = ["./train.py", "../_base_/data/coco_ubt.py", "../_base_/models/detectors/detector.py"]
 
 task_adapt = dict(
-    type="mpa",
+    type="default_task_adapt",
     op="REPLACE",
     efficient_mode=False,
+    use_adaptive_anchor=True,
 )
 
 custom_hooks = [
     dict(
-        type="UnbiasedTeacherHook",
+        type="MeanTeacherHook",
         epoch_momentum=0.1,
-        start_epoch=2,
-        # min_pseudo_label_ratio=0.1,
-        min_pseudo_label_ratio=0.0,
-    ),
-    dict(
-        type="DualModelEMAHook",
-        epoch_momentum=0.4,
         start_epoch=2,
     ),
     dict(

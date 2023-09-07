@@ -47,12 +47,8 @@ __test_pipeline = [
 ]
 
 __dataset_type = "OTXClsDataset"
-__samples_per_gpu = 16
-__workers_per_gpu = 2
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu,
-    workers_per_gpu=__workers_per_gpu,
     train=dict(type=__dataset_type, pipeline=__train_pipeline),
     val=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
     test=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),

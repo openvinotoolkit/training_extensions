@@ -197,8 +197,8 @@ class TestMultiGPUManager:
         start_time = datetime.datetime.now() - datetime.timedelta(seconds=elapsed_second)
         MultiGPUManager(mocker.MagicMock(), "0,1", "localhost:0", start_time=start_time)
 
-        # check torch.dist.init_process_group timeout value is adapted if elapsed time is more than 20 seconds.
-        assert int(self.mock_os.environ.get("TORCH_DIST_TIMEOUT", 30)) >= int(elapsed_second * 1.5)
+        # check torch.dist.init_process_group timeout value is adapted if elapsed time is bigger than criteria.
+        assert int(self.mock_os.environ.get("TORCH_DIST_TIMEOUT", 60)) >= int(elapsed_second * 1.5)
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("num_gpu", [4, 10])
