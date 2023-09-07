@@ -50,7 +50,7 @@ class ClassificationConfig(BaseConfig):
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
         """Algorithm backend configurations."""
 
-        header = string_attribute("Parameters for the MPA algo-backend")
+        header = string_attribute("Parameters for the OTX algo-backend")
         description = header
 
         enable_noisy_label_detection = configurable_boolean(

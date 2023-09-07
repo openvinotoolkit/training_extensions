@@ -53,7 +53,7 @@ def get_annotation_mmseg_format(
 
 
 @DATASETS.register_module()
-class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
+class __OTXSegDataset(CustomDataset, metaclass=ABCMeta):
     """Wrapper that allows using a OTX dataset to train mmsegmentation models.
 
     This wrapper is not based on the filesystem,
@@ -137,7 +137,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         # even if we need only checking aspect ratio of the image; due to it
         # this implementation of dataset does not uses such tricks as skipping images with wrong aspect ratios or
         # small image size, since otherwise reading the whole dataset during initialization will be required.
-        self.data_infos = OTXSegDataset._DataInfoProxy(self.otx_dataset, self.project_labels)
+        self.data_infos = __OTXSegDataset._DataInfoProxy(self.otx_dataset, self.project_labels)
 
         self.pipeline = Compose(pipeline)
 
@@ -229,7 +229,7 @@ class OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
 
 @DATASETS.register_module()
-class MPASegDataset(OTXSegDataset, metaclass=ABCMeta):
+class OTXSegDataset(__OTXSegDataset, metaclass=ABCMeta):
     """Wrapper dataset that allows using a OTX dataset to train models."""
 
     def __init__(self, **kwargs):

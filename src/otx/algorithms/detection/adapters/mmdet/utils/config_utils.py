@@ -91,7 +91,7 @@ def patch_tiling(config, hparams, dataset=None):
     """Update config for tiling.
 
     Args:
-        config (dict): MPA config containing configuration settings.
+        config (dict): OTX config containing configuration settings.
         hparams (DetectionConfig): DetectionConfig containing hyperparameters.
         dataset (DatasetEntity, optional): A dataset entity. Defaults to None.
 
