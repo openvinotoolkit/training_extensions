@@ -1,18 +1,14 @@
-""" Custom Rotated Anchor Head"""
+"""Custom Rotated Anchor Head."""
 
-from mmrotate.models.dense_heads import RotatedATSSHead
 import torch
 from mmcv.ops import nms_rotated
 from mmrotate.models import ROTATED_HEADS
+from mmrotate.models.dense_heads import RotatedATSSHead
 
 
-def custom_multiclass_nms_rotated(multi_bboxes,
-                                  multi_scores,
-                                  score_thr,
-                                  nms,
-                                  max_num=-1,
-                                  score_factors=None,
-                                  return_inds=False):
+def custom_multiclass_nms_rotated(
+    multi_bboxes, multi_scores, score_thr, nms, max_num=-1, score_factors=None, return_inds=False
+):
     """NMS for multi-class bboxes.
 
     Args:
@@ -38,8 +34,7 @@ def custom_multiclass_nms_rotated(multi_bboxes,
     if multi_bboxes.shape[1] > 5:
         bboxes = multi_bboxes.view(multi_scores.size(0), -1, 5)
     else:
-        bboxes = multi_bboxes[:, None].expand(
-            multi_scores.size(0), num_classes, 5)
+        bboxes = multi_bboxes[:, None].expand(multi_scores.size(0), num_classes, 5)
     scores = multi_scores[:, :-1]
 
     labels = torch.arange(num_classes, dtype=torch.long, device=scores.device)
@@ -52,8 +47,7 @@ def custom_multiclass_nms_rotated(multi_bboxes,
     valid_mask = scores > score_thr
     if score_factors is not None:
         # expand the shape to match original shape of score
-        score_factors = score_factors.view(-1, 1).expand(
-            multi_scores.size(0), num_classes)
+        score_factors = score_factors.view(-1, 1).expand(multi_scores.size(0), num_classes)
         score_factors = score_factors.reshape(-1)
         scores = scores * score_factors
 
@@ -97,15 +91,11 @@ def custom_multiclass_nms_rotated(multi_bboxes,
 
 @ROTATED_HEADS.register_module()
 class CustomRotatedATSSHead(RotatedATSSHead):
-    def _get_bboxes_single(self,
-                           cls_score_list,
-                           bbox_pred_list,
-                           mlvl_anchors,
-                           img_shape,
-                           scale_factor,
-                           cfg,
-                           rescale=False,
-                           with_nms=True):
+    """Custom Rotated ATSS Head."""
+
+    def _get_bboxes_single(
+        self, cls_score_list, bbox_pred_list, mlvl_anchors, img_shape, scale_factor, cfg, rescale=False, with_nms=True
+    ):
         """Transform outputs for a single batch item into bbox predictions.
 
         Args:
@@ -135,17 +125,15 @@ class CustomRotatedATSSHead(RotatedATSSHead):
         assert len(cls_score_list) == len(bbox_pred_list) == len(mlvl_anchors)
         mlvl_bboxes = []
         mlvl_scores = []
-        for cls_score, bbox_pred, anchors in zip(cls_score_list,
-                                                 bbox_pred_list, mlvl_anchors):
+        for cls_score, bbox_pred, anchors in zip(cls_score_list, bbox_pred_list, mlvl_anchors):
             assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
-            cls_score = cls_score.permute(1, 2,
-                                          0).reshape(-1, self.cls_out_channels)
+            cls_score = cls_score.permute(1, 2, 0).reshape(-1, self.cls_out_channels)
             if self.use_sigmoid_cls:
                 scores = cls_score.sigmoid()
             else:
                 scores = cls_score.softmax(-1)
             bbox_pred = bbox_pred.permute(1, 2, 0).reshape(-1, 5)
-            nms_pre = cfg.get('nms_pre', -1)
+            nms_pre = cfg.get("nms_pre", -1)
             if nms_pre > 0 and scores.shape[0] > nms_pre:
                 # Get maximum scores for foreground classes.
                 if self.use_sigmoid_cls:
@@ -159,15 +147,13 @@ class CustomRotatedATSSHead(RotatedATSSHead):
                 anchors = anchors[topk_inds, :]
                 bbox_pred = bbox_pred[topk_inds, :]
                 scores = scores[topk_inds, :]
-            bboxes = self.bbox_coder.decode(
-                anchors, bbox_pred, max_shape=img_shape)
+            bboxes = self.bbox_coder.decode(anchors, bbox_pred, max_shape=img_shape)
             mlvl_bboxes.append(bboxes)
             mlvl_scores.append(scores)
         mlvl_bboxes = torch.cat(mlvl_bboxes)
         if rescale:
             # angle should not be rescaled
-            mlvl_bboxes[:, :4] = mlvl_bboxes[:, :4] / mlvl_bboxes.new_tensor(
-                scale_factor)
+            mlvl_bboxes[:, :4] = mlvl_bboxes[:, :4] / mlvl_bboxes.new_tensor(scale_factor)
         mlvl_scores = torch.cat(mlvl_scores)
         if self.use_sigmoid_cls:
             # Add a dummy background class to the backend when using sigmoid
@@ -178,8 +164,8 @@ class CustomRotatedATSSHead(RotatedATSSHead):
 
         if with_nms:
             det_bboxes, det_labels = custom_multiclass_nms_rotated(
-                mlvl_bboxes, mlvl_scores, cfg.score_thr, cfg.nms,
-                cfg.max_per_img)
+                mlvl_bboxes, mlvl_scores, cfg.score_thr, cfg.nms, cfg.max_per_img
+            )
             return det_bboxes, det_labels
         else:
             return mlvl_bboxes, mlvl_scores

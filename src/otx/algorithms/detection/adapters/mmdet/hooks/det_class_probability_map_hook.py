@@ -25,6 +25,7 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head impo
 from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head import (
     CustomYOLOXHead,
 )
+from otx.algorithms.detection.adapters.mmrotate.models.heads.custom_rotated_atss_head import CustomRotatedATSSHead
 
 # pylint: disable=too-many-locals
 
@@ -106,6 +107,13 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                     for cls_conv in self._bbox_head.cls_convs:
                         cls_feat = cls_conv(cls_feat)
                     cls_score = self._bbox_head.atss_cls(cls_feat)
+                    cls_scores.append(cls_score)
+            elif isinstance(self._bbox_head, CustomRotatedATSSHead):
+                cls_scores = []
+                for cls_feat in x:
+                    for cls_conv in self._bbox_head.cls_convs:
+                        cls_feat = cls_conv(cls_feat)
+                    cls_score = self._bbox_head.retina_cls(cls_feat)
                     cls_scores.append(cls_score)
             elif isinstance(self._bbox_head, CustomVFNetHead):
                 # Not clear how to separate cls_scores from bbox_preds

@@ -1,12 +1,11 @@
+"""Custom ATSS OBB Assigner."""
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 from mmcv.ops import points_in_polygons
 from mmdet.core.bbox.assigners.assign_result import AssignResult
-
+from mmrotate.core.bbox.assigners.atss_obb_assigner import ATSSObbAssigner
 from mmrotate.core.bbox.builder import ROTATED_BBOX_ASSIGNERS
 from mmrotate.core.bbox.transforms import obb2poly
-
-from mmrotate.core.bbox.assigners.atss_obb_assigner import ATSSObbAssigner
 
 
 @ROTATED_BBOX_ASSIGNERS.register_module()
@@ -23,12 +22,7 @@ class CustomATSSObbAssigner(ATSSObbAssigner):
         topk (float): Number of bbox selected in each level.
     """
 
-    def assign(self,
-               bboxes,
-               num_level_bboxes,
-               gt_bboxes,
-               gt_bboxes_ignore=None,
-               gt_labels=None):
+    def assign(self, bboxes, num_level_bboxes, gt_bboxes, gt_bboxes_ignore=None, gt_labels=None):
         """Assign gt to bboxes.
 
         The assignment is done in following steps
@@ -62,32 +56,26 @@ class CustomATSSObbAssigner(ATSSObbAssigner):
         overlaps = self.iou_calculator(bboxes, gt_bboxes)
 
         # assign 0 by default
-        assigned_gt_inds = overlaps.new_full((num_bboxes, ),
-                                             0,
-                                             dtype=torch.long)
+        assigned_gt_inds = overlaps.new_full((num_bboxes,), 0, dtype=torch.long)
 
         if num_gt == 0 or num_bboxes == 0:
             # No ground truth or boxes, return empty assignment
-            max_overlaps = overlaps.new_zeros((num_bboxes, ))
+            max_overlaps = overlaps.new_zeros((num_bboxes,))
             if num_gt == 0:
                 # No truth, assign everything to background
                 assigned_gt_inds[:] = 0
             if gt_labels is None:
                 assigned_labels = None
             else:
-                assigned_labels = overlaps.new_full((num_bboxes, ),
-                                                    -1,
-                                                    dtype=torch.long)
-            return AssignResult(
-                num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels)
+                assigned_labels = overlaps.new_full((num_bboxes,), -1, dtype=torch.long)
+            return AssignResult(num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels)
 
         # compute center distance between all bbox and gt
         # the center of gt and bbox
         gt_points = gt_bboxes[:, :2]
         bboxes_points = bboxes[:, :2]
 
-        distances = (bboxes_points[:, None, :] -
-                     gt_points[None, :, :]).pow(2).sum(-1).sqrt()
+        distances = (bboxes_points[:, None, :] - gt_points[None, :, :]).pow(2).sum(-1).sqrt()
 
         # Selecting candidates based on the center distance
         candidate_idxs = []
@@ -98,8 +86,7 @@ class CustomATSSObbAssigner(ATSSObbAssigner):
             end_idx = start_idx + bboxes_per_level
             distances_per_level = distances[start_idx:end_idx, :]
             selectable_k = min(self.topk, bboxes_per_level)
-            _, topk_idxs_per_level = distances_per_level.topk(
-                selectable_k, dim=0, largest=False)
+            _, topk_idxs_per_level = distances_per_level.topk(selectable_k, dim=0, largest=False)
             candidate_idxs.append(topk_idxs_per_level + start_idx)
             start_idx = end_idx
         candidate_idxs = torch.cat(candidate_idxs, dim=0)
@@ -117,8 +104,7 @@ class CustomATSSObbAssigner(ATSSObbAssigner):
 
         # limit the positive sample's center in gt
         inside_flag = points_in_polygons(bboxes_points, gt_bboxes)
-        is_in_gts = inside_flag[candidate_idxs,
-                                torch.arange(num_gt)].to(is_pos.dtype)
+        is_in_gts = inside_flag[candidate_idxs, torch.arange(num_gt)].to(is_pos.dtype)
 
         is_pos = is_pos & is_in_gts
         for gt_idx in range(num_gt):
@@ -127,24 +113,19 @@ class CustomATSSObbAssigner(ATSSObbAssigner):
 
         # if an anchor box is assigned to multiple gts,
         # the one with the highest IoU will be selected.
-        overlaps_inf = torch.full_like(overlaps,
-                                       -INF).t().contiguous().view(-1)
+        overlaps_inf = torch.full_like(overlaps, -INF).t().contiguous().view(-1)
         index = candidate_idxs.view(-1)[is_pos.view(-1)]
         overlaps_inf[index] = overlaps.t().contiguous().view(-1)[index]
         overlaps_inf = overlaps_inf.view(num_gt, -1).t()
 
         max_overlaps, argmax_overlaps = overlaps_inf.max(dim=1)
-        assigned_gt_inds[
-            max_overlaps != -INF] = argmax_overlaps[max_overlaps != -INF] + 1
+        assigned_gt_inds[max_overlaps != -INF] = argmax_overlaps[max_overlaps != -INF] + 1
 
         if gt_labels is not None:
-            assigned_labels = assigned_gt_inds.new_full((num_bboxes, ), -1)
-            pos_inds = torch.nonzero(
-                assigned_gt_inds > 0, as_tuple=False).squeeze()
+            assigned_labels = assigned_gt_inds.new_full((num_bboxes,), -1)
+            pos_inds = torch.nonzero(assigned_gt_inds > 0, as_tuple=False).squeeze()
             if pos_inds.numel() > 0:
-                assigned_labels[pos_inds] = gt_labels[
-                    assigned_gt_inds[pos_inds] - 1]
+                assigned_labels[pos_inds] = gt_labels[assigned_gt_inds[pos_inds] - 1]
         else:
             assigned_labels = None
-        return AssignResult(
-            num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels)
+        return AssignResult(num_gt, assigned_gt_inds, max_overlaps, labels=assigned_labels)

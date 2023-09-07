@@ -44,5 +44,7 @@ model = dict(
     test_cfg=dict(nms_pre=2000, min_bbox_size=0, score_thr=0.05, nms=dict(iou_thr=0.1), max_per_img=2000),
 )
 
-# TODO[EUGENE]: Add pretrained weights
+load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
+/models/object_detection/v2/mobilenet_v2-atss.pth"
+
 fp16 = dict(loss_scale=512.0)

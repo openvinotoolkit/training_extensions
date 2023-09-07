@@ -14,13 +14,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from collections import OrderedDict
 from typing import List
 
 import numpy as np
-from mmcv.utils import print_log
 from mmdet.datasets.builder import DATASETS
-from mmrotate.core import eval_rbbox_map, poly2obb_np
+from mmrotate.core import poly2obb_np
 
 from otx.algorithms.detection.adapters.mmdet.datasets.dataset import OTXDetDataset
 from otx.api.entities.dataset_item import DatasetItemEntity

@@ -347,8 +347,8 @@ def create_rbox_shapes(
                 continue
             points = polygon[:-1].reshape(-1, 2)
             points = [Point(x=point[0] / width, y=point[1] / height) for point in points]
-            labels = [ScoredLabel(labels[label_idx], probability=probability)]
+            assigned_label = [ScoredLabel(labels[label_idx], probability=probability)]
             polygon = Polygon(points=points)
             if polygon.get_area() > 1e-12:
-                shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+                shapes.append(Annotation(polygon, labels=assigned_label, id=ID(f"{label_idx:08}")))
     return shapes

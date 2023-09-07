@@ -19,7 +19,7 @@ model = dict(
         num_outs=5,
     ),
     bbox_head=dict(
-        type="RotatedATSSHead",
+        type="CustomRotatedATSSHead",
         num_classes=15,
         in_channels=256,
         stacked_convs=4,
@@ -46,7 +46,10 @@ model = dict(
     ),
     train_cfg=dict(
         assigner=dict(
-            type="ATSSObbAssigner", topk=9, angle_version=angle_version, iou_calculator=dict(type="RBboxOverlaps2D")
+            type="CustomATSSObbAssigner",
+            topk=9,
+            angle_version=angle_version,
+            iou_calculator=dict(type="RBboxOverlaps2D"),
         ),
         allowed_border=-1,
         pos_weight=-1,

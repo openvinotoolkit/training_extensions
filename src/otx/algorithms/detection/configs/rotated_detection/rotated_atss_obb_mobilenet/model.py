@@ -51,7 +51,7 @@ model = dict(
             type="CustomATSSObbAssigner",
             topk=9,
             angle_version=angle_version,
-            iou_calculator=dict(type="RBboxOverlaps2D")
+            iou_calculator=dict(type="RBboxOverlaps2D"),
         ),
         allowed_border=-1,
         pos_weight=-1,

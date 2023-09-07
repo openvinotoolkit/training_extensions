@@ -30,11 +30,8 @@ train_pipeline = [
         with_angle=True,
         angle_version=angle_version,
     ),
-    dict(
-        type="RResize",
-        img_scale=img_scale
-    ),
-    dict(type='RRandomFlip', flip_ratio=0.5),
+    dict(type="RResize", img_scale=img_scale),
+    dict(type="RRandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **img_norm_cfg),
     dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
