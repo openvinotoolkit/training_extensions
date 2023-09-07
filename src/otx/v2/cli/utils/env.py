@@ -3,7 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-
 import importlib
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -12,9 +11,18 @@ from rich.table import Table
 
 from otx.v2.adapters import ADAPTERS
 
-REQUIREMENT_PER_TASK = {
-    "anomaly": ["datumaro", "torch.anomalib"],
-    "classification": ["datumaro", "torch.mmengine.mmpretrain"],
+from .install import get_module_version, get_requirements
+
+REQUIRED_ADAPTERS_PER_TASK = {
+    "anomaly": ["openvino", "datumaro", "torch", "torch.anomalib"],
+    "classification": [
+        "openvino",
+        "datumaro",
+        "torch",
+        "torch.mmengine",
+        "torch.mmengine.mmpretrain",
+        "torch.mmengine.mmdeploy",
+    ],
 }
 
 
@@ -35,23 +43,51 @@ def get_adapters_status() -> Dict[str, Dict]:
     return adapters_status
 
 
-def get_environment_table() -> str:
-    """A table provides the availability of each adapter.
+def get_environment_table(verbose: bool = False) -> str:
+    """A table provides the availability of each tasks.
+
+    Args:
+        verbose (bool, optional): Show more detail dependencies. Defaults to False.
 
     Returns:
         str: String of rich.table.Table.
     """
     table = Table(title="Current Evironment Status of OTX")
-    table.add_column("Adapters", justify="left", style="yellow")
-    table.add_column("Version", justify="left", style="cyan")
+    table.add_column("Task", justify="left", style="yellow")
+    table.add_column("Required", justify="left", style="cyan")
     table.add_column("Available", justify="center", style="green")
 
-    adapter = get_adapters_status()
-    for name, value in adapter.items():
-        if value["AVAILABLE"]:
-            table.add_row(name, value["VERSION"], "O")
+    if verbose:
+        task_lst = ["api", "base", "openvino", "anomaly", "classification"]
+    else:
+        task_lst = list(REQUIRED_ADAPTERS_PER_TASK.keys())
+
+    requirements_per_task = get_requirements()
+    adapters_status = get_adapters_status()
+    for task in task_lst:
+        task_name = task
+        if verbose:
+            if task not in requirements_per_task:
+                continue
+            requirements = requirements_per_task[task]
         else:
-            table.add_row(name, value["VERSION"], "X", style="red")
+            requirements = REQUIRED_ADAPTERS_PER_TASK[task]
+        i = 0
+        for req in requirements:
+            end_section = True if i == len(requirements) - 1 else False
+            if verbose:
+                required = str(req)
+                current_version = get_module_version(req.project_name)
+            else:
+                required = req.split(".")[-1]
+                adapter = adapters_status[f"otx.v2.adapters.{req}"]
+                current_version = adapter["VERSION"] if adapter["AVAILABLE"] else None
+            if current_version is not None:
+                table.add_row(task_name, required, current_version, end_section=end_section)
+            else:
+                table.add_row(task_name, required, "X", style="red", end_section=end_section)
+            i += 1
+            task_name = None
 
     console = Console()
     with console.capture() as capture:
@@ -73,9 +109,9 @@ def get_task_status(task: Optional[str] = None) -> Dict[str, Dict]:
     task_status: Dict[str, Dict[str, Union[List, bool]]] = {}
     target_req: Dict[str, List[str]] = {}
     if task is not None:
-        target_req[task] = REQUIREMENT_PER_TASK[task]
+        target_req[task] = REQUIRED_ADAPTERS_PER_TASK[task]
     else:
-        target_req = REQUIREMENT_PER_TASK
+        target_req = REQUIRED_ADAPTERS_PER_TASK
     for req, adapters in target_req.items():
         available = True
         exception_lst: List = []

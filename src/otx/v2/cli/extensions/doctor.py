@@ -41,12 +41,14 @@ def prepare_parser() -> OTXArgumentParser:
 
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default=None, type=str)
-    parser.add_argument("--debug", help="Print Traceback of Exception for more details.", action="store_true")
+    parser.add_argument(
+        "--verbose", help="Print more detailed output. (All the dependency & TraceBack)", action="store_true"
+    )
 
     return parser
 
 
-def doctor(task: Optional[str] = None, debug: bool = False) -> None:
+def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
     """Print diagnostic information about the current environment.
 
     Args:
@@ -59,7 +61,7 @@ def doctor(task: Optional[str] = None, debug: bool = False) -> None:
     warning_mark = ":warning:"
 
     # Print Adapters available table
-    env_table = get_environment_table()
+    env_table = get_environment_table(verbose=verbose)
     print(env_table)
 
     # 1. OTX Version
@@ -88,7 +90,7 @@ def doctor(task: Optional[str] = None, debug: bool = False) -> None:
             for exception in exception_lst:
                 if exception is not None:
                     console.log(f"{red_mark} {target}: [bold red]{warning_mark} {exception}[/bold red]")
-                if debug and isinstance(exception, Exception):
+                if verbose and isinstance(exception, Exception):
                     traceback.print_tb(exception.__traceback__)
             console.log(f"\t - Please try this command: 'otx install {target}' or 'otx install full'\n")
             issue_count += 1

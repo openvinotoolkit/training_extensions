@@ -543,3 +543,12 @@ def mim_installation(requirements: list[str]):
     from mim import install
 
     install(requirements)
+
+
+def get_module_version(module_name):
+    try:
+        module_version = pkg_resources.get_distribution(module_name).version
+    except pkg_resources.DistributionNotFound:
+        module_version = None
+
+    return module_version

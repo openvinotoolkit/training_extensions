@@ -9,6 +9,9 @@ DEBUG = None
 
 try:
     import openvino  # noqa: F401
+    from openvino.runtime import get_version
+
+    VERSION = get_version().split("-")[0]
 
     # flake8: noqa
     from .graph import *
