@@ -7,8 +7,6 @@
 import inspect
 from typing import Callable, List
 
-from otx.v2.api.core.dataset import BaseDataset
-
 
 def add_subset_dataloader(subsets: List[str]):
     def decorator(cls):
@@ -18,9 +16,7 @@ def add_subset_dataloader(subsets: List[str]):
 
             return wrapper
 
-        if not issubclass(cls, BaseDataset):
-            raise ValueError("This decorator is a feature for otx.v2.api.core.dataset.BaseDataset.")
-        if not hasattr(cls(), "subset_dataloader"):
+        if not hasattr(cls, "subset_dataloader"):
             raise NotImplementedError(
                 "In order to use this decorator, the class must have the subset_dataloader function implemented."
             )

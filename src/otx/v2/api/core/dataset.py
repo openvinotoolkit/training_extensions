@@ -183,17 +183,19 @@ class BaseDataset:
             unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared. Defaults to None.
             data_format (Optional[str], optional): The format of the dataset. Defaults to None.
         """
+        self._train_data_roots = train_data_roots
+        self._train_ann_files = train_ann_files
+        self._val_data_roots = val_data_roots
+        self._val_ann_files = val_ann_files
+        self._test_data_roots = test_data_roots
+        self._test_ann_files = test_ann_files
+        self._unlabeled_data_roots = unlabeled_data_roots
+        self._unlabeled_file_list = unlabeled_file_list
+
         self.task = task
         self.train_type = train_type
-        self.train_data_roots = train_data_roots
-        self.train_ann_files = train_ann_files
-        self.val_data_roots = val_data_roots
-        self.val_ann_files = val_ann_files
-        self.test_data_roots = test_data_roots
-        self.test_ann_files = test_ann_files
-        self.unlabeled_data_roots = unlabeled_data_roots
-        self.unlabeled_file_list = unlabeled_file_list
         self.data_format = data_format
+        self.initialize = False
 
     def set_datumaro_adapters(self, data_roots: Optional[str] = None):
         """Functions that provide the ability to load datasets from datumaro.
@@ -273,3 +275,75 @@ class BaseDataset:
     @property
     def num_classes(self) -> int:
         raise NotImplementedError()
+
+    @property
+    def train_data_roots(self):
+        return self._train_data_roots
+
+    @train_data_roots.setter
+    def train_data_roots(self, path: str):
+        self._train_data_roots = path
+        self.initialize = False
+
+    @property
+    def train_ann_files(self):
+        return self._train_ann_files
+
+    @train_ann_files.setter
+    def train_ann_files(self, path: str):
+        self._train_ann_files = path
+        self.initialize = False
+
+    @property
+    def val_data_roots(self):
+        return self._val_data_roots
+
+    @val_data_roots.setter
+    def val_data_roots(self, path: str):
+        self._val_data_roots = path
+        self.initialize = False
+
+    @property
+    def val_ann_files(self):
+        return self._val_ann_files
+
+    @val_ann_files.setter
+    def val_ann_files(self, path: str):
+        self._val_ann_files = path
+        self.initialize = False
+
+    @property
+    def test_data_roots(self):
+        return self._test_data_roots
+
+    @test_data_roots.setter
+    def test_data_roots(self, path: str):
+        self._test_data_roots = path
+        self.initialize = False
+
+    @property
+    def test_ann_files(self):
+        return self._test_ann_files
+
+    @test_ann_files.setter
+    def test_ann_files(self, path: str):
+        self._test_ann_files = path
+        self.initialize = False
+
+    @property
+    def unlabeled_data_roots(self):
+        return self._unlabeled_data_roots
+
+    @unlabeled_data_roots.setter
+    def unlabeled_data_roots(self, path: str):
+        self._unlabeled_data_roots = path
+        self.initialize = False
+
+    @property
+    def unlabeled_file_list(self):
+        return self._unlabeled_file_list
+
+    @unlabeled_file_list.setter
+    def unlabeled_file_list(self, path: str):
+        self._unlabeled_file_list = path
+        self.initialize = False

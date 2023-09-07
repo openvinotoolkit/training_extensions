@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from mmengine.registry import MODELS as MMENGINE_MODELS
-from mmengine.registry import Registry
+from mmengine.registry import Registry  # noqa: F401
 
 BACKBONES = MMENGINE_MODELS
 TORCHVISION_BACKBONES = MMENGINE_MODELS

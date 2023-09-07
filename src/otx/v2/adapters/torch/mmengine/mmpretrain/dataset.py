@@ -115,7 +115,6 @@ class Dataset(BaseDataset):
             unlabeled_file_list,
             data_format,
         )
-        self.initialize = False
 
     def _initialize(self):
         self.set_datumaro_adapters()  # Set self.dataset_entity & self.label_schema

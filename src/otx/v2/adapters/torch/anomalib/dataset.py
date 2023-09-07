@@ -56,7 +56,6 @@ class Dataset(BaseDataset):
             unlabeled_file_list,
             data_format=data_format,  # TODO: Is there a way to make it more flexible?
         )
-        self.initialize = False
 
     def _initialize(self):
         self.set_datumaro_adapters()

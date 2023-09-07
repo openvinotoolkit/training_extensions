@@ -3,16 +3,17 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
+from otx.v2.api.core.engine import Engine
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.auto_utils import configure_task_type, configure_train_type
+from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.importing import get_impl_class, get_otx_root_path
 from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
-
-from .engine import Engine
 
 # TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"
@@ -88,6 +89,7 @@ def set_adapters_from_string(framework: str):
     return sub_engine, dataset_builder, get_model, model_configs, list_models
 
 
+@add_subset_dataloader(["train", "val", "test", "unlabeled"])
 class AutoRunner:
     def __init__(
         self,
@@ -131,15 +133,17 @@ class AutoRunner:
             TypeError: _description_
         """
         self.config_path: Optional[str] = None
-        config = self._initial_config(config)
+        self.config = self._initial_config(config)
         self.engine: Engine
         self.task: TaskType
         self.train_type: TrainType
         self.work_dir = work_dir
-        self.framework: Optional[str] = config.get("framework", None)
+        self.framework: Optional[str] = self.config.get("framework", None)
+        self.cache = {"model": None, "checkpoint": None}
+        self.subset_dls: Dict[str, Any] = {}
 
         self.config = set_dataset_paths(
-            config,
+            self.config,
             {
                 "train_data_roots": train_data_roots,
                 "train_ann_files": train_ann_files,
@@ -164,7 +168,7 @@ class AutoRunner:
 
         (
             self.framework_engine,
-            self.dataset,
+            self.dataset_class,
             self.get_model,
             self.config_list,
             self.list_models,
@@ -172,9 +176,9 @@ class AutoRunner:
 
         # Create Dataset Builder
         dataset_kwargs["task"] = self.task
-        dataset_kwargs["train_type"] = self.task
-        dataset_kwargs["data_format"] = data_format
-        self.dataset_obj = self.dataset(**dataset_kwargs)
+        dataset_kwargs["train_type"] = self.train_type
+        dataset_kwargs["data_format"] = self.data_format
+        self.dataset = self.dataset_class(**dataset_kwargs)
 
     def _initial_config(self, config: Optional[Union[Dict, str]]) -> Dict[str, Any]:
         if config is not None:
@@ -190,6 +194,17 @@ class AutoRunner:
         if "model" not in config:
             config["model"] = {}
         return config
+
+    def _configure_model(self, model):
+        # Configure Model if model is None
+        if model is None:
+            if self.cache.get("model") is not None:
+                model = self.cache.get("model")
+            elif self.get_model is not None:
+                model = self.get_model(model=self.config, num_classes=self.dataset.num_classes)
+        elif isinstance(model, (str, Dict)):
+            model = self.get_model(model=model)
+        return model
 
     def auto_configuration(
         self,
@@ -233,20 +248,33 @@ class AutoRunner:
         """Create the selected framework Engine."""
         self.engine = self.framework_engine(work_dir=self.work_dir, config=self.config)
 
+    def subset_dataloader(
+        self,
+        subset: str,
+        pipeline: Any = None,
+        batch_size: Optional[int] = None,
+        num_workers: Optional[int] = None,
+        distributed: bool = False,
+        **kwargs,
+    ):
+        subset_dl = self.dataset.subset_dataloader(subset, pipeline, batch_size, num_workers, distributed, **kwargs)
+        self.subset_dls[subset] = subset_dl
+        return subset_dl
+
     def train(
         self,
-        # Training
         model=None,
         train_dataloader=None,
-        train_data_pipeline=None,
         val_dataloader=None,
-        val_data_pipeline=None,
-        max_epochs: Optional[int] = None,
+        optimizer=None,
+        checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
-        batch_size: Optional[int] = None,
+        max_epochs: Optional[int] = None,
+        distributed: Optional[bool] = None,
         seed: Optional[int] = None,
         deterministic: Optional[bool] = None,
         precision: Optional[str] = None,
+        val_interval: Optional[int] = None,
         **kwargs,
     ):
         """The Train function in AutoRunner.
@@ -270,40 +298,145 @@ class AutoRunner:
         """
         # TODO: self.config update with new input
 
-        # Build DataLoader
+        # Configure if dataloader is None
         # TODO: Need to add more arguments
         if train_dataloader is None:
-            train_dataloader = self.dataset_obj.train_dataloader(
-                pipeline=train_data_pipeline,
-                config=self.config,
-                batch_size=batch_size,
-            )
+            if "train" in self.subset_dls:
+                train_dataloader = self.subset_dls["train"]
+            else:
+                train_dataloader = self.subset_dataloader(subset="train", config=self.config)
         if val_dataloader is None:
-            val_dataloader = self.dataset_obj.val_dataloader(
-                pipeline=val_data_pipeline,
-                config=self.config,
-                batch_size=batch_size,
-            )
+            if "val" in self.subset_dls:
+                val_dataloader = self.subset_dls["val"]
+            else:
+                val_dataloader = self.subset_dataloader(subset="val", config=self.config)
 
-        # Build Model
-        if model is None and self.get_model is not None:
-            # Model Setting
-            model = self.get_model(model=self.config, num_classes=self.dataset_obj.num_classes)
-        elif isinstance(model, (str, Dict)):
-            model = self.get_model(model=model)
+        model = self._configure_model(model)
 
-        # Training
+        # Configure Engine
         if not hasattr(self, "engine"):
             self.build_framework_engine()
         # TODO: config + args merge for sub-engine
-        return self.engine.train(
+        results = self.engine.train(
             model=model,
             train_dataloader=train_dataloader,
             val_dataloader=val_dataloader,
-            max_epochs=max_epochs,
+            optimizer=optimizer,
+            checkpoint=checkpoint,
             max_iters=max_iters,
+            max_epochs=max_epochs,
+            distributed=distributed,
             seed=seed,
             deterministic=deterministic,
+            precision=precision,
+            val_interval=val_interval,
+            **kwargs,
+        )
+        # Model Cache Update (Training only)
+        self.cache = results
+        return results
+
+    def validate(
+        self,
+        model=None,
+        val_dataloader=None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        precision: Optional[str] = None,
+        **kwargs,
+    ):
+        if val_dataloader is None:
+            if self.subset_dls.get("val", None) is not None:
+                val_dataloader = self.subset_dls["val"]
+            else:
+                val_dataloader = self.subset_dataloader(subset="val", config=self.config)
+
+        model = self._configure_model(model)
+        if checkpoint is None and self.cache.get("checkpoint") is not None:
+            checkpoint = self.cache.get("checkpoint")
+
+        # Configure Engine
+        if not hasattr(self, "engine"):
+            self.build_framework_engine()
+
+        return self.engine.validate(
+            model=model,
+            val_dataloader=val_dataloader,
+            checkpoint=checkpoint,
+            precision=precision,
+            **kwargs,
+        )
+
+    def test(
+        self,
+        model=None,
+        test_dataloader=None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        precision: Optional[str] = None,
+        **kwargs,
+    ):
+        if test_dataloader is None:
+            if self.subset_dls.get("test", None) is not None:
+                test_dataloader = self.subset_dls["test"]
+            else:
+                test_dataloader = self.subset_dataloader(subset="test", config=self.config)
+        model = self._configure_model(model)
+        if checkpoint is None and self.cache.get("checkpoint") is not None:
+            checkpoint = self.cache.get("checkpoint")
+
+        # Configure Engine
+        if not hasattr(self, "engine"):
+            self.build_framework_engine()
+
+        return self.engine.test(
+            model=model,
+            test_dataloader=test_dataloader,
+            checkpoint=checkpoint,
+            precision=precision,
+            **kwargs,
+        )
+
+    def predict(
+        self,
+        img,
+        model=None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        pipeline: Optional[List[Dict]] = None,
+        **kwargs,
+    ) -> List[Dict]:
+        model = self._configure_model(model)
+        if checkpoint is None and self.cache.get("checkpoint") is not None:
+            checkpoint = self.cache.get("checkpoint")
+
+        # Configure Engine
+        if not hasattr(self, "engine"):
+            self.build_framework_engine()
+
+        return self.engine.predict(
+            model=model,
+            img=img,
+            checkpoint=checkpoint,
+            pipeline=pipeline,
+            **kwargs,
+        )
+
+    def export(
+        self,
+        model=None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        precision: str = "float32",
+        **kwargs,
+    ):
+        model = self._configure_model(model)
+        if checkpoint is None and self.cache.get("checkpoint") is not None:
+            checkpoint = self.cache.get("checkpoint")
+
+        # Configure Engine
+        if not hasattr(self, "engine"):
+            self.build_framework_engine()
+
+        return self.engine.export(
+            model=model,
+            checkpoint=checkpoint,
             precision=precision,
             **kwargs,
         )

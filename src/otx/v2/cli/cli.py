@@ -22,7 +22,6 @@ from otx.v2.cli import print_otx_logo
 
 from .extensions import CLI_EXTENSIONS
 from .utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments, tuple_constructor
-from .utils.env import get_environment_table
 from .utils.workspace import Workspace
 
 DefaultLoader.add_constructor("tag:yaml.org,2002:python/tuple", tuple_constructor)
@@ -50,7 +49,7 @@ class OTXCLIv2:
         self.model_class, self.default_config_files = self.get_model_class()
         if self.auto_runner is not None:
             self.framework_engine = self.auto_runner.framework_engine
-            self.data_class = self.auto_runner.dataset
+            self.data_class = self.auto_runner.dataset_class
         else:
             self.framework_engine = Engine
             self.data_class = BaseDataset

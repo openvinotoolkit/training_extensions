@@ -26,7 +26,7 @@ try:
     from mmpretrain.models.necks.gap import GlobalAveragePooling
 
     MMPRETRAIN_AVAILABLE = True
-except:
+except Exception:
     MMPRETRAIN_AVAILABLE = False
 
 
