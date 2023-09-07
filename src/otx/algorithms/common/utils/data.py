@@ -1,18 +1,6 @@
 """Collections of Dataset utils for common OTX algorithms."""
-
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 # pylint: disable=invalid-name
 
@@ -230,3 +218,95 @@ class OTXOpenVinoDataLoader:
         """Get length of dataset."""
 
         return len(self.dataset)
+
+
+def compute_robust_statistics(values: np.array) -> Dict[str, float]:
+    """Computes robust statistics of given samples.
+
+    Args:
+        values (np.array): Array of samples
+
+    Returns:
+        Dict[str, float]: Robust avg, min, max values
+    """
+    stat = {}
+    if values.size == 0:
+        return stat
+
+    avg_value = np.mean(values)
+    std_value = np.std(values)
+    avg_3std_min_value = avg_value - 3 * std_value
+    avg_3std_max_value = avg_value + 3 * std_value
+    min_value = np.min(values)
+    max_value = np.max(values)
+
+    # Refine min/max to reduce outlier effect
+    robust_min_value = max(min_value, avg_3std_min_value)
+    robust_max_value = min(max_value, avg_3std_max_value)
+
+    stat["avg"] = avg_value
+    stat["std"] = std_value
+    stat["min"] = min_value
+    stat["max"] = max_value
+    stat["robust_min"] = robust_min_value
+    stat["robust_max"] = robust_max_value
+    return stat
+
+
+def compute_robust_scale_statistics(values: np.array) -> Dict[str, float]:
+    """Computes robust statistics of scale values.
+
+    Average of 0.5x scale and 2x scale should be 1x
+
+    Args:
+        values (np.array): Array of positive scale values
+
+    Returns:
+        Dict[str, float]: Robust avg, min, max values
+    """
+    # Compute stat in log scale & convert back to original scale
+    stat = compute_robust_statistics(np.log(values))
+    return {k: np.exp(v) for k, v in stat.items()}
+
+
+def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) -> Dict[str, Dict[str, float]]:
+    """Computes robust statistics of image & annotation sizes.
+
+    Args:
+        dataset (DatasetEntity): Input dataset.
+        ann_stat (bool): Whether to compute annotation size statistics. Defaults to False.
+
+    Returns:
+        Dict[str, Dict[str, float]]: Robust avg, min, max values for images, and annotations optionally.
+            e.x) stat = {
+                     "image": {"avg": ...},
+                     "annotation": {
+                        "num_per_image": {"avg": ...},
+                        "size_of_shape": {"avg": ...},
+                     }
+                 }
+    """
+    stat = {}
+    if len(dataset) == 0:
+        return stat
+
+    image_sizes = []
+    for data in dataset:
+        image_sizes.append(np.sqrt(data.width * data.height))
+    stat["image"] = compute_robust_scale_statistics(np.array(image_sizes))
+
+    if ann_stat:
+        stat["annotation"] = {}
+        num_per_images = []
+        size_of_shapes = []
+        for data in dataset:
+            annotations = data.get_annotations()
+            num_per_images.append(len(annotations))
+            image_area = data.width * data.height
+            def shape_size(ann):
+                return np.sqrt(image_area * ann.shape.get_area())
+            size_of_shapes.extend(map(shape_size, annotations))
+        stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
+        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes))
+
+    return stat
