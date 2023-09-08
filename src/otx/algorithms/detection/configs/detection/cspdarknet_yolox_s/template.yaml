@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Object_Detection_YOLOX_L
-name: YOLOX_L
+model_template_id: Object_Detection_YOLOX_S
+name: YOLOX-S
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for YOLOX_L
+summary: Class-Incremental Object Detection for YOLOX_S
 application: ~
 
 # Algo backend.
@@ -57,8 +57,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 194.57
-size: 207
+gigaflops: 33.51
+size: 46
 # # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
 # inference_targets:
 #   - CPU

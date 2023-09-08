@@ -1,0 +1,10 @@
+TestToolsMPADetection:
+  nncf:
+    number_of_fakequantizers: 177
+  ptq:
+    number_of_fakequantizers: 177
+TestToolsTilingDetection:
+  nncf:
+    number_of_fakequantizers: 177
+  ptq:
+    number_of_fakequantizers: 177

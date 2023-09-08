@@ -1,4 +1,4 @@
-"""Tiling Pipeline of YOLOX model for Detection Task."""
+"""Tiling Pipeline of YOLOX Tiny model for Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

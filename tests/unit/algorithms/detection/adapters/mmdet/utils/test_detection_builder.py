@@ -5,7 +5,7 @@
 #
 import pytest
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.detection.test_helpers import (
@@ -16,9 +16,9 @@ from tests.unit.algorithms.detection.test_helpers import (
 
 @e2e_pytest_unit
 @pytest.mark.parametrize("model_cfg", [DEFAULT_DET_MODEL_CONFIG_PATH, DEFAULT_ISEG_MODEL_CONFIG_PATH])
-@pytest.mark.parametrize("cfg_options", [None, MPAConfig()])
+@pytest.mark.parametrize("cfg_options", [None, OTXConfig()])
 def test_build_detector(model_cfg, cfg_options):
     """Test build_detector function."""
-    cfg = MPAConfig.fromfile(model_cfg)
+    cfg = OTXConfig.fromfile(model_cfg)
     model = build_detector(cfg, checkpoint=cfg.load_from, cfg_options=cfg_options)
     assert model is not None

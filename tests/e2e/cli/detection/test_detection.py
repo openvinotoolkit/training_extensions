@@ -64,7 +64,7 @@ args_semisl = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--unlabeled-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "2"],
 }
 
 # Training params for resume, num_iters*2
@@ -88,10 +88,13 @@ if TT_STABILITY_TESTS:
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
     templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
+    for i, template in enumerate(templates):
+        if template.name in ["YOLOX-S", "YOLOX-X"]:
+            templates.pop(i)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
     templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsMPADetection:
+class TestToolsOTXDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -312,7 +315,7 @@ class TestToolsMPADetection:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
 
-class TestToolsMPASemiSLDetection:
+class TestToolsOTXSemiSLDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):

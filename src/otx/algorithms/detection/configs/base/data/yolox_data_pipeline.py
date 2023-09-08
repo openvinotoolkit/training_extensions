@@ -50,7 +50,7 @@ test_pipeline = [
         transforms=[
             dict(type="Resize", keep_ratio=True),
             dict(type="RandomFlip"),
-            dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
+            dict(type="Pad", size=__img_size, pad_val=114.0),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="DefaultFormatBundle"),
             dict(type="Collect", keys=["img"]),

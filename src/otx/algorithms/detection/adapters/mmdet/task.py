@@ -46,7 +46,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-    MPAConfig,
+    OTXConfig,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
@@ -110,7 +110,7 @@ class MMDetectionTask(OTXDetectionTask):
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def _init_task(self, dataset: Optional[DatasetEntity] = None, export: bool = False):  # noqa
         """Initialize task."""
-        self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
@@ -178,7 +178,7 @@ class MMDetectionTask(OTXDetectionTask):
         """Patch mmcv configs for OTX detection settings."""
 
         # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
+        # changes under Configurer and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
@@ -199,13 +199,13 @@ class MMDetectionTask(OTXDetectionTask):
             configurer = DetectionConfigurer("detection", training)
         cfg = configurer.configure(
             recipe_cfg,
-            train_dataset,
             self._model_ckpt,
             self._data_cfg,
             ir_options,
             data_classes,
             model_classes,
             self._hyperparams.learning_parameters.input_size,
+            train_dataset=train_dataset,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
@@ -373,7 +373,7 @@ class MMDetectionTask(OTXDetectionTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
-        feature_model = model.model_t if self._train_type == TrainType.Semisupervised else model
+        feature_model = model.model_s if self._train_type == TrainType.Semisupervised else model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -457,7 +457,6 @@ class MMDetectionTask(OTXDetectionTask):
             "Number of elements should be the same, however, number of outputs are "
             f"{len(eval_predictions)}, {len(feature_vectors)}, and {len(saliency_maps)}"
         )
-
         results = dict(
             outputs=dict(
                 classes=target_classes,
@@ -696,7 +695,7 @@ class MMDetectionTask(OTXDetectionTask):
             deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
-            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+            deploy_cfg = OTXConfig.fromfile(deploy_cfg_path)
 
             patch_input_preprocessing(cfg, deploy_cfg)
             patch_input_shape(cfg, deploy_cfg)

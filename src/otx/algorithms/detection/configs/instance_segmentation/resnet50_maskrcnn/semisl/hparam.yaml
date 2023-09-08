@@ -1,0 +1,15 @@
+# Hyperparameters.
+# since we use repeat dataset for semi-sl
+# -> change iteration related parameters
+hyper_parameters:
+  parameter_overrides:
+    algo_backend:
+      train_type:
+        default_value: Semisupervised
+    learning_parameters:
+      num_iters:
+        default_value: 25 # actual num epochs 25 * repeat dataset times
+      early_stop_start:
+        default_value: 8 # when unlabeled branch enabled
+      early_stop_patience:
+        default_value: 3

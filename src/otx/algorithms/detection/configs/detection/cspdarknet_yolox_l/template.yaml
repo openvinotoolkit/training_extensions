@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_ResNeXt101_ATSS
-name: ResNeXt101-ATSS
+model_template_id: Object_Detection_YOLOX_L
+name: YOLOX-L
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for ResNeXt101-ATSS
+summary: Class-Incremental Object Detection for YOLOX_L
 application: ~
 
 # Algo backend.
@@ -31,7 +31,7 @@ hyper_parameters:
       inference_batch_size:
         default_value: 8
       learning_rate:
-        default_value: 0.004
+        default_value: 0.001
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 3
@@ -43,7 +43,7 @@ hyper_parameters:
       enable_pruning:
         default_value: false
       pruning_supported:
-        default_value: true
+        default_value: false
       maximal_accuracy_degradation:
         default_value: 1.0
     algo_backend:
@@ -57,8 +57,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 434.75
-size: 344
+gigaflops: 194.57
+size: 207
 # # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
 # inference_targets:
 #   - CPU
