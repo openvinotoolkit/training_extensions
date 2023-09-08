@@ -108,16 +108,16 @@ class SegmentationConfigurer(BaseConfigurer):
         if "auxiliary_head" in cfg.model:
             cfg.model.auxiliary_head.num_classes = len(self.model_classes)
 
-    def configure_ckpt(self, cfg: Config, model_ckpt: str) -> None:
+    def configure_ckpt(self, cfg: Config, model_ckpt_path: str) -> None:
         """Patch checkpoint path for pretrained weight.
 
-        Replace cfg.load_from to model_ckpt
+        Replace cfg.load_from to model_ckpt_path
         Replace cfg.load_from to pretrained
         Replace cfg.resume_from to cfg.load_from
         """
-        super().configure_ckpt(cfg, model_ckpt)
+        super().configure_ckpt(cfg, model_ckpt_path)
         # patch checkpoint if needed (e.g. pretrained weights from mmseg)
-        if cfg.get("load_from", None) and not model_ckpt and not cfg.get("resume", False):
+        if cfg.get("load_from", None) and not model_ckpt_path and not cfg.get("resume", False):
             cfg.load_from = self.patch_chkpt(cfg.load_from)
 
     @staticmethod
@@ -148,10 +148,10 @@ class SegmentationConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        input_size = get_configured_input_size(input_size_config, model_ckpt_path)
         if input_size is None:
             return
 

@@ -16,9 +16,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 class SemiSLConfigurerMixin:
     """Patch config to support semi supervised learning."""
 
-    def configure_data_pipeline(self, cfg, input_size, model_ckpt, **kwargs):
+    def configure_data_pipeline(self, cfg, input_size, model_ckpt_path, **kwargs):
         """Patch cfg.data."""
-        super().configure_data_pipeline(cfg, input_size, model_ckpt, **kwargs)
+        super().configure_data_pipeline(cfg, input_size, model_ckpt_path, **kwargs)
         # Set unlabeled data hook
         if self.training:
             if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):

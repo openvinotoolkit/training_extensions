@@ -33,9 +33,9 @@ logger = get_logger()
 class ClassificationConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    def configure_data_pipeline(self, cfg, input_size, model_ckpt, **kwargs):
+    def configure_data_pipeline(self, cfg, input_size, model_ckpt_path, **kwargs):
         """Configuration for data pipeline."""
-        super().configure_data_pipeline(cfg, input_size, model_ckpt)
+        super().configure_data_pipeline(cfg, input_size, model_ckpt_path)
         options_for_patch_datasets = kwargs.get("options_for_patch_datasets", {"type": "OTXClsDataset"})
         patch_datasets(cfg, **options_for_patch_datasets)
 
@@ -163,10 +163,10 @@ class ClassificationConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        input_size = get_configured_input_size(input_size_config, model_ckpt_path)
         if input_size is None:
             return
 
