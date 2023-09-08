@@ -87,7 +87,7 @@ def get_requirements(module: str = "otx") -> Dict[str, List[Requirement]]:
         extra = "api"
         requirement_extra: List[str] = requirement.replace(" ", "").split(";")
         if isinstance(requirement_extra, list) and len(requirement_extra) > 1:
-            extra = requirement_extra[-1].split("==")[-1].strip("'")
+            extra = requirement_extra[-1].split("==")[-1].strip("'\"")
         requirement = requirement_extra[0]
         requirement = Requirement.parse(requirement)
         if extra in extra_requirement:
