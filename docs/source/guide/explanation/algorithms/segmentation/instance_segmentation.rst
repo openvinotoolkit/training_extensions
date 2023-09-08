@@ -114,15 +114,15 @@ In the same way as for the supervised pipeline we utilize EMA smoothing for the 
 
     To obtain a better performance after fine-tuning on small labeled datasets used in Semi-SL tasks we adopt a repeat dataset which brings metric improvement in our experiments. However, the training time also increases noticeably.
     If the training time is important or the Semi-SL dataset has a sufficient number of labeled images, dataset repetition times can be decreased or switched off
-    in the corresponding `data_pipeline.py <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/base/data/semisl/semisl_is_res_data_pipeline.py>` config.
+    in the corresponding `data_pipeline.py <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/base/data/semisl/semisl_is_res_data_pipeline.py>`_ config.
 
 The table below presents the mAP metric achieved by our templates on various datasets.
 We provide these scores for comparison purposes, alongside the supervised baseline trained solely on labeled data.
 
-* `Cityscapes <https://www.cityscapes-dataset.com/>`: 8 classes, 267 labeled images, 2708 unlabeled and 500 images for validation
-* `TrashCan <https://conservancy.umn.edu/handle/11299/214865>`: 22 classes, 606 labeled images, 5459 unlabeled and 1147 images for validation
-* `WGISD <https://github.com/thsant/wgisd>`: 5 classes , 11 labeled images, 599 unlabeled and 27 images for validation
-* `Pascal-tiny <https://github.com/Yunyung/Instance-Segmentation-on-Tiny-PASCAL-VOC-Dataset/tree/main#Download-Official-Dataset>`: 20 classes,  337 labeled images, 709 unlabeled and 303 images for validation
+* `Cityscapes <https://www.cityscapes-dataset.com/>`_ : 8 classes, 267 labeled images, 2708 unlabeled and 500 images for validation
+* `TrashCan <https://conservancy.umn.edu/handle/11299/214865>`_ : 22 classes, 606 labeled images, 5459 unlabeled and 1147 images for validation
+* `WGISD <https://github.com/thsant/wgisd>`_ : 5 classes , 11 labeled images, 599 unlabeled and 27 images for validation
+* `Pascal-tiny <https://github.com/Yunyung/Instance-Segmentation-on-Tiny-PASCAL-VOC-Dataset/tree/main#Download-Official-Dataset>`_ : 20 classes,  337 labeled images, 709 unlabeled and 303 images for validation
 
 +-------------------------------------+------------+------------+-------+-------------+
 | Model name                          | Cityscapes | TrashCan   | WGISD | Pascal-tiny |
