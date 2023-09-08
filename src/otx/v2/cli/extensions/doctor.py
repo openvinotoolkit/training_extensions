@@ -42,7 +42,7 @@ def prepare_parser() -> OTXArgumentParser:
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default=None, type=str)
     parser.add_argument(
-        "--verbose", help="Print more detailed output. (All the dependency & TraceBack)", action="store_true"
+        "-v", "--verbose", help="Print more detailed output. (All the dependency & TraceBack)", action="store_true"
     )
 
     return parser
