@@ -7,6 +7,7 @@ from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import torch
@@ -86,27 +87,39 @@ class Exporter:
         input_metas = None
         return input_tensor, input_metas
 
-    def export(self):
+    def export(self) -> Dict[str, Dict[str, str]]:
         """Export model using mmdeploy apis."""
+        results: Dict[str, Dict[str, str]] = {"outputs": {}}
+        onnx_dir = Path(self.work_dir) / "onnx"
+        onnx_dir.mkdir(exist_ok=True, parents=True)
         with no_mp():
             export(
                 self.model,
                 self.input_tensor,
-                self.work_dir,
+                str(onnx_dir) + "/openvino",
                 "onnxruntime",
                 self.input_metas,
                 self.context_info,
                 self.deploy_cfg.ir_config.input_names,
                 self.deploy_cfg.ir_config.output_names,
             )
+            onnx_file = [f for f in onnx_dir.iterdir() if str(f).endswith(".onnx")][0]
+            results["outputs"]["onnx"] = str(onnx_dir / onnx_file)
 
             if self.onnx_only:
-                return
+                return results
 
+            openvino_dir = Path(self.work_dir) / "openvino"
+            openvino_dir.mkdir(exist_ok=True, parents=True)
             from_onnx(
-                self.work_dir + ".onnx",
-                self.work_dir.replace("openvino", ""),
+                str(onnx_dir / onnx_file),
+                str(openvino_dir),
                 {self.deploy_cfg.ir_config.input_names[0]: self.input_tensor.shape},
                 self.deploy_cfg.ir_config.output_names,
                 ModelOptimizerOptions(self.deploy_cfg.backend_config.mo_options),
             )
+            bin_file = [f for f in openvino_dir.iterdir() if str(f).endswith(".bin")][0]
+            xml_file = [f for f in openvino_dir.iterdir() if str(f).endswith(".xml")][0]
+            results["outputs"]["bin"] = str(openvino_dir / bin_file)
+            results["outputs"]["xml"] = str(openvino_dir / xml_file)
+            return results

@@ -6,6 +6,7 @@
 
 import copy
 import glob
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -41,7 +42,6 @@ class MMXEngine(Engine):
         self.runner: Runner
         self.latest_model = {"model": None, "checkpoint": None}
         self.registry = MMEngineRegistry()
-        # self.base_runner = self.registry.get("RUNNER")
         self._initial_config(config)
         self.dumped_config = Config({})
 
@@ -64,10 +64,10 @@ class MMXEngine(Engine):
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
-        if "work_dir" not in kwargs:
-            if self.work_dir is None:
-                raise ValueError("Engine.work_dir is None.")
-            kwargs["work_dir"] = self.work_dir
+        # if "work_dir" not in kwargs:
+        #     if self.work_dir is None:
+        #         raise ValueError("Engine.work_dir is None.")
+        #     kwargs["work_dir"] = self.work_dir
 
         # Update Model & Dataloaders & Custom hooks
         model = func_args.get("model", None)
@@ -341,9 +341,18 @@ class MMXEngine(Engine):
             "visualizer": visualizer,
         }
         update_check = self._update_config(func_args=train_args, **kwargs)
+
+        target_folder = Path(self.work_dir) / f"{self.timestamp}_train"
+
         if not hasattr(self, "runner") or update_check:
+            self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
-            self.runner = base_runner(experiment_name="otx_train", **self.config)
+            self.runner = base_runner(
+                work_dir=str(target_folder),
+                experiment_name="otx_train",
+                cfg=Config(dict()),  # To prevent unnecessary dumps.
+                **self.config,
+            )
         # TODO: Need to align outputs
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
@@ -352,13 +361,23 @@ class MMXEngine(Engine):
 
         # Get CKPT path
         if self.config.train_cfg.by_epoch:
-            ckpt_path = glob.glob(str(Path(self.work_dir) / "epoch*.pth"))[-1]
+            ckpt_path = glob.glob(str(target_folder / "epoch*.pth"))[-1]
         else:
-            ckpt_path = glob.glob(str(Path(self.work_dir) / "iter*.pth"))[-1]
-        best_ckpt_path = glob.glob(str(Path(self.work_dir) / "best_*.pth"))
+            ckpt_path = glob.glob(str(target_folder / "iter*.pth"))[-1]
+        best_ckpt_path = glob.glob(str(target_folder / "best_*.pth"))
         if len(best_ckpt_path) >= 1:
             ckpt_path = best_ckpt_path[0]
-        results = {"model": output_model, "checkpoint": ckpt_path}
+        last_ckpt = glob.glob(str(target_folder / "last_checkpoint"))[-1]
+        # TODO: Clean up output
+        # Copy & Remove weights file
+        output_model_dir = target_folder / "models"
+        output_model_dir.mkdir(exist_ok=True, parents=True)
+        shutil.copy(Path(ckpt_path), output_model_dir / "weights.pth")
+        shutil.copy(Path(last_ckpt), output_model_dir / "last_checkpoint")
+        Path(ckpt_path).unlink()
+        Path(last_ckpt).unlink()
+
+        results = {"model": output_model, "checkpoint": str(output_model_dir / "weights.pth")}
         self.latest_model = results
         return results
 
@@ -384,9 +403,16 @@ class MMXEngine(Engine):
             "precision": precision,
         }
         update_check = self._update_config(func_args=val_args, **kwargs)
+        target_folder = Path(self.work_dir) / f"{self.timestamp}_validate"
         if not hasattr(self, "runner"):
+            self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
-            self.runner = base_runner(experiment_name="otx_validate", **self.config)
+            self.runner = base_runner(
+                work_dir=str(target_folder),
+                experiment_name="otx_validate",
+                cfg=Config(dict()),  # To prevent unnecessary dumps.
+                **self.config,
+            )
         elif update_check:
             self.runner._val_dataloader = self.config["val_dataloader"]
             self.runner._val_loop = self.config["val_cfg"]
@@ -395,7 +421,6 @@ class MMXEngine(Engine):
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
 
-        # Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
         self.dumped_config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
 
         return self.runner.val()
@@ -422,11 +447,16 @@ class MMXEngine(Engine):
             "precision": precision,
         }
         update_check = self._update_config(func_args=test_args, **kwargs)
-        # self.config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
+        target_folder = Path(self.work_dir) / f"{self.timestamp}_test"
         if not hasattr(self, "runner"):
+            self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
-            # self.runner = base_runner.from_cfg(self.config)
-            self.runner = base_runner(experiment_name="otx_test", **self.config)
+            self.runner = base_runner(
+                work_dir=str(target_folder),
+                experiment_name="otx_test",
+                cfg=Config(dict()),  # To prevent unnecessary dumps.
+                **self.config,
+            )
         elif update_check:
             self.runner._test_dataloader = self.config["test_dataloader"]
             self.runner._test_loop = self.config["test_cfg"]
@@ -435,7 +465,6 @@ class MMXEngine(Engine):
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
 
-        # config_path = Path(self.config.work_dir) / f"{self.runner.timestamp}" / "configs.py"
         self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
 
         return self.runner.test()
@@ -504,8 +533,6 @@ class MMXEngine(Engine):
                 model_cfg = self.dumped_config["model"]
         else:
             raise ValueError("Not fount target model.")
-        # model_cfg.head.in_channels = -1
-        # model_cfg.head.num_classes = 1000
 
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
@@ -563,26 +590,15 @@ class MMXEngine(Engine):
                 pass
             patch_input_shape(deploy_config_dict, input_shape=input_shape)
 
+        export_dir = Path(self.work_dir) / f"{self.timestamp}_export"
         exporter = Exporter(
             config=self.dumped_config,
             checkpoint=str(checkpoint),
             deploy_config=deploy_config_dict,
-            work_dir=f"{self.work_dir}/openvino",
+            work_dir=str(export_dir),
             precision=precision,
             export_type=export_type,
             device=device,
         )
-        exporter.export()
 
-        results: Dict[str, Dict[str, str]] = {"outputs": {}}
-
-        if export_type.upper() == "ONNX":
-            onnx_file = [f for f in Path(self.work_dir).iterdir() if str(f).endswith(".onnx")][0]
-            results["outputs"]["onnx"] = str(Path(self.work_dir) / onnx_file)
-        else:
-            bin_file = [f for f in Path(self.work_dir).iterdir() if str(f).endswith(".bin")][0]
-            xml_file = [f for f in Path(self.work_dir).iterdir() if str(f).endswith(".xml")][0]
-            results["outputs"]["bin"] = str(Path(self.work_dir) / bin_file)
-            results["outputs"]["xml"] = str(Path(self.work_dir) / xml_file)
-
-        return results
+        return exporter.export()

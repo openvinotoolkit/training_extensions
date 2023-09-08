@@ -306,6 +306,10 @@ class OTXCLIv2:
             self.workspace.dump_config(filename=str(model_base_dir / "configs.yaml"))
             print(f"[*] OTX Model Weight: {results['checkpoint']}")
             print(f"[*] The OTX configuration used in the training: {str(model_base_dir / 'configs.yaml')}")
+
+            # Latest dir update
+            self.workspace.update_latest(model_base_dir)
+
         elif subcommand == "test":
             self.instantiate_classes()
             test_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "test")

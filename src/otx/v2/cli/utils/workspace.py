@@ -37,6 +37,7 @@ class Workspace:
         self.work_dir = Path(work_dir) if work_dir is not None else None
         self.task = task
         self.mkdir_or_exist()
+        self.latest_dir = Path(self.work_dir) / "latest"
         self._config: Dict[str, Any] = {}
         self._config_path = self.work_dir / "configs.yaml"
 
@@ -96,3 +97,11 @@ class Workspace:
             config (Dict): Config contents.
         """
         self._config.update(config)
+
+    def update_latest(self, target_dir: Path) -> None:
+        # Latest folder symbolic link to models
+        if self.latest_dir.exists():
+            self.latest_dir.unlink()
+        elif not self.latest_dir.parent.exists():
+            self.latest_dir.parent.mkdir(exist_ok=True, parents=True)
+        self.latest_dir.symlink_to(target_dir.resolve())
