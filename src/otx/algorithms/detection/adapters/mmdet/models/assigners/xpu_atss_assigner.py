@@ -4,7 +4,7 @@ import torch
 
 from mmdet.core.bbox.assigners import ATSSAssigner
 from mmdet.core.bbox.builder import BBOX_ASSIGNERS
-from mmdet.core.bbox.assign_result import AssignResult
+from mmdet.core.bbox import AssignResult
 
 
 @BBOX_ASSIGNERS.register_module()
