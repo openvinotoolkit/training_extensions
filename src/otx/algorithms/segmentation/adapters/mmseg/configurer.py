@@ -5,7 +5,7 @@
 
 import os
 from collections import OrderedDict
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 import torch
 from mmcv.runner import CheckpointLoader
@@ -17,7 +17,6 @@ from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMix
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
     get_configured_input_size,
-    patch_color_conversion,
     remove_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
@@ -32,42 +31,13 @@ logger = get_logger()
 class SegmentationConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    # pylint: disable=too-many-arguments
-    def configure(
-        self,
-        cfg: Config,
-        model_ckpt: str,
-        data_cfg: Config,
-        ir_options: Optional[Config] = None,
-        data_classes: Optional[List[str]] = None,
-        model_classes: Optional[List[str]] = None,
-        input_size: InputSizePreset = InputSizePreset.DEFAULT,
-    ) -> Config:
-        """Create MMCV-consumable config from given inputs."""
-        logger.info(f"configure!: training={self.training}")
-
-        self.configure_base(cfg, data_cfg, data_classes, model_classes)
-        self.configure_device(cfg)
-        self.configure_ckpt(cfg, model_ckpt)
-        self.configure_model(cfg, ir_options)
-        self.configure_data(cfg, data_cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
-        self.configure_task(cfg)
-        self.configure_samples_per_gpu(cfg)
-        self.configure_fp16(cfg)
-        self.configure_compat_cfg(cfg)
-        return cfg
-
-    def configure_compatibility(self, cfg, **kwargs):
-        """Configure for OTX compatibility with mmseg."""
-        patch_color_conversion(cfg)
-
     def configure_task(
         self,
         cfg: Config,
+        **kwargs,
     ) -> None:
         """Patch config to support training algorithm."""
-        super().configure_task(cfg)
+        super().configure_task(cfg, **kwargs)
         if "task_adapt" in cfg:
             self.configure_decode_head(cfg)
 
@@ -138,16 +108,16 @@ class SegmentationConfigurer(BaseConfigurer):
         if "auxiliary_head" in cfg.model:
             cfg.model.auxiliary_head.num_classes = len(self.model_classes)
 
-    def configure_ckpt(self, cfg: Config, model_ckpt: str) -> None:
+    def configure_ckpt(self, cfg: Config, model_ckpt_path: str) -> None:
         """Patch checkpoint path for pretrained weight.
 
-        Replace cfg.load_from to model_ckpt
+        Replace cfg.load_from to model_ckpt_path
         Replace cfg.load_from to pretrained
         Replace cfg.resume_from to cfg.load_from
         """
-        super().configure_ckpt(cfg, model_ckpt)
+        super().configure_ckpt(cfg, model_ckpt_path)
         # patch checkpoint if needed (e.g. pretrained weights from mmseg)
-        if cfg.get("load_from", None) and not model_ckpt and not cfg.get("resume", False):
+        if cfg.get("load_from", None) and not model_ckpt_path and not cfg.get("resume", False):
             cfg.load_from = self.patch_chkpt(cfg.load_from)
 
     @staticmethod
@@ -178,10 +148,10 @@ class SegmentationConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt)
+        input_size = get_configured_input_size(input_size_config, model_ckpt_path)
         if input_size is None:
             return
 

@@ -122,3 +122,32 @@ class CrossSigmoidFocalLoss(nn.Module):
             valid_label_mask=valid_label_mask,
         )
         return loss_cls
+
+
+@LOSSES.register_module()
+class OrdinaryFocalLoss(nn.Module):
+    """Focal loss without balancing."""
+
+    def __init__(self, gamma=1.5, **kwargs):
+        super(OrdinaryFocalLoss, self).__init__()
+        assert gamma >= 0
+        self.gamma = gamma
+
+    def forward(self, input, target, label_weights=None, avg_factor=None, reduction="mean", **kwars):
+        """Forward function for focal loss."""
+        if target.numel() == 0:
+            return 0.0 * input.sum()
+
+        CE = F.cross_entropy(input, target, reduction="none")
+        p = torch.exp(-CE)
+        loss = (1 - p) ** self.gamma * CE
+        if label_weights is not None:
+            assert len(loss) == len(label_weights)
+            loss = loss * label_weights
+        if avg_factor is None:
+            avg_factor = target.shape[0]
+        if reduction == "sum":
+            return loss.sum()
+        if reduction == "mean":
+            return loss.sum() / avg_factor
+        return loss

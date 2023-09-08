@@ -3,7 +3,7 @@ import os
 import pytest
 
 from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.common.adapters.mmdeploy.apis import NaiveExporter
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.exporter import DetectionExporter
@@ -26,7 +26,7 @@ from tests.unit.algorithms.detection.test_helpers import (
 )
 def test_run(recipe_cfg, template_dir, mocker):
     exporter = DetectionExporter()
-    model_cfg = MPAConfig.fromfile(os.path.join(template_dir, "model.py"))
+    model_cfg = OTXConfig.fromfile(os.path.join(template_dir, "model.py"))
     model_cfg.work_dir = "/tmp/"
     args = {"precision": "FP32", "model_builder": build_detector}
     mocker.patch.object(Exporter, "run", return_value=True)
@@ -45,7 +45,7 @@ def test_run(recipe_cfg, template_dir, mocker):
 )
 def test_naive_export(recipe_cfg, template_dir, mocker):
     exporter = DetectionExporter()
-    data_cfg = MPAConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
+    data_cfg = OTXConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
     mock_export_ov = mocker.patch.object(NaiveExporter, "export2backend")
     exporter.naive_export("", build_detector, "FP32", "OPENVINO", data_cfg)
     mock_export_ov.assert_called_once()

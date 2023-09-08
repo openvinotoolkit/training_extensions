@@ -83,8 +83,8 @@ unlabeled_pipeline = [
 ]
 
 data = dict(
-    train=dict(type="MPASegDataset", pipeline=train_pipeline),
-    val=dict(type="MPASegDataset", pipeline=test_pipeline),
-    test=dict(type="MPASegDataset", pipeline=test_pipeline),
-    unlabeled=dict(type="MPASegDataset", pipeline=unlabeled_pipeline),
+    train=dict(type="OTXSegDataset", pipeline=train_pipeline),
+    val=dict(type="OTXSegDataset", pipeline=test_pipeline),
+    test=dict(type="OTXSegDataset", pipeline=test_pipeline),
+    unlabeled=dict(type="OTXSegDataset", pipeline=unlabeled_pipeline),
 )

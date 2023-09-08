@@ -20,7 +20,7 @@ from otx.algorithms.action.configs.base.configuration import ActionConfig
 from otx.algorithms.action.adapters.mmaction import task as target_file
 from otx.algorithms.action.adapters.mmaction.task import MMActionTask
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -178,7 +178,7 @@ class TestMMActionTask:
     @e2e_pytest_unit
     def test_build_model(self, mocker) -> None:
         """Test build_model function."""
-        _mock_recipe_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ACTION_CLS_DIR, "model.py"))
+        _mock_recipe_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ACTION_CLS_DIR, "model.py"))
         mock_load_checkpoint = mocker.patch.object(target_file, "load_checkpoint")
         model = self.cls_task.build_model(_mock_recipe_cfg, True)
         assert isinstance(model, Recognizer3D)

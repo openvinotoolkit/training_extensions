@@ -1,4 +1,4 @@
-"""Data Pipeline of YOLOX model for Semi-Supervised Learning Detection Task."""
+"""Data Pipeline of YOLOX Tiny model for Semi-Supervised Learning Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -18,6 +18,8 @@
 
 # This is from src/otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
+_base_ = ["../../../base/data/semisl/base_semisl_det_data_pipeline.py"]
+
 __img_scale = (992, 736)
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
@@ -93,34 +95,22 @@ train_pipeline = [
     dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
-    *common_pipeline,
-    dict(type="ToTensor", keys=["gt_bboxes", "gt_labels"]),
     dict(
-        type="ToDataContainer",
-        fields=[
-            dict(key="img", stack=True),
-            dict(key="img0", stack=True),
-            dict(key="gt_bboxes"),
-            dict(key="gt_labels"),
+        type="Resize",
+        img_scale=[
+            (992, 736),
+            (896, 736),
+            (1088, 736),
+            (992, 672),
+            (992, 800),
         ],
+        multiscale_mode="value",
+        keep_ratio=False,
     ),
-    dict(
-        type="Collect",
-        keys=["img", "img0", "gt_bboxes", "gt_labels"],
-        meta_keys=[
-            "ori_filename",
-            "flip_direction",
-            "scale_factor",
-            "img_norm_cfg",
-            "gt_ann_ids",
-            "flip",
-            "ignored_labels",
-            "ori_shape",
-            "filename",
-            "img_shape",
-            "pad_shape",
-        ],
-    ),
+    dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type="Normalize", **__img_norm_cfg),
+    dict(type="DefaultFormatBundle"),
+    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
 ]
 
 unlabeled_pipeline = [

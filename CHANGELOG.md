@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
 - Add a new object detector Lite-DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
 - Add Semi-SL Mean Teacher algorithm for Instance Segmentation task(<https://github.com/openvinotoolkit/training_extensions/pull/2444>)
+- Official supports for YOLOX-X, YOLOX-L, YOLOX-S, ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2485>)
 
 ### Enhancements
 
