@@ -9,8 +9,10 @@ from mmdet.datasets.builder import PIPELINES, build_from_cfg
 from mmdet.datasets.pipelines import Resize
 
 import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset as load_image_base
-from otx.algorithms.detection.adapters.mmdet.datasets.dataset import get_annotation_mmdet_format
-from otx.algorithms.detection.adapters.mmrotate.datasets.dataset import get_annotation_mmrotate_format
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
+    get_annotation_mmdet_format,
+    get_annotation_mmrotate_format,
+)
 from otx.api.entities.label import Domain
 
 

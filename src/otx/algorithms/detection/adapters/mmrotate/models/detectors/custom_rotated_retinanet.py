@@ -10,13 +10,12 @@ from mmrotate.models.detectors import RotatedRetinaNet
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
-from otx.algorithms.detection.adapters.mmdet.models.detectors import L2SPDetectorMixin, SAMDetectorMixin
 
 logger = get_logger()
 
 
 @ROTATED_DETECTORS.register_module()
-class CustomRotatedRetinaNet(SAMDetectorMixin, L2SPDetectorMixin, RotatedRetinaNet):
+class CustomRotatedRetinaNet(RotatedRetinaNet):
     """SAM optimizer & L2SP regularizer enabled custom RotatedRetinaNet."""
 
     def __init__(self, *args, task_adapt=None, **kwargs):

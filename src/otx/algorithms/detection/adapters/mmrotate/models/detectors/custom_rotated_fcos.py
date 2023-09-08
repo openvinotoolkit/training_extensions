@@ -10,13 +10,12 @@ from mmrotate.models.detectors import RotatedFCOS
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
-from otx.algorithms.detection.adapters.mmdet.models.detectors import L2SPDetectorMixin, SAMDetectorMixin
 
 logger = get_logger()
 
 
 @ROTATED_DETECTORS.register_module()
-class CustomRotatedFCOS(SAMDetectorMixin, L2SPDetectorMixin, RotatedFCOS):
+class CustomRotatedFCOS(RotatedFCOS):
     """SAM optimizer & L2SP regularizer enabled custom RotatedRetinaNet."""
 
     def __init__(self, *args, task_adapt=None, **kwargs):

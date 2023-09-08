@@ -25,6 +25,8 @@ from mmdet.core import PolygonMasks
 from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
+from mmrotate.core import poly2obb_np
+from shapely.geometry import Polygon as shapely_polygon
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
 from otx.algorithms.detection.adapters.mmdet.evaluation import Evaluator
@@ -60,6 +62,7 @@ def get_annotation_mmdet_format(
     gt_labels = []
     gt_polygons = []
     gt_ann_ids = []
+    gt_bbox_sizes = []
 
     label_idx = {label.id: i for i, label in enumerate(labels)}
 
@@ -82,6 +85,7 @@ def get_annotation_mmdet_format(
         gt_labels.extend(class_indices)
         item_id = getattr(dataset_item, "id_", None)
         gt_ann_ids.append((item_id, annotation.id_))
+        gt_bbox_sizes.append(box.width * width * box.height * height)
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
@@ -89,6 +93,7 @@ def get_annotation_mmdet_format(
             labels=np.array(gt_labels, dtype=int),
             masks=PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
             ann_ids=gt_ann_ids,
+            bbox_sizes=np.array(gt_bbox_sizes, dtype=np.float32),
         )
     else:
         ann_info = dict(
@@ -96,6 +101,72 @@ def get_annotation_mmdet_format(
             labels=np.array([], dtype=int),
             masks=[],
             ann_ids=[],
+            bbox_sizes=np.array([], dtype=np.float32),
+        )
+    return ann_info
+
+
+def get_annotation_mmrotate_format(
+    dataset_item: DatasetItemEntity,
+    labels: List[LabelEntity],
+    domain: Domain,
+    min_size: int = -1,
+    angle_version: str = "oc",
+) -> dict:
+    """Function to convert OTX annotation to mmrotate format.
+
+    This is used both in the OTXDataset class defined in
+    this file as in the custom pipeline element 'LoadAnnotationFromOTXDataset'
+
+    :param dataset_item: DatasetItem for which to get annotations
+    :param labels: List of labels that are used in the task
+    :param min_size: Minimum size of the bounding box
+    :param angle_version: Version of angle to use
+    :return dict: annotation information dict in mmdet format
+    """
+    width, height = dataset_item.width, dataset_item.height
+
+    # load annotations for item
+    gt_bboxes = []
+    gt_labels = []
+    gt_ann_ids = []
+    gt_bbox_sizes = []
+
+    label_idx = {label.id: i for i, label in enumerate(labels)}
+
+    for annotation in dataset_item.get_annotations(labels=labels, include_empty=False, preserve_id=True):
+        if annotation.shape.get_area() > 0:
+            class_indices = [
+                label_idx[label.id] for label in annotation.get_labels(include_empty=False) if label.domain == domain
+            ]
+
+            polygon = ShapeFactory.shape_as_polygon(annotation.shape)
+            points = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
+            points[::2] = np.clip(points[::2], 0, width)
+            points[1::2] = np.clip(points[1::2], 0, height)
+            points = points.astype(np.uint64)
+            obb = poly2obb_np(points, angle_version)
+            if obb is not None:
+                x, y, w, h, a = obb
+                gt_bboxes.append([x, y, w, h, a])
+                gt_labels.extend(class_indices)
+                item_id = getattr(dataset_item, "id_", None)
+                gt_ann_ids.append((item_id, annotation.id_))
+                gt_bbox_sizes.append(shapely_polygon(points.reshape(-1, 2)).area)
+
+    if len(gt_bboxes) > 0:
+        ann_info = dict(
+            bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 5),
+            labels=np.array(gt_labels, dtype=int),
+            ann_ids=gt_ann_ids,
+            bbox_sizes=np.array(gt_bbox_sizes, dtype=np.float32),
+        )
+    else:
+        ann_info = dict(
+            bboxes=np.zeros((0, 5), dtype=np.float32),
+            labels=np.array([], dtype=int),
+            ann_ids=[],
+            bbox_sizes=np.array([], dtype=np.float32),
         )
     return ann_info
 
@@ -426,3 +497,31 @@ class ImageTilingDataset(OTXDetDataset):
         """Delete the temporary directory when the object is deleted."""
         if getattr(self, "tmp_dir", False):
             self.tmp_dir.cleanup()
+
+
+@DATASETS.register_module()
+class OTXRotatedDataset(OTXDetDataset):
+    """Wrapper that allows using a OTX dataset to train mmrotate models."""
+
+    def __init__(self, angle_version: str = "oc", **kwargs):
+        """Initialize OTXDataset.
+
+        :param min_size: Minimum size of the bounding box
+        :param angle_version: Version of angle to use
+        :param kwargs: Additional arguments
+        """
+        self.angle_version = angle_version
+        super(OTXRotatedDataset, self).__init__(**kwargs)
+
+    def get_ann_info(self, idx: int):
+        """This method is used for evaluation of predictions.
+
+        The CustomDataset class implements a method
+        CustomDataset.evaluate, which uses the class method get_ann_info to retrieve annotations.
+
+        :param idx: index of the dataset item for which to get the annotations
+        :return ann_info: dict that contains the coordinates of the bboxes and their corresponding labels
+        """
+        dataset_item = self.otx_dataset[idx]
+        labels = self.labels
+        return get_annotation_mmrotate_format(dataset_item, labels, self.domain, angle_version=self.angle_version)

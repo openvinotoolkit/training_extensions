@@ -24,6 +24,7 @@ from mmdet.datasets.api_wrappers.coco_api import COCO
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
     get_annotation_mmdet_format,
+    get_annotation_mmrotate_format,
 )
 from otx.algorithms.detection.configs.base.configuration import DetectionConfig
 from otx.api.entities.annotation import (
@@ -460,27 +461,29 @@ def adaptive_tile_params(
     """
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
 
-    all_sizes = np.zeros((0), dtype=np.float32)
+    all_edges = np.zeros((0), dtype=np.float32)
     labels = dataset.get_labels(include_empty=False)
     domain = labels[0].domain
     max_object = 0
     for dataset_item in dataset:
-        result = get_annotation_mmdet_format(dataset_item, labels, domain)
-        if len(result["bboxes"]):
-            bboxes = result["bboxes"]
-            sizes = 0.5 * (bboxes[:, 2] - bboxes[:, 0] + bboxes[:, 3] - bboxes[:, 1])
-            all_sizes = np.concatenate((all_sizes, sizes), 0)
-            if len(bboxes) > max_object:
-                max_object = len(bboxes)
+        if domain == Domain.ROTATED_DETECTION:
+            result = get_annotation_mmrotate_format(dataset_item, labels, domain)
+        else:
+            result = get_annotation_mmdet_format(dataset_item, labels, domain)
+        if len(result["bbox_sizes"]):
+            edges = np.sqrt(result["bbox_sizes"])
+            all_edges = np.concatenate((all_edges, edges), 0)
+            if len(edges) > max_object:
+                max_object = len(edges)
 
-    log_sizes = np.log(all_sizes)
-    avg_log_size = np.mean(log_sizes)
-    std_log_size = np.std(log_sizes)
+    log_edges = np.log(all_edges)
+    avg_log_size = np.mean(log_edges)
+    std_log_size = np.std(log_edges)
     avg_size = np.exp(avg_log_size)
     avg_3std_min_size = np.exp(avg_log_size - 3 * std_log_size)
     avg_3std_max_size = np.exp(avg_log_size + 3 * std_log_size)
-    min_size = np.exp(np.min(log_sizes))
-    max_size = np.exp(np.max(log_sizes))
+    min_size = np.exp(np.min(log_edges))
+    max_size = np.exp(np.max(log_edges))
     logger.info(f"----> [stat] log scale avg: {avg_size}")
     logger.info(f"----> [stat] log scale avg - 3*std: {avg_3std_min_size}")
     logger.info(f"----> [stat] log scale avg + 3*std: {avg_3std_max_size}")

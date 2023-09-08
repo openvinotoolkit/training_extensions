@@ -15,7 +15,13 @@
 # and limitations under the License.
 
 from . import pipelines
-from .dataset import ImageTilingDataset, OTXDetDataset
+from .dataset import ImageTilingDataset, OTXDetDataset, OTXRotatedDataset
 from .task_adapt_dataset import TaskAdaptEvalDataset
 
-__all__ = ["OTXDetDataset", "pipelines", "ImageTilingDataset", "TaskAdaptEvalDataset"]
+__all__ = [
+    "OTXDetDataset",
+    "OTXRotatedDataset",
+    "pipelines",
+    "ImageTilingDataset",
+    "TaskAdaptEvalDataset",
+]

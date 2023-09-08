@@ -27,10 +27,14 @@ meta_keys = [
 
 train_pipeline = [
     dict(type="RResize", img_scale=img_scale),
-    dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type="RRandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **img_norm_cfg),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"], meta_keys=meta_keys,),
+    dict(
+        type="Collect",
+        keys=["img", "gt_bboxes", "gt_labels"],
+        meta_keys=meta_keys,
+    ),
 ]
 
 
@@ -74,11 +78,13 @@ train_dataset = dict(
         angle_version=angle_version,
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-            dict(type="LoadAnnotationFromOTXDataset",
-                 domain="rotated_detection",
-                 with_bbox=True,
-                 with_angle=True,
-                 angle_version=angle_version,),
+            dict(
+                type="LoadAnnotationFromOTXDataset",
+                domain="rotated_detection",
+                with_bbox=True,
+                with_angle=True,
+                angle_version=angle_version,
+            ),
         ],
     ),
     pipeline=train_pipeline,
@@ -92,11 +98,13 @@ val_dataset = dict(
         angle_version=angle_version,
         pipeline=[
             dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-            dict(type="LoadAnnotationFromOTXDataset",
-                 domain="rotated_detection",
-                 with_bbox=True,
-                 with_angle=True,
-                 angle_version=angle_version,),
+            dict(
+                type="LoadAnnotationFromOTXDataset",
+                domain="rotated_detection",
+                with_bbox=True,
+                with_angle=True,
+                angle_version=angle_version,
+            ),
         ],
     ),
     pipeline=test_pipeline,

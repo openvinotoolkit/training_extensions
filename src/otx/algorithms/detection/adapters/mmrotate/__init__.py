@@ -1,5 +1,4 @@
 """OTX Adapters - mmrotate."""
 from . import models
-from .datasets.dataset import OTXRotatedDataset
 
-__all__ = ["OTXRotatedDataset", "models"]
+__all__ = ["models"]
