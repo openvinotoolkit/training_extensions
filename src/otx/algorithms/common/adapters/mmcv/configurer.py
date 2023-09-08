@@ -44,7 +44,7 @@ class BaseConfigurer:
     def configure(
         self,
         cfg: Config,
-        model_ckpt: str,
+        model_ckpt_path: str,
         data_cfg: Config,
         ir_options: Optional[Config] = None,
         data_classes: Optional[List[str]] = None,
@@ -59,24 +59,24 @@ class BaseConfigurer:
         if cfg.model_task != self.task:
             raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {self.task} recipe")
 
-        self.configure_ckpt(cfg, model_ckpt)
+        self.configure_ckpt(cfg, model_ckpt_path)
         self.configure_data(cfg, data_cfg)
         self.configure_env(cfg)
-        self.configure_data_pipeline(cfg, input_size, model_ckpt, **kwargs)
+        self.configure_data_pipeline(cfg, input_size, model_ckpt_path, **kwargs)
         self.configure_recipe(cfg, **kwargs)
         self.configure_model(cfg, data_classes, model_classes, ir_options, **kwargs)
         self.configure_compat_cfg(cfg)
         return cfg
 
-    def configure_ckpt(self, cfg, model_ckpt):
+    def configure_ckpt(self, cfg, model_ckpt_path):
         """Patch checkpoint path for pretrained weight.
 
-        Replace cfg.load_from to model_ckpt
+        Replace cfg.load_from to model_ckpt_path
         Replace cfg.load_from to pretrained
         Replace cfg.resume_from to cfg.load_from
         """
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
+        if model_ckpt_path:
+            cfg.load_from = self.get_model_ckpt(model_ckpt_path)
         if cfg.get("resume", False):
             cfg.resume_from = cfg.load_from
             for hook in cfg.custom_hooks:
@@ -186,11 +186,11 @@ class BaseConfigurer:
 
                     cfg.data[f"{subset}_dataloader"] = dataloader_cfg
 
-    def configure_data_pipeline(self, cfg, input_size, model_ckpt, **kwargs):
+    def configure_data_pipeline(self, cfg, input_size, model_ckpt_path, **kwargs):
         """Configuration data pipeline settings."""
 
         patch_color_conversion(cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
+        self.configure_input_size(cfg, input_size, model_ckpt_path)
 
     def configure_recipe(self, cfg, **kwargs):
         """Configuration training recipe settings."""
