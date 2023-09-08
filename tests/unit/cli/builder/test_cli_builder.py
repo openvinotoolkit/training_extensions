@@ -9,7 +9,7 @@ import pytest
 from mmcv.utils import Registry
 from torch import nn
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.cli.builder.builder import (
     Builder,
     get_backbone_out_channels,
@@ -88,7 +88,7 @@ class TestOTXCLIBuilder:
         mock_model_config = mocker.MagicMock()
         mock_model_config.model.backbone = {"out_indices"}
         mock_config_from_file = mocker.patch(
-            "otx.cli.builder.builder.MPAConfig.fromfile", return_value=mock_model_config
+            "otx.cli.builder.builder.OTXConfig.fromfile", return_value=mock_model_config
         )
         mock_get_backbone_registry = mocker.patch(
             "otx.cli.builder.builder.get_backbone_registry", return_value=(None, ["otx"])
@@ -259,12 +259,12 @@ class TestOTXBuilderUtils:
     def test_update_channels_neck(self) -> None:
         """Remove model.neck.in_channels."""
         cfg_dict = {"model": {"neck": {"type": "GlobalAveragePooling", "in_channels": 100}}}
-        model_config = MPAConfig(cfg_dict=cfg_dict)
+        model_config = OTXConfig(cfg_dict=cfg_dict)
         update_channels(model_config, -1)
         assert "in_channels" not in model_config.model.neck
 
         cfg_dict = {"model": {"neck": {"type": "TestNeck", "in_channels": 100}}}
-        model_config = MPAConfig(cfg_dict=cfg_dict)
+        model_config = OTXConfig(cfg_dict=cfg_dict)
         update_channels(model_config, -1)
         assert model_config.model.neck.in_channels == -1
 
@@ -273,7 +273,7 @@ class TestOTXBuilderUtils:
         """Update model.decode_head.in_channels & in_index (segmentation case)."""
         cfg_dict = {"model": {"decode_head": {"in_channels": (0, 1, 2), "in_index": (0, 1, 2)}}}
         out_channels = (10, 20, 30, 40)
-        model_config = MPAConfig(cfg_dict=cfg_dict)
+        model_config = OTXConfig(cfg_dict=cfg_dict)
         update_channels(model_config, out_channels)
         assert model_config.model.decode_head.in_index == list(range(len(out_channels)))
         assert model_config.model.decode_head.in_channels == out_channels
@@ -283,7 +283,7 @@ class TestOTXBuilderUtils:
         """Update model.head.in_channels."""
         out_channels = (10, 20, 30, 40)
         cfg_dict = {"model": {"head": {"in_channels": (0, 1, 2)}}}
-        model_config = MPAConfig(cfg_dict=cfg_dict)
+        model_config = OTXConfig(cfg_dict=cfg_dict)
         update_channels(model_config, out_channels)
         assert model_config.model.head.in_channels == out_channels
 
@@ -292,6 +292,6 @@ class TestOTXBuilderUtils:
         """Raise NotImplementedError with unexpected model key."""
         out_channels = (10, 20, 30, 40)
         cfg_dict = {"model": {"unexpected": {"in_channels": (0, 1, 2)}}}
-        model_config = MPAConfig(cfg_dict=cfg_dict)
+        model_config = OTXConfig(cfg_dict=cfg_dict)
         with pytest.raises(NotImplementedError):
             update_channels(model_config, out_channels)

@@ -27,7 +27,7 @@ logging.addLevelName(_CUSTOM_LOG_LEVEL, "LOG")
 
 
 def _get_logger():
-    logger = logging.getLogger("mpa")
+    logger = logging.getLogger("otx")
     logger.propagate = False
 
     def logger_print(message, *args, **kws):

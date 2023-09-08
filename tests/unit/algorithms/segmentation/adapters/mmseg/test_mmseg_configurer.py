@@ -10,7 +10,7 @@ import pytest
 import tempfile
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.segmentation.adapters.mmseg import configurer
 from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     SegmentationConfigurer,
@@ -28,10 +28,10 @@ class TestSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SegmentationConfigurer("segmentation", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
-        self.data_cfg = MPAConfig(
+        self.data_cfg = OTXConfig(
             {
                 "data": {
                     "train": {"otx_dataset": [], "labels": []},
@@ -238,10 +238,10 @@ class TestIncrSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = IncrSegmentationConfigurer("segmentation", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
-        self.data_cfg = MPAConfig(
+        self.data_cfg = OTXConfig(
             {
                 "data": {
                     "train": {"otx_dataset": [], "labels": []},
@@ -264,8 +264,8 @@ class TestSemiSLSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLSegmentationConfigurer("segmentation", True)
-        self.cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
+        self.cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
         self.cfg.merge_from_dict(data_pipeline_cfg)
 
     @e2e_pytest_unit
@@ -274,7 +274,7 @@ class TestSemiSLSegmentationConfigurer:
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
         mocker.patch.object(SegmentationConfigurer, "configure_input_size", return_value=True)
 
-        data_cfg = MPAConfig(
+        data_cfg = OTXConfig(
             {
                 "data": {
                     "train": {"otx_dataset": [], "labels": []},

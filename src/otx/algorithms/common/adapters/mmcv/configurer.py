@@ -364,7 +364,7 @@ class BaseConfigurer:
 
         classes = []
         meta = get_model_meta(cfg)
-        # for MPA classification legacy compatibility
+        # for OTX classification legacy compatibility
         classes = meta.get("CLASSES", [])
         classes = meta.get("classes", classes)
         if classes is None:

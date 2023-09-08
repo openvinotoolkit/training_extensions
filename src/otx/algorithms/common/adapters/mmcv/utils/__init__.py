@@ -10,7 +10,7 @@ from .automatic_bs import adapt_batch_size
 from .builder import build_dataloader, build_dataset
 from .config_utils import (
     InputSizeManager,
-    MPAConfig,
+    OTXConfig,
     config_from_string,
     get_data_cfg,
     get_dataset_configs,
@@ -51,7 +51,7 @@ __all__ = [
     "get_meta_keys",
     "prepare_work_dir",
     "get_data_cfg",
-    "MPAConfig",
+    "OTXConfig",
     "adapt_batch_size",
     "InputSizeManager",
 ]

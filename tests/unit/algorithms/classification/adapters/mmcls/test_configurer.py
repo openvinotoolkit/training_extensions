@@ -6,7 +6,7 @@ import tempfile
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.classification.adapters.mmcls import configurer
 from otx.algorithms.classification.adapters.mmcls.configurer import (
     ClassificationConfigurer,
@@ -22,10 +22,10 @@ class TestClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = ClassificationConfigurer("classification", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
-        self.data_cfg = MPAConfig(
+        self.data_cfg = OTXConfig(
             {
                 "data": {
                     "train": {"otx_dataset": [], "labels": []},
@@ -35,8 +35,8 @@ class TestClassificationConfigurer:
             }
         )
 
-        self.multilabel_model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_multilabel.py"))
-        self.hierarchical_model_cfg = MPAConfig.fromfile(
+        self.multilabel_model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_multilabel.py"))
+        self.hierarchical_model_cfg = OTXConfig.fromfile(
             os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_hierarchical.py")
         )
 
@@ -235,8 +235,8 @@ class TestIncrClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = IncrClassificationConfigurer("classification", True)
-        self.model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
-        self.data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
+        self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
+        self.data_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "data_pipeline.py"))
 
     def test_configure_task(self, mocker):
         mocker.patch.object(ClassificationConfigurer, "configure_task")
@@ -251,8 +251,8 @@ class TestSemiSLClassificationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.configurer = SemiSLClassificationConfigurer("classification", True)
-        self.cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "semisl", "model.py"))
-        data_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
+        self.cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "semisl", "model.py"))
+        data_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
         self.cfg.merge_from_dict(data_cfg)
 
     @e2e_pytest_unit
@@ -261,7 +261,7 @@ class TestSemiSLClassificationConfigurer:
         mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
         mocker.patch.object(ClassificationConfigurer, "configure_input_size", return_value=True)
 
-        data_cfg = MPAConfig(
+        data_cfg = OTXConfig(
             {
                 "data": {
                     "train": {"otx_dataset": [], "labels": []},

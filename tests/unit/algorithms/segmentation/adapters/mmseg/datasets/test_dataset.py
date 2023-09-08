@@ -5,7 +5,7 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.segmentation.adapters.mmseg.datasets import MPASegDataset
+from otx.algorithms.segmentation.adapters.mmseg.datasets import OTXSegDataset
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -34,7 +34,7 @@ def dataset_item() -> DatasetItemEntity:
     return DatasetItemEntity(media=image, annotation_scene=annotation_scene)
 
 
-class TestMPASegDataset:
+class TestOTXSegDataset:
     @pytest.fixture(autouse=True)
     def setUp(self, mocker) -> None:
         self.otx_dataset: DatasetEntity = DatasetEntity(items=[dataset_item()])
@@ -42,9 +42,9 @@ class TestMPASegDataset:
         self.classes: list[str] = ["class_1", "class_2"]
         labels_entities = [label_entity(name, i) for i, name in enumerate(self.classes)]
 
-        mocker.patch.object(MPASegDataset, "filter_labels", return_value=labels_entities)
+        mocker.patch.object(OTXSegDataset, "filter_labels", return_value=labels_entities)
 
-        self.dataset: MPASegDataset = MPASegDataset(
+        self.dataset: OTXSegDataset = OTXSegDataset(
             otx_dataset=self.otx_dataset,
             pipeline=self.pipeline,
             labels=labels_entities,
@@ -69,9 +69,9 @@ class TestMPASegDataset:
         self.classes: list[str] = [f"class_{i+1}" for i in range(11)]
         labels_entities = [label_entity(name, str(i)) for i, name in enumerate(self.classes)]
 
-        mocker.patch.object(MPASegDataset, "filter_labels", return_value=labels_entities)
+        mocker.patch.object(OTXSegDataset, "filter_labels", return_value=labels_entities)
 
-        self.dataset: MPASegDataset = MPASegDataset(
+        self.dataset: OTXSegDataset = OTXSegDataset(
             otx_dataset=self.otx_dataset,
             pipeline=self.pipeline,
             labels=labels_entities,

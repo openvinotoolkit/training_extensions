@@ -46,7 +46,7 @@ logger = get_logger()
 
 
 # TODO: refactor Config
-class MPAConfig(Config):
+class OTXConfig(Config):
     """A class that extends the base `Config` class, adds additional functionality for loading configuration files."""
 
     @staticmethod
@@ -117,7 +117,7 @@ class MPAConfig(Config):
             cfg_dict_list = []
             cfg_text_list = []
             for f in base_filename:
-                _cfg_dict, _cfg_text = MPAConfig._file2dict(osp.join(cfg_dir, f))
+                _cfg_dict, _cfg_text = OTXConfig._file2dict(osp.join(cfg_dir, f))
                 cfg_dict_list.append(_cfg_dict)
                 cfg_text_list.append(_cfg_text)
 
@@ -160,10 +160,10 @@ class MPAConfig(Config):
         :param import_custom_modules: bool, a flag indicating whether to import custom modules.
         :return: Config object, an instance of `Config` class containing the contents of the configuration file.
         """
-        cfg_dict, cfg_text = MPAConfig._file2dict(filename, use_predefined_variables)
+        cfg_dict, cfg_text = OTXConfig._file2dict(filename, use_predefined_variables)
         if import_custom_modules and cfg_dict.get("custom_imports", None):
             import_modules_from_strings(**cfg_dict["custom_imports"])
-        return MPAConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
+        return OTXConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @property
     def pretty_text(self):
