@@ -96,7 +96,7 @@ Recently, we have made updates to MaskRCNN-ConvNeXt, incorporating the `ConvNeXt
 Semi-supervised Learning
 ************************
 
-We employ the modified `Unbiased Teacher framework <>`_ to tackle the problem of :ref:`Semi-supervised learning <semi_sl_explanation>` in instance segmentation.
+We employ the modified `Unbiased Teacher framework <https://arxiv.org/abs/2102.09480>`_ to tackle the problem of :ref:`Semi-supervised learning <semi_sl_explanation>` in instance segmentation.
 This framework leverages two models during training: a "student" model, which serves as the primary model being trained, and a "teacher" model, which acts as a guiding reference for the student model.
 
 During training, the student model is updated using both ground truth annotations (for labeled data) and pseudo-labels (for unlabeled data).
@@ -112,17 +112,17 @@ As well as for the supervised pipeline we utilize EMA smoothing for the student 
 
 .. note::
 
-    To fine-tune better on small labeled datasets used in Semi-SL tasks we adopted a repeat dataset which brought visible improvements in our experiments. However, the training time also increased noticeably.
+    To fine-tune better on small labeled datasets used in Semi-SL tasks we adopted a repeat dataset which brought metric improvement in our experiments. However, the training time also increased noticeably.
     If the training time is important or the Semi-SL dataset has a sufficient number of labeled images, dataset repetition times can be decreased or switched off
     in the corresponding `data_pipeline.py <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/base/data/semisl/semisl_is_res_data_pipeline.py>` config.
 
 The table below presents the mAP metric achieved by our templates on various datasets.
 We provide these scores for comparison purposes, alongside the supervised baseline trained solely on labeled data.
 
-* `Cityscapes <https://www.cityscapes-dataset.com/>`: 8 classes ,  labeled images,  unlabeled and  images for validation
-* `TrashCan <https://conservancy.umn.edu/handle/11299/214865>`:  classes  ,  labeled images,  unlabeled and  images for validation
-* `WGISD <https://github.com/thsant/wgisd>`:  classes ,  labeled images,  unlabeled and  images for validation
-* `Pascal-tiny <https://github.com/Yunyung/Instance-Segmentation-on-Tiny-PASCAL-VOC-Dataset/tree/main#Download-Official-Dataset>`: 20 classes ,  labeled images,  unlabeled  and  images for validation
+* `Cityscapes <https://www.cityscapes-dataset.com/>`: 8 classes, 267 labeled images, 2708 unlabeled and 500 images for validation
+* `TrashCan <https://conservancy.umn.edu/handle/11299/214865>`: 22 classes, 606 labeled images, 5459 unlabeled and 1147 images for validation
+* `WGISD <https://github.com/thsant/wgisd>`: 5 classes , 11 labeled images, 599 unlabeled and 27 images for validation
+* `Pascal-tiny <https://github.com/Yunyung/Instance-Segmentation-on-Tiny-PASCAL-VOC-Dataset/tree/main#Download-Official-Dataset>`: 20 classes,  337 labeled images, 709 unlabeled and 303 images for validation
 
 +-------------------------------------+------------+------------+-------+-------------+
 | Model name                          | Cityscapes | TrashCan   | WGISD | Pascal-tiny |
