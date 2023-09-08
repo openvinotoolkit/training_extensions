@@ -1,4 +1,4 @@
-TestToolsMPAInstanceSegmentation:
+TestToolsOTXInstanceSegmentation:
   nncf:
     number_of_fakequantizers: 97
   ptq:

@@ -1,4 +1,4 @@
-"""Unit Tests for the MPA Dataset Pipelines - Random Augment."""
+"""Unit Tests for the OTX Dataset Pipelines - Random Augment."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
