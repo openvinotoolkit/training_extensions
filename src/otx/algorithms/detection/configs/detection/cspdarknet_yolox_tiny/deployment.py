@@ -1,4 +1,4 @@
-"""MMDeploy config of YOLOX model for Detection Task."""
+"""MMDeploy config of YOLOX Tiny model for Detection Task."""
 
 _base_ = ["../../base/deployments/base_detection_dynamic.py"]
 
