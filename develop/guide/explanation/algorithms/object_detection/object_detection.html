@@ -525,20 +525,40 @@ Learn more about the formats by following the links above. Here is an example of
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml">Custom_Object_Detection_YOLOX</a></p></td>
-<td><p>YOLOX</p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_tiny/template.yaml">Custom_Object_Detection_YOLOX</a></p></td>
+<td><p>YOLOX-TINY</p></td>
 <td><p>6.5</p></td>
 <td><p>20.4</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml">Custom_Object_Detection_Gen3_SSD</a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template.yaml">Object_Detection_YOLOX_S</a></p></td>
+<td><p>YOLOX_S</p></td>
+<td><p>33.51</p></td>
+<td><p>46.0</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template.yaml">Object_Detection_YOLOX_L</a></p></td>
+<td><p>YOLOX_L</p></td>
+<td><p>194.57</p></td>
+<td><p>207.0</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template.yaml">Object_Detection_YOLOX_X</a></p></td>
+<td><p>YOLOX_X</p></td>
+<td><p>352.42</p></td>
+<td><p>378.0</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml">Custom_Object_Detection_Gen3_SSD</a></p></td>
 <td><p>SSD</p></td>
 <td><p>9.4</p></td>
 <td><p>7.6</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml">Custom_Object_Detection_Gen3_ATSS</a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml">Custom_Object_Detection_Gen3_ATSS</a></p></td>
 <td><p>MobileNetV2-ATSS</p></td>
 <td><p>20.6</p></td>
 <td><p>9.1</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnext101_atss/template.yaml">Object_Detection_ResNeXt101_ATSS</a></p></td>
+<td><p>ResNeXt101-ATSS</p></td>
+<td><p>434.75</p></td>
+<td><p>344.0</p></td>
 </tr>
 </tbody>
 </table>
@@ -546,7 +566,9 @@ Learn more about the formats by following the links above. Here is an example of
 <p><a class="reference external" href="https://arxiv.org/abs/1912.02424">MobileNetV2-ATSS</a> is a good medium-range model that works well and fast in most cases.
 <a class="reference external" href="https://arxiv.org/abs/1512.02325">SSD</a> and <a class="reference external" href="https://arxiv.org/abs/2107.08430">YOLOX</a> are light models, that a perfect for the fastest inference on low-power hardware.
 YOLOX achieved the same accuracy as SSD, and even outperforms its inference on CPU 1.5 times, but requires 3 times more time for training due to <a class="reference external" href="https://arxiv.org/pdf/2004.10934.pdf">Mosaic augmentation</a>, which is even more than for ATSS.
-So if you have resources for a long training, you can pick the YOLOX model.</p>
+So if you have resources for a long training, you can pick the YOLOX model.
+ATSS still shows good performance among <a class="reference external" href="https://arxiv.org/abs/1708.02002">RetinaNet</a> based models. Therfore, We added ATSS with large scale backbone, ResNeXt101-ATSS. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.
+In addition, we added a YOLOX variants to support users’ diverse situations.</p>
 <p>In addition to these models, we supports experimental models for object detection. These experimental models will be changed to official models within a few releases.</p>
 <table class="table">
 <thead>
@@ -557,48 +579,25 @@ So if you have resources for a long training, you can pick the YOLOX model.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml">Custom_Object_Detection_Gen3_Deformable_DETR</a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml">Object_Detection_Deformable_DETR</a></p></td>
 <td><p>Deformable_DETR</p></td>
 <td><p>165</p></td>
 <td><p>157.0</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml">Custom_Object_Detection_Gen3_DINO</a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml">Object_Detection_DINO</a></p></td>
 <td><p>DINO</p></td>
 <td><p>235</p></td>
 <td><p>182.0</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_litedino/template_experimental.yaml">Custom_Object_Detection_Gen3_Lite_DINO</a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_litedino/template_experimental.yaml">Object_Detection_Lite_DINO</a></p></td>
 <td><p>Lite-DINO</p></td>
 <td><p>140</p></td>
 <td><p>190.0</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml">Custom_Object_Detection_Gen3_ResNeXt101_ATSS</a></p></td>
-<td><p>ResNeXt101-ATSS</p></td>
-<td><p>434.75</p></td>
-<td><p>344.0</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template_experimental.yaml">Object_Detection_YOLOX_S</a></p></td>
-<td><p>YOLOX_S</p></td>
-<td><p>33.51</p></td>
-<td><p>46.0</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template_experimental.yaml">Object_Detection_YOLOX_L</a></p></td>
-<td><p>YOLOX_L</p></td>
-<td><p>194.57</p></td>
-<td><p>207.0</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template_experimental.yaml">Object_Detection_YOLOX_X</a></p></td>
-<td><p>YOLOX_X</p></td>
-<td><p>352.42</p></td>
-<td><p>378.0</p></td>
-</tr>
 </tbody>
 </table>
 <p><a class="reference external" href="https://arxiv.org/abs/2010.04159">Deformable_DETR</a> is <a class="reference external" href="https://arxiv.org/abs/2005.12872">DETR</a> based model, and it solves slow convergence problem of DETR. <a class="reference external" href="https://arxiv.org/abs/2203.03605">DINO</a> improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO.
-<a class="reference external" href="https://arxiv.org/abs/2303.07335">Lite-DINO</a> is efficient structure for DINO. It reduces FLOPS of transformer’s encoder which takes the highest computational costs.
-Although transformer based models show notable performance on various object detection benchmark, CNN based model still show good performance with proper latency.
-Therefore, we added a new experimental CNN based method, ResNeXt101-ATSS. ATSS still shows good performance among <a class="reference external" href="https://arxiv.org/abs/1708.02002">RetinaNet</a> based models. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.
-In addition, we added a YOLOX variants to support users’ diverse situations.</p>
+<a class="reference external" href="https://arxiv.org/abs/2303.07335">Lite-DINO</a> is efficient structure for DINO. It reduces FLOPS of transformer’s encoder which takes the highest computational costs.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For using experimental templates, you should specify full path of experimental template. Ex) otx build src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml –task detection</p>
@@ -628,7 +627,7 @@ We trained each model with a single Nvidia GeForce RTX3090.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>YOLOX</p></td>
+<tr class="row-even"><td><p>YOLOX-TINY</p></td>
 <td><p>31.0 (48.2)</p></td>
 <td><p>24.8</p></td>
 <td><p>96.3</p></td>
@@ -684,7 +683,7 @@ We trained each model with a single Nvidia GeForce RTX3090.</p>
 <td><p>93.6</p></td>
 <td><p>99.4</p></td>
 </tr>
-<tr class="row-odd"><td><p>YOLOX_S</p></td>
+<tr class="row-odd"><td><p>YOLOX-S</p></td>
 <td><p>40.3 (59.1)</p></td>
 <td><p>37.1</p></td>
 <td><p>93.6</p></td>
@@ -692,7 +691,7 @@ We trained each model with a single Nvidia GeForce RTX3090.</p>
 <td><p>92.7</p></td>
 <td><p>98.8</p></td>
 </tr>
-<tr class="row-even"><td><p>YOLOX_L</p></td>
+<tr class="row-even"><td><p>YOLOX-L</p></td>
 <td><p>49.4 (67.1)</p></td>
 <td><p>44.5</p></td>
 <td><p>94.6</p></td>
@@ -700,7 +699,7 @@ We trained each model with a single Nvidia GeForce RTX3090.</p>
 <td><p>91.8</p></td>
 <td><p>99.0</p></td>
 </tr>
-<tr class="row-odd"><td><p>YOLOX_X</p></td>
+<tr class="row-odd"><td><p>YOLOX-X</p></td>
 <td><p>50.9 (68.4)</p></td>
 <td><p>44.2</p></td>
 <td><p>96.3</p></td>
