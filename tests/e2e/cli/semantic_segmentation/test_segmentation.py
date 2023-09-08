@@ -307,6 +307,7 @@ class TestToolsOTXSemiSLSegmentation:
 
 args_selfsl = {
     "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
+    "--train-type": "Selfsupervised",
     "--input": "tests/assets/segmentation/custom/images/training",
     "train_params": ["params", "--learning_parameters.num_iters", "5", "--learning_parameters.batch_size", "4"],
 }
