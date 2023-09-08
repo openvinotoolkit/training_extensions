@@ -4,7 +4,7 @@
 #
 
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import torch
@@ -18,8 +18,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    patch_color_conversion,
     recursively_update_cfg,
 )
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 
@@ -39,30 +41,86 @@ class BaseConfigurer:
         self.training = training
         self.ema_hooks = ["EMAHook", "CustomModelEMAHook"]  # EMA hooks supporting resume
 
-    def configure_base(self, cfg, data_cfg, data_classes, model_classes, **kwargs):
-        """Basic configuration work for recipe.
+    def configure(
+        self,
+        cfg: Config,
+        model_ckpt_path: str,
+        data_cfg: Config,
+        ir_options: Optional[Config] = None,
+        data_classes: Optional[List[str]] = None,
+        model_classes: Optional[List[str]] = None,
+        input_size: InputSizePreset = InputSizePreset.DEFAULT,
+        **kwargs: Dict[Any, Any],
+    ) -> Config:
+        """Create MMCV-consumable config from given inputs."""
+        logger.info(f"configure!: training={self.training}")
 
-        Patchings in this function are handled task level previously
-        This function might need to be re-orgianized
+        cfg.model_task = cfg.model.pop("task", self.task)
+        if cfg.model_task != self.task:
+            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {self.task} recipe")
+
+        self.configure_ckpt(cfg, model_ckpt_path)
+        self.configure_data(cfg, data_cfg)
+        self.configure_env(cfg)
+        self.configure_data_pipeline(cfg, input_size, model_ckpt_path, **kwargs)
+        self.configure_recipe(cfg, **kwargs)
+        self.configure_model(cfg, data_classes, model_classes, ir_options, **kwargs)
+        self.configure_compat_cfg(cfg)
+        return cfg
+
+    def configure_ckpt(self, cfg, model_ckpt_path):
+        """Patch checkpoint path for pretrained weight.
+
+        Replace cfg.load_from to model_ckpt_path
+        Replace cfg.load_from to pretrained
+        Replace cfg.resume_from to cfg.load_from
+        """
+        if model_ckpt_path:
+            cfg.load_from = self.get_model_ckpt(model_ckpt_path)
+        if cfg.get("resume", False):
+            cfg.resume_from = cfg.load_from
+            for hook in cfg.custom_hooks:
+                if hook.type in self.ema_hooks:
+                    hook.resume_from = cfg.resume_from
+        if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
+            cfg.model.backbone.pretrained = None
+
+    def configure_data(self, cfg, data_cfg):  # noqa: C901
+        """Patch cfg.data.
+
+        Merge cfg and data_cfg
         """
 
-        self.configure_compatibility(cfg, **kwargs)
-        patch_adaptive_interval_training(cfg)
-        patch_early_stopping(cfg)
+        logger.info("configure_data()")
+        if data_cfg:
+            for subset in data_cfg.data:
+                if subset in cfg.data:
+                    src_data_cfg = self.get_data_cfg(cfg, subset)
+                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
+                    for key in new_data_cfg:
+                        src_data_cfg[key] = new_data_cfg[key]
+                else:
+                    raise ValueError(f"{subset} of data_cfg is not in cfg")
+
+    @staticmethod
+    def get_model_ckpt(ckpt_path, new_path=None):
+        """Get pytorch model weights."""
+        ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
+        if "model" in ckpt:
+            ckpt = ckpt["model"]
+            if not new_path:
+                new_path = ckpt_path[:-3] + "converted.pth"
+            new_path = append_dist_rank_suffix(new_path)
+            torch.save(ckpt, new_path)
+            return new_path
+        return ckpt_path
+
+    def configure_env(self, cfg):
+        """Configuration for environment settings."""
+
         patch_persistent_workers(cfg)
-
-        # update model config -> model label schema
-        self.model_classes = model_classes
-        self.data_classes = data_classes
-        if data_classes is not None:
-            train_data_cfg = self.get_data_cfg(data_cfg, "train")
-            train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
-
-    def configure_compatibilty(self, cfg, **kwargs):
-        """Patch for compatibilty with mmX config."""
-        raise NotImplementedError
+        self.configure_device(cfg)
+        self.configure_samples_per_gpu(cfg)
 
     def configure_device(self, cfg):
         """Setting device for training and inference."""
@@ -93,37 +151,98 @@ class BaseConfigurer:
             )
             cfg.optimizer.lr = new_lr
 
-    def configure_ckpt(self, cfg, model_ckpt):
-        """Patch checkpoint path for pretrained weight.
+    def configure_samples_per_gpu(
+        self,
+        cfg: Config,
+        subsets: List[str] = ["train", "val", "test", "unlabeled"],
+    ):
+        """Settings samples_per_gpu for each dataloader.
 
-        Replace cfg.load_from to model_ckpt
-        Replace cfg.load_from to pretrained
-        Replace cfg.resume_from to cfg.load_from
+        samples_per_gpu can be changed if it is larger than length of datset
         """
-        if model_ckpt:
-            cfg.load_from = self.get_model_ckpt(model_ckpt)
-        if cfg.get("resume", False):
-            cfg.resume_from = cfg.load_from
-            for hook in cfg.custom_hooks:
-                if hook.type in self.ema_hooks:
-                    hook.resume_from = cfg.resume_from
-        if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
-            cfg.model.backbone.pretrained = None
+
+        for subset in subsets:
+            if cfg.data.get(subset, None):
+                dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
+                samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
+
+                data_cfg = self.get_data_cfg(cfg, subset)
+                if data_cfg.get("otx_dataset") is not None:
+                    dataset_len = len(data_cfg.otx_dataset)
+
+                    if getattr(cfg, "distributed", False):
+                        dataset_len = dataset_len // dist.get_world_size()
+
+                    # set batch size as a total dataset
+                    # if it is smaller than total dataset
+                    if dataset_len < samples_per_gpu:
+                        dataloader_cfg.samples_per_gpu = dataset_len
+                        logger.info(f"{subset}'s samples_per_gpu: {samples_per_gpu} --> {dataset_len}")
+
+                    # drop the last batch if the last batch size is 1
+                    # batch size of 1 is a runtime error for training batch normalization layer
+                    if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
+                        dataloader_cfg["drop_last"] = True
+
+                    cfg.data[f"{subset}_dataloader"] = dataloader_cfg
+
+    def configure_data_pipeline(self, cfg, input_size, model_ckpt_path, **kwargs):
+        """Configuration data pipeline settings."""
+
+        patch_color_conversion(cfg)
+        self.configure_input_size(cfg, input_size, model_ckpt_path)
+
+    def configure_recipe(self, cfg, **kwargs):
+        """Configuration training recipe settings."""
+
+        patch_adaptive_interval_training(cfg)
+        patch_early_stopping(cfg)
+        self.configure_fp16(cfg)
 
     @staticmethod
-    def get_model_ckpt(ckpt_path, new_path=None):
-        """Get pytorch model weights."""
-        ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
-        if "model" in ckpt:
-            ckpt = ckpt["model"]
-            if not new_path:
-                new_path = ckpt_path[:-3] + "converted.pth"
-            new_path = append_dist_rank_suffix(new_path)
-            torch.save(ckpt, new_path)
-            return new_path
-        return ckpt_path
+    def configure_fp16(cfg: Config):
+        """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
 
-    def configure_model(self, cfg, ir_options):
+        fp16_config = cfg.pop("fp16", None)
+
+        if fp16_config is not None:
+            if torch.cuda.is_available():
+                optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
+                opts: Dict[str, Any] = dict(
+                    distributed=getattr(cfg, "distributed", False),
+                    **fp16_config,
+                )
+                if optim_type == "SAMOptimizerHook":
+                    opts["type"] = "Fp16SAMOptimizerHook"
+                elif optim_type == "OptimizerHook":
+                    opts["type"] = "Fp16OptimizerHook"
+                else:
+                    # does not support optimizerhook type
+                    # let mm library handle it
+                    cfg.fp16 = fp16_config
+                    opts = dict()
+                cfg.optimizer_config.update(opts)
+            else:
+                logger.info("Revert FP16 to FP32 on CPU device")
+                if isinstance(cfg, Config):
+                    del cfg._cfg_dict["fp16"]  # pylint: disable=protected-access
+                elif isinstance(cfg, ConfigDict):
+                    del cfg["fp16"]
+
+    def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
+        """Configuration model config settings."""
+
+        self.model_classes = model_classes
+        self.data_classes = data_classes
+        if data_classes is not None:
+            train_data_cfg = self.get_data_cfg(cfg, "train")
+            train_data_cfg["data_classes"] = data_classes
+            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
+            train_data_cfg["new_classes"] = new_classes
+        self.configure_backbone(cfg, ir_options)
+        self.configure_task(cfg, **kwargs)
+
+    def configure_backbone(self, cfg, ir_options):
         """Patch config's model.
 
         Change model type to super type
@@ -132,10 +251,6 @@ class BaseConfigurer:
 
         if ir_options is None:
             ir_options = {"ir_model_path": None, "ir_weight_path": None, "ir_weight_init": False}
-
-        cfg.model_task = cfg.model.pop("task", self.task)
-        if cfg.model_task != self.task:
-            raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {self.task} recipe")
 
         super_type = cfg.model.pop("super_type", None)
         if super_type:
@@ -159,24 +274,7 @@ class BaseConfigurer:
                 {"model_path": ir_model_path, "weight_path": ir_weight_path, "init_weight": ir_weight_init},
             )
 
-    def configure_data(self, cfg, data_cfg):  # noqa: C901
-        """Patch cfg.data.
-
-        Merge cfg and data_cfg
-        """
-
-        logger.info("configure_data()")
-        if data_cfg:
-            for subset in data_cfg.data:
-                if subset in cfg.data:
-                    src_data_cfg = self.get_data_cfg(cfg, subset)
-                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
-                    for key in new_data_cfg:
-                        src_data_cfg[key] = new_data_cfg[key]
-                else:
-                    raise ValueError(f"{subset} of data_cfg is not in cfg")
-
-    def configure_task(self, cfg):
+    def configure_task(self, cfg, **kwargs):
         """Patch config to support training algorithm."""
         if "task_adapt" in cfg:
             logger.info(f"task config!!!!: training={self.training}")
@@ -214,71 +312,6 @@ class BaseConfigurer:
 
     def _configure_head(self, cfg):
         raise NotImplementedError
-
-    def configure_samples_per_gpu(
-        self,
-        cfg: Config,
-        subsets: List[str] = ["train", "val", "test", "unlabeled"],
-    ):
-        """Settings samples_per_gpu for each dataloader.
-
-        samples_per_gpu can be changed if it is larger than length of datset
-        """
-
-        for subset in subsets:
-            if cfg.data.get(subset, None):
-                dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
-                samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
-
-                data_cfg = self.get_data_cfg(cfg, subset)
-                if data_cfg.get("otx_dataset") is not None:
-                    dataset_len = len(data_cfg.otx_dataset)
-
-                    if getattr(cfg, "distributed", False):
-                        dataset_len = dataset_len // dist.get_world_size()
-
-                    # set batch size as a total dataset
-                    # if it is smaller than total dataset
-                    if dataset_len < samples_per_gpu:
-                        dataloader_cfg.samples_per_gpu = dataset_len
-                        logger.info(f"{subset}'s samples_per_gpu: {samples_per_gpu} --> {dataset_len}")
-
-                    # drop the last batch if the last batch size is 1
-                    # batch size of 1 is a runtime error for training batch normalization layer
-                    if subset in ("train", "unlabeled") and dataset_len % samples_per_gpu == 1:
-                        dataloader_cfg["drop_last"] = True
-
-                    cfg.data[f"{subset}_dataloader"] = dataloader_cfg
-
-    @staticmethod
-    def configure_fp16(cfg: Config):
-        """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
-
-        fp16_config = cfg.pop("fp16", None)
-
-        if fp16_config is not None:
-            if torch.cuda.is_available():
-                optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
-                opts: Dict[str, Any] = dict(
-                    distributed=getattr(cfg, "distributed", False),
-                    **fp16_config,
-                )
-                if optim_type == "SAMOptimizerHook":
-                    opts["type"] = "Fp16SAMOptimizerHook"
-                elif optim_type == "OptimizerHook":
-                    opts["type"] = "Fp16OptimizerHook"
-                else:
-                    # does not support optimizerhook type
-                    # let mm library handle it
-                    cfg.fp16 = fp16_config
-                    opts = dict()
-                cfg.optimizer_config.update(opts)
-            else:
-                logger.info("Revert FP16 to FP32 on CPU device")
-                if isinstance(cfg, Config):
-                    del cfg._cfg_dict["fp16"]  # pylint: disable=protected-access
-                elif isinstance(cfg, ConfigDict):
-                    del cfg["fp16"]
 
     @staticmethod
     def configure_compat_cfg(cfg: Config):

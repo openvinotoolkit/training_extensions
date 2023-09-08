@@ -199,13 +199,13 @@ class MMDetectionTask(OTXDetectionTask):
             configurer = DetectionConfigurer("detection", training)
         cfg = configurer.configure(
             recipe_cfg,
-            train_dataset,
             self._model_ckpt,
             self._data_cfg,
             ir_options,
             data_classes,
             model_classes,
             self._hyperparams.learning_parameters.input_size,
+            train_dataset=train_dataset,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
