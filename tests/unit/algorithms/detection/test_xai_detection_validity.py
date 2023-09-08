@@ -9,7 +9,7 @@ import pytest
 import torch
 from mmdet.models import build_detector
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.hooks import DetClassProbabilityMapHook
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import MaskRCNNRecordingForwardHook
 from otx.cli.registry import Registry
@@ -47,7 +47,7 @@ class TestExplainMethods:
 
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
         cfg_path = os.path.join(base_dir, "model.py")
-        cfg = MPAConfig.fromfile(cfg_path)
+        cfg = OTXConfig.fromfile(cfg_path)
 
         model = build_detector(cfg.model)
         model = model.eval()

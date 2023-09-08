@@ -11,7 +11,7 @@ import pytest
 import torch
 from openvino.model_api.models import ImageModel, Model
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from openvino.model_api.models import MaskRCNNModel
@@ -137,7 +137,7 @@ class TestTilingTileClassifier:
         Args:
             tmp_dir_path (str): Path to temporary directory
         """
-        maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        maskrcnn_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
         model_ckpt = os.path.join(tmp_dir_path, "maskrcnn_without_tile_classifier.pth")
         torch.save({"state_dict": detector.state_dict()}, model_ckpt)
@@ -173,7 +173,7 @@ class TestTilingTileClassifier:
                 == "Tile classifier is enabled but not found in the trained model. Please retrain your model."
             )
 
-        maskrcnn_classifier_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        maskrcnn_classifier_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         maskrcnn_classifier_cfg.model.type = "CustomMaskRCNNTileOptimized"
         tile_classifier_detector = build_detector(maskrcnn_classifier_cfg)
         tile_classifier_ckpt = os.path.join(tmp_dir_path, "maskrcnn_with_tile_classifier.pth")
@@ -203,8 +203,8 @@ class TestTilingTileClassifier:
     @e2e_pytest_unit
     def test_patch_tiling_func(self):
         """Test that patch_tiling function works correctly"""
-        cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "tile_pipeline.py"))
+        cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "tile_pipeline.py"))
         cfg.merge_from_dict(data_pipeline_cfg)
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)

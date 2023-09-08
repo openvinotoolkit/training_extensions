@@ -15,7 +15,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
     ViTReciproCAMHook,
 )
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.cli.registry import Registry
 from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import _extract_vit_feat
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -38,7 +38,7 @@ class TestExplainMethods:
         torch.manual_seed(0)
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
         cfg_path = os.path.join(base_dir, "model.py")
-        cfg = MPAConfig.fromfile(cfg_path)
+        cfg = OTXConfig.fromfile(cfg_path)
 
         cfg.model.pop("task")
         ClassificationConfigurer.configure_in_channel(cfg)
@@ -75,7 +75,7 @@ class TestViTExplain:
         torch.manual_seed(0)
         base_dir = os.path.abspath(self.DEIT_TEMPLATE_DIR)
         cfg_path = os.path.join(base_dir, "model.py")
-        cfg = MPAConfig.fromfile(cfg_path)
+        cfg = OTXConfig.fromfile(cfg_path)
 
         cfg.model.pop("task")
         ClassificationConfigurer.configure_in_channel(cfg)

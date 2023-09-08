@@ -97,7 +97,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    train=dict(type="MPASegDataset", pipeline=train_pipeline),
-    val=dict(type="MPASegDataset", pipeline=val_pipeline),
-    test=dict(type="MPASegDataset", pipeline=test_pipeline),
+    train=dict(type="OTXSegDataset", pipeline=train_pipeline),
+    val=dict(type="OTXSegDataset", pipeline=val_pipeline),
+    test=dict(type="OTXSegDataset", pipeline=test_pipeline),
 )

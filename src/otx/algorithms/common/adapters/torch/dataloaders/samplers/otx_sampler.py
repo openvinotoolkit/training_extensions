@@ -4,7 +4,10 @@
 #
 
 import math
+from typing import Optional
 
+import numpy as np
+import torch
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
@@ -51,6 +54,7 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         shuffle: bool = True,
         coef: float = -0.7,
         min_repeat: float = 1.0,
+        seed: Optional[int] = None,
     ):
 
         self.dataset, _ = unwrap_dataset(dataset)
@@ -62,6 +66,12 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         self.num_samples = math.ceil(len(self.dataset) * self.repeat / self.num_replicas)
         self.total_size = self.num_samples * self.num_replicas
+
+        if seed is None:
+            seed = np.random.randint(2**31)
+
+        self.seed = seed
+        self.epoch = 0
 
     def _get_proper_repeats(self, use_adaptive_repeats: bool, coef: float, min_repeat: float):
         """Calculate the proper repeats with considering the number of iterations."""
@@ -78,7 +88,12 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
     def __iter__(self):
         """Iter."""
-        indices = list(range(len(self.dataset)))
+        if self.shuffle:
+            g = torch.Generator()
+            g.manual_seed(self.seed + self.epoch)
+            indices = torch.randperm(len(self.dataset), generator=g).tolist()
+        else:
+            indices = list(range(len(self.dataset)))
 
         # produce repeats e.g. [0, 0, 0, 1, 1, 1, 2, 2, 2....]
         indices = [x for x in indices for _ in range(self.repeat)]
@@ -97,3 +112,15 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     def __len__(self):
         """Return length of selected samples."""
         return self.total_size
+
+    def set_epoch(self, epoch: int) -> None:
+        """Sets the epoch for this sampler.
+
+        When :attr:`shuffle=True`, this ensures all replicas use a different
+        random ordering for each epoch. Otherwise, the next iteration of this
+        sampler will yield the same ordering.
+
+        Args:
+            epoch (int): Epoch number.
+        """
+        self.epoch = epoch
