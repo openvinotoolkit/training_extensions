@@ -380,6 +380,16 @@ class TestInputSizeManager:
         # check input size is estimated as expected
         assert input_size_manager.get_input_size_from_cfg("train") == input_size
 
+    def test_select_closest_size(self):
+        manager = InputSizeManager({})
+        input_size = (100, 100)
+        preset_sizes = []
+        assert manager.select_closest_size(input_size, preset_sizes) == input_size
+        preset_sizes = [(99, 99), (101, 101)]
+        assert manager.select_closest_size(input_size, preset_sizes) == (99, 99)
+        preset_sizes = InputSizePreset.input_sizes()
+        assert manager.select_closest_size(input_size, preset_sizes) == (64, 64)
+
 
 def get_mock_model_ckpt(case):
     if case == "none":
@@ -393,7 +403,7 @@ def get_mock_model_ckpt(case):
 
 
 @e2e_pytest_unit
-@pytest.mark.parametrize("input_size_config", [InputSizePreset.DEFAULT, InputSizePreset._1024x1024])
+@pytest.mark.parametrize("input_size_config", [InputSizePreset.DEFAULT, InputSizePreset.AUTO, InputSizePreset._1024x1024])
 @pytest.mark.parametrize("model_ckpt_case", ["none", "no_input_size", "input_size_default", "input_size_exist"])
 def test_get_configured_input_size(mocker, input_size_config, model_ckpt_case):
     # prepare
@@ -403,17 +413,19 @@ def test_get_configured_input_size(mocker, input_size_config, model_ckpt_case):
 
     if input_size_config == InputSizePreset.DEFAULT:
         if model_ckpt_case == "none" or model_ckpt_case == "no_input_size" or model_ckpt_case == "input_size_default":
-            expeted_value = None
+            expected_value = None
         elif model_ckpt_case == "input_size_exist":
             input_size = get_mock_model_ckpt(model_ckpt_case)["config"]["learning_parameters"]["input_size"]["value"]
             pattern = input_size_parser.search(input_size)
-            expeted_value = (int(pattern.group(1)), int(pattern.group(2)))
+            expected_value = (int(pattern.group(1)), int(pattern.group(2)))
+    elif input_size_config == InputSizePreset.AUTO:
+        expected_value = (0, 0)
     else:
         pattern = input_size_parser.search(input_size_config.value)
-        expeted_value = (int(pattern.group(1)), int(pattern.group(2)))
+        expected_value = (int(pattern.group(1)), int(pattern.group(2)))
 
     # check expected value is returned
     assert (
         get_configured_input_size(input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock())
-        == expeted_value
+        == expected_value
     )

@@ -5,6 +5,7 @@
 import copy
 import glob
 import multiprocessing
+import numpy as np
 import os
 import os.path as osp
 import platform
@@ -712,6 +713,24 @@ class InputSizeManager:
                 pipelines = self._get_pipelines(subset_type)
                 for pipeline in pipelines:
                     self._set_pipeline_size_value(pipeline, resize_ratio)
+
+    @staticmethod
+    def select_closest_size(input_size: Tuple[int, int], preset_sizes: List[Tuple[int, int]]):
+        """Select the most closest size from preset sizes in terms of area.
+
+        Args:
+            input_size (Tuple[int, int]): Query input size
+            preset_sizes (List[Tuple[int, int]]): List of preset input sizes
+
+        Returns:
+            Tuple[int, int]: Best matching size out of preset. Returns input_size if preset is empty.
+        """
+        if len(preset_sizes) == 0:
+            return input_size
+        input_area = input_size[0]*input_size[1]
+        preset_areas = np.array(list(map(lambda x: x[0]*x[1], preset_sizes)))
+        abs_diff = np.abs(preset_areas - input_area)
+        return preset_sizes[np.argmin(abs_diff)]
 
     @property
     def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
