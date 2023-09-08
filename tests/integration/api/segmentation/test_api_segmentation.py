@@ -59,7 +59,7 @@ def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Per
     return result_set.performance
 
 
-class TestMPASegAPI:
+class TestOTXSegAPI:
     """
     Collection of tests for OTX API and OTX Model Templates
     """

@@ -195,7 +195,7 @@ def expected_metrics_all_tests_fx(request):
         logger.warning(
             "The command line parameter '--expected-metrics-file' is not set"
             "whereas it is required to compare with target metrics"
-            " -- ALL THE COMPARISON WITH TARGET METRICS IN TESTS WILL BE FAILED"
+            " -- ALL THE COOTXRISON WITH TARGET METRICS IN TESTS WILL BE FAILED"
         )
         return None
     with open(path, encoding="utf-8") as f:
