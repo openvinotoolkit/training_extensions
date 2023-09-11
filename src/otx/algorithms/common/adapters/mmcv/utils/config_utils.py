@@ -421,15 +421,6 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-def patch_data_pipeline(config: Config, data_pipeline: str = ""):
-    """Replace data pipeline to data_pipeline.py if it exist."""
-    if os.path.isfile(data_pipeline):
-        data_pipeline_cfg = Config.fromfile(data_pipeline)
-        config.merge_from_dict(data_pipeline_cfg)
-    else:
-        raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
-
-
 def patch_color_conversion(config: Config):
     """Patch color conversion."""
     assert "data" in config
@@ -530,101 +521,6 @@ def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
         logger.warning("There is no GPUs. Use existing num_worker value.")
         return None
     return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
-
-
-def patch_from_hyperparams(config: Config, hyperparams):
-    """Patch config parameters from hyperparams."""
-    params = hyperparams.learning_parameters
-    warmup_iters = int(params.learning_rate_warmup_iters)
-
-    model_label_type = config.filename.split("/")[-1]
-    if "multilabel" in model_label_type:
-        lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-    else:
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
-
-    if params.enable_early_stopping and config.get("evaluation", None):
-        early_stop = ConfigDict(
-            start=int(params.early_stop_start),
-            patience=int(params.early_stop_patience),
-            iteration_patience=int(params.early_stop_iteration_patience),
-        )
-    else:
-        early_stop = False
-
-    runner = ConfigDict(max_epochs=int(params.num_iters))
-    if config.get("runner", None) and config.runner.get("type").startswith("IterBasedRunner"):
-        runner = ConfigDict(max_iters=int(params.num_iters))
-
-    hparams = ConfigDict(
-        optimizer=ConfigDict(lr=params.learning_rate),
-        lr_config=lr_config,
-        early_stop=early_stop,
-        data=ConfigDict(
-            samples_per_gpu=int(params.batch_size),
-            workers_per_gpu=int(params.num_workers),
-        ),
-        runner=runner,
-    )
-
-    # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
-    # as `samples_per_gpu might` not be a valid argument for certain algorithms.
-    if hasattr(config, "task"):
-        if config.task == "instance-segmentation" or config.task == "detection":
-            hparams.update(
-                ConfigDict(
-                    data=ConfigDict(
-                        val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
-                        test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
-                    ),
-                )
-            )
-    is_semi_sl = hyperparams.algo_backend.train_type.name == "Semisupervised"
-
-    if hyperparams.learning_parameters.auto_num_workers:
-        adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
-        if adapted_num_worker is not None:
-            hparams.data.workers_per_gpu = adapted_num_worker
-
-    if is_semi_sl:
-        unlabeled_config = ConfigDict(
-            data=ConfigDict(
-                unlabeled_dataloader=ConfigDict(
-                    samples_per_gpu=int(params.unlabeled_batch_size),
-                    workers_per_gpu=int(params.num_workers),
-                )
-            )
-        )
-        config.update(unlabeled_config)
-
-    hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
-    config.merge_from_dict(hparams)
-
-
-DEFAULT_META_KEYS = (
-    "filename",
-    "ori_filename",
-    "ori_shape",
-    "img_shape",
-    "pad_shape",
-    "scale_factor",
-    "flip",
-    "flip_direction",
-    "img_norm_cfg",
-)
-
-
-def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
-    """Update meta_keys for ignore_labels."""
-    meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
-    meta_keys.append("ignored_labels")
-    meta_keys += add_meta_keys
-    pipeline_step["meta_keys"] = set(meta_keys)
-    return pipeline_step
 
 
 def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
