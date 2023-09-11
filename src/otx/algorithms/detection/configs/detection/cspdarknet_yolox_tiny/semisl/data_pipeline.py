@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-# This is from src/otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
+# This is from src/otx/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
 _base_ = ["../../../base/data/semisl/base_semisl_det_data_pipeline.py"]
 
