@@ -223,6 +223,8 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                         label_list = get_hierarchical_label_list(
                             self.inferencer.model.hierarchical_info["cls_heads_info"], label_list
                         )
+                    if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
+                        saliency_map = saliency_map.squeeze()
 
                     add_saliency_maps_to_dataset_item(
                         dataset_item=dataset_item,
