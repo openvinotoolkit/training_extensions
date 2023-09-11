@@ -405,7 +405,6 @@ class ImageTilingDataset(OTXDetDataset):
         data_subset = self.dataset.otx_dataset[0].subset
         self.tile_dataset = Tile(
             self.dataset,
-            pipeline,
             tile_size=tile_size,
             overlap=overlap_ratio,
             min_area_ratio=min_area_ratio,

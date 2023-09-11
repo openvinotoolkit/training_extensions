@@ -12,17 +12,15 @@ tile_cfg = dict(
 angle_version = "le135"
 
 meta_keys = [
-    "ori_filename",
-    "flip_direction",
-    "scale_factor",
-    "img_norm_cfg",
-    "gt_ann_ids",
-    "flip",
-    "ignored_labels",
-    "ori_shape",
     "filename",
+    "ori_filename",
+    "ori_shape",
     "img_shape",
     "pad_shape",
+    "scale_factor",
+    "flip",
+    "flip_direction",
+    "img_norm_cfg",
 ]
 
 train_pipeline = [

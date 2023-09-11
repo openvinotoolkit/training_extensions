@@ -5,6 +5,7 @@
 
 import copy
 import uuid
+from functools import partial
 from itertools import product
 from random import sample
 from time import time
@@ -12,11 +13,23 @@ from typing import Callable, Dict, List, Tuple, Union
 
 import cv2
 import numpy as np
-from mmcv.ops import nms
+import torch
+from mmcv import ConfigDict
 from mmdet.core import BitmapMasks, bbox2result
+from mmrotate import multiclass_nms_rotated
 from tqdm import tqdm
 
+from otx.api.entities.label import Domain
 from otx.api.utils.dataset_utils import non_linear_normalization
+
+from .tiling_utils import (
+    multiclass_nms,
+    rbbox2result,
+    shift_boxes,
+    shift_rboxes,
+    tile_boxes_overlap,
+    tile_rboxes_overlap,
+)
 
 
 def timeit(func) -> Callable:
@@ -69,7 +82,6 @@ class Tile:
     def __init__(
         self,
         dataset,
-        pipeline,
         tile_size: int = 400,
         overlap: float = 0.2,
         min_area_ratio: float = 0.9,
@@ -94,12 +106,18 @@ class Tile:
         self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
         self.nproc = nproc
         self.img2fp32 = False
-        for p in pipeline:
-            if p.type == "PhotoMetricDistortion":
-                self.img2fp32 = True
-                break
-
         self.dataset = dataset
+        self.domain = self.dataset.domain
+
+        if self.domain == Domain.ROTATED_DETECTION:
+            self.box2result_func = rbbox2result
+            self.box_overlap_func = partial(tile_rboxes_overlap, angle_version=self.dataset.angle_version)
+            self.box_shift_func = shift_rboxes
+        else:
+            self.box2result_func = bbox2result
+            self.box_overlap_func = tile_boxes_overlap
+            self.box_shift_func = shift_boxes
+
         self.tiles_all, self.cached_results = self.gen_tile_ann(include_full_img)
         self.sample_num = max(int(len(self.tiles_all) * sampling_ratio), 1)
         if sampling_ratio < 1.0:
@@ -262,19 +280,12 @@ class Tile:
             gt_labels (np.ndarray): the original image-level labels
         """
         x_1, y_1 = tile_box[0][:2]
-        matched_indices = self.tile_boxes_overlap(tile_box, gt_bboxes)
+        matched_indices = self.box_overlap_func(tile_box, gt_bboxes)
 
         if len(matched_indices):
             tile_lables = gt_labels[matched_indices][:]
             tile_bboxes = gt_bboxes[matched_indices][:]
-            tile_bboxes[:, 0] -= x_1
-            tile_bboxes[:, 1] -= y_1
-            tile_bboxes[:, 2] -= x_1
-            tile_bboxes[:, 3] -= y_1
-            tile_bboxes[:, 0] = np.maximum(0, tile_bboxes[:, 0])
-            tile_bboxes[:, 1] = np.maximum(0, tile_bboxes[:, 1])
-            tile_bboxes[:, 2] = np.minimum(self.tile_size, tile_bboxes[:, 2])
-            tile_bboxes[:, 3] = np.minimum(self.tile_size, tile_bboxes[:, 3])
+            tile_bboxes = self.box_shift_func(tile_bboxes, -x_1, -y_1)
             tile_result["gt_bboxes"] = tile_bboxes
             tile_result["gt_labels"] = tile_lables
             tile_result["gt_masks"] = gt_masks[matched_indices].crop(tile_box[0]) if gt_masks is not None else []
@@ -290,54 +301,45 @@ class Tile:
         if gt_masks is None:
             tile_result.pop("gt_masks")
 
-    def tile_boxes_overlap(self, tile_box: np.ndarray, boxes: np.ndarray) -> np.ndarray:
-        """Compute overlapping ratio over boxes.
+    def nms(self, score_bboxes, labels, iou_threshold, max_num):
+        """NMS for image-level prediction branching depending on the domain.
 
         Args:
-            tile_box (np.ndarray): box in shape (1, 4).
-            boxes (np.ndarray): boxes in shape (N, 4).
-
-        Returns:
-            np.ndarray: matched indices.
-        """
-        x1, y1, x2, y2 = tile_box[0]
-        match_indices = (boxes[:, 0] > x1) & (boxes[:, 1] > y1) & (boxes[:, 2] < x2) & (boxes[:, 3] < y2)
-        match_indices = np.argwhere(match_indices == 1).flatten()
-        return match_indices
-
-    def multiclass_nms(
-        self, boxes: np.ndarray, scores: np.ndarray, idxs: np.ndarray, iou_threshold: float, max_num: int
-    ):
-        """NMS for multi-class bboxes.
-
-        Args:
-            boxes (np.ndarray):  boxes in shape (N, 4).
-            scores (np.ndarray): scores in shape (N, ).
-            idxs (np.ndarray):  each index value correspond to a bbox cluster,
-                and NMS will not be applied between elements of different idxs,
-                shape (N, ).
+            score_bboxes (np.array): boxes with scores in shape (N, 5) as in x1, y1, x2, y2, score
+                                     or (N, 6) as in cx, cy, w, h, a, score.
+            labels (np.array): labels in shape (N,).
             iou_threshold (float): IoU threshold to be used to suppress boxes
-                in tiles' overlap areas.
             max_num (int): if there are more than max_per_img bboxes after
-                NMS, only top max_per_img will be kept.
 
         Returns:
-            tuple: tuple: kept dets and indice.
+            keep: keep indices.
         """
-        if len(boxes) == 0:
-            return None, []
-        max_coordinate = boxes.max()
-        offsets = idxs.astype(boxes.dtype) * (max_coordinate + 1)
-        boxes_for_nms = boxes + offsets[:, None]
-        dets, keep = nms(boxes_for_nms, scores, iou_threshold)
-        if max_num > 0:
-            dets = dets[:max_num]
-            keep = keep[:max_num]
-        return dets, keep
+        if self.domain == Domain.ROTATED_DETECTION:
+            rboxes = score_bboxes[:, :5]
+            scores = np.ascontiguousarray(score_bboxes[:, 5])
+            rboxes = torch.from_numpy(rboxes)
+            scores = torch.from_numpy(scores)
+            labels = torch.from_numpy(labels)
+            multi_scores = torch.zeros((rboxes.shape[0], self.num_classes), dtype=scores.dtype)
+            multi_scores[torch.arange(rboxes.shape[0]), labels.long()] = scores
+            _, _, keep = multiclass_nms_rotated(
+                rboxes,
+                multi_scores,
+                score_thr=0.05,
+                nms=ConfigDict({"iou_thr": iou_threshold}),
+                max_num=max_num,
+                return_inds=True,
+            )
+            keep = keep.numpy()
+            return keep
+        bboxes = score_bboxes[:, :4]
+        scores = np.ascontiguousarray(score_bboxes[:, 4])
+        _, keep = multiclass_nms(bboxes, scores, labels, iou_threshold, max_num)
+        return keep
 
     def tile_nms(
         self,
-        bbox_results: List[np.ndarray],
+        box_results: List[np.ndarray],
         mask_results: List[List],
         label_results: List[np.ndarray],
         iou_threshold: float,
@@ -347,26 +349,21 @@ class Tile:
         """NMS after aggregation suppressing duplicate boxes in tile-overlap areas.
 
         Args:
-            bbox_results (List[List]): image-level box prediction
+            box_results (List[List]): image-level box/rbox prediction
             mask_results (List[np.ndarray]): image-level mask prediction
             label_results (List[List]): image-level label prediction
             iou_threshold (float): IoU threshold to be used to suppress boxes in tiles' overlap areas.
             max_per_img (int): if there are more than max_per_img bboxes after NMS, only top max_per_img will be kept.
             detection (bool): whether it is a detection task
         """
-        assert len(bbox_results) == len(mask_results) == len(label_results)
-        for i, result in enumerate(zip(bbox_results, mask_results, label_results)):
+        assert len(box_results) == len(mask_results) == len(label_results)
+        for i, result in enumerate(zip(box_results, mask_results, label_results)):
             score_bboxes, masks, labels = result
-            bboxes = score_bboxes[:, :4]
-            scores = np.ascontiguousarray(score_bboxes[:, 4])
-            _, keep_indices = self.multiclass_nms(
-                bboxes, scores, labels, iou_threshold=iou_threshold, max_num=max_per_img
-            )
+            keep_indices = self.nms(score_bboxes, labels, iou_threshold=iou_threshold, max_num=max_per_img)
 
-            bboxes = bboxes[keep_indices]
+            score_bboxes = score_bboxes[keep_indices]
             labels = labels[keep_indices]
-            scores = scores[keep_indices]
-            bbox_results[i] = bbox2result(np.concatenate([bboxes, scores[:, None]], -1), labels, self.num_classes)
+            box_results[i] = self.box2result_func(score_bboxes, labels, self.num_classes)
 
             if not detection:
                 masks = np.array([masks[keep_idx] for keep_idx in keep_indices])
@@ -419,7 +416,11 @@ class Tile:
         else:
             raise RuntimeError("Unknown data type")
 
-        merged_bbox_results: List[np.ndarray] = [np.empty((0, 5), dtype=dtype) for _ in range(self.num_images)]
+        merged_box_results: List[np.ndarray] = (
+            [np.empty((0, 6), dtype=dtype) for _ in range(self.num_images)]
+            if self.domain == Domain.ROTATED_DETECTION
+            else [np.empty((0, 5), dtype=dtype) for _ in range(self.num_images)]
+        )
         merged_mask_results: List[List] = [[] for _ in range(self.num_images)]
         merged_label_results: List[Union[List, np.ndarray]] = [np.array([]) for _ in range(self.num_images)]
 
@@ -436,14 +437,9 @@ class Tile:
 
             for cls_idx, cls_result in enumerate(zip(bbox_result, mask_result)):
                 cls_bbox_result, cls_mask_result = cls_result
-                _tmp_cls_bbox_result = np.zeros_like(cls_bbox_result)
-                _tmp_cls_bbox_result[:, 0] = cls_bbox_result[:, 0] + tile_x1
-                _tmp_cls_bbox_result[:, 1] = cls_bbox_result[:, 1] + tile_y1
-                _tmp_cls_bbox_result[:, 2] = cls_bbox_result[:, 2] + tile_x1
-                _tmp_cls_bbox_result[:, 3] = cls_bbox_result[:, 3] + tile_y1
-                _tmp_cls_bbox_result[:, 4] = cls_bbox_result[:, 4]
 
-                merged_bbox_results[img_idx] = np.concatenate((merged_bbox_results[img_idx], _tmp_cls_bbox_result))
+                shift_result = self.box_shift_func(cls_bbox_result, tile_x1, tile_y1)
+                merged_box_results[img_idx] = np.concatenate((merged_box_results[img_idx], shift_result))
                 merged_label_results[img_idx] = np.concatenate(
                     [merged_label_results[img_idx], len(cls_bbox_result) * [cls_idx]]
                 )
@@ -455,7 +451,7 @@ class Tile:
         # run NMS after aggregation suppressing duplicate boxes in
         # overlapping areas
         self.tile_nms(
-            merged_bbox_results,
+            merged_box_results,
             merged_mask_results,
             merged_label_results,
             iou_threshold=self.iou_threshold,
@@ -463,10 +459,10 @@ class Tile:
             detection=detection,
         )
 
-        assert len(merged_bbox_results) == len(merged_mask_results)
+        assert len(merged_box_results) == len(merged_mask_results)
         if detection:
-            return list(merged_bbox_results)
-        return list(zip(merged_bbox_results, merged_mask_results))
+            return list(merged_box_results)
+        return list(zip(merged_box_results, merged_mask_results))
 
     def get_ann_info(self, idx):
         """Get annotation by index.
