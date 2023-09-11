@@ -28,10 +28,12 @@ from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmdet import __version__
 from mmdet.apis import single_gpu_test
-from otx.algorithms.detection.adapters.mmdet.apis.train import train_detector
+from otx.algorithms.detection.adapters.mmdet.apis.train import monkey_patched_xpu_nms, monkey_patched_xpu_roi_align, train_detector
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
 from mmdet.models.detectors import DETR, TwoStageDetector
 from mmdet.utils import collect_env
+from mmcv.ops.nms import NMSop
+from mmcv.ops.roi_align import RoIAlign
 
 from otx.algorithms.common.adapters.mmcv.hooks import LossDynamicsTrackingHook
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
@@ -369,6 +371,10 @@ class MMDetectionTask(OTXDetectionTask):
                 )
         else:
             target_classes = mm_dataset.CLASSES
+
+        if cfg.device == "xpu":
+            NMSop.forward = monkey_patched_xpu_nms
+            RoIAlign.forward = monkey_patched_xpu_roi_align
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
