@@ -1,19 +1,11 @@
 """Tiling utils."""
-import torch
-
 import numpy as np
-
+import torch
 from mmcv.ops import nms
 from mmrotate import obb2poly_np
 
 
-def multiclass_nms(
-    boxes: np.ndarray,
-    scores: np.ndarray,
-    idxs: np.ndarray,
-    iou_threshold: float,
-    max_num: int
-):
+def multiclass_nms(boxes: np.ndarray, scores: np.ndarray, idxs: np.ndarray, iou_threshold: float, max_num: int):
     """NMS for multi-class bboxes.
 
     Args:
@@ -64,6 +56,7 @@ def tile_rboxes_overlap(tile_box: np.ndarray, rboxes: np.ndarray, angle_version:
     Args:
         tile_box (np.ndarray): box in shape (1, 4).
         rboxes (np.ndarray): rotated boxes in shape (N, 5) as in cx, cy, w, h, a.
+        angle_version (str): angle version of "le90", "le135", or "oc"
 
     Returns:
         np.ndarray: matched indices.
@@ -80,15 +73,18 @@ def tile_rboxes_overlap(tile_box: np.ndarray, rboxes: np.ndarray, angle_version:
             np.min(polygons[:, 1::2], axis=1, keepdims=True),
             np.max(polygons[:, 0::2], axis=1, keepdims=True),
             np.max(polygons[:, 1::2], axis=1, keepdims=True),
-        ), axis=1
+        ),
+        axis=1,
     )
-    match_indices = (dummy_boxes[:, 0] > x1) & (dummy_boxes[:, 1] > y1) & (dummy_boxes[:, 2] < x2) & (dummy_boxes[:, 3] < y2)
+    match_indices = (
+        (dummy_boxes[:, 0] > x1) & (dummy_boxes[:, 1] > y1) & (dummy_boxes[:, 2] < x2) & (dummy_boxes[:, 3] < y2)
+    )
     match_indices = np.argwhere(match_indices == 1).flatten()
     return match_indices
 
 
 def shift_boxes(tile_bboxes, shift_x, shift_y):
-    """ Shift boxes by shift_x and shift_y and clip to tile_edge_size.
+    """Shift boxes by shift_x and shift_y and clip to tile_edge_size.
 
     Args:
         tile_bboxes (np.array): boxes in shape (N, 4).
@@ -106,7 +102,7 @@ def shift_boxes(tile_bboxes, shift_x, shift_y):
 
 
 def shift_rboxes(tile_rboxes, shift_x, shift_y):
-    """ Shift rotated boxes by shift_x and shift_y and clip to tile_edge_size.
+    """Shift rotated boxes by shift_x and shift_y and clip to tile_edge_size.
 
     Args:
         tile_rboxes (np.array): rboxes in shape (N, 5) as in cx, cy, w, h, a.

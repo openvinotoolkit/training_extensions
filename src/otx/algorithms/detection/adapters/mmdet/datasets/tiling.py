@@ -105,7 +105,6 @@ class Tile:
         self.num_classes = len(dataset.CLASSES)
         self.CLASSES = dataset.CLASSES  # pylint: disable=invalid-name
         self.nproc = nproc
-        self.img2fp32 = False
         self.dataset = dataset
         self.domain = self.dataset.domain
 
@@ -115,7 +114,7 @@ class Tile:
             self.box_shift_func = shift_rboxes
         else:
             self.box2result_func = bbox2result
-            self.box_overlap_func = tile_boxes_overlap
+            self.box_overlap_func = tile_boxes_overlap  # type: ignore[assignment]
             self.box_shift_func = shift_boxes
 
         self.tiles_all, self.cached_results = self.gen_tile_ann(include_full_img)
@@ -387,8 +386,6 @@ class Tile:
         x_1, y_1, x_2, y_2 = result["tile_box"]
         ori_img = self.cached_results[dataset_idx]["img"]
         cropped_tile = ori_img[y_1:y_2, x_1:x_2, :]
-        if self.img2fp32:
-            cropped_tile = cropped_tile.astype(np.float32)
         result["img"] = cropped_tile
         return result
 

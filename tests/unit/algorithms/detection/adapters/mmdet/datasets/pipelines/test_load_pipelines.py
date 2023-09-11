@@ -1,9 +1,8 @@
 import numpy as np
 import pytest
-from PIL import Image
-from typing import Iterator, List, Optional, Sequence, Tuple
 
 from otx.algorithms.detection.adapters.mmdet.datasets.pipelines import (
+    LoadAnnotationFromOTXDataset,
     LoadResizeDataFromOTXDataset,
     ResizeTo,
 )
@@ -125,3 +124,33 @@ def test_resize_to(mocker):
     assert dst_dict["ori_shape"][0] == 16
     assert dst_dict["img_shape"][0] == 8
     assert op._resize_img.call_count == 0  # _resize_img() should not be called
+
+
+@e2e_pytest_unit
+@pytest.mark.parametrize("angle_version", ["oc", "le90", "le135"])
+def test_load_anno_with_angle(mocker, angle_version):
+    """Test LoadAnnotationFromOTXDataset with mmrotate angle."""
+    otx_dataset, labels = generate_det_dataset(
+        TaskType.ROTATED_DETECTION,
+        classes=("rectangle", "ellipse"),
+        image_width=320,
+        image_height=320,
+    )
+
+    op = LoadAnnotationFromOTXDataset(
+        domain="rotated_detection",
+        with_bbox=True,
+        with_angle=True,
+        angle_version=angle_version,
+    )
+    src_dict = dict(
+        dataset_item=otx_dataset[0],
+        width=otx_dataset[0].width,
+        height=otx_dataset[0].height,
+        index=0,
+        ann_info=dict(label_list=labels),
+        bbox_fields=[],
+        mask_fields=[],
+    )
+    dst_dict = op(src_dict)
+    assert dst_dict["gt_bboxes"].shape[1] == 5, "gt_bboxes should have 5 columns as in cx, cy, w, h, a"

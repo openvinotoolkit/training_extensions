@@ -448,3 +448,23 @@ class TestTilingDetection:
 
         # check max output prediction size is changed
         assert hp.tiling_parameters.tile_max_number != default_tile_max_number
+
+    @e2e_pytest_unit
+    # TODO[EUGENE]: fix this test
+    def test_tile_rboxes_overlap(self):
+        print(self.otx_dataset)
+
+    @e2e_pytest_unit
+    # TODO[EUGENE]: fix this test
+    def test_tile_shift_rboxes(self):
+        pass
+
+    @e2e_pytest_unit
+    # TODO[EUGENE]: fix this test
+    def test_tile_rbbox2result(self):
+        pass
+
+    @e2e_pytest_unit
+    # TODO[EUGENE]: fix this test
+    def test_tile_rotated_nms(self):
+        pass

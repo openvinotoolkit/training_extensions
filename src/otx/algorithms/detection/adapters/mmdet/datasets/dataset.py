@@ -141,7 +141,8 @@ def get_annotation_mmrotate_format(
             ]
 
             polygon = ShapeFactory.shape_as_polygon(annotation.shape)
-            points = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
+            polygon_points = polygon.points[:4]
+            points = np.array([p for point in polygon_points for p in [point.x * width, point.y * height]])
             points[::2] = np.clip(points[::2], 0, width)
             points[1::2] = np.clip(points[1::2], 0, height)
             points = points.astype(np.uint64)
@@ -502,15 +503,15 @@ class ImageTilingDataset(OTXDetDataset):
 class OTXRotatedDataset(OTXDetDataset):
     """Wrapper that allows using a OTX dataset to train mmrotate models."""
 
-    def __init__(self, angle_version: str = "oc", **kwargs):
+    def __init__(self, *args, angle_version: str = "oc", **kwargs):
         """Initialize OTXDataset.
 
-        :param min_size: Minimum size of the bounding box
+        :param args: Additional arguments
         :param angle_version: Version of angle to use
         :param kwargs: Additional arguments
         """
         self.angle_version = angle_version
-        super(OTXRotatedDataset, self).__init__(**kwargs)
+        super(OTXRotatedDataset, self).__init__(*args, **kwargs)
 
     def get_ann_info(self, idx: int):
         """This method is used for evaluation of predictions.

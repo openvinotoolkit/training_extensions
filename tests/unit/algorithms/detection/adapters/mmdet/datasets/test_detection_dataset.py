@@ -6,7 +6,12 @@
 import numpy as np
 import pytest
 
-from otx.algorithms.detection.adapters.mmdet.datasets.dataset import OTXDetDataset, get_annotation_mmdet_format
+from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
+    OTXDetDataset,
+    get_annotation_mmdet_format,
+    OTXRotatedDataset,
+    get_annotation_mmrotate_format,
+)
 from otx.api.entities.label import Domain
 from otx.api.entities.model_template import TaskType
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -14,10 +19,9 @@ from tests.unit.algorithms.detection.test_helpers import (
     MockPipeline,
     generate_det_dataset,
 )
-from mmdet.core.mask.structures import BitmapMasks
 import pycocotools.mask as mask_util
 
-from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes
+from otx.algorithms.detection.utils import create_detection_shapes, create_mask_shapes, create_rbox_shapes
 
 
 class TestOTXDetDataset:
@@ -33,16 +37,24 @@ class TestOTXDetDataset:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
         self.dataset = dict()
-        for task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
-            self.dataset[task_type] = generate_det_dataset(task_type=task_type)
+        for task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION]:
+            classes = ("rectangle", "ellipse", "triangle")
+            if task_type == TaskType.ROTATED_DETECTION:
+                classes = ("rectangle", "ellipse")
+            self.dataset[task_type] = generate_det_dataset(task_type=task_type, classes=classes)
         self.pipeline = []
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("task_type", [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION])
+    @pytest.mark.parametrize(
+        "task_type", [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION]
+    )
     def test_DataInfoProxy(self, task_type):
         """Test _DataInfoProxy Class."""
         otx_dataset, labels = self.dataset[task_type]
-        proxy = OTXDetDataset._DataInfoProxy(otx_dataset, labels)
+        if task_type == TaskType.ROTATED_DETECTION:
+            proxy = OTXRotatedDataset._DataInfoProxy(otx_dataset, labels)
+        else:
+            proxy = OTXDetDataset._DataInfoProxy(otx_dataset, labels)
         sample = proxy[0]
         assert "dataset_item" in sample
         assert "width" in sample
@@ -106,6 +118,7 @@ class TestOTXDetDataset:
     )
     @pytest.mark.parametrize("metric", ["mAP"])
     @pytest.mark.parametrize("logger", ["silent", None])
+    # TODO[EUGENE]: Add test for rotated detection
     def test_evaluate(self, task_type, domain, metric, logger) -> None:
         """Test evaluate method for detection and instance segmentation"""
         otx_dataset, labels = self.dataset[task_type]
@@ -229,3 +242,32 @@ class TestOTXDetDataset:
             labels=dataset.labels,
         )
         assert len(shapes) == 0, "No shapes should be created for confidence_threshold=0.0"
+
+    @e2e_pytest_unit
+    @pytest.mark.parametrize("angle_version", ["le90", "le135", "oc"])
+    def test_create_rotated_box_shape(self, angle_version) -> None:
+        """Test create_rotated_box_shape method."""
+        otx_dataset, labels = self.dataset[TaskType.ROTATED_DETECTION]
+        dataset = OTXRotatedDataset(otx_dataset, labels, self.pipeline, angle_version=angle_version)
+        dataset.pipeline = MockPipeline()
+        sample = dataset[0]
+        h, w = sample["dataset_item"].height, sample["dataset_item"].width
+
+        num_classes = len(dataset.labels)
+        anno = get_annotation_mmrotate_format(
+            sample["dataset_item"], dataset.labels, Domain.ROTATED_DETECTION, angle_version=angle_version
+        )
+        bboxes = anno["bboxes"]
+        scores = np.full((len(bboxes), 1), 0.5, dtype=np.float32)
+        bboxes = np.hstack((bboxes, scores))
+        labels = anno["labels"]
+
+        rbox_results = [bboxes[labels == i, :] for i in range(num_classes)]
+        create_rbox_shapes(
+            rbox_results,
+            width=w,
+            height=h,
+            confidence_threshold=0.0,
+            labels=dataset.labels,
+            angle_version=angle_version,
+        )
