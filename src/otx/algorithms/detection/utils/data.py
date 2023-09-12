@@ -9,11 +9,8 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 from mmdet.datasets.api_wrappers.coco_api import COCO
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
-from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
-    get_annotation_mmdet_format,
-)
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base.configuration import DetectionConfig
 from otx.api.entities.annotation import (
     Annotation,

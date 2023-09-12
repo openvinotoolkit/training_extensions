@@ -2,9 +2,10 @@
 # Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from otx.api.configuration import ConfigurableEnum
-from typing import Tuple, Optional
 import re
+from typing import Optional, Tuple
+
+from otx.api.configuration import ConfigurableEnum
 
 
 class POTQuantizationPreset(ConfigurableEnum):
@@ -51,15 +52,17 @@ class InputSizePreset(ConfigurableEnum):
     _768x768 = "768x768"
     _1024x1024 = "1024x1024"
 
-    @staticmethod
-    def parse(preset: str) -> Optional[Tuple[int, int]]:
-        if preset == "Default":
+    @property
+    def tuple(self) -> Optional[Tuple[int, int]]:
+        """Returns parsed tuple."""
+        if self.value == "Default":
             return None
-        if preset == "Auto":
+        if self.value == "Auto":
             return (0, 0)
-        parsed_tocken = re.match("(\\d+)x(\\d+)", preset)
+        parsed_tocken = re.match("(\\d+)x(\\d+)", self.value)
         return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))
 
     @classmethod
     def input_sizes(cls):
-        return [InputSizePreset.parse(e.value) for e in cls if e.value[0].isdigit()]
+        """Returns list of actual size tuples."""
+        return [e.tuple for e in cls if e.value[0].isdigit()]

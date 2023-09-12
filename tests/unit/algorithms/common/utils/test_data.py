@@ -86,8 +86,7 @@ def test_compute_robuste_dataset_statistics():
             DatasetItemEntity(
                 Image(data=np.random.rand(200, 200)),
                 AnnotationSceneEntity(
-                    annotations=[
-                    ],
+                    annotations=[],
                     kind=AnnotationSceneKind.ANNOTATION,
                 ),
             ),

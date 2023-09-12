@@ -8,7 +8,7 @@ import glob
 import logging
 import os
 import random
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -229,7 +229,7 @@ def compute_robust_statistics(values: np.array) -> Dict[str, float]:
     Returns:
         Dict[str, float]: Robust avg, min, max values
     """
-    stat = {}
+    stat: Dict = {}
     if values.size == 0:
         return stat
 
@@ -269,7 +269,7 @@ def compute_robust_scale_statistics(values: np.array) -> Dict[str, float]:
     return {k: np.exp(v) for k, v in stat.items()}
 
 
-def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) -> Dict[str, Dict[str, float]]:
+def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) -> Dict[str, Any]:
     """Computes robust statistics of image & annotation sizes.
 
     Args:
@@ -277,7 +277,7 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) ->
         ann_stat (bool): Whether to compute annotation size statistics. Defaults to False.
 
     Returns:
-        Dict[str, Dict[str, float]]: Robust avg, min, max values for images, and annotations optionally.
+        Dict[str, Any]: Robust avg, min, max values for images, and annotations optionally.
             e.x) stat = {
                      "image": {"avg": ...},
                      "annotation": {
@@ -286,7 +286,7 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) ->
                      }
                  }
     """
-    stat = {}
+    stat: Dict = {}
     if len(dataset) == 0:
         return stat
 
@@ -297,14 +297,16 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) ->
 
     if ann_stat:
         stat["annotation"] = {}
-        num_per_images = []
-        size_of_shapes = []
+        num_per_images: List[int] = []
+        size_of_shapes: List[float] = []
         for data in dataset:
             annotations = data.get_annotations()
             num_per_images.append(len(annotations))
             image_area = data.width * data.height
+
             def shape_size(ann):
                 return np.sqrt(image_area * ann.shape.get_area())
+
             size_of_shapes.extend(map(shape_size, annotations))
         stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
         stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes))
