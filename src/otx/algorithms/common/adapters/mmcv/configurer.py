@@ -24,8 +24,10 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
-from otx.algorithms.common.utils import append_dist_rank_suffix
+from otx.algorithms.common.tasks.base_task import OnHookInitialized
+from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
+from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.core.data import caching
 
 logger = get_logger()
@@ -39,10 +41,10 @@ class BaseConfigurer:
         task: str,
         training: bool,
         export: bool,
-        override_configs,
-        on_hook_initialized,
-        time_monitor,
-        learning_curves,
+        override_configs: Dict[str, str],
+        on_hook_initialized: OnHookInitialized,
+        time_monitor: Optional[TimeMonitorCallback],
+        learning_curves: UncopiableDefaultDict,
     ):
         self.task_adapt_type: Optional[str] = None
         self.task_adapt_op: str = "REPLACE"
@@ -53,10 +55,10 @@ class BaseConfigurer:
         self.training: bool = training
         self.export: bool = export
         self.ema_hooks: List[str] = ["EMAHook", "CustomModelEMAHook"]  # EMA hooks supporting resume
-        self.override_configs = override_configs
-        self.on_hook_initialized = on_hook_initialized
-        self.time_monitor = time_monitor
-        self.learning_curves = learning_curves
+        self.override_configs: Dict[str, str] = override_configs
+        self.on_hook_initialized: OnHookInitialized = on_hook_initialized
+        self.time_monitor: Optional[TimeMonitorCallback] = time_monitor
+        self.learning_curves: UncopiableDefaultDict = learning_curves
 
     def configure(
         self,
