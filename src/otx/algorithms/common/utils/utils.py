@@ -28,7 +28,7 @@ import onnx
 import torch
 import yaml
 from addict import Dict as adict
-
+from otx.algorithms.common.utils import is_xpu_available
 
 class UncopiableDefaultDict(defaultdict):
     """Defauldict type object to avoid deepcopy."""
@@ -116,6 +116,8 @@ def set_random_seed(seed, logger, deterministic=False):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    if is_xpu_available():
+        torch.xpu.manual_seed_all(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     logger.info(f"Training seed was set to {seed} w/ deterministic={deterministic}.")
     if deterministic:

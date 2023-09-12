@@ -12,9 +12,8 @@ from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import (auto_select_device, get_root_logger,
                          wrap_distributed_model, wrap_non_distributed_model)
-from mmcv.parallel import MMDataParallel
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
-
+from otx.algorithms.common.utils import is_xpu_available
 
 def init_random_seed(seed=None, device=None):
     """Initialize random seed.
@@ -64,6 +63,8 @@ def set_random_seed(seed, deterministic=False):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    if is_xpu_available():
+        torch.xpu.manual_seed_all(seed)
     if deterministic:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False

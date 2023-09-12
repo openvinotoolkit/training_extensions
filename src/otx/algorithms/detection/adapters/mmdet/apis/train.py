@@ -16,6 +16,7 @@ from mmdet.utils import (build_ddp, compat_cfg,
                          find_latest_checkpoint, get_root_logger)
 
 from mmdet.utils.util_distribution import dp_factory
+from otx.algorithms.common.utils import is_xpu_available
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 from mmcv.ops.nms import NMSop
 from mmcv.utils import ext_loader
@@ -104,6 +105,8 @@ def set_random_seed(seed, deterministic=False):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    if is_xpu_available():
+        torch.xpu.manual_seed_all(seed)
     if deterministic:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
