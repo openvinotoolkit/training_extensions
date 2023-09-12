@@ -28,7 +28,7 @@ import onnx
 import torch
 import yaml
 from addict import Dict as adict
-from otx.algorithms.common.utils import is_xpu_available
+
 
 class UncopiableDefaultDict(defaultdict):
     """Defauldict type object to avoid deepcopy."""

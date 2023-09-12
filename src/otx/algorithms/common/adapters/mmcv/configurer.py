@@ -79,6 +79,7 @@ class BaseConfigurer:
         if not torch.cuda.is_available():
             try:
                 import intel_extension_for_pytorch as ipex
+
                 if is_xpu_available():
                     cfg.device = "xpu"
             except:

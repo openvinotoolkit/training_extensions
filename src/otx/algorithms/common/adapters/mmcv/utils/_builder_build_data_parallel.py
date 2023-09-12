@@ -10,9 +10,10 @@ from typing import Literal, Union, overload
 
 import torch
 from mmcv import Config
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel, DataContainer
+from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
 from otx.algorithms.common.utils import is_xpu_available
+
 
 @overload
 def build_data_parallel(
@@ -91,8 +92,7 @@ class XPUDataParallel(MMDataParallel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def scatter(self, inputs, kwargs,
-                device_ids):
+    def scatter(self, inputs, kwargs, device_ids):
         inputs, kwargs = super().scatter(inputs, kwargs, [-1])
 
         for x in inputs:
@@ -101,11 +101,11 @@ class XPUDataParallel(MMDataParallel):
                     if isinstance(val, dict):
                         for k in val:
                             if isinstance(val[k], torch.Tensor):
-                                val[k] = val[k].to(torch.device(f'xpu:{device_ids[0]}'))
+                                val[k] = val[k].to(torch.device(f"xpu:{device_ids[0]}"))
                             elif isinstance(val[k], list):
                                 for i, item in enumerate(val[k]):
                                     if isinstance(item, torch.Tensor):
-                                        val[k][i] = item.to(torch.device(f'xpu:{device_ids[0]}'))
+                                        val[k][i] = item.to(torch.device(f"xpu:{device_ids[0]}"))
 
         for x in kwargs:
             if isinstance(x, dict):
@@ -115,6 +115,6 @@ class XPUDataParallel(MMDataParallel):
                     elif isinstance(x[k], list):
                         for i, item in enumerate(x[k]):
                             if isinstance(item, torch.Tensor):
-                                x[k][i] = item.to(torch.device(f'xpu:{device_ids[0]}'))
+                                x[k][i] = item.to(torch.device(f"xpu:{device_ids[0]}"))
 
         return inputs, kwargs

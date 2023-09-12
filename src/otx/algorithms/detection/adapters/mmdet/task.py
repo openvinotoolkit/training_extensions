@@ -24,16 +24,15 @@ from functools import partial
 from typing import Any, Dict, Optional, Union
 
 import torch
+from mmcv.ops.nms import NMSop
+from mmcv.ops.roi_align import RoIAlign
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmdet import __version__
 from mmdet.apis import single_gpu_test
-from otx.algorithms.detection.adapters.mmdet.apis.train import monkey_patched_xpu_nms, monkey_patched_xpu_roi_align, train_detector
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
 from mmdet.models.detectors import DETR, TwoStageDetector
 from mmdet.utils import collect_env
-from mmcv.ops.nms import NMSop
-from mmcv.ops.roi_align import RoIAlign
 
 from otx.algorithms.common.adapters.mmcv.hooks import LossDynamicsTrackingHook
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
@@ -58,6 +57,11 @@ from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.detection.adapters.mmdet.apis.train import (
+    monkey_patched_xpu_nms,
+    monkey_patched_xpu_roi_align,
+    train_detector,
+)
 from otx.algorithms.detection.adapters.mmdet.configurer import (
     DetectionConfigurer,
     IncrDetectionConfigurer,

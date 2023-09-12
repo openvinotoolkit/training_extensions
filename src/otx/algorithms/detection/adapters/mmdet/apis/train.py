@@ -5,28 +5,30 @@ import random
 import numpy as np
 import torch
 import torch.distributed as dist
-from mmcv.runner import (DistSamplerSeedHook, EpochBasedRunner,
-                         Fp16OptimizerHook, OptimizerHook, build_runner,
-                         get_dist_info)
-
-from mmdet.core import DistEvalHook, EvalHook, build_optimizer
-from mmdet.datasets import (build_dataloader, build_dataset,
-                            replace_ImageToTensor)
-from mmdet.utils import (build_ddp, compat_cfg,
-                         find_latest_checkpoint, get_root_logger)
-
-from mmdet.utils.util_distribution import dp_factory
-from otx.algorithms.common.utils import is_xpu_available
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 from mmcv.ops.nms import NMSop
-from mmcv.utils import ext_loader
 from mmcv.ops.roi_align import RoIAlign
-ext_module = ext_loader.load_ext(
-    '_ext', ['nms', 'softnms', 'nms_match', 'nms_rotated', 'nms_quadri'])
+from mmcv.runner import (
+    DistSamplerSeedHook,
+    EpochBasedRunner,
+    Fp16OptimizerHook,
+    OptimizerHook,
+    build_runner,
+    get_dist_info,
+)
+from mmcv.utils import ext_loader
+from mmdet.core import DistEvalHook, EvalHook, build_optimizer
+from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
+from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_logger
+from mmdet.utils.util_distribution import dp_factory
+from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
+from otx.algorithms.common.utils import is_xpu_available
 
-dp_factory['xpu'] = XPUDataParallel
+ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
 
-def build_dp(model, device='cuda', dim=0, *args, **kwargs):
+dp_factory["xpu"] = XPUDataParallel
+
+
+def build_dp(model, device="cuda", dim=0, *args, **kwargs):
     """build DataParallel module by device type.
 
     if device is cuda, return a MMDataParallel model; if device is mlu,
@@ -40,25 +42,27 @@ def build_dp(model, device='cuda', dim=0, *args, **kwargs):
     Returns:
         nn.Module: the model to be parallelized.
     """
-    if device == 'npu':
+    if device == "npu":
         from mmcv.device.npu import NPUDataParallel
-        dp_factory['npu'] = NPUDataParallel
-        torch.npu.set_device(kwargs['device_ids'][0])
+
+        dp_factory["npu"] = NPUDataParallel
+        torch.npu.set_device(kwargs["device_ids"][0])
         torch.npu.set_compile_mode(jit_compile=False)
         model = model.npu()
-    elif device == 'cuda':
-        model = model.cuda(kwargs['device_ids'][0])
-    elif device == 'xpu':
+    elif device == "cuda":
+        model = model.cuda(kwargs["device_ids"][0])
+    elif device == "xpu":
         pass
-    elif device == 'mlu':
+    elif device == "mlu":
         from mmcv.device.mlu import MLUDataParallel
-        dp_factory['mlu'] = MLUDataParallel
+
+        dp_factory["mlu"] = MLUDataParallel
         model = model.mlu()
 
     return dp_factory[device](model, dim=dim, *args, **kwargs)
 
 
-def init_random_seed(seed=None, device='cuda'):
+def init_random_seed(seed=None, device="cuda"):
     """Initialize random seed.
 
     If the seed is not set, the seed will be automatically randomized,
@@ -121,14 +125,12 @@ def auto_scale_lr(cfg, distributed, logger):
         logger (logging.Logger): Logger.
     """
     # Get flag from config
-    if ('auto_scale_lr' not in cfg) or \
-            (not cfg.auto_scale_lr.get('enable', False)):
-        logger.info('Automatic scaling of learning rate (LR)'
-                    ' has been disabled.')
+    if ("auto_scale_lr" not in cfg) or (not cfg.auto_scale_lr.get("enable", False)):
+        logger.info("Automatic scaling of learning rate (LR)" " has been disabled.")
         return
 
     # Get base batch size from config
-    base_batch_size = cfg.auto_scale_lr.get('base_batch_size', None)
+    base_batch_size = cfg.auto_scale_lr.get("base_batch_size", None)
     if base_batch_size is None:
         return
 
@@ -142,29 +144,26 @@ def auto_scale_lr(cfg, distributed, logger):
     # calculate the batch size
     samples_per_gpu = cfg.data.train_dataloader.samples_per_gpu
     batch_size = num_gpus * samples_per_gpu
-    logger.info(f'Training with {num_gpus} GPU(s) with {samples_per_gpu} '
-                f'samples per GPU. The total batch size is {batch_size}.')
+    logger.info(
+        f"Training with {num_gpus} GPU(s) with {samples_per_gpu} "
+        f"samples per GPU. The total batch size is {batch_size}."
+    )
 
     if batch_size != base_batch_size:
         # scale LR with
         # [linear scaling rule](https://arxiv.org/abs/1706.02677)
         scaled_lr = (batch_size / base_batch_size) * cfg.optimizer.lr
-        logger.info('LR has been automatically scaled '
-                    f'from {cfg.optimizer.lr} to {scaled_lr}')
+        logger.info("LR has been automatically scaled " f"from {cfg.optimizer.lr} to {scaled_lr}")
         cfg.optimizer.lr = scaled_lr
     else:
-        logger.info('The batch size match the '
-                    f'base batch size: {base_batch_size}, '
-                    f'will not scaling the LR ({cfg.optimizer.lr}).')
+        logger.info(
+            "The batch size match the "
+            f"base batch size: {base_batch_size}, "
+            f"will not scaling the LR ({cfg.optimizer.lr})."
+        )
 
 
-def train_detector(model,
-                   dataset,
-                   cfg,
-                   distributed=False,
-                   validate=False,
-                   timestamp=None,
-                   meta=None):
+def train_detector(model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None):
 
     cfg = compat_cfg(cfg)
     logger = get_root_logger(log_level=cfg.log_level)
@@ -172,8 +171,7 @@ def train_detector(model,
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
 
-    runner_type = 'EpochBasedRunner' if 'runner' not in cfg else cfg.runner[
-        'type']
+    runner_type = "EpochBasedRunner" if "runner" not in cfg else cfg.runner["type"]
 
     train_dataloader_default_args = dict(
         samples_per_gpu=2,
@@ -183,26 +181,25 @@ def train_detector(model,
         dist=distributed,
         seed=cfg.seed,
         runner_type=runner_type,
-        persistent_workers=False)
+        persistent_workers=False,
+    )
 
-    train_loader_cfg = {
-        **train_dataloader_default_args,
-        **cfg.data.get('train_dataloader', {})
-    }
+    train_loader_cfg = {**train_dataloader_default_args, **cfg.data.get("train_dataloader", {})}
 
     data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
     # put model on gpus
     if distributed:
-        find_unused_parameters = cfg.get('find_unused_parameters', False)
+        find_unused_parameters = cfg.get("find_unused_parameters", False)
         # Sets the `find_unused_parameters` parameter in
         # torch.nn.parallel.DistributedDataParallel
         model = build_ddp(
             model,
             cfg.device,
-            device_ids=[int(os.environ['LOCAL_RANK'])],
+            device_ids=[int(os.environ["LOCAL_RANK"])],
             broadcast_buffers=False,
-            find_unused_parameters=find_unused_parameters)
+            find_unused_parameters=find_unused_parameters,
+        )
     else:
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
@@ -211,7 +208,7 @@ def train_detector(model,
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        fp16_cfg = cfg.get('fp16', None)
+        fp16_cfg = cfg.get("fp16", None)
         # dinamic patch for nms and roi_align
         NMSop.forward = monkey_patched_xpu_nms
         RoIAlign.forward = monkey_patched_xpu_roi_align
@@ -220,30 +217,23 @@ def train_detector(model,
         else:
             dtype = torch.float32
         model.train()
-        model.to('xpu')
+        model.to("xpu")
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
     runner = build_runner(
-        cfg.runner,
-        default_args=dict(
-            model=model,
-            optimizer=optimizer,
-            work_dir=cfg.work_dir,
-            logger=logger,
-            meta=meta))
+        cfg.runner, default_args=dict(model=model, optimizer=optimizer, work_dir=cfg.work_dir, logger=logger, meta=meta)
+    )
 
     # an ugly workaround to make .log and .log.json filenames the same
     runner.timestamp = timestamp
 
-
     # fp16 setting
-    fp16_cfg = cfg.get('fp16', None)
-    if fp16_cfg is None and cfg.get('device', None) == 'npu':
-        fp16_cfg = dict(loss_scale='dynamic')
+    fp16_cfg = cfg.get("fp16", None)
+    if fp16_cfg is None and cfg.get("device", None) == "npu":
+        fp16_cfg = dict(loss_scale="dynamic")
     if fp16_cfg is not None:
-        optimizer_config = Fp16OptimizerHook(
-            **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
-    elif distributed and 'type' not in cfg.optimizer_config:
+        optimizer_config = Fp16OptimizerHook(**cfg.optimizer_config, **fp16_cfg, distributed=distributed)
+    elif distributed and "type" not in cfg.optimizer_config:
         optimizer_config = OptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config
@@ -254,8 +244,9 @@ def train_detector(model,
         optimizer_config,
         cfg.checkpoint_config,
         cfg.log_config,
-        cfg.get('momentum_config', None),
-        custom_hooks_config=cfg.get('custom_hooks', None))
+        cfg.get("momentum_config", None),
+        custom_hooks_config=cfg.get("custom_hooks", None),
+    )
 
     if distributed:
         if isinstance(runner, EpochBasedRunner):
@@ -264,35 +255,27 @@ def train_detector(model,
     # register eval hooks
     if validate:
         val_dataloader_default_args = dict(
-            samples_per_gpu=1,
-            workers_per_gpu=2,
-            dist=distributed,
-            shuffle=False,
-            persistent_workers=False)
+            samples_per_gpu=1, workers_per_gpu=2, dist=distributed, shuffle=False, persistent_workers=False
+        )
 
-        val_dataloader_args = {
-            **val_dataloader_default_args,
-            **cfg.data.get('val_dataloader', {})
-        }
+        val_dataloader_args = {**val_dataloader_default_args, **cfg.data.get("val_dataloader", {})}
         # Support batch_size > 1 in validation
 
-        if val_dataloader_args['samples_per_gpu'] > 1:
+        if val_dataloader_args["samples_per_gpu"] > 1:
             # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-            cfg.data.val.pipeline = replace_ImageToTensor(
-                cfg.data.val.pipeline)
+            cfg.data.val.pipeline = replace_ImageToTensor(cfg.data.val.pipeline)
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
 
         val_dataloader = build_dataloader(val_dataset, **val_dataloader_args)
-        eval_cfg = cfg.get('evaluation', {})
-        eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
+        eval_cfg = cfg.get("evaluation", {})
+        eval_cfg["by_epoch"] = cfg.runner["type"] != "IterBasedRunner"
         eval_hook = DistEvalHook if distributed else EvalHook
         # In this PR (https://github.com/open-mmlab/mmcv/pull/1193), the
         # priority of IterTimerHook has been modified from 'NORMAL' to 'LOW'.
-        runner.register_hook(
-            eval_hook(val_dataloader, **eval_cfg), priority='LOW')
+        runner.register_hook(eval_hook(val_dataloader, **eval_cfg), priority="LOW")
 
     resume_from = None
-    if cfg.resume_from is None and cfg.get('auto_resume'):
+    if cfg.resume_from is None and cfg.get("auto_resume"):
         resume_from = find_latest_checkpoint(cfg.work_dir)
     if resume_from is not None:
         cfg.resume_from = resume_from
@@ -303,19 +286,17 @@ def train_detector(model,
         runner.load_checkpoint(cfg.load_from)
     runner.run(data_loaders, cfg.workflow)
 
-def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold,
-            offset, score_threshold, max_num):
+
+def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_threshold, max_num):
     is_filtering_by_score = score_threshold > 0
     if is_filtering_by_score:
         valid_mask = scores > score_threshold
         bboxes, scores = bboxes[valid_mask], scores[valid_mask]
-        valid_inds = torch.nonzero(
-            valid_mask, as_tuple=False).squeeze(dim=1)
+        valid_inds = torch.nonzero(valid_mask, as_tuple=False).squeeze(dim=1)
     device = bboxes.device
     bboxes = bboxes.to("cpu")
     scores = scores.to("cpu")
-    inds = ext_module.nms(
-        bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
+    inds = ext_module.nms(bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
     bboxes = bboxes.to(device)
     scores = scores.to(device)
     if max_num > 0:
@@ -324,21 +305,18 @@ def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold,
         inds = valid_inds[inds]
     return inds
 
+
 def monkey_patched_xpu_roi_align(self, input, rois):
-        """
-        Args:
-            input: NCHW images
-            rois: Bx5 boxes. First column is the index into N.\
+    """Args:
+    input: NCHW images
+    rois: Bx5 boxes. First column is the index into N.\
                 The other 4 columns are xyxy.
-        """
-        from torchvision.ops import roi_align as tv_roi_align
-        if 'aligned' in tv_roi_align.__code__.co_varnames:
-            return tv_roi_align(input, rois, self.output_size,
-                                self.spatial_scale, self.sampling_ratio,
-                                self.aligned)
-        else:
-            if self.aligned:
-                rois -= rois.new_tensor([0.] +
-                                        [0.5 / self.spatial_scale] * 4)
-            return tv_roi_align(input, rois, self.output_size,
-                                self.spatial_scale, self.sampling_ratio)
+    """
+    from torchvision.ops import roi_align as tv_roi_align
+
+    if "aligned" in tv_roi_align.__code__.co_varnames:
+        return tv_roi_align(input, rois, self.output_size, self.spatial_scale, self.sampling_ratio, self.aligned)
+    else:
+        if self.aligned:
+            rois -= rois.new_tensor([0.0] + [0.5 / self.spatial_scale] * 4)
+        return tv_roi_align(input, rois, self.output_size, self.spatial_scale, self.sampling_ratio)
