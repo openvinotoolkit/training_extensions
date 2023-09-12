@@ -12,7 +12,6 @@ from mmcv.cnn import (
     normal_init,
 )
 from mmdet.core import (
-    InstanceData,
     anchor_inside_flags,
     build_assigner,
     distance2bbox,
@@ -26,6 +25,8 @@ from mmdet.models.dense_heads.atss_head import ATSSHead
 from mmdet.models.utils import sigmoid_geometric_mean
 from mmdet.models.utils.transformer import inverse_sigmoid
 from torch import Tensor, nn
+
+from otx.algorithms.detection.adapters.mmdet.utils import CustomInstanceData
 
 
 @HEADS.register_module()
@@ -222,9 +223,9 @@ class RTMDetHead(ATSSHead):
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
-        batch_gt_instances: List[InstanceData],
+        batch_gt_instances: List[CustomInstanceData],
         batch_img_metas: List[dict],
-        batch_gt_instances_ignore: List[InstanceData] = None,
+        batch_gt_instances_ignore: List[CustomInstanceData] = None,
     ):
         """Compute losses of the head.
 
@@ -234,12 +235,12 @@ class RTMDetHead(ATSSHead):
             bbox_preds (list[Tensor]): Decoded box for each scale
                 level with shape (N, num_anchors * 4, H, W) in
                 [tl_x, tl_y, br_x, br_y] format.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[:obj:`CustomInstanceData`]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
+            batch_gt_instances_ignore (list[:obj:`CustomInstanceData`], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -307,9 +308,9 @@ class RTMDetHead(ATSSHead):
         bbox_preds: Tensor,
         anchor_list: List[List[Tensor]],
         valid_flag_list: List[List[Tensor]],
-        batch_gt_instances: List[InstanceData],
+        batch_gt_instances: List[CustomInstanceData],
         batch_img_metas: List[dict],
-        batch_gt_instances_ignore: List[InstanceData] = None,
+        batch_gt_instances_ignore: List[CustomInstanceData] = None,
         unmap_outputs=True,
     ):
         """Compute regression and classification targets for anchors in
@@ -329,12 +330,12 @@ class RTMDetHead(ATSSHead):
                 each image. The outer list indicates images, and the inner list
                 corresponds to feature levels of the image. Each element of
                 the inner list is a tensor of shape (num_anchors, )
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[:obj:`CustomInstanceData`]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
+            batch_gt_instances_ignore (list[:obj:`CustomInstanceData`], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -412,9 +413,9 @@ class RTMDetHead(ATSSHead):
         bbox_preds: Tensor,
         flat_anchors: Tensor,
         valid_flags: Tensor,
-        gt_instances: InstanceData,
+        gt_instances: CustomInstanceData,
         img_meta: dict,
-        gt_instances_ignore: Optional[InstanceData] = None,
+        gt_instances_ignore: Optional[CustomInstanceData] = None,
         unmap_outputs=True,
     ):
         """Compute regression, classification targets for anchors in a single
@@ -428,11 +429,11 @@ class RTMDetHead(ATSSHead):
             valid_flags (Tensor): Multi level valid flags of the image,
                 which are concatenated into a single tensor of
                     shape (num_anchors,).
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (:obj:`CustomInstanceData`): Ground truth of instance
                 annotations. It usually includes ``bboxes`` and ``labels``
                 attributes.
             img_meta (dict): Meta information for current image.
-            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+            gt_instances_ignore (:obj:`CustomInstanceData`, optional): Instances
                 to be ignored during training. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -460,14 +461,14 @@ class RTMDetHead(ATSSHead):
         # assign gt and sample anchors
         anchors = flat_anchors[inside_flags, :]
 
-        pred_instances = InstanceData()
+        pred_instances = CustomInstanceData()
         pred_instances.scores = cls_scores[inside_flags, :]
         pred_instances.bboxes = bbox_preds[inside_flags, :]
         pred_instances.priors = anchors
 
         assign_result = self.assigner.assign(pred_instances, gt_instances, gt_instances_ignore)
 
-        sampling_result = self.sampler.sample(assign_result, pred_instances.bboxes, gt_instances.bboxes)
+        sampling_result = self.sampler.sample(assign_result, pred_instances.priors, gt_instances.bboxes)
 
         num_valid_anchors = anchors.shape[0]
         bbox_targets = torch.zeros_like(anchors)

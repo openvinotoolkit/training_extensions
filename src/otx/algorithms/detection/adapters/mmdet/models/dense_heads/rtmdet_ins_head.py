@@ -8,13 +8,14 @@ import torch.nn.functional as F
 from mmcv.cnn import ConvModule, bias_init_with_prob, constant_init, is_norm, normal_init
 from mmcv.ops import batched_nms
 from mmcv.runner import BaseModule
-from mmdet.core import InstanceData
 from mmdet.core.bbox import distance2bbox
 from mmdet.core.utils import filter_scores_and_topk, multi_apply, reduce_mean, select_single_mlvl
 from mmdet.models.builder import HEADS, build_loss
 from mmdet.models.utils import sigmoid_geometric_mean
 from mmdet.models.utils.transformer import inverse_sigmoid
 from torch import Tensor, nn
+
+from otx.algorithms.detection.adapters.mmdet.utils import CustomInstanceData
 
 from .rtmdet_head import RTMDetHead
 
@@ -203,7 +204,7 @@ class RTMDetInsHead(RTMDetHead):
         cfg: dict = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> List[InstanceData]:
+    ) -> List[CustomInstanceData]:
         """Transform a batch of output features extracted from the head into
         bbox results.
 
@@ -237,7 +238,7 @@ class RTMDetInsHead(RTMDetHead):
                 Defaults to True.
 
         Returns:
-            list[:obj:`InstanceData`]: Object detection results of each image
+            list[:obj:`CustomInstanceData`]: Object detection results of each image
             after the post process. Each item usually contains following keys.
 
                 - scores (Tensor): Classification scores, has a shape
@@ -304,7 +305,7 @@ class RTMDetInsHead(RTMDetHead):
         cfg: dict,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> InstanceData:
+    ) -> CustomInstanceData:
         """Transform a single image's features extracted from the head into
         bbox and mask results.
 
@@ -338,7 +339,7 @@ class RTMDetInsHead(RTMDetHead):
                 Defaults to True.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image
+            :obj:`CustomInstanceData`: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 
@@ -423,7 +424,7 @@ class RTMDetInsHead(RTMDetHead):
         priors = torch.cat(mlvl_valid_priors)
         bboxes = self.bbox_coder.decode(priors[..., :2], bbox_pred, max_shape=img_shape)
 
-        results = InstanceData()
+        results = CustomInstanceData()
         results.bboxes = bboxes
         results.priors = priors
         results.scores = torch.cat(mlvl_scores)
@@ -438,13 +439,13 @@ class RTMDetInsHead(RTMDetHead):
 
     def _bbox_mask_post_process(
         self,
-        results: InstanceData,
+        results: CustomInstanceData,
         mask_feat,
         cfg: dict,
         rescale: bool = False,
         with_nms: bool = True,
         img_meta: Optional[dict] = None,
-    ) -> InstanceData:
+    ) -> CustomInstanceData:
         """bbox and mask post-processing method.
 
         The boxes would be rescaled to the original image scale and do
@@ -462,7 +463,7 @@ class RTMDetInsHead(RTMDetHead):
             img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
-            :obj:`InstanceData`: Detection results of each image
+            :obj:`CustomInstanceData`: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 
@@ -479,10 +480,7 @@ class RTMDetInsHead(RTMDetHead):
             assert img_meta.get("scale_factor") is not None
             scale_factor = [1 / s for s in img_meta["scale_factor"]]
             scale_factor = results.bboxes.new_tensor(scale_factor)
-            # TODO: Might not be correct
-            results.bboxes = (results.bboxes.view(results.bboxes.size(0), -1, 4) * scale_factor).view(
-                results.bboxes.size()[0], -1
-            )
+            results.bboxes = results.bboxes * scale_factor
 
         if hasattr(results, "score_factors"):
             # TODO: Add sqrt operation in order to be consistent with
@@ -599,7 +597,7 @@ class RTMDetInsHead(RTMDetHead):
         mask_feats: Tensor,
         flatten_kernels: Tensor,
         sampling_results_list: list,
-        batch_gt_instances: List[InstanceData],
+        batch_gt_instances: List[CustomInstanceData],
     ) -> Tensor:
         """Compute instance segmentation loss.
 
@@ -610,7 +608,7 @@ class RTMDetInsHead(RTMDetHead):
                 Has shape (N, num_instances, num_params)
             sampling_results_list (list[:obj:`SamplingResults`]) Batch of
                 assignment results.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[:obj:`CustomInstanceData`]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
 
@@ -622,7 +620,7 @@ class RTMDetInsHead(RTMDetHead):
         for idx, (mask_feat, kernels, sampling_results, gt_instances) in enumerate(
             zip(mask_feats, flatten_kernels, sampling_results_list, batch_gt_instances)
         ):
-            pos_priors = sampling_results.pos_priors
+            pos_priors = sampling_results.pos_bboxes
             pos_inds = sampling_results.pos_inds
             pos_kernels = kernels[pos_inds]  # n_pos, num_gen_params
             pos_mask_logits = self._mask_predict_by_feat_single(mask_feat, pos_kernels, pos_priors)
@@ -663,9 +661,9 @@ class RTMDetInsHead(RTMDetHead):
         bbox_preds: List[Tensor],
         kernel_preds: List[Tensor],
         mask_feat: Tensor,
-        batch_gt_instances: List[InstanceData],
+        batch_gt_instances: List[CustomInstanceData],
         batch_img_metas: List[dict],
-        batch_gt_instances_ignore: List[InstanceData] = None,
+        batch_gt_instances_ignore: List[CustomInstanceData] = None,
     ):
         """Compute losses of the head.
 
@@ -675,12 +673,12 @@ class RTMDetInsHead(RTMDetHead):
             bbox_preds (list[Tensor]): Decoded box for each scale
                 level with shape (N, num_anchors * 4, H, W) in
                 [tl_x, tl_y, br_x, br_y] format.
-            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
+            batch_gt_instances (list[:obj:`CustomInstanceData`]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
+            batch_gt_instances_ignore (list[:obj:`CustomInstanceData`], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.

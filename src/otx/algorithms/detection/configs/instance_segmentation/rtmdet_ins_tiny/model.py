@@ -22,7 +22,7 @@ model = dict(
         deepen_factor=1,
         widen_factor=1,
         channel_attention=True,
-        norm_cfg=dict(type="BN"),
+        norm_cfg=dict(type='BN', requires_grad=True),
         act_cfg=dict(type="SiLU", inplace=True),
     ),
     neck=dict(

@@ -6,8 +6,9 @@ import torch.nn.functional as F
 from mmdet.core.bbox.assigners import AssignResult, BaseAssigner
 from mmdet.core.bbox.builder import BBOX_ASSIGNERS
 from mmdet.core.bbox.iou_calculators import build_iou_calculator
-from mmdet.core.data_structures import InstanceData
 from torch import Tensor
+
+from otx.algorithms.detection.adapters.mmdet.utils import CustomInstanceData
 
 INF = 100000000
 EPS = 1.0e-7
@@ -64,25 +65,25 @@ class DynamicSoftLabelAssigner(BaseAssigner):
 
     def assign(
         self,
-        pred_instances: InstanceData,
-        gt_instances: InstanceData,
-        gt_instances_ignore: Optional[InstanceData] = None,
+        pred_instances: CustomInstanceData,
+        gt_instances: CustomInstanceData,
+        gt_instances_ignore: Optional[CustomInstanceData] = None,
         **kwargs
     ) -> AssignResult:
         """Assign gt to priors.
 
         Args:
-            pred_instances (:obj:`InstanceData`): Instances of model
+            pred_instances (:obj:`CustomInstanceData`): Instances of model
                 predictions. It includes ``priors``, and the priors can
                 be anchors or points, or the bboxes predicted by the
                 previous stage, has shape (n, 4). The bboxes predicted by
                 the current model or stage will be named ``bboxes``,
-                ``labels``, and ``scores``, the same as the ``InstanceData``
+                ``labels``, and ``scores``, the same as the ``CustomInstanceData``
                 in other places.
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (:obj:`CustomInstanceData`): Ground truth of instance
                 annotations. It usually includes ``bboxes``, with shape (k, 4),
                 and ``labels``, with shape (k, ).
-            gt_instances_ignore (:obj:`InstanceData`, optional): Instances
+            gt_instances_ignore (:obj:`CustomInstanceData`, optional): Instances
                 to be ignored during training. It includes ``bboxes``
                 attribute data that is ignored during training and testing.
                 Defaults to None.

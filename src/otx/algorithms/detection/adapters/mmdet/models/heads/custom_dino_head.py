@@ -319,7 +319,7 @@ class CustomDINOHead(DeformableDETRHead, DETRHeadExtension):
                 group collation, including 'num_denoising_queries' and
                 'num_denoising_groups'. It will be used for split outputs of
                 denoising and matching parts and loss calculation.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], optional):
+            batch_gt_instances_ignore (list[:obj:`CustomInstanceData`], optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.

@@ -45,7 +45,7 @@ class DETRHeadExtension(BaseModule):
                 It usually includes ``bboxes`` and ``labels`` attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`InstanceData`], optional):
+            batch_gt_instances_ignore (list[:obj:`CustomInstanceData`], optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -213,7 +213,7 @@ class DETRHeadExtension(BaseModule):
             bbox_pred (Tensor): Sigmoid outputs from a single decoder layer
                 for one image, with normalized coordinate (cx, cy, w, h) and
                 shape [num_queries, 4].
-            gt_instances (:obj:`InstanceData`): Ground truth of instance
+            gt_instances (:obj:`CustomInstanceData`): Ground truth of instance
                 annotations. It should includes ``bboxes`` and ``labels``
                 attributes.
             img_meta (dict): Meta information for one image.

@@ -7,24 +7,21 @@ import functools
 
 import numpy as np
 import torch
-from mmdet.core import InstanceData, bbox2result
+from mmdet.core import bbox2result
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.single_stage import SingleStageDetector
 
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
+from otx.algorithms.detection.adapters.mmdet.utils import CustomInstanceData
 
 logger = get_logger()
 
 
-# TODO: Need to fix pylint issues
-# pylint: disable=too-many-locals, unused-argument, protected-access, abstract-method
-
-
-def pack_gt_instances(gt_masks, gt_labels, gt_bboxes) -> list[InstanceData]:
+def pack_gt_instances(gt_masks, gt_labels, gt_bboxes) -> list[CustomInstanceData]:
     batch_gt_instances = []
     for gt_mask, gt_label, gt_bbox in zip(gt_masks, gt_labels, gt_bboxes):
-        gt_instance = InstanceData()
+        gt_instance = CustomInstanceData()
         gt_instance.masks = gt_mask
         gt_instance.labels = gt_label
         gt_instance.bboxes = gt_bbox
@@ -135,7 +132,7 @@ class CustomRTMDetInst(SingleStageDetector):
         dataset.
 
         Args:
-            results (:obj:`InstanceData`): Processed
+            results (:obj:`CustomInstanceData`): Processed
                 results of single images. Usually contains
                 following keys.
 
