@@ -25,7 +25,7 @@ def test_batsh_size_adapt_type():
 
 @e2e_pytest_unit
 def test_input_size_preset():
-    assert len(InputSizePreset) == 9
+    assert len(InputSizePreset) == 10
     assert InputSizePreset.parse("xxx") == None
     assert InputSizePreset.parse("Default") == None
     assert InputSizePreset.parse("Auto") == (0, 0)
@@ -34,5 +34,5 @@ def test_input_size_preset():
     assert InputSizePreset.AUTO.tuple == (0, 0)
     assert InputSizePreset._64x64.tuple == (64, 64)
     input_sizes = InputSizePreset.input_sizes()
-    assert len(input_sizes) == 7
+    assert len(input_sizes) == 8
     assert input_sizes[-1] == (1024, 1024)

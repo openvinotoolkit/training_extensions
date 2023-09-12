@@ -5,11 +5,9 @@
 import copy
 import glob
 import multiprocessing
-import numpy as np
 import os
 import os.path as osp
 import platform
-import re
 import shutil
 import sys
 import tempfile
@@ -18,6 +16,7 @@ from collections.abc import Mapping
 from importlib import import_module
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from mmcv import Config, ConfigDict
 from mmcv.utils.config import BASE_KEY, DEPRECATION_KEY
@@ -644,7 +643,7 @@ class InputSizeManager:
     are considered at now. If other data pipelines exist, it can work differently than expected.
 
     Args:
-        data_config (Dict): Data configuration expected to have "train", "val" or "test" data pipeline.
+        config (Dict): Global configuration including data config w/ "train", "val" or "test" data pipeline.
         base_input_size (Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]], optional):
             Default input size. If it's a None, it's estimated based on data pipeline. If it's an integer,
             it's expected that all data pipeline have (base_input_size x base_input_size) input size.
@@ -669,20 +668,24 @@ class InputSizeManager:
     }
     SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
 
+    MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
+    # meaning NxN input pixels being downscaled to 1x1 on feature map
+
     def __init__(
         self,
-        data_config: Dict,
+        config: Dict,
         base_input_size: Optional[Union[int, Tuple[int, int], Dict[str, int], Dict[str, Tuple[int, int]]]] = None,
     ):
-        self._data_config = data_config
+        self._config = config
+        self._data_config = config.get("data", {})
         if isinstance(base_input_size, int):
             base_input_size = (base_input_size, base_input_size)
         elif isinstance(base_input_size, dict):
-            for task in base_input_size.keys():
-                if isinstance(base_input_size[task], int):
-                    base_input_size[task] = (base_input_size[task], base_input_size[task])  # type: ignore[assignment]
+            for subset_type in base_input_size.keys():
+                if isinstance(base_input_size[subset_type], int):
+                    base_input_size[subset_type] = (base_input_size[subset_type], base_input_size[subset_type])  # type: ignore[assignment]
             for subset_type in self.SUBSET_TYPES:
-                if subset_type in data_config and subset_type not in base_input_size:
+                if subset_type in self._data_config and subset_type not in base_input_size:
                     raise ValueError(
                         f"There is {subset_type} data configuration but base input size for it doesn't exists."
                     )
@@ -698,11 +701,11 @@ class InputSizeManager:
                 If input_size is an integer list, (input_size[0] x input_size[1]) will be set.
         """
         if isinstance(input_size, int):
-            input_size = [input_size, input_size]
+            input_size = (input_size, input_size)
         if not isinstance(self.base_input_size, dict):
             resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
 
-        # scale size values
+        # Scale size values in data pipelines
         for subset_type in self.SUBSET_TYPES:
             if subset_type in self._data_config:
                 if isinstance(self.base_input_size, dict):
@@ -714,23 +717,13 @@ class InputSizeManager:
                 for pipeline in pipelines:
                     self._set_pipeline_size_value(pipeline, resize_ratio)
 
-    @staticmethod
-    def select_closest_size(input_size: Tuple[int, int], preset_sizes: List[Tuple[int, int]]):
-        """Select the most closest size from preset sizes in terms of area.
-
-        Args:
-            input_size (Tuple[int, int]): Query input size
-            preset_sizes (List[Tuple[int, int]]): List of preset input sizes
-
-        Returns:
-            Tuple[int, int]: Best matching size out of preset. Returns input_size if preset is empty.
-        """
-        if len(preset_sizes) == 0:
-            return input_size
-        input_area = input_size[0]*input_size[1]
-        preset_areas = np.array(list(map(lambda x: x[0]*x[1], preset_sizes)))
-        abs_diff = np.abs(preset_areas - input_area)
-        return preset_sizes[np.argmin(abs_diff)]
+        # Set model size
+        # - needed only for YOLOX
+        model_cfg = self._config.get("model", {})
+        if model_cfg.get("type", "") == "CustomYOLOX":
+            if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
+                raise ValueError("YOLOX should have input size being multiple of 32.")
+            model_cfg["input_size"] = input_size
 
     @property
     def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
@@ -889,36 +882,102 @@ class InputSizeManager:
         else:
             pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
 
+    @staticmethod
+    def get_configured_input_size(
+        input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+    ) -> Optional[Tuple[int, int]]:
+        """Get configurable input size configuration. If it doesn't exist, return None.
 
-def get_configured_input_size(
-    input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
-) -> Union[None, Tuple[int, int]]:
-    """Get configurable input size configuration. If it doesn't exist, return None.
+        Args:
+            input_size_config (InputSizePreset, optional): Input size setting. Defaults to InputSizePreset.DEFAULT.
+            model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
 
-    Args:
-        input_size_config (InputSizePreset, optional): Input size configuration. Defaults to InputSizePreset.DEFAULT.
-        model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
-
-    Returns:
-        Union[None, Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
-    """
-    input_size = None
-    if input_size_config == InputSizePreset.DEFAULT:
-        if model_ckpt is None:
-            return None
-
-        model_info = torch.load(model_ckpt, map_location="cpu")
-        for key in ["config", "learning_parameters", "input_size", "value"]:
-            if key not in model_info:
+        Returns:
+            Optional[Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
+        """
+        input_size = None
+        if input_size_config == InputSizePreset.DEFAULT:
+            if model_ckpt is None:
                 return None
-            model_info = model_info[key]
-        input_size = model_info
 
-        if input_size == InputSizePreset.DEFAULT.value:
-            return None
+            model_info = torch.load(model_ckpt, map_location="cpu")
+            for key in ["config", "learning_parameters", "input_size", "value"]:
+                if key not in model_info:
+                    return None
+                model_info = model_info[key]
+            input_size = model_info
 
-        logger.info("Given model weight was trained with {} input size.".format(input_size))
-    else:
-        input_size = input_size_config.value
+            if input_size == InputSizePreset.DEFAULT.value:
+                return None
 
-    return InputSizePreset.parse(input_size)
+            logger.info("Given model weight was trained with {} input size.".format(input_size))
+        else:
+            input_size = input_size_config.value
+
+        return InputSizePreset.parse(input_size)
+
+    @staticmethod
+    def select_closest_size(input_size: Tuple[int, int], preset_sizes: List[Tuple[int, int]]):
+        """Select the most closest size from preset sizes in log scale.
+
+        Args:
+            input_size (Tuple[int, int]): Query input size
+            preset_sizes (List[Tuple[int, int]]): List of preset input sizes
+
+        Returns:
+            Tuple[int, int]: Best matching size out of preset. Returns input_size if preset is empty.
+        """
+        if len(preset_sizes) == 0:
+            return input_size
+        scale_of = lambda x: np.log(np.sqrt(x[0] * x[1]))
+        input_scale = scale_of(input_size)
+        preset_scales = np.array(list(map(scale_of, preset_sizes)))
+        abs_diff = np.abs(preset_scales - input_scale)
+        return preset_sizes[np.argmin(abs_diff)]
+
+    def adapt_input_size_to_dataset(
+        self, max_image_size: float, min_object_size: float = None, downscale_only: bool = True
+    ) -> Tuple[int, int]:
+        """Compute appropriate model input size w.r.t. dataset statistics.
+
+        Args:
+            max_image_size (int): Typical large image size of dataset in pixels.
+            min_object_size (int): Typical small object size of dataset in pixels.
+                None to consider only image size. Defaults to None.
+            downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
+
+        Returns:
+            Tuple[int, int]: (width, height)
+        """
+
+        logger.info("Adapting model input size based on dataset stat")
+
+        base_input_size = self.base_input_size
+        if isinstance(base_input_size, Dict):
+            base_input_size = base_input_size.get("test", None)
+
+        if max_image_size <= 0:
+            return base_input_size
+
+        image_size = max_image_size
+        logger.info(f"-> Based on typical large image size: {image_size}")
+
+        # Refine using annotation shape size stat
+        if min_object_size is not None and min_object_size > 0:
+            image_size = image_size * self.MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size
+            logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
+
+        input_size = (round(image_size), round(image_size))
+
+        if downscale_only:
+            def area(x):
+                return x[0] * x[1]
+            if base_input_size and area(input_size) >= area(base_input_size):
+                logger.info(f"-> Downscale only: {input_size} -> {base_input_size}")
+                return base_input_size
+
+        # Closest preset
+        input_size_preset = InputSizePreset.input_sizes()
+        input_size = InputSizeManager.select_closest_size(input_size, input_size_preset)
+        logger.info(f"-> Closest preset: {input_size}")
+        return input_size
