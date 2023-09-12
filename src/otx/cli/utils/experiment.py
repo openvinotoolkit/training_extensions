@@ -69,7 +69,7 @@ def _check_resource(
     trackers: Dict[str, ResourceRecorder] = {}
     for resource_type in resource_types:
         if resource_type == "cpu":
-            trackers[resource_type] = CpuUsageRecorder(psutil.Process().parent())
+            trackers[resource_type] = CpuUsageRecorder()
         elif resource_type == "gpu":
             if pynvml is None:
                 logger.warning("GPU can't be found. Tracking GPU usage is skipped.")
@@ -119,8 +119,7 @@ class CpuUsageRecorder(ResourceRecorder):
     Args:
         target_process Optional[psutil.Process]: Process to track.
     """
-    def __init__(self, target_process: Optional[psutil.Process] = None):
-        self._target_process = psutil.Process() if target_process is None else target_process
+    def __init__(self):
         self._record_count: int = 0
         self._max_mem: Union[int, float] = 0
         self._avg_util: Union[int, float] = 0
@@ -128,12 +127,13 @@ class CpuUsageRecorder(ResourceRecorder):
     def record(self):
         """Record CPU usage."""
         # cpu mem
-        cpu_mem = self._target_process.memory_info().rss / GIB
+        memory_info = psutil.virtual_memory()
+        cpu_mem = (memory_info.total - memory_info.available) / GIB
         if self._max_mem < cpu_mem:
             self._max_mem = cpu_mem
 
         # cpu util
-        cpu_percent = self._target_process.cpu_percent()
+        cpu_percent = psutil.cpu_percent()
         if self._record_count != 0:  # a value at the first time is meaningless
             self._avg_util += cpu_percent
 
