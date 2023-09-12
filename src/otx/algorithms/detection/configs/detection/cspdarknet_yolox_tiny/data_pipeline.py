@@ -1,4 +1,4 @@
-"""Data Pipeline of YOLOX model for Detection Task."""
+"""Data Pipeline of YOLOX Tiny model for Detection Task."""
 
 # Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
