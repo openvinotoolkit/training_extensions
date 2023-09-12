@@ -16,7 +16,6 @@ from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    get_configured_input_size,
     remove_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
@@ -151,11 +150,7 @@ class SegmentationConfigurer(BaseConfigurer):
         cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt_path)
-        if input_size is None:
-            return
-
-        # segmentation models have different input size in train and val data pipeline
+        # Segmentation models have different input size in train and val data pipeline
         base_input_size = {
             "train": 512,
             "val": 544,
@@ -163,7 +158,18 @@ class SegmentationConfigurer(BaseConfigurer):
             "unlabeled": 512,
         }
 
-        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        manager = InputSizeManager(cfg.data, base_input_size)
+
+        input_size = manager.get_configured_input_size(input_size_config, model_ckpt_path)
+        if input_size is None:  # InputSizePreset.DEFAULT
+            return
+
+        if input_size == (0, 0):  # InputSizePreset.AUTO
+            input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager)
+            if input_size is None:
+                return
+
+        manager.set_input_size(input_size)
         logger.info("Input size is changed to {}".format(input_size))
 
 
