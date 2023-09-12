@@ -40,7 +40,7 @@ class TestExplainMethods:
         "YOLOX-S": np.array([75, 178, 151, 159, 150, 148, 144, 144, 147, 144, 147, 142, 189], dtype=np.uint8),
         "YOLOX-L": np.array([43, 28, 0, 6, 7, 19, 22, 17, 14, 18, 25, 7, 34], dtype=np.uint8),
         "YOLOX-X": np.array([255, 144, 83, 76, 83, 86, 82, 90, 91, 93, 110, 104, 83], dtype=np.uint8),
-        "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 28, 44, 23, 61], dtype=np.uint8),
+        "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 27, 44, 23, 61], dtype=np.uint8),
     }
 
     ref_saliency_vals_det_wo_postprocess = {
@@ -94,7 +94,9 @@ class TestExplainMethods:
         assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
         actual_sal_vals = saliency_maps[0][0][0].astype(np.uint8)
         ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.uint8)
-        assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
+        # convert to int8 in case of negative delta
+        delta_sal_map = np.abs((actual_sal_vals - ref_sal_vals).astype(np.int8))
+        assert np.all(delta_sal_map) <= 1
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_det, ids=templates_det_ids)

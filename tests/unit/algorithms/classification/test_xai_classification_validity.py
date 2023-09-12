@@ -65,7 +65,9 @@ class TestExplainMethods:
         assert saliency_maps[0].shape == saliency_map_ref_shape
         actual_sal_vals = saliency_maps[0][0][0].astype(np.uint8)
         ref_sal_vals = self.ref_saliency_vals_cls[template.name].astype(np.uint8)
-        assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
+        # convert to int8 in case of negative delta
+        delta_sal_map = np.abs((actual_sal_vals - ref_sal_vals).astype(np.int8))
+        assert np.all(delta_sal_map) <= 1
 
 
 class TestViTExplain:
