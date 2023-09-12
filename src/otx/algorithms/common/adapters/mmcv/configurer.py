@@ -480,7 +480,8 @@ class BaseConfigurer:
                 ),
             )
         cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self.learning_curves})
-        self._update_caching_modules(cfg)
+        if hasattr(cfg, "algo_backend"):
+            self._update_caching_modules(cfg)
 
     @staticmethod
     def _update_caching_modules(cfg: Config) -> None:

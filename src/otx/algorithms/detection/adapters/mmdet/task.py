@@ -102,8 +102,7 @@ class MMDetectionTask(OTXDetectionTask):
         self._data_cfg: Optional[Config] = None
         self._recipe_cfg: Optional[Config] = None
 
-    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, dataset: Optional[DatasetEntity] = None):  # noqa
+    def _init_task(self):  # noqa
         """Initialize task."""
         self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
@@ -221,7 +220,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._is_training = True
 
-        self._init_task(dataset)
+        self._init_task()
 
         cfg = self.configure(True, None, get_dataset(dataset, Subset.TRAINING))
         logger.info("train!")
@@ -320,7 +319,7 @@ class MMDetectionTask(OTXDetectionTask):
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
-        self._init_task(dataset)
+        self._init_task()
 
         cfg = self.configure(False, None)
         logger.info("infer!")
