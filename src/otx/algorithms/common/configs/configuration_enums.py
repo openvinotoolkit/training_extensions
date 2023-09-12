@@ -52,15 +52,22 @@ class InputSizePreset(ConfigurableEnum):
     _768x768 = "768x768"
     _1024x1024 = "1024x1024"
 
+    @staticmethod
+    def parse(value: str) -> Optional[Tuple[int, int]]:
+        """Parse string value to tuple."""
+        if value == "Default":
+            return None
+        if value == "Auto":
+            return (0, 0)
+        parsed_tocken = re.match("(\\d+)x(\\d+)", value)
+        if parsed_tocken is None:
+            return None
+        return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))
+
     @property
     def tuple(self) -> Optional[Tuple[int, int]]:
         """Returns parsed tuple."""
-        if self.value == "Default":
-            return None
-        if self.value == "Auto":
-            return (0, 0)
-        parsed_tocken = re.match("(\\d+)x(\\d+)", self.value)
-        return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))
+        return InputSizePreset.parse(self.value)
 
     @classmethod
     def input_sizes(cls):
