@@ -42,6 +42,7 @@ from otx.cli.utils.parser import (
     get_parser_and_hprams_data,
 )
 from otx.cli.utils.report import get_otx_report
+from otx.cli.utils.experiment import ResourceTracker
 from otx.core.data.adapter import get_dataset_adapter
 
 
@@ -159,6 +160,11 @@ def get_args():
         default=None,
         help="Encryption key required to train the encrypted dataset. It is not required the non-encrypted dataset",
     )
+    parser.add_argument(
+        "--track-resource-usage",
+        action="store_true",
+        help="Track CPU & GPU utilization and max memory usage and save them at the output path as a file.",
+    )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
     # TODO: Temporary solution for cases where there is no template input
@@ -273,9 +279,17 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
+    resource_tracker = None
+    if args.track_resource_usage and not is_multigpu_child_process():
+        resource_tracker = ResourceTracker(config_manager.output_path, args.gpus)
+        resource_tracker.start()
+
     task.train(
         dataset, output_model, train_parameters=TrainParameters(), seed=args.seed, deterministic=args.deterministic
     )
+
+    if resource_tracker is not None:
+        resource_tracker.stop()
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
