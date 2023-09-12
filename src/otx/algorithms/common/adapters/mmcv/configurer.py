@@ -3,30 +3,29 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import json
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-import json
 from mmcv.runner import CheckpointLoader
 from mmcv.utils import Config, ConfigDict
 from torch import distributed as dist
 
-from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
 from otx.algorithms.common.adapters.mmcv.utils import (
     patch_adaptive_interval_training,
     patch_early_stopping,
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
+    InputSizePreset,
     patch_color_conversion,
     recursively_update_cfg,
-    InputSizePreset,
-    InputSizeManager,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils import append_dist_rank_suffix
+from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
@@ -404,20 +403,22 @@ class BaseConfigurer:
         return cfg.data[subset]
 
     @staticmethod
-    def get_input_size_to_fit_dataset(data_cfg, use_annotations: bool = False) -> Optional[Tuple[int, int]]:
-        """ Compute appropriate model input size w.r.t. dataset statistics.
+    def adapt_input_size_to_dataset(
+        cfg, input_size_manager: InputSizeManager, downscale_only: bool = True, use_annotations: bool = False
+    ) -> Optional[Tuple[int, int]]:
+        """Compute appropriate model input size w.r.t. dataset statistics.
 
-            Args:
-                data_cfg (Dict): dataset configuration.
-                use_annotations (bool): whether to consider annotation shapes to compute input size. Defaults to False.
+        Args:
+            cfg (Dict): Global configuration.
+            input_size_manager: (InputSizeManager): Pre-configured input size manager
+            downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
+            use_annotations (bool): Whether to consider annotation shapes to compute input size. Defaults to False.
 
-            Returns:
-                Tuple[int, int]: (width, height) or None
+        Returns:
+            Tuple[int, int]: (width, height) or None
         """
-        MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
-                                           # meaning NxN input pixels being downscaled to 1x1 on feature map
 
-        data_cfg = BaseConfigurer.get_data_cfg(data_cfg, "train")
+        data_cfg = BaseConfigurer.get_data_cfg(cfg, "train")
         dataset = data_cfg.get("otx_dataset", None)
         if dataset is None:
             return None
@@ -425,23 +426,16 @@ class BaseConfigurer:
         stat = compute_robust_dataset_statistics(dataset, use_annotations)
         if not stat:
             return None
-        logger.info(f"Adapting model input size based on dataset stat: {json.dumps(stat, indent=4)}")
+        logger.info(f"Dataset stat: {json.dumps(stat, indent=4)}")
 
         # Fit to typical large image size (conservative)
         # -> "avg" size might be preferrable for efficiency
-        input_size = stat["image"]["robust_max"]
-        logger.info(f"-> Based on typical large image size: {input_size}")
-
-        # Refine using annotation shape size stat
+        image_size = stat["image"]["robust_max"]
+        object_size = None
         if use_annotations and stat["annotation"]:
-            small_object_size = stat["annotation"].get("size_of_shape", {}).get("robust_min", None)
-            if small_object_size is not None and small_object_size > 0:
-                input_size = input_size * MIN_RECOGNIZABLE_OBJECT_SIZE / small_object_size
-                logger.info(f"-> Based on typical small object size {small_object_size}: {input_size}")
+            # Refine using annotation shape size stat
+            # Fit to typical small object size (conservative)
+            # -> "avg" size might be preferrable for efficiency
+            object_size = stat["annotation"].get("size_of_shape", {}).get("robust_min", None)
 
-        # Closest preset
-        input_size = (round(input_size), round(input_size))
-        input_size_preset = InputSizePreset.input_sizes()
-        input_size = InputSizeManager.select_closest_size(input_size, input_size_preset)
-        logger.info(f"-> Closest preset: {input_size}")
-        return input_size
+        return input_size_manager.adapt_input_size_to_dataset(image_size, object_size, downscale_only)
