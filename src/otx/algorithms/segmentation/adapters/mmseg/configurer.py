@@ -158,7 +158,7 @@ class SegmentationConfigurer(BaseConfigurer):
             "unlabeled": 512,
         }
 
-        manager = InputSizeManager(cfg.data, base_input_size)
+        manager = InputSizeManager(cfg, base_input_size)
 
         input_size = manager.get_configured_input_size(input_size_config, model_ckpt_path)
         if input_size is None:  # InputSizePreset.DEFAULT

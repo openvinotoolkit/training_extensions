@@ -255,6 +255,7 @@ learning_parameters:
     header: Configure model input size.
     options:
       DEFAULT: "Default"
+      AUTO: "Auto"
       _256x256: "256x256"
       _384x384: "384x384"
       _512x512: "512x512"

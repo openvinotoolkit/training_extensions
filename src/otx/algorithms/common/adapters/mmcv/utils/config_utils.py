@@ -911,6 +911,7 @@ class InputSizeManager:
                 return None
 
             logger.info("Given model weight was trained with {} input size.".format(input_size))
+
         else:
             input_size = input_size_config.value
 
@@ -955,6 +956,7 @@ class InputSizeManager:
         base_input_size = self.base_input_size
         if isinstance(base_input_size, Dict):
             base_input_size = base_input_size.get("test", None)
+        logger.info(f"-> Current base input size: {base_input_size}")
 
         if max_image_size <= 0:
             return base_input_size

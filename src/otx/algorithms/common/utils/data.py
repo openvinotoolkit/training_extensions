@@ -244,12 +244,12 @@ def compute_robust_statistics(values: np.array) -> Dict[str, float]:
     robust_min_value = max(min_value, avg_3std_min_value)
     robust_max_value = min(max_value, avg_3std_max_value)
 
-    stat["avg"] = avg_value
-    stat["std"] = std_value
-    stat["min"] = min_value
-    stat["max"] = max_value
-    stat["robust_min"] = robust_min_value
-    stat["robust_max"] = robust_max_value
+    stat["avg"] = float(avg_value)
+    stat["std"] = float(std_value)
+    stat["min"] = float(min_value)
+    stat["max"] = float(max_value)
+    stat["robust_min"] = float(robust_min_value)
+    stat["robust_max"] = float(robust_max_value)
     return stat
 
 
@@ -266,7 +266,7 @@ def compute_robust_scale_statistics(values: np.array) -> Dict[str, float]:
     """
     # Compute stat in log scale & convert back to original scale
     stat = compute_robust_statistics(np.log(values))
-    return {k: np.exp(v) for k, v in stat.items()}
+    return {k: float(np.exp(v)) for k, v in stat.items()}
 
 
 def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) -> Dict[str, Any]:
@@ -293,7 +293,7 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) ->
     image_sizes = []
     for data in dataset:
         image_sizes.append(np.sqrt(data.width * data.height))
-    stat["image"] = compute_robust_scale_statistics(np.array(image_sizes))
+    stat["image"] = compute_robust_statistics(np.array(image_sizes))
 
     if ann_stat:
         stat["annotation"] = {}
@@ -307,8 +307,8 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False) ->
             def shape_size(ann):
                 return np.sqrt(image_area * ann.shape.get_area())
 
-            size_of_shapes.extend(map(shape_size, annotations))
+            size_of_shapes.extend(filter(lambda x: x >= 1, map(shape_size, annotations)))
         stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
-        stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes))
+        stat["annotation"]["size_of_shape"] = compute_robust_statistics(np.array(size_of_shapes))
 
     return stat
