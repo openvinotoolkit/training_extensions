@@ -239,8 +239,6 @@ class TestToolsTilingDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_det"
-        if "MaskRCNN-ConvNeXt" in template.name:
-            pytest.skip("CVS-118373 ConvNeXt Compilation Error in PTQ")
         ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
@@ -248,8 +246,6 @@ class TestToolsTilingDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_det"
-        if "MaskRCNN-ConvNeXt" in template.name:
-            pytest.skip("CVS-118373 ConvNeXt Compilation Error in PTQ")
         ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "detection", type(self).__name__)
 
     @e2e_pytest_component
@@ -257,6 +253,4 @@ class TestToolsTilingDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_det"
-        if "MaskRCNN-ConvNeXt" in template.name:
-            pytest.skip("CVS-118373 ConvNeXt Compilation Error in PTQ")
         ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
