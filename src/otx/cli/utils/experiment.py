@@ -5,8 +5,10 @@ import psutil
 import yaml
 import logging
 import os
+import time
 from abc import ABC, abstractmethod
 from typing import Union, Optional, List, Dict, Any
+from statistics import mean
 from pathlib import Path
 
 try:
@@ -28,6 +30,10 @@ class ResourceTracker:
     """
     def __init__(self, output_dir: Union[str, Path], gpu_ids: Optional[str] = None):
         self._output_dir = output_dir if isinstance(output_dir, Path) else Path(output_dir)
+        if gpu_ids is not None:
+            gpu_ids = [int(idx) for idx in gpu_ids.split(',')]
+            if len(gpu_ids) == 1:  # First GPU will be used in a single GPU training case.
+                gpu_ids = [0]
         self._gpu_ids = gpu_ids
         self._mem_check_proc: Union[mp.Process, None] = None
         self._queue: Union[mp.Queue, None] = None
@@ -85,6 +91,8 @@ def _check_resource(
 
         if not queue.empty():
             break
+
+        time.sleep(0.01)
 
     output_path = Path(queue.get())
 
@@ -153,14 +161,13 @@ class GpuUsageRecorder(ResourceRecorder):
         if gpu_ids is None:
             gpu_ids = [0]
 
-        self._record_count: int = 0
         self._record: Dict[str, Union[int, float]] = {}
         self._gpu_handlers: Dict[int, Any] = {}
 
         pynvml.nvmlInit()
         gpu_to_track = self._get_gpu_to_track(gpu_ids)
         for gpu_idx in gpu_to_track:
-            self._record[gpu_idx] = {"max_mem" : 0, "avg_util" : 0} 
+            self._record[gpu_idx] = {"max_mem" : 0, "util_record" : []}
             self._gpu_handlers[gpu_idx] = pynvml.nvmlDeviceGetHandleByIndex(gpu_idx)
 
     def _get_gpu_to_track(self, gpu_ids: List[int]) -> List[int]:
@@ -176,7 +183,7 @@ class GpuUsageRecorder(ResourceRecorder):
         for gpu_idx, record in self._record.items():
             # gpu util
             gpu_info = pynvml.nvmlDeviceGetUtilizationRates(self._gpu_handlers[gpu_idx])
-            record["avg_util"] += gpu_info.gpu
+            record["util_record"].append(gpu_info.gpu)
 
             # gpu mem
             gpu_mem = pynvml.nvmlDeviceGetMemoryInfo(self._gpu_handlers[gpu_idx])
@@ -184,13 +191,8 @@ class GpuUsageRecorder(ResourceRecorder):
             if record["max_mem"] < mem_used:
                 record["max_mem"] = mem_used
 
-        self._record_count += 1
-
     def report(self) -> Dict[str, str]:
         """Aggregate GPU usage."""
-        if self._record_count == 0:
-            return {}
-
         total_max_mem = 0
         total_avg_util = 0
         gpus_record = self._record.copy()
@@ -198,12 +200,19 @@ class GpuUsageRecorder(ResourceRecorder):
             max_mem = gpus_record[gpu_idx]['max_mem']
             if total_max_mem < max_mem:
                 total_max_mem = max_mem
-            avg_util = gpus_record[gpu_idx]['avg_util'] / self._record_count
-            total_avg_util = avg_util
 
-            gpus_record[gpu_idx]["avg_util"] = f"{round(avg_util, 2)} %"
-            gpus_record[gpu_idx]["max_mem"] = f"{round(max_mem, 2)} GiB"
-            gpus_record[f"gpu_{gpu_idx}"] = gpus_record[gpu_idx]
+            # Count utilization after it becomes bigger than 20% of max utilization
+            max_util = max(gpus_record[gpu_idx]['util_record'])
+            for idx, util in enumerate(gpus_record[gpu_idx]['util_record']):
+                if util * 5 > max_util:
+                    break
+            avg_util = mean(gpus_record[gpu_idx]['util_record'][idx:])
+            total_avg_util += avg_util
+
+            gpus_record[f"gpu_{gpu_idx}"] = {
+                "avg_util" : f"{round(avg_util, 2)} %",
+                "max_mem" : f"{round(max_mem, 2)} GiB",
+            }
             del gpus_record[gpu_idx]
 
         gpus_record["total_avg_util"] = f"{round(total_avg_util / len(gpus_record), 2)} %"
