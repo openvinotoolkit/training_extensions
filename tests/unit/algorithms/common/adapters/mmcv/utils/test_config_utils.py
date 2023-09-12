@@ -351,6 +351,22 @@ class TestInputSizeManager:
 
         check_val_changed(mock_data_pipeline)
 
+    @pytest.mark.parametrize("input_size", [(256, 256), (300, 300)])
+    def test_set_input_size_yolox(self, mock_data_pipeline, input_size):
+        mock_config = {
+            "model": {"type": "CustomYOLOX"},
+            "data": {"train": {"pipeline": mock_data_pipeline}},
+        }
+
+        manager = InputSizeManager(mock_config)
+
+        if input_size[0] % 32 != 0:
+            with pytest.raises(ValueError):
+                manager.set_input_size(input_size)
+        else:
+            manager.set_input_size(input_size)
+            assert mock_config["model"]["input_size"] == input_size
+
     @pytest.mark.parametrize("base_input_size", [100, [100, 200], {"train": 100}])
     def test_base_input_size_with_given_args(self, base_input_size):
         # prepare
