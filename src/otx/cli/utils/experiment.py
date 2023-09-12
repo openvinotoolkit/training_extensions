@@ -32,8 +32,7 @@ class ResourceTracker:
         self._output_dir = output_dir if isinstance(output_dir, Path) else Path(output_dir)
         if gpu_ids is not None:
             gpu_ids = [int(idx) for idx in gpu_ids.split(',')]
-            if len(gpu_ids) == 1:  # First GPU will be used in a single GPU training case.
-                gpu_ids = [0]
+            gpu_ids[0] = 0
         self._gpu_ids = gpu_ids
         self._mem_check_proc: Union[mp.Process, None] = None
         self._queue: Union[mp.Queue, None] = None
