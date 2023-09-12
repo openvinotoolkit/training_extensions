@@ -277,7 +277,6 @@ class TestToolsOTXInstanceSegmentation:
     def test_ptq_optimize(self, template, tmp_dir_path):
         if "MaskRCNN-ConvNeXt" in template.name:
             pytest.skip("CVS-118373 ConvNeXt Compilation Error in PTQ")
-
         tmp_dir_path = tmp_dir_path / "ins_seg"
         ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
