@@ -18,7 +18,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-    get_adaptive_num_workers,
+    override_from_hyperparams,
     patch_color_conversion,
     recursively_update_cfg,
     update_or_add_custom_hook,
@@ -64,7 +64,7 @@ class BaseConfigurer:
         self,
         cfg: Config,
         data_pipeline_path: str,
-        hyperparams_from_otx: str,
+        hyperparams_from_otx: ConfigDict,
         model_ckpt_path: str,
         data_cfg: Config,
         ir_options: Optional[Config] = None,
@@ -92,6 +92,29 @@ class BaseConfigurer:
         )
         self.configure_compat_cfg(cfg)
         return cfg
+
+    def merge_configs(self, cfg, data_cfg, data_pipeline_path, hyperparams_from_otx, **kwargs):
+        """Merge model cfg, data_pipeline cfg, data_cfg, and hyperparams from otx cli."""
+
+        logger.info("merge_configs()")
+        if os.path.isfile(data_pipeline_path):
+            data_pipeline_cfg = Config.fromfile(data_pipeline_path)
+            cfg.merge_from_dict(data_pipeline_cfg)
+        else:
+            raise FileNotFoundError(f"data_pipeline: {data_pipeline_path} not founded")
+
+        if not self.export:
+            override_from_hyperparams(cfg, hyperparams_from_otx, **kwargs)
+
+        if data_cfg:
+            for subset in data_cfg.data:
+                if subset in cfg.data:
+                    src_data_cfg = self.get_data_cfg(cfg, subset)
+                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
+                    for key in new_data_cfg:
+                        src_data_cfg[key] = new_data_cfg[key]
+                else:
+                    raise ValueError(f"{subset} of data_cfg is not in cfg")
 
     def configure_ckpt(self, cfg, model_ckpt_path):
         """Patch checkpoint path for pretrained weight.
@@ -122,104 +145,6 @@ class BaseConfigurer:
             torch.save(ckpt, new_path)
             return new_path
         return ckpt_path
-
-    def merge_configs(self, cfg, data_cfg, data_pipeline_path, hyperparams_from_otx, **kwargs):
-        """Merge model cfg, data_pipeline cfg, data_cfg, and hyperparams from otx cli."""
-
-        logger.info("merge_configs()")
-        if os.path.isfile(data_pipeline_path):
-            data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-            cfg.merge_from_dict(data_pipeline_cfg)
-        else:
-            raise FileNotFoundError(f"data_pipeline: {data_pipeline_path} not founded")
-
-        if not self.export:
-            self.override_from_hyperparams(cfg, hyperparams_from_otx, **kwargs)
-
-        if data_cfg:
-            for subset in data_cfg.data:
-                if subset in cfg.data:
-                    src_data_cfg = self.get_data_cfg(cfg, subset)
-                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
-                    for key in new_data_cfg:
-                        src_data_cfg[key] = new_data_cfg[key]
-                else:
-                    raise ValueError(f"{subset} of data_cfg is not in cfg")
-
-    @staticmethod
-    def override_from_hyperparams(config: Config, hyperparams, **kwargs):
-        """Patch config parameters from hyperparams."""
-        params = hyperparams.learning_parameters
-        algo_backend = hyperparams.algo_backend
-        warmup_iters = int(params.learning_rate_warmup_iters)
-
-        model_label_type = config.filename.split("/")[-1]
-        if "multilabel" in model_label_type:
-            lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-        else:
-            lr_config = (
-                ConfigDict(warmup_iters=warmup_iters)
-                if warmup_iters > 0
-                else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-            )
-
-        if params.enable_early_stopping and config.get("evaluation", None):
-            early_stop = ConfigDict(
-                start=int(params.early_stop_start),
-                patience=int(params.early_stop_patience),
-                iteration_patience=int(params.early_stop_iteration_patience),
-            )
-        else:
-            early_stop = False
-
-        runner = ConfigDict(max_epochs=int(params.num_iters))
-        if config.get("runner", None) and config.runner.get("type").startswith("IterBasedRunner"):
-            runner = ConfigDict(max_iters=int(params.num_iters))
-
-        hparams = ConfigDict(
-            optimizer=ConfigDict(lr=params.learning_rate),
-            lr_config=lr_config,
-            early_stop=early_stop,
-            data=ConfigDict(
-                samples_per_gpu=int(params.batch_size),
-                workers_per_gpu=int(params.num_workers),
-            ),
-            runner=runner,
-            algo_backend=algo_backend,
-        )
-
-        # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
-        # as `samples_per_gpu might` not be a valid argument for certain algorithms.
-        if hasattr(config, "task"):
-            if config.task == "instance-segmentation" or config.task == "detection":
-                hparams.update(
-                    ConfigDict(
-                        data=ConfigDict(
-                            val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
-                            test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
-                        ),
-                    )
-                )
-        is_semi_sl = algo_backend.train_type.name == "Semisupervised"
-
-        if hyperparams.learning_parameters.auto_num_workers:
-            adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
-            if adapted_num_worker is not None:
-                hparams.data.workers_per_gpu = adapted_num_worker
-
-        if is_semi_sl:
-            unlabeled_config = ConfigDict(
-                data=ConfigDict(
-                    unlabeled_dataloader=ConfigDict(
-                        samples_per_gpu=int(params.unlabeled_batch_size),
-                        workers_per_gpu=int(params.num_workers),
-                    )
-                )
-            )
-            config.update(unlabeled_config)
-
-        hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
-        config.merge_from_dict(hparams)
 
     def configure_env(self, cfg):
         """Configuration for environment settings."""

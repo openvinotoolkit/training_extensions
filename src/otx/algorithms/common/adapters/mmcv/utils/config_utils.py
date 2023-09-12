@@ -523,6 +523,81 @@ def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
 
 
+def override_from_hyperparams(config: Config, hyperparams, **kwargs):
+    """Patch config parameters from hyperparams."""
+    params = hyperparams.learning_parameters
+    algo_backend = hyperparams.algo_backend
+    warmup_iters = int(params.learning_rate_warmup_iters)
+
+    model_label_type = config.filename.split("/")[-1]
+    if "multilabel" in model_label_type:
+        lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
+    else:
+        lr_config = (
+            ConfigDict(warmup_iters=warmup_iters)
+            if warmup_iters > 0
+            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        )
+
+    if params.enable_early_stopping and config.get("evaluation", None):
+        early_stop = ConfigDict(
+            start=int(params.early_stop_start),
+            patience=int(params.early_stop_patience),
+            iteration_patience=int(params.early_stop_iteration_patience),
+        )
+    else:
+        early_stop = False
+
+    runner = ConfigDict(max_epochs=int(params.num_iters))
+    if config.get("runner", None) and config.runner.get("type").startswith("IterBasedRunner"):
+        runner = ConfigDict(max_iters=int(params.num_iters))
+
+    hparams = ConfigDict(
+        optimizer=ConfigDict(lr=params.learning_rate),
+        lr_config=lr_config,
+        early_stop=early_stop,
+        data=ConfigDict(
+            samples_per_gpu=int(params.batch_size),
+            workers_per_gpu=int(params.num_workers),
+        ),
+        runner=runner,
+        algo_backend=algo_backend,
+    )
+
+    # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
+    # as `samples_per_gpu might` not be a valid argument for certain algorithms.
+    if hasattr(config, "task"):
+        if config.task == "instance-segmentation" or config.task == "detection":
+            hparams.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                        test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                    ),
+                )
+            )
+    is_semi_sl = algo_backend.train_type.name == "Semisupervised"
+
+    if hyperparams.learning_parameters.auto_num_workers:
+        adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
+        if adapted_num_worker is not None:
+            hparams.data.workers_per_gpu = adapted_num_worker
+
+    if is_semi_sl:
+        unlabeled_config = ConfigDict(
+            data=ConfigDict(
+                unlabeled_dataloader=ConfigDict(
+                    samples_per_gpu=int(params.unlabeled_batch_size),
+                    workers_per_gpu=int(params.num_workers),
+                )
+            )
+        )
+        config.update(unlabeled_config)
+
+    hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
+    config.merge_from_dict(hparams)
+
+
 def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     """Prepare configs of working directory."""
     base_work_dir = config.work_dir

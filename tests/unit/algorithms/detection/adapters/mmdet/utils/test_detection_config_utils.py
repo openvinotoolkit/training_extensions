@@ -18,7 +18,7 @@ from tests.unit.algorithms.detection.test_helpers import (
     generate_det_dataset,
 )
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig, patch_from_hyperparams
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig, override_from_hyperparams
 
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_MODEL_CONFIG_PATH,
@@ -77,7 +77,7 @@ def test_patch_samples_per_gpu(model_cfg):
     model_template = parse_model_template(Path(model_cfg).parent / "template.yaml")
     hyper_parameters = create(model_template.hyper_parameters.data)
 
-    patch_from_hyperparams(cfg, hyper_parameters)
+    override_from_hyperparams(cfg, hyper_parameters)
     params = hyper_parameters.learning_parameters
     assert cfg.data.val_dataloader.samples_per_gpu == params.inference_batch_size
     assert cfg.data.test_dataloader.samples_per_gpu == params.inference_batch_size

@@ -44,10 +44,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
+    override_from_hyperparams,
     patch_adaptive_interval_training,
-    patch_data_pipeline,
     patch_early_stopping,
-    patch_from_hyperparams,
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
@@ -94,10 +93,14 @@ class MMActionTask(OTXActionTask):
         self.set_seed()
 
         # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        if os.path.isfile(self.data_pipeline_path):
+            data_pipeline_cfg = Config.fromfile(self.data_pipeline_path)
+            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
+        else:
+            raise FileNotFoundError(f"data_pipeline: {self.data_pipeline_path} not founded")
 
         if not export:
-            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
+            override_from_hyperparams(self._recipe_cfg, self._hyperparams)
             self._recipe_cfg.total_epochs = self._recipe_cfg.runner.max_epochs
 
         if "custom_hooks" in self.override_configs:
