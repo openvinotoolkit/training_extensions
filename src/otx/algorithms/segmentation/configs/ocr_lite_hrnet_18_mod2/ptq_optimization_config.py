@@ -23,6 +23,7 @@ advanced_parameters = AdvancedQuantizationParameters(
 preset = QuantizationPreset.MIXED
 
 ignored_scope = IgnoredScope(
+    patterns=["/backbone/*"],
     names=[
         "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul",
         "/backbone/stage0/stage0.0/layers/layers.0/cross_resolution_weighting/Mul_1",
@@ -102,5 +103,5 @@ ignored_scope = IgnoredScope(
         "/aggregator/Add_1",
         "/aggregator/Add_2",
         "/backbone/stage2/stage2.1/Add",
-    ]
+    ],
 )

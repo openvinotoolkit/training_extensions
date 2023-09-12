@@ -56,6 +56,10 @@ def get_args():
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
+        "--unlabeled-data-roots",
+        help="Comma-separated paths to unlabeled data folders.",
+    )
+    parser.add_argument(
         "--load-weights",
         help="Load weights of trained model",
     )
@@ -109,7 +113,7 @@ def main():
 
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
-    dataset_config = config_manager.get_dataset_config(subsets=["train", "val"])
+    dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 

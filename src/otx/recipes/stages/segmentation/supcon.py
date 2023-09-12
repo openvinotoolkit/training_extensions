@@ -12,3 +12,6 @@ custom_hooks = [
     ),
     dict(type="TwoCropTransformHook", interval=5),
 ]
+
+# added to support multi-gpu training
+find_unused_parameters = True

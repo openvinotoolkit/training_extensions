@@ -72,7 +72,7 @@ class ActionConfig(BaseConfig):
 
     @attrs
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
-        header = string_attribute("Parameters for the MPA algo-backend")
+        header = string_attribute("Parameters for the OTX algo-backend")
         description = header
 
     learning_parameters = add_parameter_group(__LearningParameters)

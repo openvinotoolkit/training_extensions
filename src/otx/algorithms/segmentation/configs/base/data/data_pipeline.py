@@ -20,8 +20,16 @@ __img_scale = (544, 544)
 __crop_size = (512, 512)
 
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-    dict(type="LoadAnnotationFromOTXDataset", use_otx_adapter=True),
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        load_ann_cfg=dict(type="LoadAnnotationFromOTXDataset", use_otx_adapter=True),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_scale,
+            downscale_only=True,
+        ),  # Resize to intermediate size if org image is bigger
+        enable_memcache=True,  # Cache after resizing image & annotations
+    ),
     dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0)),
     dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type="RandomFlip", prob=0.5, direction="horizontal"),
@@ -46,6 +54,29 @@ train_pipeline = [
     ),
 ]
 
+val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", img_scale=__img_scale, keep_ratio=False),
+        enable_memcache=True,  # Cache after resizing image
+        use_otx_adapter=True,
+    ),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=__img_scale,
+        flip=False,
+        transforms=[
+            dict(type="RandomFlip"),
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(
+                type="Collect",
+                keys=["img"],
+            ),
+        ],
+    ),
+]
+
 test_pipeline = [
     dict(type="LoadImageFromOTXDataset", use_otx_adapter=True),
     dict(
@@ -66,7 +97,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    train=dict(type="MPASegDataset", pipeline=train_pipeline),
-    val=dict(type="MPASegDataset", pipeline=test_pipeline),
-    test=dict(type="MPASegDataset", pipeline=test_pipeline),
+    train=dict(type="OTXSegDataset", pipeline=train_pipeline),
+    val=dict(type="OTXSegDataset", pipeline=val_pipeline),
+    test=dict(type="OTXSegDataset", pipeline=test_pipeline),
 )

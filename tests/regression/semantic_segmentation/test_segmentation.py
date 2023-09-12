@@ -244,6 +244,8 @@ class TestRegressionSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl(self, reg_cfg, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
         train_type = "self_supervised"
         self.performance[template.name] = {}
 
@@ -252,7 +254,7 @@ class TestRegressionSegmentation:
         args_selfsl = config_selfsl["data_path"]
 
         selfsl_train_args = copy.deepcopy(args_selfsl)
-        selfsl_train_args["train_params"] = ["params", "--algo_backend.train_type", "Selfsupervised"]
+        selfsl_train_args["--train-type"] = "Selfsupervised"
 
         reg_cfg.update_gpu_args(selfsl_train_args)
 
@@ -295,6 +297,8 @@ class TestRegressionSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl_kpi_test(self, reg_cfg, template):
+        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
+            pytest.skip("Self-SL training type isn't available for this template")
         train_type = "self_supervised"
         config_selfsl = reg_cfg.load_config(train_type=train_type)
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
@@ -477,6 +481,8 @@ class TestRegressionSupconSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "supcon").is_dir():
+            pytest.skip("Supcon training type isn't available for this template")
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "supcon_seg"
@@ -507,6 +513,9 @@ class TestRegressionSupconSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
+        if not (Path(template.model_template_path).parent / "supcon").is_dir():
+            pytest.skip("Supcon training type isn't available for this template")
+
         performance = reg_cfg.get_template_performance(template)
 
         kpi_train_result = regression_train_time_testing(

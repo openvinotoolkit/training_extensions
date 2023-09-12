@@ -162,7 +162,7 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
     def _prepare_optimize(self):
         assert self._recipe_cfg is not None
 
-        # TODO: more delicate configuration change control in MPA side
+        # TODO: more delicate configuration change control in OTX side
 
         # last batch size of 1 causes undefined behaviour for batch normalization
         # when initializing and training NNCF

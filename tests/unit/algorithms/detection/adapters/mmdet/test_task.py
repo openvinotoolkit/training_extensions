@@ -14,7 +14,7 @@ import torch
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.models.detectors.custom_atss_detector import CustomATSS
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -174,7 +174,7 @@ class TestMMDetectionTask:
     @e2e_pytest_unit
     def test_build_model(self, mocker) -> None:
         """Test build_model function."""
-        _mock_recipe_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
+        _mock_recipe_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_DET_TEMPLATE_DIR, "model.py"))
         model = self.det_task.build_model(_mock_recipe_cfg, True)
         assert isinstance(model, CustomATSS)
 
@@ -410,7 +410,7 @@ class TestMMDetectionTask:
     def test_anchor_clustering(self, mocker):
 
         ssd_dir = os.path.join("src/otx/algorithms/detection/configs/detection", "mobilenetv2_ssd")
-        ssd_cfg = MPAConfig.fromfile(os.path.join(ssd_dir, "model.py"))
+        ssd_cfg = OTXConfig.fromfile(os.path.join(ssd_dir, "model.py"))
         model_template = parse_model_template(os.path.join(ssd_dir, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.learning_parameters.auto_num_workers = True

@@ -1,4 +1,4 @@
-"""Tests for MPA Class-Incremental Learning for object detection with OTX CLI"""
+"""Tests for OTX Class-Incremental Learning for object detection with OTX CLI"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -45,7 +45,7 @@ args = {
         "--learning_parameters.num_iters",
         "10",
         "--learning_parameters.batch_size",
-        "4",
+        "2",
         "--tiling_parameters.enable_tiling",
         "1",
         "--tiling_parameters.enable_adaptive_params",

@@ -105,7 +105,8 @@ def main():
 
     if not args.backbone or args.template:
         template_table = PrettyTable(["TASK", "ID", "NAME", "BASE PATH"])
-        for template in otx_registry.templates:
+        templates = sorted(otx_registry.templates, key=lambda x: x.name)
+        for template in templates:
             relpath = os.path.relpath(template.model_template_path, os.path.abspath("."))
             template_table.add_row(
                 [

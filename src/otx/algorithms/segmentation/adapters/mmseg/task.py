@@ -45,7 +45,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    MPAConfig,
+    OTXConfig,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
@@ -96,7 +96,7 @@ class MMSegmentationTask(OTXSegmentationTask):
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     def _init_task(self, export: bool = False):  # noqa
         """Initialize task."""
-        self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
@@ -148,7 +148,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         """Patch mmcv configs for OTX segmentation settings."""
 
         # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
+        # changes under Configuerer and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
@@ -489,7 +489,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
-            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+            deploy_cfg = OTXConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(

@@ -14,7 +14,7 @@ import torch
 from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils import config_utils
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
 from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import (
     CustomImageClassifier,
@@ -152,7 +152,7 @@ class TestMMClassificationTask:
     @e2e_pytest_unit
     def test_build_model(self, mocker) -> None:
         """Test build_model function."""
-        _mock_recipe_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
+        _mock_recipe_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model.py"))
         _mock_recipe_cfg.model.pop("task")
         _mock_recipe_cfg["channel_last"] = False
         model = self.mc_cls_task.build_model(_mock_recipe_cfg, True)
@@ -434,9 +434,9 @@ class TestMMClassificationTask:
             process_saliency_maps=False,
             explain_predicted_classes=True,
         )
-        outputs = self.mc_cls_task.explain(self.mc_cls_dataset, explain_parameters)
+        outputs = self.hl_cls_task.explain(self.hl_cls_dataset, explain_parameters)
         assert isinstance(outputs, DatasetEntity)
-        assert len(outputs) == 200
+        assert len(outputs) == 500
 
     @e2e_pytest_unit
     def test_geti_scenario(self, mocker):

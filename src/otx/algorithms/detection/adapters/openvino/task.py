@@ -453,7 +453,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             inferencer: BaseInferencerWithConverter = OpenVINODetectionInferencer(*args)
         if self.task_type == TaskType.INSTANCE_SEGMENTATION:
             if self.config.tiling_parameters.enable_tiling:
-                args.append({"resize_type": "fit_to_window_letterbox"})
+                args.append({"resize_type": "standard"})
+            else:
+                args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 0})
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
@@ -691,7 +693,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.model is None:
             raise RuntimeError("Optimize failed, model is None")
 
-        dataset = dataset.get_subset(Subset.TRAINING)
+        dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.UNLABELED])
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])
