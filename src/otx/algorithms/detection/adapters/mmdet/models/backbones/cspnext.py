@@ -1,3 +1,4 @@
+"""CSPNeXt backbone used in RTMDet."""
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 from typing import Sequence, Tuple
@@ -176,6 +177,7 @@ class CSPNeXt(BaseModule):
             self.layers.append(f"stage{i + 1}")
 
     def _freeze_stages(self) -> None:
+        """Freeze stages param and norm stats."""
         if self.frozen_stages >= 0:
             for i in range(self.frozen_stages + 1):
                 m = getattr(self, self.layers[i])
@@ -184,6 +186,7 @@ class CSPNeXt(BaseModule):
                     param.requires_grad = False
 
     def train(self, mode=True) -> None:
+        """Set modules in training mode."""
         super().train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
@@ -192,6 +195,7 @@ class CSPNeXt(BaseModule):
                     m.eval()
 
     def forward(self, x: Tuple[Tensor, ...]) -> Tuple[Tensor, ...]:
+        """Forward function."""
         outs = []
         for i, layer_name in enumerate(self.layers):
             layer = getattr(self, layer_name)

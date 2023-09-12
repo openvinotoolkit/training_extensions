@@ -19,6 +19,16 @@ logger = get_logger()
 
 
 def pack_gt_instances(gt_masks, gt_labels, gt_bboxes) -> list[CustomInstanceData]:
+    """Pack ground truth instances into a list of CustomInstanceData.
+
+    Args:
+        gt_masks (Tensor): ground truth masks.
+        gt_labels (Tensor): ground truth labels.
+        gt_bboxes (Tensor): ground truth bounding boxes.
+
+    Returns:
+        list[CustomInstanceData]: list of CustomInstanceData.
+    """
     batch_gt_instances = []
     for gt_mask, gt_label, gt_bbox in zip(gt_masks, gt_labels, gt_bboxes):
         gt_instance = CustomInstanceData()
@@ -84,6 +94,7 @@ class CustomRTMDetInst(SingleStageDetector):
             chkpt_dict[chkpt_name] = model_param
 
     def forward_train(self, img, img_metas, gt_masks, gt_labels, gt_bboxes, gt_bboxes_ignore=None, **kwargs):
+        """Forward function for training."""
         gt_masks = [gt_mask.to_tensor(dtype=torch.bool, device=img.device) for gt_mask in gt_masks]
         x = self.extract_feat(img)
         bbox_head_preds = self.bbox_head(x)
@@ -122,14 +133,14 @@ class CustomRTMDetInst(SingleStageDetector):
         return self.format_bbox_results(results_list)
 
     def format_bbox_results(self, results_list):
+        """Format box results."""
         bbox_results = [
             bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes) for det_bboxes, det_labels in results_list
         ]
         return bbox_results
 
     def format_mask_results(self, results):
-        """Format the model predictions according to the interface with
-        dataset.
+        """Format the model predictions according to the interface with dataset.
 
         Args:
             results (:obj:`CustomInstanceData`): Processed

@@ -1,3 +1,4 @@
+"""Dynamic Soft Label Assigner for RTMDet."""
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Tuple
 
@@ -38,8 +39,7 @@ def center_of_mass(masks: Tensor, eps: float = 1e-7) -> Tensor:
 
 @BBOX_ASSIGNERS.register_module()
 class DynamicSoftLabelAssigner(BaseAssigner):
-    """Computes matching between predictions and ground truth with dynamic soft
-    label assignment.
+    """Computes matching between predictions and ground truth with dynamic soft label assignment.
 
     Args:
         soft_center_radius (float): Radius of the soft center prior.
@@ -87,6 +87,7 @@ class DynamicSoftLabelAssigner(BaseAssigner):
                 to be ignored during training. It includes ``bboxes``
                 attribute data that is ignored during training and testing.
                 Defaults to None.
+            kwargs (dict, optional): Any keyword arguments to be used.
 
 
         Returns:
@@ -172,8 +173,7 @@ class DynamicSoftLabelAssigner(BaseAssigner):
     def dynamic_k_matching(
         self, cost: Tensor, pairwise_ious: Tensor, num_gt: int, valid_mask: Tensor
     ) -> Tuple[Tensor, Tensor]:
-        """Use IoU and matching cost to calculate the dynamic top-k positive
-        targets. Same as SimOTA.
+        """Use IoU and matching cost to calculate the dynamic top-k positive targets. Same as SimOTA.
 
         Args:
             cost (Tensor): Cost matrix.

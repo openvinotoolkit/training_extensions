@@ -1,3 +1,4 @@
+"""RTMDet-Ins head."""
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import math
@@ -8,7 +9,7 @@ import torch.nn.functional as F
 from mmcv.cnn import ConvModule, bias_init_with_prob, constant_init, is_norm, normal_init
 from mmcv.ops import batched_nms
 from mmcv.runner import BaseModule
-from mmdet.core.bbox import distance2bbox
+from mmdet.core.bbox import SamplingResult, distance2bbox
 from mmdet.core.utils import filter_scores_and_topk, multi_apply, reduce_mean, select_single_mlvl
 from mmdet.models.builder import HEADS, build_loss
 from mmdet.models.utils import sigmoid_geometric_mean
@@ -205,8 +206,7 @@ class RTMDetInsHead(RTMDetHead):
         rescale: bool = False,
         with_nms: bool = True,
     ) -> List[CustomInstanceData]:
-        """Transform a batch of output features extracted from the head into
-        bbox results.
+        """Transform a batch of output features extracted from the head into bbox results.
 
         Note: When score_factors is not None, the cls_scores are
         usually multiplied by it then obtain the real score used in NMS,
@@ -227,7 +227,7 @@ class RTMDetInsHead(RTMDetHead):
             score_factors (list[Tensor], optional): Score factor for
                 all scale level, each is a 4D-tensor, has shape
                 (batch_size, num_priors * 1, H, W). Defaults to None.
-            batch_img_metas (list[dict], Optional): Batch image meta info.
+            img_metas (list[dict], Optional): Batch image meta info.
                 Defaults to None.
             cfg (ConfigDict, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
@@ -306,8 +306,7 @@ class RTMDetInsHead(RTMDetHead):
         rescale: bool = False,
         with_nms: bool = True,
     ) -> CustomInstanceData:
-        """Transform a single image's features extracted from the head into
-        bbox and mask results.
+        """Transform a single image's features extracted from the head into bbox and mask results.
 
         Args:
             cls_score_list (list[Tensor]): Box scores from all scale
@@ -316,7 +315,7 @@ class RTMDetInsHead(RTMDetHead):
             bbox_pred_list (list[Tensor]): Box energies / deltas from
                 all scale levels of a single image, each item has shape
                 (num_priors * 4, H, W).
-            kernel_preds (list[Tensor]): Kernel predictions of dynamic
+            kernel_pred_list (list[Tensor]): Kernel predictions of dynamic
                 convs for all scale levels of a single image, each is a
                 4D-tensor, has shape (num_params, H, W).
             mask_feat (Tensor): Mask prototype features of a single image
@@ -446,7 +445,7 @@ class RTMDetInsHead(RTMDetHead):
         with_nms: bool = True,
         img_meta: Optional[dict] = None,
     ) -> CustomInstanceData:
-        """bbox and mask post-processing method.
+        """Bbox and mask post-processing method.
 
         The boxes would be rescaled to the original image scale and do
         the nms operation. Usually `with_nms` is False is used for aug test.
@@ -454,6 +453,7 @@ class RTMDetInsHead(RTMDetHead):
         Args:
             results (:obj:`InstaceData`): Detection instance results,
                 each item has shape (num_bboxes, ).
+            mask_feat (Tensor): Mask prototype features of a single image
             cfg (ConfigDict): Test / postprocessing configuration,
                 if None, test_cfg would be used.
             rescale (bool): If True, return boxes in original image space.
@@ -532,7 +532,7 @@ class RTMDetInsHead(RTMDetHead):
         return results
 
     def parse_dynamic_params(self, flatten_kernels: Tensor) -> tuple:
-        """split kernel head prediction to conv weight and bias."""
+        """Split kernel head prediction to conv weight and bias."""
         n_inst = flatten_kernels.size(0)
         n_layers = len(self.weight_nums)
         params_splits = list(torch.split_with_sizes(flatten_kernels, self.weight_nums + self.bias_nums, dim=1))
@@ -596,21 +596,18 @@ class RTMDetInsHead(RTMDetHead):
         self,
         mask_feats: Tensor,
         flatten_kernels: Tensor,
-        sampling_results_list: list,
+        sampling_results_list: List[SamplingResult],
         batch_gt_instances: List[CustomInstanceData],
     ) -> Tensor:
         """Compute instance segmentation loss.
 
         Args:
-            mask_feats (list[Tensor]): Mask prototype features extracted from
-                the mask head. Has shape (N, num_prototypes, H, W)
-            flatten_kernels (list[Tensor]): Kernels of the dynamic conv layers.
-                Has shape (N, num_instances, num_params)
-            sampling_results_list (list[:obj:`SamplingResults`]) Batch of
-                assignment results.
-            batch_gt_instances (list[:obj:`CustomInstanceData`]): Batch of
-                gt_instance.  It usually includes ``bboxes`` and ``labels``
-                attributes.
+            mask_feats (Tensor): Mask prototype features extracted from the mask head.
+                                 Has shape (N, num_prototypes, H, W).
+            flatten_kernels (Tensor): Kernels of the dynamic conv layers.
+                                      Has shape (N, num_instances, num_params).
+            sampling_results_list (List[SamplingResult]): Batch of assignment results.
+            batch_gt_instances (List[CustomInstanceData]): Batch of gt_instance.
 
         Returns:
             Tensor: The mask loss tensor.
@@ -673,6 +670,8 @@ class RTMDetInsHead(RTMDetHead):
             bbox_preds (list[Tensor]): Decoded box for each scale
                 level with shape (N, num_anchors * 4, H, W) in
                 [tl_x, tl_y, br_x, br_y] format.
+            kernel_preds (list[Tensor]): Kernel predictions of dynamic.
+            mask_feat (Tensor): Mask prototype features.
             batch_gt_instances (list[:obj:`CustomInstanceData`]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
@@ -791,6 +790,7 @@ class MaskFeatModule(BaseModule):
         self.projection = nn.Conv2d(feat_channels, num_prototypes, kernel_size=1)
 
     def forward(self, features: Tuple[Tensor, ...]) -> Tensor:
+        """Forward features from the upstream network."""
         # multi-level feature fusion
         fusion_feats = [features[0]]
         size = features[0].shape[-2:]

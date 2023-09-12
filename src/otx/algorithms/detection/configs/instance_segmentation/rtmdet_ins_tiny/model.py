@@ -22,7 +22,7 @@ model = dict(
         deepen_factor=1,
         widen_factor=1,
         channel_attention=True,
-        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_cfg=dict(type="BN", requires_grad=True),
         act_cfg=dict(type="SiLU", inplace=True),
     ),
     neck=dict(
@@ -77,6 +77,10 @@ lr_config = dict(min_lr=4e-06)
 
 optimizer_config = dict(_delete_=True, grad_clip=None)
 
-load_from = "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco/rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
+load_from = (
+    "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/"
+    "rtmdet-ins_tiny_8xb32-300e_coco/"
+    "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
+)
 
 ignore = True

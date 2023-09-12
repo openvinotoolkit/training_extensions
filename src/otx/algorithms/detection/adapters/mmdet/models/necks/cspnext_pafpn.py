@@ -1,3 +1,4 @@
+"""CSPNeXtPAFPN (CSPNeXt Path Aggregation Feature Pyramid Network)."""
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 from typing import Sequence, Tuple
@@ -18,22 +19,14 @@ class CSPNeXtPAFPN(BaseModule):
     Args:
         in_channels (Sequence[int]): Number of input channels per scale.
         out_channels (int): Number of output channels (used at each scale)
-        num_csp_blocks (int): Number of bottlenecks in CSPLayer.
-            Defaults to 3.
-        use_depthwise (bool): Whether to use depthwise separable convolution in
-            blocks. Defaults to False.
-        expand_ratio (float): Ratio to adjust the number of channels of the
-            hidden layer. Default: 0.5
-        upsample_cfg (dict): Config dict for interpolate layer.
-            Default: `dict(scale_factor=2, mode='nearest')`
-        conv_cfg (dict, optional): Config dict for convolution layer.
-            Default: None, which means using conv2d.
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN')
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='Swish')
-        init_cfg (dict or list[dict], optional): Initialization config dict.
-            Default: None.
+        num_csp_blocks (int): Number of bottlenecks in CSPLayer. Defaults to 3.
+        use_depthwise (bool): Whether to use depthwise separable convolution in blocks. Defaults to False.
+        expand_ratio (float): Ratio to adjust the number of channels of the hidden layer. Default: 0.5
+        upsample_cfg (dict): Config dict for interpolate layer. Default: `dict(scale_factor=2, mode='nearest')`
+        conv_cfg (dict, optional): Config dict for convolution layer. Default: None, which means using conv2d.
+        norm_cfg (dict): Config dict for normalization layer. Default: dict(type='BN')
+        act_cfg (dict): Config dict for activation layer. Default: dict(type='Swish')
+        init_cfg (dict or list[dict], optional): Initialization config dict. Default: None.
     """
 
     def __init__(
@@ -125,7 +118,9 @@ class CSPNeXtPAFPN(BaseModule):
             )
 
     def forward(self, inputs: Tuple[Tensor, ...]) -> Tuple[Tensor, ...]:
-        """Args:
+        """Forward function.
+
+        Args:
             inputs (tuple[Tensor]): input features.
 
         Returns:

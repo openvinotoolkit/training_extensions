@@ -1,3 +1,4 @@
+"""RTMDet head."""
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Tuple, Union
 
@@ -34,13 +35,10 @@ class RTMDetHead(ATSSHead):
     """Detection Head of RTMDet.
 
     Args:
-        num_classes (int): Number of categories excluding the background
-            category.
+        num_classes (int): Number of categories excluding the background category.
         in_channels (int): Number of channels in the input feature map.
-        with_objectness (bool): Whether to add an objectness branch.
-            Defaults to True.
-        act_cfg (:obj:`ConfigDict` or dict): Config dict for activation layer.
-            Default: dict(type='ReLU')
+        with_objectness (bool): Whether to add an objectness branch. Defaults to True.
+        act_cfg (:obj:`ConfigDict` or dict): Config dict for activation layer. Default: dict(type='ReLU')
     """
 
     def __init__(
@@ -313,8 +311,7 @@ class RTMDetHead(ATSSHead):
         batch_gt_instances_ignore: List[CustomInstanceData] = None,
         unmap_outputs=True,
     ):
-        """Compute regression and classification targets for anchors in
-        multiple images.
+        """Compute regression and classification targets for anchors in multiple images.
 
         Args:
             cls_scores (Tensor): Classification predictions of images,
@@ -418,8 +415,7 @@ class RTMDetHead(ATSSHead):
         gt_instances_ignore: Optional[CustomInstanceData] = None,
         unmap_outputs=True,
     ):
-        """Compute regression, classification targets for anchors in a single
-        image.
+        """Compute regression, classification targets for anchors in a single image.
 
         Args:
             cls_scores (list(Tensor)): Box scores for each image.

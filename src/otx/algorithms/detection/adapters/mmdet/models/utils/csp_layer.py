@@ -1,3 +1,4 @@
+"""CSP layers for YOLO variants."""
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
@@ -51,6 +52,7 @@ class DarknetBottleneck(BaseModule):
         self.add_identity = add_identity and in_channels == out_channels
 
     def forward(self, x):
+        """Forward function."""
         identity = x
         out = self.conv1(x)
         out = self.conv2(out)
