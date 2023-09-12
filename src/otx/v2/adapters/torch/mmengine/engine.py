@@ -64,10 +64,6 @@ class MMXEngine(Engine):
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
-        # if "work_dir" not in kwargs:
-        #     if self.work_dir is None:
-        #         raise ValueError("Engine.work_dir is None.")
-        #     kwargs["work_dir"] = self.work_dir
 
         # Update Model & Dataloaders & Custom hooks
         model = func_args.get("model", None)

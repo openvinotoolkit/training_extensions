@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import traceback
 from typing import List, Optional
 
 from rich.console import Console
+from rich.traceback import Traceback
 
 from otx.v2 import __version__ as otx_version
 from otx.v2.cli.utils.arg_parser import OTXArgumentParser
@@ -91,7 +91,10 @@ def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
                 if exception is not None:
                     console.log(f"{red_mark} {target}: [bold red]{warning_mark} {exception}[/bold red]")
                 if verbose and isinstance(exception, Exception):
-                    traceback.print_tb(exception.__traceback__)
+                    traceback = Traceback.from_exception(
+                        exc_type=type(exception), exc_value=exception, traceback=exception.__traceback__
+                    )
+                    console.print(traceback)
             console.log(f"\t - Please try this command: 'otx install {target}' or 'otx install full'\n")
             issue_count += 1
     print()
