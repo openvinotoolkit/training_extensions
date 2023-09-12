@@ -275,6 +275,9 @@ class TestToolsOTXInstanceSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_optimize(self, template, tmp_dir_path):
+        if "MaskRCNN-ConvNeXt" in template.name:
+            pytest.skip("CVS-118373	ConvNeXt Compilation Error in PTQ")
+
         tmp_dir_path = tmp_dir_path / "ins_seg"
         ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -283,6 +286,8 @@ class TestToolsOTXInstanceSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_validate_fq(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
+        if "MaskRCNN-ConvNeXt" in template.name:
+            pytest.skip("CVS-118373	ConvNeXt Compilation Error in PTQ")
         ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "instance_segmentation", type(self).__name__)
 
     @e2e_pytest_component
@@ -290,6 +295,8 @@ class TestToolsOTXInstanceSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ptq_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
+        if "MaskRCNN-ConvNeXt" in template.name:
+            pytest.skip("CVS-118373	ConvNeXt Compilation Error in PTQ")
         ptq_eval_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
