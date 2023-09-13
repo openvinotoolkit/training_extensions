@@ -681,14 +681,13 @@ class InputSizeManager:
         if isinstance(base_input_size, int):
             base_input_size = (base_input_size, base_input_size)
         elif isinstance(base_input_size, dict):
-            for subset_type in base_input_size.keys():
-                if isinstance(base_input_size[subset_type], int):
-                    base_input_size[subset_type] = (base_input_size[subset_type], base_input_size[subset_type])  # type: ignore[assignment]
-            for subset_type in self.SUBSET_TYPES:
-                if subset_type in self._data_config and subset_type not in base_input_size:
-                    raise ValueError(
-                        f"There is {subset_type} data configuration but base input size for it doesn't exists."
-                    )
+            for subset in base_input_size.keys():
+                if isinstance(base_input_size[subset], int):
+                    size = base_input_size[subset]
+                    base_input_size[subset] = (size, size)  # type: ignore[assignment]
+            for subset in self.SUBSET_TYPES:
+                if subset in self._data_config and subset not in base_input_size:
+                    raise ValueError(f"There is {subset} data configuration but base input size for it doesn't exists.")
 
         self._base_input_size = base_input_size
 
@@ -706,14 +705,14 @@ class InputSizeManager:
             resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
 
         # Scale size values in data pipelines
-        for subset_type in self.SUBSET_TYPES:
-            if subset_type in self._data_config:
+        for subset in self.SUBSET_TYPES:
+            if subset in self._data_config:
                 if isinstance(self.base_input_size, dict):
                     resize_ratio = (
-                        input_size[0] / self.base_input_size[subset_type][0],
-                        input_size[1] / self.base_input_size[subset_type][1],
+                        input_size[0] / self.base_input_size[subset][0],
+                        input_size[1] / self.base_input_size[subset][1],
                     )
-                pipelines = self._get_pipelines(subset_type)
+                pipelines = self._get_pipelines(subset)
                 for pipeline in pipelines:
                     self._set_pipeline_size_value(pipeline, resize_ratio)
 
@@ -832,11 +831,11 @@ class InputSizeManager:
 
         return None
 
-    def _get_pipelines(self, subset_type: str):
-        if "pipeline" in self._data_config[subset_type]:
-            return self._data_config[subset_type]["pipeline"]
-        if "dataset" in self._data_config[subset_type]:
-            return self._data_config[subset_type]["dataset"]["pipeline"]
+    def _get_pipelines(self, subset: str):
+        if "pipeline" in self._data_config[subset]:
+            return self._data_config[subset]["pipeline"]
+        if "dataset" in self._data_config[subset]:
+            return self._data_config[subset]["dataset"]["pipeline"]
         raise RuntimeError("Failed to find pipeline.")
 
     def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
@@ -930,8 +929,10 @@ class InputSizeManager:
         """
         if len(preset_sizes) == 0:
             return input_size
+
         def scale_of(x):
             return np.log(np.sqrt(x[0] * x[1]))
+
         input_scale = scale_of(input_size)
         preset_scales = np.array(list(map(scale_of, preset_sizes)))
         abs_diff = np.abs(preset_scales - input_scale)

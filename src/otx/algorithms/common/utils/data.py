@@ -315,9 +315,13 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False, ma
                 continue
 
             image_area = data.width * data.height
+
             def scale_of(ann):
                 return np.sqrt(image_area * ann.shape.get_area())
-            size_of_shapes.extend(filter(lambda x: x >= 1, map(scale_of, annotations)))  # Filter out shapes smaller than 1 pixel as outlier
+
+            size_of_shapes.extend(
+                filter(lambda x: x >= 1, map(scale_of, annotations))
+            )  # Filter out shapes smaller than 1 pixel as outlier
 
         stat["annotation"]["num_per_image"] = compute_robust_statistics(np.array(num_per_images))
         stat["annotation"]["size_of_shape"] = compute_robust_scale_statistics(np.array(size_of_shapes))
