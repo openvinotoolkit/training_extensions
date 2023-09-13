@@ -10,3 +10,4 @@ scipy>=1.8
 bayesian-optimization>=1.2.0
 tensorboard>=2.11.0
 multiprocess
+pynvml
