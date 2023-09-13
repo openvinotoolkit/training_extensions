@@ -97,7 +97,7 @@ def _check_resource(queue: mp.Queue, resource_types: Optional[List[str]] = None,
                 continue
             trackers[resource_type] = GpuUsageRecorder(gpu_ids)
         else:
-            logger.warning(
+            raise ValueError(
                 "Resource type {} isn't supported now. Current available types are cpu and gpu.".format(resource_type)
             )
 

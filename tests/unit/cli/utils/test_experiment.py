@@ -139,31 +139,20 @@ def test_check_resource(mocker, resource_types, tmp_path):
     assert Path(output_file).exists()  # check a file is saved well
 
 
-@pytest.mark.parametrize("resource_types", (["wrong"], None))
-@e2e_pytest_unit
-def test_check_resource_wrong_resource_type(mocker, resource_types, tmp_path):
+def test_check_resource_wrong_resource_type(mocker, tmp_path):
     # prepare
+    resource_types = ["wrong"]
     output_file = f"{tmp_path}/fake.yaml"
     mock_queue = MockQueue(output_file)
 
-    mock_cpu_recorder = mocker.MagicMock()
-    mock_cpu_recorder_cls = mocker.patch.object(target_file, "CpuUsageRecorder", return_value=mock_cpu_recorder)
-    mock_gpu_recorder = mocker.MagicMock()
-    mock_gpu_recorder_cls = mocker.patch.object(target_file, "GpuUsageRecorder", return_value=mock_gpu_recorder)
-
+    mocker.patch.object(target_file, "CpuUsageRecorder")
+    mocker.patch.object(target_file, "GpuUsageRecorder")
     mocker.patch.object(target_file, "yaml")
     mocker.patch.object(target_file, "time")
 
-    # run
-    _check_resource(mock_queue, resource_types)
-
-    # check the recorders aren't called
-    mock_cpu_recorder.record.assert_not_called()
-    mock_cpu_recorder_cls.assert_not_called()
-    mock_gpu_recorder.record.assert_not_called()
-    mock_gpu_recorder_cls.assert_not_called()
-
-    assert not Path(output_file).exists()  # check a file isn't saved
+    # check that ValueError is raised.
+    with pytest.raises(ValueError):
+        _check_resource(mock_queue, resource_types)
 
 
 class TestCpuUsageRecorder:
