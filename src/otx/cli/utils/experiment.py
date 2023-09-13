@@ -215,6 +215,9 @@ class GpuUsageRecorder(ResourceRecorder):
 
     def report(self) -> Dict[str, str]:
         """Aggregate GPU usage."""
+        if not list(self._record.values())[0]["util_record"]:  # record isn't called
+            return {}
+
         total_max_mem = 0
         total_avg_util = 0
         gpus_record = self._record.copy()
