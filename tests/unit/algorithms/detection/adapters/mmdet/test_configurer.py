@@ -87,7 +87,8 @@ class TestDetectionConfigurer:
 
     @e2e_pytest_unit
     def test_merge_configs(self, mocker):
-        mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.override_from_hyperparams", return_value=True)
+        mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.patch_from_hyperparams", return_value=True)
+        mocker.patch("otx.algorithms.detection.adapters.mmdet.configurer.patch_tiling", return_value=True)
         self.configurer.merge_configs(self.model_cfg, self.data_cfg, self.data_pipeline_path, None)
         assert self.model_cfg.data
         assert self.model_cfg.data.train
