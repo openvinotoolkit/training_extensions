@@ -93,6 +93,11 @@ def test_compute_robuste_dataset_statistics():
         ]
     )
 
+    stat = compute_robust_dataset_statistics(dataset, max_samples=0)
+    assert len(stat) == 0
+    stat = compute_robust_dataset_statistics(dataset, max_samples=-1)
+    assert len(stat) == 0
+
     stat = compute_robust_dataset_statistics(dataset, ann_stat=False)
     assert np.isclose(stat["image"]["avg"], 100)
     assert "annotation" not in stat
