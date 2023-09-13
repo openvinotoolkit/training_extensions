@@ -44,9 +44,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
-    override_from_hyperparams,
     patch_adaptive_interval_training,
     patch_early_stopping,
+    patch_from_hyperparams,
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
@@ -100,7 +100,7 @@ class MMActionTask(OTXActionTask):
             raise FileNotFoundError(f"data_pipeline: {self.data_pipeline_path} not founded")
 
         if not export:
-            override_from_hyperparams(self._recipe_cfg, self._hyperparams)
+            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
             self._recipe_cfg.total_epochs = self._recipe_cfg.runner.max_epochs
 
         if "custom_hooks" in self.override_configs:

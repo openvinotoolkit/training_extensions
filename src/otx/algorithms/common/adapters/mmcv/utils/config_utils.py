@@ -523,7 +523,7 @@ def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
 
 
-def override_from_hyperparams(config: Config, hyperparams, **kwargs):
+def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
     algo_backend = hyperparams.algo_backend

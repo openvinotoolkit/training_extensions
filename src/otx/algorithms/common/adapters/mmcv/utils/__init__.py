@@ -15,10 +15,10 @@ from .config_utils import (
     get_data_cfg,
     get_dataset_configs,
     is_epoch_based_runner,
-    override_from_hyperparams,
     patch_adaptive_interval_training,
     patch_color_conversion,
     patch_early_stopping,
+    patch_from_hyperparams,
     patch_persistent_workers,
     prepare_for_testing,
     prepare_work_dir,
@@ -49,5 +49,5 @@ __all__ = [
     "OTXConfig",
     "adapt_batch_size",
     "InputSizeManager",
-    "override_from_hyperparams",
+    "patch_from_hyperparams",
 ]

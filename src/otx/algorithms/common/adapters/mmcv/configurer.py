@@ -18,8 +18,8 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-    override_from_hyperparams,
     patch_color_conversion,
+    patch_from_hyperparams,
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
@@ -104,7 +104,7 @@ class BaseConfigurer:
             raise FileNotFoundError(f"data_pipeline: {data_pipeline_path} not founded")
 
         if not self.export:
-            override_from_hyperparams(cfg, hyperparams_from_otx, **kwargs)
+            self.override_from_hyperparams(cfg, hyperparams_from_otx, **kwargs)
 
         if data_cfg:
             for subset in data_cfg.data:
@@ -115,6 +115,11 @@ class BaseConfigurer:
                         src_data_cfg[key] = new_data_cfg[key]
                 else:
                     raise ValueError(f"{subset} of data_cfg is not in cfg")
+
+    @staticmethod
+    def override_from_hyperparams(config, hyperparams, **kwargs):
+        """Override config using hyperparams from OTX CLI."""
+        patch_from_hyperparams(config, hyperparams, **kwargs)
 
     def configure_ckpt(self, cfg, model_ckpt_path):
         """Patch checkpoint path for pretrained weight.
