@@ -19,11 +19,13 @@ class TestResourceTracker:
         self.mock_queue = mocker.MagicMock()
         self.mock_mp.Queue.return_value = self.mock_queue
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("resource_type", ("cpu", "gpu", "all", "cpu,gpu"))
     @pytest.mark.parametrize("gpu_ids", (None, "0", "0,3"))
     def test_init(self, resource_type, gpu_ids):
         ResourceTracker(resource_type, gpu_ids)
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("resource_type", ("cpu", "gpu", "all", "cpu,gpu"))
     @pytest.mark.parametrize("gpu_ids", (None, "0", "0,3"))
     def test_start(self, resource_type, gpu_ids):
@@ -47,6 +49,7 @@ class TestResourceTracker:
         assert self.mock_mp.Process.call_args.kwargs['args'][1] == expected_resource_type 
         assert self.mock_mp.Process.call_args.kwargs['args'][2] == expected_gpu_ids 
 
+    @e2e_pytest_unit
     def test_start_multiple_times(self):
         resource_tracker = ResourceTracker()
 
@@ -56,6 +59,7 @@ class TestResourceTracker:
 
         self.mock_proc.start.assert_called_once()  # check that a process starts once
 
+    @e2e_pytest_unit
     def test_stop(self):
         output_path = Path("fake")
 
@@ -68,6 +72,7 @@ class TestResourceTracker:
         self.mock_proc.join.assert_called()
         self.mock_proc.close.assert_called()
 
+    @e2e_pytest_unit
     def test_stop_not_exit_normally(self):
         output_path = Path("fake")
         self.mock_proc.exitcode = None
@@ -83,6 +88,7 @@ class TestResourceTracker:
         self.mock_proc.terminate.assert_called()  
         self.mock_proc.close.assert_called()
 
+    @e2e_pytest_unit
     def test_stop_before_start(self):
         resource_tracker = ResourceTracker()
         resource_tracker.stop("fake")
@@ -105,6 +111,7 @@ class MockQueue:
 
 
 @pytest.mark.parametrize("resource_types", (["cpu"], ["gpu"], ["cpu", "gpu"]))
+@e2e_pytest_unit
 def test_check_resource(mocker, resource_types, tmp_path):
     # prepare
     gpu_ids = [0,1]
@@ -133,6 +140,7 @@ def test_check_resource(mocker, resource_types, tmp_path):
 
 
 @pytest.mark.parametrize("resource_types", (["wrong"], None))
+@e2e_pytest_unit
 def test_check_resource_wrong_resource_type(mocker, resource_types, tmp_path):
     # prepare
     output_file = f"{tmp_path}/fake.yaml"
@@ -174,9 +182,11 @@ class TestCpuUsageRecorder:
     def set_cpu_util(self, cpu_util: int):
         self.mock_psutil.cpu_percent.return_value = cpu_util
 
+    @e2e_pytest_unit
     def test_init(self):
         CpuUsageRecorder()
 
+    @e2e_pytest_unit
     def test_record_report(self):
         cpu_usage_recorder = CpuUsageRecorder()
 
@@ -194,6 +204,7 @@ class TestCpuUsageRecorder:
         assert float(report["max_memory_usage"].split()[0]) == pytest.approx(6)
         assert float(report["avg_util"].split()[0]) == pytest.approx(50)
 
+    @e2e_pytest_unit
     def test_report_wo_record(self):
         cpu_usage_recorder = CpuUsageRecorder()
         report = cpu_usage_recorder.report()
@@ -238,6 +249,7 @@ class TestGpuUsageRecorder:
         else:
             self.gpu_usage[gpu_idx] = {"util" : gpu_util}
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("gpu_to_track", ([0], [0,4]))
     def test_init(self, mocker, gpu_to_track):
         mocker.patch.object(GpuUsageRecorder, "_get_gpu_to_track", return_value=gpu_to_track)
@@ -249,12 +261,14 @@ class TestGpuUsageRecorder:
         for i, gpu_idx in enumerate(gpu_to_track):
             self.mock_nvmlDeviceGetHandleByIndex.call_args_list[i].args == (gpu_idx,)
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("gpu_ids", ([0], [1, 2, 5]))
     def test_get_gpu_to_track_no_cuda_env_var(self, gpu_ids):
         gpu_usage_recorder = GpuUsageRecorder()
 
         assert gpu_usage_recorder._get_gpu_to_track(gpu_ids) == gpu_ids  # check right gpu indices are returned
 
+    @e2e_pytest_unit
     @pytest.mark.parametrize("gpu_ids", ([0], [1, 2, 5]))
     def test_get_gpu_to_track_cuda_env_var(self, gpu_ids):
         cuda_visible_devices = [1, 2, 5, 7, 9, 10]
@@ -265,6 +279,7 @@ class TestGpuUsageRecorder:
 
         assert gpu_usage_recorder._get_gpu_to_track(gpu_ids) == gpu_to_track  # check right gpu indices are returned
 
+    @e2e_pytest_unit
     def test_record_report(self):
         gpu_ids = [0,1]
         gpu_usage_recorder = GpuUsageRecorder(gpu_ids)
@@ -293,6 +308,7 @@ class TestGpuUsageRecorder:
         assert float(report["total_avg_util"].split()[0]) == pytest.approx(60)
         assert float(report["total_max_mem"].split()[0]) == pytest.approx(8)
 
+    @e2e_pytest_unit
     def test_report_wo_record(self):
         gpu_usage_recorder = GpuUsageRecorder()
         report = gpu_usage_recorder.report()
