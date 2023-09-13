@@ -18,37 +18,58 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 GIB = 1024**3
+AVAILABLE_RESOURCE_TYPE = ["cpu", "gpu"]
 
 
 class ResourceTracker:
     """Class to track resources usage.
 
     Args:
-        output_dir (Union[str, Path]): Output directory path where CPU & GPU utilization and max meory usage values
-                                    are saved.
+        resource_type (str, optional): Which resource to track. Available values are cpu, gpu or all now.
+                                        Defaults to "all".
         gpu_ids (Optional[str]): GPU indices to record.
     """
-    def __init__(self, output_dir: Union[str, Path], gpu_ids: Optional[str] = None):
-        self._output_dir = output_dir if isinstance(output_dir, Path) else Path(output_dir)
+    def __init__(self, resource_type: str = "all", gpu_ids: Optional[str] = None):
+        if resource_type == "all":
+            resource_type = AVAILABLE_RESOURCE_TYPE
+        else:
+            resource_type = [val for val in resource_type.split(',')]
+        self._resource_type: List[str] = resource_type
+
         if gpu_ids is not None:
             gpu_ids = [int(idx) for idx in gpu_ids.split(',')]
             gpu_ids[0] = 0
+
         self._gpu_ids = gpu_ids
         self._mem_check_proc: Union[mp.Process, None] = None
         self._queue: Union[mp.Queue, None] = None
 
     def start(self):
-        """Run a process which tracks resources usage"""
+        """Run a process which tracks resources usage."""
+        if self._mem_check_proc is not None:
+            logger.warning("Resource tracker started already. Please execute start after executing stop.")
+            return
+
         self._queue = mp.Queue()
-        self._mem_check_proc = mp.Process(target=_check_resource, args=(self._queue, ["cpu", "gpu"], self._gpu_ids))
+        self._mem_check_proc = mp.Process(
+            target=_check_resource,
+            args=(self._queue, self._resource_type, self._gpu_ids)
+        )
         self._mem_check_proc.start()
 
-    def stop(self):
-        """Terminate a process to record resources usage."""
+    def stop(self, output_path: Union[str, Path]):
+        """Terminate a process to record resources usage.
+
+        Args:
+            output_path (Union[str, Path]): Output file path to save CPU & GPU utilization and max meory usage values.
+        """
         if self._mem_check_proc is None or not self._mem_check_proc.is_alive():
             return
 
-        self._queue.put(self._output_dir)
+        if isinstance(output_path, str):
+            output_path = Path(output_path)
+
+        self._queue.put(output_path)
         self._mem_check_proc.join(10)
         if self._mem_check_proc.exitcode is None:
             self._mem_check_proc.terminate()
@@ -60,7 +81,7 @@ class ResourceTracker:
 
 def _check_resource(
     queue: mp.Queue,
-    resource_types: Optional[Union[str, List[str]]] = None,
+    resource_types: Optional[List[str]] = None,
     gpu_ids: Optional[List[int]] = None
 ):
     if resource_types is None:
@@ -96,7 +117,7 @@ def _check_resource(
     output_path = Path(queue.get())
 
     resource_record = {resource_type : tracker.report() for resource_type, tracker in trackers.items()}
-    with (output_path / "resource_usage.yaml").open("w") as f:
+    with output_path.open("w") as f:
         yaml.dump(resource_record, f, default_flow_style=False)
 
 
@@ -123,6 +144,7 @@ class CpuUsageRecorder(ResourceRecorder):
         self._record_count: int = 0
         self._max_mem: Union[int, float] = 0
         self._avg_util: Union[int, float] = 0
+        self._first_record = True
 
     def record(self):
         """Record CPU usage."""
@@ -134,10 +156,11 @@ class CpuUsageRecorder(ResourceRecorder):
 
         # cpu util
         cpu_percent = psutil.cpu_percent()
-        if self._record_count != 0:  # a value at the first time is meaningless
+        if self._first_record:
+            self._first_record = False
+        else:
             self._avg_util += cpu_percent
-
-        self._record_count += 1
+            self._record_count += 1
 
     def report(self) -> Dict[str, str]:
         """Aggregate CPU usage."""

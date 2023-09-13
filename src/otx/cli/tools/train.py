@@ -162,7 +162,8 @@ def get_args():
     )
     parser.add_argument(
         "--track-resource-usage",
-        action="store_true",
+        type=str,
+        default=None,
         help="Track CPU & GPU utilization and max memory usage and save them at the output path as a file.",
     )
 
@@ -281,7 +282,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
 
     resource_tracker = None
     if args.track_resource_usage and not is_multigpu_child_process():
-        resource_tracker = ResourceTracker(config_manager.output_path, args.gpus)
+        resource_tracker = ResourceTracker(args.track_resource_usage, args.gpus)
         resource_tracker.start()
 
     task.train(
@@ -289,7 +290,7 @@ def train(exit_stack: Optional[ExitStack] = None):  # pylint: disable=too-many-b
     )
 
     if resource_tracker is not None:
-        resource_tracker.stop()
+        resource_tracker.stop(config_manager.output_path / "resource_usage.yaml")
 
     model_path = config_manager.output_path / "models"
     save_model_data(output_model, str(model_path))
