@@ -2,21 +2,24 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import math
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule, bias_init_with_prob, constant_init, is_norm, normal_init
-from mmcv.ops import batched_nms
+from mmcv.ops import RoIAlign, batched_nms
 from mmcv.runner import BaseModule
+from mmdet.core import bbox2roi
 from mmdet.core.bbox import SamplingResult, distance2bbox
 from mmdet.core.utils import filter_scores_and_topk, multi_apply, reduce_mean, select_single_mlvl
 from mmdet.models.builder import HEADS, build_loss
 from mmdet.models.utils import sigmoid_geometric_mean
 from mmdet.models.utils.transformer import inverse_sigmoid
+from mmengine.config import ConfigDict
+from mmengine.structures import InstanceData
 from torch import Tensor, nn
 
-from otx.algorithms.detection.adapters.mmdet.utils import CustomInstanceData
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 
 from .rtmdet_head import RTMDetHead
 
@@ -87,6 +90,7 @@ class RTMDetInsHead(RTMDetHead):
         self.mask_loss_stride = mask_loss_stride
         super().__init__(*args, **kwargs)
         self.loss_mask = build_loss(loss_mask)
+        self.roi_align = RoIAlign(output_size=(28, 28))
 
     def _init_layers(self) -> None:
         """Initialize layers of the head."""
@@ -201,11 +205,11 @@ class RTMDetInsHead(RTMDetHead):
         kernel_preds: List[Tensor],
         mask_feat: Tensor,
         score_factors: Optional[List[Tensor]] = None,
-        img_metas: Optional[List[dict]] = None,
-        cfg: dict = None,
+        img_metas: Optional[List[Dict]] = None,
+        cfg: Dict = None,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> List[CustomInstanceData]:
+    ) -> List[InstanceData]:
         """Transform a batch of output features extracted from the head into bbox results.
 
         Note: When score_factors is not None, the cls_scores are
@@ -213,22 +217,18 @@ class RTMDetInsHead(RTMDetHead):
         such as CenterNess in FCOS, IoU branch in ATSS.
 
         Args:
-            cls_scores (list[Tensor]): Classification scores for all
-                scale levels, each is a 4D-tensor, has shape
-                (batch_size, num_priors * num_classes, H, W).
-            bbox_preds (list[Tensor]): Box energies / deltas for all
+            cls_scores (List[Tensor]): Classification scores for all scale levels, each is a 4D-tensor,
+                                       has shape (batch_size, num_priors * num_classes, H, W).
+            bbox_preds (List[Tensor]): Box energies / deltas for all
                 scale levels, each is a 4D-tensor, has shape
                 (batch_size, num_priors * 4, H, W).
-            kernel_preds (list[Tensor]): Kernel predictions of dynamic
-                convs for all scale levels, each is a 4D-tensor, has shape
-                (batch_size, num_params, H, W).
-            mask_feat (Tensor): Mask prototype features extracted from the
-                mask head, has shape (batch_size, num_prototypes, H, W).
-            score_factors (list[Tensor], optional): Score factor for
-                all scale level, each is a 4D-tensor, has shape
-                (batch_size, num_priors * 1, H, W). Defaults to None.
-            img_metas (list[dict], Optional): Batch image meta info.
-                Defaults to None.
+            kernel_preds (List[Tensor]): Kernel predictions of dynamic convs for all scale levels,
+                                         each is a 4D-tensor, has shape (batch_size, num_params, H, W).
+            mask_feat (Tensor): Mask prototype features extracted from the mask head, has shape
+                                (batch_size, num_prototypes, H, W).
+            score_factors (List[Tensor]): Score factor for all scale level, each is a 4D-tensor, has shape
+                                          (batch_size, num_priors * 1, H, W). Defaults to None.
+            img_metas (List[Dict]): Batch image meta info. Defaults to None.
             cfg (ConfigDict, optional): Test / postprocessing
                 configuration, if None, test_cfg would be used.
                 Defaults to None.
@@ -238,7 +238,7 @@ class RTMDetInsHead(RTMDetHead):
                 Defaults to True.
 
         Returns:
-            list[:obj:`CustomInstanceData`]: Object detection results of each image
+            list[:obj:`InstanceData`]: Object detection results of each image
             after the post process. Each item usually contains following keys.
 
                 - scores (Tensor): Classification scores, has a shape
@@ -305,7 +305,7 @@ class RTMDetInsHead(RTMDetHead):
         cfg: dict,
         rescale: bool = False,
         with_nms: bool = True,
-    ) -> CustomInstanceData:
+    ) -> InstanceData:
         """Transform a single image's features extracted from the head into bbox and mask results.
 
         Args:
@@ -338,7 +338,7 @@ class RTMDetInsHead(RTMDetHead):
                 Defaults to True.
 
         Returns:
-            :obj:`CustomInstanceData`: Detection results of each image
+            :obj:`InstanceData`: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 
@@ -368,7 +368,7 @@ class RTMDetInsHead(RTMDetHead):
         mlvl_scores = []
         mlvl_labels = []
         if with_score_factors:
-            mlvl_score_factors = []
+            mlvl_score_factors: List = []
         else:
             mlvl_score_factors = None
 
@@ -423,7 +423,7 @@ class RTMDetInsHead(RTMDetHead):
         priors = torch.cat(mlvl_valid_priors)
         bboxes = self.bbox_coder.decode(priors[..., :2], bbox_pred, max_shape=img_shape)
 
-        results = CustomInstanceData()
+        results = InstanceData()
         results.bboxes = bboxes
         results.priors = priors
         results.scores = torch.cat(mlvl_scores)
@@ -438,13 +438,13 @@ class RTMDetInsHead(RTMDetHead):
 
     def _bbox_mask_post_process(
         self,
-        results: CustomInstanceData,
+        results: InstanceData,
         mask_feat,
-        cfg: dict,
+        cfg: ConfigDict,
         rescale: bool = False,
         with_nms: bool = True,
         img_meta: Optional[dict] = None,
-    ) -> CustomInstanceData:
+    ) -> InstanceData:
         """Bbox and mask post-processing method.
 
         The boxes would be rescaled to the original image scale and do
@@ -463,7 +463,7 @@ class RTMDetInsHead(RTMDetHead):
             img_meta (dict, optional): Image meta info. Defaults to None.
 
         Returns:
-            :obj:`CustomInstanceData`: Detection results of each image
+            :obj:`InstanceData`: Detection results of each image
             after the post process.
             Each item usually contains following keys.
 
@@ -520,9 +520,13 @@ class RTMDetInsHead(RTMDetHead):
                     mode="bilinear",
                     align_corners=False,
                 )[..., :ori_h, :ori_w]
-            masks = mask_logits.sigmoid().squeeze(0)
-            masks = masks > cfg.mask_thr_binary
-            results.masks = masks
+            assert mask_logits.shape[0] == 1, "Only support batch_size=1 for now."
+            masks = mask_logits.sigmoid()
+            rois = bbox2roi([results.bboxes])
+            cropped_masks = self.roi_align(masks, rois)
+            cropped_masks = cropped_masks[torch.arange(cropped_masks.size(0)), torch.arange(cropped_masks.size(0))]
+            cropped_masks = cropped_masks > cfg.mask_thr_binary
+            results.masks = cropped_masks
         else:
             h, w = img_meta["ori_shape"][:2] if rescale else img_meta["img_shape"][:2]
             results.masks = torch.zeros(
@@ -597,7 +601,7 @@ class RTMDetInsHead(RTMDetHead):
         mask_feats: Tensor,
         flatten_kernels: Tensor,
         sampling_results_list: List[SamplingResult],
-        batch_gt_instances: List[CustomInstanceData],
+        batch_gt_instances: List[InstanceData],
     ) -> Tensor:
         """Compute instance segmentation loss.
 
@@ -607,7 +611,7 @@ class RTMDetInsHead(RTMDetHead):
             flatten_kernels (Tensor): Kernels of the dynamic conv layers.
                                       Has shape (N, num_instances, num_params).
             sampling_results_list (List[SamplingResult]): Batch of assignment results.
-            batch_gt_instances (List[CustomInstanceData]): Batch of gt_instance.
+            batch_gt_instances (List[InstanceData]): Batch of gt_instance.
 
         Returns:
             Tensor: The mask loss tensor.
@@ -632,21 +636,24 @@ class RTMDetInsHead(RTMDetHead):
         batch_pos_mask_logits = torch.cat(batch_pos_mask_logits, 0)
 
         # avg_factor
-        num_pos = batch_pos_mask_logits.shape[0]
+        num_pos = batch_pos_mask_logits.shape[0]  # type: ignore[attr-defined]
         num_pos = reduce_mean(mask_feats.new_tensor([num_pos])).clamp_(min=1).item()
 
-        if batch_pos_mask_logits.shape[0] == 0:
+        if batch_pos_mask_logits.shape[0] == 0:  # type: ignore[attr-defined]
             return mask_feats.sum() * 0
 
         scale = self.prior_generator.strides[0][0] // self.mask_loss_stride
         # upsample pred masks
+        batch_pos_mask_logits = batch_pos_mask_logits.unsqueeze(0)  # type: ignore[attr-defined]
         batch_pos_mask_logits = F.interpolate(
-            batch_pos_mask_logits.unsqueeze(0), scale_factor=scale, mode="bilinear", align_corners=False
-        ).squeeze(0)
+            batch_pos_mask_logits, scale_factor=scale, mode="bilinear", align_corners=False
+        ).squeeze(
+            0
+        )  # type: ignore[attr-defined]
         # downsample gt masks
         pos_gt_masks = pos_gt_masks[
             :, self.mask_loss_stride // 2 :: self.mask_loss_stride, self.mask_loss_stride // 2 :: self.mask_loss_stride
-        ]
+        ]  # type: ignore[call-overload]
 
         loss_mask = self.loss_mask(batch_pos_mask_logits, pos_gt_masks, weight=None, avg_factor=num_pos)
 
@@ -658,9 +665,9 @@ class RTMDetInsHead(RTMDetHead):
         bbox_preds: List[Tensor],
         kernel_preds: List[Tensor],
         mask_feat: Tensor,
-        batch_gt_instances: List[CustomInstanceData],
+        batch_gt_instances: List[InstanceData],
         batch_img_metas: List[dict],
-        batch_gt_instances_ignore: List[CustomInstanceData] = None,
+        batch_gt_instances_ignore: List[InstanceData] = None,
     ):
         """Compute losses of the head.
 
@@ -672,12 +679,12 @@ class RTMDetInsHead(RTMDetHead):
                 [tl_x, tl_y, br_x, br_y] format.
             kernel_preds (list[Tensor]): Kernel predictions of dynamic.
             mask_feat (Tensor): Mask prototype features.
-            batch_gt_instances (list[:obj:`CustomInstanceData`]): Batch of
+            batch_gt_instances (list[:obj:`InstanceData`]): Batch of
                 gt_instance.  It usually includes ``bboxes`` and ``labels``
                 attributes.
             batch_img_metas (list[dict]): Meta information of each image, e.g.,
                 image size, scaling factor, etc.
-            batch_gt_instances_ignore (list[:obj:`CustomInstanceData`], Optional):
+            batch_gt_instances_ignore (list[:obj:`InstanceData`], Optional):
                 Batch of gt_instances_ignore. It includes ``bboxes`` attribute
                 data that is ignored during training and testing.
                 Defaults to None.
@@ -1018,3 +1025,259 @@ class RTMDetInsSepBNHead(RTMDetInsHead):
             bbox_preds.append(reg_dist)
             kernel_preds.append(kernel_pred)
         return tuple(cls_scores), tuple(bbox_preds), tuple(kernel_preds), mask_feat
+
+
+if is_mmdeploy_enabled():
+
+    from typing import List, Optional
+
+    from mmdeploy.codebase.mmdet import get_post_processing_params
+    from mmdeploy.core import FUNCTION_REWRITER
+    from mmdeploy.mmcv.ops import ONNXNMSop
+    from mmengine.config import ConfigDict
+    from packaging import version
+    from torch import Tensor
+
+    @FUNCTION_REWRITER.register_rewriter(
+        func_name="otx.algorithms.detection.adapters.mmdet.models.dense_heads."
+        "rtmdet_ins_head.RTMDetInsHead.get_bboxes"
+    )
+    def rtmdet_ins_head__get_bboxes(
+        ctx,
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        kernel_preds: List[Tensor],
+        mask_feat: Tensor,
+        img_metas: Optional[List[Dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = False,
+    ):
+        """Rewrite `get_bboxes` of `RTMDet-Ins` for default backend.
+
+        Rewrite this function to deploy model, transform network output for a
+        batch into bbox predictions.
+
+        Args:
+            ctx: Context that contains original meta information.
+            self: The instance of `RTMDetInsHead`.
+            cls_scores (list[Tensor]): Classification scores for all
+                scale levels, each is a 4D-tensor, has shape
+                (batch_size, num_priors * num_classes, H, W).
+            bbox_preds (list[Tensor]): Box energies / deltas for all
+                scale levels, each is a 4D-tensor, has shape
+                (batch_size, num_priors * 4, H, W).
+            kernel_preds (list[Tensor]): Dynamic conv kernels.
+            mask_feat (Tensor): Output feature of the mask head.
+            img_metas (list[dict], Optional): Batch image meta info.
+                Defaults to None.
+            cfg (ConfigDict, optional): Test / postprocessing
+                configuration, if None, test_cfg would be used.
+                Defaults to None.
+            rescale (bool): If True, return boxes in original image space.
+                Defaults to False.
+            with_nms (bool): If True, do nms before return boxes.
+                Defaults to True.
+
+
+        Returns:
+            tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
+                where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
+                size and the score between 0 and 1. The shape of the second
+                tensor in the tuple is (N, num_box), and each element
+                represents the class label of the corresponding box.
+        """
+        assert len(cls_scores) == len(bbox_preds)
+        device = cls_scores[0].device
+        cfg = self.test_cfg if cfg is None else cfg
+        batch_size = bbox_preds[0].shape[0]
+        featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
+        mlvl_priors = self.prior_generator.grid_priors(featmap_sizes, device=device, with_stride=True)
+
+        flatten_cls_scores = [
+            cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels) for cls_score in cls_scores
+        ]
+        flatten_bbox_preds = [bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4) for bbox_pred in bbox_preds]
+        flatten_kernel_preds = [
+            kernel_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, self.num_gen_params) for kernel_pred in kernel_preds
+        ]
+        flatten_cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
+        flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
+        flatten_kernel_preds = torch.cat(flatten_kernel_preds, dim=1)
+        priors = torch.cat(mlvl_priors)
+        tl_x = priors[..., 0] - flatten_bbox_preds[..., 0]  # type: ignore[call-overload]
+        tl_y = priors[..., 1] - flatten_bbox_preds[..., 1]  # type: ignore[call-overload]
+        br_x = priors[..., 0] + flatten_bbox_preds[..., 2]  # type: ignore[call-overload]
+        br_y = priors[..., 1] + flatten_bbox_preds[..., 3]  # type: ignore[call-overload]
+        bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)
+        # directly multiply score factor and feed to nms
+        max_scores, _ = torch.max(flatten_cls_scores, 1)
+        mask = max_scores >= cfg.score_thr
+        scores = flatten_cls_scores.where(mask, flatten_cls_scores.new_zeros(1))  # type: ignore[attr-defined]
+
+        deploy_cfg = ctx.cfg
+        post_params = get_post_processing_params(deploy_cfg)
+        max_output_boxes_per_class = post_params.max_output_boxes_per_class
+        iou_threshold = cfg.nms.get("iou_threshold", post_params.iou_threshold)
+        score_threshold = cfg.get("score_thr", post_params.score_threshold)
+        pre_top_k = post_params.pre_top_k
+        keep_top_k = cfg.get("max_per_img", post_params.keep_top_k)
+        mask_thr_binary = cfg.get("mask_thr_binary", 0.5)
+
+        return _nms_with_mask_static(
+            self,
+            priors,
+            bboxes,
+            scores,
+            flatten_kernel_preds,
+            mask_feat,
+            max_output_boxes_per_class,
+            iou_threshold,
+            score_threshold,
+            pre_top_k,
+            keep_top_k,
+            mask_thr_binary,
+        )
+
+    def _nms_with_mask_static(
+        self,
+        priors: Tensor,
+        boxes: Tensor,
+        scores: Tensor,
+        kernels: Tensor,
+        mask_feats: Tensor,
+        max_output_boxes_per_class: int = 1000,
+        iou_threshold: float = 0.5,
+        score_threshold: float = 0.05,
+        pre_top_k: int = -1,
+        keep_top_k: int = -1,
+        mask_thr_binary: float = 0.5,
+    ):
+        """Wrapper for `multiclass_nms` with ONNXRuntime.
+
+        Args:
+            self: The instance of `RTMDetInsHead`.
+            priors (Tensor): The prior boxes of shape [num_boxes, 4].
+            boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+            scores (Tensor): The detection scores of shape
+                [N, num_boxes, num_classes].
+            kernels (Tensor): The dynamic conv kernels.
+            mask_feats (Tensor): The mask feature.
+            max_output_boxes_per_class (int): Maximum number of output
+                boxes per class of nms. Defaults to 1000.
+            iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
+            score_threshold (float): score threshold of nms.
+                Defaults to 0.05.
+            pre_top_k (int): Number of top K boxes to keep before nms.
+                Defaults to -1.
+            keep_top_k (int): Number of top K boxes to keep after nms.
+                Defaults to -1.
+            mask_thr_binary (float): Binarization threshold for masks.
+
+
+        Returns:
+            tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
+                and `labels` of shape [N, num_det].
+        """
+        if version.parse(torch.__version__) < version.parse("1.13.0"):
+            max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
+        iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
+        score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
+
+        # pre topk
+        if pre_top_k > 0:
+            max_scores, _ = scores.max(-1)
+            _, topk_inds = max_scores.squeeze(0).topk(pre_top_k)
+            boxes = boxes[:, topk_inds, :]
+            scores = scores[:, topk_inds, :]
+            kernels = kernels[:, topk_inds, :]
+            priors = priors[topk_inds, :]
+
+        scores = scores.permute(0, 2, 1)
+        selected_indices = ONNXNMSop.apply(boxes, scores, max_output_boxes_per_class, iou_threshold, score_threshold)
+
+        cls_inds = selected_indices[:, 1]
+        box_inds = selected_indices[:, 2]
+
+        scores = scores[:, cls_inds, box_inds].unsqueeze(2)
+        boxes = boxes[:, box_inds, ...]
+        kernels = kernels[:, box_inds, :]
+        priors = priors[box_inds, :]
+        dets = torch.cat([boxes, scores], dim=2)
+        labels = cls_inds.unsqueeze(0)
+
+        # pad
+        dets = torch.cat((dets, dets.new_zeros((1, 1, 5))), 1)
+        labels = torch.cat((labels, labels.new_zeros((1, 1))), 1)
+        kernels = torch.cat((kernels, kernels.new_zeros(1, 1, kernels.shape[2])), 1)
+        priors = torch.cat((priors, priors.new_zeros(1, 4)), 0)
+
+        # topk or sort
+        is_use_topk = keep_top_k > 0 and (torch.onnx.is_in_onnx_export() or keep_top_k < dets.shape[1])
+        if is_use_topk:
+            _, topk_inds = dets[:, :, -1].topk(keep_top_k, dim=1)
+        else:
+            _, topk_inds = dets[:, :, -1].sort(dim=1, descending=True)
+        topk_inds = topk_inds.squeeze(0)
+        dets = dets[:, topk_inds, ...]
+        labels = labels[:, topk_inds, ...]
+        kernels = kernels[:, topk_inds, ...]
+        priors = priors[topk_inds, ...]
+        mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0], priors)
+        stride = self.prior_generator.strides[0][0]
+        mask_logits = F.interpolate(mask_logits.unsqueeze(0), scale_factor=stride, mode="bilinear")
+        masks = mask_logits.sigmoid()
+
+        batch_index = (
+            torch.arange(dets.size(0), device=dets.device).float().view(-1, 1, 1).expand(dets.size(0), dets.size(1), 1)
+        )
+        rois = torch.cat([batch_index, dets[..., :4]], dim=-1)
+        cropped_masks = self.roi_align(masks, rois[0])
+        cropped_masks = cropped_masks[torch.arange(cropped_masks.size(0)), torch.arange(cropped_masks.size(0))]
+        cropped_masks = cropped_masks.unsqueeze(0)
+        return dets, labels, cropped_masks
+
+    def _mask_predict_by_feat_single(self, mask_feat, kernels, priors):
+        """Decode mask with dynamic conv."""
+        num_inst = priors.shape[0]
+        h, w = mask_feat.size()[-2:]
+        if num_inst < 1:
+            return torch.empty(size=(num_inst, h, w), dtype=mask_feat.dtype, device=mask_feat.device)
+        if len(mask_feat.shape) < 4:
+            mask_feat.unsqueeze(0)
+        coord = (
+            self.prior_generator.single_level_grid_priors((h, w), level_idx=0).reshape(1, -1, 2).to(mask_feat.device)
+        )
+        num_inst = priors.shape[0]
+        points = priors[:, :2].reshape(-1, 1, 2)
+        strides = priors[:, 2:].reshape(-1, 1, 2)
+        relative_coord = (points - coord).permute(0, 2, 1) / (strides[..., 0].reshape(-1, 1, 1) * 8)
+        relative_coord = relative_coord.reshape(num_inst, 2, h, w)
+
+        mask_feat = torch.cat([relative_coord, mask_feat.repeat(num_inst, 1, 1, 1)], dim=1)
+        weights, biases = _parse_dynamic_params(self, kernels)
+
+        n_layers = len(weights)
+        x = mask_feat.flatten(2)
+        for i, (weight, bias) in enumerate(zip(weights, biases)):
+            # replace dynamic conv with bmm
+            x = torch.bmm(weight, x)
+            x = x + bias[:, :, None]
+            if i < n_layers - 1:
+                x = x.clamp_(min=0)
+        x = x.reshape(num_inst, h, w)
+        return x
+
+    def _parse_dynamic_params(self, flatten_kernels):
+        """Split kernel head prediction to conv weight and bias."""
+        n_inst = flatten_kernels.size(0)
+        n_layers = len(self.weight_nums)
+        params_splits = list(torch.split_with_sizes(flatten_kernels, self.weight_nums + self.bias_nums, dim=1))
+        weight_splits = params_splits[:n_layers]
+        bias_splits = params_splits[n_layers:]
+        for idx in range(n_layers):
+            if idx < n_layers - 1:
+                weight_splits[idx] = weight_splits[idx].reshape(n_inst, self.dyconv_channels, -1)
+            else:
+                weight_splits[idx] = weight_splits[idx].reshape(n_inst, 1, -1)
+        return weight_splits, bias_splits

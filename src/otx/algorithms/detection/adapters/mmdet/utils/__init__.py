@@ -12,7 +12,6 @@ from .config_utils import (
     patch_tiling,
     should_cluster_anchors,
 )
-from .instance_data import CustomInstanceData
 
 __all__ = [
     "cluster_anchors",
@@ -22,5 +21,4 @@ __all__ = [
     "patch_input_shape",
     "patch_ir_scale_factor",
     "should_cluster_anchors",
-    "CustomInstanceData",
 ]

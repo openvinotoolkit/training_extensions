@@ -2,24 +2,25 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
 import functools
+from typing import List
 
 import numpy as np
 import torch
 from mmdet.core import bbox2result
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.single_stage import SingleStageDetector
+from mmengine.structures import InstanceData
 
+from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
-from otx.algorithms.detection.adapters.mmdet.utils import CustomInstanceData
 
 logger = get_logger()
 
 
-def pack_gt_instances(gt_masks, gt_labels, gt_bboxes) -> list[CustomInstanceData]:
-    """Pack ground truth instances into a list of CustomInstanceData.
+def pack_gt_instances(gt_masks, gt_labels, gt_bboxes) -> List[InstanceData]:
+    """Pack ground truth instances into a list of InstanceData.
 
     Args:
         gt_masks (Tensor): ground truth masks.
@@ -27,11 +28,11 @@ def pack_gt_instances(gt_masks, gt_labels, gt_bboxes) -> list[CustomInstanceData
         gt_bboxes (Tensor): ground truth bounding boxes.
 
     Returns:
-        list[CustomInstanceData]: list of CustomInstanceData.
+        list[InstanceData]: list of InstanceData.
     """
     batch_gt_instances = []
     for gt_mask, gt_label, gt_bbox in zip(gt_masks, gt_labels, gt_bboxes):
-        gt_instance = CustomInstanceData()
+        gt_instance = InstanceData()
         gt_instance.masks = gt_mask
         gt_instance.labels = gt_label
         gt_instance.bboxes = gt_bbox
@@ -143,7 +144,7 @@ class CustomRTMDetInst(SingleStageDetector):
         """Format the model predictions according to the interface with dataset.
 
         Args:
-            results (:obj:`CustomInstanceData`): Processed
+            results (:obj:`InstanceData`): Processed
                 results of single images. Usually contains
                 following keys.
 
@@ -192,3 +193,66 @@ class CustomRTMDetInst(SingleStageDetector):
             mask_results[labels[idx]].append(mask)
 
         return bbox_results, mask_results
+
+
+if is_mmdeploy_enabled():
+    from mmdeploy.core import FUNCTION_REWRITER, mark
+    from mmdeploy.utils import is_dynamic_shape
+
+    from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import FeatureVectorHook
+    from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import (
+        DetClassProbabilityMapHook,
+    )
+
+    @FUNCTION_REWRITER.register_rewriter(
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_rtmdet.CustomRTMDetInst.simple_test"
+    )
+    def custom_rtmdet_inst__simple_test(ctx, self, img, img_metas, rescale=False):
+        """Rewritten CustomRTMDetInst.simple_test."""
+        feat = self.extract_feat(img)
+        outs = self.bbox_head(feat)
+        mask_results = self.bbox_head.get_bboxes(*outs, cfg=self.test_cfg, img_metas=img_metas, rescale=rescale)
+
+        if ctx.cfg["dump_features"]:
+            feature_vector = FeatureVectorHook.func(feat)
+            cls_scores = outs[0]
+            postprocess_kwargs = {
+                "use_cls_softmax": ctx.cfg["softmax_saliency_maps"],
+                "normalize": ctx.cfg["normalize_saliency_maps"],
+            }
+            saliency_map = DetClassProbabilityMapHook(self, **postprocess_kwargs).func(
+                cls_scores, cls_scores_provided=True
+            )
+            return (*mask_results, feature_vector, saliency_map)
+
+        return mask_results
+
+    @mark("custom_rtmdet_inst_forward", inputs=["input"], outputs=["dets", "labels", "masks", "feats", "saliencies"])
+    def __forward_impl(ctx, self, img, img_metas, **kwargs):
+        """Rewritten CustomRTMDetInst.forward."""
+        assert isinstance(img, torch.Tensor)
+
+        deploy_cfg = ctx.cfg
+        is_dynamic_flag = is_dynamic_shape(deploy_cfg)
+        # get origin input shape as tensor to support onnx dynamic shape
+        img_shape = torch._shape_as_tensor(img)[2:]
+        if not is_dynamic_flag:
+            img_shape = [int(val) for val in img_shape]
+        img_metas[0]["img_shape"] = img_shape
+        return self.simple_test(img, img_metas, **kwargs)
+
+    @FUNCTION_REWRITER.register_rewriter(
+        "otx.algorithms.detection.adapters.mmdet.models.detectors.custom_rtmdet.CustomRTMDetInst.forward"
+    )
+    def custom_rtmdet_inst__forward(ctx, self, img, img_metas=None, return_loss=False, **kwargs):
+        """Rewritten CustomRTMDetInst.forward."""
+        if img_metas is None:
+            img_metas = [{}]
+        else:
+            assert len(img_metas) == 1, "do not support aug_test"
+            img_metas = img_metas[0]
+
+        if isinstance(img, list):
+            img = img[0]
+
+        return __forward_impl(ctx, self, img, img_metas=img_metas, **kwargs)
