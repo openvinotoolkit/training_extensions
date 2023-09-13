@@ -164,7 +164,9 @@ def get_args():
         "--track-resource-usage",
         type=str,
         default=None,
-        help="Track CPU & GPU utilization and max memory usage and save values at the output path.",
+        help="Track resources utilization and max memory usage and save values at the output path. "
+             "The possible options are 'cpu', 'gpu' or you can set to a comma-separated list of resource types. "
+             "And 'all' is also available for choosing all resource types.",
     )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
