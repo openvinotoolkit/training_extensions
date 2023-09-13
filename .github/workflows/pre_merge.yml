@@ -137,4 +137,4 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "intg-test-results"
-      runs-on: "['otx-gpu-v100-2']"
+      runs-on: "['otx-gpu-t4-2']"
