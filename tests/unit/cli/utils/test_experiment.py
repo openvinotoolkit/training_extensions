@@ -33,11 +33,11 @@ class TestResourceTracker:
         if resource_type == "all":
             expected_resource_type = target_file.AVAILABLE_RESOURCE_TYPE
         else:
-            expected_resource_type = [val for val in resource_type.split(',')]
+            expected_resource_type = [val for val in resource_type.split(",")]
 
         expected_gpu_ids = None
         if gpu_ids is not None:
-            expected_gpu_ids = [int(idx) for idx in gpu_ids.split(',')]
+            expected_gpu_ids = [int(idx) for idx in gpu_ids.split(",")]
             expected_gpu_ids[0] = 0
 
         # run
@@ -46,8 +46,8 @@ class TestResourceTracker:
 
         self.mock_proc.start.assert_called_once()  # check that a process to track resource usages starts
         # check proper resource type and gpu_ids vaues are passed to a process to run
-        assert self.mock_mp.Process.call_args.kwargs['args'][1] == expected_resource_type 
-        assert self.mock_mp.Process.call_args.kwargs['args'][2] == expected_gpu_ids 
+        assert self.mock_mp.Process.call_args.kwargs["args"][1] == expected_resource_type
+        assert self.mock_mp.Process.call_args.kwargs["args"][2] == expected_gpu_ids
 
     @e2e_pytest_unit
     def test_start_multiple_times(self):
@@ -85,7 +85,7 @@ class TestResourceTracker:
         self.mock_queue.put.assert_called_once_with(output_path)
         self.mock_proc.join.assert_called()
         # check that code to terminate a process forcibly if process doesn't exit normally
-        self.mock_proc.terminate.assert_called()  
+        self.mock_proc.terminate.assert_called()
         self.mock_proc.close.assert_called()
 
     @e2e_pytest_unit
@@ -114,7 +114,7 @@ class MockQueue:
 @e2e_pytest_unit
 def test_check_resource(mocker, resource_types, tmp_path):
     # prepare
-    gpu_ids = [0,1]
+    gpu_ids = [0, 1]
     output_file = f"{tmp_path}/fake.yaml"
     mock_queue = MockQueue(output_file)
 
@@ -135,7 +135,7 @@ def test_check_resource(mocker, resource_types, tmp_path):
     if "gpu" in resource_types:
         mock_gpu_recorder.record.assert_called_once()
         mock_gpu_recorder_cls.assert_called_once_with(gpu_ids)
-    
+
     assert Path(output_file).exists()  # check a file is saved well
 
 
@@ -162,7 +162,7 @@ def test_check_resource_wrong_resource_type(mocker, resource_types, tmp_path):
     mock_cpu_recorder_cls.assert_not_called()
     mock_gpu_recorder.record.assert_not_called()
     mock_gpu_recorder_cls.assert_not_called()
-    
+
     assert not Path(output_file).exists()  # check a file isn't saved
 
 
@@ -217,7 +217,7 @@ class TestGpuUsageRecorder:
     def _set_up(self, mocker):
         self.mock_pynvml = mocker.patch.object(target_file, "pynvml")
         self.mock_pynvml.nvmlDeviceGetCount.return_value = 8
-        self.mock_nvmlDeviceGetHandleByIndex = mocker.MagicMock(side_effect=lambda val : val)
+        self.mock_nvmlDeviceGetHandleByIndex = mocker.MagicMock(side_effect=lambda val: val)
         self.mock_pynvml.nvmlDeviceGetHandleByIndex = self.mock_nvmlDeviceGetHandleByIndex
 
         self.gpu_usage = {}
@@ -241,16 +241,16 @@ class TestGpuUsageRecorder:
         if gpu_idx in self.gpu_usage:
             self.gpu_usage[gpu_idx]["mem"] = mem_usage
         else:
-            self.gpu_usage[gpu_idx] = {"mem" : mem_usage}
+            self.gpu_usage[gpu_idx] = {"mem": mem_usage}
 
     def set_gpu_util(self, gpu_idx: int, gpu_util: int):
         if gpu_idx in self.gpu_usage:
             self.gpu_usage[gpu_idx]["util"] = gpu_util
         else:
-            self.gpu_usage[gpu_idx] = {"util" : gpu_util}
+            self.gpu_usage[gpu_idx] = {"util": gpu_util}
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("gpu_to_track", ([0], [0,4]))
+    @pytest.mark.parametrize("gpu_to_track", ([0], [0, 4]))
     def test_init(self, mocker, gpu_to_track):
         mocker.patch.object(GpuUsageRecorder, "_get_gpu_to_track", return_value=gpu_to_track)
 
@@ -272,7 +272,7 @@ class TestGpuUsageRecorder:
     @pytest.mark.parametrize("gpu_ids", ([0], [1, 2, 5]))
     def test_get_gpu_to_track_cuda_env_var(self, gpu_ids):
         cuda_visible_devices = [1, 2, 5, 7, 9, 10]
-        self.mock_os.environ = {"CUDA_VISIBLE_DEVICES" : ",".join(list(map(str, cuda_visible_devices)))}
+        self.mock_os.environ = {"CUDA_VISIBLE_DEVICES": ",".join(list(map(str, cuda_visible_devices)))}
         gpu_to_track = [cuda_visible_devices[i] for i in gpu_ids]
 
         gpu_usage_recorder = GpuUsageRecorder()
@@ -281,7 +281,7 @@ class TestGpuUsageRecorder:
 
     @e2e_pytest_unit
     def test_record_report(self):
-        gpu_ids = [0,1]
+        gpu_ids = [0, 1]
         gpu_usage_recorder = GpuUsageRecorder(gpu_ids)
 
         # first record

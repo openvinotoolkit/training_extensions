@@ -31,6 +31,7 @@ from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.manager import ConfigManager
 from otx.cli.manager.config_manager import TASK_TYPE_TO_SUB_DIR_NAME
+from otx.cli.utils.experiment import ResourceTracker
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
@@ -42,7 +43,6 @@ from otx.cli.utils.parser import (
     get_parser_and_hprams_data,
 )
 from otx.cli.utils.report import get_otx_report
-from otx.cli.utils.experiment import ResourceTracker
 from otx.core.data.adapter import get_dataset_adapter
 
 
@@ -164,7 +164,7 @@ def get_args():
         "--track-resource-usage",
         type=str,
         default=None,
-        help="Track CPU & GPU utilization and max memory usage and save them at the output path as a file.",
+        help="Track CPU & GPU utilization and max memory usage and save values at the output path.",
     )
 
     sub_parser = add_hyper_parameters_sub_parser(parser, hyper_parameters, return_sub_parser=True)
