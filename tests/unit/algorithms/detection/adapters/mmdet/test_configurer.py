@@ -166,7 +166,6 @@ class TestDetectionConfigurer:
         if input_size is None:
             mock_input_manager.set_input_size.assert_not_called()
         elif input_size == (0, 0):
-            #mock_base_configurer_cls.adapt_input_size_to_dataset.assert_called_once_with()
             mock_input_manager.set_input_size.assert_called_once_with((64, 64))
         else:
             mock_input_manager.set_input_size.assert_called_once_with(input_size)

@@ -418,10 +418,16 @@ class TestInputSizeManager:
         input_size_parser = re.compile("(\d+)x(\d+)")
 
         if input_size_config == InputSizePreset.DEFAULT:
-            if model_ckpt_case == "none" or model_ckpt_case == "no_input_size" or model_ckpt_case == "input_size_default":
+            if (
+                model_ckpt_case == "none"
+                or model_ckpt_case == "no_input_size"
+                or model_ckpt_case == "input_size_default"
+            ):
                 expected_value = None
             elif model_ckpt_case == "input_size_exist":
-                input_size = get_mock_model_ckpt(model_ckpt_case)["config"]["learning_parameters"]["input_size"]["value"]
+                input_size = get_mock_model_ckpt(model_ckpt_case)["config"]["learning_parameters"]["input_size"][
+                    "value"
+                ]
                 pattern = input_size_parser.search(input_size)
                 expected_value = (int(pattern.group(1)), int(pattern.group(2)))
         elif input_size_config == InputSizePreset.AUTO:
@@ -469,19 +475,19 @@ class TestInputSizeManager:
 
         input_size = manager.adapt_input_size_to_dataset(
             max_image_size=200,
-            min_object_size = 128,
+            min_object_size=128,
         )  # 50 -> 64
         assert input_size == (64, 64)
 
         input_size = manager.adapt_input_size_to_dataset(
             max_image_size=200,
-            min_object_size = 16,
+            min_object_size=16,
         )  # 400 -> 128
         assert input_size == base_input_size
 
         input_size = manager.adapt_input_size_to_dataset(
             max_image_size=200,
-            min_object_size = 16,
+            min_object_size=16,
             downscale_only=False,
         )  # 400 -> 384
         assert input_size == (384, 384)

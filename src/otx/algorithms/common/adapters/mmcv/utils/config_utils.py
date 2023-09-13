@@ -930,7 +930,8 @@ class InputSizeManager:
         """
         if len(preset_sizes) == 0:
             return input_size
-        scale_of = lambda x: np.log(np.sqrt(x[0] * x[1]))
+        def scale_of(x):
+            return np.log(np.sqrt(x[0] * x[1]))
         input_scale = scale_of(input_size)
         preset_scales = np.array(list(map(scale_of, preset_sizes)))
         abs_diff = np.abs(preset_scales - input_scale)
@@ -972,8 +973,10 @@ class InputSizeManager:
         input_size = (round(image_size), round(image_size))
 
         if downscale_only:
+
             def area(x):
                 return x[0] * x[1]
+
             if base_input_size and area(input_size) >= area(base_input_size):
                 logger.info(f"-> Downscale only: {input_size} -> {base_input_size}")
                 return base_input_size
