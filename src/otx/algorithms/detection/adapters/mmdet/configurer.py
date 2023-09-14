@@ -29,11 +29,10 @@ logger = get_logger()
 class DetectionConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    @staticmethod
-    def override_from_hyperparams(config, hyperparams, **kwargs):
+    def override_from_hyperparams(self, config, hyperparams, **kwargs):
         """Override config using hyperparameters from OTX cli."""
         dataset = kwargs.get("train_dataset", None)
-        super(DetectionConfigurer, DetectionConfigurer).override_from_hyperparams(config, hyperparams)
+        super().override_from_hyperparams(config, hyperparams)
         patch_tiling(config, hyperparams, dataset)
 
     def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
