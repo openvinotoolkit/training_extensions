@@ -8,10 +8,13 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from mmdet.core import bbox2roi
+from mmdet.core import MlvlPointGenerator, bbox2roi
 
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     BaseRecordingForwardHook,
+)
+from otx.algorithms.detection.adapters.mmdet.models.dense_heads.rtmdet_ins_head import (
+    RTMDetInsSepBNHead,
 )
 from otx.algorithms.detection.adapters.mmdet.models.heads.custom_atss_head import (
     CustomATSSHead,
@@ -38,7 +41,10 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         self._bbox_head = module.bbox_head
         self._num_cls_out_channels = module.bbox_head.cls_out_channels  # SSD-like heads also have background class
         if hasattr(module.bbox_head, "anchor_generator"):
-            self._num_anchors = module.bbox_head.anchor_generator.num_base_anchors
+            if isinstance(module.bbox_head.anchor_generator, MlvlPointGenerator):
+                self._num_anchors = module.bbox_head.anchor_generator.num_base_priors
+            else:
+                self._num_anchors = module.bbox_head.anchor_generator.num_base_anchors
         else:
             self._num_anchors = [1] * 10
         self.use_cls_softmax = use_cls_softmax
@@ -122,6 +128,15 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                     forward_single, x, self._bbox_head.multi_level_cls_convs, self._bbox_head.multi_level_conv_cls
                 )
                 cls_scores = list(map_results)
+            elif isinstance(self._bbox_head, RTMDetInsSepBNHead):
+                cls_scores = []
+                feats = x
+                for idx, x in enumerate(feats):
+                    cls_feat = x
+                    for cls_layer in self._bbox_head.cls_convs[idx]:
+                        cls_feat = cls_layer(cls_feat)
+                    cls_score = self._bbox_head.rtm_cls[idx](cls_feat)
+                    cls_scores.append(cls_score)
             else:
                 raise NotImplementedError(
                     "Not supported detection head provided. "
