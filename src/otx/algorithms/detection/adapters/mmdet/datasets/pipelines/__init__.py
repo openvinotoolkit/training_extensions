@@ -20,6 +20,7 @@ from .torchvision2mmdet import (
     RandomGaussianBlur,
     RandomGrayscale,
 )
+from .transforms import CachedMixUp, CachedMosaic
 
 __all__ = [
     "LoadImageFromOTXDataset",
@@ -35,4 +36,6 @@ __all__ = [
     "NDArrayToPILImage",
     "PILImageToNDArray",
     "BranchImage",
+    "CachedMixUp",
+    "CachedMosaic",
 ]
