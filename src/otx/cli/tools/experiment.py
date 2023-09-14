@@ -24,6 +24,7 @@ import json
 import statistics
 import shutil
 import yaml
+from abc import ABC, abstractmethod
 from math import sqrt
 from copy import copy
 from datetime import datetime
@@ -80,90 +81,222 @@ def get_exp_recipe() -> Dict:
     return exp_recipe
 
 
-def parse_performance(performance_file: Path, with_fps: bool = False):
-    with performance_file.open("r") as f:
-        temp = json.load(f)
-    if with_fps:
-        return temp["f-measure"], temp["avg_time_per_image"]
-    return temp["f-measure"]
+class BaseExpParser(ABC):
+    def __init__(self, workspace: Path):
+        self.workspace = workspace
+        self._val_score = None
+        self._test_score = None
+        self._train_e2e_time = None
+        self._iter_time_arr = []
+        self._data_time_arr = []
+        self._export_model_score = None
+        self._export_model_speed = None
+        self._max_cpu_mem = None
+        self._avg_cpu_util = None
+        self._max_gpu_mem = None
+        self._avg_gpu_util = None
+
+    @abstractmethod
+    def parse_exp_log(self):
+        raise NotImplementedError
+
+    def get_exp_result(self):
+        avg_iter_time = None
+        std_iter_time = None
+        if self._iter_time_arr:
+            avg_iter_time = round(statistics.mean(self._iter_time_arr), 4)
+            std_iter_time = round(statistics.stdev(self._iter_time_arr), 4)
+
+        avg_data_time = None
+        std_data_time = None
+        if self._data_time_arr:
+            avg_data_time = round(statistics.mean(self._data_time_arr), 4)
+            std_data_time = round(statistics.stdev(self._data_time_arr), 4)
+
+        result = {
+            "val_score" : self._val_score,
+            "test_score" : self._test_score,
+            "train_e2e_time" : self._train_e2e_time,
+            "avg_iter_time" : avg_iter_time,
+            "std_iter_time" : std_iter_time,
+            "avg_data_time" : avg_data_time,
+            "std_data_time" : std_data_time,
+            "export_model_score" : self._export_model_score,
+            "export_model_speed" : self._export_model_speed,
+            "max_cpu_mem(GiB)" : self._max_cpu_mem,
+            "avg_cpu_util(%)" : self._avg_cpu_util,
+            "max_gpu_mem(GiB)" : self._max_gpu_mem,
+            "avg_gpu_util(%)" : self._avg_gpu_util,
+        }
+
+        # delete None value
+        for key in list(result.keys()):
+            if result[key] is None:
+                del result[key]
+
+        return result
+
+    def _parse_eval_output(self, file_path: Path):
+        with file_path.open("r") as f:
+            eval_output = json.load(f)
+
+        if "train" in str(file_path.parent.name):
+            self._test_score = eval_output["f-measure"]
+        else:  # export
+            if "avg_time_per_image" in eval_output:
+                self._export_model_speed = eval_output["avg_time_per_image"]
+            self._export_model_score = eval_output["f-measure"]
+
+        
+    def _parse_resource_usage(self, file_path: Path):
+        with file_path.open("r") as f:
+            resource_usage = yaml.safe_load(f)
+    
+        self._max_cpu_mem = resource_usage["max_cpu_mem(GiB)"]
+        self._avg_cpu_util = resource_usage["avg_cpu_util(%)"]
+        self._max_gpu_mem = resource_usage["max_gpu_mem(GiB)"]
+        self._avg_gpu_util = resource_usage["avg_gpu_util(%)"]
+
+    def _parse_cli_report(self, file_path: Path, save_val_score=True):
+        with file_path.open("r") as f:
+            lines = f.readlines()
+
+        val_score_pattern = re.compile(r"score: Performance\(score: (\d+(\.\d*)?|\.\d+)")
+        e2e_time_pattern = re.compile(r"time elapsed: '(\d+:\d+:\d+(\.\d*)?)'")
+        for line in lines:
+            if save_val_score:
+                val_score = val_score_pattern.search(line)
+                if val_score is not None:
+                    self._val_score = val_score.group(1)
+
+            e2e_time = e2e_time_pattern.search(line)
+            if e2e_time is not None:
+                self._train_e2e_time = e2e_time.group(1)
+
+
+class MMCVExpParser(BaseExpParser):
+    def parse_exp_log(self):
+        for task_dir in (self.workspace / "outputs").iterdir():
+            if "train" in str(task_dir.name):
+                # test score
+                eval_files = list(task_dir.glob("performance.json"))
+                if eval_files:
+                    self._parse_eval_output(eval_files[0])
+
+                # best eval score & iter, data time
+                train_record_files = list((task_dir / "logs").glob("*.log.json"))
+                if train_record_files:
+                    self._parse_train_record(train_record_files[0])
+
+                # train e2e time
+                cli_report_files = list(task_dir.glob("cli_report.log"))
+                if cli_report_files:
+                    self._parse_cli_report(cli_report_files[0], False)
+
+                # get resource info
+                resource_file = task_dir / "resource_usage.yaml"
+                if resource_file.exists():
+                    self._parse_resource_usage(resource_file)
+
+            elif "export" in str(task_dir):
+                eval_files = list(task_dir.glob("performance.json"))
+                if eval_files:
+                    self._parse_eval_output(eval_files[0])
+
+    def _parse_train_record(self, file_path : Path):
+        with file_path.open("r") as f:
+            lines = f.readlines()
+
+        for line in lines:
+            iter_history = json.loads(line)
+            if iter_history.get("mode") == "train":
+                self._iter_time_arr.append(iter_history["time"])
+                self._data_time_arr.append(iter_history["data_time"])
+            elif iter_history.get("mode") == "val":
+                if self._val_score is None or self._val_score < iter_history["mAP"]:
+                    self._val_score = iter_history["mAP"]
+
+
+class AnomalibExpParser(BaseExpParser):
+    def parse_exp_log(self):
+        for task_dir in (self.workspace / "outputs").iterdir():
+            if "train" in str(task_dir.name):
+                # test score
+                eval_files = list(task_dir.glob("performance.json"))
+                if eval_files:
+                    self._parse_eval_output(eval_files[0])
+
+                # val score and train e2e time
+                cli_report_files = list(task_dir.glob("cli_report.log"))
+                if cli_report_files:
+                    self._parse_cli_report(cli_report_files[0])
+
+                # get resource info
+                resource_file = task_dir / "resource_usage.yaml"
+                if resource_file.exists():
+                    self._parse_resource_usage(resource_file)
+
+            elif "export" in str(task_dir):
+                eval_files = list(task_dir.glob("performance.json"))
+                if eval_files:
+                    self._parse_eval_output(eval_files[0])
+
+
+def get_exp_parser(workspace: Path) -> BaseExpParser:
+    with (workspace / "template.yaml").open("r") as f:
+        template = yaml.safe_load(f)
+
+    if "anomaly" in template["task_type"].lower():
+        return AnomalibExpParser(workspace)
+    return MMCVExpParser(workspace)
 
 
 def organize_exp_result(workspace: Union[str, Path], exp_meta: Dict[str, str]):
     if isinstance(workspace, str):
         workspace = Path(workspace)
 
-    exp_result = {
-        "val_score" : 0,
-        "test_score" : None,
-        "export_model_score" : None,
-        "iter_time_arr" : [],
-        "data_time_arr" : [],
-        "export_model_speed" : None,
-        "max_cpu_mem(GiB)" : None,
-        "avg_cpu_util(%)" : None,
-        "max_gpu_mem(GiB)" : None,
-        "avg_gpu_util(%)" : None,
-    }
-    for task_dir in (workspace / "outputs").iterdir():
-        if "train" in str(task_dir.name):
-            # test score
-            performance_file = list(task_dir.glob("performance.json"))
-            if performance_file:
-                exp_result["test_score"] = parse_performance(performance_file[0])
+    exp_parser = get_exp_parser(workspace)
+    exp_parser.parse_exp_log()
 
-            # best eval score & iter, data time
-            train_history_file = list((task_dir / "logs").glob("*.log.json"))[0]
-            with train_history_file.open("r") as f:
-                lines = f.readlines()
-
-            for line in lines:
-                iter_history = json.loads(line)
-                if iter_history.get("mode") == "train":
-                    exp_result["iter_time_arr"].append(iter_history["time"])
-                    exp_result["data_time_arr"].append(iter_history["data_time"])
-                elif iter_history.get("mode") == "val":
-                    if exp_result["val_score"] < iter_history["mAP"]:
-                        exp_result["val_score"] = iter_history["mAP"]
-
-            resource_file = task_dir / "resource_usage.yaml"
-            if resource_file.exists():
-                with resource_file.open("r") as f:
-                    resource_usage = yaml.safe_load(f)
-            
-                for key in ["max_cpu_mem(GiB)", "avg_cpu_util(%)", "max_gpu_mem(GiB)" ,"avg_gpu_util(%)"]:
-                    exp_result[key] = resource_usage[key]
-
-        elif "export" in str(task_dir):
-            performance_file = list(task_dir.glob("performance.json"))
-            if performance_file:
-                exp_result["export_model_score"], exp_result["export_model_speed"] \
-                    = parse_performance(performance_file[0], True)
-
-    for iter_type in ["iter_time", "data_time"]:
-        if exp_result[f"{iter_type}_arr"]:
-            exp_result[f"avg_{iter_type}"] = round(statistics.mean(exp_result[f"{iter_type}_arr"]), 4)
-            exp_result[f"std_{iter_type}"] = round(statistics.stdev(exp_result[f"{iter_type}_arr"]), 4)
-        else:
-            exp_result[f"avg_{iter_type}"] = None
-            exp_result[f"std_{iter_type}"] = None
-
-        del exp_result[f"{iter_type}_arr"]
-
+    exp_result = exp_parser.get_exp_result() 
     with (workspace / "exp_result.yaml").open("w") as f:
-        yaml.dump(
-            {
-                "meta" : exp_meta,
-                "exp_result" : exp_result,
-            },
-            f,
-            default_flow_style=False
-        )
-    
+        yaml.dump({"meta" : exp_meta, "exp_result" : exp_result}, f, default_flow_style=False)
+
     
 def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     if isinstance(exp_dir, str):
         exp_dir = Path(exp_dir)
 
+    stdev_field = ["std_iter_time", "std_data_time"]
+
+    exp_result_aggregation = {}
+    for each_exp in exp_dir.iterdir():
+        exp_result_file = each_exp / "exp_result.yaml"
+        if not exp_result_file.exists():
+            continue
+
+        with exp_result_file.open("r") as f:
+            exp_result: Dict[str, Dict] = yaml.safe_load(f)
+            exp_meta = copy(exp_result["meta"])
+            repeat = exp_meta.pop("repeat")
+
+            exp_name = json.dumps(exp_meta, sort_keys=True).encode()
+            if exp_name in exp_result_aggregation:
+                pass
+            else:
+                exp_result_aggregation[exp_name] = {
+                    "result" : exp_result["exp_result"],
+                    "num" : 1,
+                    "meta" : exp_meta
+                }
+
+
+
+
+
+def perv_aggregate_all_exp_result(exp_dir: Union[str, Path]):
+    if isinstance(exp_dir, str):
+        exp_dir = Path(exp_dir)
 
     tensorboard_dir = exp_dir / "tensorboard"
     tensorboard_dir.mkdir(exist_ok=True)
@@ -173,6 +306,7 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     header = [
         "val_score",
         "test_score",
+        "train_e2e_time",
         "export_model_score",
         "export_model_speed",
         "avg_iter_time",
@@ -184,6 +318,7 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
         "max_gpu_mem(GiB)",
         "avg_gpu_util(%)",
     ]
+
     stdev_field = ["std_iter_time", "std_data_time"]
     add_meta_to_header = False
 
@@ -380,7 +515,7 @@ def run_experiment_recipe(exp_recipe: Dict):
         exp_name = "_".join(command_var.values())
 
         for repeat_idx in range(repeat):
-            workspace = Path(exp_name.replace('/', '_') + f"_repeat{repeat_idx}")
+            workspace = Path(exp_name.replace('/', '_') + f"_repeat_{repeat_idx}")
             command_var["repeat"] = str(repeat_idx)
 
             command = copy(original_command).split()
