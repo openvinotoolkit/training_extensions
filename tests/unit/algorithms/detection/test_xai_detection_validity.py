@@ -7,7 +7,7 @@ import os
 import numpy as np
 import pytest
 import torch
-from mmdet.models import build_detector
+from mmdet.models import build_detector, MaskRCNN
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.hooks import DetClassProbabilityMapHook
@@ -116,6 +116,8 @@ class TestExplainMethods:
     @pytest.mark.parametrize("template", templates_two_stage_det, ids=templates_two_stage_det_ids)
     def test_saliency_map_two_stage_det(self, template):
         model = self._get_model(template)
+        if not isinstance(model, MaskRCNN):
+            pytest.skip(f"{template.name} is not a T model")
         data = self._get_data()
 
         with MaskRCNNRecordingForwardHook(model, input_img_shape=(800, 1344)) as det_hook:
