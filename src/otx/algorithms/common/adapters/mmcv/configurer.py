@@ -96,7 +96,7 @@ class BaseConfigurer:
     def merge_configs(self, cfg, data_cfg, data_pipeline_path, hyperparams_from_otx, **kwargs):
         """Merge model cfg, data_pipeline cfg, data_cfg, and hyperparams from otx cli."""
 
-        logger.info("merge_configs()")
+        logger.debug("merge_configs()")
         if os.path.isfile(data_pipeline_path):
             data_pipeline_cfg = Config.fromfile(data_pipeline_path)
             cfg.merge_from_dict(data_pipeline_cfg)
