@@ -224,10 +224,6 @@ class BaseConfigurer:
                 cfg.optimizer_config.update(opts)
             else:
                 logger.info("Revert FP16 to FP32 on CPU device")
-                if isinstance(cfg, Config):
-                    del cfg._cfg_dict["fp16"]  # pylint: disable=protected-access
-                elif isinstance(cfg, ConfigDict):
-                    del cfg["fp16"]
 
     def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
         """Configuration model config settings."""
