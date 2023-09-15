@@ -1,4 +1,4 @@
-"""Data Pipeline of HR-Net model for Segmentation Task."""
+"""Data Pipeline of SegNext model for Segmentation Task."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
