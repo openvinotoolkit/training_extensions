@@ -676,7 +676,7 @@ class MMClassificationTask(OTXClassificationTask):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                input_size_manager = InputSizeManager(cfg.data)
+                input_size_manager = InputSizeManager(cfg)
                 size = input_size_manager.get_input_size_from_cfg("test")
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error

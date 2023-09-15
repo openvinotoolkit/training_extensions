@@ -984,6 +984,6 @@ class InputSizeManager:
 
         # Closest preset
         input_size_preset = InputSizePreset.input_sizes()
-        input_size = InputSizeManager.select_closest_size(input_size, input_size_preset)
+        input_size = self.select_closest_size(input_size, input_size_preset)
         logger.info(f"-> Closest preset: {input_size}")
         return input_size

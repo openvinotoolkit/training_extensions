@@ -201,7 +201,7 @@ class TestDetectionConfigurer:
         self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT)
 
         # check
-        mock_input_manager_cls.assert_called_once_with(mock_cfg.data, base_input_size)
+        mock_input_manager_cls.assert_called_once_with(mock_cfg, base_input_size)
 
     @e2e_pytest_unit
     def test_configure_fp16(self):

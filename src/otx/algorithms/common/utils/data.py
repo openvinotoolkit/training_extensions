@@ -265,6 +265,9 @@ def compute_robust_scale_statistics(values: np.array) -> Dict[str, float]:
         Dict[str, float]: Robust avg, min, max values
     """
     # Compute stat in log scale & convert back to original scale
+    if values.size == 0:
+        return {}
+
     stat = compute_robust_statistics(np.log(values))
     stat = {k: float(np.exp(v)) for k, v in stat.items()}
     stat["std"] = float(np.std(values))  # Normal scale std is better for understanding
