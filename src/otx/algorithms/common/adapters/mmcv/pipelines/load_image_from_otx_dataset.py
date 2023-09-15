@@ -53,14 +53,14 @@ class LoadImageFromOTXDataset:
             # Create a null handler
             MemCacheHandlerSingleton.create(mode="null", mem_size=0)
             mem_cache_handler = MemCacheHandlerSingleton.get()
-        
+
         return mem_cache_handler
-    
+
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
         img = None
         mem_cache_handler = self._get_memcache_handler()
-                    
+
         if self._enable_memcache:
             key = self._get_unique_key(results)
             img, meta = mem_cache_handler.get(key)
@@ -169,11 +169,11 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
 
     def _load_cache(self, results: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Try to load pre-computed results from cache."""
-            
+
         if not self._enable_outer_memcache:
             return None
         key = self._get_unique_key(results)
-        
+
         mem_cache_handler = self._get_memcache_handler()
         img, meta = mem_cache_handler.get(key)
         if img is None or meta is None:
@@ -188,11 +188,11 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         """Try to save pre-computed results to cache."""
         if not self._enable_outer_memcache:
             return
-        
+
         key = self._get_unique_key(results)
         meta = results.copy()
         img = meta.pop("img")
-        
+
         mem_cache_handler = self._get_memcache_handler()
         mem_cache_handler.put(key, img, meta)
 

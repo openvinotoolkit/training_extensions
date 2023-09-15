@@ -3,14 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import importlib
-
 from mmcv.utils import Config, ConfigDict
-
-from otx.algorithms.common.adapters.mmcv.utils import (
-    build_dataloader,
-    build_dataset,
-)
 
 
 class SemiSLConfigurerMixin:
