@@ -35,20 +35,63 @@ meta_keys = [
 ]
 
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     dict(
-        type="LoadAnnotationFromOTXDataset",
-        domain="instance_segmentation",
-        with_bbox=True,
-        with_mask=True,
-        poly2mask=False,
+        type="LoadResizeDataFromOTXDataset",
+        load_ann_cfg=dict(
+            type="LoadAnnotationFromOTXDataset",
+            domain="instance_segmentation",
+            with_bbox=True,
+            with_mask=True,
+            poly2mask=False,
+        ),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_size,
+            keep_ratio=True,
+        ),
+        enable_memcache=True,  # Cache after resizing image & annotations
     ),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=True),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="Pad", size_divisor=32),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"], meta_keys=meta_keys),
+    dict(
+        type="Collect",
+        keys=["img", "gt_bboxes", "gt_labels", "gt_masks"],
+        meta_keys=[
+            "ori_filename",
+            "flip_direction",
+            "scale_factor",
+            "img_norm_cfg",
+            "gt_ann_ids",
+            "flip",
+            "ignored_labels",
+            "ori_shape",
+            "filename",
+            "img_shape",
+            "pad_shape",
+        ],
+    ),
+]
+
+val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(type="Resize", img_scale=__img_size, keep_ratio=True),
+        enable_memcache=True,  # Cache after resizing image
+    ),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=__img_size,
+        flip=False,
+        transforms=[
+            dict(type="RandomFlip"),
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="Pad", size_divisor=32),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(type="Collect", keys=["img"]),
+        ],
+    ),
 ]
 
 test_pipeline = [
