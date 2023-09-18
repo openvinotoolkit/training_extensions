@@ -1,0 +1,16 @@
+metric: mAP
+search_algorithm: asha
+early_stop: None
+hp_space:
+  learning_parameters.learning_rate:
+    param_type: qloguniform
+    range:
+      - 0.001
+      - 0.01
+      - 0.001
+  learning_parameters.batch_size:
+    param_type: qloguniform
+    range:
+      - 2
+      - 24
+      - 2
