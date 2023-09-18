@@ -9,11 +9,13 @@ from multiprocessing.managers import DictProxy
 from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
+import psutil
 from multiprocess.synchronize import Lock
 
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
+GIB = 1024**3
 
 
 class _DummyLock:
@@ -157,6 +159,7 @@ class MemCacheHandlerSingleton:
     """A singleton class to create, delete and get MemCacheHandlerBase."""
 
     instance: MemCacheHandlerBase
+    CPU_MEM_LIMITS_GIB: int = 30
 
     @classmethod
     def get(cls) -> MemCacheHandlerBase:
@@ -178,7 +181,6 @@ class MemCacheHandlerSingleton:
             mode (str): There are two options: null, multiprocessing or singleprocessing.
             mem_size (int): The size of memory pool (bytes).
         """
-        logger.info(f"Try to create a {mem_size} size memory pool.")
 
         # COPY FROM mmcv.runner.get_dist_info
         from torch import distributed
@@ -188,9 +190,19 @@ class MemCacheHandlerSingleton:
         else:
             world_size = 1
 
+        # Prevent CPU OOM issue
+        memory_info = psutil.virtual_memory()
+        available_cpu_mem = memory_info.available / GIB
+
         if world_size > 1:
             mem_size = mem_size // world_size
+            available_cpu_mem = available_cpu_mem // world_size
             logger.info(f"Since world_size={world_size} > 1, each worker a {mem_size} size memory pool.")
+
+        logger.info(f"Try to create a {mem_size} size memory pool.")
+        if available_cpu_mem < ((mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB):
+            logger.info("No available CPU memory left, mem_size will be set to 0.")
+            mem_size = 0
 
         if mode == "null" or mem_size == 0:
             cls.instance = MemCacheHandlerBase(mem_size=0)
