@@ -24,13 +24,15 @@ import json
 import statistics
 import shutil
 import yaml
+import dataclasses
 from abc import ABC, abstractmethod
 from math import sqrt
-from copy import copy
-from datetime import datetime
+from copy import copy, deepcopy
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 from itertools import product
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Any
 
 from rich.console import Console
 from rich.table import Table
@@ -46,7 +48,6 @@ from .optimize import main as otx_optimize
 from .train import main as otx_train
 from .run import main as otx_run
 
-
 __all__ = [
     "otx_demo",
     "otx_deploy",
@@ -59,6 +60,7 @@ __all__ = [
     "otx_build",
     "otx_run",
 ]
+
 
 def get_args() -> str:
     """Parses command line arguments."""
@@ -81,81 +83,141 @@ def get_exp_recipe() -> Dict:
     return exp_recipe
 
 
+@dataclass
+class ExperimentResult:
+    val_score: Union[float, None] = None
+    test_score: Union[float, None] = None
+    train_e2e_time: Union[timedelta, None] = None
+    avg_iter_time: Union[float, None] = None
+    std_iter_time: Union[float, None] = None
+    avg_data_time: Union[float, None] = None
+    std_data_time: Union[float, None] = None
+    export_model_score: Union[float, None] = None
+    export_model_speed: Union[float, None] = None
+    max_cpu_mem: Union[float, None] = None
+    avg_cpu_util: Union[float, None] = None
+    max_gpu_mem: Union[float, None] = None
+    avg_gpu_util: Union[float, None] = None
+
+    def get_formatted_result(self):
+        result = dataclasses.asdict(self)
+
+        for attr_name in ["max_cpu_mem", "max_gpu_mem"]:
+            max_mem = result.pop(attr_name)
+            result[f"{attr_name}(GiB)"] = max_mem
+
+        for attr_name in ["avg_cpu_util", "avg_gpu_util"]:
+            res_util = result.pop(attr_name)
+            result[f"{attr_name}(%)"] = res_util
+
+        # delete None value
+        for key in list(result.keys()):
+            if result[key] is None:
+                del result[key]
+            elif isinstance(result[key], float):
+                result[key] = round(result[key], 4)
+
+        return result
+
+    def __add__(self, obj: 'ExperimentResult'):
+        new_obj = deepcopy(self)
+
+        for attr in dataclasses.fields(self):
+            self._add_if_not_none(new_obj, obj, attr.name)
+
+        return new_obj
+
+    @staticmethod
+    def _add_if_not_none(dst_obj: 'ExperimentResult', src_obj : 'ExperimentResult', attr: str):
+        dst_obj_val = getattr(dst_obj, attr)
+        src_obj_val = getattr(src_obj, attr)
+        if dst_obj_val is not None and src_obj_val is not None:
+            setattr(dst_obj, attr, dst_obj_val + src_obj_val)
+        else:
+            setattr(dst_obj, attr, None)
+
+    def __truediv__(self, divisor: Union[int, float]):
+        new_obj = deepcopy(self)
+
+        for attr in dataclasses.fields(self):
+            self._divide_if_not_none(new_obj, attr.name, divisor)
+
+        return new_obj
+
+    @staticmethod
+    def _divide_if_not_none(obj: 'ExperimentResult', attr: str, divisor: Union[int, float]):
+        obj_val = getattr(obj, attr)
+        if obj_val is not None:
+            setattr(obj, attr, obj_val / divisor)
+
+    def parse_formatted_dict(self, formatted_dict: Dict):
+        max_mem_pat = re.compile(r"max_.*_mem")
+        cpu_util_pat = re.compile(r"avg.*_util")
+        for key, val in formatted_dict.items():
+            max_mem_name = max_mem_pat.search(key)
+            cpu_util_name = cpu_util_pat.search(key)
+            if max_mem_name is not None:
+                max_mem_name = max_mem_name.group(0)
+                setattr(self, max_mem_name, val)
+            elif cpu_util_name is not None:
+                cpu_util_name = cpu_util_name.group(0)
+                setattr(self, cpu_util_name, val)
+            elif key == "train_e2e_time":
+                time_delta = datetime.strptime("%H:%M:%S.%f", val) - datetime.datetime(1900, 1, 1)
+                setattr(self, key, time_delta)
+            else:
+                setattr(self, key, val)
+
+
 class BaseExpParser(ABC):
     def __init__(self, workspace: Path):
-        self.workspace = workspace
-        self._val_score = None
-        self._test_score = None
-        self._train_e2e_time = None
+        self._workspace = workspace
+        self._exp_result = ExperimentResult()
         self._iter_time_arr = []
         self._data_time_arr = []
-        self._export_model_score = None
-        self._export_model_speed = None
-        self._max_cpu_mem = None
-        self._avg_cpu_util = None
-        self._max_gpu_mem = None
-        self._avg_gpu_util = None
+
+    @property
+    def exp_result(self) -> ExperimentResult:
+        return self._exp_result
 
     @abstractmethod
     def parse_exp_log(self):
         raise NotImplementedError
 
     def get_exp_result(self):
-        avg_iter_time = None
-        std_iter_time = None
+        self._calculate_avg_std_per_iter()
+
+        return self._exp_result.get_formatted_result()
+
+    def _calculate_avg_std_per_iter(self):
         if self._iter_time_arr:
-            avg_iter_time = round(statistics.mean(self._iter_time_arr), 4)
-            std_iter_time = round(statistics.stdev(self._iter_time_arr), 4)
+            self._exp_result.avg_iter_time = statistics.mean(self._iter_time_arr)
+            self._exp_result.std_iter_time = statistics.stdev(self._iter_time_arr)
 
-        avg_data_time = None
-        std_data_time = None
         if self._data_time_arr:
-            avg_data_time = round(statistics.mean(self._data_time_arr), 4)
-            std_data_time = round(statistics.stdev(self._data_time_arr), 4)
-
-        result = {
-            "val_score" : self._val_score,
-            "test_score" : self._test_score,
-            "train_e2e_time" : self._train_e2e_time,
-            "avg_iter_time" : avg_iter_time,
-            "std_iter_time" : std_iter_time,
-            "avg_data_time" : avg_data_time,
-            "std_data_time" : std_data_time,
-            "export_model_score" : self._export_model_score,
-            "export_model_speed" : self._export_model_speed,
-            "max_cpu_mem(GiB)" : self._max_cpu_mem,
-            "avg_cpu_util(%)" : self._avg_cpu_util,
-            "max_gpu_mem(GiB)" : self._max_gpu_mem,
-            "avg_gpu_util(%)" : self._avg_gpu_util,
-        }
-
-        # delete None value
-        for key in list(result.keys()):
-            if result[key] is None:
-                del result[key]
-
-        return result
+            self._exp_result.avg_data_time = statistics.mean(self._data_time_arr)
+            self._exp_result.std_data_time = statistics.stdev(self._data_time_arr)
 
     def _parse_eval_output(self, file_path: Path):
         with file_path.open("r") as f:
             eval_output = json.load(f)
 
         if "train" in str(file_path.parent.name):
-            self._test_score = eval_output["f-measure"]
+            self._exp_result.test_score = eval_output["f-measure"]
         else:  # export
             if "avg_time_per_image" in eval_output:
-                self._export_model_speed = eval_output["avg_time_per_image"]
-            self._export_model_score = eval_output["f-measure"]
+                self._exp_result.export_model_speed = eval_output["avg_time_per_image"]
+            self._exp_result.export_model_score = eval_output["f-measure"]
 
         
     def _parse_resource_usage(self, file_path: Path):
         with file_path.open("r") as f:
             resource_usage = yaml.safe_load(f)
     
-        self._max_cpu_mem = resource_usage["max_cpu_mem(GiB)"]
-        self._avg_cpu_util = resource_usage["avg_cpu_util(%)"]
-        self._max_gpu_mem = resource_usage["max_gpu_mem(GiB)"]
-        self._avg_gpu_util = resource_usage["avg_gpu_util(%)"]
+        self._exp_result.max_cpu_mem = resource_usage["max_cpu_mem(GiB)"]
+        self._exp_result.avg_cpu_util = resource_usage["avg_cpu_util(%)"]
+        self._exp_result.max_gpu_mem = resource_usage["max_gpu_mem(GiB)"]
+        self._exp_result.avg_gpu_util = resource_usage["avg_gpu_util(%)"]
 
     def _parse_cli_report(self, file_path: Path, save_val_score=True):
         with file_path.open("r") as f:
@@ -167,16 +229,16 @@ class BaseExpParser(ABC):
             if save_val_score:
                 val_score = val_score_pattern.search(line)
                 if val_score is not None:
-                    self._val_score = val_score.group(1)
+                    self._exp_result.val_score = val_score.group(1)
 
             e2e_time = e2e_time_pattern.search(line)
             if e2e_time is not None:
-                self._train_e2e_time = e2e_time.group(1)
+                self._exp_result.train_e2e_time = e2e_time.group(1)
 
 
 class MMCVExpParser(BaseExpParser):
     def parse_exp_log(self):
-        for task_dir in (self.workspace / "outputs").iterdir():
+        for task_dir in (self._workspace / "outputs").iterdir():
             if "train" in str(task_dir.name):
                 # test score
                 eval_files = list(task_dir.glob("performance.json"))
@@ -213,13 +275,13 @@ class MMCVExpParser(BaseExpParser):
                 self._iter_time_arr.append(iter_history["time"])
                 self._data_time_arr.append(iter_history["data_time"])
             elif iter_history.get("mode") == "val":
-                if self._val_score is None or self._val_score < iter_history["mAP"]:
-                    self._val_score = iter_history["mAP"]
+                if self._exp_result.val_score is None or self._exp_result.val_score < iter_history["mAP"]:
+                    self._exp_result.val_score = iter_history["mAP"]
 
 
 class AnomalibExpParser(BaseExpParser):
     def parse_exp_log(self):
-        for task_dir in (self.workspace / "outputs").iterdir():
+        for task_dir in (self._workspace / "outputs").iterdir():
             if "train" in str(task_dir.name):
                 # test score
                 eval_files = list(task_dir.glob("performance.json"))
@@ -262,13 +324,41 @@ def organize_exp_result(workspace: Union[str, Path], exp_meta: Dict[str, str]):
     with (workspace / "exp_result.yaml").open("w") as f:
         yaml.dump({"meta" : exp_meta, "exp_result" : exp_result}, f, default_flow_style=False)
 
+
+def write_csv(output_path: Union[str, Path], header: List[str], rows: List[Dict[str, Any]]):
+    if isinstance(output_path, str):
+        output_path = Path(output_path)
+
+    with output_path.open("w") as f:
+        writer = csv.DictWriter(f, fieldnames=header)
+        writer.writeheader() 
+        writer.writerows(rows)
+
+
+def draw_rich_table(header: List[str], rows: List[Dict[str, Any]], table_title: str = "Table"):
+    # print experiment summary to console
+    table = Table(title=table_title)
+    for field in header:
+        table.add_column(field, justify="center", no_wrap=True)
+    for each_exp_result_summary in rows:
+        table_row = []
+        for field in header:
+            val = each_exp_result_summary["result"][field]
+            table_row.append(str(val))
+
+        table.add_row(*table_row)
+
+    console = Console()
+    console.print(table)
+
     
 def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     if isinstance(exp_dir, str):
         exp_dir = Path(exp_dir)
 
-    stdev_field = ["std_iter_time", "std_data_time"]
-
+    meta_header: Union[List[str], None] = None
+    metric_header = set()
+    all_exp_result: List[Dict[str, str]] = []
     exp_result_aggregation = {}
     for each_exp in exp_dir.iterdir():
         exp_result_file = each_exp / "exp_result.yaml"
@@ -276,21 +366,45 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
             continue
 
         with exp_result_file.open("r") as f:
-            exp_result: Dict[str, Dict] = yaml.safe_load(f)
-            exp_meta = copy(exp_result["meta"])
-            repeat = exp_meta.pop("repeat")
+            exp_yaml_result: Dict[str, Dict] = yaml.safe_load(f)
 
-            exp_name = json.dumps(exp_meta, sort_keys=True).encode()
-            if exp_name in exp_result_aggregation:
-                pass
-            else:
-                exp_result_aggregation[exp_name] = {
-                    "result" : exp_result["exp_result"],
-                    "num" : 1,
-                    "meta" : exp_meta
-                }
+        all_exp_result.append(exp_yaml_result["meta"] + exp_yaml_result["exp_result"])
 
+        if meta_header is None:
+            meta_header = exp_yaml_result["meta"]
 
+        metric_header = metric_header | set(exp_yaml_result["exp_result"].keys())
+
+        exp_meta = copy(exp_yaml_result["meta"])
+        exp_meta.pop("repeat")
+
+        exp_result = ExperimentResult()
+        exp_result.parse_formatted_dict(exp_yaml_result["exp_result"])
+
+        exp_name = json.dumps(exp_meta, sort_keys=True).encode()
+        if exp_name in exp_result_aggregation:
+            exp_result_aggregation[exp_name]["result"] += exp_result
+            exp_result_aggregation[exp_name]["num"] += 1
+        else:
+            exp_result_aggregation[exp_name] = {"result" : exp_result, "num" : 1, "meta" : exp_meta}
+
+    if not all_exp_result:
+        print("There aren't any experiment results.")
+        return
+
+    headers = meta_header + list(metric_header)
+
+    write_csv(exp_dir / "all_exp_result.csv", headers, all_exp_result)
+
+    headers.remove("seed")
+
+    rows = []
+    for val in exp_result_aggregation.values():
+        exp_result = val["result"] / val["num"]
+        rows.append(val["meta"] + exp_result.get_formatted_result())
+    write_csv(exp_dir / "exp_summary.csv", headers, rows)
+
+    draw_rich_table(headers, rows, "Experiment Summary")
 
 
 
