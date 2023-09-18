@@ -27,10 +27,17 @@ from tests.unit.algorithms.segmentation.test_helpers import (
 class TestSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = SegmentationConfigurer("segmentation", True)
+        self.configurer = SegmentationConfigurer(
+            "segmentation",
+            True,
+            False,
+            {},
+            None,
+            None,
+            None,
+        )
         self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
-        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
-        self.model_cfg.merge_from_dict(data_pipeline_cfg)
+        self.data_pipeline_path = os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py")
         self.data_cfg = OTXConfig(
             {
                 "data": {
@@ -43,25 +50,37 @@ class TestSegmentationConfigurer:
 
     @e2e_pytest_unit
     def test_configure(self, mocker):
+        mock_cfg_merge = mocker.patch.object(SegmentationConfigurer, "merge_configs")
         mock_cfg_ckpt = mocker.patch.object(SegmentationConfigurer, "configure_ckpt")
-        mock_cfg_data = mocker.patch.object(SegmentationConfigurer, "configure_data")
         mock_cfg_env = mocker.patch.object(SegmentationConfigurer, "configure_env")
         mock_cfg_data_pipeline = mocker.patch.object(SegmentationConfigurer, "configure_data_pipeline")
         mock_cfg_recipe = mocker.patch.object(SegmentationConfigurer, "configure_recipe")
         mock_cfg_model = mocker.patch.object(SegmentationConfigurer, "configure_model")
+        mock_cfg_hook = mocker.patch.object(SegmentationConfigurer, "configure_hooks")
         mock_cfg_compat_cfg = mocker.patch.object(SegmentationConfigurer, "configure_compat_cfg")
 
         model_cfg = copy.deepcopy(self.model_cfg)
+        model_cfg.model_task = "segmentation"
         data_cfg = copy.deepcopy(self.data_cfg)
-        returned_value = self.configurer.configure(model_cfg, "", data_cfg)
+        returned_value = self.configurer.configure(model_cfg, self.data_pipeline_path, None, "", data_cfg)
+
+        mock_cfg_merge.assert_called_once_with(model_cfg, data_cfg, self.data_pipeline_path, None)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
-        mock_cfg_data.assert_called_once_with(model_cfg, data_cfg)
         mock_cfg_env.assert_called_once_with(model_cfg)
         mock_cfg_data_pipeline.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
         mock_cfg_recipe.assert_called_once_with(model_cfg)
         mock_cfg_model.assert_called_once_with(model_cfg, None, None, None)
+        mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_compat_cfg.assert_called_once_with(model_cfg)
         assert returned_value == model_cfg
+
+    @e2e_pytest_unit
+    def test_merge_configs(self, mocker):
+        mocker.patch("otx.algorithms.common.adapters.mmcv.configurer.patch_from_hyperparams", return_value=True)
+        self.configurer.merge_configs(self.model_cfg, self.data_cfg, self.data_pipeline_path, None)
+        assert self.model_cfg.data
+        assert self.model_cfg.data.train
+        assert self.model_cfg.data.val
 
     @e2e_pytest_unit
     def test_configure_ckpt(self, mocker):
@@ -76,15 +95,9 @@ class TestSegmentationConfigurer:
             self.configurer.configure_ckpt(model_cfg, os.path.join(tempdir, "dummy.pth"))
 
     @e2e_pytest_unit
-    def test_configure_data(self, mocker):
-        data_cfg = copy.deepcopy(self.data_cfg)
-        self.configurer.configure_data(self.model_cfg, data_cfg)
-        assert self.model_cfg.data
-        assert self.model_cfg.data.train
-        assert self.model_cfg.data.val
-
-    @e2e_pytest_unit
     def test_configure_env(self):
+        data_pipeline_cfg = OTXConfig.fromfile(self.data_pipeline_path)
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
         self.configurer.configure_env(self.model_cfg)
 
     @e2e_pytest_unit
@@ -134,6 +147,8 @@ class TestSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_samples_per_gpu(self):
         model_cfg = copy.deepcopy(self.model_cfg)
+        data_pipeline_cfg = OTXConfig.fromfile(self.data_pipeline_path)
+        model_cfg.merge_from_dict(data_pipeline_cfg)
         model_cfg.data.train_dataloader = ConfigDict({"samples_per_gpu": 2})
         model_cfg.data.train.otx_dataset = range(1)
         self.configurer.configure_samples_per_gpu(model_cfg)
@@ -188,6 +203,8 @@ class TestSegmentationConfigurer:
     @e2e_pytest_unit
     def test_configure_model(self):
         ir_options = {"ir_model_path": {"ir_weight_path": "", "ir_weight_init": ""}}
+        data_pipeline_cfg = OTXConfig.fromfile(self.data_pipeline_path)
+        self.model_cfg.merge_from_dict(data_pipeline_cfg)
         self.configurer.configure_model(self.model_cfg, [], [], ir_options)
         assert len(self.configurer.model_classes) == 1001
         assert len(self.configurer.data_classes) == 1
@@ -229,8 +246,20 @@ class TestSegmentationConfigurer:
         assert self.configurer.model_classes == ["background", "foo", "bar", "baz"]
 
     @e2e_pytest_unit
+    def test_configure_hooks(self):
+        self.configurer.override_configs = {"custom_hooks": [{"type": "LazyEarlyStoppingHook", "patience": 6}]}
+        self.configurer.time_monitor = []
+        self.configurer.configure_hooks(self.model_cfg)
+        assert self.model_cfg.custom_hooks[0]["patience"] == 6
+        assert self.model_cfg.custom_hooks[-2]["type"] == "CancelInterfaceHook"
+        assert self.model_cfg.custom_hooks[-1]["type"] == "OTXProgressHook"
+        assert self.model_cfg.log_config.hooks[-1]["type"] == "OTXLoggerHook"
+
+    @e2e_pytest_unit
     def test_configure_compat_cfg(self):
         model_cfg = copy.deepcopy(self.model_cfg)
+        data_pipeline_cfg = OTXConfig.fromfile(self.data_pipeline_path)
+        model_cfg.merge_from_dict(data_pipeline_cfg)
         model_cfg.data.train_dataloader = {}
         model_cfg.data.val_dataloader = {}
         model_cfg.data.test_dataloader = {}
@@ -240,7 +269,15 @@ class TestSegmentationConfigurer:
 class TestIncrSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = IncrSegmentationConfigurer("segmentation", True)
+        self.configurer = IncrSegmentationConfigurer(
+            "segmentation",
+            True,
+            False,
+            {},
+            None,
+            None,
+            None,
+        )
         self.model_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "model.py"))
         data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "data_pipeline.py"))
         self.model_cfg.merge_from_dict(data_pipeline_cfg)
@@ -266,7 +303,15 @@ class TestIncrSegmentationConfigurer:
 class TestSemiSLSegmentationConfigurer:
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
-        self.configurer = SemiSLSegmentationConfigurer("segmentation", True)
+        self.configurer = SemiSLSegmentationConfigurer(
+            "segmentation",
+            True,
+            False,
+            {},
+            None,
+            None,
+            None,
+        )
         self.cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "model.py"))
         data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_SEG_TEMPLATE_DIR, "semisl", "data_pipeline.py"))
         self.cfg.merge_from_dict(data_pipeline_cfg)

@@ -66,10 +66,11 @@ default_template = parse_model_template(
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
-for i, template in enumerate(templates):
-    if template.name in ["YOLOX-S", "YOLOX-X"]:
-        templates.pop(i)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
+_templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
+templates = []
+for template in _templates:
+    if template.name not in ["YOLOX-S", "YOLOX-X"]:
+        templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
 templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [
