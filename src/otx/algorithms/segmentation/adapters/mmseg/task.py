@@ -40,13 +40,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
-    patch_data_pipeline,
-    patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
     OTXConfig,
-    update_or_add_custom_hook,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
@@ -76,7 +73,6 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.core.data import caching
 
 logger = get_logger()
 
@@ -94,48 +90,13 @@ class MMSegmentationTask(OTXSegmentationTask):
         self._recipe_cfg: Optional[Config] = None
 
     # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, export: bool = False):  # noqa
+    def _init_task(self):  # noqa
         """Initialize task."""
         self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
         self.set_seed()
-
-        # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-
-        if not export:
-            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
-
-        if "custom_hooks" in self.override_configs:
-            override_custom_hooks = self.override_configs.pop("custom_hooks")
-            for override_custom_hook in override_custom_hooks:
-                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
-        if len(self.override_configs) > 0:
-            logger.info(f"before override configs merging = {self._recipe_cfg}")
-            self._recipe_cfg.merge_from_dict(self.override_configs)
-            logger.info(f"after override configs merging = {self._recipe_cfg}")
-
-        # add Cancel training hook
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
-        )
-        if self._time_monitor is not None:
-            update_or_add_custom_hook(
-                self._recipe_cfg,
-                ConfigDict(
-                    type="OTXProgressHook",
-                    time_monitor=self._time_monitor,
-                    verbose=True,
-                    priority=71,
-                ),
-            )
-        self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
-
-        # Update recipe with caching modules
-        self._update_caching_modules(self._recipe_cfg.data)
 
         logger.info("initialized.")
 
@@ -144,6 +105,7 @@ class MMSegmentationTask(OTXSegmentationTask):
         self,
         training=True,
         ir_options=None,
+        export=False,
     ):
         """Patch mmcv configs for OTX segmentation settings."""
 
@@ -162,13 +124,39 @@ class MMSegmentationTask(OTXSegmentationTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrSegmentationConfigurer("segmentation", training)
+            configurer = IncrSegmentationConfigurer(
+                "segmentation",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLSegmentationConfigurer("segmentation", training)
+            configurer = SemiSLSegmentationConfigurer(
+                "segmentation",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         else:
-            configurer = SegmentationConfigurer("segmentation", training)
+            configurer = SegmentationConfigurer(
+                "segmentation",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         cfg = configurer.configure(
             recipe_cfg,
+            self.data_pipeline_path,
+            self._hyperparams,
             self._model_ckpt,
             self._data_cfg,
             ir_options,
@@ -436,9 +424,9 @@ class MMSegmentationTask(OTXSegmentationTask):
                 ),
             )
         )
-        self._init_task(export=True)
+        self._init_task()
 
-        cfg = self.configure(False, None)
+        cfg = self.configure(False, None, export=True)
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
@@ -575,32 +563,3 @@ class MMSegmentationTask(OTXSegmentationTask):
             label_schema_to_bytes(self._task_environment.label_schema),
         )
         output_model.precision = self._precision
-
-    # These need to be moved somewhere
-    def _update_caching_modules(self, data_cfg: Config) -> None:
-        def _find_max_num_workers(cfg: dict):
-            num_workers = [0]
-            for key, value in cfg.items():
-                if key == "workers_per_gpu" and isinstance(value, int):
-                    num_workers += [value]
-                elif isinstance(value, dict):
-                    num_workers += [_find_max_num_workers(value)]
-
-            return max(num_workers)
-
-        def _get_mem_cache_size():
-            if not hasattr(self._hyperparams.algo_backend, "mem_cache_size"):
-                return 0
-
-            return self._hyperparams.algo_backend.mem_cache_size
-
-        max_num_workers = _find_max_num_workers(data_cfg)
-        mem_cache_size = _get_mem_cache_size()
-
-        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
-        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
-
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
-        )

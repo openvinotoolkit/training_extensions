@@ -247,7 +247,9 @@ class TestMMDetectionTask:
         output_model = ModelEntity(self.det_dataset, _config)
         self.det_task.train(self.det_dataset, output_model)
         output_model.performance == 1.0
-        assert self.det_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
+        assert (
+            self.det_task._config.data.train_dataloader.workers_per_gpu == num_cpu // num_gpu
+        )  # test adaptive num_workers
 
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.train_detector",
@@ -261,7 +263,9 @@ class TestMMDetectionTask:
         output_model = ModelEntity(self.iseg_dataset, _config)
         self.iseg_task.train(self.iseg_dataset, output_model)
         output_model.performance == 1.0
-        assert self.det_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
+        assert (
+            self.det_task._config.data.train_dataloader.workers_per_gpu == num_cpu // num_gpu
+        )  # test adaptive num_workers
 
         mocker.patch(
             "otx.algorithms.detection.adapters.mmdet.task.single_gpu_test",
@@ -277,7 +281,9 @@ class TestMMDetectionTask:
         output_model = ModelEntity(self.iseg_dataset, _config)
         self.iseg_task.train(self.iseg_dataset, output_model)
         output_model.performance == 1.0
-        assert self.det_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
+        assert (
+            self.det_task._config.data.train_dataloader.workers_per_gpu == num_cpu // num_gpu
+        )  # test adaptive num_workers
 
     @e2e_pytest_unit
     def test_infer(self, mocker) -> None:

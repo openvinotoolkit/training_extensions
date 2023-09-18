@@ -16,6 +16,7 @@ from torch import nn
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.common.adapters.mmdeploy.apis import MMdeployExporter
+from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from otx.api.configuration.helper import create
@@ -365,7 +366,8 @@ class TestTilingDetection:
             assert os.path.exists(openvino_path)
 
         task._init_task()
-        original_width, original_height = task._recipe_cfg.data.test.pipeline[0].img_scale  # w, h
+        task.configure(True, None, get_dataset(self.otx_dataset, Subset.TRAINING))
+        original_width, original_height = task._config.data.test.pipeline[0].img_scale  # w, h
 
         model_adapter = OpenvinoAdapter(create_core(), openvino_paths[0], openvino_paths[1])
 
