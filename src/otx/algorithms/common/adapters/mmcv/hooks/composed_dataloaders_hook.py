@@ -64,7 +64,7 @@ class ComposedDataLoadersHook(Hook):
     def before_epoch(self, runner):
         """Create composedDL before running epoch."""
         if self.composed_loader is None:
-            logger.info("Creating ComposedDL " f"(runner's -> {runner.data_loader}, " f"hook's -> {self.data_loaders})")
+            logger.info("ComposedDL is created, now two DataLoader are enabled." )
             self.composed_loader = ComposedDL([runner.data_loader, *self.data_loaders])
         else:
             self.composed_loader = runner.data_loader
