@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import re
 import sys
 from typing import Any, Dict, List, Optional
 
@@ -14,7 +15,8 @@ from jsonargparse import (
     Namespace,
     class_from_function,
 )
-from rich_argparse import RichHelpFormatter
+
+from .help_formatter import OTXHelpFormatter as help_formatter
 
 
 def tuple_constructor(loader, node):
@@ -27,13 +29,13 @@ def tuple_constructor(loader, node):
     return None
 
 
-def pre_parse_arguments() -> Dict[str, str]:
+def pre_parse_arguments() -> Dict[str, Optional[str]]:
     """Pre-parse arguments for Auto-Runner.
 
     Returns:
         dict[str, str]: Pased arguments.
     """
-    arguments = {}
+    arguments: Dict[str, Optional[str]] = {"subcommand": None}
     i = 1
     while i < len(sys.argv):
         if sys.argv[i].startswith("--"):
@@ -43,6 +45,15 @@ def pre_parse_arguments() -> Dict[str, str]:
                 value = sys.argv[i + 1]
                 i += 1
             arguments[key] = value
+        elif sys.argv[i].startswith("-"):
+            key = sys.argv[i][1:]
+            value = None
+            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-"):
+                value = sys.argv[i + 1]
+                i += 1
+            arguments[key] = value
+        elif i == 1:
+            arguments["subcommand"] = sys.argv[i]
         i += 1
     return arguments
 
@@ -80,7 +91,7 @@ class OTXArgumentParser(ArgumentParser):
             env_prefix=env_prefix,
             default_env=default_env,
             default_config_files=default_config_files,
-            formatter_class=RichHelpFormatter,
+            formatter_class=help_formatter,
             **kwargs,
         )
 

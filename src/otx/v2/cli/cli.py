@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import datetime
+import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
@@ -16,9 +19,11 @@ from jsonargparse import (
 
 # Add the constructor to the YAML loader
 from jsonargparse._loaders_dumpers import DefaultLoader
+from rich.console import Console
 
+from otx.v2 import OTX_LOGO, __version__
 from otx.v2.api.core import AutoRunner, BaseDataset, Engine
-from otx.v2.cli import print_otx_logo
+from otx.v2.cli.utils.help_formatter import OTXHelpFormatter
 
 from .extensions import CLI_EXTENSIONS
 from .utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments, tuple_constructor
@@ -38,13 +43,17 @@ class OTXCLIv2:
         args: ArgsType = None,
         parser_kwargs: Dict[str, Any] = {},
     ):
-        print_otx_logo()
+        self.console = Console()
+        self.console.print(f"[blue]{OTX_LOGO}[/blue] ver.{__version__}", justify="center")
         self.error = None
+        self.model_name = None
         self.pre_args = {}
         self.auto_runner_class = AutoRunner
 
         # Checks to see if the user's command enables auto-configuration.
         self.pre_args = pre_parse_arguments()
+
+        # Setting Auto-Runner
         self.auto_runner = self.get_auto_runner()
         self.model_class, self.default_config_files = self.get_model_class()
         if self.auto_runner is not None:
@@ -74,7 +83,15 @@ class OTXCLIv2:
     def init_parser(self, default_config_files: Optional[List[str]] = None, **kwargs: Any) -> OTXArgumentParser:
         """Method that instantiates the argument parser."""
         parser = OTXArgumentParser(default_config_files=default_config_files, **kwargs)
-        # Same with Engine's __init__ argument
+        parser.add_argument(
+            "-V", "--version", action="version", version=f"%(prog)s {__version__}", help="Display OTX version number."
+        )
+        parser.add_argument(
+            "-v",
+            "--verbose",
+            action="count",
+            help="Verbose mode. This shows a configuration argument that allows for more specific overrides. Multiple -v options increase the verbosity. The maximum is 3.",
+        )
         parser.add_argument(
             "-c", "--config", action=ActionConfigFile, help="Path to a configuration file in yaml format."
         )
@@ -98,6 +115,8 @@ class OTXCLIv2:
     ) -> None:
         """Initialize and setup the parser, subcommands, and arguments."""
         self.parser = self.init_parser(**main_kwargs)
+        # Check -hh or --verbose
+        self._check_verbose_help_format()
         self._subcommand_method_arguments: Dict[str, List[str]] = {}
         self._set_engine_subcommands_parser(self.parser, **subparser_kwargs)
         self._set_extension_subcommands_parser(self.parser)
@@ -141,6 +160,7 @@ class OTXCLIv2:
         parser.add_argument(
             "--model.name",
             help="Enter the name of model.",
+            default=self.model_name,
         )
 
         if subcommand not in ("predict", "export"):
@@ -223,6 +243,7 @@ class OTXCLIv2:
                 raise ValueError()
             if model_name in self.auto_runner.config_list:
                 default_configs.append(self.auto_runner.config_list[model_name])
+            self.model_name = model_name
             # TODO: Need more flexible way for Model API
             model_class = model.__class__
         return model_class, default_configs
@@ -273,6 +294,7 @@ class OTXCLIv2:
 
     def run(self, subcommand: str):
         """Runs the subcommand."""
+        start_time = time.time()
         if subcommand in CLI_EXTENSIONS:
             config = namespace_to_dict(self.config[subcommand])
             extension_function = CLI_EXTENSIONS[subcommand].get("main", None)
@@ -304,8 +326,8 @@ class OTXCLIv2:
             # The configuration dump is saved next to the checkpoint file.
             model_base_dir = Path(results["checkpoint"]).parent
             self.workspace.dump_config(filename=str(model_base_dir / "configs.yaml"))
-            print(f"[*] OTX Model Weight: {results['checkpoint']}")
-            print(f"[*] The OTX configuration used in the training: {str(model_base_dir / 'configs.yaml')}")
+            self.console.print(f"[*] OTX Model Weight: {results['checkpoint']}")
+            self.console.print(f"[*] OTX configuration used in the training: {str(model_base_dir / 'configs.yaml')}")
 
             # Latest dir update
             self.workspace.update_latest(model_base_dir)
@@ -318,22 +340,26 @@ class OTXCLIv2:
                 self.model, test_dataloader=self.data.test_dataloader(**test_dl_kwargs), **subcommand_kwargs
             )
             # TODO: Cleanup for output
-            print(results)
+            self.console.print(results)
         elif subcommand == "predict":
             self.instantiate_classes()
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.predict(model=self.model, **subcommand_kwargs)
             # TODO: Cleanup for output
-            print(results)
+            self.console.print(results)
         elif subcommand == "export":
             self.instantiate_classes()
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.export(model=self.model, **subcommand_kwargs)
             # TODO: Cleanup for output
-            print("[*] Model exporting ended successfully.")
+            self.console.print("[*] Model exporting ended successfully.")
         else:
             for key, val in self.config[subcommand].items():
-                print(f"{key}: {val}")
+                self.console.print(f"{key}: {val}")
+        end_time = time.time()
+        total_time = str(datetime.timedelta(seconds=end_time - start_time))
+        if subcommand in self.engine_subcommands():
+            self.console.print(f"[*] otx {subcommand} time elapsed: {total_time}")
 
     def _prepare_subcommand_kwargs(self, subcommand: str) -> Tuple[Dict, Dict]:
         """Prepares the keyword arguments to pass to the subcommand to run."""
@@ -354,6 +380,27 @@ class OTXCLIv2:
         dl_kwargs.pop("subset", None)
         dl_kwargs.pop("dataset", None)
         return dl_kwargs
+
+    def _check_verbose_help_format(self):
+        subcommand = self.pre_args.get("subcommand", None)
+        if issubclass(self.parser.formatter_class, OTXHelpFormatter):
+            # TODO: how to use verbose count value
+            if subcommand not in self.engine_subcommands():
+                pass
+            elif "v" in self.pre_args:
+                sys.argv.append("--help")
+                self.parser.formatter_class.verbose_level = 1
+                self.parser.formatter_class.subcommand = subcommand
+            elif "vv" in self.pre_args:
+                sys.argv.append("--help")
+                self.parser.formatter_class.verbose_level = 2
+                self.parser.formatter_class.subcommand = subcommand
+            elif subcommand is not None:
+                # -v Applies only to subcommands provided by Engine.
+                self.parser.formatter_class.verbose_level = 0
+                self.parser.formatter_class.subcommand = subcommand
+        else:
+            self.console.print("The current Help Formatter does not support the verbose help format.")
 
 
 def main():

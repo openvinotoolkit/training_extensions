@@ -38,7 +38,7 @@ class Engine:
         val_interval: Optional[int] = None,
         **kwargs,
     ):
-        """OTX Engine train function.
+        r"""OTX Engine train function.
 
         Args:
             model : Models to be used in training.
@@ -53,6 +53,21 @@ class Engine:
             deterministic (Optional[bool], optional): Deterministic for training. Defaults to None.
             precision (Optional[str], optional): Precision of training. Defaults to None.
             val_interval (Optional[int], optional): Validation Interval for validation step. Defaults to None.
+
+        CLI Usage:
+            1. You must first prepare the dataset by referring to [dataset-preparation-document](https://openvinotoolkit.github.io/training_extensions/stable/guide/tutorials/base/how_to_train/classification.html#dataset-preparation).
+            2. By default, OTX understands the task through the structure of the dataset and automatically provides model selection and training.
+                ```python
+                otx train --data.train_data_roots <path_to_data_root>
+                ```
+            3. Of course, you can override the various values with commands.
+                ```python
+                otx train --data.train_data_roots <path_to_data_root> --max_epochs 3
+                ```
+            4. If you have a ready configuration file, run it like this.
+                ```python
+                otx train --config <config_file_path>
+                ```
         """
 
     @abstractmethod
@@ -64,13 +79,19 @@ class Engine:
         precision: Optional[str] = None,
         **kwargs,
     ):
-        """OTX Engine validate function.
+        r"""OTX Engine validate function.
 
         Args:
             model : Models to be used in validation.
             val_dataloader :  Dataloader to use for validation.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
             precision (Optional[str], optional): Precision of model. Defaults to None.
+
+        CLI Usage:
+            1. Please enter val_data_roots with the checkpoint of your model.
+                ```python
+                otx validate --data.val_data_roots <path_to_data_root> --checkpoint <model_checkpoint_path>
+                ```
         """
 
     @abstractmethod
@@ -82,13 +103,19 @@ class Engine:
         precision: Optional[str] = None,
         **kwargs,
     ):
-        """OTX Engine test function.
+        r"""OTX Engine test function.
 
         Args:
             model : Models to be used in testing.
             test_dataloader : Dataloader to use for testing.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
             precision (Optional[str], optional): Precision of model. Defaults to None.
+
+        CLI Usage:
+            1. Please enter test_data_roots with the checkpoint of your model.
+                ```python
+                otx test --data.test_data_roots <path_to_data_root> --checkpoint <model_checkpoint_path>
+                ```
         """
 
     @abstractmethod
@@ -100,7 +127,7 @@ class Engine:
         pipeline: Optional[List[Dict]] = None,
         **kwargs,
     ) -> List[Dict]:
-        """OTX Engine predict function.
+        r"""OTX Engine predict function.
 
         Args:
             model : Models to be used in prediction.
@@ -110,6 +137,12 @@ class Engine:
 
         Returns:
             List[Dict]: Prediction Results.
+
+        CLI Usage:
+            1. Please enter the image file want to predict and the checkpoint of model.
+                ```python
+                otx test --img <image_file_root> --checkpoint <model_checkpoint_path>
+                ```
         """
 
     @abstractmethod
@@ -120,10 +153,16 @@ class Engine:
         precision: Optional[str] = None,
         **kwargs,
     ):
-        """OTX Engine export function.
+        r"""OTX Engine export function.
 
         Args:
             model (optional): Models to be used in exporting. Defaults to None.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
             precision (Optional[str], optional):Precision for exporting. Defaults to None.
+
+        CLI Usage:
+            1. Please the checkpoint of model.
+                ```python
+                otx export --checkpoint <model_checkpoint_path>
+                ```
         """

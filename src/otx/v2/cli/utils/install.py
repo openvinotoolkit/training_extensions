@@ -478,7 +478,7 @@ def get_torch_install_args(requirement: str | Requirement) -> list[str]:
             torch_version,
             torchvision_version,
         ]
-    elif platform.system() == "macos":
+    elif platform.system() in ("macos", "Darwin"):
         torch_version = str(requirement)
         install_args += [torch_version]
     else:
