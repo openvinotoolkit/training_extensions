@@ -507,22 +507,13 @@ class RTMDetInsHead(RTMDetHead):
 
             # process masks
             mask_logits = self._mask_predict_by_feat_single(mask_feat, results.kernels, results.priors)
-
             mask_logits = F.interpolate(mask_logits.unsqueeze(0), scale_factor=stride, mode="bilinear")
-            if rescale:
-                ori_h, ori_w = img_meta["ori_shape"][:2]
-                mask_logits = F.interpolate(
-                    mask_logits,
-                    size=[
-                        math.ceil(mask_logits.shape[-2] * scale_factor[0]),
-                        math.ceil(mask_logits.shape[-1] * scale_factor[1]),
-                    ],
-                    mode="bilinear",
-                    align_corners=False,
-                )[..., :ori_h, :ori_w]
-            assert mask_logits.shape[0] == 1, "Only support batch_size=1 for now."
             masks = mask_logits.sigmoid()
-            rois = bbox2roi([results.bboxes])
+
+            # if det_bboxes is rescaled to the original image size, we need to
+            # rescale it back to the testing scale to obtain RoIs.
+            _bboxes = results.bboxes / scale_factor if rescale else results.bboxes[:, :4]
+            rois = bbox2roi([_bboxes])
             cropped_masks = self.roi_align(masks, rois)
             cropped_masks = cropped_masks[torch.arange(cropped_masks.size(0)), torch.arange(cropped_masks.size(0))]
             cropped_masks = cropped_masks > cfg.mask_thr_binary

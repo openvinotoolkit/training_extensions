@@ -19,16 +19,16 @@ model = dict(
         type="CSPNeXt",
         arch="P5",
         expand_ratio=0.5,
-        deepen_factor=0.167,
-        widen_factor=0.375,
+        deepen_factor=0.33,
+        widen_factor=0.5,
         channel_attention=True,
         norm_cfg=dict(type="BN"),
         act_cfg=dict(type="SiLU", inplace=True),
     ),
     neck=dict(
         type="CSPNeXtPAFPN",
-        in_channels=[96, 192, 384],
-        out_channels=96,
+        in_channels=[128, 256, 512],
+        out_channels=128,
         num_csp_blocks=1,
         expand_ratio=0.5,
         norm_cfg=dict(type="BN"),
@@ -37,11 +37,11 @@ model = dict(
     bbox_head=dict(
         type="RTMDetInsSepBNHead",
         num_classes=80,
-        in_channels=96,
+        in_channels=128,
         stacked_convs=2,
         share_conv=True,
         pred_kernel_size=1,
-        feat_channels=96,
+        feat_channels=128,
         act_cfg=dict(type="SiLU", inplace=True),
         norm_cfg=dict(type="BN", requires_grad=True),
         anchor_generator=dict(type="MlvlPointGenerator", offset=0, strides=[8, 16, 32]),
@@ -58,7 +58,7 @@ model = dict(
         min_bbox_size=0,
         score_thr=0.05,
         nms=dict(type="nms", iou_threshold=0.6),
-        max_per_img=100,
+        max_per_img=500,
         mask_thr_binary=0.5,
     ),
 )
@@ -79,8 +79,8 @@ optimizer_config = dict(_delete_=True, grad_clip=None)
 
 load_from = (
     "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/"
-    "rtmdet-ins_tiny_8xb32-300e_coco/"
-    "rtmdet-ins_tiny_8xb32-300e_coco_20221130_151727-ec670f7e.pth"
+    "rtmdet_s_8xb32-300e_coco/"
+    "rtmdet_s_8xb32-300e_coco_20220905_161602-387a891e.pth"
 )
 
 ignore = True

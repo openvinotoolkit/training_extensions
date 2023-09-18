@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Counting_Instance_Segmentation_RTMDet_InsTiny
-name: RTMDet-Inst-Tiny
+model_template_id: Custom_Counting_Instance_Segmentation_RTMDet_Ins_Small
+name: RTMDet-Inst-Small
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for RTMDet-Inst-Tiny
+summary: Class-Incremental Instance Segmentation for RTMDet-Inst-Small
 application: ~
 
 # Algo backend.
