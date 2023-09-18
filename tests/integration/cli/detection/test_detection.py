@@ -96,7 +96,11 @@ class TestDetectionCLI:
     @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args)
+        # FIXME: remove this block once Issue#2054 resolved
+        _args = args.copy()
+        if "DINO" in template.name:
+            _args["train_params"] = ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4", "--learning_parameters.input_size", "Default"]
+        otx_train_testing(template, tmp_dir_path, otx_dir, _args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
