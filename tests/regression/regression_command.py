@@ -44,13 +44,20 @@ def regression_eval_testing(
     with open(performance_json_path) as read_file:
         trained_performance = json.load(read_file)
 
-    model_criteria = criteria[template.name]
+    model_criteria = criteria[template.name] if template.name in criteria.keys() else 0.0
     modified_criteria = model_criteria - (model_criteria * threshold)
     for k in trained_performance.keys():
         result_dict[k] = round(trained_performance[k], 3)
         if trained_performance[k] < modified_criteria:
             regression_result["passed"] = False
             regression_result["log"] = f"Performance: ({trained_performance[k]}) < Criteria: ({modified_criteria})."
+            regression_result["raw"] = {
+                "metric": k,
+                "performance": trained_performance[k],
+                "template": template.name,
+                "criteria": model_criteria,
+                "threshold": threshold,
+            }
 
     result_dict["Model size (MB)"] = round(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth") / 1e6, 2
@@ -276,7 +283,7 @@ def regression_train_time_testing(train_time_criteria, e2e_train_time, template,
         "log": "",
     }
 
-    e2e_train_time_criteria = train_time_criteria[template.name]
+    e2e_train_time_criteria = train_time_criteria[template.name] if template.name in train_time_criteria.keys() else 0.0
     modified_train_criteria = e2e_train_time_criteria + (e2e_train_time_criteria * threshold)
 
     if e2e_train_time > modified_train_criteria:
@@ -296,7 +303,7 @@ def regression_eval_time_testing(eval_time_criteria, e2e_eval_time, template, th
         "log": "",
     }
 
-    e2e_eval_time_criteria = eval_time_criteria[template.name]
+    e2e_eval_time_criteria = eval_time_criteria[template.name] if template.name in eval_time_criteria.keys() else 0.0
     modified_eval_criteria = e2e_eval_time_criteria + (e2e_eval_time_criteria * threshold)
 
     if e2e_eval_time > modified_eval_criteria:

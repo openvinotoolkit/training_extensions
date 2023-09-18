@@ -160,7 +160,6 @@ class OTXDetDataset(CustomDataset):
         otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
-        domain: Domain,
         test_mode: bool = False,
         **kwargs,
     ):
@@ -170,7 +169,7 @@ class OTXDetDataset(CustomDataset):
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.CLASSES = list(label.name for label in labels)
-        self.domain = domain
+        self.domain = self.labels[0].domain
         self.test_mode = test_mode
 
         # Instead of using list data_infos as in CustomDataset, this implementation of dataset

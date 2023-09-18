@@ -119,3 +119,4 @@ jobs:
       tests-dir: ${{ matrix.test_dir }}
       timeout-minutes: 120
       upload-artifact: true
+      artifact-prefix: "intg-test-results"

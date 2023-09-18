@@ -32,7 +32,7 @@ class OTXClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
     def __init__(
-        self, otx_dataset: DatasetEntity, labels: List[LabelEntity], empty_label=None, **kwargs
+        self, otx_dataset: DatasetEntity, labels: List[LabelEntity], empty_label=None, pipeline=[], **kwargs
     ):  # pylint: disable=super-init-not-called
         self.otx_dataset = otx_dataset
         self.labels = labels
@@ -44,7 +44,6 @@ class OTXClsDataset(BaseDataset):
 
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []  # type: List
-        pipeline = kwargs.get("pipeline", [])
         self.num_classes = len(self.CLASSES)
 
         test_mode = kwargs.get("test_mode", False)
@@ -52,8 +51,7 @@ class OTXClsDataset(BaseDataset):
             new_classes = kwargs.pop("new_classes", [])
             self.img_indices = self.get_indices(new_classes)
 
-        _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
-        self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
+        self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in pipeline])
         self.load_annotations()
 
     def get_indices(self, *args):  # pylint: disable=unused-argument

@@ -1,15 +1,21 @@
 """Balanced sampler for imbalanced data."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 import math
 
 import numpy as np
-from torch.utils.data.sampler import Sampler
+from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils.logger import get_logger
+
+from .otx_sampler import OTXSampler
 
 logger = get_logger()
 
 
-class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
+class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attributes
     """Balanced sampler for imbalanced data for class-incremental task.
 
     This sampler is a sampler that creates an effective batch
@@ -21,23 +27,39 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
+        num_replicas (int, optional): Number of processes participating in
+            distributed training. By default, :attr:`world_size` is retrieved from the
+            current distributed group.
+        rank (int, optional): Rank of the current process within :attr:`num_replicas`.
+            By default, :attr:`rank` is retrieved from the current distributed
+            group.
+        drop_last (bool, optional): if ``True``, then the sampler will drop the
+            tail of the data to make it evenly divisible across the number of
+            replicas. If ``False``, the sampler will add extra indices to make
+            the data evenly divisible across the replicas. Default: ``False``.
+        use_adaptive_repeats (bool, optional): Flag about using adaptive repeats
     """
 
-    def __init__(self, dataset, batch_size, efficient_mode=True, num_replicas=1, rank=0, drop_last=False):
-        self.batch_size = batch_size
-        self.repeat = 1
-        if hasattr(dataset, "times"):
-            self.repeat = dataset.times
-        if hasattr(dataset, "dataset"):
-            self.dataset = dataset.dataset
-        else:
-            self.dataset = dataset
-        self.img_indices = self.dataset.img_indices
-        self.num_cls = len(self.img_indices.keys())
-        self.data_length = len(self.dataset)
+    def __init__(
+        self,
+        dataset: Dataset,
+        samples_per_gpu: int,
+        efficient_mode: bool = False,
+        num_replicas: int = 1,
+        rank: int = 0,
+        drop_last: bool = False,
+        use_adaptive_repeats: bool = False,
+    ):
+        self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
+
+        super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
+
+        self.img_indices = self.dataset.img_indices  # type: ignore[attr-defined]
+        self.num_cls = len(self.img_indices.keys())
+        self.data_length = len(self.dataset)
 
         if efficient_mode:
             # Reduce the # of sampling (sampling data for a single epoch)
@@ -109,7 +131,6 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             ]
 
             assert len(indices) == self.num_samples
-
         return iter(indices)
 
     def __len__(self):

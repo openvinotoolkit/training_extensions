@@ -2,17 +2,11 @@
 # Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
-
 from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     InputSizeManager,
     get_configs_by_pairs,
-    get_dataset_configs,
-    get_meta_keys,
-    patch_color_conversion,
-    remove_from_config,
 )
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -23,7 +17,6 @@ from otx.algorithms.detection.utils.data import (
     get_sizes_from_dataset_entity,
 )
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
-from otx.api.entities.label import Domain
 from otx.api.entities.subset import Subset
 
 try:
@@ -37,72 +30,6 @@ except ImportError:
 
 
 logger = get_logger()
-
-
-def patch_datasets(
-    config: Config,
-    domain: Domain = Domain.DETECTION,
-    subsets: Optional[List[str]] = None,
-    **kwargs,
-):
-    """Update dataset configs."""
-    assert "data" in config
-    assert "type" in kwargs
-
-    # This code is for nncf, if we don't consider nncf, this code could be
-    # domain = config.get("domain", Domain.DETECTION)
-    domain = config.get("domain", domain)
-
-    if subsets is None:
-        subsets = ["train", "val", "test", "unlabeled"]
-
-    def update_pipeline(cfg, subset):
-        if subset == "train":
-            for collect_cfg in get_configs_by_pairs(cfg, dict(type="Collect")):
-                get_meta_keys(collect_cfg, ["gt_ann_ids"])
-        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadImageFromFile")):
-            cfg_.type = "LoadImageFromOTXDataset"
-            if subset != "test":
-                cfg_.enable_memcache = True
-        for cfg_ in get_configs_by_pairs(cfg, dict(type="LoadAnnotations")):
-            cfg_.type = "LoadAnnotationFromOTXDataset"
-            cfg_.domain = domain
-            cfg_.min_size = cfg.pop("min_size", -1)
-
-    for subset in subsets:
-        if subset not in config.data:
-            continue
-        config.data[f"{subset}_dataloader"] = config.data.get(f"{subset}_dataloader", ConfigDict())
-
-        remove_from_config(config.data[subset], "ann_file")
-        remove_from_config(config.data[subset], "img_prefix")
-        remove_from_config(config.data[subset], "classes")  # Get from DatasetEntity
-
-        cfgs = get_dataset_configs(config, subset)
-        for cfg in cfgs:
-            cfg.domain = domain
-            cfg.otx_dataset = None
-            cfg.labels = None
-            cfg.update(kwargs)
-
-            remove_from_config(cfg, "ann_file")
-            remove_from_config(cfg, "img_prefix")
-            remove_from_config(cfg, "classes")  # Get from DatasetEntity
-
-            update_pipeline(cfg, subset)
-
-    patch_color_conversion(config)
-
-
-def patch_evaluation(config: Config):
-    """Update evaluation configs."""
-    cfg = config.evaluation
-    # CocoDataset.evaluate -> CustomDataset.evaluate
-    cfg.pop("classwise", None)
-    cfg.metric = "mAP"
-    cfg.save_best = "mAP"
-    # EarlyStoppingHook
-    config.early_stop_metric = "mAP"
 
 
 def should_cluster_anchors(model_cfg: Config):
@@ -164,7 +91,7 @@ def patch_tiling(config, hparams, dataset=None):
     """Update config for tiling.
 
     Args:
-        config (dict): MPA config containing configuration settings.
+        config (dict): OTX config containing configuration settings.
         hparams (DetectionConfig): DetectionConfig containing hyperparameters.
         dataset (DatasetEntity, optional): A dataset entity. Defaults to None.
 

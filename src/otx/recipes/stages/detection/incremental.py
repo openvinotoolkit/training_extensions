@@ -1,10 +1,10 @@
 _base_ = ["./train.py", "../_base_/models/detectors/detector.py"]
 
 task_adapt = dict(
-    type="mpa",
+    type="default_task_adapt",
     op="REPLACE",
     efficient_mode=False,
-    use_mpa_anchor=True,
+    use_adaptive_anchor=True,
 )
 
 runner = dict(max_epochs=30)
@@ -20,6 +20,11 @@ custom_hooks = [
         metric="mAP",
         interval=1,
         priority=75,
+    ),
+    dict(
+        type="EMAHook",
+        priority="ABOVE_NORMAL",
+        momentum=0.1,
     ),
 ]
 

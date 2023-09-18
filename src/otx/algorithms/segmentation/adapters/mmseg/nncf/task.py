@@ -50,9 +50,16 @@ class SegmentationNNCFTask(NNCFBaseTask, MMSegmentationTask):  # pylint: disable
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
 
-    def _init_task(self, export: bool = False):  # noqa
-        super(NNCFBaseTask, self)._init_task(export)
+    def configure(
+        self,
+        training=True,
+        ir_options=None,
+        export=False,
+    ):
+        """Configure configs for nncf task."""
+        super(NNCFBaseTask, self).configure(training, ir_options, export)
         self._prepare_optimize(export)
+        return self._config
 
     def _prepare_optimize(self, export=False):
         super()._prepare_optimize()

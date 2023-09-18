@@ -46,7 +46,7 @@ logger = get_logger()
 
 
 # TODO: refactor Config
-class MPAConfig(Config):
+class OTXConfig(Config):
     """A class that extends the base `Config` class, adds additional functionality for loading configuration files."""
 
     @staticmethod
@@ -117,7 +117,7 @@ class MPAConfig(Config):
             cfg_dict_list = []
             cfg_text_list = []
             for f in base_filename:
-                _cfg_dict, _cfg_text = MPAConfig._file2dict(osp.join(cfg_dir, f))
+                _cfg_dict, _cfg_text = OTXConfig._file2dict(osp.join(cfg_dir, f))
                 cfg_dict_list.append(_cfg_dict)
                 cfg_text_list.append(_cfg_text)
 
@@ -160,10 +160,10 @@ class MPAConfig(Config):
         :param import_custom_modules: bool, a flag indicating whether to import custom modules.
         :return: Config object, an instance of `Config` class containing the contents of the configuration file.
         """
-        cfg_dict, cfg_text = MPAConfig._file2dict(filename, use_predefined_variables)
+        cfg_dict, cfg_text = OTXConfig._file2dict(filename, use_predefined_variables)
         if import_custom_modules and cfg_dict.get("custom_imports", None):
             import_modules_from_strings(**cfg_dict["custom_imports"])
-        return MPAConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
+        return OTXConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @property
     def pretty_text(self):
@@ -421,27 +421,6 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-def patch_default_config(config: Config):
-    """Patch default config."""
-    if "runner" not in config:
-        config.runner = ConfigDict({"type": "EpochBasedRunner"})
-    if "log_config" not in config:
-        config.log_config = ConfigDict()
-    if "evaluation" not in config:
-        config.evaluation = ConfigDict()
-    if "checkpoint_config" not in config:
-        config.checkpoint_config = ConfigDict({"type": "CheckpointHook", "interval": 1})
-
-
-def patch_data_pipeline(config: Config, data_pipeline: str = ""):
-    """Replace data pipeline to data_pipeline.py if it exist."""
-    if os.path.isfile(data_pipeline):
-        data_pipeline_cfg = Config.fromfile(data_pipeline)
-        config.merge_from_dict(data_pipeline_cfg)
-    else:
-        raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
-
-
 def patch_color_conversion(config: Config):
     """Patch color conversion."""
     assert "data" in config
@@ -453,58 +432,11 @@ def patch_color_conversion(config: Config):
         cfg.to_rgb = not bool(to_rgb)
 
 
-def patch_runner(config: Config):
-    """Patch runner."""
-    assert "runner" in config
-
-    # Check that there is no conflict in specification of number of training epochs.
-    # Move global definition of epochs inside runner config.
-    if "total_epochs" in config:
-        if is_epoch_based_runner(config.runner):
-            if config.runner.max_epochs != config.total_epochs:
-                logger.warning("Conflicting declaration of training epochs number.")
-            config.runner.max_epochs = config.total_epochs
-        else:
-            logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
-        remove_from_config(config, "total_epochs")
-
-    # Change runner's type.
-    if config.runner.type != "AccuracyAwareRunner":
-        if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
-            logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-            config.runner.type = "EpochRunnerWithCancel"
-        elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
-            logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-            config.runner.type = "IterBasedRunnerWithCancel"
-
-
-def patch_fp16(config: Config):
-    """Remove FP16 config if running on CPU device and revert to FP32.
-
-    Please refer https://github.com/pytorch/pytorch/issues/23377
-    """
-    if not torch.cuda.is_available() and "fp16" in config:
-        logger.info("Revert FP16 to FP32 on CPU device")
-        if isinstance(config, Config):
-            del config._cfg_dict["fp16"]  # pylint: disable=protected-access
-        elif isinstance(config, ConfigDict):
-            del config["fp16"]
-
-
 def patch_adaptive_interval_training(config: Config):
     """Update adaptive interval settings for OTX training.
 
     This function can be removed by adding custom hook cfg into recipe.py directly.
     """
-    # default adaptive hook for evaluating before and after training
-    add_custom_hook_if_not_exists(
-        config,
-        ConfigDict(
-            type="AdaptiveTrainSchedulingHook",
-            enable_adaptive_interval_hook=False,
-            enable_eval_before_run=True,
-        ),
-    )
     # Add/remove adaptive interval hook
     if config.get("use_adaptive_interval", False):
         update_or_add_custom_hook(
@@ -553,7 +485,15 @@ def patch_early_stopping(config: Config):
 
 
 def patch_persistent_workers(config: Config):
-    """If num_workers is 0, persistent_workers must be False."""
+    """Set persistent_workers as False in some conditions.
+
+    persistent_workers is set as 0 in two cases below:
+    case 1) num_workers is 0
+    case 2) semi-SL with distributed training. Because it uses two data loaders in each processes,
+            it makes workers for data loaders unstable, which makes errors during training.
+
+    """
+    dist_semi_sl = "unlabeled" in config.data and torch.distributed.is_initialized()
     data_cfg = config.data
     for subset in ["train", "val", "test", "unlabeled"]:
         if subset not in data_cfg:
@@ -563,7 +503,7 @@ def patch_persistent_workers(config: Config):
             "workers_per_gpu",
             data_cfg.get("workers_per_gpu", 0),
         )
-        if workers_per_gpu == 0:
+        if workers_per_gpu == 0 or dist_semi_sl:
             dataloader_cfg["persistent_workers"] = False
         elif "persistent_workers" not in dataloader_cfg:
             dataloader_cfg["persistent_workers"] = True
@@ -574,18 +514,19 @@ def patch_persistent_workers(config: Config):
         data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
 
-def get_adaptive_num_workers() -> Union[int, None]:
+def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     """Measure appropriate num_workers value and return it."""
     num_gpus = torch.cuda.device_count()
     if num_gpus == 0:
         logger.warning("There is no GPUs. Use existing num_worker value.")
         return None
-    return min(multiprocessing.cpu_count() // num_gpus, 8)  # max available num_workers is 8
+    return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
 
 
-def patch_from_hyperparams(config: Config, hyperparams):
+def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
+    algo_backend = hyperparams.algo_backend
     warmup_iters = int(params.learning_rate_warmup_iters)
 
     model_label_type = config.filename.split("/")[-1]
@@ -620,14 +561,29 @@ def patch_from_hyperparams(config: Config, hyperparams):
             workers_per_gpu=int(params.num_workers),
         ),
         runner=runner,
+        algo_backend=algo_backend,
     )
 
+    # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
+    # as `samples_per_gpu might` not be a valid argument for certain algorithms.
+    if hasattr(config, "task"):
+        if config.task == "instance-segmentation" or config.task == "detection":
+            hparams.update(
+                ConfigDict(
+                    data=ConfigDict(
+                        val_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                        test_dataloader=ConfigDict(samples_per_gpu=int(params.inference_batch_size)),
+                    ),
+                )
+            )
+    is_semi_sl = algo_backend.train_type.name == "Semisupervised"
+
     if hyperparams.learning_parameters.auto_num_workers:
-        adapted_num_worker = get_adaptive_num_workers()
+        adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
         if adapted_num_worker is not None:
             hparams.data.workers_per_gpu = adapted_num_worker
 
-    if hyperparams.algo_backend.train_type.name == "Semisupervised":
+    if is_semi_sl:
         unlabeled_config = ConfigDict(
             data=ConfigDict(
                 unlabeled_dataloader=ConfigDict(
@@ -640,45 +596,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
-
-
-def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
-    """Align data_cfg with recipe_cfg."""
-    # we assumed config has 'otx_dataset' and 'labels' key in it
-    # by 'patch_datasets' function
-
-    data_config = data_config.data
-    config = config.data
-    for subset in data_config.keys():
-        subset_config = data_config.get(subset, {})
-        for key in list(subset_config.keys()):
-            found_config = get_configs_by_keys(config.get(subset), key, return_path=True)
-            assert len(found_config) == 1
-            value = subset_config.pop(key)
-            path = list(found_config.keys())[0]
-            update_config(subset_config, {path: value})
-
-
-DEFAULT_META_KEYS = (
-    "filename",
-    "ori_filename",
-    "ori_shape",
-    "img_shape",
-    "pad_shape",
-    "scale_factor",
-    "flip",
-    "flip_direction",
-    "img_norm_cfg",
-)
-
-
-def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
-    """Update meta_keys for ignore_labels."""
-    meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
-    meta_keys.append("ignored_labels")
-    meta_keys += add_meta_keys
-    pipeline_step["meta_keys"] = set(meta_keys)
-    return pipeline_step
 
 
 def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
@@ -705,7 +622,7 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
 class InputSizeManager:
     """Class for changing input size and getting input size value by checking data pipeline.
 
-    NOTE: "resize", "pad", "crop", "mosaic", "randomaffine", "multiscaleflipaug" and "AutoAugment"
+    NOTE: "resize", "pad", "crop", "mosaic", "randomaffine", "multiscaleflipaug" , "AutoAugment" and "TwoCropTransform"
     are considered at now. If other data pipelines exist, it can work differently than expected.
 
     Args:
@@ -726,7 +643,13 @@ class InputSizeManager:
         "randomaffine": ["border"],
         "multiscaleflipaug": ["img_scale"],
     }
-    SUBSET_TYPES: Tuple[str, str, str] = ("train", "val", "test")
+    PIPELINE_WRAPPER: Dict[str, List[str]] = {
+        "MultiScaleFlipAug": ["transforms"],
+        "AutoAugment": ["policies"],
+        "TwoCropTransform": ["view0", "view1", "pipeline"],
+        "LoadResizeDataFromOTXDataset": ["resize_cfg"],
+    }
+    SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
 
     def __init__(
         self,
@@ -819,7 +742,7 @@ class InputSizeManager:
         return None
 
     def _estimate_post_img_size(
-        self, pipelines: Dict, default_size: Optional[List[int]] = None
+        self, pipelines: List[Dict], default_size: Optional[List[int]] = None
     ) -> Union[List[int], None]:
         # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
@@ -850,9 +773,18 @@ class InputSizeManager:
                 img_size = self._get_size_value(pipeline, "multiscaleflipaug")
                 if img_size is not None:
                     post_img_size = img_size
-                post_img_size = self._estimate_post_img_size(pipeline["transforms"], post_img_size)
-            elif pipeline["type"] == "AutoAugment":
-                post_img_size = self._estimate_post_img_size(pipeline["policies"][0], post_img_size)
+
+        for pipeline_name, sub_pipeline_names in self.PIPELINE_WRAPPER.items():
+            if pipeline_name == pipeline["type"]:
+                for sub_pipeline_name in sub_pipeline_names:
+                    if sub_pipeline_name in pipeline:
+                        sub_pipeline = pipeline[sub_pipeline_name]
+                        if isinstance(sub_pipeline, dict):
+                            sub_pipeline = [sub_pipeline]
+                        elif isinstance(sub_pipeline[0], list):
+                            sub_pipeline = sub_pipeline[0]
+                        post_img_size = self._estimate_post_img_size(sub_pipeline, post_img_size)
+                        break
 
         return post_img_size
 
@@ -879,20 +811,34 @@ class InputSizeManager:
         raise RuntimeError("Failed to find pipeline.")
 
     def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
+        updated = False
         for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
             if pipeline_name in pipeline["type"].lower():
                 for pipeline_attr in pipeline_attrs:
                     if pipeline_attr in pipeline:
                         self._set_size_value(pipeline, pipeline_attr, scale)
+                        updated = True
+                if updated:
+                    break
 
-        if pipeline["type"] == "MultiScaleFlipAug":
-            for sub_pipeline in pipeline["transforms"]:
-                self._set_pipeline_size_value(sub_pipeline, scale)
-
-        if pipeline["type"] == "AutoAugment":
-            for sub_pipelines in pipeline["policies"]:
-                for sub_pipeline in sub_pipelines:
-                    self._set_pipeline_size_value(sub_pipeline, scale)
+        for pipeline_name, sub_pipeline_names in self.PIPELINE_WRAPPER.items():
+            if pipeline_name == pipeline["type"]:
+                for sub_pipeline_name in sub_pipeline_names:
+                    if sub_pipeline_name in pipeline:
+                        if isinstance(pipeline[sub_pipeline_name], dict):
+                            self._set_pipeline_size_value(pipeline[sub_pipeline_name], scale)
+                        elif isinstance(pipeline[sub_pipeline_name][0], dict):
+                            for sub_pipeline in pipeline[sub_pipeline_name]:
+                                self._set_pipeline_size_value(sub_pipeline, scale)
+                        elif isinstance(pipeline[sub_pipeline_name][0], list):
+                            for sub_pipelines in pipeline[sub_pipeline_name]:
+                                for sub_pipeline in sub_pipelines:
+                                    self._set_pipeline_size_value(sub_pipeline, scale)
+                        else:
+                            raise ValueError(
+                                "Dataset pipeline in pipeline wrapper type should be"
+                                "either dict, list[dict] or list[list[dict]]."
+                            )
 
     @staticmethod
     def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]):

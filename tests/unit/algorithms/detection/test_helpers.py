@@ -68,7 +68,7 @@ def init_environment(params, model_template, task_type=TaskType.DETECTION):
     return environment
 
 
-def generate_det_dataset(task_type, number_of_images=1):
+def generate_det_dataset(task_type, number_of_images=1, image_width=640, image_height=480):
     classes = ("rectangle", "ellipse", "triangle")
     label_schema = generate_label_schema(classes, task_type_to_label_domain(task_type))
 
@@ -79,8 +79,8 @@ def generate_det_dataset(task_type, number_of_images=1):
         else:
             subset = Subset.TRAINING
         image_numpy, annos = generate_random_annotated_image(
-            image_width=640,
-            image_height=480,
+            image_width=image_width,
+            image_height=image_height,
             labels=label_schema.get_labels(False),
         )
         # Convert shapes according to task

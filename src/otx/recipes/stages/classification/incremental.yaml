@@ -29,7 +29,7 @@ lr_config:
   warmup_ratio: 0.333
 
 task_adapt:
-  type: "mpa"
+  type: "default_task_adapt"
   op: "REPLACE"
 
 custom_hooks: [
@@ -42,6 +42,10 @@ custom_hooks: [
     start: 3,
     min_delta_ratio: 0.01,
     priority: 75,
+  },
+  {
+    type: AdaptiveRepeatDataHook, 
+    priority: ABOVE_NORMAL
   }
 ]
 

@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 @HOOKS.register_module()
 class CustomEvalHook(EvalHook):
-    """Custom Evaluation hook for the MPA.
+    """Custom Evaluation hook for the OTX.
 
     Args:
         dataloader (DataLoader): A PyTorch dataloader.

@@ -28,6 +28,7 @@ from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
     get_cls_inferencer_configuration,
     get_cls_model_api_configuration,
+    get_hierarchical_label_list,
 )
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
@@ -350,6 +351,10 @@ class OTXClassificationTask(OTXTask, ABC):
 
         dataset_size = len(dataset)
         pos_thr = 0.5
+        label_list = self._labels
+        # Fix the order for hierarchical labels to adjust classes with model outputs
+        if self._hierarchical:
+            label_list = get_hierarchical_label_list(self._hierarchical_info, label_list)
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
@@ -378,7 +383,7 @@ class OTXClassificationTask(OTXTask, ABC):
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
                     model=self._task_environment.model,
-                    labels=self._labels,
+                    labels=label_list,
                     predicted_scored_labels=item_labels,
                     explain_predicted_classes=explain_predicted_classes,
                     process_saliency_maps=process_saliency_maps,
@@ -440,13 +445,17 @@ class OTXClassificationTask(OTXTask, ABC):
     ):
         """Loop over dataset again and assign saliency maps."""
         dataset_size = len(dataset)
+        label_list = self._labels
+        # Fix the order for hierarchical labels to adjust classes with model outputs
+        if self._hierarchical:
+            label_list = get_hierarchical_label_list(self._hierarchical_info, label_list)
         for i, (dataset_item, prediction_item, saliency_map) in enumerate(zip(dataset, predictions, saliency_maps)):
             item_labels = self._get_item_labels(prediction_item, pos_thr=0.5)
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
                 model=self._task_environment.model,
-                labels=self._labels,
+                labels=label_list,
                 predicted_scored_labels=item_labels,
                 explain_predicted_classes=explain_predicted_classes,
                 process_saliency_maps=process_saliency_maps,
@@ -490,7 +499,7 @@ class OTXClassificationTask(OTXTask, ABC):
         elif self._hierarchical:
             metric_key = "val/MHAcc"
         else:
-            metric_key = "val/accuracy_top-1"
+            metric_key = "val/accuracy (%)"
 
         # Learning curves
         best_acc = -1
