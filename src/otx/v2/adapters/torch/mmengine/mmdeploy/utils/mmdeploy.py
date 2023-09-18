@@ -4,6 +4,7 @@
 #
 
 import importlib
+import platform
 
 import onnx
 
@@ -18,6 +19,8 @@ def is_mmdeploy_enabled():
         >>> is_mmdeploy_enabled()
         True
     """
+    if platform.system() not in ("Linux", "Windows"):
+        return False
     return importlib.util.find_spec("mmdeploy") is not None
 
 

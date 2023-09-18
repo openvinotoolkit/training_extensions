@@ -9,6 +9,11 @@ AVAILABLE = True
 VERSION = None
 DEBUG = None
 try:
+    import platform
+
+    if platform.system() not in ("Linux", "Windows"):
+        raise ImportError("mmdeploy is only supports Windows and Linux.")
+
     import mmdeploy  # noqa: F401
 
     from .ops import squeeze__default

@@ -334,8 +334,6 @@ def get_hardware_suffix(with_available_torch_build: bool = False, torch_version:
     Returns:
         str: Hardware suffix for PyTorch or mmX version.
     """
-    if platform.system() not in ("Windows", "Linux"):
-        raise RuntimeError("This script only supports Windows and Linux.")
 
     cuda_version = get_cuda_version()
     if cuda_version:
@@ -507,7 +505,7 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
     _operator, version = torch_requirement.specs[0]
     install_args: list[str] = []
 
-    if platform.system() in ("Linux", "Windows"):
+    if platform.system() in ("Linux", "Windows", "Darwin", "macos"):
         # Get the hardware suffix (eg., +cpu, +cu116 and +cu118 etc.)
         hardware_suffix = get_hardware_suffix(with_available_torch_build=True, torch_version=version)
 
@@ -520,9 +518,6 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
 
         # Return the install arguments.
         install_args = ["--find-links", mmcv_index_url] + mmcv_requirements
-    elif platform.system() == "macos":
-        # TODO: Add support for macOS.
-        raise NotImplementedError("OTX installation of MMCV is not supported on macOS.")
     else:
         raise RuntimeError(f"Unsupported OS: {platform.system()}")
 
