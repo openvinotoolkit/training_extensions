@@ -713,8 +713,12 @@ class InputSizeManager:
                         input_size[1] / self.base_input_size[subset][1],
                     )
                 pipelines = self._get_pipelines(subset)
-                for pipeline in pipelines:
-                    self._set_pipeline_size_value(pipeline, resize_ratio)
+                if isinstance(pipelines, dict):
+                    # Deals with {"view0": [...], "view1": [...]}
+                    for pipeline in pipelines.values():
+                        self._set_pipeline_size_value(pipeline, resize_ratio)
+                else:
+                    self._set_pipeline_size_value(pipelines, resize_ratio)
 
         # Set model size
         # - needed only for YOLOX
@@ -770,10 +774,17 @@ class InputSizeManager:
         return None
 
     def _estimate_post_img_size(
-        self, pipelines: List[Dict], default_size: Optional[List[int]] = None
+        self, pipelines: Union[Dict, List[Dict]], default_size: Optional[List[int]] = None
     ) -> Union[List[int], None]:
         # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
         post_img_size = default_size
+
+        if isinstance(pipelines, dict):
+            for pipeline in pipelines.values():
+                # Deals with {"view0": [...], "view1": [...]}
+                # Just using the first one to estimate
+                return self._estimate_post_img_size(pipeline, post_img_size)
+
         for pipeline in pipelines:
             if "resize" in pipeline["type"].lower():
                 img_size = self._get_size_value(pipeline, "resize")
@@ -838,7 +849,13 @@ class InputSizeManager:
             return self._data_config[subset]["dataset"]["pipeline"]
         raise RuntimeError("Failed to find pipeline.")
 
-    def _set_pipeline_size_value(self, pipeline: Dict, scale: Tuple[Union[int, float], Union[int, float]]):
+    def _set_pipeline_size_value(self, pipeline: Union[Dict, List[Dict]], scale: Tuple[Union[int, float], Union[int, float]]):
+
+        if isinstance(pipeline, list):
+            for sub_pipeline in pipeline:
+                self._set_pipeline_size_value(sub_pipeline, scale)
+            return
+
         updated = False
         for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
             if pipeline_name in pipeline["type"].lower():
