@@ -6,7 +6,7 @@ import pytest
 from tests.regression.summarize_test_results import summarize_results_data
 
 
-@pytest.fixture(autouse=True, scope="package")
+@pytest.fixture(autouse=True, scope="session")
 def run_regression_tests():
     # do something for regression tesing
     yield
