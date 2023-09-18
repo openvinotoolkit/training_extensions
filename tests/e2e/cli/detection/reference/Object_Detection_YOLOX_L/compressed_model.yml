@@ -1,4 +1,4 @@
-TestToolsMPADetection:
+TestToolsOTXDetection:
   nncf:
     number_of_fakequantizers: 146
   ptq:
