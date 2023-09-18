@@ -79,8 +79,8 @@ optimizer_config = dict(_delete_=True, grad_clip=None)
 
 load_from = (
     "https://download.openmmlab.com/mmdetection/v3.0/rtmdet/"
-    "rtmdet_s_8xb32-300e_coco/"
-    "rtmdet_s_8xb32-300e_coco_20220905_161602-387a891e.pth"
+    "rtmdet-ins_m_8xb32-300e_coco/"
+    "rtmdet-ins_m_8xb32-300e_coco_20221123_001039-6eba602e.pth"
 )
 
 ignore = True
