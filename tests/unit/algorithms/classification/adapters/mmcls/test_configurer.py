@@ -257,8 +257,6 @@ class TestSemiSLClassificationConfigurer:
 
     @e2e_pytest_unit
     def test_configure_data_pipeline(self, mocker):
-        mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataset", return_value=True)
-        mocker.patch("otx.algorithms.common.adapters.mmcv.semisl_mixin.build_dataloader", return_value=True)
         mocker.patch.object(ClassificationConfigurer, "configure_input_size", return_value=True)
 
         data_cfg = OTXConfig(
