@@ -210,7 +210,9 @@ class TestMMClassificationTask:
         output_model = ModelEntity(self.mc_cls_dataset, _config)
         self.mc_cls_task.train(self.mc_cls_dataset, output_model)
         output_model.performance == 1.0
-        assert self.mc_cls_task._recipe_cfg.data.workers_per_gpu == num_cpu // num_gpu  # test adaptive num_workers
+        assert (
+            self.mc_cls_task._config.data.train_dataloader.workers_per_gpu == num_cpu // num_gpu
+        )  # test adaptive num_workers
 
     @e2e_pytest_unit
     def test_train_multilabel(self, mocker) -> None:

@@ -19,11 +19,16 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     patch_color_conversion,
+    patch_from_hyperparams,
     recursively_update_cfg,
+    update_or_add_custom_hook,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
-from otx.algorithms.common.utils import append_dist_rank_suffix
+from otx.algorithms.common.tasks.base_task import OnHookInitialized
+from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
+from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from otx.core.data import caching
 
 logger = get_logger()
 
@@ -31,19 +36,35 @@ logger = get_logger()
 class BaseConfigurer:
     """Base configurer class for mmcv configs."""
 
-    def __init__(self, task, training):
-        self.task_adapt_type = None
-        self.task_adapt_op = "REPLACE"
-        self.org_model_classes = []
-        self.model_classes = []
-        self.data_classes = []
-        self.task = task
-        self.training = training
-        self.ema_hooks = ["EMAHook", "CustomModelEMAHook"]  # EMA hooks supporting resume
+    def __init__(
+        self,
+        task: str,
+        training: bool,
+        export: bool,
+        override_configs: Dict[str, str],
+        on_hook_initialized: OnHookInitialized,
+        time_monitor: Optional[TimeMonitorCallback],
+        learning_curves: UncopiableDefaultDict,
+    ):
+        self.task_adapt_type: Optional[str] = None
+        self.task_adapt_op: str = "REPLACE"
+        self.org_model_classes: List[str] = []
+        self.model_classes: List[str] = []
+        self.data_classes: List[str] = []
+        self.task: str = task
+        self.training: bool = training
+        self.export: bool = export
+        self.ema_hooks: List[str] = ["EMAHook", "CustomModelEMAHook"]  # EMA hooks supporting resume
+        self.override_configs: Dict[str, str] = override_configs
+        self.on_hook_initialized: OnHookInitialized = on_hook_initialized
+        self.time_monitor: Optional[TimeMonitorCallback] = time_monitor
+        self.learning_curves: UncopiableDefaultDict = learning_curves
 
     def configure(
         self,
         cfg: Config,
+        data_pipeline_path: str,
+        hyperparams_from_otx: ConfigDict,
         model_ckpt_path: str,
         data_cfg: Config,
         ir_options: Optional[Config] = None,
@@ -59,14 +80,45 @@ class BaseConfigurer:
         if cfg.model_task != self.task:
             raise ValueError(f"Given cfg ({cfg.filename}) is not supported by {self.task} recipe")
 
+        self.merge_configs(cfg, data_cfg, data_pipeline_path, hyperparams_from_otx, **kwargs)
+
         self.configure_ckpt(cfg, model_ckpt_path)
-        self.configure_data(cfg, data_cfg)
         self.configure_env(cfg)
         self.configure_data_pipeline(cfg, input_size, model_ckpt_path, **kwargs)
         self.configure_recipe(cfg, **kwargs)
         self.configure_model(cfg, data_classes, model_classes, ir_options, **kwargs)
+        self.configure_hooks(
+            cfg,
+        )
         self.configure_compat_cfg(cfg)
         return cfg
+
+    def merge_configs(self, cfg, data_cfg, data_pipeline_path, hyperparams_from_otx, **kwargs):
+        """Merge model cfg, data_pipeline cfg, data_cfg, and hyperparams from otx cli."""
+
+        logger.debug("merge_configs()")
+        if os.path.isfile(data_pipeline_path):
+            data_pipeline_cfg = Config.fromfile(data_pipeline_path)
+            cfg.merge_from_dict(data_pipeline_cfg)
+        else:
+            raise FileNotFoundError(f"data_pipeline: {data_pipeline_path} not founded")
+
+        self.override_from_hyperparams(cfg, hyperparams_from_otx, **kwargs)
+
+        if data_cfg:
+            for subset in data_cfg.data:
+                if subset in cfg.data:
+                    src_data_cfg = self.get_data_cfg(cfg, subset)
+                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
+                    for key in new_data_cfg:
+                        src_data_cfg[key] = new_data_cfg[key]
+                else:
+                    raise ValueError(f"{subset} of data_cfg is not in cfg")
+
+    def override_from_hyperparams(self, config, hyperparams, **kwargs):
+        """Override config using hyperparams from OTX CLI."""
+        if not self.export:
+            patch_from_hyperparams(config, hyperparams, **kwargs)
 
     def configure_ckpt(self, cfg, model_ckpt_path):
         """Patch checkpoint path for pretrained weight.
@@ -84,23 +136,6 @@ class BaseConfigurer:
                     hook.resume_from = cfg.resume_from
         if cfg.get("load_from", None) and cfg.model.backbone.get("pretrained", None):
             cfg.model.backbone.pretrained = None
-
-    def configure_data(self, cfg, data_cfg):  # noqa: C901
-        """Patch cfg.data.
-
-        Merge cfg and data_cfg
-        """
-
-        logger.info("configure_data()")
-        if data_cfg:
-            for subset in data_cfg.data:
-                if subset in cfg.data:
-                    src_data_cfg = self.get_data_cfg(cfg, subset)
-                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
-                    for key in new_data_cfg:
-                        src_data_cfg[key] = new_data_cfg[key]
-                else:
-                    raise ValueError(f"{subset} of data_cfg is not in cfg")
 
     @staticmethod
     def get_model_ckpt(ckpt_path, new_path=None):
@@ -340,6 +375,69 @@ class BaseConfigurer:
                 raise AttributeError(f"{subset}_dataloader is not found in config.")
             dataloader_cfg = Config(cfg_dict={**global_dataloader_cfg, **dataloader_cfg})
             cfg.data[f"{subset}_dataloader"] = dataloader_cfg
+
+    def configure_hooks(
+        self,
+        cfg,
+    ):
+        """Add or update hooks."""
+
+        if "custom_hooks" in self.override_configs:
+            override_custom_hooks = self.override_configs.pop("custom_hooks")
+            for override_custom_hook in override_custom_hooks:
+                update_or_add_custom_hook(cfg, ConfigDict(override_custom_hook))
+        if len(self.override_configs) > 0:
+            logger.info(f"before override configs merging = {cfg}")
+            cfg.merge_from_dict(self.override_configs)
+            logger.info(f"after override configs merging = {cfg}")
+
+        # add Cancel training hook
+        update_or_add_custom_hook(
+            cfg,
+            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
+        )
+        if self.time_monitor is not None:
+            update_or_add_custom_hook(
+                cfg,
+                ConfigDict(
+                    type="OTXProgressHook",
+                    time_monitor=self.time_monitor,
+                    verbose=True,
+                    priority=71,
+                ),
+            )
+        cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self.learning_curves})
+        if hasattr(cfg, "algo_backend"):
+            self._update_caching_modules(cfg)
+
+    @staticmethod
+    def _update_caching_modules(cfg: Config) -> None:
+        def _find_max_num_workers(cfg: dict):
+            num_workers = [0]
+            for key, value in cfg.items():
+                if key == "workers_per_gpu" and isinstance(value, int):
+                    num_workers += [value]
+                elif isinstance(value, dict):
+                    num_workers += [_find_max_num_workers(value)]
+
+            return max(num_workers)
+
+        def _get_mem_cache_size(cfg):
+            if not hasattr(cfg.algo_backend, "mem_cache_size"):
+                return 0
+
+            return cfg.algo_backend.mem_cache_size
+
+        max_num_workers = _find_max_num_workers(cfg.data)
+        mem_cache_size = _get_mem_cache_size(cfg)
+
+        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
+        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
+
+        update_or_add_custom_hook(
+            cfg,
+            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
+        )
 
     def get_model_classes(self, cfg):
         """Extract trained classes info from checkpoint file.

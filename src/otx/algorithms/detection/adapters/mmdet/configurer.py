@@ -18,6 +18,7 @@ from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
+    patch_tiling,
     should_cluster_anchors,
 )
 
@@ -27,6 +28,12 @@ logger = get_logger()
 # pylint: disable=too-many-public-methods
 class DetectionConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
+
+    def override_from_hyperparams(self, config, hyperparams, **kwargs):
+        """Override config using hyperparameters from OTX cli."""
+        dataset = kwargs.get("train_dataset", None)
+        super().override_from_hyperparams(config, hyperparams)
+        patch_tiling(config, hyperparams, dataset)
 
     def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
         """Configuration for model config."""
