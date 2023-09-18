@@ -46,7 +46,6 @@ class TestRegressionMultiClassClassification:
 
     TRAIN_PARAMS = ["--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
     templates = Registry(f"src/otx/algorithms/{REG_CATEGORY}").filter(task_type=TASK_TYPE.upper()).templates
-    templates = templates[:1]
     templates_ids = [template.model_template_id for template in templates]
 
     reg_cfg: RegressionTestConfig

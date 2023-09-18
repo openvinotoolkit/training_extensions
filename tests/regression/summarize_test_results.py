@@ -211,12 +211,12 @@ def save_file(result_data: dict, output_path: str, file_name: str):
     df.to_csv(os.path.join(output_path, file_name))
 
 
-def merge_dict(target, source, overwrite=False):
+def merge_reg_results_dict(target, source, overwrite=False):
     target = target.copy()
     for k, v in source.items():
         if isinstance(v, Dict):
             if k in target:
-                target[k] = merge_dict(target[k], v)
+                target[k] = merge_reg_results_dict(target[k], v)
             else:
                 target[k] = v
         elif isinstance(v, List):
@@ -230,8 +230,7 @@ def merge_results_list(results_list: List[Dict]):
         return results_list[0]
     results_dict = {}
     for results in results_list:
-        results_dict = merge_dict(results_dict, results)
-        print(f"merged result = {results_dict}")
+        results_dict = merge_reg_results_dict(results_dict, results)
     return results_dict
 
 
