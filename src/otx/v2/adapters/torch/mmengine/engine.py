@@ -119,11 +119,11 @@ class MMXEngine(Engine):
                 if optimizer is None:
                     # FIXME: Remove default setting here
                     optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0005)
-                optim_wrapper = "AmpOptimWrapper"
                 if get_device() not in ("cuda", "gpu", "npu", "mlu"):
-                    optim_wrapper = "OptimWrapper"
                     logger.warning(f"{get_device()} device do not support mixed precision.")
-                kwargs["optim_wrapper"] = dict(type=optim_wrapper, dtype=precision, optimizer=optimizer)
+                    kwargs["optim_wrapper"] = dict(type="OptimWrapper", optimizer=optimizer)
+                else:
+                    kwargs["optim_wrapper"] = dict(type="AmpOptimWrapper", dtype=precision, optimizer=optimizer)
         elif isinstance(self.config.get("train_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
             self.config["train_dataloader"] = None
