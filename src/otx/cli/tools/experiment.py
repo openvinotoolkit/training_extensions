@@ -1,18 +1,7 @@
-"""OTX CLI entry point."""
-
-# Copyright (C) 2021 Intel Corporation
+"""OTX experiment CLI."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
 
 import argparse
 import yaml
@@ -81,6 +70,10 @@ def get_exp_recipe() -> Dict:
     return exp_recipe
 
 
+def parse_time_delta_fmt(time_str: str, format: str) -> timedelta:
+    return datetime.strptime(time_str, format) - datetime(1900, 1, 1)
+
+
 @dataclass
 class ExperimentResult:
     val_score: Union[float, None] = None
@@ -108,9 +101,8 @@ class ExperimentResult:
             res_util = result.pop(attr_name)
             result[f"{attr_name}(%)"] = res_util
 
-        train_e2e_time = result["train_e2e_time"]
-        if train_e2e_time is not None:
-            result["train_e2e_time"] = train_e2e_time.split('.')[0]
+        if self.train_e2e_time is not None:
+            result["train_e2e_time"] = str(self.train_e2e_time).split('.')[0]
 
         # delete None value
         for key in list(result.keys()):
@@ -165,8 +157,7 @@ class ExperimentResult:
                 cpu_util_name = cpu_util_name.group(0)
                 setattr(self, cpu_util_name, val)
             elif key == "train_e2e_time":
-                time_delta = datetime.strptime(val, "%H:%M:%S.%f") - datetime(1900, 1, 1)
-                setattr(self, key, time_delta)
+                setattr(self, key, parse_time_delta_fmt(val, "%H:%M:%S"))
             else:
                 setattr(self, key, val)
 
@@ -218,11 +209,14 @@ class BaseExpParser(ABC):
     def _parse_resource_usage(self, file_path: Path):
         with file_path.open("r") as f:
             resource_usage = yaml.safe_load(f)
-    
-        self._exp_result.max_cpu_mem = resource_usage["max_cpu_mem(GiB)"]
-        self._exp_result.avg_cpu_util = resource_usage["avg_cpu_util(%)"]
-        self._exp_result.max_gpu_mem = resource_usage["max_gpu_mem(GiB)"]
-        self._exp_result.avg_gpu_util = resource_usage["avg_gpu_util(%)"]
+
+        if "cpu" in resource_usage:
+            self._exp_result.max_cpu_mem = float(resource_usage["cpu"]["max_memory_usage"].split()[0])
+            self._exp_result.avg_cpu_util = float(resource_usage["cpu"]["avg_util"].split()[0])
+
+        if "gpu" in resource_usage:
+            self._exp_result.max_gpu_mem = float(resource_usage["gpu"]["total_max_mem"].split()[0])
+            self._exp_result.avg_gpu_util = float(resource_usage["gpu"]["total_avg_util"].split()[0])
 
     def _parse_cli_report(self, file_path: Path, save_val_score=True):
         with file_path.open("r") as f:
@@ -238,7 +232,7 @@ class BaseExpParser(ABC):
 
             e2e_time = e2e_time_pattern.search(line)
             if e2e_time is not None:
-                self._exp_result.train_e2e_time = e2e_time.group(1)
+                self._exp_result.train_e2e_time = parse_time_delta_fmt(e2e_time.group(1), "%H:%M:%S.%f")
 
 
 class MMCVExpParser(BaseExpParser):
