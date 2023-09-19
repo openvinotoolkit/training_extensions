@@ -60,11 +60,14 @@ def install(task: str) -> int:
     requirements_dict = get_requirements("otx")
     # Add base and openvino requirements.
     requirements = requirements_dict["base"]
-    requirements.extend(requirements_dict["openvino"])
     if task == "full":
+        requirements.extend(requirements_dict["openvino"])
         for extra in SUPPORTED_TASKS:
             requirements.extend(requirements_dict[extra])
     elif task in SUPPORTED_TASKS:
+        requirements.extend(requirements_dict["openvino"])
+        requirements.extend(requirements_dict[task])
+    elif task in requirements_dict:
         requirements.extend(requirements_dict[task])
     else:
         raise ValueError(f"Invalid subcommand: {task}" f"Supported tasks: {SUPPORTED_TASKS}")

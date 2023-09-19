@@ -89,7 +89,9 @@ A better guide is provided by the [documentation](https://openvinotoolkit.github
     return Markdown(INTRO)
 
 
-def render_guide(subcommand: str = "train") -> list:
+def render_guide(subcommand: Optional[str] = None) -> list:
+    if subcommand is None:
+        return []
     contents = [get_intro()]
     engine_subcommand = getattr(Engine, subcommand, None)
     cli_usage = get_cli_usage_docstring(engine_subcommand)

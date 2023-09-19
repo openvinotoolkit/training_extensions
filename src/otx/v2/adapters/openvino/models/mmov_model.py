@@ -26,7 +26,7 @@ class MMOVModel(OVModel, ParserMixin):
         inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         parser = kwargs.pop("parser", None)
         parser_kwargs = kwargs.pop("parser_kwargs", {})

@@ -106,14 +106,14 @@ if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
 def get_dataset_adapter(
     task_type: TaskType,
     train_type: TrainType,
-    train_data_roots: str = None,
-    train_ann_files: str = None,
-    val_data_roots: str = None,
-    val_ann_files: str = None,
-    test_data_roots: str = None,
-    test_ann_files: str = None,
-    unlabeled_data_roots: str = None,
-    unlabeled_file_list: str = None,
+    train_data_roots: Optional[str] = None,
+    train_ann_files: Optional[str] = None,
+    val_data_roots: Optional[str] = None,
+    val_ann_files: Optional[str] = None,
+    test_data_roots: Optional[str] = None,
+    test_ann_files: Optional[str] = None,
+    unlabeled_data_roots: Optional[str] = None,
+    unlabeled_file_list: Optional[str] = None,
     **kwargs,
 ):
     """Returns a dataset class by task type.

@@ -80,7 +80,9 @@ class OTXCLIv2:
         subparser_kwargs = {k: v for k, v in parser_kwargs.items() if k in subcommand_names}
         return main_kwargs, subparser_kwargs
 
-    def init_parser(self, default_config_files: Optional[List[str]] = None, **kwargs: Any) -> OTXArgumentParser:
+    def init_parser(
+        self, default_config_files: Optional[List[Optional[str]]] = None, **kwargs: Any
+    ) -> OTXArgumentParser:
         """Method that instantiates the argument parser."""
         parser = OTXArgumentParser(default_config_files=default_config_files, **kwargs)
         parser.add_argument(
@@ -90,7 +92,7 @@ class OTXCLIv2:
             "-v",
             "--verbose",
             action="count",
-            help="Verbose mode. This shows a configuration argument that allows for more specific overrides. Multiple -v options increase the verbosity. The maximum is 3.",
+            help="Verbose mode. This shows a configuration argument that allows for more specific overrides. Multiple -v options increase the verbosity. The maximum is 2.",
         )
         parser.add_argument(
             "-c", "--config", action=ActionConfigFile, help="Path to a configuration file in yaml format."
@@ -118,8 +120,9 @@ class OTXCLIv2:
         # Check -hh or --verbose
         self._check_verbose_help_format()
         self._subcommand_method_arguments: Dict[str, List[str]] = {}
-        self._set_engine_subcommands_parser(self.parser, **subparser_kwargs)
-        self._set_extension_subcommands_parser(self.parser)
+        self.parser_subcommands = self.parser.add_subcommands()
+        self._set_extension_subcommands_parser()
+        self._set_engine_subcommands_parser(**subparser_kwargs)
 
     @staticmethod
     def engine_subcommands() -> Dict[str, Set[str]]:
@@ -132,9 +135,8 @@ class OTXCLIv2:
             "export": {"model"},
         }
 
-    def _set_engine_subcommands_parser(self, parser: OTXArgumentParser, **kwargs) -> None:
+    def _set_engine_subcommands_parser(self, **kwargs) -> None:
         """Adds subcommands to the input parser."""
-        parser_subcommands = parser.add_subcommands()
         # the user might have passed a builder function
         self._engine_class = (
             self.framework_engine
@@ -150,7 +152,7 @@ class OTXCLIv2:
             subparser_kwargs = kwargs.get(subcommand, {})
             subparser_kwargs.setdefault("description", description)
             subcommand_parser = self._prepare_subcommand_parser(self._engine_class, subcommand, **subparser_kwargs)
-            parser_subcommands.add_subcommand(subcommand, subcommand_parser, help=description)
+            self.parser_subcommands.add_subcommand(subcommand, subcommand_parser, help=description)
 
     def _prepare_subcommand_parser(self, klass: Type, subcommand: str, **kwargs: Any) -> OTXArgumentParser:
         parser = self.init_parser(default_config_files=self.default_config_files, **kwargs)
@@ -179,26 +181,27 @@ class OTXCLIv2:
         self._subcommand_method_arguments[subcommand] = added
         return parser
 
-    def _set_extension_subcommands_parser(self, parser: OTXArgumentParser, **kwargs) -> None:
+    def _set_extension_subcommands_parser(self, **kwargs) -> None:
         for sub_command, functions in CLI_EXTENSIONS.items():
             add_parser_function = functions.get("add_parser", None)
             if add_parser_function is None:
                 raise NotImplementedError(f"The sub-parser function of {sub_command} was not found.")
             else:
-                add_parser_function(parser)
+                add_parser_function(self.parser)
 
-    def get_auto_runner(self):
+    def get_auto_runner(self) -> Optional[AutoRunner]:
         # If the user puts --checkpoint in the command and doesn't put --config,
         # will use those configs as the default if they exist in the checkpoint folder location.
         if "checkpoint" in self.pre_args and self.pre_args.get("config", None) is None:
-            checkpoint_path = Path(self.pre_args["checkpoint"])
-            config_candidate = checkpoint_path.parent / "configs.yaml"
-            if config_candidate.exists():
-                self.pre_args["config"] = str(config_candidate)
-            elif checkpoint_path.exists():
-                raise FileNotFoundError(f"{config_candidate} not found. Please include --config.")
-            else:
-                raise FileNotFoundError(f"{checkpoint_path} not found. Double-check your checkpoint file.")
+            checkpoint_path = self.pre_args.get("checkpoint", None)
+            if checkpoint_path is not None:
+                config_candidate = Path(checkpoint_path).parent / "configs.yaml"
+                if config_candidate.exists():
+                    self.pre_args["config"] = str(config_candidate)
+                elif Path(checkpoint_path).exists():
+                    raise FileNotFoundError(f"{config_candidate} not found. Please include --config.")
+                else:
+                    raise FileNotFoundError(f"{checkpoint_path} not found. Double-check your checkpoint file.")
         try:
             data_task = self.pre_args.get("data.task", None)
             auto_runner = self.auto_runner_class(
@@ -222,7 +225,7 @@ class OTXCLIv2:
             self.error = e
             return None
 
-    def get_model_class(self):
+    def get_model_class(self) -> Tuple[Optional[Any], Optional[List[Optional[str]]]]:
         model_class = None
         default_configs = None
         if self.auto_runner is not None:
@@ -233,7 +236,7 @@ class OTXCLIv2:
             model_name = None
             if "model.name" in self.pre_args:
                 model_name = self.pre_args["model.name"]
-            else:
+            elif hasattr(framework_engine, "config"):
                 model_cfg = framework_engine.config.get("model", {})
                 model_name = model_cfg.get("name", model_cfg.get("type", None))
             if model_name is None:
@@ -257,9 +260,13 @@ class OTXCLIv2:
 
     def instantiate_classes(self) -> None:
         """Instantiates the classes and sets their attributes."""
-        if self.auto_runner is None and self.error is not None:
-            # Raise an existing raised exception only when the actual command is executed.
-            raise self.error
+        if self.auto_runner is None:
+            if self.error is not None:
+                # Raise an existing raised exception only when the actual command is executed.
+                raise self.error
+            raise ValueError(
+                "Couldn't run because it couldn't find a suitable task. Make sure you have enough commands entered."
+            )
         self.config_init = self.parser.instantiate_classes(self.config)
         data_cfg = self._pop(self.config_init, "data")
         model_cfg = self._pop(self.config_init, "model")
@@ -381,7 +388,7 @@ class OTXCLIv2:
         dl_kwargs.pop("dataset", None)
         return dl_kwargs
 
-    def _check_verbose_help_format(self):
+    def _check_verbose_help_format(self) -> None:
         subcommand = self.pre_args.get("subcommand", None)
         if issubclass(self.parser.formatter_class, OTXHelpFormatter):
             # TODO: how to use verbose count value
@@ -403,7 +410,7 @@ class OTXCLIv2:
             self.console.print("The current Help Formatter does not support the verbose help format.")
 
 
-def main():
+def main() -> None:
     """Entry point for OTX CLI.
 
     This function is a single entry point for all OTX CLI related operations:

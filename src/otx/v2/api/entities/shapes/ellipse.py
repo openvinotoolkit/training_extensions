@@ -50,7 +50,7 @@ class Ellipse(Shape):
             modification_date=modification_date,
         )
 
-        for (x, y) in [(x1, y1), (x2, y2)]:
+        for x, y in [(x1, y1), (x2, y2)]:
             self._validate_coordinates(x, y)
 
         self.x1 = x1

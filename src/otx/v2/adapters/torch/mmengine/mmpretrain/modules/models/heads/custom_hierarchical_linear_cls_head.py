@@ -108,12 +108,8 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             head_gt = gt_label[:, self.hierarchical_info["num_multiclass_heads"] :]
             head_logits = cls_score[:, self.hierarchical_info["num_single_label_classes"] :]
             valid_batch_mask = head_gt >= 0
-            head_gt = head_gt[
-                valid_batch_mask,
-            ]
-            head_logits = head_logits[
-                valid_batch_mask,
-            ]
+            head_gt = head_gt[valid_batch_mask,]
+            head_logits = head_logits[valid_batch_mask,]
 
             # multilabel_loss is assumed to perform no batch averaging
             if img_metas is not None:

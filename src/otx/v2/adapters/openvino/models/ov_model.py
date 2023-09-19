@@ -104,7 +104,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
 
         if init_weight:
             if not isinstance(init_weight, Callable):
-
                 # internal init weight
                 def init_weight(module, graph):  # pylint: disable=function-redefined
                     from ..ops.op import Operation

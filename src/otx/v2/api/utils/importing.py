@@ -16,12 +16,11 @@
 
 import importlib
 import inspect
-import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 
-def get_impl_class(impl_path):
+def get_impl_class(impl_path: str) -> object:
     """Returns a class by its path in package."""
 
     task_impl_module = None
@@ -55,11 +54,12 @@ def get_all_args(func):
     return signature.parameters.keys()
 
 
-def get_otx_root_path():
+def get_otx_root_path() -> Optional[str]:
     """Get otx root path from importing otx."""
     otx_module = importlib.import_module("otx")
     if otx_module:
-        return os.path.dirname(inspect.getfile(otx_module))
+        file_path = inspect.getfile(otx_module)
+        return str(Path(file_path).parent)
     return None
 
 

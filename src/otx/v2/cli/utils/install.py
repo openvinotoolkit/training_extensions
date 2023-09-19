@@ -5,15 +5,15 @@
 
 from __future__ import annotations
 
-import importlib
 import json
 import os
 import platform
 import re
 import subprocess
 from importlib.metadata import requires
+from importlib.util import find_spec
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from warnings import warn
 
 import pkg_resources  # type: ignore[import]
@@ -81,8 +81,10 @@ def get_requirements(module: str = "otx") -> Dict[str, List[Requirement]]:
     Returns:
         Dict[str, List[Requirement]]: List of required packages for each optional-extras.
     """
-    requirement_list: List[str] = requires(module)
+    requirement_list: Optional[List[str]] = requires(module)
     extra_requirement: Dict[str, List[Requirement]] = {}
+    if requirement_list is None:
+        return extra_requirement
     for requirement in requirement_list:
         extra = "api"
         requirement_extra: List[str] = requirement.replace(" ", "").split(";")
@@ -533,14 +535,14 @@ def mim_installation(requirements: list[str]):
     Raises:
         ModuleNotFoundError: Raise an error if mim import is not possible.
     """
-    if not importlib.util.find_spec("mim"):
+    if not find_spec("mim"):
         raise ModuleNotFoundError("The mmX library installation requires mim." "mim is not currently installed.")
     from mim import install
 
     install(requirements)
 
 
-def get_module_version(module_name):
+def get_module_version(module_name: str) -> Optional[str]:
     try:
         module_version = pkg_resources.get_distribution(module_name).version
     except pkg_resources.DistributionNotFound:

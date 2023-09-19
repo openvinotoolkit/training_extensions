@@ -5,7 +5,7 @@
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
     "CLASSIFICATION": ["imagenet", "datumaro"],
@@ -39,7 +39,7 @@ def configure_task_type(
     raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
 
-def configure_train_type(train_data_roots: str, unlabeled_data_roots: str):
+def configure_train_type(train_data_roots: str, unlabeled_data_roots: str) -> Optional[str]:
     """Auto train type detection.
 
     If train_data_roots contains only set of images -> Self-SL
@@ -48,7 +48,7 @@ def configure_train_type(train_data_roots: str, unlabeled_data_roots: str):
     Overwise set Incremental training type.
     """
 
-    def _count_imgs_in_dir(dir, recursive=False):
+    def _count_imgs_in_dir(dir: Union[str, Path], recursive: bool = False) -> int:
         """Count number of images in directory recursively."""
         import glob
 
@@ -61,7 +61,7 @@ def configure_train_type(train_data_roots: str, unlabeled_data_roots: str):
 
         return num_valid_imgs
 
-    def _check_semisl_requirements(unlabeled_dir):
+    def _check_semisl_requirements(unlabeled_dir: Optional[Union[str, Path]]) -> Union[bool, str, Path]:
         """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
         if unlabeled_dir is None:
             return False
@@ -82,6 +82,7 @@ def configure_train_type(train_data_roots: str, unlabeled_data_roots: str):
             "It should be more than relative threshold (at least 7% of labeled images) "
             "Start Supervised training instead."
         )
+        return False
 
     if train_data_roots is None or not Path(train_data_roots).is_dir() or not Path(train_data_roots).iterdir():
         return None

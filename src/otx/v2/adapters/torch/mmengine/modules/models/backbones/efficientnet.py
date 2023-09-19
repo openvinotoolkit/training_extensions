@@ -443,7 +443,6 @@ class EfficientNet(nn.Module):
         pretrained=False,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.num_classes = 1000
         self.pretrained = pretrained
@@ -1160,7 +1159,6 @@ def _test():
     ]
 
     for model in models:
-
         net = model(pretrained=pretrained)
 
         # net.train()

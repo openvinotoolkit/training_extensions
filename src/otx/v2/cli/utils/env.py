@@ -87,7 +87,7 @@ def get_environment_table(verbose: bool = False) -> str:
             else:
                 table.add_row(task_name, required, "X", style="red", end_section=end_section)
             i += 1
-            task_name = None
+            task_name = ""
 
     console = Console()
     with console.capture() as capture:

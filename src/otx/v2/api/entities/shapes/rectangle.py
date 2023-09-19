@@ -54,7 +54,7 @@ class Rectangle(Shape):
         )
 
         is_valid = True
-        for (x, y) in [(x1, y1), (x2, y2)]:
+        for x, y in [(x1, y1), (x2, y2)]:
             is_valid = is_valid and self._validate_coordinates(x, y)
         if not is_valid:
             warnings.warn(

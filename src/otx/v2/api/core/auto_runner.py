@@ -17,7 +17,7 @@ from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
 
 # TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"
-CONFIG_ROOT = get_otx_root_path() + "/v2/configs"
+CONFIG_ROOT = f"{get_otx_root_path()}/v2/configs"
 DEFAULT_FRAMEWORK_PER_TASK_TYPE = {
     TaskType.CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmpretrain",
@@ -64,7 +64,7 @@ ADAPTER_QUICK_LINK = {
 }
 
 
-def set_dataset_paths(config: Dict[str, Any], args: Dict[str, str]):
+def set_dataset_paths(config: Dict[str, Any], args: Dict[str, Optional[str]]):
     for key, value in args.items():
         if value is None:
             continue
@@ -135,10 +135,11 @@ class AutoRunner:
         self.config_path: Optional[str] = None
         self.config = self._initial_config(config)
         self.engine: Engine
+        self.framework: str
         self.task: TaskType
         self.train_type: TrainType
         self.work_dir = work_dir
-        self.framework: Optional[str] = self.config.get("framework", None)
+
         self.cache = {"model": None, "checkpoint": None}
         self.subset_dls: Dict[str, Any] = {}
 
@@ -195,7 +196,7 @@ class AutoRunner:
             config["model"] = {}
         return config
 
-    def _configure_model(self, model):
+    def _configure_model(self, model: Any) -> object:
         # Configure Model if model is None
         if model is None:
             if self.cache.get("model") is not None:
@@ -238,7 +239,7 @@ class AutoRunner:
             train_type = configure_train_type(data_roots, data_config.get("unlabeled_data_roots", None))
         self.task = str_to_task_type(task) if isinstance(task, str) else task
         self.train_type = str_to_train_type(train_type) if isinstance(train_type, str) else train_type
-        if self.framework is None:
+        if not hasattr(self, "framework"):
             self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["adapter"]
         if self.config_path is None:
             self.config_path = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["default_config"]

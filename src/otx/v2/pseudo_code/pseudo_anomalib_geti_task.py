@@ -124,7 +124,6 @@ class GetiAnomalibTask(GetiTask):
         seed: Optional[int] = None,
         deterministic: bool = False,
     ) -> None:
-
         # Covert DatasetEntity -> Dataset
         dataset = self.dataset_from_entity(dataset)
         train_dataloader = dataset.train_dataloader()
@@ -182,7 +181,6 @@ class GetiAnomalibTask(GetiTask):
         precision: ModelPrecision = ModelPrecision.FP32,
         dump_features: bool = False,
     ) -> None:
-
         # Set output_model settings
         if export_type == ExportType.ONNX:
             output_model.model_format = ModelFormat.ONNX

@@ -24,7 +24,7 @@ LEVEL = logging.INFO
 logging.addLevelName(_CUSTOM_LOG_LEVEL, "LOG")
 
 
-def _get_logger():
+def _get_logger() -> logging.Logger:
     logger = logging.getLogger("mpa")
     logger.propagate = False
 
@@ -32,7 +32,7 @@ def _get_logger():
         if logger.isEnabledFor(_CUSTOM_LOG_LEVEL):
             logger.log(_CUSTOM_LOG_LEVEL, message, *args, **kws)
 
-    logger.print = logger_print
+    logger.__setattr__("print", logger_print)
 
     logger.setLevel(LEVEL)
     console = logging.StreamHandler(sys.stdout)

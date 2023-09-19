@@ -189,7 +189,6 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
     os.makedirs(annotation_path, exist_ok=True)
 
     for split in ["train", "val", "test"]:
-
         if task == "classification":
             create_json_items = create_classification_json_items
         elif task == "detection":

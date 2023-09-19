@@ -8,12 +8,12 @@ from .doctor import add_doctor_parser, doctor
 from .install import add_install_parser, install
 
 CLI_EXTENSIONS: Dict[str, Dict] = {
-    "install": {
-        "add_parser": add_install_parser,
-        "main": install,
-    },
     "doctor": {
         "add_parser": add_doctor_parser,
         "main": doctor,
+    },
+    "install": {
+        "add_parser": add_install_parser,
+        "main": install,
     },
 }

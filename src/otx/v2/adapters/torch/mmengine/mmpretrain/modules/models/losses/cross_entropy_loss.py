@@ -48,6 +48,6 @@ class CrossEntropyLossWithIgnore(nn.Module):
             ignore_index=self.ignore_index,
             reduction=reduction,
             avg_factor=avg_factor,
-            **kwargs
+            **kwargs,
         )
         return loss_cls

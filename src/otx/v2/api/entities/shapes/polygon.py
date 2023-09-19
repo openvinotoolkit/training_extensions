@@ -111,7 +111,7 @@ class Polygon(Shape):
         self.max_y = max(points, key=attrgetter("y")).y
 
         is_valid = True
-        for (x, y) in [(self.min_x, self.min_y), (self.max_x, self.max_y)]:
+        for x, y in [(self.min_x, self.min_y), (self.max_x, self.max_y)]:
             is_valid = is_valid and self._validate_coordinates(x, y)
         if not is_valid:
             points_str = "; ".join(str(p) for p in self.points)

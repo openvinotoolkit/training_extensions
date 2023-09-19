@@ -101,7 +101,7 @@ class TimeEstimator:
             estimation = self.get_time_remaining()
         return estimation
 
-    def get_time_remaining(self):
+    def get_time_remaining(self) -> float:
         """If the new estimation is higher than the previous one by up to 2 seconds, return old estimation.
 
         Returns:
@@ -127,7 +127,6 @@ class TimeEstimator:
             self.first_update_time = time.time()
 
         if self.last_update_progress is not None and progress - self.last_update_progress >= self.update_window:
-
             if self.first_update_time is None or self.first_update_progress is None:
                 raise AssertionError(
                     "first_update_time and first_update_progress both can not be None when calling "

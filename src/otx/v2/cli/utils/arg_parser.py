@@ -82,7 +82,7 @@ class OTXArgumentParser(ArgumentParser):
         description: str = "OpenVINO Training-Extension command line tool",
         env_prefix: str = "otx",
         default_env: bool = False,
-        default_config_files: Optional[List[str]] = None,
+        default_config_files: Optional[List[Optional[str]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(

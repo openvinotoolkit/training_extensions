@@ -126,7 +126,6 @@ class TimeMonitorCallback(Callback):
         step_history: int = 50,
         update_progress_callback: UpdateProgressCallback = default_progress_callback,
     ):
-
         self.total_epochs = num_epoch
         self.train_steps = num_train_steps
         self.val_steps = num_val_steps

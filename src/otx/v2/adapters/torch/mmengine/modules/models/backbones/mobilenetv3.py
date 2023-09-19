@@ -226,7 +226,6 @@ class MobileNetV3Base(ModelInterface):
         lr_finder=None,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.in_size = input_size
         self.num_classes = num_classes

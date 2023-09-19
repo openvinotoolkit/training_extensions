@@ -29,7 +29,30 @@ from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.subset import Subset
-from otx.v2.api.utils.argument_checks import IMAGE_FILE_EXTENSIONS
+
+IMAGE_FILE_EXTENSIONS = [
+    ".bmp",
+    ".dib",
+    ".jpeg",
+    ".jpg",
+    ".jpe",
+    ".jp2",
+    ".png",
+    ".webp",
+    ".pbm",
+    ".pgm",
+    ".ppm",
+    ".pxm",
+    ".pnm",
+    ".sr",
+    ".ras",
+    ".tiff",
+    ".tif",
+    ".exr",
+    ".hdr",
+    ".pic",
+]
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +71,7 @@ def get_unlabeled_filename(base_root: str, file_list_path: str):
         List[str]: a list of existing image file paths which will be unlabeled data items.
     """
 
-    def is_valid(file_path):
+    def is_valid(file_path: str) -> bool:
         return file_path.lower().endswith(tuple(IMAGE_FILE_EXTENSIONS))
 
     with open(file_list_path, "r", encoding="UTF-8") as f:

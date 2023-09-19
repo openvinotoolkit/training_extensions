@@ -12,7 +12,7 @@ from omegaconf import OmegaConf
 from otx.v2.api.utils.importing import get_otx_root_path
 
 
-def set_workspace(root: str = None, name: str = "otx-workspace") -> str:
+def set_workspace(root: Optional[str] = None, name: str = "otx-workspace") -> str:
     """Set workspace path according to arguments.
 
     Args:
@@ -34,10 +34,10 @@ class Workspace:
             work_dir (Optional[str], optional): The path the workspace will use. Defaults to None.
         """
         self.otx_root = get_otx_root_path()
-        self.work_dir = Path(work_dir) if work_dir is not None else None
+        self.work_dir = Path(work_dir) if work_dir is not None else Path(set_workspace()).resolve()
         self.task = task
         self.mkdir_or_exist()
-        self.latest_dir = Path(self.work_dir) / "latest"
+        self.latest_dir = self.work_dir / "latest"
         self._config: Dict[str, Any] = {}
         self._config_path = self.work_dir / "configs.yaml"
 
@@ -60,8 +60,6 @@ class Workspace:
 
     def mkdir_or_exist(self) -> None:
         """If the workspace doesn't exist, create it."""
-        if self.work_dir is None:
-            self.work_dir = Path(set_workspace()).resolve()
         if self.task is not None:
             self.work_dir = self.work_dir / self.task
         self.work_dir.mkdir(exist_ok=True, parents=True)
