@@ -201,7 +201,7 @@ class MemCacheHandlerSingleton:
 
         logger.info(f"Try to create a {mem_size} size memory pool.")
         if available_cpu_mem < ((mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB):
-            logger.info("No available CPU memory left, mem_size will be set to 0.")
+            logger.warning("No available CPU memory left, mem_size will be set to 0.")
             mem_size = 0
 
         if mode == "null" or mem_size == 0:
