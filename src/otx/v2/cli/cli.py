@@ -23,6 +23,7 @@ from rich.console import Console
 
 from otx.v2 import OTX_LOGO, __version__
 from otx.v2.api.core import AutoRunner, BaseDataset, Engine
+from otx.v2.api.utils.logger import get_logger
 from otx.v2.cli.utils.help_formatter import OTXHelpFormatter, render_guide
 
 from .extensions import CLI_EXTENSIONS
@@ -44,7 +45,6 @@ class OTXCLIv2:
         parser_kwargs: Dict[str, Any] = {},
     ):
         self.console = Console()
-        self.console.print(f"[blue]{OTX_LOGO}[/blue] ver.{__version__}", justify="center")
         self.error = None
         self.model_name = None
         self.pre_args = {}
@@ -52,6 +52,12 @@ class OTXCLIv2:
 
         # Checks to see if the user's command enables auto-configuration.
         self.pre_args = pre_parse_arguments()
+        # To eliminate unnecessary output from print_config (To save the configuration file).
+        if "print_config" not in self.pre_args:
+            self.console.print(f"[blue]{OTX_LOGO}[/blue] ver.{__version__}", justify="center")
+        else:
+            logger = get_logger()
+            logger.disabled = True
 
         # Setting Auto-Runner
         self.auto_runner = self.get_auto_runner()

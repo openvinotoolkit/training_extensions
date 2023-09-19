@@ -69,7 +69,6 @@ class DatasetManager:
             data_formats = datumaro.Environment().detect_dataset(data_root)
             # TODO: how to avoid hard-coded part
             data_format = data_formats[0] if "imagenet" not in data_formats else "imagenet"
-        print(f"[*] Detected dataset format: {data_format}")
         return data_format
 
     @staticmethod
