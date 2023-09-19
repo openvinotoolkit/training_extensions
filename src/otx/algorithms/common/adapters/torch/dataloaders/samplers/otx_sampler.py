@@ -71,7 +71,7 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         elif isinstance(n_repeats, (int, float)):
             repeat = float(n_repeats)
         else:
-            raise ValueError(f"n_repeats: {n_repeats} should be auto or float orint value")
+            raise ValueError(f"n_repeats: {n_repeats} should be auto or float or int value")
         # TODO: Currently, only supporting the int variable.
         # Will be removed.
         self.repeat = int(repeat)
