@@ -66,7 +66,11 @@ default_template = parse_model_template(
 default_templates = [default_template]
 default_templates_ids = [default_template.model_template_id]
 
-templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
+_templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTION").templates
+templates = []
+for template in _templates:
+    if template.name not in ["YOLOX-S", "YOLOX-X"]:
+        templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
 templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [
@@ -76,16 +80,6 @@ experimental_templates = [
     parse_model_template("src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml"),
     parse_model_template(
         "src/otx/algorithms/detection/configs/detection/resnet50_lite_dino/template_experimental.yaml"
-    ),
-    parse_model_template("src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml"),
-    parse_model_template(
-        "src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template_experimental.yaml"
-    ),
-    parse_model_template(
-        "src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template_experimental.yaml"
-    ),
-    parse_model_template(
-        "src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template_experimental.yaml"
     ),
 ]
 experimental_template_ids = [template.model_template_id for template in experimental_templates]

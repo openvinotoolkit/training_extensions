@@ -1,4 +1,4 @@
-"""Tests for MPA Class-Incremental Learning for instance segmentation with OTX CLI"""
+"""Tests for OTX Class-Incremental Learning for instance segmentation with OTX CLI"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #

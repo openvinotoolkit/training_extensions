@@ -97,6 +97,15 @@ class TestOpenVINOClassificationTask:
         ]
         self.fake_ann_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=fake_annotation)
         self.fake_input = mocker.MagicMock()
+        self.fake_hierarchical_info = {
+            "cls_heads_info": {
+                "num_multiclass_heads": 2,
+                "head_idx_to_logits_range": {"0": (0, 1), "1": (1, 2)},
+                "all_groups": [["a"], ["b"]],
+                "label_to_idx": {"a": 0, "b": 1},
+                "num_multilabel_classes": 0,
+            }
+        }
 
     @e2e_pytest_unit
     def test_infer(self, mocker):
@@ -110,6 +119,25 @@ class TestOpenVINOClassificationTask:
             self.dataset, InferenceParameters(enable_async_inference=False, is_evaluation=True)
         )
 
+        mock_predict.assert_called()
+        for updated in updated_dataset:
+            assert updated.annotation_scene.contains_any(self.labels)
+
+    @e2e_pytest_unit
+    def test_infer_w_features_hierarhicallabel(self, mocker):
+        mock_predict = mocker.patch.object(
+            ClassificationOpenVINOInferencer,
+            "predict",
+            return_value=(
+                ClassificationResult([], np.empty((2, 2, 2)), np.array([0, 1]), np.array([0, 1])),
+                self.fake_ann_scene,
+            ),
+        )
+        mocker.patch.object(ShapeFactory, "shape_produces_valid_crop", return_value=True)
+        self.cls_ov_task.inferencer.model.hierarchical_info = self.fake_hierarchical_info
+        updated_dataset = self.cls_ov_task.infer(
+            self.dataset, InferenceParameters(enable_async_inference=False, is_evaluation=False)
+        )
         mock_predict.assert_called()
         for updated in updated_dataset:
             assert updated.annotation_scene.contains_any(self.labels)
@@ -143,6 +171,23 @@ class TestOpenVINOClassificationTask:
                 self.fake_ann_scene,
             ),
         )
+        self.cls_ov_task.inferencer.model.hierarchical = False
+        updpated_dataset = self.cls_ov_task.explain(self.dataset)
+
+        assert updpated_dataset is not None
+        assert updpated_dataset.get_labels() == self.dataset.get_labels()
+
+    @e2e_pytest_unit
+    def test_explain_hierarhicallabel(self, mocker):
+        mocker.patch.object(
+            ClassificationOpenVINOInferencer,
+            "predict",
+            return_value=(
+                ClassificationResult([], np.empty((2, 2, 2)), np.array([0, 1]), np.array([0, 1])),
+                self.fake_ann_scene,
+            ),
+        )
+        self.cls_ov_task.inferencer.model.hierarchical_info = self.fake_hierarchical_info
         updpated_dataset = self.cls_ov_task.explain(self.dataset)
 
         assert updpated_dataset is not None

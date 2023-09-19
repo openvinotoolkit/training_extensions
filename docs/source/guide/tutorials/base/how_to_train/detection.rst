@@ -134,13 +134,17 @@ The list of supported templates for object detection is available with the comma
 .. code-block::
 
   (otx) ...$ otx find --template --task DETECTION
-  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
-  |    TASK   |                       ID                      |       NAME       |                                   BASE PATH                                   |
-  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+
-  | DETECTION |        Custom_Object_Detection_Gen3_SSD       |       SSD        |  src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml |
-  | DETECTION |         Custom_Object_Detection_YOLOX         |      YOLOX       | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml |
-  | DETECTION |        Custom_Object_Detection_Gen3_ATSS      | MobileNetV2-ATSS | src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
-  +-----------+-----------------------------------------------+------------------+-------------------------------------------------------------------------------+v
+  +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
+  |    TASK   |                 ID                |       NAME       |                                     BASE PATH                                      |
+  +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+
+  | DETECTION | Custom_Object_Detection_Gen3_ATSS | MobileNetV2-ATSS |   src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml    |
+  | DETECTION |  Object_Detection_ResNeXt101_ATSS | ResNeXt101-ATSS  |    src/otx/algorithms/detection/configs/detection/resnext101_atss/template.yaml    |
+  | DETECTION |  Custom_Object_Detection_Gen3_SSD |       SSD        |    src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml    |
+  | DETECTION |      Object_Detection_YOLOX_L     |     YOLOX-L      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template.yaml   |
+  | DETECTION |      Object_Detection_YOLOX_S     |     YOLOX-S      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template.yaml   |
+  | DETECTION |   Custom_Object_Detection_YOLOX   |    YOLOX-TINY    | src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_tiny/template.yaml |
+  | DETECTION |      Object_Detection_YOLOX_X     |     YOLOX-X      |  src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template.yaml   |
+  +-----------+-----------------------------------+------------------+------------------------------------------------------------------------------------+  
 
 .. _detection_workspace:
 

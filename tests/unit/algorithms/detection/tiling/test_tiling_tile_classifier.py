@@ -11,7 +11,7 @@ import pytest
 import torch
 from openvino.model_api.models import ImageModel, Model
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.task import MMDetectionTask
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector, patch_tiling
 from openvino.model_api.models import MaskRCNNModel
@@ -74,16 +74,27 @@ class TestTilingTileClassifier:
         mocker.patch("otx.algorithms.detection.adapters.openvino.task.OpenvinoAdapter")
         mocked_model = mocker.patch.object(Model, "create_model")
         adapter_mock = mocker.Mock(
-            set_callback=mocker.Mock(return_value=None), get_rt_info=mocker.Mock(return_value={})
+            set_callback=mocker.Mock(return_value=None), get_rt_info=mocker.Mock(return_value=np.array([1]))
         )
         mocker.patch.object(ImageModel, "__init__", return_value=None)
         mocker.patch.object(Model, "__init__", return_value=None)
-        mocked_model.return_value = mocker.MagicMock(spec=MaskRCNNModel, model_adapter=adapter_mock)
+        mocked_model.return_value = mocker.MagicMock(
+            spec=MaskRCNNModel, inference_adapter=adapter_mock, postprocess_semantic_masks=False
+        )
         params = DetectionConfig(header=self.hyper_parameters.header)
         ov_mask_inferencer = OpenVINOMaskInferencer(params, self.label_schema, "")
-        ov_mask_inferencer.model = mocked_model
+        original_shape = (self.dataset[0].media.width, self.dataset[0].media.height, 3)
         ov_mask_inferencer.model.resize_mask = False
-        ov_mask_inferencer.model.preprocess.return_value = ({"foo": "bar"}, {"baz": "qux"})
+        ov_mask_inferencer.model.preprocess.return_value = (
+            {"foo": "bar"},
+            {"baz": "qux", "original_shape": original_shape},
+        )
+        ov_mask_inferencer.model.postprocess.return_value = (
+            np.array([], dtype=np.float32),
+            np.array([], dtype=np.uint32),
+            np.zeros((0, 4), dtype=np.float32),
+            [],
+        )
         ov_inferencer = OpenVINOTileClassifierWrapper(
             ov_mask_inferencer, tile_classifier_model_file="", tile_classifier_weight_file="", mode="sync"
         )
@@ -99,6 +110,10 @@ class TestTilingTileClassifier:
                 [], [np.zeros((0, 4), dtype=np.float32)], np.zeros((0, 4), dtype=np.float32)
             ),
         )
+        ov_inferencer.tiler.model.infer_sync.return_value = {
+            "feature_vector": np.zeros((1, 5), dtype=np.float32),
+            "saliency_map": np.zeros((1, 1, 2, 2), dtype=np.float32),
+        }
         mocker.patch.object(OpenVINODetectionTask, "load_inferencer", return_value=ov_inferencer)
         ov_task = OpenVINODetectionTask(self.task_env)
         updated_dataset = ov_task.infer(self.dataset)
@@ -122,7 +137,7 @@ class TestTilingTileClassifier:
         Args:
             tmp_dir_path (str): Path to temporary directory
         """
-        maskrcnn_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        maskrcnn_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         detector = build_detector(maskrcnn_cfg)
         model_ckpt = os.path.join(tmp_dir_path, "maskrcnn_without_tile_classifier.pth")
         torch.save({"state_dict": detector.state_dict()}, model_ckpt)
@@ -158,7 +173,7 @@ class TestTilingTileClassifier:
                 == "Tile classifier is enabled but not found in the trained model. Please retrain your model."
             )
 
-        maskrcnn_classifier_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        maskrcnn_classifier_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
         maskrcnn_classifier_cfg.model.type = "CustomMaskRCNNTileOptimized"
         tile_classifier_detector = build_detector(maskrcnn_classifier_cfg)
         tile_classifier_ckpt = os.path.join(tmp_dir_path, "maskrcnn_with_tile_classifier.pth")
@@ -188,8 +203,8 @@ class TestTilingTileClassifier:
     @e2e_pytest_unit
     def test_patch_tiling_func(self):
         """Test that patch_tiling function works correctly"""
-        cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
-        data_pipeline_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "tile_pipeline.py"))
+        cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "model.py"))
+        data_pipeline_cfg = OTXConfig.fromfile(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "tile_pipeline.py"))
         cfg.merge_from_dict(data_pipeline_cfg)
         model_template = parse_model_template(os.path.join(DEFAULT_ISEG_TEMPLATE_DIR, "template.yaml"))
         hyper_parameters = create(model_template.hyper_parameters.data)

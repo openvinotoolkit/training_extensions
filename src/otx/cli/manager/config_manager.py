@@ -672,10 +672,10 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
             if file_name.endswith(".py"):
                 try:
                     from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-                        MPAConfig,
+                        OTXConfig,
                     )
 
-                    config = MPAConfig.fromfile(str(target_dir / file_name))
+                    config = OTXConfig.fromfile(str(target_dir / file_name))
                     self._patch_cli_configs(config)
                     config.dump(str(dest_dir / file_name))
                 except Exception as exc:
