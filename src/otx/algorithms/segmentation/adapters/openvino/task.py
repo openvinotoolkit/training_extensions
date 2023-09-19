@@ -162,6 +162,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         self.model = self.task_environment.model
         self.model_name = self.task_environment.model_template.model_template_id
         self.inferencer = self.load_inferencer()
+        self._avg_time_per_image = None
 
         labels = task_environment.get_labels(include_empty=False)
         self._label_dictionary = dict(enumerate(labels, 1))
@@ -172,6 +173,10 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
     def hparams(self):
         """Hparams of OpenVINO Segmentation Task."""
         return self.task_environment.get_hyper_parameters(SegmentationConfig)
+
+    @property
+    def avg_time_per_image(self):
+        return self._avg_time_per_image
 
     def load_inferencer(self) -> OpenVINOSegmentationInferencer:
         """load_inferencer function of OpenVINO Segmentation Task."""
@@ -248,7 +253,8 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         self.inferencer.await_all()
 
-        logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        self._avg_time_per_image = total_time / len(dataset)
+        logger.info(f"Avg time per image: {self._avg_time_per_image} secs")
         logger.info(f"Total time: {total_time} secs")
         logger.info("Segmentation OpenVINO inference completed")
 
