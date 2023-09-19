@@ -1,4 +1,4 @@
-"""Test helpers for MPA."""
+"""Test helpers for OTX."""
 import torch
 import torch.nn as nn
 

@@ -46,7 +46,7 @@ logger = get_logger()
 
 
 # TODO: refactor Config
-class MPAConfig(Config):
+class OTXConfig(Config):
     """A class that extends the base `Config` class, adds additional functionality for loading configuration files."""
 
     @staticmethod
@@ -117,7 +117,7 @@ class MPAConfig(Config):
             cfg_dict_list = []
             cfg_text_list = []
             for f in base_filename:
-                _cfg_dict, _cfg_text = MPAConfig._file2dict(osp.join(cfg_dir, f))
+                _cfg_dict, _cfg_text = OTXConfig._file2dict(osp.join(cfg_dir, f))
                 cfg_dict_list.append(_cfg_dict)
                 cfg_text_list.append(_cfg_text)
 
@@ -160,10 +160,10 @@ class MPAConfig(Config):
         :param import_custom_modules: bool, a flag indicating whether to import custom modules.
         :return: Config object, an instance of `Config` class containing the contents of the configuration file.
         """
-        cfg_dict, cfg_text = MPAConfig._file2dict(filename, use_predefined_variables)
+        cfg_dict, cfg_text = OTXConfig._file2dict(filename, use_predefined_variables)
         if import_custom_modules and cfg_dict.get("custom_imports", None):
             import_modules_from_strings(**cfg_dict["custom_imports"])
-        return MPAConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
+        return OTXConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @property
     def pretty_text(self):
@@ -421,15 +421,6 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-def patch_data_pipeline(config: Config, data_pipeline: str = ""):
-    """Replace data pipeline to data_pipeline.py if it exist."""
-    if os.path.isfile(data_pipeline):
-        data_pipeline_cfg = Config.fromfile(data_pipeline)
-        config.merge_from_dict(data_pipeline_cfg)
-    else:
-        raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
-
-
 def patch_color_conversion(config: Config):
     """Patch color conversion."""
     assert "data" in config
@@ -532,9 +523,10 @@ def get_adaptive_num_workers(num_dataloader: int = 1) -> Union[int, None]:
     return min(multiprocessing.cpu_count() // (num_dataloader * num_gpus), 8)  # max available num_workers is 8
 
 
-def patch_from_hyperparams(config: Config, hyperparams):
+def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
+    algo_backend = hyperparams.algo_backend
     warmup_iters = int(params.learning_rate_warmup_iters)
 
     model_label_type = config.filename.split("/")[-1]
@@ -569,6 +561,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
             workers_per_gpu=int(params.num_workers),
         ),
         runner=runner,
+        algo_backend=algo_backend,
     )
 
     # NOTE: Not all algorithms are compatible with the parameter `inference_batch_size`,
@@ -583,7 +576,7 @@ def patch_from_hyperparams(config: Config, hyperparams):
                     ),
                 )
             )
-    is_semi_sl = hyperparams.algo_backend.train_type.name == "Semisupervised"
+    is_semi_sl = algo_backend.train_type.name == "Semisupervised"
 
     if hyperparams.learning_parameters.auto_num_workers:
         adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
@@ -603,28 +596,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
 
     hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
-
-
-DEFAULT_META_KEYS = (
-    "filename",
-    "ori_filename",
-    "ori_shape",
-    "img_shape",
-    "pad_shape",
-    "scale_factor",
-    "flip",
-    "flip_direction",
-    "img_norm_cfg",
-)
-
-
-def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
-    """Update meta_keys for ignore_labels."""
-    meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
-    meta_keys.append("ignored_labels")
-    meta_keys += add_meta_keys
-    pipeline_step["meta_keys"] = set(meta_keys)
-    return pipeline_step
 
 
 def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:

@@ -169,7 +169,7 @@ def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-m
             compression_ctrl=compression_ctrl,
         )
     )
-    # TODO: move this to OTX task when MPA is absorbed into OTX
+    # TODO: move this to OTX task
     remove_from_configs_by_type(custom_hooks, "CancelInterfaceHook")
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
     remove_from_configs_by_type(custom_hooks, "LazyEarlyStoppingHook")

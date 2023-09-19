@@ -142,6 +142,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
         losses = dict()
         if cls_score is not None and cls_score.numel() > 0:
             avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
+
             if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
                 losses["loss_cls"] = self.loss_cls(
                     cls_score,

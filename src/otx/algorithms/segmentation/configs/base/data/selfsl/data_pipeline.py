@@ -79,4 +79,4 @@ __train_pipeline = [
     ),
 ]
 
-data = dict(train=dict(type="MPASegDataset", pipeline=__train_pipeline))
+data = dict(train=dict(type="OTXSegDataset", pipeline=__train_pipeline))

@@ -78,9 +78,9 @@
       },
       "tiling": {
         "multi_class": {
-          "--train-data-roots": "detection/coco_subset_cls_decr",
-          "--val-data-roots": "detection/coco_subset_cls_decr",
-          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--train-data-roots": "detection/coco_subset",
+          "--val-data-roots": "detection/coco_subset",
+          "--test-data-roots": "detection/coco_subset",
           "--input": "detection/coco_subset/images/test"
         }
       }
@@ -192,88 +192,104 @@
           "train": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-B0": 0.806,
+            "Deti-Tiny": 0.0
           },
           "export": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-B0": 0.806,
+            "Deti-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.806
+            "EfficientNet-B0": 0.806,
+            "Deti-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.764,
             "MobileNet-V3-large-1x": 0.733,
-            "EfficientNet-B0": 0.742
+            "EfficientNet-B0": 0.742,
+            "Deti-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.711,
             "MobileNet-V3-large-1x": 0.692,
-            "EfficientNet-B0": 0.725
+            "EfficientNet-B0": 0.725,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.966,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "export": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.967,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.965
+            "EfficientNet-B0": 0.965,
+            "Deti-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
-            "EfficientNet-B0": 0.964
+            "EfficientNet-B0": 0.964,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-B0": 0.636,
+            "Deti-Tiny": 0.0
           },
           "export": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-B0": 0.636,
+            "Deti-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
-            "EfficientNet-B0": 0.636
+            "EfficientNet-B0": 0.636,
+            "Deti-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.594,
             "MobileNet-V3-large-1x": 0.622,
-            "EfficientNet-B0": 0.638
+            "EfficientNet-B0": 0.638,
+            "Deti-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.577,
             "MobileNet-V3-large-1x": 0.472,
-            "EfficientNet-B0": 0.605
+            "EfficientNet-B0": 0.605,
+            "Deti-Tiny": 0.0
           }
         },
         "supcon": {
           "train": {
             "EfficientNet-V2-S": 0.783,
             "MobileNet-V3-large-1x": 0.728,
-            "EfficientNet-B0": 0.772
+            "EfficientNet-B0": 0.772,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -282,21 +298,24 @@
           "train": {
             "EfficientNet-V2-S": 0.79,
             "MobileNet-V3-large-1x": 0.76,
-            "EfficientNet-B0": 0.81
+            "EfficientNet-B0": 0.81,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 0.97,
             "MobileNet-V3-large-1x": 0.97,
-            "EfficientNet-B0": 0.964
+            "EfficientNet-B0": 0.964,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
+            "EfficientNet-B0": 0.0,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -305,7 +324,8 @@
           "train": {
             "EfficientNet-V2-S": 0.822,
             "MobileNet-V3-large-1x": 0.764,
-            "EfficientNet-B0": 0.797
+            "EfficientNet-B0": 0.797,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -314,7 +334,8 @@
           "train": {
             "EfficientNet-V2-S": 0.767,
             "MobileNet-V3-large-1x": 0.744,
-            "EfficientNet-B0": 0.794
+            "EfficientNet-B0": 0.794,
+            "Deti-Tiny": 0.0
           }
         }
       }
@@ -404,31 +425,46 @@
             "Lite-HRNet-s-mod2": 0.636,
             "Lite-HRNet-18-mod2": 0.692,
             "Lite-HRNet-18": 0.801,
-            "Lite-HRNet-x-mod3": 0.693
+            "Lite-HRNet-x-mod3": 0.693,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "export": {
             "Lite-HRNet-s-mod2": 0.636,
             "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.692
+            "Lite-HRNet-x-mod3": 0.692,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "deploy": {
             "Lite-HRNet-s-mod2": 0.636,
             "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.692
+            "Lite-HRNet-x-mod3": 0.692,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "nncf": {
             "Lite-HRNet-s-mod2": 0.678,
             "Lite-HRNet-18-mod2": 0.707,
             "Lite-HRNet-18": 0.79,
-            "Lite-HRNet-x-mod3": 0.668
+            "Lite-HRNet-x-mod3": 0.668,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "ptq": {
             "Lite-HRNet-s-mod2": 0.725,
             "Lite-HRNet-18-mod2": 0.269,
             "Lite-HRNet-18": 0.115,
-            "Lite-HRNet-x-mod3": 0.041
+            "Lite-HRNet-x-mod3": 0.041,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         },
         "supcon": {
@@ -436,7 +472,10 @@
             "Lite-HRNet-s-mod2": 0.691,
             "Lite-HRNet-18-mod2": 0.676,
             "Lite-HRNet-18": 0.682,
-            "Lite-HRNet-x-mod3": 0.698
+            "Lite-HRNet-x-mod3": 0.698,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -446,7 +485,10 @@
             "Lite-HRNet-s-mod2": 0.66,
             "Lite-HRNet-18-mod2": 0.768,
             "Lite-HRNet-18": 0.669,
-            "Lite-HRNet-x-mod3": 0.712
+            "Lite-HRNet-x-mod3": 0.712,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -456,7 +498,10 @@
             "Lite-HRNet-s-mod2": 0.681,
             "Lite-HRNet-18-mod2": 0.696,
             "Lite-HRNet-18": 0.742,
-            "Lite-HRNet-x-mod3": 0.802
+            "Lite-HRNet-x-mod3": 0.802,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -466,7 +511,10 @@
             "Lite-HRNet-s-mod2": 0.785,
             "Lite-HRNet-18-mod2": 0.798,
             "Lite-HRNet-18": 0.782,
-            "Lite-HRNet-x-mod3": 0.785
+            "Lite-HRNet-x-mod3": 0.785,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       }
@@ -1500,28 +1548,32 @@
           "train": {
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.732,
-            "EfficientNet-B0": 82.521
+            "EfficientNet-B0": 82.521,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 214.508,
             "MobileNet-V3-large-1x": 185.442,
-            "EfficientNet-B0": 187.332
+            "EfficientNet-B0": 187.332,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 149.627,
             "MobileNet-V3-large-1x": 76.041,
-            "EfficientNet-B0": 87.159
+            "EfficientNet-B0": 87.159,
+            "Deti-Tiny": 0.0
           }
         },
         "supcon": {
           "train": {
             "EfficientNet-V2-S": 136.036,
             "MobileNet-V3-large-1x": 134.635,
-            "EfficientNet-B0": 124.474
+            "EfficientNet-B0": 124.474,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1530,21 +1582,24 @@
           "train": {
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 80.603,
-            "EfficientNet-B0": 82.521
+            "EfficientNet-B0": 82.521,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 214.508,
             "MobileNet-V3-large-1x": 185.442,
-            "EfficientNet-B0": 187.332
+            "EfficientNet-B0": 187.332,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
+            "EfficientNet-B0": 0.0,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1553,7 +1608,8 @@
           "train": {
             "EfficientNet-V2-S": 423.184,
             "MobileNet-V3-large-1x": 227.445,
-            "EfficientNet-B0": 230.227
+            "EfficientNet-B0": 230.227,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1562,7 +1618,8 @@
           "train": {
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.239,
-            "EfficientNet-B0": 82.521
+            "EfficientNet-B0": 82.521,
+            "Deti-Tiny": 0.0
           }
         }
       }
@@ -1612,7 +1669,10 @@
             "Lite-HRNet-s-mod2": 393.137,
             "Lite-HRNet-18-mod2": 443.94,
             "Lite-HRNet-18": 446.99,
-            "Lite-HRNet-x-mod3": 667.493
+            "Lite-HRNet-x-mod3": 667.493,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         },
         "supcon": {
@@ -1620,7 +1680,10 @@
             "Lite-HRNet-s-mod2": 241.88,
             "Lite-HRNet-18-mod2": 279.19,
             "Lite-HRNet-18": 279.71,
-            "Lite-HRNet-x-mod3": 454.31
+            "Lite-HRNet-x-mod3": 454.31,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -1630,7 +1693,10 @@
             "Lite-HRNet-s-mod2": 447.762,
             "Lite-HRNet-18-mod2": 474.511,
             "Lite-HRNet-18": 486.038,
-            "Lite-HRNet-x-mod3": 759.906
+            "Lite-HRNet-x-mod3": 759.906,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -1640,7 +1706,10 @@
             "Lite-HRNet-s-mod2": 564.257,
             "Lite-HRNet-18-mod2": 715.882,
             "Lite-HRNet-18": 601.665,
-            "Lite-HRNet-x-mod3": 902.047
+            "Lite-HRNet-x-mod3": 902.047,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -1650,7 +1719,10 @@
             "Lite-HRNet-s-mod2": 727.372,
             "Lite-HRNet-18-mod2": 756.383,
             "Lite-HRNet-18": 750.812,
-            "Lite-HRNet-x-mod3": 1017.624
+            "Lite-HRNet-x-mod3": 1017.624,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       }
@@ -1659,8 +1731,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 5857.729,
-            "MaskRCNN-EfficientNetB2B": 4869.547
+            "MaskRCNN-ResNet50": 7234.698,
+            "MaskRCNN-EfficientNetB2B": 3450.991
           }
         }
       },
@@ -1900,28 +1972,32 @@
           "train": {
             "EfficientNet-V2-S": 17.8,
             "MobileNet-V3-large-1x": 16.453,
-            "EfficientNet-B0": 15.145
+            "EfficientNet-B0": 15.145,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 18.706,
             "MobileNet-V3-large-1x": 20.311,
-            "EfficientNet-B0": 19.497
+            "EfficientNet-B0": 19.497,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 17.99,
             "MobileNet-V3-large-1x": 18.068,
-            "EfficientNet-B0": 13.558
+            "EfficientNet-B0": 13.558,
+            "Deti-Tiny": 0.0
           }
         },
         "supcon": {
           "train": {
             "EfficientNet-V2-S": 17.1,
             "MobileNet-V3-large-1x": 17.988,
-            "EfficientNet-B0": 14.586
+            "EfficientNet-B0": 14.586,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1930,21 +2006,24 @@
           "train": {
             "EfficientNet-V2-S": 16.715,
             "MobileNet-V3-large-1x": 16.722,
-            "EfficientNet-B0": 15.488
+            "EfficientNet-B0": 15.488,
+            "Deti-Tiny": 0.0
           }
         },
         "multi_label": {
           "train": {
             "EfficientNet-V2-S": 19.618,
             "MobileNet-V3-large-1x": 20.686,
-            "EfficientNet-B0": 17.046
+            "EfficientNet-B0": 17.046,
+            "Deti-Tiny": 0.0
           }
         },
         "h_label": {
           "train": {
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
-            "EfficientNet-B0": 0.0
+            "EfficientNet-B0": 0.0,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1953,7 +2032,8 @@
           "train": {
             "EfficientNet-V2-S": 16.885,
             "MobileNet-V3-large-1x": 17.905,
-            "EfficientNet-B0": 15.107
+            "EfficientNet-B0": 15.107,
+            "Deti-Tiny": 0.0
           }
         }
       },
@@ -1962,7 +2042,8 @@
           "train": {
             "EfficientNet-V2-S": 15.552,
             "MobileNet-V3-large-1x": 14.267,
-            "EfficientNet-B0": 15.179
+            "EfficientNet-B0": 15.179,
+            "Deti-Tiny": 0.0
           }
         }
       }
@@ -2012,7 +2093,10 @@
             "Lite-HRNet-s-mod2": 36.656,
             "Lite-HRNet-18-mod2": 42.2,
             "Lite-HRNet-18": 43.046,
-            "Lite-HRNet-x-mod3": 59.053
+            "Lite-HRNet-x-mod3": 59.053,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         },
         "supcon": {
@@ -2020,7 +2104,10 @@
             "Lite-HRNet-s-mod2": 13.835,
             "Lite-HRNet-18-mod2": 16.39,
             "Lite-HRNet-18": 16.23,
-            "Lite-HRNet-x-mod3": 26.549
+            "Lite-HRNet-x-mod3": 26.549,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -2030,7 +2117,10 @@
             "Lite-HRNet-s-mod2": 43.425,
             "Lite-HRNet-18-mod2": 48.536,
             "Lite-HRNet-18": 43.817,
-            "Lite-HRNet-x-mod3": 74.163
+            "Lite-HRNet-x-mod3": 74.163,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -2040,7 +2130,10 @@
             "Lite-HRNet-s-mod2": 43.347,
             "Lite-HRNet-18-mod2": 51.605,
             "Lite-HRNet-18": 47.816,
-            "Lite-HRNet-x-mod3": 56.125
+            "Lite-HRNet-x-mod3": 56.125,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -2050,7 +2143,10 @@
             "Lite-HRNet-s-mod2": 37.616,
             "Lite-HRNet-18-mod2": 36.786,
             "Lite-HRNet-18": 44.935,
-            "Lite-HRNet-x-mod3": 52.59
+            "Lite-HRNet-x-mod3": 52.59,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       }
@@ -2059,8 +2155,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 142.759,
-            "MaskRCNN-EfficientNetB2B": 119.753
+            "MaskRCNN-ResNet50": 443.869,
+            "MaskRCNN-EfficientNetB2B": 451.211
           }
         }
       },

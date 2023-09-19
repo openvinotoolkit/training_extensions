@@ -18,7 +18,7 @@ from tests.unit.algorithms.detection.test_helpers import (
     generate_det_dataset,
 )
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig, patch_from_hyperparams
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig, patch_from_hyperparams
 
 from tests.unit.algorithms.detection.test_helpers import (
     DEFAULT_DET_MODEL_CONFIG_PATH,
@@ -73,7 +73,7 @@ def test_cluster_anchors(widths, heights):
 @pytest.mark.parametrize("model_cfg", [DEFAULT_DET_MODEL_CONFIG_PATH, DEFAULT_ISEG_MODEL_CONFIG_PATH])
 def test_patch_samples_per_gpu(model_cfg):
     """Test samples per gpu function works correctly."""
-    cfg = MPAConfig.fromfile(model_cfg)
+    cfg = OTXConfig.fromfile(model_cfg)
     model_template = parse_model_template(Path(model_cfg).parent / "template.yaml")
     hyper_parameters = create(model_template.hyper_parameters.data)
 

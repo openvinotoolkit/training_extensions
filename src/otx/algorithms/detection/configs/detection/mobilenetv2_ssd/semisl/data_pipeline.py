@@ -4,4 +4,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-_base_ = ["../../../base/data/semisl/base_semisl_data_pipeline.py"]
+_base_ = ["../../../base/data/semisl/base_semisl_det_data_pipeline.py"]

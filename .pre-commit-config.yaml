@@ -45,7 +45,7 @@ repos:
         description: Runs hadolint to lint Dockerfiles
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.8.0.4
+    rev: v0.9.0.5
     hooks:
       - id: shellcheck # TODO remove this when all shell scripts have been removed from otx
 

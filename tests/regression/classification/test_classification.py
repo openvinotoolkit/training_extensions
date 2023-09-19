@@ -63,7 +63,7 @@ class TestRegressionMultiClassClassification:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):
@@ -161,8 +161,6 @@ class TestRegressionMultiClassClassification:
         train_type = "class_incr"
         config_cls_incr = reg_cfg.load_config(train_type=train_type)
 
-        # results = reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][TRAIN_TYPE]["train"]
-        # performance = get_template_performance(results, template)
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
 
         kpi_train_result = regression_train_time_testing(
@@ -226,11 +224,8 @@ class TestRegressionMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_semisl_kpi_test(self, reg_cfg, template):
         train_type = "semi_supervised"
-        # config_semisl = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, "semi_supervised", reg_cfg.label_type)
         config_semisl = reg_cfg.load_config(train_type=train_type)
 
-        # results = reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][TRAIN_TYPE]["train"]
-        # performance = get_template_performance(results, template)
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
 
         kpi_train_result = regression_train_time_testing(
@@ -251,23 +246,23 @@ class TestRegressionMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl(self, reg_cfg, template, tmp_dir_path):
+        if template.name == "DeiT-Tiny":
+            pytest.skip(reason="Self-SL for ViT template is not supported yet.")
         train_type = "self_supervised"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_selfsl"
-        # config_selfsl = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, "self_supervised", reg_cfg.label_type)
         config_selfsl = reg_cfg.load_config(train_type=train_type)
         args_selfsl = config_selfsl["data_path"]
 
         selfsl_train_args = copy.deepcopy(args_selfsl)
+        selfsl_train_args["--train-type"] = "Selfsupervised"
         selfsl_train_args["train_params"] = [
             "params",
             "--learning_parameters.batch_size",
             "64",
             "--learning_parameters.num_iters",
             "10",
-            "--algo_backend.train_type",
-            "Selfsupervised",
         ]
 
         reg_cfg.update_gpu_args(selfsl_train_args)
@@ -279,6 +274,7 @@ class TestRegressionMultiClassClassification:
 
         # Supervised Training
         template_work_dir = get_template_dir(template, tmp_dir_path)
+        assert os.path.exists(f"{template_work_dir}/selfsl")
         new_tmp_dir_path = tmp_dir_path / "test_supervised"
         args_selfsl["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
         args_selfsl["--val-data-roots"] = reg_cfg.args["--val-data-roots"]
@@ -312,11 +308,8 @@ class TestRegressionMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl_kpi_test(self, reg_cfg, template):
         train_type = "self_supervised"
-        # config_selfsl = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, "self_supervised", reg_cfg.label_type)
         config_selfsl = reg_cfg.load_config(train_type=train_type)
 
-        # results = reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][TRAIN_TYPE]["train"]
-        # performance = get_template_performance(results, template)
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
 
         kpi_train_result = regression_train_time_testing(
@@ -457,11 +450,6 @@ class TestRegressionMultiClassClassification:
         assert test_result["passed"] is True, test_result["log"]
 
 
-# multi_label_regression_config = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, TRAIN_TYPE, "multi_label")
-# multi_label_data_args = multi_label_regression_config["data_path"]
-# multi_label_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
-
-
 class TestRegressionMultiLabelClassification:
     REG_CATEGORY = "classification"
     TASK_TYPE = "classification"
@@ -487,7 +475,7 @@ class TestRegressionMultiLabelClassification:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):
@@ -523,8 +511,6 @@ class TestRegressionMultiLabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
-        # results = reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][TRAIN_TYPE]["train"]
-        # performance = get_template_performance(results, template)
         performance = reg_cfg.get_template_performance(template)
 
         kpi_train_result = regression_train_time_testing(
@@ -551,7 +537,6 @@ class TestRegressionMultiLabelClassification:
         sl_template_work_dir = get_template_dir(template, tmp_dir_path / "multi_label_cls")
 
         tmp_dir_path = tmp_dir_path / "multi_label_cls_incr"
-        # config_cls_incr = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, "class_incr", reg_cfg.label_type)
         config_cls_incr = reg_cfg.load_config(train_type=train_type)
         args_cls_incr = config_cls_incr["data_path"]
         args_cls_incr[
@@ -586,11 +571,8 @@ class TestRegressionMultiLabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr_kpi_test(self, reg_cfg, template):
         train_type = "class_incr"
-        # config_cls_incr = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, "class_incr", reg_cfg.label_type)
         config_cls_incr = reg_cfg.load_config(train_type=train_type)
 
-        # results = reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][TRAIN_TYPE]["train"]
-        # performance = get_template_performance(results, template)
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
 
         kpi_train_result = regression_train_time_testing(
@@ -731,16 +713,11 @@ class TestRegressionMultiLabelClassification:
         assert test_result["passed"] is True, test_result["log"]
 
 
-# h_label_regression_config = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, TRAIN_TYPE, "h_label")
-# h_label_data_args = h_label_regression_config["data_path"]
-# h_label_data_args["train_params"] = ["params", "--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
-
-
 class TestRegressionHierarchicalLabelClassification:
     REG_CATEGORY = "classification"
     TASK_TYPE = "classification"
     TRAIN_TYPE = "supervised"
-    LABEL_TYPE = "m_label"
+    LABEL_TYPE = "h_label"
 
     TRAIN_PARAMS = ["--learning_parameters.num_iters", REGRESSION_TEST_EPOCHS]
     templates = Registry(f"src/otx/algorithms/{REG_CATEGORY}").filter(task_type=TASK_TYPE.upper()).templates
@@ -761,7 +738,7 @@ class TestRegressionHierarchicalLabelClassification:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):
@@ -797,8 +774,6 @@ class TestRegressionHierarchicalLabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
-        # results = reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["train"]
-        # performance = get_template_performance(results, template)
         performance = reg_cfg.get_template_performance(template)
 
         kpi_train_result = regression_train_time_testing(
@@ -969,7 +944,7 @@ class TestRegressionSupconClassification:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):
@@ -981,17 +956,6 @@ class TestRegressionSupconClassification:
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "supcon_cls"
-        # config_supcon = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, TRAIN_TYPE, reg_cfg.label_type)
-
-        # args_supcon = config_supcon["data_path"]
-
-        # args_supcon["train_params"] = [
-        #     "params",
-        #     "--learning_parameters.num_iters",
-        #     REGRESSION_TEST_EPOCHS,
-        #     "--learning_parameters.enable_supcon",
-        #     "True",
-        # ]
 
         # Supcon
         train_start_time = timer()
@@ -1019,9 +983,6 @@ class TestRegressionSupconClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
-        # config_supcon = load_regression_configuration(reg_cfg.otx_dir, TASK_TYPE, TRAIN_TYPE, reg_cfg.label_type)
-        # results = reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][TRAIN_TYPE]["train"]
-        # performance = get_template_performance(results, template)
         performance = reg_cfg.get_template_performance(template)
 
         kpi_train_result = regression_train_time_testing(
