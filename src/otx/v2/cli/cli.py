@@ -23,7 +23,7 @@ from rich.console import Console
 
 from otx.v2 import OTX_LOGO, __version__
 from otx.v2.api.core import AutoRunner, BaseDataset, Engine
-from otx.v2.cli.utils.help_formatter import OTXHelpFormatter
+from otx.v2.cli.utils.help_formatter import OTXHelpFormatter, render_guide
 
 from .extensions import CLI_EXTENSIONS
 from .utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments, tuple_constructor
@@ -72,7 +72,15 @@ class OTXCLIv2:
         self.subcommand = self.config["subcommand"]
 
         if self.subcommand is not None:
-            self.run(self.subcommand)
+            try:
+                self.run(self.subcommand)
+            except Exception:
+                # Print subcommand guide
+                contents = render_guide(self.subcommand)
+                for content in contents:
+                    self.console.print(content)
+                # Print TraceBack
+                self.console.print_exception(width=self.console.width)
 
     def _setup_parser_kwargs(self, parser_kwargs: Dict[str, Any] = {}) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         subcommand_names = self.engine_subcommands().keys()
