@@ -157,7 +157,7 @@ class TestTilingInstanceSegmentationCLI:
         tmp_dir_path = tmp_dir_path / "tiling_ins_seg"
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
-        if template.name.startswith("MaskRCNN"):
+        if torch.__version__.startswith("2.") and template.name.startswith("MaskRCNN"):
             pytest.skip(
                 reason="Issue#2451: Torch2.0 CUDA runtime error during NNCF optimization of ROIAlign MMCV kernel for MaskRCNN"
             )

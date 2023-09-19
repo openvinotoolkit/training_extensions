@@ -46,12 +46,15 @@ Refer to the `official installation guide <https://pytorch.org/get-started/previ
 
 .. note::
 
-    Currently, only torch==2.0.1 was fully validated. (1.x versions are not supported due to security issues).
+    Currently, only torch==1.13.1 ~ 2.0.1 was fully validated. (older versions are not supported due to security issues).
 
 .. code-block::
 
-    # install command for torch==2.0.1 for CUDA 11.7:
+    # Install command for torch==2.0.1 for CUDA 11.7:
     pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url https://download.pytorch.org/whl/cu117
+
+    # Or, install command for torch==1.13.1 for CUDA 11.7:
+    pip install torch==1.13.1 torchvision==0.14.1 --extra-index-url https://download.pytorch.org/whl/cu117
 
 4. Install OpenVINO™ Training Extensions package from either:
 
