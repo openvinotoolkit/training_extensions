@@ -99,7 +99,15 @@ class TestDetectionCLI:
         # FIXME: remove this block once Issue#2054 resolved
         _args = args.copy()
         if "DINO" in template.name:
-            _args["train_params"] = ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4", "--learning_parameters.input_size", "Default"]
+            _args["train_params"] = [
+                "params",
+                "--learning_parameters.num_iters",
+                "1",
+                "--learning_parameters.batch_size",
+                "4",
+                "--learning_parameters.input_size",
+                "Default",
+            ]
         otx_train_testing(template, tmp_dir_path, otx_dir, _args)
 
     @e2e_pytest_component

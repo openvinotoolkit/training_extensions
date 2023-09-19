@@ -20,7 +20,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    InputSizePreset,
     patch_color_conversion,
     patch_from_hyperparams,
     recursively_update_cfg,

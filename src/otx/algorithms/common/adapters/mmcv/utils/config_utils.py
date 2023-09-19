@@ -820,7 +820,9 @@ class InputSizeManager:
             return self._data_config[subset]["dataset"]["pipeline"]
         raise RuntimeError("Failed to find pipeline.")
 
-    def _set_pipeline_size_value(self, pipeline: Union[Dict, List[Dict]], scale: Tuple[Union[int, float], Union[int, float]]):
+    def _set_pipeline_size_value(
+        self, pipeline: Union[Dict, List[Dict]], scale: Tuple[Union[int, float], Union[int, float]]
+    ):
 
         if isinstance(pipeline, list):
             for sub_pipeline in pipeline:
