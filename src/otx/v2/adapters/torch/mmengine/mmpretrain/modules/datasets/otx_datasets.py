@@ -63,11 +63,11 @@ class OTXClsDataset(BaseDataset):
         self.pipeline = Compose(pipeline_modules)
         self.load_annotations()
 
-    def get_indices(self, *args):  # pylint: disable=unused-argument
+    def get_indices(self, *args) -> Dict[str, List[int]]:  # pylint: disable=unused-argument
         """Get indices."""
         return get_cls_img_indices(self.labels, self.otx_dataset)
 
-    def load_annotations(self):
+    def load_annotations(self) -> None:
         """Load annotations."""
         include_empty = self.empty_label in self.labels
         for i, _ in enumerate(self.otx_dataset):

@@ -50,8 +50,8 @@ class CustomConfig(Config):
 
     @staticmethod
     def _file2dict(
-        filename, use_predefined_variables=True
-    ):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        filename: str, use_predefined_variables: bool = True
+    ) -> Tuple[Config, str]:  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Static method that loads the configuration file and returns a dictionary of its contents.
 
         :param filename: str, the path of the configuration file to be loaded.
@@ -110,17 +110,17 @@ class CustomConfig(Config):
 
         if BASE_KEY in cfg_dict:
             cfg_dir = osp.dirname(filename)
-            base_filename = cfg_dict.pop(BASE_KEY)
-            base_filename = base_filename if isinstance(base_filename, list) else [base_filename]
+            base_key = cfg_dict.pop(BASE_KEY)
+            base_filename: List[str] = base_key if isinstance(base_key, list) else [base_key]
 
             cfg_dict_list = []
             cfg_text_list = []
-            for f in base_filename:
-                _cfg_dict, _cfg_text = CustomConfig._file2dict(osp.join(cfg_dir, f))
+            for file_path in base_filename:
+                _cfg_dict, _cfg_text = CustomConfig._file2dict(osp.join(cfg_dir, file_path))
                 cfg_dict_list.append(_cfg_dict)
                 cfg_text_list.append(_cfg_text)
 
-            base_cfg_dict = dict()
+            base_cfg_dict: Union[Config, Dict] = dict()
             # for c in cfg_dict_list:
             #     duplicate_keys = base_cfg_dict.keys() & c.keys()
             #     if len(duplicate_keys) > 0:
@@ -150,7 +150,7 @@ class CustomConfig(Config):
         return cfg_dict, cfg_text
 
     @staticmethod
-    def fromfile(filename, use_predefined_variables=True, import_custom_modules=True):
+    def fromfile(filename: str, use_predefined_variables: bool = True, import_custom_modules: bool = True) -> Config:
         """Static method that loads a configuration file and returns an instance of `Config` class.
 
         :param filename: str, the path of the configuration file to be loaded.

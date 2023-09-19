@@ -132,20 +132,6 @@ class AnomalibEngine(Engine):
         val_interval: Optional[int] = None,
         **kwargs,  # Trainer.__init__ arguments
     ):
-        super().train(
-            model,
-            train_dataloader,
-            val_dataloader,
-            optimizer,
-            checkpoint,
-            max_iters,
-            max_epochs,
-            distributed,
-            seed,
-            deterministic,
-            precision,
-            val_interval,
-        )
         train_args = {
             "max_iters": max_iters,
             "max_epochs": max_epochs,
@@ -185,7 +171,7 @@ class AnomalibEngine(Engine):
             ckpt_path=checkpoint,
         )
 
-        output_model_dir = Path(self.work_dir) / target_folder / "models"
+        output_model_dir = self.work_dir / target_folder / "models"
         self.trainer.save_checkpoint(output_model_dir / "weights.pth")
         results = {"model": model, "checkpoint": str(output_model_dir / "weights.pth")}
         self.latest_model = results
@@ -275,17 +261,11 @@ class AnomalibEngine(Engine):
         model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
         img: Optional[Union[PREDICT_FORMAT, EVAL_DATALOADERS, LightningDataModule]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[List[Dict]] = None,
+        pipeline: Optional[Union[Dict, List]] = None,
         device: str = "auto",  # ["auto", "cpu", "gpu", "cuda"]
         visualization_mode: str = "simple",  # ["full", "simple"]
         **kwargs,
     ) -> List[Dict]:
-        super().predict(
-            model,
-            img,
-            checkpoint,
-            pipeline,
-        )
         results = []
         if model is None:
             model = self.latest_model.get("model", None)
@@ -366,9 +346,9 @@ class AnomalibEngine(Engine):
 
         # Set device
         if device is None:
-            device = model.device
+            device = getattr(model, "device", None)
 
-        export_dir = Path(self.work_dir) / f"{self.timestamp}_export"
+        export_dir = self.work_dir / f"{self.timestamp}_export"
         export_dir.mkdir(exist_ok=True, parents=True)
 
         # Torch to onnx
@@ -376,7 +356,7 @@ class AnomalibEngine(Engine):
         onnx_dir.mkdir(exist_ok=True, parents=True)
         onnx_model = str(onnx_dir / "onnx_model.onnx")
         torch.onnx.export(
-            model=model.model,
+            model=getattr(model, "model", model),
             args=torch.zeros((1, 3, height, width)).to(device),
             f=onnx_model,
             opset_version=11,

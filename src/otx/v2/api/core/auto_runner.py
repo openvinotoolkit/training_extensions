@@ -298,6 +298,11 @@ class AutoRunner:
             _type_: Outputs of training.
         """
         # TODO: self.config update with new input
+        dataloader_cfg = {
+            "batch_size": kwargs.pop("batch_size", None),
+            "num_workers": kwargs.pop("num_workers", None),
+            "distributed": kwargs.pop("distributed", None),
+        }
 
         # Configure if dataloader is None
         # TODO: Need to add more arguments
@@ -305,12 +310,12 @@ class AutoRunner:
             if "train" in self.subset_dls:
                 train_dataloader = self.subset_dls["train"]
             else:
-                train_dataloader = self.subset_dataloader(subset="train", config=self.config)
+                train_dataloader = self.subset_dataloader(subset="train", config=self.config, **dataloader_cfg)
         if val_dataloader is None:
             if "val" in self.subset_dls:
                 val_dataloader = self.subset_dls["val"]
             else:
-                val_dataloader = self.subset_dataloader(subset="val", config=self.config)
+                val_dataloader = self.subset_dataloader(subset="val", config=self.config, **dataloader_cfg)
 
         model = self._configure_model(model)
 

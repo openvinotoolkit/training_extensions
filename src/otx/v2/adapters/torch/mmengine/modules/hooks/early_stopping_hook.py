@@ -4,7 +4,7 @@
 #
 
 from math import inf, isnan
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 from mmengine import print_log
 from mmengine.hooks import EarlyStoppingHook, Hook, ParamSchedulerHook
@@ -26,11 +26,11 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
         self,
         interval: int,
         metric: str = "bbox_mAP",
-        rule: str = None,
+        rule: Optional[str] = None,
         patience: int = 5,
         iteration_patience: int = 500,
         min_delta: float = 0.0,
-        start: int = None,
+        start: Optional[int] = None,
     ):
         self.start = start
         super().__init__(interval, metric, rule, patience, iteration_patience, min_delta)
@@ -113,7 +113,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
 
-    def _init_rule(self, rule, key_indicator):
+    def _init_rule(self, rule: Optional[str], key_indicator: str) -> None:
         """Initialize rule, key_indicator, comparison_func, and best score.
 
         Here is the rule to determine which rule is used for key indicator
@@ -146,7 +146,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
                 )
         self.rule = rule
         self.key_indicator = key_indicator
-        self.compare_func = self.rule_map[self.rule]
+        self.compare_func: Callable[[float, float], bool] = self.rule_map[self.rule]
 
     def _is_check_timing(self, runner: Runner) -> bool:
         """Check whether current epoch or iter is multiple of self.interval, skip during warmup interations."""

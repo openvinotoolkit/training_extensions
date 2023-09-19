@@ -19,7 +19,7 @@
 import glob
 import logging
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -28,6 +28,7 @@ from otx.v2.api.entities.annotation import NullAnnotationSceneEntity
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
+from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.subset import Subset
 
 IMAGE_FILE_EXTENSIONS = [
@@ -124,14 +125,14 @@ def get_dataset(dataset: DatasetEntity, subset: Subset):
     return data if len(data) > 0 else None
 
 
-def get_cls_img_indices(labels, dataset):
+def get_cls_img_indices(labels: List[LabelEntity], dataset: DatasetEntity) -> Dict[str, List[int]]:
     """Function for getting image indices per class.
 
     Args:
         labels (List[LabelEntity]): List of labels
         dataset(DatasetEntity): dataset entity
     """
-    img_indices = {label.name: [] for label in labels}
+    img_indices: Dict[str, List[int]] = {label.name: [] for label in labels}
     for i, item in enumerate(dataset):
         item_labels = item.annotation_scene.get_labels()
         for i_l in item_labels:

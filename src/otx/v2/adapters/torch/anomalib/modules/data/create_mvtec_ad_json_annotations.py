@@ -264,7 +264,7 @@ def get_args() -> Namespace:
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """Create MVTec AD Annotations."""
     args = get_args()
     create_mvtec_ad_annotations(mvtec_data_path=args.data_path, mvtec_annotation_path=args.annotation_path)

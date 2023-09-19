@@ -7,6 +7,7 @@
 from typing import Any, Dict, Optional, Union
 
 import albumentations as A
+import yaml
 from anomalib.data.base.datamodule import collate_fn
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader as TorchDataLoader
@@ -57,7 +58,7 @@ class Dataset(BaseDataset):
             data_format=data_format,  # TODO: Is there a way to make it more flexible?
         )
 
-    def _initialize(self):
+    def _initialize(self) -> None:
         self.set_datumaro_adapters()
         self.initialize = True
 
@@ -92,9 +93,8 @@ class Dataset(BaseDataset):
     def build_dataloader(
         self,
         dataset: Optional[OTXAnomalyDataset],
-        batch_size: int = 1,
-        num_workers: int = 0,
-        num_gpus: int = 1,
+        batch_size: Optional[int] = 1,
+        num_workers: Optional[int] = 0,
         shuffle: bool = False,
         pin_memory: bool = False,
         drop_last: bool = False,
@@ -127,11 +127,10 @@ class Dataset(BaseDataset):
         self,
         subset: str,
         pipeline: Optional[Union[str, A.Compose]] = None,
-        batch_size: int = 1,
-        num_workers: int = 0,
+        batch_size: Optional[int] = 1,
+        num_workers: Optional[int] = 0,
         distributed: bool = False,
         config: Optional[Union[str, Dict[str, Any]]] = None,
-        num_gpus: int = 1,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
@@ -148,13 +147,23 @@ class Dataset(BaseDataset):
         )
         if subset == "predict":
             pass
-        dataset = self.build_dataset(subset=subset, pipeline=pipeline, config=config)
+        _config: Dict[str, Any] = {}
+        if isinstance(config, str):
+            _config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
+        elif config is not None:
+            _config = config
+
+        dataset = self.build_dataset(subset=subset, pipeline=pipeline, config=_config)
         # TODO: argument update with configuration (config is not None case) + Semi-SL Setting flow
+        if batch_size is None:
+            batch_size = _config.get("batch_size", 1)
+        if num_workers is None:
+            num_workers = _config.get("num_workers", 0)
+
         return self.build_dataloader(
             dataset=dataset,
             batch_size=batch_size,
             num_workers=num_workers,
-            num_gpus=num_gpus,
             shuffle=shuffle,
             pin_memory=pin_memory,
             drop_last=drop_last,

@@ -22,6 +22,7 @@ as it is and made some modifications & code cleaning.
 
 import inspect
 import os
+from typing import Callable, Dict, Tuple
 
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from torch import nn
@@ -34,7 +35,7 @@ from ..builder import TORCHVISION_BACKBONES
 # pylint: disable=protected-access, assignment-from-no-return, no-value-for-parameter, too-many-statements
 
 
-def get_torchvision_models():
+def get_torchvision_models() -> Tuple[Dict, Dict]:
     """Get torchvision backbones of current version."""
     torchvision_urls = {}
     torchvision_models = {}
@@ -165,11 +166,11 @@ def init_weights(self):
         self.load_state_dict(state_dict)
 
 
-def generate_torchvision_backbones():
+def generate_torchvision_backbones() -> None:
     """Regist Torchvision Backbone into mmX Registry (copy from mmdet)."""
     for model_name, model_builder in TORCHVISION_MODELS.items():
 
-        def closure(model_name, model_builder):
+        def closure(model_name: str, model_builder: Callable):
             """Get Model builder for mmcv (copy from mmdet)."""
 
             class TorchvisionModelWrapper(nn.Module):  # pylint: disable=abstract-method

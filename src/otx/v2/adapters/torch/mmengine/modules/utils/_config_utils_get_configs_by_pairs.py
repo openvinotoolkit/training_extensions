@@ -53,7 +53,9 @@ def get_configs_by_pairs(  # noqa: C901
     if not isinstance(pairs, list):
         pairs = [pairs]
 
-    def get_config(config, path=()):
+    def get_config(
+        config: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]], path: Tuple = ()
+    ) -> Dict[Tuple[Any, ...], Union[Any, Sequence[Any]]]:
         out = {}
         if isinstance(config, (Config, Mapping)):
             for pair in pairs:

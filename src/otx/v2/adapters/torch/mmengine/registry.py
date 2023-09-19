@@ -60,6 +60,6 @@ REGISTRY_LIST = [
 
 
 class MMEngineRegistry(BaseRegistry):
-    def __init__(self, name="mmengine"):
+    def __init__(self, name="mmengine") -> None:
         super().__init__(name)
         self._registry_dict = {registry.name: registry for registry in REGISTRY_LIST}

@@ -54,7 +54,7 @@ def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
     """
     graph = model.graph
 
-    def simplify_inputs():
+    def simplify_inputs() -> bool:
         connect = None
         for _input in graph.input:
             for i, node in enumerate(graph.node):
@@ -74,7 +74,7 @@ def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
         # the input just changed won't be an output
         return True
 
-    def simplify_outputs():
+    def simplify_outputs() -> bool:
         connect = None
         for output in graph.output:
             for i, node in enumerate(graph.node):

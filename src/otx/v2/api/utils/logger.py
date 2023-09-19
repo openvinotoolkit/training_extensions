@@ -142,7 +142,7 @@ for fn in _logging_methods:
     setattr(_logger, fn, local_master_only(getattr(_logger, fn)))
 
 
-def get_logger():
+def get_logger() -> logging.Logger:
     """Return logger."""
     # if dist.is_available() and dist.is_initialized():
     #     rank = dist.get_rank()

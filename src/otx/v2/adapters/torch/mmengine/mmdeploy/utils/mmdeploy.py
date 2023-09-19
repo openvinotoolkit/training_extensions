@@ -9,7 +9,7 @@ import platform
 import onnx
 
 
-def is_mmdeploy_enabled():
+def is_mmdeploy_enabled() -> bool:
     """Checks if the 'mmdeploy' Python module is installed and available for use.
 
     Returns:

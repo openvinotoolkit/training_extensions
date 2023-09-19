@@ -7,7 +7,7 @@ This MLP consists of fc (conv) - norm - relu - fc (conv).
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=missing-module-docstring
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from mmcv.cnn import build_norm_layer
@@ -35,7 +35,7 @@ class SelfSLMLP(nn.Module):
         in_channels: int,
         hid_channels: int,
         out_channels: int,
-        norm_cfg: Dict[str, Any] = None,
+        norm_cfg: Optional[Dict[str, Any]] = None,
         use_conv: bool = False,
         with_avg_pool: bool = True,
     ):

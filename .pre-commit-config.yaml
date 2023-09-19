@@ -5,11 +5,11 @@ default_language_version:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 23.3.0
     hooks:
       - id: black
         args: [--line-length, "120"]
-        files: '^(src|tests)/.*\.py'
+        files: '^(src/otx/v2)/.*\.py'
 
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
@@ -19,12 +19,12 @@ repos:
         exclude: "src/otx/recipes"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.1.1"
+    rev: "v1.5.1"
     hooks:
       - id: mypy
-        files: '^(src)/.*\.py'
-        additional_dependencies: [
-            # numpy==1.19.5,
+        files: '^(src/otx/v2)/.*\.py'
+        additional_dependencies:
+          [
             types-PyYAML,
             attrs==21.2.*,
             types-requests,
@@ -34,8 +34,8 @@ repos:
             types-python-dateutil,
             tokenize-rt==3.2.0,
           ]
-        args: [--no-strict-optional, --ignore-missing-imports]
-        exclude: "^src/otx/recipes"
+        args: [--disallow-untyped-calls]
+        exclude: "^src/otx/recipes|src/otx/v2/demo|src/otx/v2/pseudo_code|src/otx/algorithms|src/otx/v2/api/entities"
 
   - repo: https://github.com/AleksaC/hadolint-py
     rev: v2.10.0

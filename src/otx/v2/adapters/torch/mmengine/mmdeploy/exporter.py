@@ -29,7 +29,7 @@ class Exporter:
         checkpoint: Optional[str],
         deploy_config: Config,
         work_dir: str,
-        precision: str = "FLOAT32",
+        precision: Optional[str] = None,
         export_type: str = "OPENVINO",
         device: str = "cpu",
     ):
@@ -53,7 +53,9 @@ class Exporter:
         self.input_tensor, self.input_metas = self._get_inputs()
         self.work_dir = work_dir
         self.context_info = {"deploy_cfg": deploy_config}
-        if precision.upper() in ["FP16", "FLOAT16"]:
+        if precision is None:
+            precision = "FLOAT32"
+        elif precision.upper() in ["FP16", "FLOAT16"]:
             self.deploy_cfg.backend_config.mo_options["flags"] = ["--compress_to_fp16"]
         self.onnx_only = export_type.upper() == "ONNX"
 

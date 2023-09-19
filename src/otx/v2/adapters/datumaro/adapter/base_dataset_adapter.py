@@ -175,7 +175,9 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 self._filter_unlabeled_data(dataset[Subset.UNLABELED], unlabeled_file_list)
         return dataset
 
-    def _import_dataset(self, data_roots: str, ann_files: str, encryption_key: Optional[str], mode: Subset):
+    def _import_dataset(
+        self, data_roots: Optional[str], ann_files: Optional[str], encryption_key: Optional[str], mode: Subset
+    ):
         # Find self.data_type and task_type
         mode_to_str = {Subset.TRAINING: "train", Subset.VALIDATION: "val", Subset.TESTING: "test"}
         str_mode = mode_to_str[mode]
@@ -233,7 +235,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         raise ValueError("Can't find proper dataset.")
 
-    def _detect_dataset_format(self, path: str) -> str:
+    def _detect_dataset_format(self, path: Optional[str]) -> str:
         """Detect dataset format (ImageNet, COCO, ...)."""
         return datumaro.Environment().detect_dataset(path=path)
 

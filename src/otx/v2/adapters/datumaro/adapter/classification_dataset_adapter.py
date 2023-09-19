@@ -5,7 +5,7 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member
-from typing import List, Union
+from typing import Any, Dict, List, Union
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import LabelCategories as DatumLabelCategories
@@ -31,7 +31,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
     for multi-class, multi-label, and hierarchical-label classification tasks
     """
 
-    def _get_dataset_items(self, fake_ann=False):
+    def _get_dataset_items(self, fake_ann: bool = False) -> List[DatasetItemEntityWithID]:
         # Set the DatasetItemEntityWithID
         dataset_items: List[DatasetItemEntityWithID] = []
         for subset, subset_data in self.dataset.items():
@@ -149,7 +149,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
             return DatasetEntity(items=dataset_items)
         return super().get_otx_dataset()
 
-    def _prepare_fake_label_information(self):
+    def _prepare_fake_label_information(self) -> Dict[str, Any]:
         label_categories_list = DatumLabelCategories.from_iterable(["fake_label"])
         category_items = label_categories_list.items
         label_groups = label_categories_list.label_groups

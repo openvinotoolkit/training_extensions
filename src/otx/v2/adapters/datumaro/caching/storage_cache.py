@@ -7,7 +7,8 @@ import hashlib
 import os
 import shutil
 import stat
-from typing import List, Optional
+from pathlib import Path
+from typing import List, Optional, Union
 
 from datumaro.components.dataset import Dataset as DatumDataset
 from datumaro.components.progress_reporting import SimpleProgressReporter
@@ -34,7 +35,7 @@ def arrow_cache_helper(
         force: If true, rebuild arrow even if cache is hit.
     """
 
-    def get_hash(dataset, scheme):
+    def get_hash(dataset: DatumDataset, scheme: str) -> str:
         source_path = dataset.data_path
         _hash = hashlib.sha256()
         _hash.update(f"{source_path}".encode("utf-8"))
@@ -52,7 +53,7 @@ def arrow_cache_helper(
                         _hash.update(str(os.stat(_dir)[stat.ST_MTIME]).encode("utf-8"))
         return _hash.hexdigest()
 
-    def get_file_hash(file):
+    def get_file_hash(file: Union[str, Path]):
         _hash = hashlib.sha256()
         _hash.update(str(file).encode("utf-8"))
         _hash.update(str(os.stat(file)[stat.ST_MTIME]).encode("utf-8"))

@@ -11,9 +11,9 @@ class Registry:
 
     REGISTERED_NAME_ATTR = "_registered_name"
 
-    def __init__(self, name, add_name_as_attr=False):
+    def __init__(self, name: str, add_name_as_attr: bool = False) -> None:
         self._name = name
-        self._registry_dict = {}
+        self._registry_dict: Dict[str, Any] = {}
         self._add_name_as_attr = add_name_as_attr
 
     @property

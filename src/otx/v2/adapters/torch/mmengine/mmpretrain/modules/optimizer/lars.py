@@ -5,7 +5,7 @@
 
 import torch
 from mmengine.registry import OPTIMIZERS
-from torch.optim.optimizer import Optimizer, required
+from torch.optim.optimizer import Optimizer
 
 
 @OPTIMIZERS.register_module()
@@ -38,7 +38,7 @@ class LARS(Optimizer):
     def __init__(
         self,
         params,
-        lr=required,
+        lr,
         momentum=0,
         dampening=0,
         weight_decay=0,
@@ -47,7 +47,7 @@ class LARS(Optimizer):
         mode=None,
         exclude_bn_from_weight_decay=False,
     ):  # pylint: disable=too-many-arguments, too-many-locals
-        if lr is not required and lr < 0.0:
+        if lr < 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
         if momentum < 0.0:
             raise ValueError(f"Invalid momentum value: {momentum}")

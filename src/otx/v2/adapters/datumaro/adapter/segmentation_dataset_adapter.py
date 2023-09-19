@@ -95,12 +95,12 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)
 
-    def set_voc_labels(self):
+    def set_voc_labels(self) -> None:
         """Set labels for common_semantic_segmentation dataset."""
         # Remove background & ignored label in VOC from datumaro
         self._remove_labels(["background", "ignored"])
 
-    def set_common_labels(self):
+    def set_common_labels(self) -> None:
         """Set labels for common_semantic_segmentation dataset."""
         # Remove background if in label_entities
         is_removed = self._remove_labels(["background"])
@@ -143,7 +143,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         encryption_key: Optional[str] = None,
-        pseudo_mask_dir: Path = None,
+        pseudo_mask_dir: Optional[Path] = None,
     ) -> Dict[Subset, DatumDataset]:
         """Import custom Self-SL dataset for using DetCon.
 

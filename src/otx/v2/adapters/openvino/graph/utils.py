@@ -157,9 +157,8 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
         graph.add_edge(running_variance, batchnorm)
 
 
-def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = None):
+def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["Convolution", "GroupConvolution"]):
     """Handle function paired batchnorm."""
-    types = types if types else ["Convolution", "GroupConvolution"]
     batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
     constant_cls = OPS.get_by_type_version("Constant", 0)
 

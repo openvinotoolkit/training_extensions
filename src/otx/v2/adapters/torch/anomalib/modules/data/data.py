@@ -191,7 +191,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         if stage == "predict":
             self.predict_otx_dataset = self.dataset
 
-    def summary(self):
+    def summary(self) -> None:
         """Print size of the dataset, number of anomalous images and number of normal images."""
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
             dataset = self.dataset.get_subset(subset)

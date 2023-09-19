@@ -17,7 +17,7 @@
 import importlib
 import inspect
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Callable, Dict, List, Tuple
 
 
 def get_impl_class(impl_path: str) -> object:
@@ -38,7 +38,7 @@ def get_impl_class(impl_path: str) -> object:
         raise e
 
 
-def get_non_default_args(func):
+def get_non_default_args(func: Callable) -> List[Tuple[str, Any]]:
     signature = inspect.signature(func)
     non_default_args = []
 
@@ -49,18 +49,18 @@ def get_non_default_args(func):
     return non_default_args
 
 
-def get_all_args(func):
+def get_all_args(func: Callable) -> List[str]:
     signature = inspect.signature(func)
-    return signature.parameters.keys()
+    return list(signature.parameters.keys())
 
 
-def get_otx_root_path() -> Optional[str]:
+def get_otx_root_path() -> str:
     """Get otx root path from importing otx."""
     otx_module = importlib.import_module("otx")
     if otx_module:
         file_path = inspect.getfile(otx_module)
         return str(Path(file_path).parent)
-    return None
+    raise ModuleNotFoundError("Cannot found otx.")
 
 
 def get_files_dict(folder_path) -> Dict[str, str]:

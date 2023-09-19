@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import List, Optional
+
 import torch
 from mmpretrain.models.builder import HEADS, build_loss
 from torch import nn
@@ -38,7 +40,7 @@ def generate_aux_mlp(aux_mlp_cfg: dict, in_channels: int):
 class EMAMeter:
     """Exponential Moving Average Meter class."""
 
-    def __init__(self, alpha=0.9):
+    def __init__(self, alpha: float = 0.9) -> None:
         """Initialize the Exponential Moving Average Meter.
 
         Args:
@@ -63,7 +65,7 @@ class EMAMeter:
 class LossBalancer:
     """Loss Balancer class."""
 
-    def __init__(self, num_losses, weights=None, ema_weight=0.7) -> None:
+    def __init__(self, num_losses: int, weights: Optional[List[float]] = None, ema_weight=0.7) -> None:
         """Initialize the Loss Balancer.
 
         Args:

@@ -34,7 +34,7 @@ from otx.v2.api.utils.type_utils import str_to_subset_type
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_default_pipeline(semisl=False):
+def get_default_pipeline(semisl: bool = False) -> Union[Dict, List]:
     # TODO: This is function for experiment // Need to remove this function
     try:
         import mmpretrain
@@ -116,12 +116,12 @@ class Dataset(BaseDataset):
             data_format,
         )
 
-    def _initialize(self):
+    def _initialize(self) -> None:
         self.set_datumaro_adapters()  # Set self.dataset_entity & self.label_schema
         self.base_dataset = self._get_sub_task_dataset()
         self.initialize = True
 
-    def _get_sub_task_dataset(self):
+    def _get_sub_task_dataset(self) -> TorchDataset:
         if self.train_type == TrainType.Selfsupervised:
             return SelfSLDataset
         len_group = len(self.label_schema.get_groups(False))
@@ -135,7 +135,7 @@ class Dataset(BaseDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: Optional[List[Union[Dict, Any]]] = None,
+        pipeline: Optional[Union[List[Union[Dict, Any]], Dict]] = None,
         config: Optional[Union[str, Dict[str, Any], Config]] = None,
     ) -> Optional[TorchDataset]:
         if not self.initialize:
@@ -150,14 +150,14 @@ class Dataset(BaseDataset):
             return None
         # Case without config
         if config is None:
-            pipeline = pipeline if pipeline is not None else get_default_pipeline()
-            dataset = self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=pipeline)
+            _pipeline = pipeline if pipeline is not None else get_default_pipeline()
+            dataset = self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=_pipeline)
             dataset._build_config = {
                 "type": str(self.base_dataset.__qualname__),
                 "data_root": getattr(self, f"{subset}_data_roots"),
                 "ann_file": getattr(self, f"{subset}_ann_files"),
                 "data_prefix": "",
-                "pipeline": pipeline,
+                "pipeline": _pipeline,
             }
             return dataset
 
@@ -326,8 +326,11 @@ class Dataset(BaseDataset):
         )
         if subset == "train" and self.train_type == TrainType.Semisupervised:
             unlabeled_pipeline = None
-            if pipeline is not None and isinstance(pipeline, dict):
-                unlabeled_pipeline = pipeline.get("unlabeled", get_default_pipeline(semisl=True)["unlabeled"])
+            if isinstance(pipeline, dict):
+                default_pipeline = get_default_pipeline(semisl=True)
+                if isinstance(default_pipeline, dict):
+                    default_pipeline = default_pipeline.get("unlabeled", None)
+                unlabeled_pipeline = pipeline.get("unlabeled", default_pipeline)
             unlabeled_dataset = self.build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=_config)
             unlabeled_dataloader = self.build_dataloader(
                 dataset=unlabeled_dataset,

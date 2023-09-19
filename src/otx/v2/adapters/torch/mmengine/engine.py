@@ -309,20 +309,6 @@ class MMXEngine(Engine):
         Returns:
             _type_: Output of training.
         """
-        super().train(
-            model,
-            train_dataloader,
-            val_dataloader,
-            optimizer,
-            checkpoint,
-            max_iters,
-            max_epochs,
-            distributed,
-            seed,
-            deterministic,
-            precision,
-            val_interval,
-        )
         train_args = {
             "model": model,
             "train_dataloader": train_dataloader,
@@ -475,15 +461,10 @@ class MMXEngine(Engine):
         model: Optional[Union[torch.nn.Module, Dict, str]] = None,
         img: Optional[Union[str, np.ndarray, list]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[List[Dict]] = None,
+        pipeline: Optional[Union[Dict, List]] = None,
         **kwargs,
     ):
-        super().predict(
-            model,
-            img,
-            checkpoint,
-            pipeline,
-        )
+        raise NotImplementedError(f"{self}.predict is not implemented.")
 
     def export(
         self,
@@ -491,7 +472,7 @@ class MMXEngine(Engine):
             Union[torch.nn.Module, str, Config]
         ] = None,  # Module with _config OR Model Config OR config-file
         checkpoint: Optional[Union[str, Path]] = None,
-        precision: str = "float32",  # ["float16", "fp16", "float32", "fp32"]
+        precision: Optional[str] = "float32",  # ["float16", "fp16", "float32", "fp32"]
         task: Optional[str] = None,
         codebase: Optional[str] = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"

@@ -14,9 +14,8 @@ from otx.v2.api.core.registry import BaseRegistry
 
 class Engine:
     def __init__(self, work_dir: Optional[Union[str, Path]]) -> None:
-        self.work_dir = work_dir
         if work_dir is not None:
-            self.work_dir = Path(work_dir).resolve()
+            self.work_dir: Path = Path(work_dir).resolve()
             self.work_dir.mkdir(exist_ok=True, parents=True)
         self.registry = BaseRegistry(name="base")
         self.timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -124,7 +123,7 @@ class Engine:
         model,
         img,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[List[Dict]] = None,
+        pipeline: Optional[Union[Dict, List]] = None,
         **kwargs,
     ) -> List[Dict]:
         r"""OTX Engine predict function.

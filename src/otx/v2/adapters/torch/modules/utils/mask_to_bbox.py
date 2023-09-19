@@ -22,7 +22,7 @@ import numpy as np
 from skimage.measure import find_contours, label, regionprops
 
 
-def mask_to_border(mask):
+def mask_to_border(mask: np.ndarray) -> np.ndarray:
     """Make a border by using a binary mask.
 
     Args:
@@ -44,7 +44,7 @@ def mask_to_border(mask):
     return border
 
 
-def mask2bbox(mask) -> List[List[int]]:
+def mask2bbox(mask: np.ndarray) -> List[List[int]]:
     """Mask to bounding boxes.
 
     Args:

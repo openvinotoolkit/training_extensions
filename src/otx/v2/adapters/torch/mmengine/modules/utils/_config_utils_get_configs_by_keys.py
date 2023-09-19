@@ -52,7 +52,9 @@ def get_configs_by_keys(  # noqa: C901
     if not isinstance(keys, list):
         keys = [keys]
 
-    def get_config(config, path=()):
+    def get_config(
+        config: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]], path: Tuple = ()
+    ) -> Dict[Tuple[Any, ...], Union[Any, Sequence[Any]]]:
         if path and path[-1] in keys:
             return {path: config}
 

@@ -4,7 +4,7 @@
 #
 
 import random
-from typing import Union
+from typing import Dict, List, Union
 
 from numpy import ndarray as CvImage
 from PIL import Image, ImageEnhance, ImageOps
@@ -22,8 +22,8 @@ class Augments:  # pylint: disable=unused-argument
     """Augments class that implements various augmentations via plain PIL."""
 
     @staticmethod
-    def _check_args_tf(kwargs):
-        def _interpolation(kwargs):
+    def _check_args_tf(kwargs) -> Dict:
+        def _interpolation(kwargs) -> Resampling:
             interpolation = kwargs.pop("resample", Resampling.BILINEAR)
             if isinstance(interpolation, (list, tuple)):
                 # disable B311 random - used for the random sampling not for security/crypto

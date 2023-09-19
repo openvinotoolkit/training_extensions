@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from otx.v2.adapters.openvino.registry import Registry
 
@@ -11,9 +11,9 @@ from otx.v2.adapters.openvino.registry import Registry
 class OperationRegistry(Registry):
     """OperationRegistry class."""
 
-    def __init__(self, name, add_name_as_attr=False):
+    def __init__(self, name: str, add_name_as_attr: bool = False) -> None:
         super().__init__(name, add_name_as_attr)
-        self._registry_dict_by_type = {}
+        self._registry_dict_by_type: Dict[str, Any] = {}
 
     def register(self, name: Optional[Any] = None):
         """Register function from name."""
@@ -45,7 +45,7 @@ class OperationRegistry(Registry):
         """Get obj from name."""
         return self.get(name)
 
-    def get_by_type_version(self, types, version):
+    def get_by_type_version(self, types: str, version: int) -> Any:
         """Get obj from type and version."""
         if types not in self._registry_dict_by_type:
             raise KeyError(f"type {types} is not registered in {self._name}")

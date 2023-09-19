@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import List, Optional
+
+from torch.utils.data import DataLoader
+
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
@@ -40,7 +44,7 @@ class ComposedDL:
     class DummySampler:
         """Dummy sampler class to relay set_epoch() call to the list of data loaders in the CDL."""
 
-        def __init__(self, cdl):
+        def __init__(self, cdl) -> None:
             self.cdl = cdl
 
         def set_epoch(self, epoch):
@@ -49,7 +53,7 @@ class ComposedDL:
             for loader in loaders:
                 loader.sampler.set_epoch(epoch)
 
-    def __init__(self, loaders=None):
+    def __init__(self, loaders: Optional[List[DataLoader]] = None) -> None:
         if loaders is None:
             loaders = []
         self.loaders = loaders

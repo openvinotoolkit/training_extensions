@@ -30,11 +30,11 @@ model_list = [
 
 
 class AnomalibRegistry(BaseRegistry):
-    def __init__(self, name="anomalib"):
+    def __init__(self, name="anomalib") -> None:
         super().__init__(name)
         self._initialize()
 
-    def _initialize(self):
+    def _initialize(self) -> None:
         for model_name in model_list:
             module = import_module(f"anomalib.models.{model_name}")
             model = getattr(module, f"{_snake_to_pascal_case(model_name)}Lightning")

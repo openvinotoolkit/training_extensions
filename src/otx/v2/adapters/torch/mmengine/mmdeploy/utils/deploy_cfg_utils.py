@@ -1,6 +1,13 @@
-from typing import List, Tuple
+"""OTX adapters.torch.mmengine.mmdeploy.utils deploy config util functions."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+from typing import List, Optional, Tuple
 
 from mmengine.config import ConfigDict
+
+from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 
 
 def patch_input_preprocessing(
@@ -44,7 +51,8 @@ def patch_input_preprocessing(
     deploy_cfg.backend_config.mo_options = mo_options
 
 
-def patch_input_shape(deploy_cfg, input_shape: Tuple[int, int]):
+def patch_input_shape(deploy_cfg: Config, input_shape: Optional[Tuple[int, int]]) -> None:
+    assert input_shape is not None
     assert all(isinstance(i, int) and i > 0 for i in input_shape)
     # default is static shape to prevent an unexpected error
     # when converting to OpenVINO IR

@@ -63,32 +63,6 @@ REGISTRY_LIST = [
 
 
 class MMPretrainRegistry(MMEngineRegistry):
-    def __init__(self, name="mmpretrain"):
+    def __init__(self, name="mmpretrain") -> None:
         super().__init__(name)
         self._registry_dict = {registry.name: registry for registry in REGISTRY_LIST}
-
-
-if __name__ == "__main__":
-    registry = MMPretrainRegistry()
-
-    from torch import nn
-
-    class NewEncoder(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.l1 = nn.Sequential(nn.Linear(28 * 28, 64), nn.ReLU(), nn.Linear(64, 3))
-
-        def forward(self, x):
-            return self.l1(x)
-
-    class NewDecoder(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.l1 = nn.Sequential(nn.Linear(3, 64), nn.ReLU(), nn.Linear(64, 28 * 28))
-
-        def forward(self, x):
-            return self.l1(x)
-
-    registry.register_module(type="model", name="A", module=NewEncoder)
-    result_module = registry.get("A")
-    print(registry)

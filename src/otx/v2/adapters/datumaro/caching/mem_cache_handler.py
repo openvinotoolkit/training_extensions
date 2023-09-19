@@ -110,11 +110,11 @@ class MemCacheHandlerBase:
             f"store {len(self)} items."
         )
 
-    def freeze(self):
+    def freeze(self) -> None:
         """If frozen, it is impossible to store a new item anymore."""
         self._freeze.value = True
 
-    def unfreeze(self):
+    def unfreeze(self) -> None:
         """If unfrozen, it is possible to store a new item."""
         self._freeze.value = False
 

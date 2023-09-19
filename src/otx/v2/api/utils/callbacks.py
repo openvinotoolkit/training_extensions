@@ -17,7 +17,7 @@ import logging
 import math
 import time
 from copy import deepcopy
-from typing import List
+from typing import Any, List, Union
 
 import dill
 
@@ -125,7 +125,7 @@ class TimeMonitorCallback(Callback):
         epoch_history: int = 5,
         step_history: int = 50,
         update_progress_callback: UpdateProgressCallback = default_progress_callback,
-    ):
+    ) -> None:
         self.total_epochs = num_epoch
         self.train_steps = num_train_steps
         self.val_steps = num_val_steps
@@ -138,13 +138,13 @@ class TimeMonitorCallback(Callback):
         # Step time calculation
         self.start_step_time = time.time()
         self.past_step_duration: List[float] = []
-        self.average_step = 0
+        self.average_step: Union[int, float] = 0
         self.step_history = step_history
 
         # epoch time calculation
         self.start_epoch_time = time.time()
         self.past_epoch_duration: List[float] = []
-        self.average_epoch = 0
+        self.average_epoch: Union[int, float] = 0
         self.epoch_history = epoch_history
 
         # whether model is training flag
@@ -178,12 +178,12 @@ class TimeMonitorCallback(Callback):
         memo[id(self)] = result
         return result
 
-    def on_train_batch_begin(self, batch, logs=None):
+    def on_train_batch_begin(self, batch, logs=None) -> None:
         """Set the value of current step and start the timer."""
         self.current_step += 1
         self.start_step_time = time.time()
 
-    def on_train_batch_end(self, batch, logs=None):
+    def on_train_batch_end(self, batch, logs=None) -> None:
         """Compute average time taken to complete a step."""
         self.__calculate_average_step()
 
@@ -206,49 +206,49 @@ class TimeMonitorCallback(Callback):
                 return True
         return False
 
-    def __calculate_average_step(self):
+    def __calculate_average_step(self) -> None:
         """Compute average duration taken to complete a step."""
         self.past_step_duration.append(time.time() - self.start_step_time)
         if len(self.past_step_duration) > self.step_history:
             self.past_step_duration.remove(self.past_step_duration[0])
         self.average_step = sum(self.past_step_duration) / len(self.past_step_duration)
 
-    def on_test_batch_begin(self, batch, logs):
+    def on_test_batch_begin(self, batch, logs) -> None:
         """Set the number of current epoch and start the timer."""
         self.current_step += 1
         self.start_step_time = time.time()
 
-    def on_test_batch_end(self, batch, logs):
+    def on_test_batch_end(self, batch, logs) -> None:
         """Compute average time taken to complete a step based on a running average of `step_history` steps."""
         self.__calculate_average_step()
 
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self, logs: Any = None) -> Any:
         """Sets training to true."""
         self.is_training = True
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self, logs: Any = None) -> Any:
         """Handles early stopping when the total_steps is greater than the current_step."""
         # To handle cases where early stopping stops the task the progress will still be accurate
         self.current_step = self.total_steps - self.test_steps
         self.current_epoch = self.total_epochs
         self.is_training = False
 
-    def on_epoch_begin(self, epoch, logs=None):
+    def on_epoch_begin(self, epoch, logs=None) -> None:
         """Set the number of current epoch and start the timer."""
         self.current_epoch = epoch + 1
         self.start_epoch_time = time.time()
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs=None) -> None:
         """Computes the average time taken to complete an epoch based on a running average of `epoch_history` epochs."""
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
         self.update_progress_callback(self.get_progress())
 
-    def _calculate_average_epoch(self):
+    def _calculate_average_epoch(self) -> None:
         if len(self.past_epoch_duration) > self.epoch_history:
             del self.past_epoch_duration[0]
         self.average_epoch = sum(self.past_epoch_duration) / len(self.past_epoch_duration)
 
-    def get_progress(self):
+    def get_progress(self) -> float:
         """Returns current progress as a percentage."""
         return (self.current_step / self.total_steps) * 100

@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
@@ -98,7 +98,7 @@ class BaseRecordingForwardHook(ABC):
         for tensor in tensors_np:
             self._records.append(tensor)
 
-    def _torch_to_numpy_from_list(self, tensor_list: List[Optional[torch.Tensor]]):
+    def _torch_to_numpy_from_list(self, tensor_list: List[Any]):
         for i in range(len(tensor_list)):
             if isinstance(tensor_list[i], list):
                 self._torch_to_numpy_from_list(tensor_list[i])

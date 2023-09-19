@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from functools import partial
+from typing import Dict
 
+import torch
 from mmpretrain.models.classifiers.image import ImageClassifier
 from mmpretrain.registry import MODELS
 
@@ -20,7 +22,7 @@ logger = get_logger()
 class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
     """SAM-enabled ImageClassifier."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.multilabel = kwargs.pop("multilabel", False)
         self.hierarchical = kwargs.pop("hierarchical", False)
         task_adapt = kwargs.pop("task_adapt", None)
@@ -39,7 +41,7 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
                 )
             )
 
-    def forward_train(self, img, gt_label, **kwargs):
+    def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> Dict[str, torch.Tensor]:
         """Forward computation during training.
 
         Args:

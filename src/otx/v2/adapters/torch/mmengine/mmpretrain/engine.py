@@ -32,14 +32,13 @@ class MMPTEngine(MMXEngine):
         self,
         model: Optional[Union[torch.nn.Module, Dict, str]] = None,
         img: Optional[Union[str, np.ndarray, list]] = None,
-        checkpoint: Union[bool, str, Path] = True,
-        pipeline: Optional[List[Dict]] = None,
+        checkpoint: Optional[Union[str, Path]] = None,
+        pipeline: Optional[Union[Dict, List]] = None,
         device: Union[str, torch.device, None] = None,
         task: Optional[str] = None,
         batch_size: int = 1,
         **kwargs,
     ) -> List[Dict]:
-        super().predict(model, img, checkpoint if isinstance(checkpoint, (str, Path)) else None, pipeline)
         from mmengine.model import BaseModel
         from mmpretrain import ImageClassificationInferencer, inference_model
 
@@ -51,7 +50,7 @@ class MMPTEngine(MMXEngine):
             pipeline = get_default_pipeline()
         config = Config({})
         if hasattr(model, "_config"):
-            config = model._config
+            config = getattr(model, "_config")
         elif isinstance(model, dict) and "_config" in model:
             config = model["_config"]
         config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}
@@ -93,9 +92,9 @@ class MMPTEngine(MMXEngine):
         self,
         model: Optional[Union[torch.nn.Module, str, Config]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        precision: str = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: str = "Classification",
-        codebase: str = "mmpretrain",
+        precision: Optional[str] = "float32",  # ["float16", "fp16", "float32", "fp32"]
+        task: Optional[str] = "Classification",
+        codebase: Optional[str] = "mmpretrain",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: Optional[str] = None,  # File path only?
         dump_features: bool = False,  # TODO
