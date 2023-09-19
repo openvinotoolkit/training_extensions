@@ -6,8 +6,12 @@ from typing import List, Optional
 import os
 
 import cv2
-import datumaro as dm
 import numpy as np
+from datumaro.components.annotation import Label, Bbox, Mask
+from datumaro.components.dataset import Dataset
+from datumaro.components.dataset_base import DatasetItem
+from datumaro.components.media import ImageFromFile, ImageFromNumpy
+
 
 from otx.api.entities.model_template import TaskType
 
@@ -107,7 +111,7 @@ def generate_datumaro_dataset_item(
     image_shape: np.array = np.array((5, 5, 3)),
     mask_shape: np.array = np.array((5, 5)),
     temp_dir: Optional[str] = None,
-) -> dm.DatasetItem:
+) -> DatasetItem:
     """Generate Datumaro DatasetItem.
 
     Args:
@@ -119,20 +123,22 @@ def generate_datumaro_dataset_item(
         temp_dir (str): directory to save image data
 
     Returns:
-        dm.DatasetItem: Datumaro DatasetItem
+        DatasetItem: Datumaro DatasetItem
     """
     ann_task_dict = {
-        "classification": dm.Label(label=0),
-        "detection": dm.Bbox(1, 2, 3, 4, label=0),
-        "segmentation": dm.Mask(np.zeros(mask_shape)),
+        "classification": Label(label=0),
+        "detection": Bbox(1, 2, 3, 4, label=0),
+        "segmentation": Mask(np.zeros(mask_shape)),
     }
 
     if temp_dir:
         path = os.path.join(temp_dir, "image.png")
         cv2.imwrite(path, np.ones(image_shape))
-        return dm.DatasetItem(id=item_id, subset=subset, image=path, annotations=[ann_task_dict[task]])
+        return DatasetItem(id=item_id, subset=subset, media=ImageFromFile(path), annotations=[ann_task_dict[task]])
 
-    return dm.DatasetItem(id=item_id, subset=subset, image=np.ones(image_shape), annotations=[ann_task_dict[task]])
+    return DatasetItem(
+        id=item_id, subset=subset, media=ImageFromNumpy(np.ones(image_shape)), annotations=[ann_task_dict[task]]
+    )
 
 
 def generate_datumaro_dataset(
@@ -141,7 +147,7 @@ def generate_datumaro_dataset(
     num_data: int = 1,
     image_shape: np.array = np.array((5, 5, 3)),
     mask_shape: np.array = np.array((5, 5)),
-) -> dm.Dataset:
+) -> Dataset:
     """Generate Datumaro Dataset.
 
     Args:
@@ -154,7 +160,7 @@ def generate_datumaro_dataset(
     Returns:
         dm.Dataset: Datumaro Dataset
     """
-    dataset_items: dm.DatasetItem = []
+    dataset_items: DatasetItem = []
     for subset in subsets:
         for idx in range(num_data):
             dataset_items.append(
@@ -166,4 +172,4 @@ def generate_datumaro_dataset(
                     mask_shape=mask_shape,
                 )
             )
-    return dm.Dataset.from_iterable(dataset_items, categories=["cat", "dog"])
+    return Dataset.from_iterable(dataset_items, categories=["cat", "dog"])
