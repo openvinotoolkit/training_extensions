@@ -163,7 +163,7 @@ class ExperimentResult:
                 cpu_util_name = cpu_util_name.group(0)
                 setattr(self, cpu_util_name, val)
             elif key == "train_e2e_time":
-                time_delta = datetime.strptime("%H:%M:%S.%f", val) - datetime.datetime(1900, 1, 1)
+                time_delta = datetime.strptime(val, "%H:%M:%S.%f") - datetime(1900, 1, 1)
                 setattr(self, key, time_delta)
             else:
                 setattr(self, key, val)
@@ -229,7 +229,7 @@ class BaseExpParser(ABC):
             if save_val_score:
                 val_score = val_score_pattern.search(line)
                 if val_score is not None:
-                    self._exp_result.val_score = val_score.group(1)
+                    self._exp_result.val_score = float(val_score.group(1))
 
             e2e_time = e2e_time_pattern.search(line)
             if e2e_time is not None:
@@ -343,7 +343,7 @@ def draw_rich_table(header: List[str], rows: List[Dict[str, Any]], table_title: 
     for each_exp_result_summary in rows:
         table_row = []
         for field in header:
-            val = each_exp_result_summary["result"][field]
+            val = each_exp_result_summary[field]
             table_row.append(str(val))
 
         table.add_row(*table_row)
@@ -368,10 +368,12 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
         with exp_result_file.open("r") as f:
             exp_yaml_result: Dict[str, Dict] = yaml.safe_load(f)
 
-        all_exp_result.append(exp_yaml_result["meta"] + exp_yaml_result["exp_result"])
+        each_exp_result = copy(exp_yaml_result["meta"])
+        each_exp_result.update(exp_yaml_result["exp_result"])
+        all_exp_result.append(each_exp_result)
 
         if meta_header is None:
-            meta_header = exp_yaml_result["meta"]
+            meta_header = list(exp_yaml_result["meta"].keys())
 
         metric_header = metric_header | set(exp_yaml_result["exp_result"].keys())
 
@@ -396,16 +398,17 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
 
     write_csv(exp_dir / "all_exp_result.csv", headers, all_exp_result)
 
-    headers.remove("seed")
+    headers.remove("repeat")
 
     rows = []
     for val in exp_result_aggregation.values():
         exp_result = val["result"] / val["num"]
-        rows.append(val["meta"] + exp_result.get_formatted_result())
+        each_exp_result = copy(val["meta"])
+        each_exp_result.update(exp_result.get_formatted_result())
+        rows.append(each_exp_result)
     write_csv(exp_dir / "exp_summary.csv", headers, rows)
 
     draw_rich_table(headers, rows, "Experiment Summary")
-
 
 
 def perv_aggregate_all_exp_result(exp_dir: Union[str, Path]):
