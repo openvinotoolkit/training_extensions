@@ -208,13 +208,6 @@ class IncrClassificationConfigurer(IncrConfigurerMixin, ClassificationConfigurer
             sampler_type = "cls_incr"
         return sampler_type
 
-    def use_adaptive_repeat(self, cfg) -> bool:
-        """Return whether using adaptive repeat.
-
-        Currently, only multi class classification supports adaptive repeat.
-        """
-        return self._is_multiclass(cfg)
-
     @staticmethod
     def _is_multiclass(cfg) -> bool:
         return not cfg.model.get("multilabel", False) and not cfg.model.get("hierarchical", False)

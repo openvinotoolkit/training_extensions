@@ -23,5 +23,8 @@ task_adapt:
   type: "default_task_adapt"
   op: "REPLACE"
 
-custom_hooks:
-  - type: ModelEmaV2Hook
+custom_hooks: [
+  {
+    type: ModelEmaV2Hook
+  }
+]

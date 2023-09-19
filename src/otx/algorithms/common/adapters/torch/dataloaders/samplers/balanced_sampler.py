@@ -4,6 +4,7 @@
 #
 
 import math
+from typing import Union
 
 import numpy as np
 from torch.utils.data import Dataset
@@ -37,7 +38,7 @@ class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attribut
             tail of the data to make it evenly divisible across the number of
             replicas. If ``False``, the sampler will add extra indices to make
             the data evenly divisible across the replicas. Default: ``False``.
-        use_adaptive_repeats (bool, optional): Flag about using adaptive repeats
+        n_repeats (Union[float, int, str], optional) : number of iterations for manual setting
     """
 
     def __init__(
@@ -48,14 +49,14 @@ class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attribut
         num_replicas: int = 1,
         rank: int = 0,
         drop_last: bool = False,
-        use_adaptive_repeats: bool = False,
+        n_repeats: Union[float, int, str] = "auto",
     ):
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
 
-        super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
+        super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
 
         self.img_indices = self.dataset.img_indices  # type: ignore[attr-defined]
         self.num_cls = len(self.img_indices.keys())

@@ -16,6 +16,7 @@
 
 import copy
 import glob
+import math
 import multiprocessing
 import os
 import os.path as osp
@@ -887,3 +888,25 @@ def get_configured_input_size(
 
     parsed_tocken = re.match("(\\d+)x(\\d+)", input_size)
     return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))
+
+
+def get_proper_repeat_times(
+    n_data: int,
+    batch_size: int,
+    coef: float,
+    min_repeat: float,
+) -> float:
+    """Get proper repeat times for adaptive training.
+
+    Args:
+        n_data (int): The total number of the training dataset
+        batch_size (int): The batch size for the training data loader
+        coef (float, optional) : coefficient that effects to number of repeats
+                       (coef * math.sqrt(num_iters-1)) +5
+        min_repeat (float, optional) : minimum repeats
+    """
+    if n_data == 0 or batch_size == 0:
+        logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
+        return 1
+    n_iters_per_epoch = math.ceil(n_data / batch_size)
+    return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))

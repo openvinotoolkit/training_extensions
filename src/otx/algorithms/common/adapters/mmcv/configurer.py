@@ -16,6 +16,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_adaptive_interval_training,
     patch_early_stopping,
     patch_persistent_workers,
+    remove_from_configs_by_type,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     patch_color_conversion,
@@ -195,7 +196,6 @@ class BaseConfigurer:
 
         samples_per_gpu can be changed if it is larger than length of datset
         """
-
         for subset in subsets:
             if cfg.data.get(subset, None):
                 dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
@@ -409,6 +409,14 @@ class BaseConfigurer:
         cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self.learning_curves})
         if hasattr(cfg, "algo_backend"):
             self._update_caching_modules(cfg)
+
+        # Update adaptive repeat
+        if not self.training:
+            remove_from_configs_by_type(cfg.custom_hooks, "AdaptiveRepeatDataHook")
+        for custom_hook in cfg.custom_hooks:
+            if custom_hook["type"] == "AdaptiveRepeatDataHook":
+                custom_hook["train_batch_size"] = cfg.data.train_dataloader.get("samples_per_gpu")
+                custom_hook["n_train_data"] = len(cfg.data.train.get("otx_dataset"))
 
     @staticmethod
     def _update_caching_modules(cfg: Config) -> None:
