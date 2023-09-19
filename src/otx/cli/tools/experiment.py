@@ -22,11 +22,9 @@ import os
 import sys
 import json
 import statistics
-import shutil
 import yaml
 import dataclasses
 from abc import ABC, abstractmethod
-from math import sqrt
 from copy import copy, deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -93,7 +91,7 @@ class ExperimentResult:
     avg_data_time: Union[float, None] = None
     std_data_time: Union[float, None] = None
     export_model_score: Union[float, None] = None
-    export_model_speed: Union[float, None] = None
+    avg_ov_infer_time: Union[float, None] = None
     max_cpu_mem: Union[float, None] = None
     avg_cpu_util: Union[float, None] = None
     max_gpu_mem: Union[float, None] = None
@@ -109,6 +107,10 @@ class ExperimentResult:
         for attr_name in ["avg_cpu_util", "avg_gpu_util"]:
             res_util = result.pop(attr_name)
             result[f"{attr_name}(%)"] = res_util
+
+        train_e2e_time = result["train_e2e_time"]
+        if train_e2e_time is not None:
+            result["train_e2e_time"] = train_e2e_time.split('.')[0]
 
         # delete None value
         for key in list(result.keys()):
@@ -199,15 +201,18 @@ class BaseExpParser(ABC):
             self._exp_result.std_data_time = statistics.stdev(self._data_time_arr)
 
     def _parse_eval_output(self, file_path: Path):
+        # NOTE: It is assumed that performance.json has only score or avg_time_per_image
         with file_path.open("r") as f:
-            eval_output = json.load(f)
+            eval_output: Dict = json.load(f)
 
         if "train" in str(file_path.parent.name):
-            self._exp_result.test_score = eval_output["f-measure"]
+            self._exp_result.test_score = list(eval_output.values())[0]
         else:  # export
-            if "avg_time_per_image" in eval_output:
-                self._exp_result.export_model_speed = eval_output["avg_time_per_image"]
-            self._exp_result.export_model_score = eval_output["f-measure"]
+            for key, val in eval_output.items():
+                if key == "avg_time_per_image":
+                    self._exp_result.avg_ov_infer_time = val
+                else:
+                    self._exp_result.export_model_score = val
 
         
     def _parse_resource_usage(self, file_path: Path):
@@ -253,7 +258,7 @@ class MMCVExpParser(BaseExpParser):
                 # train e2e time
                 cli_report_files = list(task_dir.glob("cli_report.log"))
                 if cli_report_files:
-                    self._parse_cli_report(cli_report_files[0], False)
+                    self._parse_cli_report(cli_report_files[0])
 
                 # get resource info
                 resource_file = task_dir / "resource_usage.yaml"
@@ -274,9 +279,6 @@ class MMCVExpParser(BaseExpParser):
             if iter_history.get("mode") == "train":
                 self._iter_time_arr.append(iter_history["time"])
                 self._data_time_arr.append(iter_history["data_time"])
-            elif iter_history.get("mode") == "val":
-                if self._exp_result.val_score is None or self._exp_result.val_score < iter_history["mAP"]:
-                    self._exp_result.val_score = iter_history["mAP"]
 
 
 class AnomalibExpParser(BaseExpParser):
@@ -398,127 +400,21 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
 
     write_csv(exp_dir / "all_exp_result.csv", headers, all_exp_result)
 
-    headers.remove("repeat")
+    for key in ["repeat", "std_iter_time", "std_data_time"]:  # average of std is distorted value
+        headers.remove(key)
 
     rows = []
     for val in exp_result_aggregation.values():
         exp_result = val["result"] / val["num"]
+        exp_result.std_iter_time = None
+        exp_result.std_data_time = None
         each_exp_result = copy(val["meta"])
+
         each_exp_result.update(exp_result.get_formatted_result())
         rows.append(each_exp_result)
     write_csv(exp_dir / "exp_summary.csv", headers, rows)
 
     draw_rich_table(headers, rows, "Experiment Summary")
-
-
-def perv_aggregate_all_exp_result(exp_dir: Union[str, Path]):
-    if isinstance(exp_dir, str):
-        exp_dir = Path(exp_dir)
-
-    tensorboard_dir = exp_dir / "tensorboard"
-    tensorboard_dir.mkdir(exist_ok=True)
-
-    exp_result_summary = {}
-    all_exp_result = []
-    header = [
-        "val_score",
-        "test_score",
-        "train_e2e_time",
-        "export_model_score",
-        "export_model_speed",
-        "avg_iter_time",
-        "std_iter_time",
-        "avg_data_time",
-        "std_data_time",
-        "max_cpu_mem(GiB)",
-        "avg_cpu_util(%)",
-        "max_gpu_mem(GiB)",
-        "avg_gpu_util(%)",
-    ]
-
-    stdev_field = ["std_iter_time", "std_data_time"]
-    add_meta_to_header = False
-
-    for each_exp in exp_dir.iterdir():
-        if not (each_exp / "exp_result.yaml").exists():
-            continue
-
-        with (each_exp / "exp_result.yaml").open("r") as f:
-            exp_result: Dict[str, Dict] = yaml.safe_load(f)
-
-        if not add_meta_to_header:
-            header = list(exp_result["meta"].keys()) + header
-            add_meta_to_header = True
-
-        all_exp_result.append(copy(exp_result["meta"]))
-        all_exp_result[-1].update(exp_result["exp_result"])
-        del exp_result["meta"]["repeat"]
-        exp_name = " ".join([val for val in exp_result["meta"].values()])
-        if exp_name in exp_result_summary:
-            for key, val in exp_result["exp_result"].items():
-                if val is None:
-                    continue
-
-                if key in stdev_field:  # avg. std is calculated by averaging variance and applying sqrt later
-                    exp_result_summary[exp_name]["result"][key] += val ** 2
-                else:
-                    exp_result_summary[exp_name]["result"][key] += val
-            exp_result_summary[exp_name]["num"] += 1
-        else:
-            exp_result_summary[exp_name] = {
-                "result" : exp_result["exp_result"],
-                "num" : 1,
-                "meta" : exp_result["meta"]
-            }
-            for field in stdev_field:
-                if exp_result_summary[exp_name]["result"][field] is not None:
-                    exp_result_summary[exp_name]["result"][field] = exp_result_summary[exp_name]["result"][field] ** 2
-
-        # copy tensorboard log into tensorboard dir
-        exp_tb_dir = list(each_exp.rglob("tf_logs"))
-        if exp_tb_dir:
-            temp = tensorboard_dir / each_exp.name
-            shutil.copytree(exp_tb_dir[0], temp, dirs_exist_ok=True)
-
-    with (exp_dir / "all_exp_result.csv").open("w") as f:
-        writer = csv.DictWriter(f, fieldnames=header)
-        writer.writeheader() 
-        writer.writerows(all_exp_result)
-
-    # process for experiment summary
-    header.remove("repeat")
-    for each_exp_result_summary in exp_result_summary.values():
-        for key, val in each_exp_result_summary["result"].items():
-            if val is None:
-                continue
-            if key in stdev_field:
-                each_exp_result_summary["result"][key] = sqrt(val / each_exp_result_summary["num"])
-            else:
-                each_exp_result_summary["result"][key] /= each_exp_result_summary["num"]
-
-        each_exp_result_summary["result"].update(each_exp_result_summary["meta"])
-
-    with (exp_dir / "exp_summary.csv").open("w") as f:
-        writer = csv.DictWriter(f, fieldnames=header)
-        writer.writeheader() 
-        writer.writerows([each_exp_result_summary["result"] for each_exp_result_summary in exp_result_summary.values()])
-
-    # print experiment summary to console
-    table = Table(title="Experiment Summary")
-    for field in header:
-        table.add_column(field, justify="center", no_wrap=True)
-    for each_exp_result_summary in exp_result_summary.values():
-        table_row = []
-        for field in header:
-            val = each_exp_result_summary["result"][field]
-            if isinstance(val, float):
-                val = round(val, 4)
-            table_row.append(str(val))
-
-        table.add_row(*table_row)
-
-    console = Console()
-    console.print(table)
 
 
 def replace_var_in_str(
