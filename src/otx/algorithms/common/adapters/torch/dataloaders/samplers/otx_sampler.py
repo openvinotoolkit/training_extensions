@@ -68,10 +68,12 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         self.shuffle = shuffle
         if n_repeats == "auto":
             repeat = get_proper_repeat_times(len(self.dataset), self.samples_per_gpu, coef, min_repeat)
-        elif type(n_repeats).__name__ == "float":
+        elif isinstance(n_repeats, (int, float)):
             repeat = float(n_repeats)
         else:
-            raise ValueError(f"n_repeats: {n_repeats} should be auto or int value")
+            raise ValueError(f"n_repeats: {n_repeats} should be auto or float orint value")
+        # TODO: Currently, only supporting the int variable.
+        # Will be removed.
         self.repeat = int(repeat)
         self.num_samples = math.ceil(len(self.dataset) * self.repeat / self.num_replicas)
         self.total_size = self.num_samples * self.num_replicas
