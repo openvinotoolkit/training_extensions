@@ -63,7 +63,7 @@ class TestRegressionSegmentation:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):
@@ -244,8 +244,6 @@ class TestRegressionSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl(self, reg_cfg, template, tmp_dir_path):
-        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
-            pytest.skip("Self-SL training type isn't available for this template")
         train_type = "self_supervised"
         self.performance[template.name] = {}
 
@@ -297,8 +295,6 @@ class TestRegressionSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_selfsl_kpi_test(self, reg_cfg, template):
-        if not (Path(template.model_template_path).parent / "selfsl").is_dir():
-            pytest.skip("Self-SL training type isn't available for this template")
         train_type = "self_supervised"
         config_selfsl = reg_cfg.load_config(train_type=train_type)
         performance = reg_cfg.get_template_performance(template, train_type=train_type)
@@ -472,7 +468,7 @@ class TestRegressionSupconSegmentation:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):

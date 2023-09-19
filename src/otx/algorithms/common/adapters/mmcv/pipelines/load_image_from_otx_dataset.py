@@ -32,12 +32,6 @@ class LoadImageFromOTXDataset:
     def __init__(self, to_float32: bool = False, enable_memcache: bool = True):
         self._to_float32 = to_float32
         self._enable_memcache = enable_memcache
-        try:
-            self._mem_cache_handler = MemCacheHandlerSingleton.get()
-        except MemCacheHandlerError:
-            # Create a null handler
-            MemCacheHandlerSingleton.create(mode="null", mem_size=0)
-            self._mem_cache_handler = MemCacheHandlerSingleton.get()
 
     @staticmethod
     def _get_unique_key(results: Dict[str, Any]) -> Tuple:
@@ -51,18 +45,31 @@ class LoadImageFromOTXDataset:
         results["cache_key"] = d_item.media.path, d_item.roi.id
         return results["cache_key"]
 
+    def _get_memcache_handler(self):
+        """Get memcache handler."""
+        try:
+            mem_cache_handler = MemCacheHandlerSingleton.get()
+        except MemCacheHandlerError:
+            # Create a null handler
+            MemCacheHandlerSingleton.create(mode="null", mem_size=0)
+            mem_cache_handler = MemCacheHandlerSingleton.get()
+
+        return mem_cache_handler
+
     def __call__(self, results: Dict[str, Any]):
         """Callback function of LoadImageFromOTXDataset."""
         img = None
+        mem_cache_handler = self._get_memcache_handler()
+
         if self._enable_memcache:
             key = self._get_unique_key(results)
-            img, meta = self._mem_cache_handler.get(key)
+            img, meta = mem_cache_handler.get(key)
 
         if img is None:
             # Get image (possibly from file cache)
             img = get_image(results, _CACHE_DIR.name, to_float32=False)
             if self._enable_memcache:
-                self._mem_cache_handler.put(key, img)
+                mem_cache_handler.put(key, img)
 
         if self._to_float32:
             img = img.astype(np.float32)
@@ -162,10 +169,13 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
 
     def _load_cache(self, results: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Try to load pre-computed results from cache."""
+
         if not self._enable_outer_memcache:
             return None
         key = self._get_unique_key(results)
-        img, meta = self._mem_cache_handler.get(key)
+
+        mem_cache_handler = self._get_memcache_handler()
+        img, meta = mem_cache_handler.get(key)
         if img is None or meta is None:
             return None
         dataset_item = results.pop("dataset_item")
@@ -178,10 +188,13 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         """Try to save pre-computed results to cache."""
         if not self._enable_outer_memcache:
             return
+
         key = self._get_unique_key(results)
         meta = results.copy()
         img = meta.pop("img")
-        self._mem_cache_handler.put(key, img, meta)
+
+        mem_cache_handler = self._get_memcache_handler()
+        mem_cache_handler.put(key, img, meta)
 
     def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
         """Callback function."""
