@@ -1,11 +1,12 @@
 """Tests for OTX Class-Incremental Learning for instance segmentation with OTX CLI"""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import copy
 import os
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from tests.test_suite.e2e_test_system import e2e_pytest_component
