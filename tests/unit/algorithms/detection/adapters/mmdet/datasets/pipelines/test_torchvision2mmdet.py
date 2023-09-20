@@ -45,7 +45,10 @@ class TestColorJitter:
     def test_repr(self) -> None:
         """Test __repr__ method of ColorJitter."""
         transform = ColorJitter(brightness=0.2)
-        assert str(transform) == "ColorJitter(brightness=[0.8, 1.2], contrast=None, saturation=None, hue=None)"
+        assert str(transform) in [
+            "ColorJitter(brightness=[0.8, 1.2], contrast=None, saturation=None, hue=None)",
+            "ColorJitter(brightness=(0.8, 1.2), contrast=None, saturation=None, hue=None)",
+        ]
 
 
 class TestRandomGrayscale:
