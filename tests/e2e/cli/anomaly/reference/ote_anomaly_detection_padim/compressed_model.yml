@@ -3,3 +3,5 @@ TestToolsAnomalyDetection:
     number_of_fakequantizers: 26
   ptq:
     number_of_fakequantizers: 27
+  pot:
+    number_of_fakequantizers: 28
