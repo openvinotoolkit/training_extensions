@@ -155,24 +155,33 @@ class TestClassificationConfigurer:
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("input_size", [None, (128, 128)])
+    @pytest.mark.parametrize("input_size", [None, (0, 0), (128, 128)])
     def test_configure_input_size(self, mocker, input_size):
         # prepare
         mock_cfg = mocker.MagicMock()
-        mocker.patch.object(configurer, "get_configured_input_size", return_value=input_size)
-        mock_input_manager = mocker.MagicMock()
         mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
+        mock_input_manager = mock_input_manager_cls.return_value
+        mock_input_manager.get_configured_input_size.return_value = input_size
         mock_input_manager_cls.return_value = mock_input_manager
+        mock_base_configurer_cls = mocker.patch.object(configurer, "BaseConfigurer")
+        mock_base_configurer_cls.adapt_input_size_to_dataset.return_value = (64, 64)
 
-        # excute
+        # execute
         self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
 
         # check
-        if input_size is not None:
-            mock_input_manager_cls.assert_called_once_with(mock_cfg.data)
-            mock_input_manager.set_input_size.assert_called_once_with(input_size)
+        if input_size is None:
+            mock_input_manager.set_input_size.assert_not_called()
+        elif input_size == (0, 0):
+            mock_input_manager.set_input_size.assert_called_once_with((64, 64))
         else:
-            mock_input_manager_cls.assert_not_called()
+            mock_input_manager.set_input_size.assert_called_once_with(input_size)
+
+        if input_size == (0, 0):
+            mock_input_manager.set_input_size = mocker.MagicMock()
+            mock_base_configurer_cls.adapt_input_size_to_dataset.return_value = None
+            self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
+            mock_input_manager.set_input_size.assert_not_called()
 
     @e2e_pytest_unit
     def test_configure_fp16(self):

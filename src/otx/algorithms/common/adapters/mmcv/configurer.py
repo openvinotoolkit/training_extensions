@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -18,6 +19,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
     patch_color_conversion,
     patch_from_hyperparams,
     recursively_update_cfg,
@@ -26,6 +28,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import OnHookInitialized
 from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
+from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.core.data import caching
@@ -492,3 +495,41 @@ class BaseConfigurer:
                 dataset = dataset.dataset
             return dataset
         return cfg.data[subset]
+
+    @staticmethod
+    def adapt_input_size_to_dataset(
+        cfg, input_size_manager: InputSizeManager, downscale_only: bool = True, use_annotations: bool = False
+    ) -> Optional[Tuple[int, int]]:
+        """Compute appropriate model input size w.r.t. dataset statistics.
+
+        Args:
+            cfg (Dict): Global configuration.
+            input_size_manager: (InputSizeManager): Pre-configured input size manager
+            downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
+            use_annotations (bool): Whether to consider annotation shapes to compute input size. Defaults to False.
+
+        Returns:
+            Tuple[int, int]: (width, height) or None
+        """
+
+        data_cfg = BaseConfigurer.get_data_cfg(cfg, "train")
+        dataset = data_cfg.get("otx_dataset", None)
+        if dataset is None:
+            return None
+
+        stat = compute_robust_dataset_statistics(dataset, use_annotations)
+        if not stat:
+            return None
+        logger.info(f"Dataset stat: {json.dumps(stat, indent=4)}")
+
+        # Fit to typical large image size (conservative)
+        # -> "avg" size might be preferrable for efficiency
+        image_size = stat["image"]["robust_max"]
+        object_size = None
+        if use_annotations and stat["annotation"]:
+            # Refine using annotation shape size stat
+            # Fit to typical small object size (conservative)
+            # -> "avg" size might be preferrable for efficiency
+            object_size = stat["annotation"].get("size_of_shape", {}).get("robust_min", None)
+
+        return input_size_manager.adapt_input_size_to_dataset(image_size, object_size, downscale_only)

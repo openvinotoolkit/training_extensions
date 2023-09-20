@@ -210,7 +210,7 @@ def patch_input_shape(cfg: ConfigDict, deploy_cfg: ConfigDict):
     Returns:
         None: This function updates the input `deploy_cfg` object directly.
     """
-    input_size_manager = InputSizeManager(cfg.data)
+    input_size_manager = InputSizeManager(cfg)
     size = input_size_manager.get_input_size_from_cfg("test")
 
     assert all(isinstance(i, int) and i > 0 for i in size)
