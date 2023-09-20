@@ -22,7 +22,7 @@ dp_factory["xpu"] = XPUDataParallel
 
 
 def build_dp(model, device="cuda", dim=0, *args, **kwargs):
-    """build DataParallel module by device type.
+    """Build DataParallel module by device type.
 
     if device is cuda, return a MMDataParallel module; if device is mlu,
     return a MLUDataParallel module.
@@ -31,6 +31,8 @@ def build_dp(model, device="cuda", dim=0, *args, **kwargs):
         model (:class:`nn.Module`): module to be parallelized.
         device (str): device type, cuda, cpu or mlu. Defaults to cuda.
         dim (int): Dimension used to scatter the data. Defaults to 0.
+        args: args to forward to constructor of a data parallel
+        kwargs: kwargs to forward to constructor of a data parallel
 
     Returns:
         :class:`nn.Module`: parallelized module.

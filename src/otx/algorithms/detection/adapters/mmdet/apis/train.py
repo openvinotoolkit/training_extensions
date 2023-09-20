@@ -1,10 +1,12 @@
+"""Train function for detection task."""
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-import random
 
-import numpy as np
 import torch
-import torch.distributed as dist
 from mmcv.ops.nms import NMSop
 from mmcv.ops.roi_align import RoIAlign
 from mmcv.runner import (
@@ -21,7 +23,6 @@ from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTenso
 from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_logger
 from mmdet.utils.util_distribution import dp_factory
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
-from otx.algorithms.common.utils import is_xpu_available
 
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
 
@@ -29,7 +30,7 @@ dp_factory["xpu"] = XPUDataParallel
 
 
 def build_dp(model, device="cuda", dim=0, *args, **kwargs):
-    """build DataParallel module by device type.
+    """Build DataParallel module by device type.
 
     if device is cuda, return a MMDataParallel model; if device is mlu,
     return a MLUDataParallel model.
@@ -38,6 +39,8 @@ def build_dp(model, device="cuda", dim=0, *args, **kwargs):
         model (:class:`nn.Module`): model to be parallelized.
         device (str): device type, cuda, cpu or mlu. Defaults to cuda.
         dim (int): Dimension used to scatter the data. Defaults to 0.
+        args: args to forward to constructor of a data parallel
+        kwargs: kwargs to forward to constructor of a data parallel
 
     Returns:
         nn.Module: the model to be parallelized.
@@ -60,60 +63,6 @@ def build_dp(model, device="cuda", dim=0, *args, **kwargs):
         model = model.mlu()
 
     return dp_factory[device](model, dim=dim, *args, **kwargs)
-
-
-def init_random_seed(seed=None, device="cuda"):
-    """Initialize random seed.
-
-    If the seed is not set, the seed will be automatically randomized,
-    and then broadcast to all processes to prevent some potential bugs.
-
-    Args:
-        seed (int, Optional): The seed. Default to None.
-        device (str): The device where the seed will be put on.
-            Default to 'cuda'.
-
-    Returns:
-        int: Seed to be used.
-    """
-    if seed is not None:
-        return seed
-
-    # Make sure all ranks share the same random seed to prevent
-    # some potential bugs. Please refer to
-    # https://github.com/open-mmlab/mmdetection/issues/6339
-    rank, world_size = get_dist_info()
-    seed = np.random.randint(2**31)
-    if world_size == 1:
-        return seed
-
-    if rank == 0:
-        random_num = torch.tensor(seed, dtype=torch.int32, device=device)
-    else:
-        random_num = torch.tensor(0, dtype=torch.int32, device=device)
-    dist.broadcast(random_num, src=0)
-    return random_num.item()
-
-
-def set_random_seed(seed, deterministic=False):
-    """Set random seed.
-
-    Args:
-        seed (int): Seed to be used.
-        deterministic (bool): Whether to set the deterministic option for
-            CUDNN backend, i.e., set `torch.backends.cudnn.deterministic`
-            to True and `torch.backends.cudnn.benchmark` to False.
-            Default: False.
-    """
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    if is_xpu_available():
-        torch.xpu.manual_seed_all(seed)
-    if deterministic:
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
 
 
 def auto_scale_lr(cfg, distributed, logger):
@@ -164,6 +113,7 @@ def auto_scale_lr(cfg, distributed, logger):
 
 
 def train_detector(model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None):
+    """Trains a detector via mmdet."""
 
     cfg = compat_cfg(cfg)
     logger = get_root_logger(log_level=cfg.log_level)
@@ -288,6 +238,7 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
 
 
 def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_threshold, max_num):
+    """Forces NMS from MMCV to run on CPU."""
     is_filtering_by_score = score_threshold > 0
     if is_filtering_by_score:
         valid_mask = scores > score_threshold
@@ -307,11 +258,14 @@ def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_thr
 
 
 def monkey_patched_xpu_roi_align(self, input, rois):
-    """Args:
-    input: NCHW images
-    rois: Bx5 boxes. First column is the index into N.\
-                The other 4 columns are xyxy.
+    """Replaces MMCVs roi align withe the one from torchvision.
+
+    Args:
+        self: patched instance
+        input: NCHW images
+        rois: Bx5 boxes. First column is the index into N. The other 4 columns are xyxy.
     """
+
     from torchvision.ops import roi_align as tv_roi_align
 
     if "aligned" in tv_roi_align.__code__.co_varnames:

@@ -1,3 +1,9 @@
+"""Custom assigner to workaround a bug in IPEX."""
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+# Copyright (c) OpenMMLab. All rights reserved.
+
 import warnings
 
 import torch
