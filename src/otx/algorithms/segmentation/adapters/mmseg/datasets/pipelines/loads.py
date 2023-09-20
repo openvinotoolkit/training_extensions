@@ -67,7 +67,9 @@ class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset)
             # Concat mask to image if size matches
             if mask.dtype == img.dtype and mask.shape[:2] == img.shape[:2]:
                 img = np.concatenate((img, mask[:, :, np.newaxis]), axis=-1)
-        self._mem_cache_handler.put(key, img, meta)
+
+        mem_cache_handler = self._get_memcache_handler()
+        mem_cache_handler.put(key, img, meta)
 
 
 @PIPELINES.register_module()

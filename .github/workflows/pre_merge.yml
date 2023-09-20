@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Code quality checks
-        run: tox -vv -e pre-commit-all-py310
+        run: tox -vv -e pre-commit-all-py310-pt1
   Unit-Test:
     runs-on: [self-hosted, linux, x64, dev]
     needs: Code-Quality-Checks
@@ -71,7 +71,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: Run unit test
-        run: tox -vv -e unittest-all-${{ matrix.tox-env }}
+        run: tox -vv -e unittest-all-${{ matrix.tox-env }}-pt1
       - name: Upload coverage artifact
         if: ${{ matrix.python-version == '3.8' }}
         uses: actions/upload-artifact@v3

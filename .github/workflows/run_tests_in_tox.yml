@@ -52,7 +52,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
       - name: E2E Tests
-        run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }} -- ${{ inputs.tests-dir }}
+        run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-pt1 -- ${{ inputs.tests-dir }}
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:

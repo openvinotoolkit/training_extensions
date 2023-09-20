@@ -168,29 +168,37 @@ class TestDetectionConfigurer:
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("input_size", [None, (256, 256)])
+    @pytest.mark.parametrize("input_size", [None, (0, 0), (256, 256)])
     def test_configure_input_size_not_yolox(self, mocker, input_size):
         # prepare
         mock_cfg = mocker.MagicMock()
-        mocker.patch.object(configurer, "get_configured_input_size", return_value=input_size)
-        mock_input_manager = mocker.MagicMock()
         mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
+        mock_input_manager = mock_input_manager_cls.return_value
+        mock_input_manager.get_configured_input_size.return_value = input_size
         mock_input_manager_cls.return_value = mock_input_manager
+        mock_base_configurer_cls = mocker.patch.object(configurer, "BaseConfigurer")
+        mock_base_configurer_cls.adapt_input_size_to_dataset.return_value = (64, 64)
 
-        # excute
+        # execute
         self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
 
         # check
-        if input_size is not None:
-            mock_input_manager_cls.assert_called_once_with(mock_cfg.data, None)
-            mock_input_manager.set_input_size.assert_called_once_with(input_size)
+        if input_size is None:
+            mock_input_manager.set_input_size.assert_not_called()
+        elif input_size == (0, 0):
+            mock_input_manager.set_input_size.assert_called_once_with((64, 64))
         else:
-            mock_input_manager_cls.assert_not_called()
+            mock_input_manager.set_input_size.assert_called_once_with(input_size)
+
+        if input_size == (0, 0):
+            mock_input_manager.set_input_size = mocker.MagicMock()
+            mock_base_configurer_cls.adapt_input_size_to_dataset.return_value = None
+            self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
+            mock_input_manager.set_input_size.assert_not_called()
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("input_size", [(256, 256), (300, 300)])
     @pytest.mark.parametrize("is_yolox_tiny", [True, False])
-    def test_configure_input_size_yolox(self, mocker, input_size, is_yolox_tiny):
+    def test_configure_input_size_yolox(self, mocker, is_yolox_tiny):
         # prepare
         mock_cfg = mocker.MagicMock()
         mock_cfg.model.type = "CustomYOLOX"
@@ -204,23 +212,16 @@ class TestDetectionConfigurer:
             }
         else:
             base_input_size = None
-        mocker.patch.object(configurer, "get_configured_input_size", return_value=input_size)
-        mock_input_manager = mocker.MagicMock()
-        mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
-        mock_input_manager_cls.return_value = mock_input_manager
 
-        # If model is one of yolox variants and input size isn't multiple of 32, error should be raised.
-        if input_size[0] % 32 != 0:
-            with pytest.raises(ValueError):
-                self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
-            return
+        mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
+        mock_input_manager = mock_input_manager_cls.return_value
+        mock_input_manager.get_configured_input_size.return_value = None
 
         # excute
-        self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
+        self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT)
 
         # check
-        mock_input_manager_cls.assert_called_once_with(mock_cfg.data, base_input_size)
-        mock_input_manager.set_input_size.assert_called_once_with(input_size)
+        mock_input_manager_cls.assert_called_once_with(mock_cfg, base_input_size)
 
     @e2e_pytest_unit
     def test_configure_fp16(self):
