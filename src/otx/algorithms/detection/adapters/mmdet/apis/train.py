@@ -21,48 +21,11 @@ from mmcv.utils import ext_loader
 from mmdet.core import DistEvalHook, EvalHook, build_optimizer
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
 from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_logger
-from mmdet.utils.util_distribution import dp_factory
+from mmdet.utils.util_distribution import build_dp, dp_factory
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
-
 dp_factory["xpu"] = XPUDataParallel
-
-
-def build_dp(model, device="cuda", dim=0, *args, **kwargs):
-    """Build DataParallel module by device type.
-
-    if device is cuda, return a MMDataParallel model; if device is mlu,
-    return a MLUDataParallel model.
-
-    Args:
-        model (:class:`nn.Module`): model to be parallelized.
-        device (str): device type, cuda, cpu or mlu. Defaults to cuda.
-        dim (int): Dimension used to scatter the data. Defaults to 0.
-        args: args to forward to constructor of a data parallel
-        kwargs: kwargs to forward to constructor of a data parallel
-
-    Returns:
-        nn.Module: the model to be parallelized.
-    """
-    if device == "npu":
-        from mmcv.device.npu import NPUDataParallel
-
-        dp_factory["npu"] = NPUDataParallel
-        torch.npu.set_device(kwargs["device_ids"][0])
-        torch.npu.set_compile_mode(jit_compile=False)
-        model = model.npu()
-    elif device == "cuda":
-        model = model.cuda(kwargs["device_ids"][0])
-    elif device == "xpu":
-        pass
-    elif device == "mlu":
-        from mmcv.device.mlu import MLUDataParallel
-
-        dp_factory["mlu"] = MLUDataParallel
-        model = model.mlu()
-
-    return dp_factory[device](model, dim=dim, *args, **kwargs)
 
 
 def auto_scale_lr(cfg, distributed, logger):

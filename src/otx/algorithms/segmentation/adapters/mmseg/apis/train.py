@@ -15,38 +15,10 @@ from mmseg import digit_version
 from mmseg.core import DistEvalHook, EvalHook, build_optimizer
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import build_ddp, find_latest_checkpoint, get_root_logger
-from mmseg.utils.util_distribution import dp_factory
+from mmseg.utils.util_distribution import build_dp, dp_factory
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
 dp_factory["xpu"] = XPUDataParallel
-
-
-def build_dp(model, device="cuda", dim=0, *args, **kwargs):
-    """Build DataParallel module by device type.
-
-    if device is cuda, return a MMDataParallel module; if device is mlu,
-    return a MLUDataParallel module.
-
-    Args:
-        model (:class:`nn.Module`): module to be parallelized.
-        device (str): device type, cuda, cpu or mlu. Defaults to cuda.
-        dim (int): Dimension used to scatter the data. Defaults to 0.
-        args: args to forward to constructor of a data parallel
-        kwargs: kwargs to forward to constructor of a data parallel
-
-    Returns:
-        :class:`nn.Module`: parallelized module.
-    """
-    if device == "cuda":
-        model = model.cuda()
-    elif device == "mlu":
-        assert digit_version(mmcv.__version__) >= digit_version("1.5.0"), "Please use MMCV >= 1.5.0 for MLU training!"
-        from mmcv.device.mlu import MLUDataParallel
-
-        dp_factory["mlu"] = MLUDataParallel
-        model = model.mlu()
-
-    return dp_factory[device](model, dim=dim, *args, **kwargs)
 
 
 def train_segmentor(model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None):
