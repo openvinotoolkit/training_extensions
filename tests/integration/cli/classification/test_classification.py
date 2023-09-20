@@ -45,6 +45,8 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.input_size",
+        "Auto",
     ],
 }
 
@@ -52,7 +54,15 @@ args = {
 args_selfsl = {
     "--train-data-roots": "tests/assets/classification_dataset",
     "--train-type": "Selfsupervised",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+        "--learning_parameters.input_size",
+        "Auto",
+    ],
 }
 
 # Training params for resume, num_iters*2

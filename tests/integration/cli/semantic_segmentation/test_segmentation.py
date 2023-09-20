@@ -38,6 +38,8 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.input_size",
+        "Auto",
     ],
 }
 
@@ -46,13 +48,33 @@ args_semisl = {
     "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--unlabeled-data-roots": "tests/assets/common_semantic_segmentation_dataset/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.learning_rate_warmup_iters",
+        "1",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+        "--learning_parameters.input_size",
+        "Auto",
+    ],
 }
 
 args_selfsl = {
     "--train-data-roots": "tests/assets/common_semantic_segmentation_dataset/train/images",
     "--input": "tests/assets/segmentation/custom/images/training",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.learning_rate_warmup_iters",
+        "1",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+        "--learning_parameters.input_size",
+        "Auto",
+    ],
 }
 
 # Training params for resume, num_iters*2

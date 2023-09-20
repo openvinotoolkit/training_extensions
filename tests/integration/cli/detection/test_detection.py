@@ -36,7 +36,15 @@ args = {
     "--val-data-roots": "tests/assets/car_tree_bug",
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+        "--learning_parameters.input_size",
+        "Auto",
+    ],
 }
 
 args_semisl = {
@@ -45,7 +53,15 @@ args_semisl = {
     "--test-data-roots": "tests/assets/car_tree_bug",
     "--unlabeled-data-roots": "tests/assets/car_tree_bug",
     "--input": "tests/assets/car_tree_bug/images/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "1", "--learning_parameters.batch_size", "4"],
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "1",
+        "--learning_parameters.batch_size",
+        "4",
+        "--learning_parameters.input_size",
+        "Auto",
+    ],
 }
 
 # Training params for resume, num_iters*2
@@ -118,7 +134,15 @@ class TestDetectionCLI:
         _resume_params = resume_params.copy()
         # FIXME: remove this block once Issue#2504 resolved
         if "DINO" in template.name:
-            _args["train_params"].extend(["--learning_parameters.input_size", "Default"])
+            _args["train_params"] = [
+                "params",
+                "--learning_parameters.num_iters",
+                "1",
+                "--learning_parameters.batch_size",
+                "4",
+                "--learning_parameters.input_size",
+                "Default",
+            ]
             _resume_params.extend(["--learning_parameters.input_size", "Default"])
         otx_resume_testing(template, tmp_dir_path, otx_dir, _args)
         template_work_dir = get_template_dir(template, tmp_dir_path)
