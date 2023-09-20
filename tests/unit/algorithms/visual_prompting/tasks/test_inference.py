@@ -94,7 +94,8 @@ class TestInferenceTask:
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.SegmentAnything"
         )
 
-        load_inference_task(path=path, resume=resume)
+        inference_task = load_inference_task(path=path, resume=resume)
+        inference_task.load_model(otx_model=inference_task.task_environment.model)
 
         mocker_segment_anything.assert_called_once()
 
@@ -111,7 +112,8 @@ class TestInferenceTask:
             return_value=dict(config=dict(model=dict(backbone="sam_vit_b")), model={}),
         )
 
-        load_inference_task(path="checkpoint.pth", resume=resume)
+        inference_task = load_inference_task(path="checkpoint.pth", resume=resume)
+        inference_task.load_model(otx_model=inference_task.task_environment.model)
 
         mocker_segment_anything.assert_called_once()
         mocker_io_bytes_io.assert_called_once()
@@ -162,6 +164,7 @@ class TestInferenceTask:
         )
 
         inference_task = load_inference_task(output_path=None)
+        inference_task.model = inference_task.load_model(otx_model=inference_task.task_environment.model)
         setattr(inference_task, "trainer", None)
         mocker.patch.object(inference_task, "trainer")
 
