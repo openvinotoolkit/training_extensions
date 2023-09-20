@@ -958,7 +958,7 @@ class InputSizeManager:
 
         # Refine using annotation shape size stat
         if min_object_size is not None and min_object_size > 0:
-            image_size = image_size * self.MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size
+            image_size = round(image_size * self.MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
             logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
 
         input_size = (round(image_size), round(image_size))
