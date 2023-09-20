@@ -90,6 +90,7 @@ class ExperimentResult:
     avg_cpu_util: Union[float, None] = None
     max_gpu_mem: Union[float, None] = None
     avg_gpu_util: Union[float, None] = None
+    optimize_model_score: Union[float, None] = None
 
     def get_formatted_result(self):
         result = dataclasses.asdict(self)
@@ -199,12 +200,14 @@ class BaseExpParser(ABC):
 
         if "train" in str(file_path.parent.name):
             self._exp_result.test_score = list(eval_output.values())[0]
-        else:  # export
+        elif "export" in str(file_path.parent.name):
             for key, val in eval_output.items():
                 if key == "avg_time_per_image":
                     self._exp_result.avg_ov_infer_time = val
                 else:
                     self._exp_result.export_model_score = val
+        elif "optimize" in str(file_path.parent.name):
+            self._exp_result.optimize_model_score = list(eval_output.values())[0]
 
         
     def _parse_resource_usage(self, file_path: Path):
@@ -260,7 +263,7 @@ class MMCVExpParser(BaseExpParser):
                 if resource_file.exists():
                     self._parse_resource_usage(resource_file)
 
-            elif "export" in str(task_dir):
+            elif "export" in str(task_dir) or "optimize" in str(task_dir):
                 eval_files = list(task_dir.glob("performance.json"))
                 if eval_files:
                     self._parse_eval_output(eval_files[0])
@@ -295,7 +298,7 @@ class AnomalibExpParser(BaseExpParser):
                 if resource_file.exists():
                     self._parse_resource_usage(resource_file)
 
-            elif "export" in str(task_dir):
+            elif "export" in str(task_dir) or "optimize" in str(task_dir):
                 eval_files = list(task_dir.glob("performance.json"))
                 if eval_files:
                     self._parse_eval_output(eval_files[0])
