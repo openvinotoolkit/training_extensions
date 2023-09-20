@@ -498,6 +498,7 @@ def run_experiment_recipe(exp_recipe: Dict):
         command_var = command_info["variable"]
         exp_name = "_".join(command_var.values())
 
+        failed_case: List[Dict[str, Any]] = []
         for repeat_idx in range(repeat):
             workspace = Path(exp_name.replace('/', '_') + f"_repeat_{repeat_idx}")
             command_var["repeat"] = str(repeat_idx)
@@ -509,11 +510,23 @@ def run_experiment_recipe(exp_recipe: Dict):
                     set_arguments_to_cmd(command, "--seed", str(repeat_idx), command.index("train")+1)
 
             sys.argv = [" ".join(command[:2])] + command[2:]
-            globals()["_".join(sys.argv[0].split())]()
-
-            if command[1] in ["train", "run"]:
-                organize_exp_result(workspace, command_var)
+            try:
+                globals()["_".join(sys.argv[0].split())]()
+            except Exception as e:
+                failed_case.append({"variable" : copy(command_var), "exception" : e})
+            else:
+                if command[1] in ["train", "run"]:
+                    organize_exp_result(workspace, command_var)
     os.chdir(current_dir)
+
+    if failed_case:
+        console = Console()
+        console.rule("[bold red]List of failed cases")
+        for each_fail_case in failed_case:
+            console.print(f"Case : {each_fail_case['variable']}")
+            console.print("Error log:", each_fail_case['exception'])
+            console.print()
+        console.rule()
 
     aggregate_all_exp_result(output_path)
 
