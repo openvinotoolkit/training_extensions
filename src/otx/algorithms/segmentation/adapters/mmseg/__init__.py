@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .datasets import MPASegDataset
+from .datasets import OTXSegDataset
 from .models import (
     ConstantScalarScheduler,
     CrossEntropyLossWithIgnore,
@@ -42,7 +42,7 @@ get_root_logger().propagate = False
 # isort: on
 
 __all__ = [
-    "MPASegDataset",
+    "OTXSegDataset",
     "LiteHRNet",
     "MMOVBackbone",
     "MMOVDecodeHead",

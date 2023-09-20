@@ -16,9 +16,9 @@ class IncrConfigurerMixin:
     org_model_classes: List = []
     model_classes: List = []
 
-    def configure_task(self, cfg):
+    def configure_task(self, cfg, **kwargs):
         """Patch config to support incremental learning."""
-        super().configure_task(cfg)
+        super().configure_task(cfg, **kwargs)
         if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
             self.configure_task_adapt_hook(cfg)
 

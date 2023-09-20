@@ -36,6 +36,7 @@ from openvino.model_api.models.utils import ClassificationResult
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_cls_deploy_config,
+    get_cls_inferencer_configuration,
     get_hierarchical_label_list,
 )
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
@@ -113,7 +114,19 @@ class ClassificationOpenVINOInferencer(IInferencer):
             max_num_requests=num_requests,
             plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
         )
-        self.model = Model.create_model(model_adapter, "Classification", {}, preload=True)
+        self.configuration = get_cls_inferencer_configuration(self.label_schema)
+
+        # create a dummy hierarchical config for backward compatibility, which is not actually used
+        if self.configuration["hierarchical"]:
+            try:
+                model_adapter.get_rt_info(["model_info", "hierarchical_config"])
+            except RuntimeError:
+                self.configuration["hierarchical_config"] = json.dumps(
+                    {"cls_heads_info": {"label_to_idx": [], "all_groups": []}, "label_tree_edges": []}
+                )
+
+        self.model = Model.create_model(model_adapter, "Classification", self.configuration, preload=True)
+
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
         self.callback_exceptions: List[Exception] = []
         self.model.inference_adapter.set_callback(self._async_callback)
@@ -223,6 +236,8 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                         label_list = get_hierarchical_label_list(
                             self.inferencer.model.hierarchical_info["cls_heads_info"], label_list
                         )
+                    if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
+                        saliency_map = saliency_map.squeeze()
 
                     add_saliency_maps_to_dataset_item(
                         dataset_item=dataset_item,

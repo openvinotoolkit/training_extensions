@@ -63,7 +63,7 @@ class TestRegressionSegmentation:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):
@@ -252,7 +252,7 @@ class TestRegressionSegmentation:
         args_selfsl = config_selfsl["data_path"]
 
         selfsl_train_args = copy.deepcopy(args_selfsl)
-        selfsl_train_args["train_params"] = ["params", "--algo_backend.train_type", "Selfsupervised"]
+        selfsl_train_args["--train-type"] = "Selfsupervised"
 
         reg_cfg.update_gpu_args(selfsl_train_args)
 
@@ -468,7 +468,7 @@ class TestRegressionSupconSegmentation:
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):
@@ -477,6 +477,8 @@ class TestRegressionSupconSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "supcon").is_dir():
+            pytest.skip("Supcon training type isn't available for this template")
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / "supcon_seg"
@@ -507,6 +509,9 @@ class TestRegressionSupconSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
+        if not (Path(template.model_template_path).parent / "supcon").is_dir():
+            pytest.skip("Supcon training type isn't available for this template")
+
         performance = reg_cfg.get_template_performance(template)
 
         kpi_train_result = regression_train_time_testing(

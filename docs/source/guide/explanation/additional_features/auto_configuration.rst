@@ -120,3 +120,10 @@ OpenVINO™ Training Extensions will automatically recognize these types of task
 
 .. note::
     To use auto template configuration with Self-SL training type `--task` option is required since it is impossible to recognize task type by folder with only images.
+
+Auto-adapt input size
+---------------------
+
+"Auto" input size feature tries to automatically select the right model input size
+based on given dataset statictics.
+See :ref:`adaptive-input-size`.

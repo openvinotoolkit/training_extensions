@@ -21,10 +21,50 @@ The available input sizes are currently as follows:
 
 - 64x64 (only for classification)
 - 128x128 (only for classification)
+- 224x224 (only for classification)
 - 256x256
 - 384x384
 - 512x512
+- 768x768
 - 1024x1024
+- Default (per-model default input size)
+- Auto (adaptive to dataset statistics)
+
+.. _adaptive-input-size:
+
+Adaptive Input Size
+-------------------
+
+"Auto" mode tries to automatically select the right size
+based on given dataset statictics.
+
+1. OTX analyzes the input dataset to get robust statistics.
+
+2. Input size is initially set to typical large image size.
+
+.. code-block::
+
+    input_size = large_image_size
+
+3. (Optionally) Input size is adjusted by object sizes in the dataset, if any.
+   The input size from image size is rescaled accoridng to the ratio of
+   minimum recongnizable object size of models, which is typically 16x16 ~ 32x32,
+   and the typical small object size in the dataset.
+   In short, if objects are 64x64 in general in 512x512 image,
+   it will be down-scaled to 256x256 as 32x32 objects are enough to be detected.
+
+.. code-block::
+
+    input_size = input_size * MIN_RECOGNIZABLE_OBJECT_SIZE / small_object_size
+
+4. Select the closest size from standard preset sizes
+
+5. Restrict scale-up
+
+.. code-block::
+
+    input_size = min(input_size, default_model_input_size)
+
 
 .. Note::
     Using smaller input size with datasets having lower image resolutions or larger objects can yield a speed advantage with minimal impact on model performance.

@@ -1,4 +1,4 @@
-"""Unit Tests for the MPA Dataset Pipeline Torchvision to MMDet."""
+"""Unit Tests for the OTX Dataset Pipeline Torchvision to MMDet."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -45,7 +45,10 @@ class TestColorJitter:
     def test_repr(self) -> None:
         """Test __repr__ method of ColorJitter."""
         transform = ColorJitter(brightness=0.2)
-        assert str(transform) == "ColorJitter(brightness=(0.8, 1.2), contrast=None, saturation=None, hue=None)"
+        assert str(transform) in [
+            "ColorJitter(brightness=[0.8, 1.2], contrast=None, saturation=None, hue=None)",
+            "ColorJitter(brightness=(0.8, 1.2), contrast=None, saturation=None, hue=None)",
+        ]
 
 
 class TestRandomGrayscale:

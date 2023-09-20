@@ -45,13 +45,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     build_data_parallel,
     get_configs_by_pairs,
     patch_adaptive_interval_training,
-    patch_data_pipeline,
     patch_early_stopping,
     patch_from_hyperparams,
     patch_persistent_workers,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-    MPAConfig,
+    OTXConfig,
     update_or_add_custom_hook,
 )
 from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
@@ -87,14 +86,18 @@ class MMActionTask(OTXActionTask):
     def _init_task(self, export: bool = False):  # noqa
         """Initialize task."""
 
-        self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
         self.set_seed()
 
         # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        if os.path.isfile(self.data_pipeline_path):
+            data_pipeline_cfg = Config.fromfile(self.data_pipeline_path)
+            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
+        else:
+            raise FileNotFoundError(f"data_pipeline: {self.data_pipeline_path} not founded")
 
         if not export:
             patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
@@ -161,7 +164,7 @@ class MMActionTask(OTXActionTask):
         """Patch mmcv configs for OTX action settings."""
 
         # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
+        # changes under configuration and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
@@ -510,7 +513,7 @@ class MMActionTask(OTXActionTask):
         deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
-            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+            deploy_cfg = OTXConfig.fromfile(deploy_cfg_path)
 
             def patch_input_preprocessing(deploy_cfg):
                 normalize_cfg = get_configs_by_pairs(

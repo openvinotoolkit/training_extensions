@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .dataset import MPASegDataset, get_annotation_mmseg_format
+from .dataset import OTXSegDataset, get_annotation_mmseg_format
 from .pipelines import (
     LoadAnnotationFromOTXDataset,
     LoadImageFromOTXDataset,
@@ -32,5 +32,5 @@ __all__ = [
     "ProbCompose",
     "TwoCropTransform",
     "get_annotation_mmseg_format",
-    "MPASegDataset",
+    "OTXSegDataset",
 ]

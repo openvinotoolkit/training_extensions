@@ -108,7 +108,7 @@ def filter_task(root: str) -> Dict[str, str]:
         task_key = "_".join(task.split("_")[1:])
     else:
         task_key = task
-    return {"task_key": task_key, "task": task}
+    return task_key, task
 
 
 def is_anomaly_task(task: str) -> bool:
@@ -211,18 +211,44 @@ def save_file(result_data: dict, output_path: str, file_name: str):
     df.to_csv(os.path.join(output_path, file_name))
 
 
+def merge_reg_results_dict(target, source, overwrite=False):
+    target = target.copy()
+    for k, v in source.items():
+        if isinstance(v, Dict):
+            if k in target:
+                target[k] = merge_reg_results_dict(target[k], v)
+            else:
+                target[k] = v
+        elif isinstance(v, List):
+            if len(target[k]) == 0 or overwrite:
+                target[k] = v
+    return target
+
+
+def merge_results_list(results_list: List[Dict]):
+    if len(results_list) == 1:
+        return results_list[0]
+    results_dict = {}
+    for results in results_list:
+        results_dict = merge_reg_results_dict(results_dict, results)
+    return results_dict
+
+
 def summarize_results_data(input_path: str, output_path: str):
     """summarize regression test result data."""
     input_path = input_path
 
-    for root, _, files in os.walk(input_path):
-        for result_file in files:
-            task_dict = filter_task(root)
-            task_key, task = task_dict["task_key"], task_dict["task"]
-
-            json_file_path = os.path.join(root, result_file)
-            with open(json_file_path, "r") as f:
-                json_data = json.load(f)
+    for entity in os.listdir(input_path):
+        entity_path = os.path.join(input_path, entity)
+        if os.path.isdir(entity_path):
+            task_key, task = filter_task(entity_path)
+            results_list = []
+            for result_json in os.listdir(entity_path):
+                result_json_path = os.path.join(entity_path, result_json)
+                if os.path.isfile(result_json_path) and result_json_path.split(".")[-1] == "json":
+                    with open(result_json_path, "r") as f:
+                        results_list.append(json.load(f))
+            json_data = merge_results_list(results_list)
 
             if is_anomaly_task(task) is True:
                 summarize_anomaly_data(task, task_key, json_data, ANOMALY_DATA)

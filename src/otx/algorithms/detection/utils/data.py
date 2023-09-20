@@ -1,18 +1,6 @@
 """Collection of utils for data in Detection Task."""
-
-# Copyright (C) 2021-2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2021-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 import json
 import os.path as osp
@@ -21,10 +9,8 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 from mmdet.datasets.api_wrappers.coco_api import COCO
 
+from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.detection.adapters.mmdet.datasets.dataset import (
-    get_annotation_mmdet_format,
-)
 from otx.algorithms.detection.configs.base.configuration import DetectionConfig
 from otx.api.entities.annotation import (
     Annotation,
@@ -460,36 +446,14 @@ def adaptive_tile_params(
     """
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
 
-    all_sizes = np.zeros((0), dtype=np.float32)
-    labels = dataset.get_labels(include_empty=False)
-    domain = labels[0].domain
-    max_object = 0
-    for dataset_item in dataset:
-        result = get_annotation_mmdet_format(dataset_item, labels, domain)
-        if len(result["bboxes"]):
-            bboxes = result["bboxes"]
-            sizes = 0.5 * (bboxes[:, 2] - bboxes[:, 0] + bboxes[:, 3] - bboxes[:, 1])
-            all_sizes = np.concatenate((all_sizes, sizes), 0)
-            if len(bboxes) > max_object:
-                max_object = len(bboxes)
-
-    log_sizes = np.log(all_sizes)
-    avg_log_size = np.mean(log_sizes)
-    std_log_size = np.std(log_sizes)
-    avg_size = np.exp(avg_log_size)
-    avg_3std_min_size = np.exp(avg_log_size - 3 * std_log_size)
-    avg_3std_max_size = np.exp(avg_log_size + 3 * std_log_size)
-    min_size = np.exp(np.min(log_sizes))
-    max_size = np.exp(np.max(log_sizes))
-    logger.info(f"----> [stat] log scale avg: {avg_size}")
-    logger.info(f"----> [stat] log scale avg - 3*std: {avg_3std_min_size}")
-    logger.info(f"----> [stat] log scale avg + 3*std: {avg_3std_max_size}")
+    stat = compute_robust_dataset_statistics(dataset, ann_stat=True)
+    max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
+    avg_size = stat["annotation"]["size_of_shape"]["avg"]
+    min_size = stat["annotation"]["size_of_shape"]["robust_min"]
+    max_size = stat["annotation"]["size_of_shape"]["robust_max"]
+    logger.info(f"----> [stat] scale avg: {avg_size}")
     logger.info(f"----> [stat] scale min: {min_size}")
     logger.info(f"----> [stat] scale max: {max_size}")
-
-    # Refine min/max to reduce outlier effect
-    min_size = max(min_size, avg_3std_min_size)
-    max_size = min(max_size, avg_3std_max_size)
 
     if rule == "min":
         object_size = min_size
@@ -520,11 +484,11 @@ def adaptive_tile_params(
         tiling_parameters.get_metadata("tile_overlap")["min_value"],
         min(tiling_parameters.get_metadata("tile_overlap")["max_value"], tile_overlap),
     )
-    max_object = max(
+    max_num_objects = max(
         tiling_parameters.get_metadata("tile_max_number")["min_value"],
-        min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_object),
+        min(tiling_parameters.get_metadata("tile_max_number")["max_value"], max_num_objects),
     )
 
     tiling_parameters.tile_size = tile_size
-    tiling_parameters.tile_max_number = max_object
+    tiling_parameters.tile_max_number = max_num_objects
     tiling_parameters.tile_overlap = tile_overlap

@@ -12,13 +12,12 @@ from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    get_configured_input_size,
-    patch_color_conversion,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
+    patch_tiling,
     should_cluster_anchors,
 )
 
@@ -29,37 +28,16 @@ logger = get_logger()
 class DetectionConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    # pylint: disable=too-many-arguments
-    def configure(
-        self,
-        cfg,
-        train_dataset,
-        model_ckpt,
-        data_cfg,
-        ir_options=None,
-        data_classes=None,
-        model_classes=None,
-        input_size: InputSizePreset = InputSizePreset.DEFAULT,
-    ):
-        """Create MMCV-consumable config from given inputs."""
-        logger.info(f"configure!: training={self.training}")
+    def override_from_hyperparams(self, config, hyperparams, **kwargs):
+        """Override config using hyperparameters from OTX cli."""
+        dataset = kwargs.get("train_dataset", None)
+        super().override_from_hyperparams(config, hyperparams)
+        patch_tiling(config, hyperparams, dataset)
 
-        self.configure_base(cfg, data_cfg, data_classes, model_classes)
-        self.configure_device(cfg)
-        self.configure_ckpt(cfg, model_ckpt)
-        self.configure_model(cfg, ir_options)
-        self.configure_data(cfg, data_cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
+    def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
+        """Configuration for model config."""
+        super().configure_model(cfg, data_classes, model_classes, ir_options, **kwargs)
         self.configure_regularization(cfg)
-        self.configure_task(cfg, train_dataset)
-        self.configure_samples_per_gpu(cfg)
-        self.configure_fp16(cfg)
-        self.configure_compat_cfg(cfg)
-        return cfg
-
-    def configure_compatibility(self, cfg, **kwargs):
-        """Configure for OTX compatibility with mmdet."""
-        patch_color_conversion(cfg)
 
     def configure_regularization(self, cfg):  # noqa: C901
         """Patch regularization parameters."""
@@ -80,9 +58,13 @@ class DetectionConfigurer(BaseConfigurer):
                 if "weight_decay" in cfg.optimizer:
                     cfg.optimizer.weight_decay = 0.0
 
-    def configure_task(self, cfg, train_dataset):
+    def configure_task(self, cfg, **kwargs):
         """Patch config to support training algorithm."""
-        super().configure_task(cfg)
+
+        assert "train_dataset" in kwargs
+        train_dataset = kwargs["train_dataset"]
+
+        super().configure_task(cfg, **kwargs)
         if "task_adapt" in cfg:
             if self.data_classes != self.model_classes:
                 self.configure_task_data_pipeline(cfg)
@@ -172,39 +154,42 @@ class DetectionConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt)
-        if input_size is None:
-            return
-
+        # YOLOX tiny has a different input size in train and val data pipeline
         base_input_size = None
         model_cfg = cfg.get("model")
         if model_cfg is not None:
-            if cfg.model.type == "CustomYOLOX":
-                if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
-                    raise ValueError("YOLOX should have input size being multiple of 32.")
-                if cfg.model.backbone.widen_factor == 0.375:  # YOLOX tiny case
-                    # YOLOX tiny has a different input size in train and val data pipeline
-                    cfg.model.input_size = (input_size[0], input_size[1])
-                    base_input_size = {
-                        "train": (640, 640),
-                        "val": (416, 416),
-                        "test": (416, 416),
-                        "unlabeled": (992, 736),
-                    }
+            if cfg.model.type == "CustomYOLOX" and cfg.model.backbone.widen_factor == 0.375:  # YOLOX tiny case
+                base_input_size = {
+                    "train": (640, 640),
+                    "val": (416, 416),
+                    "test": (416, 416),
+                    "unlabeled": (992, 736),
+                }
 
-        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        manager = InputSizeManager(cfg, base_input_size)
+
+        input_size = manager.get_configured_input_size(input_size_config, model_ckpt_path)
+        if input_size is None:  # InputSizePreset.DEFAULT
+            return
+
+        if input_size == (0, 0):  # InputSizePreset.AUTO
+            input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=True)
+            if input_size is None:
+                return
+
+        manager.set_input_size(input_size)
         logger.info("Input size is changed to {}".format(input_size))
 
 
 class IncrDetectionConfigurer(IncrConfigurerMixin, DetectionConfigurer):
     """Patch config to support incremental learning for object detection."""
 
-    def configure_task(self, cfg, train_dataset):
+    def configure_task(self, cfg, **kwargs):
         """Patch config to support incremental learning."""
-        super(IncrConfigurerMixin, self).configure_task(cfg, train_dataset)
+        super(IncrConfigurerMixin, self).configure_task(cfg, **kwargs)
         if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
             self.configure_task_adapt_hook(cfg)
 

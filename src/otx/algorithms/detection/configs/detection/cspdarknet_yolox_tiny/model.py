@@ -1,4 +1,4 @@
-"""Model configuration of YOLOX model for Detection Task."""
+"""Model configuration of YOLOX Tiny model for Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
