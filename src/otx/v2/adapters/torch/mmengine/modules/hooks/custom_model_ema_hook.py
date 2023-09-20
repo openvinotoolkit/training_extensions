@@ -20,7 +20,7 @@ logger = get_logger()
 class CustomModelEMAHook(EMAHook):
     """Custom EMAHook to update momentum for ema over training."""
 
-    def __init__(self, momentum=0.0002, epoch_momentum=0.0, interval=1, **kwargs):
+    def __init__(self, momentum=0.0002, epoch_momentum=0.0, interval=1, **kwargs) -> None:
         super().__init__(momentum=momentum, interval=interval, **kwargs)
         self.momentum = momentum
         self.epoch_momentum = epoch_momentum
@@ -52,7 +52,7 @@ class EMAMomentumUpdateHook(Hook):
     :param by_epoch: Whether updating momentum by epoch or not, defaults to False.
     """
 
-    def __init__(self, end_momentum: float = 1.0, update_interval: int = 1, by_epoch: bool = False):
+    def __init__(self, end_momentum: float = 1.0, update_interval: int = 1, by_epoch: bool = False) -> None:
         self.by_epoch = by_epoch
         self.end_momentum = end_momentum
         self.update_interval = update_interval

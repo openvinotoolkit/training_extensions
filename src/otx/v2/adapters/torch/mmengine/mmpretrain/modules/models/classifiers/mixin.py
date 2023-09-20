@@ -78,7 +78,7 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
 class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
     """Mix-in to track loss dynamics during training for classification tasks."""
 
-    def __init__(self, track_loss_dynamics: bool = False, **kwargs):
+    def __init__(self, track_loss_dynamics: bool = False, **kwargs) -> None:
         if track_loss_dynamics:
             if getattr(self, "multilabel", False) or getattr(self, "hierarchical", False):
                 raise RuntimeError("multilabel or hierarchical tasks are not supported now.")

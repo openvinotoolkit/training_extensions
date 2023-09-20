@@ -17,7 +17,7 @@ logger = get_logger()
 class UnbiasedTeacherHook(DualModelEMAHook):
     """UnbiasedTeacherHook for semi-supervised learnings."""
 
-    def __init__(self, min_pseudo_label_ratio=0.1, **kwargs):
+    def __init__(self, min_pseudo_label_ratio=0.1, **kwargs) -> None:
         super().__init__(**kwargs)
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
         self.unlabeled_loss_enabled = False

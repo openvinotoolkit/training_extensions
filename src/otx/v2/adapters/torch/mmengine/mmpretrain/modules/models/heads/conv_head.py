@@ -3,10 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch.nn.functional as F
+from typing import Optional, Union
+
+import torch
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import ClsHead
 from torch import nn
+from torch.nn import functional
 
 
 @HEADS.register_module()
@@ -21,7 +24,7 @@ class ConvClsHead(ClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(self, num_classes, in_channels, init_cfg=None, **kwargs):
+    def __init__(self, num_classes: int, in_channels: int, init_cfg: Optional[dict] = None, **kwargs) -> None:
         init_cfg = init_cfg if init_cfg else dict(type="Kaiming", layer=["Conv2d"])
         super().__init__(init_cfg=init_cfg, **kwargs)
 
@@ -33,13 +36,13 @@ class ConvClsHead(ClsHead):
 
         self.conv = nn.Conv2d(self.in_channels, self.num_classes, (1, 1))
 
-    def pre_logits(self, x):
+    def pre_logits(self, x: Union[tuple, torch.Tensor]):
         """Preprocess logits."""
         if isinstance(x, tuple):
             x = x[-1]
         return x
 
-    def simple_test(self, x, softmax=True, post_process=True):
+    def simple_test(self, x: Union[tuple, torch.Tensor], softmax: bool = True, post_process: bool = True):
         """Inference without augmentation.
 
         Args:
@@ -63,7 +66,7 @@ class ConvClsHead(ClsHead):
         cls_score = self.conv(x).squeeze()
 
         if softmax:
-            pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+            pred = functional.softmax(cls_score, dim=1) if cls_score is not None else None
         else:
             pred = cls_score
 
@@ -71,11 +74,11 @@ class ConvClsHead(ClsHead):
             return self.post_process(pred)
         return pred
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> Union[list, torch.Tensor]:
         """Forward fuction of ConvClsHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label, **kwargs):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of ConvClsHead class."""
         x = self.pre_logits(cls_score)
         cls_score = self.conv(x).squeeze()

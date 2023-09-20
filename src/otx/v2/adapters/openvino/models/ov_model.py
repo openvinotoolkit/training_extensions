@@ -48,7 +48,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         paired_bn: bool = True,
         init_weight: Union[bool, Callable] = False,
         verify_shape: bool = True,
-    ):
+    ) -> None:
         super().__init__()
         self._model_path_or_model = model_path_or_model
         self._weight_path = weight_path

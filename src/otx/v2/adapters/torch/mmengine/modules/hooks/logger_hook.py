@@ -23,11 +23,11 @@ class OTXLoggerHook(LoggerHook):
     class Curve:
         """Curve with x (epochs) & y (scores)."""
 
-        def __init__(self):
-            self.x = []
-            self.y = []
+        def __init__(self) -> None:
+            self.x: list = []
+            self.y: list = []
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             """Repr function."""
             points = []
             for x, y in zip(self.x, self.y):
@@ -54,7 +54,7 @@ class OTXLoggerHook(LoggerHook):
         ignore_last: bool = True,
         reset_flag: bool = True,
         by_epoch: bool = True,
-    ):
+    ) -> None:
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.curves = curves if curves is not None else defaultdict(self.Curve)
 
@@ -98,7 +98,7 @@ class LoggerReplaceHook(Hook):
     mpa will add this hook to all recipe internally.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     def before_run(self, runner):

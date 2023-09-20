@@ -9,7 +9,7 @@ from functools import partial
 from typing import List
 
 import torch
-from torch.nn import functional as F
+from torch.nn import functional
 
 from .builder import OPS
 from .op import Attribute, Operation
@@ -39,12 +39,12 @@ class PadV1(Operation[PadV1Attribute]):
     VERSION = 1
     ATTRIBUTE_FACTORY = PadV1Attribute
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._pad_mode = self.get_torch_pad_mode(self.attrs.pad_mode)
 
     @staticmethod
-    def get_torch_pad_mode(pad_mode):
+    def get_torch_pad_mode(pad_mode: str) -> str:
         """PadV1's get_torch_pad_mode function."""
         if pad_mode == "constant":
             return "constant"
@@ -66,7 +66,7 @@ class PadV1(Operation[PadV1Attribute]):
         pads_end = pads_end if isinstance(pads_end, list) else pads_end.detach().cpu().tolist()
         pad = self.get_torch_pad_dim(pads_begin, pads_end)
         pad = list(map(math.ceil, pad))
-        return F.pad(input=inputs, pad=pad, mode=self._pad_mode, value=pad_value)
+        return functional.pad(input=inputs, pad=pad, mode=self._pad_mode, value=pad_value)
 
 
 @dataclass
@@ -510,8 +510,8 @@ def get_torch_padding(pads_begin, pads_end, auto_pad, input_size, weight_size, s
             pads_begin.append(padding_lhs if auto_pad == "same_upper" else padding_rhs)
             pads_end.append(padding_rhs if auto_pad == "same_upper" else padding_lhs)
         pad = PadV1.get_torch_pad_dim(pads_begin, pads_end)
-        return partial(F.pad, pad=pad, mode="constant", value=0)
+        return partial(functional.pad, pad=pad, mode="constant", value=0)
     if auto_pad == "explicit":
         pad = PadV1.get_torch_pad_dim(pads_begin, pads_end)
-        return partial(F.pad, pad=pad, mode="constant", value=0)
+        return partial(functional.pad, pad=pad, mode="constant", value=0)
     raise NotImplementedError

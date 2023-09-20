@@ -6,7 +6,7 @@
 from dataclasses import dataclass, field
 
 import torch
-from torch.nn import functional as F
+from torch.nn import functional
 
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.op import Attribute, Operation
@@ -29,14 +29,14 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = BatchNormalizationV0Attribute
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.register_buffer("_num_init_iter", torch.tensor(0))
 
     def forward(self, inputs, gamma, beta, mean, variance):
         """BatchNormalizationV0's forward function."""
 
-        output = F.batch_norm(
+        output = functional.batch_norm(
             input=inputs,
             running_mean=mean,
             running_var=variance,

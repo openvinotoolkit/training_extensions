@@ -8,9 +8,10 @@ import random
 
 import numpy as np
 from torch.utils.data.sampler import Sampler
+from torch.utils.data import Dataset
 
 
-def unwrap_dataset(dataset):
+def unwrap_dataset(dataset: Dataset) -> tuple:
     """A function that unwraps a dataset object to its base dataset.
 
     :param dataset: dataset object, an instance of a dataset.
@@ -40,7 +41,15 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         efficient_mode (bool): Flag about using efficient mode
     """
 
-    def __init__(self, dataset, samples_per_gpu, efficient_mode=False, num_replicas=1, rank=0, drop_last=False):
+    def __init__(
+        self,
+        dataset: Dataset,
+        samples_per_gpu: int,
+        efficient_mode: bool = False,
+        num_replicas: int = 1,
+        rank: int = 0,
+        drop_last: bool = False,
+    ) -> None:
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
@@ -70,7 +79,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         self.num_samples = self._calcuate_num_samples()
 
-    def _calcuate_num_samples(self):
+    def _calcuate_num_samples(self) -> int:
         num_samples = self.repeat * (1 + self.old_new_ratio) * int(self.data_length / (1 + self.old_new_ratio))
 
         if not self.drop_last:
@@ -138,6 +147,6 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         return iter(indices)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return length of selected samples."""
         return self.num_samples

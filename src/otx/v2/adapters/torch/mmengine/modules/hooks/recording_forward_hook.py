@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Any, List, Sequence, Union
+from typing import Any, Sequence
 
 import numpy as np
 import torch
@@ -49,7 +49,7 @@ class BaseRecordingForwardHook(ABC):
     def __init__(self, module: torch.nn.Module, fpn_idx: int = -1, normalize: bool = True) -> None:
         self._module = module
         self._handle = None
-        self._records: List[torch.Tensor] = []
+        self._records: list[torch.Tensor] = []
         self._fpn_idx = fpn_idx
         self._norm_saliency_maps = normalize
 
@@ -98,7 +98,7 @@ class BaseRecordingForwardHook(ABC):
         for tensor in tensors_np:
             self._records.append(tensor)
 
-    def _torch_to_numpy_from_list(self, tensor_list: List[Any]):
+    def _torch_to_numpy_from_list(self, tensor_list: list[Any]):
         for i in range(len(tensor_list)):
             if isinstance(tensor_list[i], list):
                 self._torch_to_numpy_from_list(tensor_list[i])
@@ -118,7 +118,7 @@ class BaseRecordingForwardHook(ABC):
 class EigenCamHook(BaseRecordingForwardHook):
     """EigenCamHook."""
 
-    def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map."""
         if isinstance(feature_map, (list, tuple)):
             feature_map = feature_map[fpn_idx]
@@ -140,7 +140,7 @@ class EigenCamHook(BaseRecordingForwardHook):
 class ActivationMapHook(BaseRecordingForwardHook):
     """ActivationMapHook."""
 
-    def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
         if isinstance(feature_map, (list, tuple)):
             assert fpn_idx < len(
@@ -163,7 +163,7 @@ class FeatureVectorHook(BaseRecordingForwardHook):
     """FeatureVectorHook."""
 
     @staticmethod
-    def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+    def func(feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the feature vector by average pooling feature maps."""
         if isinstance(feature_map, (list, tuple)):
             # aggregate feature maps from Feature Pyramid Network
@@ -186,7 +186,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         self._head = module.head
         self._num_classes = module.head.num_classes
 
-    def func(self, feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = -1) -> torch.Tensor:
+    def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the class-wise saliency maps using Recipro-CAM and then normalizing to (0, 255).
 
         Args:
@@ -256,7 +256,7 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
 
     def __init__(
         self, module: torch.nn.Module, layer_index: int = -1, use_gaussian: bool = True, cls_token: bool = True
-    ):
+    ) -> None:
         super().__init__(module)
         self._layer_index = layer_index
         self._target_layernorm = self._get_target_layernorm()

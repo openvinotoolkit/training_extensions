@@ -31,14 +31,14 @@ from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.utils.logger import get_logger
 
-from .base_dataset_adapter import BaseDatasetAdapter
+from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches,
 # pylint: too-many-arguments
 
 
-class SegmentationDatasetAdapter(BaseDatasetAdapter):
-    """Segmentation adapter inherited from BaseDatasetAdapter.
+class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
+    """Segmentation adapter inherited from DatumaroDatasetAdapter.
 
     It converts DatumaroDataset --> DatasetEntity for semantic segmentation task
     """
@@ -236,7 +236,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         if mode == "FH":
             pseudo_mask = felzenszwalb(img, scale=1000, min_size=1000)
         else:
-            raise ValueError((f'{mode} is not supported to create pseudo masks for DetCon. Choose one of ["FH"].'))
+            raise ValueError(f'{mode} is not supported to create pseudo masks for DetCon. Choose one of ["FH"].')
 
         cv2.imwrite(pseudo_mask_path, pseudo_mask.astype(np.uint8))
 

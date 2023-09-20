@@ -29,7 +29,7 @@ class LoadImageFromOTXDataset:
     :param to_float32: optional bool, True to convert images to fp32. defaults to False
     """
 
-    def __init__(self, to_float32: bool = False):
+    def __init__(self, to_float32: bool = False) -> None:
         self.to_float32 = to_float32
         try:
             self.mem_cache_handler = MemCacheHandlerSingleton.get()

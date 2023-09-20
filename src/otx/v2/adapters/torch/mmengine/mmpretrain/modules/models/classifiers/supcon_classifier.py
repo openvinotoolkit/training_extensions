@@ -12,7 +12,7 @@ from mmpretrain.registry import MODELS
 class SupConClassifier(ImageClassifier):
     """SupConClassifier with support for classification tasks."""
 
-    def __init__(self, backbone, neck=None, head=None, pretrained=None, **kwargs):
+    def __init__(self, backbone, neck=None, head=None, pretrained=None, **kwargs) -> None:
         self.multilabel = kwargs.pop("multilabel", False)
         self.hierarchical = kwargs.pop("hierarchical", False)
         super().__init__(backbone, neck=neck, head=head, pretrained=pretrained, **kwargs)

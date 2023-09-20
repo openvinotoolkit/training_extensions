@@ -25,7 +25,7 @@ class ComposedDataLoadersHook(Hook):
     def __init__(
         self,
         data_loaders: Union[Sequence[DataLoader], DataLoader],
-    ):
+    ) -> None:
         self.data_loaders: List[DataLoader] = []
         self.composed_loader = None
 

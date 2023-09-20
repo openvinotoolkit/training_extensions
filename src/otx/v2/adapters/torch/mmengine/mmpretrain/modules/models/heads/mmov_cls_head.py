@@ -6,9 +6,9 @@
 from typing import Dict, List, Optional, Union
 
 import openvino.runtime as ov
-import torch.nn.functional as F
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import ClsHead
+from torch.nn import functional
 
 from otx.v2.adapters.openvino.graph.parsers.cls import cls_base_parser
 from otx.v2.adapters.openvino.models.mmov_model import MMOVModel
@@ -42,7 +42,7 @@ class MMOVClsHead(ClsHead):
         verify_shape: bool = True,
         softmax_at_test: bool = True,
         **kwargs,
-    ):  # pylint: disable=too-many-arguments
+    ) -> None:  # pylint: disable=too-many-arguments
         kwargs.pop("in_channels", None)
         kwargs.pop("num_classes", None)
         super().__init__(**kwargs)
@@ -84,7 +84,7 @@ class MMOVClsHead(ClsHead):
         while cls_score.dim() > 2:
             cls_score = cls_score.squeeze(2)
         if self._softmax_at_test:
-            pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+            pred = functional.softmax(cls_score, dim=1) if cls_score is not None else None
         else:
             pred = cls_score
         return self.post_process(pred)

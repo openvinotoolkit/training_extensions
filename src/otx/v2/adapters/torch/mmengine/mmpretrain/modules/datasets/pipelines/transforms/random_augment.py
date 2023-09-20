@@ -173,7 +173,7 @@ rand_augment_pool = [
 class OTXRandAugment:
     """RandAugment class for OTX classification."""
 
-    def __init__(self, num_aug, magnitude, cutout_value=16):
+    def __init__(self, num_aug, magnitude, cutout_value=16) -> None:
         assert num_aug >= 1
         assert 1 <= magnitude <= 10
         self.num_aug = num_aug

@@ -15,7 +15,7 @@ logger = get_logger()
 class CDLIterator:
     """Iterator for aligning the number of batches as many as samples in the first iterator."""
 
-    def __init__(self, cdl):
+    def __init__(self, cdl) -> None:
         self._cdl = cdl
         self._index = 0
         self._cdl_iter = [iter(dl) for dl in self._cdl.loaders]
@@ -61,7 +61,7 @@ class ComposedDL:
         logger.info(f"possible max iterations = {self.max_iter}")
         self._sampler = ComposedDL.DummySampler(self)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return length of the first loader."""
         return self.max_iter
 

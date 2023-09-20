@@ -7,7 +7,7 @@ import math
 from dataclasses import dataclass, field
 
 import torch
-from torch.nn import functional as F
+from torch.nn import functional
 
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.op import Attribute, Operation
@@ -30,7 +30,7 @@ class SoftMaxV0(Operation[SoftMaxV0Attribute]):
 
     def forward(self, inputs):
         """SoftMaxV0's forward function."""
-        return F.softmax(input=inputs, dim=self.attrs.axis)
+        return functional.softmax(input=inputs, dim=self.attrs.axis)
 
 
 @dataclass
@@ -50,7 +50,7 @@ class SoftMaxV1(Operation[SoftMaxV1Attribute]):
 
     def forward(self, inputs):
         """SoftMaxV1's forward function."""
-        return F.softmax(input=inputs, dim=self.attrs.axis)
+        return functional.softmax(input=inputs, dim=self.attrs.axis)
 
 
 @dataclass
@@ -70,7 +70,7 @@ class ReluV0(Operation[ReluV0Attribute]):
 
     def forward(self, inputs):
         """ReluV0's forward function."""
-        return F.relu(inputs)
+        return functional.relu(inputs)
 
 
 @dataclass
@@ -151,7 +151,7 @@ class PReluV0(Operation[PReluV0Attribute]):
 
     def forward(self, inputs, slope):
         """PReluV0's forward function."""
-        return F.prelu(input=inputs, weight=slope)
+        return functional.prelu(input=inputs, weight=slope)
 
 
 @dataclass
@@ -171,7 +171,7 @@ class TanhV0(Operation[TanhV0Attribute]):
 
     def forward(self, inputs):
         """TanhV0's forward function."""
-        return F.tanh(inputs)
+        return functional.tanh(inputs)
 
 
 @dataclass
@@ -191,7 +191,7 @@ class EluV0(Operation[EluV0Attribute]):
 
     def forward(self, inputs):
         """EluV0's forward function."""
-        return F.elu(input=inputs, alpha=self.attrs.alpha)
+        return functional.elu(input=inputs, alpha=self.attrs.alpha)
 
 
 @dataclass
@@ -211,7 +211,7 @@ class SeluV0(Operation[SeluV0Attribute]):
 
     def forward(self, inputs, alpha, lambda_):
         """SeluV0's forward function."""
-        return lambda_ * F.elu(input=inputs, alpha=alpha)
+        return lambda_ * functional.elu(input=inputs, alpha=alpha)
 
 
 @dataclass
@@ -232,8 +232,8 @@ class MishV4(Operation[MishV4Attribute]):
     def forward(self, inputs):
         """MishV4's forward function."""
         # NOTE: pytorch 1.8.2 does not have mish function
-        #  return F.mish(input=input)
-        return inputs * F.tanh(F.softplus(inputs))
+        #  return functional.mish(input=input)
+        return inputs * functional.tanh(functional.softplus(inputs))
 
 
 @dataclass
@@ -253,7 +253,7 @@ class HSwishV4(Operation[HSwishV4Attribute]):
 
     def forward(self, inputs):
         """HSwishV4's forward function."""
-        return F.hardswish(input=inputs)
+        return functional.hardswish(input=inputs)
 
 
 @dataclass
@@ -273,7 +273,7 @@ class HSigmoidV5(Operation[HSigmoidV5Attribute]):
 
     def forward(self, inputs):
         """HSigmoidV5's forward function."""
-        return F.hardsigmoid(input=inputs)
+        return functional.hardsigmoid(input=inputs)
 
 
 @dataclass
@@ -348,9 +348,11 @@ class GeluV7(Operation[GeluV7Attribute]):
         """GeluV7's forward function."""
         mode = self.attrs.approximation_mode
         if mode == "ERF":
-            return F.gelu(input=inputs)
+            return functional.gelu(input=inputs)
         if mode == "tanh":
             return (
-                inputs * 0.5 * (1 + F.tanh(torch.sqrt(2 / torch.tensor(math.pi)) * (inputs + 0.044715 * inputs**3)))
+                inputs
+                * 0.5
+                * (1 + functional.tanh(torch.sqrt(2 / torch.tensor(math.pi)) * (inputs + 0.044715 * inputs**3)))
             )
         return None

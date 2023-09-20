@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional, Union
+
 import torch
 from mmcv.cnn import build_activation_layer
 from mmengine.model import constant_init, normal_init
@@ -31,15 +33,15 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
     # pylint: disable=too-many-arguments
     def __init__(
         self,
-        num_classes,
-        in_channels,
-        hid_channels=1280,
-        act_cfg=None,
-        scale=1.0,
-        loss=None,
-        dropout=False,
-        normalized=False,
-    ):
+        num_classes: int,
+        in_channels: int,
+        hid_channels: int = 1280,
+        act_cfg: Optional[dict] = None,
+        scale: float = 1.0,
+        loss: Optional[dict] = None,
+        dropout: bool = False,
+        normalized: bool = False,
+    ) -> None:
         act_cfg = act_cfg if act_cfg else dict(type="ReLU")
         loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
         super().__init__(loss=loss)
@@ -56,7 +58,7 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
 
         self._init_layers(act_cfg)
 
-    def _init_layers(self, act_cfg):
+    def _init_layers(self, act_cfg: Optional[dict]) -> None:
         modules = [
             nn.Linear(self.in_channels, self.hid_channels),
             nn.BatchNorm1d(self.hid_channels),
@@ -71,7 +73,7 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
 
         self.classifier = nn.Sequential(*modules)
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         """Iniitalize weights of model."""
         for module in self.classifier:
             if isinstance(module, nn.Linear):
@@ -79,7 +81,9 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             elif isinstance(module, nn.BatchNorm1d):
                 constant_init(module, 1)
 
-    def loss(self, cls_score, gt_label, valid_label_mask=None):
+    def loss(
+        self, cls_score: torch.Tensor, gt_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None
+    ) -> dict:
         """Calculate loss for given cls_score/gt_label."""
         gt_label = gt_label.type_as(cls_score)
         num_samples = len(cls_score)
@@ -97,11 +101,11 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         losses["loss"] = loss / self.scale
         return losses
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> Union[list, torch.Tensor]:
         """Forward fuction of CustomMultiLabelNonLinearClsHead."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label, **kwargs):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of CustomMultiLabelNonLinearClsHead."""
         img_metas = kwargs.get("img_metas", False)
         cls_score = self.pre_logits(cls_score)
@@ -120,7 +124,7 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             losses = self.loss(cls_score, gt_label)
         return losses
 
-    def simple_test(self, img):
+    def simple_test(self, img: torch.Tensor) -> torch.Tensor:
         """Test without augmentation."""
         img = self.pre_logits(img)
         cls_score = self.classifier(img) * self.scale
@@ -132,7 +136,7 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         pred = list(pred.detach().cpu().numpy())
         return pred
 
-    def get_valid_label_mask(self, img_metas):
+    def get_valid_label_mask(self, img_metas: list) -> torch.Tensor:
         """Get valid label with ignored_label mask."""
         valid_label_mask = []
         for meta in img_metas:

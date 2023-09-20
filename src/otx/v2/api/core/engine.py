@@ -23,10 +23,10 @@ class Engine:
     @abstractmethod
     def train(
         self,
-        model,
-        train_dataloader,
-        val_dataloader=None,
-        optimizer=None,
+        model: Optional[Union[str, dict, list, object]],
+        train_dataloader: Optional[Union[dict, object]],
+        val_dataloader: Optional[Union[dict, object]] = None,
+        optimizer: Optional[Union[dict, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
         max_epochs: Optional[int] = None,
@@ -36,7 +36,7 @@ class Engine:
         precision: Optional[str] = None,
         val_interval: Optional[int] = None,
         **kwargs,
-    ):
+    ) -> dict:
         r"""OTX Engine train function.
 
         Args:
@@ -72,12 +72,12 @@ class Engine:
     @abstractmethod
     def validate(
         self,
-        model,
-        val_dataloader,
+        model: Optional[Union[str, dict, list, object]],
+        val_dataloader: Optional[Union[dict, object]],
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
         **kwargs,
-    ):
+    ) -> dict:
         r"""OTX Engine validate function.
 
         Args:
@@ -96,12 +96,12 @@ class Engine:
     @abstractmethod
     def test(
         self,
-        model,
-        test_dataloader,
+        model: Optional[Union[str, dict, list, object]],
+        test_dataloader: Optional[Union[dict, object]],
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
         **kwargs,
-    ):
+    ) -> dict:
         r"""OTX Engine test function.
 
         Args:
@@ -120,8 +120,8 @@ class Engine:
     @abstractmethod
     def predict(
         self,
-        model,
-        img,
+        model: Optional[Union[str, dict, list, object]],
+        img: Optional[Union[str, Path, object]],
         checkpoint: Optional[Union[str, Path]] = None,
         pipeline: Optional[Union[Dict, List]] = None,
         **kwargs,
@@ -147,11 +147,11 @@ class Engine:
     @abstractmethod
     def export(
         self,
-        model=None,
+        model: Optional[Union[str, dict, list, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
         **kwargs,
-    ):
+    ) -> dict:
         r"""OTX Engine export function.
 
         Args:

@@ -100,7 +100,7 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         loss_weight (float): Weight of loss. Defaults to 1.0.
     """
 
-    def __init__(self, gamma_pos=0.0, gamma_neg=1.0, k=0.8, clip=0.05, reduction="mean", loss_weight=1.0):
+    def __init__(self, gamma_pos=0.0, gamma_neg=1.0, k=0.8, clip=0.05, reduction="mean", loss_weight=1.0) -> None:
         """Init fuction of AsymmetricAngularLossWithIgnore class."""
         super().__init__()
         self.gamma_pos = gamma_pos

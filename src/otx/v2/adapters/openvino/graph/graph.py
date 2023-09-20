@@ -29,7 +29,7 @@ logger = get_logger()
 class SortedDictKeysView(_collections_abc.KeysView):
     """SortedDictKeysView class."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Function repr of SortedDictKeysView."""
         return f"{self.__class__.__name__}({list(self._mapping)})"
 
@@ -41,7 +41,7 @@ class SortedDictKeysView(_collections_abc.KeysView):
 class SortedDictValuesView(_collections_abc.ValuesView):
     """SortedDictValuesView class."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Sorteddictvaluesview's repr function."""
         return f"{self.__class__.__name__}({[self._mapping[i] for i in self._mapping]})"
 
@@ -54,7 +54,7 @@ class SortedDictValuesView(_collections_abc.ValuesView):
 class SortedDictItemsView(_collections_abc.ItemsView):
     """SortedDictItemsView class."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Sorteddictitemsview's repr function."""
         return f"{self.__class__.__name__}({[(i, self._mapping[i]) for i in self._mapping]})"
 
@@ -73,7 +73,7 @@ class NOOP:
 class SortedDict(dict):
     """SortedDict class."""
 
-    def __init__(self, sort_key, *args, **kwargs):
+    def __init__(self, sort_key, *args, **kwargs) -> None:
         self._sort_key = sort_key
         self._sorted_keys = []
         super().__init__(self, *args, **kwargs)
@@ -109,7 +109,7 @@ class SortedDict(dict):
         for _, key, _ in self._sorted_keys[::-1]:
             yield key
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Sorteddict's repr function."""
         if not len(self):  # pylint: disable=use-implicit-booleaness-not-len
             return "{}"
@@ -173,7 +173,7 @@ class SortedDict(dict):
 class SortedDictHelper(dict):
     """SortedDictHelper class."""
 
-    def __init__(self, sort_key=None, *args, **kwargs):  # pylint: disable=keyword-arg-before-vararg
+    def __init__(self, sort_key=None, *args, **kwargs) -> None:  # pylint: disable=keyword-arg-before-vararg
         self._sort_key = sort_key
         super().__init__(*args, **kwargs)
 
@@ -189,7 +189,7 @@ class Graph(nx.MultiDiGraph):
 
     adjlist_outer_dict_factory = SortedDictHelper
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         self._adj = self.adjlist_outer_dict_factory("out_port")
@@ -462,7 +462,7 @@ class Graph(nx.MultiDiGraph):
             start_nodes = [found[-1] for found in founds]
         return founds
 
-    def _freeze_normalize_nodes(self):  # noqa: C901
+    def _freeze_normalize_nodes(self) -> None:
         """Graph's _freeze_normalize_nodes function."""
         invariant_types = ["Transpose", "Convert"]
 

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 import numpy as np
-from torch.nn import functional as F
+from torch.nn import functional
 
 from .builder import OPS
 from .movements import PadV1
@@ -72,7 +72,7 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
     VERSION = 4
     ATTRIBUTE_FACTORY = InterpolateV4Attribute
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.pad = PadV1("tmp", shape=self.shape, pad_mode="constant")
 
@@ -121,7 +121,7 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
             if output.dim() == len(sizes):
                 sizes = sizes[2:]
 
-            return F.interpolate(
+            return functional.interpolate(
                 input=output,
                 size=sizes,
                 scale_factor=None,
@@ -133,7 +133,7 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
         if output.dim() == len(scales):
             scales = scales[2:]
 
-        return F.interpolate(
+        return functional.interpolate(
             input=output,
             size=None,
             scale_factor=scales,

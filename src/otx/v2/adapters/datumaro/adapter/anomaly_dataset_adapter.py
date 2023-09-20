@@ -29,11 +29,11 @@ from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 
-from .base_dataset_adapter import BaseDatasetAdapter
+from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 
 
-class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
-    """BaseDataset Adpater for Anomaly tasks inherited from BaseDatasetAdapter."""
+class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
+    """BaseDataset Adpater for Anomaly tasks inherited from DatumaroDatasetAdapter."""
 
     def _import_datasets(
         self,
@@ -189,7 +189,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
 
 
 class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
-    """Anomaly segmentation adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
+    """Anomaly segmentation adapter inherited by AnomalyBaseDatasetAdapter and DatumaroDatasetAdapter."""
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Conver DatumaroDataset to DatasetEntity for Anomaly segmentation."""

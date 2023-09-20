@@ -4,12 +4,12 @@
 #
 
 import torch
-import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmengine.model import constant_init, normal_init
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads.cls_head import ClsHead
 from torch import nn
+from torch.nn import functional
 
 
 @HEADS.register_module()
@@ -36,7 +36,7 @@ class NonLinearClsHead(ClsHead):
         topk=(1,),
         dropout=False,
         **kwargs,
-    ):  # pylint: disable=too-many-arguments
+    ) -> None:  # pylint: disable=too-many-arguments
         topk = (1,) if num_classes < 5 else (1, 5)
         act_cfg = act_cfg if act_cfg else dict(type="ReLU")
         loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
@@ -52,7 +52,7 @@ class NonLinearClsHead(ClsHead):
 
         self._init_layers()
 
-    def _init_layers(self):
+    def _init_layers(self) -> None:
         if self.dropout:
             self.classifier = nn.Sequential(
                 nn.Linear(self.in_channels, self.hid_channels),
@@ -77,14 +77,14 @@ class NonLinearClsHead(ClsHead):
             elif isinstance(module, nn.BatchNorm1d):
                 constant_init(module, 1)
 
-    def simple_test(self, img):
+    def simple_test(self, img: torch.Tensor) -> torch.Tensor:
         """Test without augmentation."""
         cls_score = self.classifier(img)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         if torch.onnx.is_in_onnx_export():
             return cls_score
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        pred = functional.softmax(cls_score, dim=1) if cls_score is not None else None
         pred = list(pred.detach().cpu().numpy())
         return pred
 

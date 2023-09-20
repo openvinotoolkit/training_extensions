@@ -15,7 +15,7 @@ class IBLossHook(Hook):
     It passes the number of data per class and current epoch to IB loss class.
     """
 
-    def __init__(self, dst_classes):
+    def __init__(self, dst_classes) -> None:
         """Initialize the IBLossHook.
 
         Args:

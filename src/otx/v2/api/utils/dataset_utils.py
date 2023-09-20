@@ -195,12 +195,12 @@ def contains_anomalous_images(dataset: DatasetEntity) -> bool:
 def add_saliency_maps_to_dataset_item(
     dataset_item: DatasetItemEntity,
     saliency_map: Union[List[Optional[np.ndarray]], np.ndarray],
-    model: Any,
+    model: Any,  # FIXME: It's originally ModelTemplate. However, it has now been deleted.  # noqa: ANN401
     labels: List[LabelEntity],
     predicted_scored_labels: Optional[List[ScoredLabel]] = None,
     explain_predicted_classes: bool = True,
     process_saliency_maps: bool = False,
-):
+) -> None:
     """Add saliency maps (2D array for class-agnostic saliency map,
     3D array or list or 2D arrays for class-wise saliency maps) to a single dataset item.
     """
@@ -235,14 +235,14 @@ def add_saliency_maps_to_dataset_item(
             label = labels[class_id]
             if class_wise_saliency_map is not None and label in explain_targets:
                 if process_saliency_maps:
-                    class_wise_saliency_map = get_actmap(
+                    _class_wise_saliency_map = get_actmap(
                         class_wise_saliency_map, (dataset_item.width, dataset_item.height)
                     )
                 saliency_media = ResultMediaEntity(
                     name=label.name,
                     type="saliency_map",
                     annotation_scene=dataset_item.annotation_scene,
-                    numpy=class_wise_saliency_map,
+                    numpy=_class_wise_saliency_map,
                     roi=dataset_item.roi,
                     label=label,
                 )

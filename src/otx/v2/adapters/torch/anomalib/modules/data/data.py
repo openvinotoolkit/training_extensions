@@ -61,7 +61,7 @@ class OTXAnomalyDataset(Dataset):
         torch.Size([3, 256, 256])
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType):
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType) -> None:
         self.config = config
         self.dataset = dataset
         self.task_type = task_type
@@ -118,7 +118,7 @@ class OTXAnomalyDataset(Dataset):
                 if boxes:
                     item["boxes"] = torch.stack(boxes)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
+            if any(isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations()):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
                 mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)

@@ -17,7 +17,7 @@
 import importlib
 import inspect
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 
 def get_impl_class(impl_path: str) -> object:
@@ -63,14 +63,14 @@ def get_otx_root_path() -> str:
     raise ModuleNotFoundError("Cannot found otx.")
 
 
-def get_files_dict(folder_path) -> Dict[str, str]:
+def get_files_dict(folder_path: Union[str, Path]) -> Dict[str, str]:
     file_path_dict = {}
 
-    folder_path = Path(folder_path)
-    if not folder_path.exists():
+    _folder_path: Path = Path(folder_path)
+    if not _folder_path.exists():
         raise ValueError("The specified folder path does not exist.")
 
-    for file_path in folder_path.iterdir():
+    for file_path in _folder_path.iterdir():
         if file_path.is_file():
             file_name = file_path.stem
             file_path_dict[file_name] = str(file_path)

@@ -82,7 +82,7 @@ class OtxMvtecDataset:
         self,
         path: Union[str, Path],
         task_type: TaskType = TaskType.ANOMALY_CLASSIFICATION,
-    ):
+    ) -> None:
         self.path = path if isinstance(path, Path) else Path(path)
         self.task_type = task_type
 

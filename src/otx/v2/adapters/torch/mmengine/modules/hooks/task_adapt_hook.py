@@ -37,7 +37,7 @@ class TaskAdaptHook(Hook):
         sampler_flag=False,
         sampler_type="cls_incr",
         efficient_mode=False,
-    ):
+    ) -> None:
         self.src_classes = src_classes
         self.dst_classes = dst_classes
         self.model_type = model_type

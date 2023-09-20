@@ -21,11 +21,11 @@ from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 
-from .base_dataset_adapter import BaseDatasetAdapter
+from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 
 
-class ClassificationDatasetAdapter(BaseDatasetAdapter):
-    """Classification adapter inherited from BaseDatasetAdapter.
+class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
+    """Classification adapter inherited from DatumaroDatasetAdapter.
 
     It converts DatumaroDataset -> DatasetEntity
     for multi-class, multi-label, and hierarchical-label classification tasks

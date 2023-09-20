@@ -13,7 +13,6 @@ import subprocess
 from importlib.metadata import requires
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Dict, List, Optional
 from warnings import warn
 
 import pkg_resources  # type: ignore[import]
@@ -58,14 +57,14 @@ def get_requirements_from_file(filenames: str | list[str]) -> list[Requirement]:
 
     requirements: list[Requirement] = []
     for filename in filenames:
-        with open(filename, "r") as file:
+        with open(filename) as file:
             reqs = [req for req in pkg_resources.parse_requirements(file)]
             requirements.extend(reqs)
 
     return requirements
 
 
-def get_requirements(module: str = "otx") -> Dict[str, List[Requirement]]:
+def get_requirements(module: str = "otx") -> dict[str, list[Requirement]]:
     """Get requirements of module from importlib.metadata.
 
     This function returns list of required packages from importlib_metadata.
@@ -81,21 +80,21 @@ def get_requirements(module: str = "otx") -> Dict[str, List[Requirement]]:
     Returns:
         Dict[str, List[Requirement]]: List of required packages for each optional-extras.
     """
-    requirement_list: Optional[List[str]] = requires(module)
-    extra_requirement: Dict[str, List[Requirement]] = {}
+    requirement_list: list[str] | None = requires(module)
+    extra_requirement: dict[str, list[Requirement]] = {}
     if requirement_list is None:
         return extra_requirement
     for requirement in requirement_list:
         extra = "api"
-        requirement_extra: List[str] = requirement.replace(" ", "").split(";")
+        requirement_extra: list[str] = requirement.replace(" ", "").split(";")
         if isinstance(requirement_extra, list) and len(requirement_extra) > 1:
             extra = requirement_extra[-1].split("==")[-1].strip("'\"")
-        requirement = requirement_extra[0]
-        requirement = Requirement.parse(requirement)
+        _requirement = requirement_extra[0]
+        _requirement = Requirement.parse(_requirement)
         if extra in extra_requirement:
-            extra_requirement[extra].append(requirement)
+            extra_requirement[extra].append(_requirement)
         else:
-            extra_requirement[extra] = [requirement]
+            extra_requirement[extra] = [_requirement]
     return extra_requirement
 
 
@@ -196,7 +195,7 @@ def get_cuda_version() -> str | None:
         # Check $CUDA_HOME/version.json file.
         version_file = Path(cuda_home) / "version.json"
         if version_file.is_file():
-            with open(version_file, "r") as file:
+            with open(version_file) as file:
                 data = json.load(file)
                 cuda_version = data.get("cuda", {}).get("version", None)
                 if cuda_version is not None:
@@ -526,7 +525,7 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
     return install_args
 
 
-def mim_installation(requirements: list[str]):
+def mim_installation(requirements: list[str]) -> None:
     """Installing libraries with mim api.
 
     Args:
@@ -542,7 +541,7 @@ def mim_installation(requirements: list[str]):
     install(requirements)
 
 
-def get_module_version(module_name: str) -> Optional[str]:
+def get_module_version(module_name: str) -> str | None:
     try:
         module_version = pkg_resources.get_distribution(module_name).version
     except pkg_resources.DistributionNotFound:

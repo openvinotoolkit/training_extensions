@@ -15,7 +15,7 @@ from otx.v2.adapters.openvino.models.mmov_model import MMOVModel
 class MMOVNeck(MMOVModel):
     """Neck class for MMOV inference."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
     @staticmethod

@@ -18,7 +18,6 @@ from jsonargparse import (
 )
 
 # Add the constructor to the YAML loader
-from jsonargparse._loaders_dumpers import DefaultLoader
 from rich.console import Console
 
 from otx.v2 import OTX_LOGO, __version__
@@ -27,11 +26,8 @@ from otx.v2.api.utils.logger import get_logger
 from otx.v2.cli.utils.help_formatter import OTXHelpFormatter, render_guide
 
 from .extensions import CLI_EXTENSIONS
-from .utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments, tuple_constructor
+from .utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments
 from .utils.workspace import Workspace
-
-DefaultLoader.add_constructor("tag:yaml.org,2002:python/tuple", tuple_constructor)
-
 
 ArgsType = Optional[Union[List[str], Dict[str, Any], Namespace]]
 
@@ -43,7 +39,7 @@ class OTXCLIv2:
         self,
         args: ArgsType = None,
         parser_kwargs: Dict[str, Any] = {},
-    ):
+    ) -> None:
         self.console = Console()
         self.error = None
         self.model_name = None
@@ -94,9 +90,7 @@ class OTXCLIv2:
         subparser_kwargs = {k: v for k, v in parser_kwargs.items() if k in subcommand_names}
         return main_kwargs, subparser_kwargs
 
-    def init_parser(
-        self, default_config_files: Optional[List[Optional[str]]] = None, **kwargs: Any
-    ) -> OTXArgumentParser:
+    def init_parser(self, default_config_files: Optional[List[Optional[str]]] = None, **kwargs) -> OTXArgumentParser:
         """Method that instantiates the argument parser."""
         parser = OTXArgumentParser(default_config_files=default_config_files, **kwargs)
         parser.add_argument(
@@ -168,7 +162,7 @@ class OTXCLIv2:
             subcommand_parser = self._prepare_subcommand_parser(self._engine_class, subcommand, **subparser_kwargs)
             self.parser_subcommands.add_subcommand(subcommand, subcommand_parser, help=description)
 
-    def _prepare_subcommand_parser(self, klass: Type, subcommand: str, **kwargs: Any) -> OTXArgumentParser:
+    def _prepare_subcommand_parser(self, klass: Type, subcommand: str, **kwargs) -> OTXArgumentParser:
         parser = self.init_parser(default_config_files=self.default_config_files, **kwargs)
         if self.model_class is not None:
             parser.add_core_class_args(self.model_class, "model", subclass_mode=False)
@@ -283,7 +277,13 @@ class OTXCLIv2:
             )
         self.config_init = self.parser.instantiate_classes(self.config)
         data_cfg = self._pop(self.config_init, "data")
+        if not isinstance(data_cfg, (dict, Namespace)):
+            # TODO: Exception
+            raise ValueError("")
         model_cfg = self._pop(self.config_init, "model")
+        if not isinstance(model_cfg, (dict, Namespace)):
+            # TODO: Exception
+            raise ValueError("")
 
         # Build Dataset
         self.data = self.data_class(**data_cfg)
@@ -296,6 +296,9 @@ class OTXCLIv2:
         if config is not None and len(config) > 0:
             config = str(config[0])
         work_dir = self._pop(self.config_init, "work_dir")
+        if not isinstance(work_dir, str):
+            # TODO: Need to fix properly.
+            work_dir = None
 
         # Workspace
         self.workspace = Workspace(work_dir=work_dir, task=str(self.auto_runner.task.name).lower())
@@ -305,15 +308,11 @@ class OTXCLIv2:
         )
         self.workspace.add_config({"data": {**data_cfg}, "model": {**model_cfg}})
 
-    def _get(self, config: Namespace, key: str, default: Optional[Any] = None) -> Any:
-        """Utility to get a config value which might be inside a subcommand."""
-        return config.get(str(self.subcommand), config).get(key, default)
-
-    def _pop(self, config: Namespace, key: str, default: Optional[Any] = None) -> Any:
+    def _pop(self, config: Namespace, key: str, default: Optional[Any] = None) -> Optional[Union[dict, str, Namespace]]:
         """Utility to get a config value which might be inside a subcommand."""
         return config.get(str(self.subcommand), config).pop(key, default)
 
-    def run(self, subcommand: str):
+    def run(self, subcommand: str) -> None:
         """Runs the subcommand."""
         start_time = time.time()
         if subcommand in CLI_EXTENSIONS:

@@ -27,7 +27,7 @@ class SemiSLClsHook(Hook):
             If False, Semi-SL uses 1 as unlabeled loss coefficient
     """
 
-    def __init__(self, total_steps=0, unlabeled_warmup=True):
+    def __init__(self, total_steps=0, unlabeled_warmup=True) -> None:
         self.unlabeled_warmup = unlabeled_warmup
         self.total_steps = total_steps
         self.current_step, self.unlabeled_coef = 0, 0

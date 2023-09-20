@@ -5,7 +5,7 @@
 
 
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import docstring_parser
 import yaml
@@ -14,11 +14,12 @@ from jsonargparse import (
     Namespace,
     class_from_function,
 )
+from jsonargparse._loaders_dumpers import DefaultLoader
 
-from .help_formatter import OTXHelpFormatter as help_formatter
+from .help_formatter import OTXHelpFormatter
 
 
-def tuple_constructor(loader, node):
+def tuple_constructor(loader: DefaultLoader, node: yaml.SequenceNode) -> Optional[tuple]:
     """Custom Constructor for Python tuples."""
     if isinstance(node, yaml.SequenceNode):
         # Load the elements as a list
@@ -26,6 +27,9 @@ def tuple_constructor(loader, node):
         # Return the tuple
         return tuple(elements)
     return None
+
+
+DefaultLoader.add_constructor("tag:yaml.org,2002:python/tuple", tuple_constructor)
 
 
 def pre_parse_arguments() -> Dict[str, Optional[str]]:
@@ -77,12 +81,12 @@ class OTXArgumentParser(ArgumentParser):
 
     def __init__(
         self,
-        *args: Any,
+        *args,
         description: str = "OpenVINO Training-Extension command line tool",
         env_prefix: str = "otx",
         default_env: bool = False,
         default_config_files: Optional[List[Optional[str]]] = None,
-        **kwargs: Any,
+        **kwargs,
     ) -> None:
         super().__init__(
             *args,
@@ -90,13 +94,13 @@ class OTXArgumentParser(ArgumentParser):
             env_prefix=env_prefix,
             default_env=default_env,
             default_config_files=default_config_files,
-            formatter_class=help_formatter,
+            formatter_class=OTXHelpFormatter,
             **kwargs,
         )
 
     def add_core_class_args(
         self,
-        api_class,
+        api_class: Callable,
         nested_key: str,
         subclass_mode: bool = False,
         required: bool = True,
@@ -143,6 +147,6 @@ class OTXArgumentParser(ArgumentParser):
         skip_none: bool = True,
         skip_required: bool = True,
         branch: Optional[str] = None,
-    ):
+    ) -> None:
         # Skip This one for Flexible Configuration
         pass

@@ -114,17 +114,16 @@ class SemiMultilabelClsHead(OTXHeadMixin):
         unlabeled_coef=0.1,
         use_dynamic_loss_weighting=True,
         aux_loss=None,
-    ):
+    ) -> None:
         aux_loss = (
             aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
         )
         self.unlabeled_coef = unlabeled_coef
         self.use_dynamic_loss_weighting = use_dynamic_loss_weighting
         self.aux_loss = build_loss(aux_loss)
+        self.loss_balancer: Optional[LossBalancer] = None
         if self.use_dynamic_loss_weighting:
             self.loss_balancer = LossBalancer(2, [1.0, unlabeled_coef])
-        else:
-            self.loss_balancer = None
         self.num_pseudo_label = 0
 
     def loss(self, logits, gt_label, features):
@@ -207,7 +206,7 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         unlabeled_coef=0.1,
         aux_loss=None,
         use_dynamic_loss_weighting=True,
-    ):  # pylint: disable=too-many-arguments
+    ) -> None:  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -269,7 +268,7 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         dropout=False,
         unlabeled_coef=0.1,
         use_dynamic_loss_weighting=True,
-    ):  # pylint: disable=too-many-arguments
+    ) -> None:  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:

@@ -9,7 +9,7 @@ import functools
 import logging
 import os
 import sys
-from typing import Callable
+from typing import Callable, Optional
 
 # __all__ = ['config_logger', 'get_log_dir', 'get_logger']
 __all__ = ["config_logger", "get_log_dir"]
@@ -28,7 +28,7 @@ def _get_logger() -> logging.Logger:
     logger = logging.getLogger("mpa")
     logger.propagate = False
 
-    def logger_print(message, *args, **kws):
+    def logger_print(message: str, *args, **kws) -> None:
         if logger.isEnabledFor(_CUSTOM_LOG_LEVEL):
             logger.log(_CUSTOM_LOG_LEVEL, message, *args, **kws)
 
@@ -53,7 +53,7 @@ _logger = _get_logger()
 #     __all__.append(fn)
 
 
-def config_logger(log_file, level="WARNING"):
+def config_logger(log_file: str, level: str = "WARNING") -> None:
     """A function that configures the logging system.
 
     :param log_file: str, a string representing the path to the log file.
@@ -74,7 +74,7 @@ def config_logger(log_file, level="WARNING"):
     _logger.setLevel(_get_log_level(level))
 
 
-def _get_log_level(level):
+def _get_log_level(level: str) -> str:
     # sanity checks
     if level is None:
         return None
@@ -88,29 +88,12 @@ def _get_log_level(level):
     return level_number
 
 
-def get_log_dir():
+def get_log_dir() -> Optional[str]:
     """A function that retrieves the directory path of the log file.
 
     :return: str, a string representing the directory path of the log file.
     """
     return _LOG_DIR
-
-
-class _DummyLogger(logging.Logger):
-    def debug(self, message, *args, **kws):
-        pass
-
-    def info(self, message, *args, **kws):
-        pass
-
-    def warning(self, message, *args, **kws):
-        pass
-
-    def critical(self, message, *args, **kws):
-        pass
-
-    def error(self, message, *args, **kws):
-        pass
 
 
 def local_master_only(func: Callable) -> Callable:
@@ -124,7 +107,7 @@ def local_master_only(func: Callable) -> Callable:
     """
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):  # pylint: disable=inconsistent-return-statements
+    def wrapper(*args, **kwargs) -> Optional[Callable]:  # pylint: disable=inconsistent-return-statements
         local_rank = 0
         from torch import distributed as dist
 
@@ -132,6 +115,7 @@ def local_master_only(func: Callable) -> Callable:
             local_rank = int(os.environ["LOCAL_RANK"])
         if local_rank == 0:
             return func(*args, **kwargs)
+        return None
 
     return wrapper
 
@@ -144,11 +128,4 @@ for fn in _logging_methods:
 
 def get_logger() -> logging.Logger:
     """Return logger."""
-    # if dist.is_available() and dist.is_initialized():
-    #     rank = dist.get_rank()
-    # else:
-    #     rank = 0
-    # if rank == 0:
-    #     return _logger
-    # return _DummyLogger('dummy')
     return _logger

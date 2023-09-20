@@ -3,12 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional, Union
+
 import torch
-import torch.nn.functional as F
 from mmengine.model import normal_init
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import MultiLabelClsHead
 from torch import nn
+from torch.nn import functional
 
 from .mixin import OTXHeadMixin
 
@@ -27,12 +29,12 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
 
     def __init__(
         self,
-        num_classes,
-        in_channels,
-        normalized=False,
-        scale=1.0,
-        loss=None,
-    ):
+        num_classes: int,
+        in_channels: int,
+        normalized: bool = False,
+        scale: float = 1.0,
+        loss: Optional[dict] = None,
+    ) -> None:
         loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
         super().__init__(loss=loss)
         if num_classes <= 0:
@@ -44,18 +46,20 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         self.scale = scale
         self._init_layers()
 
-    def _init_layers(self):
+    def _init_layers(self) -> None:
         if self.normalized:
             self.fc = AnglularLinear(self.in_channels, self.num_classes)
         else:
             self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         """Initialize weights of head."""
         if isinstance(self.fc, nn.Linear):
             normal_init(self.fc, mean=0, std=0.01, bias=0)
 
-    def loss(self, cls_score, gt_label, valid_label_mask=None):
+    def loss(
+        self, cls_score: torch.Tensor, gt_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None
+    ) -> dict:
         """Calculate loss for given cls_score/gt_label."""
         gt_label = gt_label.type_as(cls_score)
         num_samples = len(cls_score)
@@ -68,11 +72,11 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         losses["loss"] = loss / self.scale
         return losses
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of CustomMultiLabelLinearClsHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label, **kwargs):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of CustomMultiLabelLinearClsHead."""
         img_metas = kwargs.get("img_metas", False)
         cls_score = self.pre_logits(cls_score)
@@ -91,7 +95,7 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             losses = self.loss(cls_score, gt_label)
         return losses
 
-    def simple_test(self, img):
+    def simple_test(self, img: torch.Tensor) -> Union[list, torch.Tensor]:
         """Test without augmentation."""
         img = self.pre_logits(img)
         cls_score = self.fc(img) * self.scale
@@ -103,7 +107,7 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         pred = list(pred.detach().cpu().numpy())
         return pred
 
-    def get_valid_label_mask(self, img_metas):
+    def get_valid_label_mask(self, img_metas: list) -> torch.Tensor:
         """Get valid label mask using ignored_label."""
         valid_label_mask = []
         for meta in img_metas:
@@ -123,7 +127,7 @@ class AnglularLinear(nn.Module):
         out_features (int): Number of output cosine logits.
     """
 
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features: int, out_features: int) -> None:
         """Init fuction of AngularLinear class."""
         super().__init__()
         self.in_features = in_features
@@ -131,7 +135,9 @@ class AnglularLinear(nn.Module):
         self.weight = nn.Parameter(torch.Tensor(self.out_features, self.in_features))
         self.weight.data.normal_().renorm_(2, 0, 1e-5).mul_(1e5)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of AngularLinear class."""
-        cos_theta = F.normalize(x.view(x.shape[0], -1), dim=1).mm(F.normalize(self.weight.t(), p=2, dim=0))
+        cos_theta = functional.normalize(x.view(x.shape[0], -1), dim=1).mm(
+            functional.normalize(self.weight.t(), p=2, dim=0)
+        )
         return cos_theta.clamp(-1, 1)

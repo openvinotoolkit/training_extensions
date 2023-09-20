@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, unused-argument, too-many-arguments
 
-import abc
+from otx.v2.api.core.dataset import BaseDatasetAdapter
 import os
 from abc import abstractmethod
 from copy import deepcopy
@@ -46,10 +46,10 @@ from otx.v2.api.entities.task_type import TaskType
 from ..caching.storage_cache import init_arrow_cache
 
 
-class BaseDatasetAdapter(metaclass=abc.ABCMeta):
+class DatumaroDatasetAdapter(BaseDatasetAdapter):
     """Base dataset adapter for all of downstream tasks to use Datumaro.
 
-    Mainly, BaseDatasetAdapter detect and import the dataset by using the function implemented in Datumaro.
+    Mainly, DatumaroDatasetAdapter detect and import the dataset by using the function implemented in Datumaro.
     And it could prepare common variable, function (EmptyLabelSchema, LabelSchema, ..) commonly consumed under all tasks
 
     Args:
@@ -84,10 +84,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         test_ann_files: Optional[str] = None,
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
-        cache_config: Optional[Dict[str, Any]] = None,
+        cache_config: Optional[dict] = None,
         encryption_key: Optional[str] = None,
         **kwargs,
-    ):
+    ) -> None:
         self.task_type = task_type
         self.domain = task_type.domain
         self.data_type: str
@@ -385,7 +385,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         """Filter out unlabeled dataset which isn't included in unlabeled file list."""
         allowed_extensions = ["jpg", "png", "jpeg"]
         file_list = []
-        with open(unlabeled_file_list, "r", encoding="utf-8") as f:
+        with open(unlabeled_file_list, encoding="utf-8") as f:
             for line in f.readlines():
                 file_ext = line.rstrip().split(".")[-1]
                 file_list.append(line.split(".")[0])

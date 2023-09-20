@@ -4,9 +4,12 @@
 #
 
 
+from typing import List, Optional
+
 import torch
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import LinearClsHead
+from mmpretrain.structures import DataSample
 
 from .non_linear_cls_head import NonLinearClsHead
 
@@ -15,7 +18,7 @@ from .non_linear_cls_head import NonLinearClsHead
 class CustomNonLinearClsHead(NonLinearClsHead):
     """Custom Nonlinear classifier head."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
@@ -40,13 +43,13 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         losses["loss"] = loss
         return losses
 
-    def loss(self, feats, data_samples, feature=None, **kwargs):
+    def loss(self, feats: torch.Tensor, data_samples: List[DataSample], feature=None, **kwargs):
         """Calculate loss for given cls_score/gt_label."""
         cls_score = self.classifier(feats)
         losses = self._get_loss(cls_score, data_samples, feature, **kwargs)
         return losses
 
-    def forward(self, feats):
+    def forward(self, feats: torch.Tensor) -> torch.Tensor:
         """Forward fuction of CustomNonLinearClsHead class."""
         return self.predict(feats)
 
@@ -63,12 +66,14 @@ class CustomLinearClsHead(LinearClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(self, num_classes, in_channels, init_cfg=None, **kwargs):
+    def __init__(self, num_classes: int, in_channels: int, init_cfg: Optional[dict] = None, **kwargs) -> None:
         init_cfg = init_cfg if init_cfg else dict(type="Normal", layer="Linear", std=0.01)
         super().__init__(num_classes, in_channels, init_cfg=init_cfg, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
-    def _get_loss(self, cls_score: torch.Tensor, data_samples, feature=None, **kwargs):
+    def _get_loss(
+        self, cls_score: torch.Tensor, data_samples: List[DataSample], feature: Optional[torch.Tensor] = None, **kwargs
+    ) -> dict:
         num_samples = len(cls_score)
         losses = dict()
         if "gt_score" in data_samples[0]:
@@ -89,14 +94,14 @@ class CustomLinearClsHead(LinearClsHead):
         losses["loss"] = loss
         return losses
 
-    def loss(self, feats, data_samples, **kwargs):
+    def loss(self, feats: torch.Tensor, data_samples: List[DataSample], **kwargs) -> dict:
         """Calculate loss for given cls_score/gt_label."""
         cls_score = self.fc(feats)
         losses = self._get_loss(cls_score, data_samples, **kwargs)
 
         return losses
 
-    def predict(self, feats, data_samples=None):
+    def predict(self, feats: torch.Tensor, data_samples: Optional[List[DataSample]] = None) -> torch.Tensor:
         """Test without augmentation."""
         cls_score = self.fc(feats)
         if isinstance(cls_score, list):
@@ -106,6 +111,6 @@ class CustomLinearClsHead(LinearClsHead):
         prediction = self._get_predictions(cls_score, data_samples)
         return prediction
 
-    def forward(self, feats):
+    def forward(self, feats: torch.Tensor) -> torch.Tensor:
         """Forward fuction of CustomLinearHead class."""
         return self.predict(feats)

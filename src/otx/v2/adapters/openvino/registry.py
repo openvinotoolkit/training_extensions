@@ -51,6 +51,6 @@ class Registry:
         """Raise KeyError when key not founded."""
         raise KeyError(f"{key} is not found in {self._name}")
 
-    def __contains__(self, item):
+    def __contains__(self, item) -> bool:
         """Check containing of item."""
         return item in self._registry_dict.values()

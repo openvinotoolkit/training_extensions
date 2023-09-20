@@ -45,7 +45,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
         train_subset: Optional[Dict[str, str]] = None,
         val_subset: Optional[Dict[str, str]] = None,
         test_subset: Optional[Dict[str, str]] = None,
-    ):
+    ) -> None:
         """Base Anomaly Dataset.
 
         Args:

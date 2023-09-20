@@ -29,6 +29,7 @@ from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import LabelEntity
+from otx.v2.api.entities.media import IMedia2DEntity
 from otx.v2.api.entities.subset import Subset
 
 IMAGE_FILE_EXTENSIONS = [
@@ -58,7 +59,7 @@ IMAGE_FILE_EXTENSIONS = [
 logger = logging.getLogger(__name__)
 
 
-def get_unlabeled_filename(base_root: str, file_list_path: str):
+def get_unlabeled_filename(base_root: str, file_list_path: str) -> List[str]:
     """This method checks and gets image file paths, which are listed in file_list_path.
 
     The content of file_list_path is expected to specify relative paths of each image file to base_root line by line.
@@ -75,7 +76,7 @@ def get_unlabeled_filename(base_root: str, file_list_path: str):
     def is_valid(file_path: str) -> bool:
         return file_path.lower().endswith(tuple(IMAGE_FILE_EXTENSIONS))
 
-    with open(file_list_path, "r", encoding="UTF-8") as f:
+    with open(file_list_path, encoding="UTF-8") as f:
         file_names = f.read().splitlines()
     unlabeled_files = []
     for fn in file_names:
@@ -88,7 +89,7 @@ def get_unlabeled_filename(base_root: str, file_list_path: str):
 def load_unlabeled_dataset_items(
     data_root_dir: str,
     file_list_path: Optional[str] = None,
-):
+) -> List[DatasetItemEntity]:
     """This method loads unlabeled dataset items from images in data_root_dir.
 
     Args:
@@ -119,7 +120,7 @@ def load_unlabeled_dataset_items(
     return dataset_items
 
 
-def get_dataset(dataset: DatasetEntity, subset: Subset):
+def get_dataset(dataset: DatasetEntity, subset: Subset) -> Optional[DatasetEntity]:
     """Get dataset from datasetentity."""
     data = dataset.get_subset(subset)
     return data if len(data) > 0 else None
@@ -142,7 +143,9 @@ def get_cls_img_indices(labels: List[LabelEntity], dataset: DatasetEntity) -> Di
     return img_indices
 
 
-def get_old_new_img_indices(labels, new_classes, dataset):
+def get_old_new_img_indices(
+    labels: List[LabelEntity], new_classes: List[str], dataset: DatasetEntity
+) -> Dict[str, list]:
     """Function for getting old & new indices of dataset.
 
     Args:
@@ -161,7 +164,7 @@ def get_old_new_img_indices(labels, new_classes, dataset):
     return {"old": ids_old, "new": ids_new}
 
 
-def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.ndarray:
+def get_image(results: Dict[str, Any], cache_dir: str, to_float32: bool = False) -> np.ndarray:
     """Load an image and cache it if it's a training video frame.
 
     Args:
@@ -173,10 +176,10 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
         np.ndarray: The loaded image.
     """
 
-    def is_training_video_frame(subset, media) -> bool:
+    def is_training_video_frame(subset: Subset, media: IMedia2DEntity) -> bool:
         return subset.name in ["TRAINING", "VALIDATION"] and "VideoFrame" in repr(media)
 
-    def load_image_from_cache(filename: str, to_float32=False) -> Union[np.ndarray, None]:
+    def load_image_from_cache(filename: str, to_float32: bool = False) -> Union[np.ndarray, None]:
         try:
             cached_img = cv2.imread(filename)
             if to_float32:
@@ -186,7 +189,7 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32=False) -> np.n
             logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
             return None
 
-    def save_image_to_cache(img: np.array, filename: str):
+    def save_image_to_cache(img: np.array, filename: str) -> None:
         tmp_filename = filename.replace(".png", "-tmp.png")
         if os.path.exists(filename) or os.path.exists(tmp_filename):  # if image is cached or caching
             return

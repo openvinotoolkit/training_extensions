@@ -16,7 +16,7 @@ class SAMOptimizerHook(OptimizerHook):
     - code ref: https://github.com/davda54/sam
     """
 
-    def __init__(self, rho=0.05, start_epoch=1, **kwargs):
+    def __init__(self, rho=0.05, start_epoch=1, **kwargs) -> None:
         super().__init__(**kwargs)
         self.rho = rho
         self.start_epoch = start_epoch

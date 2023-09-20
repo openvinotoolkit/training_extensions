@@ -10,6 +10,7 @@ from copy import deepcopy
 import numpy as np
 from mmengine.config import ConfigDict
 from mmpretrain.datasets.transforms import TRANSFORMS
+from typing import Optional
 from PIL import Image
 
 from otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.augments import (
@@ -43,7 +44,7 @@ _AUGMIX_TRANSFORMS = [
 class OpsFabric:
     """OpsFabric class."""
 
-    def __init__(self, name, magnitude, hparams, prob=1.0):
+    def __init__(self, name, magnitude, hparams, prob=1.0) -> None:
         self.max_level = 10
         self.prob = prob
         self.hparams = hparams
@@ -165,7 +166,7 @@ class AugMixAugment:
     https://arxiv.org/abs/1912.02781.
     """
 
-    def __init__(self, config_str, image_mean=None, grey=False):
+    def __init__(self, config_str, image_mean=None, grey=False) -> None:
         self.ops, self.alpha, self.width, self.depth = self._augmix_ops(config_str, image_mean, grey=grey)
 
     def _apply_basic(self, img, mixing_weights, m):  # pylint: disable=invalid-name
@@ -183,7 +184,9 @@ class AugMixAugment:
         np.clip(mixed, 0, 255.0, out=mixed)
         return Image.fromarray(mixed.astype(np.uint8))
 
-    def _augmix_ops(self, config_str, image_mean=None, translate_const=250, grey=False):
+    def _augmix_ops(
+        self, config_str: str, image_mean: Optional[list] = None, translate_const: int = 250, grey: bool = False
+    ) -> tuple:
         if image_mean is None:
             image_mean = [0.485, 0.456, 0.406]  # imagenet mean
         aug_params = ConfigDict(magnitude=3, width=3, depth=-1, alpha=1.0, p=1.0)

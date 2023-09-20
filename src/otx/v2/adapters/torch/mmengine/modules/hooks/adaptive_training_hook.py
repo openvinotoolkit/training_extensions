@@ -42,7 +42,7 @@ class AdaptiveTrainSchedulingHook(Hook):
         enable_adaptive_interval_hook=False,
         enable_eval_before_run=False,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
 
         self.max_interval = max_interval

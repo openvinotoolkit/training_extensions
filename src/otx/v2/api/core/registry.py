@@ -1,17 +1,17 @@
 import inspect
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from rich.console import Console
 from rich.table import Table
 
 
 class BaseRegistry:
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self._name = name
         self._module_dict: Dict[str, Any] = dict()
         self._registry_dict: Dict[str, Any] = dict()
 
-    def get(self, module_type: str):
+    def get(self, module_type: str) -> Optional[Callable]:
         # Return Registry
         if module_type in self._registry_dict:
             return self._registry_dict[module_type]
@@ -24,15 +24,15 @@ class BaseRegistry:
                 return module.get(module_type)
         return None
 
-    def __len__(self):
+    def __len__(self) -> int:
         # Copy from mmcv.utils.registry.Registry
         return len(self._module_dict)
 
-    def __contains__(self, key):
+    def __contains__(self, key: str) -> bool:
         # Copy from mmcv.utils.registry.Registry
         return self.get(key) is not None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # Evolved from mmengine
         table = Table(title=f"Registry of {self._name}")
         table.add_column("Type", justify="left", style="yellow")
@@ -68,7 +68,13 @@ class BaseRegistry:
         """Dictionary of registries."""
         return self._registry_dict
 
-    def register_module(self, type: Optional[str] = None, name: Optional[str] = None, module=None, force=False):
+    def register_module(
+        self,
+        type: Optional[str] = None,
+        name: Optional[str] = None,
+        module: Optional[object] = None,
+        force: bool = False,
+    ) -> None:
         # Copy from mmcv.utils.registry.Registry
         if not inspect.isclass(module) and not inspect.isfunction(module):
             raise TypeError("module must be a class or a function, " f"but got {str(module)}")

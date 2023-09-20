@@ -38,7 +38,7 @@ class SelfSLMLP(nn.Module):
         norm_cfg: Optional[Dict[str, Any]] = None,
         use_conv: bool = False,
         with_avg_pool: bool = True,
-    ):
+    ) -> None:
         norm_cfg = norm_cfg if norm_cfg else dict(type="BN1d")
         super().__init__()
 

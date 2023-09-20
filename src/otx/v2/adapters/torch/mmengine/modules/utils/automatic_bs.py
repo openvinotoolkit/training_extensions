@@ -145,7 +145,7 @@ class SubDataset:
         num_samples (int): Number of images to pretend to have. It should be positive.
     """
 
-    def __init__(self, fullset, num_samples: int):
+    def __init__(self, fullset, num_samples: int) -> None:
         if num_samples <= 0:
             raise ValueError(f"num_samples should be positive. But, current value is {num_samples}.")
 

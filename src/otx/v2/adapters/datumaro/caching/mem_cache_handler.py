@@ -30,7 +30,7 @@ class MemCacheHandlerBase:
     It will be combined with LoadImageFromOTXDataset to store/retrieve the samples in memory.
     """
 
-    def __init__(self, mem_size: int):
+    def __init__(self, mem_size: int) -> None:
         self._init_data_structs(mem_size)
 
     def _init_data_structs(self, mem_size: int):
@@ -40,7 +40,7 @@ class MemCacheHandlerBase:
         self._lock: Union[Lock, _DummyLock] = _DummyLock()
         self._freeze = ct.c_bool(False)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Get the number of cached items."""
         return len(self._cache_addr)
 
@@ -101,7 +101,7 @@ class MemCacheHandlerBase:
             self._cur_page.value = new_page
             return new_page
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Representation for the current handler status."""
         perc = 100.0 * self._cur_page.value / self.mem_size if self.mem_size > 0 else 0.0
         return (
@@ -141,7 +141,7 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
         self._lock = mp.Lock()
         self._freeze = mp.Value(ct.c_bool, False, lock=False)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """When deleting, manager should also be shutdowned."""
         self._manager.shutdown()
 

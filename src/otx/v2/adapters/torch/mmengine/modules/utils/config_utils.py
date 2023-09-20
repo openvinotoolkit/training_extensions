@@ -65,7 +65,7 @@ class CustomConfig(Config):
         check_file_exist(filename)
         extender = osp.splitext(filename)[1]
         if extender not in [".py", ".json", ".yaml", ".yml"]:
-            raise IOError("Only py/yml/yaml/json type are supported now!")
+            raise OSError("Only py/yml/yaml/json type are supported now!")
 
         with tempfile.TemporaryDirectory() as temp_config_dir:
             with tempfile.NamedTemporaryFile(dir=temp_config_dir, suffix=extender) as temp_config_file:
@@ -104,7 +104,7 @@ class CustomConfig(Config):
             warnings.warn(warning_msg)
 
         cfg_text = filename + "\n"
-        with open(filename, "r", encoding="utf-8") as f:
+        with open(filename, encoding="utf-8") as f:
             # Setting encoding explicitly to resolve coding issue on windows
             cfg_text += f.read()
 

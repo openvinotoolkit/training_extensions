@@ -24,7 +24,7 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
 def configure_task_type(
     data_roots: Optional[str] = None,
     data_format: Optional[str] = None,
-):
+) -> tuple:
     if data_format is None and data_roots is not None:
         try:
             from otx.v2.adapters.datumaro.manager.dataset_manager import DatasetManager
@@ -37,7 +37,7 @@ def configure_task_type(
     raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
 
 
-def configure_train_type(train_data_roots: str, unlabeled_data_roots: str) -> Optional[str]:
+def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: Optional[str]) -> Optional[str]:
     """Auto train type detection.
 
     If train_data_roots contains only set of images -> Self-SL

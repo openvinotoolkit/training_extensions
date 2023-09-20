@@ -34,7 +34,7 @@ class ModelEmaV2Hook(Hook):
         dataset_len_thr (int): number of train images in the dataset when to enable the EMA hook
     """
 
-    def __init__(self, ema_decay=0.9995, interval=1, start_epoch=0, dataset_len_thr=2000, **kwargs):
+    def __init__(self, ema_decay=0.9995, interval=1, start_epoch=0, dataset_len_thr=2000, **kwargs) -> None:
         super().__init__(**kwargs)
         self.ema_decay = ema_decay
         self.interval = interval
@@ -92,7 +92,7 @@ class ModelEmaV2(nn.Module):
     GPU assignment and distributed training wrappers.
     """
 
-    def __init__(self, model, decay=0.9999, dataset_len_thr=None, device=None):
+    def __init__(self, model, decay=0.9999, dataset_len_thr=None, device=None) -> None:
         super().__init__()
         # make a copy of the model for accumulating moving average of weights
         self.module = deepcopy(model)

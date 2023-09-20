@@ -32,7 +32,7 @@ class Exporter:
         precision: Optional[str] = None,
         export_type: str = "OPENVINO",
         device: str = "cpu",
-    ):
+    ) -> None:
         """Initialize Exporter.
 
         Args:

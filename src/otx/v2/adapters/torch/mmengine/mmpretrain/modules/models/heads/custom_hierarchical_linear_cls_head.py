@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional, Callable
+
 import torch
 from mmengine.model import normal_init
 from mmpretrain.models.builder import HEADS, build_loss
@@ -25,12 +27,12 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
 
     def __init__(
         self,
-        num_classes,
-        in_channels,
-        loss=None,
-        multilabel_loss=None,
+        num_classes: int,
+        in_channels: int,
+        loss: Optional[dict] = None,
+        multilabel_loss: Optional[dict] = None,
         **kwargs,
-    ):
+    ) -> None:
         loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
         multilabel_loss = (
             multilabel_loss if multilabel_loss else dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0)
@@ -40,7 +42,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         super().__init__(loss=loss)
         if self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"] == 0:
             raise ValueError("Invalid classification heads configuration")
-        self.compute_multilabel_loss = False
+        self.compute_multilabel_loss: Optional[Callable] = None
         if self.hierarchical_info["num_multilabel_classes"] > 0:
             self.compute_multilabel_loss = build_loss(multilabel_loss)
 
@@ -51,18 +53,24 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         self.num_classes = num_classes
         self._init_layers()
 
-    def _init_layers(self):
+    def _init_layers(self) -> None:
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         """Initialize weights of head."""
         normal_init(self.fc, mean=0, std=0.01, bias=0)
 
-    def loss(self, cls_score, gt_label, multilabel=False, valid_label_mask=None):
+    def loss(
+        self,
+        cls_score: torch.Tensor,
+        gt_label: torch.Tensor,
+        multilabel: bool = False,
+        valid_label_mask: Optional[torch.Tensor] = None,
+    ):
         """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         # compute loss
-        if multilabel:
+        if multilabel and self.compute_multilabel_loss is not None:
             gt_label = gt_label.type_as(cls_score)
             # map difficult examples to positive ones
             _gt_label = torch.abs(gt_label)
@@ -75,11 +83,11 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
 
         return loss
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of CustomHierarchicalLinearClsHead."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label, **kwargs):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of CustomHierarchicalLinearClsHead class."""
         img_metas = kwargs.get("img_metas", None)
         cls_score = self.pre_logits(cls_score)
@@ -104,7 +112,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         if self.hierarchical_info["num_multiclass_heads"] > 1:
             losses["loss"] /= self.hierarchical_info["num_multiclass_heads"]
 
-        if self.compute_multilabel_loss:
+        if self.compute_multilabel_loss is not None:
             head_gt = gt_label[:, self.hierarchical_info["num_multiclass_heads"] :]
             head_logits = cls_score[:, self.hierarchical_info["num_single_label_classes"] :]
             valid_batch_mask = head_gt >= 0
@@ -124,7 +132,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             losses["loss"] += multilabel_loss.mean()
         return losses
 
-    def simple_test(self, img):
+    def simple_test(self, img: torch.Tensor) -> torch.Tensor:
         """Test without augmentation."""
         img = self.pre_logits(img)
         cls_score = self.fc(img)
@@ -144,7 +152,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             multiclass_logits.append(multiclass_logit)
         multiclass_pred = torch.cat(multiclass_logits, dim=1) if multiclass_logits else None
 
-        if self.compute_multilabel_loss:
+        if self.compute_multilabel_loss is not None:
             multilabel_logits = cls_score[:, self.hierarchical_info["num_single_label_classes"] :]
             if not torch.onnx.is_in_onnx_export():
                 multilabel_pred = torch.sigmoid(multilabel_logits) if multilabel_logits is not None else None
@@ -162,7 +170,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         pred = list(pred.detach().cpu().numpy())
         return pred
 
-    def get_valid_label_mask(self, img_metas):
+    def get_valid_label_mask(self, img_metas: list) -> torch.Tensor:
         """Get valid label with ignored_label mask."""
         valid_label_mask = []
         for meta in img_metas:

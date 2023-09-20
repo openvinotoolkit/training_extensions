@@ -6,7 +6,7 @@
 import importlib
 import os
 from abc import abstractmethod
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
@@ -103,6 +103,34 @@ if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
     )
 
 
+class BaseDatasetAdapter:
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
+        cache_config: Optional[dict] = None,
+        encryption_key: Optional[str] = None,
+        **kwargs,
+    ) -> None:
+        """"""
+
+    @abstractmethod
+    def get_otx_dataset(self) -> DatasetEntity:
+        """Get DatasetEntity."""
+        raise NotImplementedError
+
+    def get_label_schema(self) -> LabelSchemaEntity:
+        """Get Label Schema."""
+        raise NotImplementedError
+
+
 def get_dataset_adapter(
     task_type: TaskType,
     train_type: TrainType,
@@ -115,7 +143,7 @@ def get_dataset_adapter(
     unlabeled_data_roots: Optional[str] = None,
     unlabeled_file_list: Optional[str] = None,
     **kwargs,
-):
+) -> BaseDatasetAdapter:
     """Returns a dataset class by task type.
 
     Args:
@@ -197,7 +225,7 @@ class BaseDataset:
         self.data_format = data_format
         self.initialize = False
 
-    def set_datumaro_adapters(self, data_roots: Optional[str] = None):
+    def set_datumaro_adapters(self, data_roots: Optional[str] = None) -> None:
         """Functions that provide the ability to load datasets from datumaro.
 
         If the train-type dataset for a particular task is supported by the datumaro adapter,
@@ -211,7 +239,7 @@ class BaseDataset:
             1) Create a BaseDataset
             2) Call this function
             3) This will set
-                - self.dataset_adapter (BaseDatasetAdapter)
+                - self.dataset_adapter (DatumaroDatasetAdapter)
                 - self.dataset_entity (DatasetEntity)
                 - self.label_schema (LabelSchemaEntity) so that can use it.
             4) Use the above attributes to complete the subset_dataloader function.
@@ -244,10 +272,10 @@ class BaseDataset:
         self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
 
     @abstractmethod
-    def subset_dataloader(
+    def subset_dataloader(  # noqa: ANN201
         self,
         subset: str,
-        pipeline: Any = None,
+        pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
         distributed: bool = False,
@@ -277,73 +305,73 @@ class BaseDataset:
         raise NotImplementedError()
 
     @property
-    def train_data_roots(self):
+    def train_data_roots(self) -> Optional[str]:
         return self._train_data_roots
 
     @train_data_roots.setter
-    def train_data_roots(self, path: str):
+    def train_data_roots(self, path: str) -> None:
         self._train_data_roots = path
         self.initialize = False
 
     @property
-    def train_ann_files(self):
+    def train_ann_files(self) -> Optional[str]:
         return self._train_ann_files
 
     @train_ann_files.setter
-    def train_ann_files(self, path: str):
+    def train_ann_files(self, path: str) -> None:
         self._train_ann_files = path
         self.initialize = False
 
     @property
-    def val_data_roots(self):
+    def val_data_roots(self) -> Optional[str]:
         return self._val_data_roots
 
     @val_data_roots.setter
-    def val_data_roots(self, path: str):
+    def val_data_roots(self, path: str) -> None:
         self._val_data_roots = path
         self.initialize = False
 
     @property
-    def val_ann_files(self):
+    def val_ann_files(self) -> Optional[str]:
         return self._val_ann_files
 
     @val_ann_files.setter
-    def val_ann_files(self, path: str):
+    def val_ann_files(self, path: str) -> None:
         self._val_ann_files = path
         self.initialize = False
 
     @property
-    def test_data_roots(self):
+    def test_data_roots(self) -> Optional[str]:
         return self._test_data_roots
 
     @test_data_roots.setter
-    def test_data_roots(self, path: str):
+    def test_data_roots(self, path: str) -> None:
         self._test_data_roots = path
         self.initialize = False
 
     @property
-    def test_ann_files(self):
+    def test_ann_files(self) -> Optional[str]:
         return self._test_ann_files
 
     @test_ann_files.setter
-    def test_ann_files(self, path: str):
+    def test_ann_files(self, path: str) -> None:
         self._test_ann_files = path
         self.initialize = False
 
     @property
-    def unlabeled_data_roots(self):
+    def unlabeled_data_roots(self) -> Optional[str]:
         return self._unlabeled_data_roots
 
     @unlabeled_data_roots.setter
-    def unlabeled_data_roots(self, path: str):
+    def unlabeled_data_roots(self, path: str) -> None:
         self._unlabeled_data_roots = path
         self.initialize = False
 
     @property
-    def unlabeled_file_list(self):
+    def unlabeled_file_list(self) -> Optional[str]:
         return self._unlabeled_file_list
 
     @unlabeled_file_list.setter
-    def unlabeled_file_list(self, path: str):
+    def unlabeled_file_list(self, path: str) -> None:
         self._unlabeled_file_list = path
         self.initialize = False

@@ -6,7 +6,7 @@
 import random
 from typing import Dict, Union
 
-from numpy import ndarray as CvImage
+from numpy import ndarray
 from PIL import Image, ImageEnhance, ImageOps
 from PIL.Image import Image as PILImage
 from PIL.Image import Resampling
@@ -15,7 +15,7 @@ from PIL.Image import Resampling
 # pylint: disable = no-name-in-module
 import otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.cython_augments.pil_augment as pil_aug
 
-ImgTypes = Union[PILImage, CvImage]
+ImgTypes = Union[PILImage, ndarray]
 
 
 class Augments:  # pylint: disable=unused-argument
@@ -208,9 +208,9 @@ class CythonAugments(Augments):
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
     @staticmethod
-    def blend(src: ImgTypes, dst: CvImage, weight: float = 0.0):
+    def blend(src: ImgTypes, dst: ndarray, weight: float = 0.0):
         """Apply blend for an given image."""
-        assert isinstance(dst, CvImage), f"Type of dst should be numpy array, but type(dst)={type(dst)}."
+        assert isinstance(dst, ndarray), f"Type of dst should be numpy array, but type(dst)={type(dst)}."
         if Image.isImageType(src):
             return pil_aug.blend(src, dst, weight)
         raise NotImplementedError(f"Unknown type: {type(src)}")

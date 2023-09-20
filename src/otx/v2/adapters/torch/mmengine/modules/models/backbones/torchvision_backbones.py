@@ -50,7 +50,7 @@ def get_torchvision_models() -> Tuple[Dict, Dict]:
 TORCHVISION_MODELS, TORCHVISION_MODEL_URLS = get_torchvision_models()
 
 
-def replace_activation(model, activation_cfg):
+def replace_activation(model: nn.Module, activation_cfg: dict) -> nn.Module:
     """Replace Activate function (copy from mmdet)."""
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
@@ -63,7 +63,7 @@ def replace_activation(model, activation_cfg):
     return model
 
 
-def replace_norm(model, cfg):
+def replace_norm(model: nn.Module, cfg: dict) -> nn.Module:
     """Replace Norm function (copy from mmdet)."""
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
@@ -187,7 +187,7 @@ def generate_torchvision_backbones() -> None:
                     norm_cfg=None,
                     init_cfg=None,
                     **kwargs,
-                ):
+                ) -> None:
                     super().__init__()
                     models_cache_root = kwargs.get("root", os.path.join("~", ".torch", "models"))
                     model = model_builder(*args, **kwargs)

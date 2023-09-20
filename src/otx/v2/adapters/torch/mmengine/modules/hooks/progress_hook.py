@@ -30,7 +30,7 @@ logger = get_logger()
 class OTXProgressHook(Hook):
     """OTXProgressHook for getting progress."""
 
-    def __init__(self, time_monitor: TimeMonitorCallback, verbose: bool = False):
+    def __init__(self, time_monitor: TimeMonitorCallback, verbose: bool = False) -> None:
         super().__init__()
         self.time_monitor = time_monitor
         self.verbose = verbose

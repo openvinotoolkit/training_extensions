@@ -6,7 +6,7 @@
 
 from typing import Any, Dict, Optional, Union
 
-import albumentations as A
+import albumentations as al
 import yaml
 from anomalib.data.base.datamodule import collate_fn
 from omegaconf import DictConfig, OmegaConf
@@ -65,7 +65,7 @@ class Dataset(BaseDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: Optional[Union[str, A.Compose]] = None,  # transform_config
+        pipeline: Optional[Union[str, al.Compose]] = None,  # transform_config
         config: Optional[Union[str, DictConfig, Dict[str, Any]]] = None,
     ) -> Optional[TorchDataset]:
         if not self.initialize:
@@ -126,7 +126,7 @@ class Dataset(BaseDataset):
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: Optional[Union[str, A.Compose]] = None,
+        pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = 1,
         num_workers: Optional[int] = 0,
         distributed: bool = False,
@@ -149,7 +149,7 @@ class Dataset(BaseDataset):
             pass
         _config: Dict[str, Any] = {}
         if isinstance(config, str):
-            _config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
+            _config = yaml.load(open(config), Loader=yaml.FullLoader)
         elif config is not None:
             _config = config
 

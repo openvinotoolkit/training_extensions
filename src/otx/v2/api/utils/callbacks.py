@@ -17,7 +17,7 @@ import logging
 import math
 import time
 from copy import deepcopy
-from typing import Any, List, Union
+from typing import List, Union
 
 import dill
 
@@ -56,50 +56,50 @@ class Callback:
             (if accuracy monitoring is enabled).
     """
 
-    def set_params(self, params):
+    def set_params(self, params: dict) -> None:
         """Sets callback parameters."""
         # pylint: disable=W0201
         self.params = params
 
-    def set_model(self, model):
+    def set_model(self, model: object) -> None:
         """Sets callback model."""
         # pylint: disable=W0201
         self.model = model
 
-    def on_epoch_begin(self, epoch, logs=None):
+    def on_epoch_begin(self, epoch: int, **kwargs) -> None:
         """It is called on epoch begin event."""
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch: int, logs: str, **kwargs) -> None:
         """It is called on epoch end event."""
 
-    def on_batch_begin(self, batch, logs=None):
+    def on_batch_begin(self, batch: int, **kwargs) -> None:
         """It is called on batch begin event."""
 
-    def on_batch_end(self, batch, logs=None):
+    def on_batch_end(self, batch: int, **kwargs) -> None:
         """It is called on batch end event."""
 
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self, **kwargs) -> None:
         """It is called on train begin event."""
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self, batch: int, **kwargs) -> None:
         """It is called on train end event."""
 
-    def on_train_batch_begin(self, batch, logs):
+    def on_train_batch_begin(self, batch: int, **kwargs) -> None:
         """It is called on train batch begin event."""
 
-    def on_train_batch_end(self, batch, logs):
+    def on_train_batch_end(self, batch: int, **kwargs) -> None:
         """It is called on train batch end event."""
 
-    def on_test_begin(self, logs):
+    def on_test_begin(self, **kwargs) -> None:
         """It is called on test begin event."""
 
-    def on_test_end(self, logs):
+    def on_test_end(self, **kwargs) -> None:
         """It is called on test end event."""
 
-    def on_test_batch_begin(self, batch, logs):
+    def on_test_batch_begin(self, batch: int, logger: logging.Logger, **kwargs) -> None:
         """It is called on test batch begin event."""
 
-    def on_test_batch_end(self, batch, logs):
+    def on_test_batch_end(self, batch: int, logger: logging.Logger, **kwargs) -> None:
         """It is called on test batch end event."""
 
 
@@ -152,7 +152,7 @@ class TimeMonitorCallback(Callback):
 
         self.update_progress_callback = update_progress_callback
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         """Return state values to be pickled."""
         state = self.__dict__.copy()
         # update_progress_callback is not always pickable object
@@ -161,7 +161,7 @@ class TimeMonitorCallback(Callback):
             state["update_progress_callback"] = default_progress_callback
         return state
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: dict) -> "TimeMonitorCallback":
         """Return deepcopy object."""
 
         update_progress_callback = self.update_progress_callback
@@ -178,12 +178,12 @@ class TimeMonitorCallback(Callback):
         memo[id(self)] = result
         return result
 
-    def on_train_batch_begin(self, batch, logs=None) -> None:
+    def on_train_batch_begin(self, batch: int, **kwargs) -> None:
         """Set the value of current step and start the timer."""
         self.current_step += 1
         self.start_step_time = time.time()
 
-    def on_train_batch_end(self, batch, logs=None) -> None:
+    def on_train_batch_end(self, batch: int, **kwargs) -> None:
         """Compute average time taken to complete a step."""
         self.__calculate_average_step()
 
@@ -213,32 +213,32 @@ class TimeMonitorCallback(Callback):
             self.past_step_duration.remove(self.past_step_duration[0])
         self.average_step = sum(self.past_step_duration) / len(self.past_step_duration)
 
-    def on_test_batch_begin(self, batch, logs) -> None:
+    def on_test_batch_begin(self, batch: int, logger: logging.Logger, **kwargs) -> None:
         """Set the number of current epoch and start the timer."""
         self.current_step += 1
         self.start_step_time = time.time()
 
-    def on_test_batch_end(self, batch, logs) -> None:
+    def on_test_batch_end(self, batch: int, logger: logging.Logger, **kwargs) -> None:
         """Compute average time taken to complete a step based on a running average of `step_history` steps."""
         self.__calculate_average_step()
 
-    def on_train_begin(self, logs: Any = None) -> Any:
+    def on_train_begin(self, **kwargs) -> None:
         """Sets training to true."""
         self.is_training = True
 
-    def on_train_end(self, logs: Any = None) -> Any:
+    def on_train_end(self, batch: int, **kwargs) -> None:
         """Handles early stopping when the total_steps is greater than the current_step."""
         # To handle cases where early stopping stops the task the progress will still be accurate
         self.current_step = self.total_steps - self.test_steps
         self.current_epoch = self.total_epochs
         self.is_training = False
 
-    def on_epoch_begin(self, epoch, logs=None) -> None:
+    def on_epoch_begin(self, epoch: int, **kwargs) -> None:
         """Set the number of current epoch and start the timer."""
         self.current_epoch = epoch + 1
         self.start_epoch_time = time.time()
 
-    def on_epoch_end(self, epoch, logs=None) -> None:
+    def on_epoch_end(self, epoch: int, logs: str, **kwargs) -> None:
         """Computes the average time taken to complete an epoch based on a running average of `epoch_history` epochs."""
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()

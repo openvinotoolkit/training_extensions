@@ -34,7 +34,7 @@ class OTXClsDataset(BaseDataset):
 
     def __init__(
         self, otx_dataset: DatasetEntity, labels: List[LabelEntity], empty_label=None, **kwargs
-    ):  # pylint: disable=super-init-not-called
+    ) -> None:  # pylint: disable=super-init-not-called
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.label_names = [label.name for label in self.labels]
@@ -121,7 +121,7 @@ class OTXClsDataset(BaseDataset):
 
         return self.gt_labels
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Get dataset length."""
         return len(self.otx_dataset)
 
@@ -283,8 +283,8 @@ class OTXMultilabelClsDataset(OTXClsDataset):
             eval_results["accuracy"] = eval_results["accuracy-mlc"]
 
         if "mAP" in metrics:
-            mAP_value = AveragePrecision.calculate(results, gt_labels)
-            eval_results["mAP"] = mAP_value
+            map_value = AveragePrecision.calculate(results, gt_labels)
+            eval_results["mAP"] = map_value
         if len(set(metrics) - {"mAP"}) != 0:
             performance_keys = ["CP", "CR", "CF1", "OP", "OR", "OF1"]
             performance_values = MultiLabelMetric.calculate(results, gt_labels, **metric_options)
@@ -302,7 +302,7 @@ class OTXMultilabelClsDataset(OTXClsDataset):
 class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
     """Hierarchical classification dataset class."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
         super().__init__(**kwargs)
 
@@ -411,20 +411,20 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
             total_acc += cls_acc
             total_acc_sl += cls_acc
 
-        mAP_value = 0.0
+        map_value = 0.0
         if self.hierarchical_info["num_multilabel_classes"] and "mAP" in metrics:
             multilabel_logits = results[:, self.hierarchical_info["num_single_label_classes"] :]
             multilabel_gt = gt_labels[:, self.hierarchical_info["num_multiclass_heads"] :]
-            mAP_value = AveragePrecision.calculate(multilabel_logits, multilabel_gt)
+            map_value = AveragePrecision.calculate(multilabel_logits, multilabel_gt)
 
-        total_acc += mAP_value
+        total_acc += map_value
         total_acc /= self.hierarchical_info["num_multiclass_heads"] + int(
             self.hierarchical_info["num_multilabel_classes"] > 0
         )
 
         eval_results["MHAcc"] = total_acc
         eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
-        eval_results["mAP"] = mAP_value
+        eval_results["mAP"] = map_value
         eval_results["accuracy"] = total_acc
 
         return eval_results
@@ -438,7 +438,7 @@ class SelfSLDataset(Dataset):
 
     def __init__(
         self, otx_dataset: DatasetEntity, pipeline: Dict[str, Any], **kwargs
-    ):  # pylint: disable=unused-argument
+    ) -> None:  # pylint: disable=unused-argument
         super().__init__()
         self.otx_dataset = otx_dataset
 
@@ -446,7 +446,7 @@ class SelfSLDataset(Dataset):
         self.view0 = Compose([build_from_cfg(p, TRANSFORMS) for p in pipeline["view0"]])
         self.view1 = Compose([build_from_cfg(p, TRANSFORMS) for p in pipeline["view1"]])
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Get dataset length."""
         return len(self.otx_dataset)
 

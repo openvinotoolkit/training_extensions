@@ -198,7 +198,7 @@ class ConstantV0(Operation[ConstantV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = ConstantV0Attribute
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         data = kwargs.pop("data", None)
         if data is None:
             raise KeyError("data is not provided")

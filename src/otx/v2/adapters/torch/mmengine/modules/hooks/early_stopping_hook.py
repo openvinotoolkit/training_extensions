@@ -31,7 +31,7 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
         iteration_patience: int = 500,
         min_delta: float = 0.0,
         start: Optional[int] = None,
-    ):
+    ) -> None:
         self.start = start
         super().__init__(interval, metric, rule, patience, iteration_patience, min_delta)
 
@@ -98,7 +98,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
         patience: int = 3,
         iteration_patience: int = 300,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.interval = interval
         self.min_lr = min_lr

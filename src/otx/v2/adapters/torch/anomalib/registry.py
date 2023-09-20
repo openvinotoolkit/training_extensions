@@ -7,6 +7,7 @@
 from importlib import import_module
 
 from anomalib.models import _snake_to_pascal_case
+from typing import Callable, Optional
 
 from otx.v2.api.core.registry import BaseRegistry
 
@@ -41,7 +42,7 @@ class AnomalibRegistry(BaseRegistry):
             if module is not None:
                 self.register_module(name=model_name, module=model)
 
-    def get(self, module_type: str):
+    def get(self, module_type: str) -> Optional[Callable]:
         # The module_dict is the highest priority.
         if module_type in self.module_dict:
             return self.module_dict[module_type]

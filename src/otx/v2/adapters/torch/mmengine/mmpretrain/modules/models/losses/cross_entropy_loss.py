@@ -3,19 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch.nn.functional as F
 from mmpretrain.models.builder import LOSSES
 from mmpretrain.models.losses.utils import weight_reduce_loss
 from torch import nn
+from torch.nn import functional
 
 
 def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, class_weight=None, ignore_index=None):
     """Calculate cross entropy for given pred, label pairs."""
     # element-wise losses
     if ignore_index is not None:
-        loss = F.cross_entropy(pred, label, reduction="none", weight=class_weight, ignore_index=ignore_index)
+        loss = functional.cross_entropy(pred, label, reduction="none", weight=class_weight, ignore_index=ignore_index)
     else:
-        loss = F.cross_entropy(pred, label, reduction="none", weight=class_weight)
+        loss = functional.cross_entropy(pred, label, reduction="none", weight=class_weight)
 
     # apply weights and do the reduction
     if weight is not None:
@@ -29,7 +29,7 @@ def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, c
 class CrossEntropyLossWithIgnore(nn.Module):
     """Defining CrossEntropyLossWothIgnore which supports ignored_label masking."""
 
-    def __init__(self, reduction="mean", loss_weight=1.0, ignore_index=None):
+    def __init__(self, reduction="mean", loss_weight=1.0, ignore_index=None) -> None:
         super().__init__()
         self.reduction = reduction
         self.loss_weight = loss_weight

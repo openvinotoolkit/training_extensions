@@ -21,7 +21,7 @@ class BsSearchAlgo:
         max_bs (int): Maximum batch size. It should be bigger than 0.
     """
 
-    def __init__(self, train_func: Callable[[int], None], default_bs: int, max_bs: int):
+    def __init__(self, train_func: Callable[[int], None], default_bs: int, max_bs: int) -> None:
         if default_bs <= 0:
             raise ValueError("Batch size should be bigger than 0.")
         if max_bs <= 0:

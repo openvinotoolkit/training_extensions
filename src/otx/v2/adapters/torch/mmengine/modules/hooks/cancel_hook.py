@@ -21,7 +21,7 @@ logger = get_logger()
 class CancelTrainingHook(Hook):
     """CancelTrainingHook for Training Stopping."""
 
-    def __init__(self, interval: int = 5):
+    def __init__(self, interval: int = 5) -> None:
         """Periodically check whether whether a stop signal is sent to the runner during model training.
 
         Every 'check_interval' iterations, the work_dir for the runner is checked to see if a file '.stop_training'
@@ -55,7 +55,7 @@ class CancelTrainingHook(Hook):
 class CancelInterfaceHook(Hook):
     """Cancel interface. If called, running job will be terminated."""
 
-    def __init__(self, init_callback: Callable, interval=5):
+    def __init__(self, init_callback: Callable, interval=5) -> None:
         self.on_init_callback = init_callback
         self.runner = None
         self.interval = interval

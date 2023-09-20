@@ -44,7 +44,7 @@ NAME_DICT = {
 class TimmModelsWrapper(nn.Module):
     """Timm model wrapper."""
 
-    def __init__(self, model_name, pretrained=False, pooling_type="avg", **kwargs):
+    def __init__(self, model_name, pretrained=False, pooling_type="avg", **kwargs) -> None:
         super().__init__(**kwargs)
         self.model_name = model_name
         self.pretrained = pretrained
@@ -97,7 +97,7 @@ class TimmModelsWrapper(nn.Module):
 class OTXEfficientNetV2(TimmModelsWrapper):
     """EfficientNetV2 for OTX."""
 
-    def __init__(self, version="s_21k", **kwargs):
+    def __init__(self, version="s_21k", **kwargs) -> None:
         self.model_name = "efficientnetv2_" + version
         super().__init__(model_name=self.model_name, **kwargs)
 

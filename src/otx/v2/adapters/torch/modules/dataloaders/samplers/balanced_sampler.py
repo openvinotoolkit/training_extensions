@@ -23,7 +23,7 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         efficient_mode (bool): Flag about using efficient mode
     """
 
-    def __init__(self, dataset, batch_size, efficient_mode=True, num_replicas=1, rank=0, drop_last=False):
+    def __init__(self, dataset, batch_size, efficient_mode=True, num_replicas=1, rank=0, drop_last=False) -> None:
         self.batch_size = batch_size
         self.repeat = 1
         if hasattr(dataset, "times"):
@@ -54,7 +54,7 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         logger.info(f"This sampler will select balanced samples {self.num_trials} times")
 
-    def _calculate_num_samples(self):
+    def _calculate_num_samples(self) -> int:
         num_samples = self.num_trials * self.num_cls * self.repeat
 
         if self.num_replicas > 1:
@@ -112,6 +112,6 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         return iter(indices)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return length of selected samples."""
         return self.num_samples

@@ -20,7 +20,7 @@ class OperationModule(torch.nn.Module):
         self,
         op_v: Operation,
         dependent_ops: Union[List[Operation], Dict[str, Optional[Operation]]],
-    ):
+    ) -> None:
         super().__init__()
 
         self.op_v = op_v

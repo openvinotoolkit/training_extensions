@@ -6,7 +6,7 @@
 from dataclasses import dataclass, field
 from typing import Callable, List
 
-from torch.nn import functional as F
+from torch.nn import functional
 
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.movements import get_torch_padding
@@ -65,11 +65,11 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
     def forward(self, inputs):
         """MaxPoolV0's forward function."""
         if inputs.dim() == 3:
-            func = F.max_pool1d
+            func = functional.max_pool1d
         elif inputs.dim() == 4:
-            func = F.max_pool2d
+            func = functional.max_pool2d
         elif inputs.dim() == 5:
-            func = F.max_pool3d
+            func = functional.max_pool3d
         else:
             raise NotImplementedError
 
@@ -129,7 +129,7 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
     VERSION = 1
     ATTRIBUTE_FACTORY = AvgPoolV1Attribute
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         if "exclude-pad" in kwargs:
             kwargs["exclude_pad"] = kwargs.pop("exclude-pad")
         super().__init__(*args, **kwargs)
@@ -137,11 +137,11 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
     def forward(self, inputs):
         """AvgPoolV1's forward function."""
         if inputs.dim() == 3:
-            func = F.avg_pool1d
+            func = functional.avg_pool1d
         elif inputs.dim() == 4:
-            func = F.avg_pool2d
+            func = functional.avg_pool2d
         elif inputs.dim() == 5:
-            func = F.avg_pool3d
+            func = functional.avg_pool3d
         else:
             raise NotImplementedError
 

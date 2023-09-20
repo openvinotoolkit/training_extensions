@@ -21,7 +21,7 @@ class BarlowTwinsLoss(nn.Module):
     Code adapted from https://github.com/facebookresearch/barlowtwins.
     """
 
-    def __init__(self, off_diag_penality, loss_weight=1.0):
+    def __init__(self, off_diag_penality, loss_weight=1.0) -> None:
         super().__init__()
         self.penalty = off_diag_penality
         self.loss_weight = loss_weight

@@ -161,7 +161,7 @@ class EnsureCorrectBestCheckpointHook(Hook):
 class SaveInitialWeightHook(Hook):
     """Save the initial weights before training."""
 
-    def __init__(self, save_path, file_name: str = "weights.pth", **kwargs):
+    def __init__(self, save_path, file_name: str = "weights.pth", **kwargs) -> None:
         self._save_path = save_path
         self._file_name = file_name
         self._args = kwargs

@@ -8,7 +8,7 @@
 import datetime
 import functools
 import time
-from typing import Optional
+from typing import Callable, Optional
 
 
 def now() -> datetime.datetime:
@@ -25,7 +25,7 @@ def now() -> datetime.datetime:
 
 
 # Debug tools
-def timeit(func):
+def timeit(func: Callable) -> Callable:
     """This function can be used as a decorator as @timeit.
 
     It will print out how long the function took to execute.
@@ -38,7 +38,7 @@ def timeit(func):
     """
 
     @functools.wraps(func)
-    def new_func(*args, **kwargs):
+    def new_func(*args, **kwargs) -> Callable:
         start_time = time.time()
         res = func(*args, **kwargs)
         elapsed_time = time.time() - start_time
@@ -74,7 +74,7 @@ class TimeEstimator:
         inflation_factor: float = 1.1,
         update_window: float = 1.0,
         starting_progress: float = 1.0,
-    ):
+    ) -> None:
         self.estimated_total_time: Optional[float] = None
         self.estimated_end_time: Optional[float] = None
         self.first_update_progress = starting_progress
@@ -112,7 +112,7 @@ class TimeEstimator:
             self.estimated_remaining_time = new_estimation
         return self.estimated_remaining_time
 
-    def update(self, progress: float):
+    def update(self, progress: float) -> None:
         """Update the estimator with a new progress (floating point percentage, between 0.0 - 100.0).
 
         Args:

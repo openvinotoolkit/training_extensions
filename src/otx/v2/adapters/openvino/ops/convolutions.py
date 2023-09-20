@@ -6,7 +6,7 @@
 from dataclasses import dataclass, field
 from typing import Callable, List
 
-from torch.nn import functional as F
+from torch.nn import functional
 
 from otx.v2.adapters.openvino.ops.builder import OPS
 from otx.v2.adapters.openvino.ops.movements import get_torch_padding
@@ -42,11 +42,11 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
     def forward(self, inputs, weight):
         """ConvolutionV1's forward function."""
         if weight.dim() == 3:
-            func = F.conv1d
+            func = functional.conv1d
         elif weight.dim() == 4:
-            func = F.conv2d
+            func = functional.conv2d
         elif weight.dim() == 5:
-            func = F.conv3d
+            func = functional.conv3d
         else:
             raise NotImplementedError
 
@@ -91,11 +91,11 @@ class GroupConvolutionV1(Operation[GroupConvolutionV1Attribute]):
     def forward(self, inputs, weight):
         """GroupConvolutionV1's forward function."""
         if weight.dim() == 4:
-            func = F.conv1d
+            func = functional.conv1d
         elif weight.dim() == 5:
-            func = F.conv2d
+            func = functional.conv2d
         elif weight.dim() == 6:
-            func = F.conv3d
+            func = functional.conv3d
         else:
             raise NotImplementedError
 

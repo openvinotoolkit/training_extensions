@@ -15,11 +15,11 @@ from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 
-from .base_dataset_adapter import BaseDatasetAdapter
+from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 
 
-class DetectionDatasetAdapter(BaseDatasetAdapter):
-    """Detection adapter inherited from BaseDatasetAdapter.
+class DetectionDatasetAdapter(DatumaroDatasetAdapter):
+    """Detection adapter inherited from DatumaroDatasetAdapter.
 
     It converts DatumaroDataset --> DatasetEntity for object detection, and instance segmentation tasks
     """

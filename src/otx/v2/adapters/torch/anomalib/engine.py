@@ -29,6 +29,7 @@ from pytorch_lightning.trainer.connectors.accelerator_connector import (
 )
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 from torch.utils.data import DataLoader
+from torch.optim import Optimizer
 
 from otx.v2.api.core.engine import Engine
 
@@ -55,7 +56,7 @@ class AnomalibEngine(Engine):
 
     def _initial_config(self, config: Optional[Union[str, Dict]] = None):
         if isinstance(config, str) and config.endswith(".yaml"):
-            config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
+            config = yaml.load(open(config), Loader=yaml.FullLoader)
         elif config is None:
             config = {}
         return DictConfig(config)
@@ -121,7 +122,7 @@ class AnomalibEngine(Engine):
         model: Union[torch.nn.Module, pl.LightningModule],
         train_dataloader: Union[DataLoader, LightningDataModule],
         val_dataloader: Optional[DataLoader] = None,
-        optimizer: Optional[List[torch.optim.Optimizer]] = None,
+        optimizer: Optional[Union[dict, Optimizer]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
         max_epochs: Optional[int] = None,
@@ -185,12 +186,6 @@ class AnomalibEngine(Engine):
         precision: Optional[_PRECISION_INPUT] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
-        super().validate(
-            model,
-            val_dataloader,
-            checkpoint,
-            precision,
-        )
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
 
         datamodule = self.trainer_config.pop("datamodule", None)
@@ -225,12 +220,6 @@ class AnomalibEngine(Engine):
         precision: Optional[_PRECISION_INPUT] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
-        super().test(
-            model,
-            test_dataloader,
-            checkpoint,
-            precision,
-        )
         _ = self._update_config(func_args={"precision": precision}, **kwargs)
         if model is None:
             model = self.latest_model.get("model", None)
@@ -330,12 +319,6 @@ class AnomalibEngine(Engine):
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
     ) -> Dict[str, Dict[str, str]]:  # Output: IR Models
-        super().export(
-            model,
-            checkpoint,
-            precision,
-        )
-
         # Set input_shape (input_size)
         if model is None:
             model = self.latest_model.get("model", None)

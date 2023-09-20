@@ -148,9 +148,9 @@ Contour = List[Tuple[float, float]]
 def get_subcontours(contour: Contour) -> List[Contour]:
     """Splits contour into subcontours that do not have self intersections."""
 
-    ContourInternal = List[Optional[Tuple[float, float]]]
+    contour_internal = List[Optional[Tuple[float, float]]]
 
-    def find_loops(points: ContourInternal) -> List[Sequence[int]]:
+    def find_loops(points: contour_internal) -> List[Sequence[int]]:
         """For each consecutive pair of equivalent rows in the input matrix returns their indices."""
         _, inverse, count = np.unique(points, axis=0, return_inverse=True, return_counts=True)
         duplicates = np.where(count > 1)[0]
@@ -161,7 +161,7 @@ def get_subcontours(contour: Contour) -> List[Contour]:
                 indices.append(y[i : i + 2])
         return indices
 
-    base_contour = cast(ContourInternal, copy(contour))
+    base_contour = cast(contour_internal, copy(contour))
 
     # Make sure that contour is closed.
     if not np.array_equal(base_contour[0], base_contour[-1]):
@@ -234,10 +234,10 @@ def create_annotation_from_segmentation_map(
 
                 if hierarchy[3] == -1:
                     # In this case a contour does not represent a hole
-                    contour = list((point[0][0], point[0][1]) for point in contour)
+                    _contour = list((point[0][0], point[0][1]) for point in contour)
 
                     # Split contour into subcontours that do not have self intersections.
-                    subcontours = get_subcontours(contour)
+                    subcontours = get_subcontours(_contour)
                     for subcontour in subcontours:
                         # compute probability of the shape
                         mask = np.zeros(hard_prediction.shape, dtype=np.uint8)

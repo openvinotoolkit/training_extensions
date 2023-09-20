@@ -21,7 +21,7 @@ from mmengine.visualization import Visualizer
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
-from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE as mmdeploy_enabled
+from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
@@ -317,6 +317,8 @@ class MMXEngine(Engine):
         if not hasattr(self, "runner") or update_check:
             self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
+            if base_runner is None:
+                raise ModuleNotFoundError("Runner not found.")
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_train",
@@ -360,12 +362,6 @@ class MMXEngine(Engine):
         val_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
-        super().validate(
-            model,
-            val_dataloader,
-            checkpoint,
-            precision,
-        )
         val_args = {
             "model": model,
             "val_dataloader": val_dataloader,
@@ -377,6 +373,8 @@ class MMXEngine(Engine):
         if not hasattr(self, "runner"):
             self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
+            if base_runner is None:
+                raise ModuleNotFoundError("Runner not found.")
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_validate",
@@ -404,12 +402,6 @@ class MMXEngine(Engine):
         test_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
         **kwargs,
     ) -> Dict[str, float]:  # Metric (data_class or dict)
-        super().test(
-            model,
-            test_dataloader,
-            checkpoint,
-            precision,
-        )
         test_args = {
             "model": model,
             "test_dataloader": test_dataloader,
@@ -421,6 +413,8 @@ class MMXEngine(Engine):
         if not hasattr(self, "runner"):
             self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
+            if base_runner is None:
+                raise ModuleNotFoundError("Runner not found.")
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_test",
@@ -465,12 +459,7 @@ class MMXEngine(Engine):
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
     ):  # Output: IR Models
-        super().export(
-            model,
-            checkpoint,
-            precision,
-        )
-        if not mmdeploy_enabled:
+        if not AVAILABLE:
             raise ModuleNotFoundError("MMXEngine's export is dependent on mmdeploy.")
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
 

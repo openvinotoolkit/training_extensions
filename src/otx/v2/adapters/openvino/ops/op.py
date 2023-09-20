@@ -35,7 +35,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
     VERSION = -1
     ATTRIBUTE_FACTORY: Type[Attribute] = Attribute
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs) -> None:
         super().__init__()
         self._name = name
         self._attrs = self.ATTRIBUTE_FACTORY(**kwargs)
@@ -85,7 +85,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
         """Operation's shape property."""
         return self.attrs.shape
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Operation's __repr__ function."""
         repr_str = f"{self.__class__.__name__}("
         repr_str += f"name={self.name}, "

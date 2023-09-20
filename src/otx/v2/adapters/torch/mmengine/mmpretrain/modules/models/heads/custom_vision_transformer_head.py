@@ -11,7 +11,7 @@ from mmpretrain.models.heads import VisionTransformerClsHead
 class CustomVisionTransformerClsHead(VisionTransformerClsHead):
     """Custom Vision Transformer classifier head which supports IBLoss loss calculation."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 

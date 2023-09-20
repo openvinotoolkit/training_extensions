@@ -10,7 +10,7 @@ from mmengine.dataset import Compose
 from mmengine.registry import build_from_cfg
 from mmpretrain.datasets.transforms import TRANSFORMS
 from PIL import Image
-from torchvision import transforms as T
+from torchvision import transforms as tv_transforms
 
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.
@@ -24,9 +24,9 @@ class RandomAppliedTrans:
     :param p: Probability, defaults to 0.5
     """
 
-    def __init__(self, transforms: List, p: float = 0.5):
+    def __init__(self, transforms: List, p: float = 0.5) -> None:
         t = [build_from_cfg(t, TRANSFORMS) for t in transforms]  # pylint: disable=invalid-name
-        self.trans = T.RandomApply(t, p=p)
+        self.trans = tv_transforms.RandomApply(t, p=p)
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of RandomAppliedTrans.
@@ -35,14 +35,14 @@ class RandomAppliedTrans:
         """
         return self.trans(results)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Set repr of RandomAppliedTrans."""
         repr_str = self.__class__.__name__
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class OTXColorJitter(T.ColorJitter):
+class OTXColorJitter(tv_transforms.ColorJitter):
     """Wrapper for ColorJitter in torchvision.transforms.
 
     Use this instead of mmpretrain's because there is no `hue` parameter in mmpretrain ColorJitter.
@@ -68,7 +68,7 @@ class PILImageToNDArray:
         keys (list[str]): list to support multiple image converting from PIL to NDArray.
     """
 
-    def __init__(self, keys=None):
+    def __init__(self, keys=None) -> None:
         self.keys = keys
 
     def __call__(self, results):
@@ -79,7 +79,7 @@ class PILImageToNDArray:
             results[key] = img
         return results
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Repr function of PILImageToNDArray."""
         repr_str = self.__class__.__name__
         return repr_str
@@ -101,7 +101,7 @@ class PostAug:
         keys (dict): keys to apply postaugmentaion. ex) dict(img_strong=strong_pipeline)
     """
 
-    def __init__(self, keys: dict):
+    def __init__(self, keys: dict) -> None:
         self.pipelines = {key: Compose(pipeline) for key, pipeline in keys.items()}
 
     def __call__(self, results):
@@ -111,7 +111,7 @@ class PostAug:
             results["img_fields"].append(key)
         return results
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Repr function of PostAug."""
         repr_str = self.__class__.__name__
         return repr_str

@@ -98,7 +98,7 @@ for models_ in OMZ_PUBLIC_MODELS.values():
 class NameSpace:
     """NameSpace class for otx.v2.adapters.openvino.omz_wrapper."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
 
 

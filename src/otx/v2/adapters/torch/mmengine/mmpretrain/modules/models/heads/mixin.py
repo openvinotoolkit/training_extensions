@@ -4,11 +4,15 @@
 #
 
 
+import torch
+from typing import Union
+
+
 class OTXHeadMixin:
     """Mix-in class for OTX custom heads."""
 
     @staticmethod
-    def pre_logits(x):
+    def pre_logits(x: Union[list, torch.Tensor]) -> torch.Tensor:
         """Preprocess logits before forward. Designed to support vision transformer output."""
         if isinstance(x, list):
             x = x[-1]

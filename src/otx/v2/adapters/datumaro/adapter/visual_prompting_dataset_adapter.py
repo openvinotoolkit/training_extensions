@@ -24,7 +24,7 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
     To handle masks, this adapter is inherited from SegmentationDatasetAdapter.
     """
 
-    def __init__(self, use_mask: bool = False, *args, **kwargs):
+    def __init__(self, use_mask: bool = False, *args, **kwargs) -> None:
         self.use_mask = use_mask
         super().__init__(*args, **kwargs)
 

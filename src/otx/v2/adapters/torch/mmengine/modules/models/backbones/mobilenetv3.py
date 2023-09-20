@@ -14,10 +14,11 @@ Original papers:
 import math
 import os
 
-import torch.nn.functional as F
 from mmengine.runner import load_checkpoint
 from mmpretrain.models.utils import make_divisible
 from torch import nn
+from torch.nn import functional
+from typing import Optional, Union
 
 from otx.v2.api.utils.logger import get_logger
 
@@ -43,13 +44,13 @@ class ModelInterface(nn.Module):
         pretrained=False,
         loss="softmax",
         **kwargs,
-    ):
+    ) -> None:
         super().__init__()
 
         self.classification = classification
         self.contrastive = contrastive
         self.pretrained = pretrained
-        self.classification_classes = {}
+        self.classification_classes: dict = {}
         self.loss = loss
         self.is_ie_model = False
         if loss == "am_softmax":
@@ -60,12 +61,12 @@ class ModelInterface(nn.Module):
     @staticmethod
     def _glob_feature_vector(x, mode, reduce_dims=True):
         if mode == "avg":
-            out = F.adaptive_avg_pool2d(x, 1)
+            out = functional.adaptive_avg_pool2d(x, 1)
         elif mode == "max":
-            out = F.adaptive_max_pool2d(x, 1)
+            out = functional.adaptive_max_pool2d(x, 1)
         elif mode == "avg+max":
-            avg_pool = F.adaptive_avg_pool2d(x, 1)
-            max_pool = F.adaptive_max_pool2d(x, 1)
+            avg_pool = functional.adaptive_avg_pool2d(x, 1)
+            max_pool = functional.adaptive_max_pool2d(x, 1)
             out = avg_pool + max_pool
         else:
             raise ValueError(f"Unknown pooling mode: {mode}")
@@ -83,7 +84,7 @@ class HSigmoid(nn.Module):
 
     def forward(self, x):
         """Forward."""
-        return F.relu6(x + 3.0, inplace=True) / 6.0
+        return functional.relu6(x + 3.0, inplace=True) / 6.0
 
 
 class HSwish(nn.Module):
@@ -95,19 +96,19 @@ class HSwish(nn.Module):
         inplace : bool, Whether to use inplace version of the module.
     """
 
-    def __init__(self, inplace=False):
+    def __init__(self, inplace=False) -> None:
         super().__init__()
         self.inplace = inplace
 
     def forward(self, x):
         """Forward."""
-        return x * F.relu6(x + 3.0, inplace=self.inplace) / 6.0
+        return x * functional.relu6(x + 3.0, inplace=self.inplace) / 6.0
 
 
 class SELayer(nn.Module):
     """SE layer."""
 
-    def __init__(self, channel, reduction=4):
+    def __init__(self, channel, reduction=4) -> None:
         super().__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
@@ -127,17 +128,17 @@ class SELayer(nn.Module):
         return x * y
 
 
-def conv_3x3_bn(inp, oup, stride, IN_conv1=False):
+def conv_3x3_bn(inp: int, oup: int, stride: int, in_conv1: bool = False):
     """Conv 3x3 layer with batch-norm."""
 
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
-        nn.BatchNorm2d(oup) if not IN_conv1 else nn.InstanceNorm2d(oup, affine=True),
+        nn.BatchNorm2d(oup) if not in_conv1 else nn.InstanceNorm2d(oup, affine=True),
         HSwish(),
     )
 
 
-def conv_1x1_bn(inp, oup, loss="softmax"):
+def conv_1x1_bn(inp: int, oup: int, loss: str = "softmax"):
     """Conv 1x1 layer with batch-norm."""
 
     return nn.Sequential(
@@ -150,7 +151,7 @@ def conv_1x1_bn(inp, oup, loss="softmax"):
 class InvertedResidual(nn.Module):
     """Inverted residual."""
 
-    def __init__(self, inp, hidden_dim, oup, kernel_size, stride, use_se, use_hs):
+    def __init__(self, inp, hidden_dim, oup, kernel_size, stride, use_se, use_hs) -> None:
         super().__init__()
         assert stride in [1, 2]
 
@@ -221,15 +222,15 @@ class MobileNetV3Base(ModelInterface):
         dropout_cls=None,
         pooling_type="avg",
         feature_dim=1280,
-        IN_first=False,
+        in_first=False,
         self_challenging_cfg=False,
         lr_finder=None,
         **kwargs,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.in_size = input_size
         self.num_classes = num_classes
-        self.input_IN = nn.InstanceNorm2d(in_channels, affine=True) if IN_first else None
+        self.input_IN = nn.InstanceNorm2d(in_channels, affine=True) if in_first else None
         self.pooling_type = pooling_type
         self.self_challenging_cfg = self_challenging_cfg
         self.width_mult = width_mult
@@ -260,7 +261,7 @@ class MobileNetV3Base(ModelInterface):
 class MobileNetV3(MobileNetV3Base):
     """MobileNetV3."""
 
-    def __init__(self, cfgs, mode, IN_conv1=False, **kwargs):
+    def __init__(self, cfgs, mode, in_conv1=False, **kwargs) -> None:
         super().__init__(**kwargs)
         # setting of inverted residual blocks
         self.cfgs = cfgs
@@ -268,7 +269,7 @@ class MobileNetV3(MobileNetV3Base):
         # building first layer
         input_channel = make_divisible(16 * self.width_mult, 8)
         stride = 1 if self.in_size[0] < 100 else 2
-        layers = [conv_3x3_bn(3, input_channel, stride, IN_conv1)]
+        layers: list = [conv_3x3_bn(3, input_channel, stride, in_conv1)]
         # building inverted residual blocks
         block = InvertedResidual
         flag = True
@@ -306,7 +307,7 @@ class MobileNetV3(MobileNetV3Base):
         logits = self.classifier(glob_features.view(x.shape[0], -1))
         return glob_features, logits
 
-    def _initialize_weights(self):
+    def _initialize_weights(self) -> None:
         """Initialize weights."""
 
         for m in self.modules():
@@ -363,7 +364,7 @@ class OTXMobileNetV3(MobileNetV3):
         ],
     )
 
-    def __init__(self, mode="large", width_mult=1.0, **kwargs):
+    def __init__(self, mode="large", width_mult=1.0, **kwargs) -> None:
         super().__init__(self.cfgs[mode], mode=mode, width_mult=width_mult, **kwargs)
         self.key = "mobilenetv3_" + mode
         if width_mult != 1.0:
@@ -375,7 +376,7 @@ class OTXMobileNetV3(MobileNetV3):
 
         return super().forward(x, return_featuremaps=True)
 
-    def init_weights(self, pretrained=None):
+    def init_weights(self, pretrained: Optional[Union[str, bool]] = None) -> None:
         """Initialize weights."""
 
         if isinstance(pretrained, str) and os.path.exists(pretrained):

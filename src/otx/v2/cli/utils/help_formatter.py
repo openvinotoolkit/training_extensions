@@ -4,8 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import argparse
 import re
-from typing import Optional
+from typing import Iterable, Optional
 
 from jsonargparse import DefaultHelpFormatter
 from rich.markdown import Markdown
@@ -31,7 +32,7 @@ NONSKIP_LIST = set(
 )
 
 
-def get_verbose_usage(subcommand: str = "train"):
+def get_verbose_usage(subcommand: str = "train") -> str:
     return f"""
 To get more overridable argument information, run the command below.\n
 ```python
@@ -78,7 +79,7 @@ def get_cli_usage_docstring(component: Optional[object]) -> Optional[str]:
 
 
 def get_intro() -> Markdown:
-    INTRO = """
+    intro_markdown = """
 
 # OpenVINO™ Training Extensions CLI Guide
 
@@ -86,7 +87,7 @@ Github Repository: [https://github.com/openvinotoolkit/training_extensions](http
 A better guide is provided by the [documentation](https://openvinotoolkit.github.io/training_extensions/latest/index.html).
 
 """
-    return Markdown(INTRO)
+    return Markdown(intro_markdown)
 
 
 def render_guide(subcommand: Optional[str] = None) -> list:
@@ -107,21 +108,20 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
     non_skip_list = NONSKIP_LIST
     subcommand: Optional[str] = None
 
-    def add_usage(self, usage, actions, *args, **kwargs):
+    def add_usage(self, usage: Optional[str], actions: Iterable[argparse.Action], *args, **kwargs) -> None:
         if self.verbose_level == 0:
             actions = []
         elif self.verbose_level == 1:
             actions = [action for action in actions if action.dest in self.non_skip_list]
 
-        ret = super(OTXHelpFormatter, self).add_usage(usage, actions, *args, **kwargs)
-        return ret
+        super().add_usage(usage, actions, *args, **kwargs)
 
-    def add_argument(self, action):
+    def add_argument(self, action: argparse.Action) -> None:
         if self.verbose_level == 0:
             return
         if self.verbose_level == 1 and action.dest not in self.non_skip_list:
             return
-        super(OTXHelpFormatter, self).add_argument(action)
+        super().add_argument(action)
 
     def format_help(self) -> str:
         with self.console.capture() as capture:

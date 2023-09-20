@@ -25,7 +25,7 @@ class CustomEvalHook(EvalHook):
         *args,
         ema_eval_start_epoch=10,
         **kwargs,
-    ):
+    ) -> None:
         metric = kwargs["metric"]
         self.metric = None
         if isinstance(metric, str):
@@ -108,7 +108,7 @@ def single_gpu_test(model, data_loader):
 class DistCustomEvalHook(CustomEvalHook):
     """Distributed Custom Evaluation Hook for Multi-GPU environment."""
 
-    def __init__(self, dataloader, interval=1, gpu_collect=False, by_epoch=True, **eval_kwargs):
+    def __init__(self, dataloader, interval=1, gpu_collect=False, by_epoch=True, **eval_kwargs) -> None:
         if not isinstance(dataloader, DataLoader):
             raise TypeError("dataloader must be a pytorch DataLoader, but got " f"{type(dataloader)}")
         self.gpu_collect = gpu_collect

@@ -24,7 +24,7 @@ class TwoCropTransformHook(Hook):
         by_epoch (bool): (TODO) Use `interval` by epoch. Defaults to False.
     """
 
-    def __init__(self, interval: int = 1, by_epoch: bool = False):
+    def __init__(self, interval: int = 1, by_epoch: bool = False) -> None:
         assert interval > 0, f"interval (={interval}) must be positive value."
         if by_epoch:
             raise NotImplementedError("by_epoch is not implemented.")

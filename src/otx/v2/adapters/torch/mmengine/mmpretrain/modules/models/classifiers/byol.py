@@ -50,7 +50,7 @@ class OTXBYOL(nn.Module):
         pretrained: Optional[str] = None,
         base_momentum: float = 0.996,
         **kwargs,  # pylint: disable=unused-argument
-    ):
+    ) -> None:
         super().__init__()
 
         # build backbone

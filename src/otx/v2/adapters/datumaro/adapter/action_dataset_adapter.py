@@ -21,11 +21,11 @@ from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.v2.api.entities.subset import Subset
 
-from .base_dataset_adapter import BaseDatasetAdapter
+from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 
 
-class ActionBaseDatasetAdapter(BaseDatasetAdapter):
-    """BaseDataset Adpater for Action tasks inherited by BaseDatasetAdapter."""
+class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
+    """BaseDataset Adpater for Action tasks inherited by DatumaroDatasetAdapter."""
 
     VIDEO_FRAME_SEP = "##"
     EMPTY_FRAME_LABEL_NAME = "EmptyFrame"
@@ -115,7 +115,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
 
 
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
-    """Action classification adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
+    """Action classification adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Classification."""
@@ -151,7 +151,7 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
 
 
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
-    """Action Detection adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
+    """Action Detection adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
 
     # pylint: disable=too-many-nested-blocks
     def get_otx_dataset(self) -> DatasetEntity:

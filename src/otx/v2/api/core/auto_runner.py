@@ -64,7 +64,7 @@ ADAPTER_QUICK_LINK = {
 }
 
 
-def set_dataset_paths(config: Dict[str, Any], args: Dict[str, Optional[str]]):
+def set_dataset_paths(config: dict, args: dict) -> dict:
     for key, value in args.items():
         if value is None:
             continue
@@ -72,7 +72,7 @@ def set_dataset_paths(config: Dict[str, Any], args: Dict[str, Optional[str]]):
     return config
 
 
-def set_adapters_from_string(framework: str):
+def set_adapters_from_string(framework: str) -> tuple:
     if framework.lower() in ADAPTER_QUICK_LINK:
         adapter = f"{ADAPTERS_ROOT}.{ADAPTER_QUICK_LINK[framework.lower()]}"
     else:
@@ -108,7 +108,7 @@ class AutoRunner:
         unlabeled_file_list: Optional[str] = None,
         data_format: Optional[str] = None,
         config: Optional[Union[Dict, str]] = None,
-    ):
+    ) -> None:
         r"""AutoRunner, which is responsible for OTX's automated training APIs.
 
         This helps to select the most appropriate type of configuration through auto-detection based on framework, task, train_type, and data_roots.
@@ -181,11 +181,11 @@ class AutoRunner:
         dataset_kwargs["data_format"] = self.data_format
         self.dataset = self.dataset_class(**dataset_kwargs)
 
-    def _initial_config(self, config: Optional[Union[Dict, str]]) -> Dict[str, Any]:
+    def _initial_config(self, config: Optional[Union[dict, str]]) -> dict:
         if config is not None:
             if isinstance(config, str):
                 self.config_path = config
-                config = yaml.load(open(config, "r"), Loader=yaml.FullLoader)
+                config = yaml.load(open(config), Loader=yaml.FullLoader)
         else:
             config = {}
         if not isinstance(config, dict):
@@ -196,14 +196,14 @@ class AutoRunner:
             config["model"] = {}
         return config
 
-    def _configure_model(self, model: Any) -> object:
+    def _configure_model(self, model: Optional[Union[str, dict, object]]) -> object:
         # Configure Model if model is None
         if model is None:
             if self.cache.get("model") is not None:
                 model = self.cache.get("model")
             elif self.get_model is not None:
                 model = self.get_model(model=self.config, num_classes=self.dataset.num_classes)
-        elif isinstance(model, (str, Dict)):
+        elif isinstance(model, (str, dict)):
             model = self.get_model(model=model)
         return model
 
@@ -212,7 +212,7 @@ class AutoRunner:
         framework: Optional[str],
         task: Union[str, TaskType, None],
         train_type: Union[str, TrainType, None],
-    ):
+    ) -> None:
         """A function to automatically detect when framework, task, and train_type are None. This uses data_roots.
 
         Args:
@@ -252,22 +252,22 @@ class AutoRunner:
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: Any = None,
+        pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
         distributed: bool = False,
         **kwargs,
-    ):
+    ) -> object:
         subset_dl = self.dataset.subset_dataloader(subset, pipeline, batch_size, num_workers, distributed, **kwargs)
         self.subset_dls[subset] = subset_dl
         return subset_dl
 
     def train(
         self,
-        model=None,
-        train_dataloader=None,
-        val_dataloader=None,
-        optimizer=None,
+        model: Optional[Union[str, dict, list, object]] = None,
+        train_dataloader: object = None,
+        val_dataloader: object = None,
+        optimizer: Optional[Union[dict, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
         max_epochs: Optional[int] = None,
@@ -277,7 +277,7 @@ class AutoRunner:
         precision: Optional[str] = None,
         val_interval: Optional[int] = None,
         **kwargs,
-    ):
+    ) -> dict:
         """The Train function in AutoRunner.
 
         Each model and dataloader is automatically created based on the configuration if None.
@@ -344,12 +344,12 @@ class AutoRunner:
 
     def validate(
         self,
-        model=None,
-        val_dataloader=None,
+        model: Optional[Union[str, dict, list, object]] = None,
+        val_dataloader: Optional[Union[dict, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
         **kwargs,
-    ):
+    ) -> dict:
         if val_dataloader is None:
             if self.subset_dls.get("val", None) is not None:
                 val_dataloader = self.subset_dls["val"]
@@ -374,12 +374,12 @@ class AutoRunner:
 
     def test(
         self,
-        model=None,
-        test_dataloader=None,
+        model: Optional[Union[str, dict, list, object]] = None,
+        test_dataloader: Optional[Union[dict, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
         **kwargs,
-    ):
+    ) -> dict:
         if test_dataloader is None:
             if self.subset_dls.get("test", None) is not None:
                 test_dataloader = self.subset_dls["test"]
@@ -403,8 +403,8 @@ class AutoRunner:
 
     def predict(
         self,
-        img,
-        model=None,
+        img: Optional[Union[str, Path, object]],
+        model: Optional[Union[str, dict, list, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         pipeline: Optional[List[Dict]] = None,
         **kwargs,
@@ -427,11 +427,11 @@ class AutoRunner:
 
     def export(
         self,
-        model=None,
+        model: Optional[Union[str, dict, list, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: str = "float32",
         **kwargs,
-    ):
+    ) -> dict:
         model = self._configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")

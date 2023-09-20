@@ -34,7 +34,7 @@ def get_actmap(
     return saliency_map
 
 
-def get_input_names_list(input_path: Union[str, int], capture):
+def get_input_names_list(input_path: Union[str, int], capture) -> list:  # noqa: ANN001
     """Lists the filenames of all inputs for demo."""
 
     # Web camera input
@@ -46,7 +46,7 @@ def get_input_names_list(input_path: Union[str, int], capture):
         return [Path(input_path).name]
 
 
-def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], capture):
+def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], capture) -> None:  # noqa: ANN001
     """Saves images/videos with predictions from saved_frames to output folder with proper names."""
 
     if not saved_frames:

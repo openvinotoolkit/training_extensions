@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-import torch.nn.functional as F
 from mmpretrain.models.builder import HEADS, build_loss
 
 # from mmengine.model import BaseModule
 from mmpretrain.models.heads import ClsHead
 from torch import nn
+from torch.nn import functional
 
 
 @HEADS.register_module()
@@ -26,7 +26,7 @@ class SupConClsHead(ClsHead):
 
     def __init__(
         self, num_classes: int, in_channels: int, aux_mlp, loss, aux_loss, topk=(1,), init_cfg=None
-    ):  # pylint: disable=too-many-arguments
+    ) -> None:  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -95,7 +95,7 @@ class SupConClsHead(ClsHead):
         cls_score = self.fc(img)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        pred = functional.softmax(cls_score, dim=1) if cls_score is not None else None
         if torch.onnx.is_in_onnx_export():
             return pred
         pred = list(pred.detach().cpu().numpy())

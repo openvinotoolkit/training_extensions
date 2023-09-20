@@ -233,7 +233,7 @@ class Dataset(BaseDataset):
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: Optional[Union[List[Union[Dict, Any]], Dict[str, List[Union[Dict, Any]]]]] = None,
+        pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
         distributed: bool = False,

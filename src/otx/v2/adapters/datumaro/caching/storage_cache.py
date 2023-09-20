@@ -38,9 +38,9 @@ def arrow_cache_helper(
     def get_hash(dataset: DatumDataset, scheme: str) -> str:
         source_path = dataset.data_path
         _hash = hashlib.sha256()
-        _hash.update(f"{source_path}".encode("utf-8"))
-        _hash.update(f"{len(dataset)}".encode("utf-8"))
-        _hash.update(f"{scheme}".encode("utf-8"))
+        _hash.update(f"{source_path}".encode())
+        _hash.update(f"{len(dataset)}".encode())
+        _hash.update(f"{scheme}".encode())
         if source_path:
             _hash.update(str(os.stat(source_path)[stat.ST_MTIME]).encode("utf-8"))
             if os.path.isdir(source_path):
@@ -74,7 +74,7 @@ def arrow_cache_helper(
         cache_paths.append(cache_path)
         hash_path = f"{cache_path}.hash"
         if os.path.exists(cache_path) and os.path.exists(hash_path):
-            with open(hash_path, "r", encoding="utf-8") as f:
+            with open(hash_path, encoding="utf-8") as f:
                 if get_file_hash(cache_path) == f.read():
                     cache_hit[-1] = True
 

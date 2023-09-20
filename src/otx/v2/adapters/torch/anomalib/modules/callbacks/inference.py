@@ -39,7 +39,7 @@ logger = get_logger(__name__)
 class AnomalyInferenceCallback(Callback):
     """Callback that updates the OTX dataset during inference."""
 
-    def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType):
+    def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType) -> None:
         self.otx_dataset = otx_dataset
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
