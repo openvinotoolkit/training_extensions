@@ -343,7 +343,7 @@ def draw_rich_table(header: List[str], rows: List[Dict[str, Any]], table_title: 
     for each_exp_result_summary in rows:
         table_row = []
         for field in header:
-            val = each_exp_result_summary[field]
+            val = each_exp_result_summary.get(field)
             table_row.append(str(val))
 
         table.add_row(*table_row)
