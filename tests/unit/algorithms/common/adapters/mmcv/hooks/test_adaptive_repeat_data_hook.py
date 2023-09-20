@@ -21,7 +21,7 @@ class TestAdaptiveRepeatDataHook:
 
             def __len__(self):
                 return 10
-
+        self.mock_dataset = MockDataset()
         self.mock_data_loader = DataLoader(
             dataset=MockDataset(),
             batch_size=len(MockDataset()),
@@ -30,7 +30,7 @@ class TestAdaptiveRepeatDataHook:
 
     @e2e_pytest_unit
     def test_before_epoch(self) -> None:
-        hook = AdaptiveRepeatDataHook()
+        hook = AdaptiveRepeatDataHook(64, len(self.mock_dataset))
         hook.before_epoch(self.mock_runner)
 
         assert self.mock_runner.data_loader.sampler.repeat == 5
