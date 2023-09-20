@@ -21,6 +21,7 @@ class TestAdaptiveRepeatDataHook:
 
             def __len__(self):
                 return 10
+
         self.mock_dataset = MockDataset()
         self.mock_data_loader = DataLoader(
             dataset=MockDataset(),

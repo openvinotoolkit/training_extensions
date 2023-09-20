@@ -419,7 +419,7 @@ class BaseConfigurer:
                 bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", 0)
                 bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
                 custom_hook["train_batch_size"] = bs
-                custom_hook["n_train_data"] = len(data_cfg.get("train",{}).get("otx_dataset",[]))
+                custom_hook["n_train_data"] = len(data_cfg.get("train", {}).get("otx_dataset", []))
 
     @staticmethod
     def _update_caching_modules(cfg: Config) -> None:
