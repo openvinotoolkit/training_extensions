@@ -476,16 +476,50 @@ OTX automatically aligns data pipelines to input size during <cite>eval`</cite> 
 <ul class="simple">
 <li><p>64x64 (only for classification)</p></li>
 <li><p>128x128 (only for classification)</p></li>
+<li><p>224x224 (only for classification)</p></li>
 <li><p>256x256</p></li>
 <li><p>384x384</p></li>
 <li><p>512x512</p></li>
+<li><p>768x768</p></li>
 <li><p>1024x1024</p></li>
+<li><p>Default (per-model default input size)</p></li>
+<li><p>Auto (adaptive to dataset statistics)</p></li>
 </ul>
+<section id="adaptive-input-size">
+<span id="id1"></span><h2>Adaptive Input Size<a class="headerlink" href="#adaptive-input-size" title="Permalink to this heading">#</a></h2>
+<p>“Auto” mode tries to automatically select the right size
+based on given dataset statictics.</p>
+<ol class="arabic simple">
+<li><p>OTX analyzes the input dataset to get robust statistics.</p></li>
+<li><p>Input size is initially set to typical large image size.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_size</span> <span class="o">=</span> <span class="n">large_image_size</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>(Optionally) Input size is adjusted by object sizes in the dataset, if any.
+The input size from image size is rescaled accoridng to the ratio of
+minimum recongnizable object size of models, which is typically 16x16 ~ 32x32,
+and the typical small object size in the dataset.
+In short, if objects are 64x64 in general in 512x512 image,
+it will be down-scaled to 256x256 as 32x32 objects are enough to be detected.</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span> <span class="o">*</span> <span class="n">MIN_RECOGNIZABLE_OBJECT_SIZE</span> <span class="o">/</span> <span class="n">small_object_size</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Select the closest size from standard preset sizes</p></li>
+<li><p>Restrict scale-up</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">default_model_input_size</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Using smaller input size with datasets having lower image resolutions or larger objects can yield a speed advantage with minimal impact on model performance.
 But note that the choice of small input size can potentially influence model performance based on the task, model architecture, and dataset characteristics.</p>
 </div>
+</section>
 </section>
 
 
@@ -519,6 +553,23 @@ But note that the choice of small input size can potentially influence model per
           
             <div class="bd-sidebar-secondary bd-toc">
               
+<div class="toc-item">
+  
+<div class="tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+</div>
+<nav id="bd-toc-nav" class="page-toc">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#adaptive-input-size">
+   Adaptive Input Size
+  </a>
+ </li>
+</ul>
+
+</nav>
+</div>
+
 <div class="toc-item">
   
 <div id="searchbox"></div>
