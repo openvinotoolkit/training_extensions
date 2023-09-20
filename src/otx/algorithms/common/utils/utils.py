@@ -173,6 +173,5 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
 
 
 def is_xpu_available():
-    """Checks if XPU device is available.
-    """
+    """Checks if XPU device is available."""
     return hasattr(torch, "xpu") and torch.xpu.is_available()

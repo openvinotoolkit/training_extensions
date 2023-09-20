@@ -25,10 +25,9 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
-from otx.algorithms.common.utils import append_dist_rank_suffix, is_xpu_available
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import OnHookInitialized
-from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
+from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix, is_xpu_available
 from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
@@ -175,11 +174,11 @@ class BaseConfigurer:
         # consider "cuda", "xpu", and "cpu" devices only
         if not torch.cuda.is_available():
             try:
-                import intel_extension_for_pytorch as ipex
+                import intel_extension_for_pytorch as ipex  # noqa: F401
 
                 if is_xpu_available():
                     cfg.device = "xpu"
-            except:
+            except ModuleNotFoundError:
                 cfg.device = "cpu"
                 cfg.gpu_ids = range(-1, 0)
         else:
