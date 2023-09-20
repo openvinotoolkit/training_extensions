@@ -24,6 +24,7 @@ from typing import Union, Dict, List, Any
 from rich.console import Console
 from rich.table import Table
 
+from otx.cli.utils.experiment import set_arguments_to_cmd
 from .build import main as otx_build
 from .demo import main as otx_demo
 from .deploy import main as otx_deploy
@@ -478,33 +479,6 @@ def get_command_list(exp_recipe: Dict) -> Dict[str, str]:
     map_variable(variables, exp_recipe, "command", True)
 
     return exp_recipe["command"]
-
-
-def set_arguments_to_cmd(command: List[str], keys: Union[str, List[str]], value: str = None, start_idx: int = 0):
-    """Add arguments at proper position in `sys.argv`.
-
-    Args:
-        keys (str or List[str]): arguement keys.
-        value (str or None): argument value.
-        after_params (bool): whether argument should be after `param` or not.
-    """
-    if not isinstance(keys, list):
-        keys = [keys]
-    for key in keys:
-        if key in command:
-            if value is not None:
-                command[command.index(key) + 1] = value
-            return
-
-    delimiters = [val.split("_")[1] for val in __all__] + ["params"]
-
-    key = keys[0]
-    for i in range(start_idx, len(command)):
-        if command[i] in delimiters:
-            if value is not None:
-                command.insert(i, value)
-            command.insert(i, key)
-            return
 
 
 def run_experiment_recipe(exp_recipe: Dict):
