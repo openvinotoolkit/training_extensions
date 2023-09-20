@@ -4,7 +4,7 @@
 #
 
 import random
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 from numpy import ndarray as CvImage
 from PIL import Image, ImageEnhance, ImageOps

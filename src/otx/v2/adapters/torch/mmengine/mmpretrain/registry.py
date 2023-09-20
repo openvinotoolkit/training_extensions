@@ -3,11 +3,6 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-
-from mmpretrain.datasets import *
-from mmpretrain.engine import *
-from mmpretrain.evaluation import *
-from mmpretrain.models import *
 from mmpretrain.registry import (
     BATCH_AUGMENTS,
     DATA_SAMPLERS,
@@ -31,10 +26,7 @@ from mmpretrain.registry import (
     VISUALIZERS,
     WEIGHT_INITIALIZERS,
 )
-from mmpretrain.structures import *
-from mmpretrain.visualization import *
 
-from otx.v2.adapters.torch.mmengine.mmpretrain.modules import *
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 
 REGISTRY_LIST = [

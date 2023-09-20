@@ -62,18 +62,32 @@ class MMXEngine(Engine):
         func_args: Dict,
         **kwargs,
     ):
+        # TODO: Need to clean up.
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
 
+        def _get_config_value(arg_key: str, positional_args: Dict[str, Any], default: Any = None):
+            arg_config = positional_args.get(arg_key, None)
+            arg_config = self.config.get(arg_key, default) if arg_config is None else arg_config
+            return arg_config
+
+        def _set_evaluator(evaluator: Union[List, Dict], num_classes: int) -> Union[List, Dict]:
+            if isinstance(evaluator, list):
+                for metric in evaluator:
+                    if isinstance(metric, dict):
+                        metric["_scope_"] = self.registry.name
+                        if "topk" in metric:
+                            metric["topk"] = [1] if num_classes < 5 else [1, 5]
+            elif isinstance(evaluator, dict):
+                evaluator["_scope_"] = self.registry.name
+                if "topk" in evaluator:
+                    evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
+            return evaluator
+
         # Update Model & Dataloaders & Custom hooks
         model = func_args.get("model", None)
         num_classes = -1
-        train_dataloader = func_args.get("train_dataloader", None)
-        val_dataloader = func_args.get("val_dataloader", None)
-        test_dataloader = func_args.get("test_dataloader", None)
-        param_scheduler = func_args.get("param_scheduler", self.config.get("param_scheduler", None))
-        custom_hooks = func_args.get("custom_hooks", self.config.get("custom_hooks", None))
         if model is not None:
             kwargs["model"] = model
             if isinstance(model, torch.nn.Module):
@@ -82,30 +96,26 @@ class MMXEngine(Engine):
             else:
                 head = model.get("head", {})
                 num_classes = head.get("num_classes", -1)
-        if train_dataloader is not None:
-            kwargs["train_dataloader"] = train_dataloader
-        if val_dataloader is not None:
-            kwargs["val_dataloader"] = val_dataloader
-        if test_dataloader is not None:
-            kwargs["test_dataloader"] = test_dataloader
-        if custom_hooks is not None:
-            kwargs["custom_hooks"] = custom_hooks
-        if param_scheduler is not None:
-            kwargs["param_scheduler"] = param_scheduler
+        for subset_dataloader in ("train_dataloader", "val_dataloader", "test_dataloader"):
+            data_loader = func_args.get(subset_dataloader, None)
+            if data_loader is not None:
+                kwargs[subset_dataloader] = data_loader
+        # Sub Arguments
+        arg_keys = ["param_scheduler", "custom_hooks"]
+        for arg_key in arg_keys:
+            arg_config = _get_config_value(arg_key, func_args)
+            if arg_config is not None:
+                kwargs[arg_key] = arg_config
 
         # Update train_cfg
-        max_iters = func_args.get("max_iters", None)
-        max_iters = self.config.get("max_iters", None) if max_iters is None else max_iters
-        max_epochs = func_args.get("max_epochs", None)
-        max_epochs = self.config.get("max_epochs", None) if max_epochs is None else max_epochs
-        precision = func_args.get("precision", None)
-        precision = self.config.get("precision", None) if precision is None else precision
-        val_interval = func_args.get("val_interval", 1)
-        if train_dataloader is not None:
+        precision = _get_config_value("precision", func_args)
+        if kwargs.get("train_dataloader", None) is not None:
+            max_iters = _get_config_value("max_iters", func_args)
+            max_epochs = _get_config_value("max_epochs", func_args)
+            val_interval = _get_config_value("val_interval", func_args, default=1)
             if max_iters is not None and max_epochs is not None:
                 raise ValueError("Only one of `max_epochs` or `max_iters` can be set.")
             if "train_cfg" not in kwargs or kwargs["train_cfg"] is None:
-                val_interval = val_interval if val_interval is not None else 1
                 kwargs["train_cfg"] = dict(val_interval=val_interval, by_epoch=True)
             if max_epochs is not None:
                 kwargs["train_cfg"]["by_epoch"] = True
@@ -115,7 +125,7 @@ class MMXEngine(Engine):
                 kwargs["train_cfg"]["max_iters"] = max_iters
             # Update Optimizer
             if "optim_wrapper" not in kwargs or kwargs["optim_wrapper"] is None:
-                optimizer = func_args.get("optimizer", None)
+                optimizer = _get_config_value("optimizer", func_args)
                 if optimizer is None:
                     # FIXME: Remove default setting here
                     optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0005)
@@ -131,28 +141,17 @@ class MMXEngine(Engine):
             self.config["optim_wrapper"] = None
 
         # Update val_cfg (ValLoop)
-        if val_dataloader is not None:
+        if kwargs.get("val_dataloader", None) is not None:
             if "val_cfg" not in kwargs or kwargs["val_cfg"] is None:
                 kwargs["val_cfg"] = dict()
             if precision in ["float16", "fp16"]:
                 kwargs["val_cfg"]["fp16"] = True
-
             # Update val_evaluator
-            val_evaluator = func_args.get("val_evaluator", self.config.get("val_evaluator", None))
+            val_evaluator = _get_config_value("val_evaluator", func_args)
             if val_evaluator is None:
                 # FIXME: Need to set val_evaluator as task-agnostic way
                 val_evaluator = [dict(type="Accuracy")]
-            if isinstance(val_evaluator, list):
-                for metric in val_evaluator:
-                    if isinstance(metric, dict):
-                        metric["_scope_"] = self.registry.name
-                        if "topk" in metric:
-                            metric["topk"] = [1] if num_classes < 5 else [1, 5]
-            elif isinstance(val_evaluator, dict):
-                val_evaluator["_scope_"] = self.registry.name
-                if "topk" in val_evaluator:
-                    val_evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
-            kwargs["val_evaluator"] = val_evaluator
+            kwargs["val_evaluator"] = _set_evaluator(val_evaluator, num_classes=num_classes)
         elif isinstance(self.config.get("val_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
             logger.warning("Currently, OTX does not accept val_dataloader as a dict configuration.")
@@ -161,28 +160,17 @@ class MMXEngine(Engine):
             self.config["val_evaluator"] = None
 
         # Update test_cfg (TestLoop)
-        if test_dataloader is not None:
+        if kwargs.get("test_dataloader", None) is not None:
             if "test_cfg" not in kwargs or kwargs["test_cfg"] is None:
                 kwargs["test_cfg"] = dict()
             if precision in ["float16", "fp16"]:
                 kwargs["test_cfg"]["fp16"] = True
-
             # Update test_evaluator
-            test_evaluator = func_args.get("test_evaluator", self.config.get("test_evaluator", None))
+            test_evaluator = _get_config_value("test_evaluator", func_args)
             if test_evaluator is None:
                 # FIXME: Need to set test_evaluator as task-agnostic way
                 test_evaluator = self.config.get("val_evaluator", [dict(type="Accuracy")])
-            if isinstance(test_evaluator, list):
-                for metric in test_evaluator:
-                    if isinstance(metric, dict):
-                        metric["_scope_"] = self.registry.name
-                        if "topk" in metric:
-                            metric["topk"] = [1] if num_classes < 5 else [1, 5]
-            elif isinstance(test_evaluator, dict):
-                test_evaluator["_scope_"] = self.registry.name
-                if "topk" in test_evaluator:
-                    test_evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
-            kwargs["test_evaluator"] = test_evaluator
+            kwargs["test_evaluator"] = _set_evaluator(test_evaluator, num_classes=num_classes)
         elif isinstance(self.config.get("test_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
             logger.warning("Currently, OTX does not accept test_dataloader as a dict configuration.")
@@ -193,11 +181,11 @@ class MMXEngine(Engine):
         # Update randomness
         seed = func_args.get("seed", self.config.pop("seed", None))
         deterministic = func_args.get("deterministic", self.config.pop("deterministic", None))
-        if func_args.get("seed", None) is not None:
+        if seed is not None:
             kwargs["randomness"] = dict(seed=seed, deterministic=deterministic)
 
-        distributed = func_args.get("distributed", False)
-        default_hooks = func_args.get("default_hooks", self.config.get("default_hooks", None))
+        distributed = _get_config_value("distributed", func_args, default=False)
+        default_hooks = _get_config_value("default_hooks", func_args)
         if default_hooks is None:
             # FIXME: Default hooks need to align
             default_hooks = dict(
@@ -219,9 +207,7 @@ class MMXEngine(Engine):
                 sampler_seed=dict(type="DistSamplerSeedHook") if distributed else None,
             )
         kwargs["default_hooks"] = default_hooks
-        visualizer = func_args.get("visualizer")
-        if visualizer is None:
-            visualizer = self.config.get("visualizer", None)
+        visualizer = _get_config_value("visualizer", func_args)
         if visualizer is not None:
             self.config["visualizer"] = visualizer
             if isinstance(visualizer, dict):
@@ -232,13 +218,11 @@ class MMXEngine(Engine):
             if kwarg_value is None:
                 continue
             self.config[kwarg_key] = kwarg_value
-
         # Check Config Default is not None
         runner_default_args = get_non_default_args(Runner.__init__)
         for not_none_arg, default_value in runner_default_args:
             if self.config.get(not_none_arg) is None:
                 self.config[not_none_arg] = default_value
-
         # Last Check for Runner.__init__
         runner_arg_list = get_all_args(Runner.__init__)
         removed_key = []
@@ -249,7 +233,6 @@ class MMXEngine(Engine):
             logger.warning(f"In Engine.config, remove {removed_key} " "that are unavailable to the Runner.")
             for config_key in removed_key:
                 self.config.pop(config_key)
-
         return update_check
 
     def train(

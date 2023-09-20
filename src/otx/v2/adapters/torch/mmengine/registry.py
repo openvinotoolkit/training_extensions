@@ -31,8 +31,6 @@ from mmengine.registry import (
 
 from otx.v2.api.core.registry import BaseRegistry
 
-from .modules import *
-
 REGISTRY_LIST = [
     DATA_SAMPLERS,
     DATASETS,

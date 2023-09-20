@@ -18,7 +18,7 @@ try:
 
     from .ops import squeeze__default
 
-    __all__.append("squeeze__default")
+    __all__ = ["squeeze__default"]
     VERSION = mmdeploy.__version__
 except ImportError as e:
     AVAILABLE = False

@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import re
 import sys
 from typing import Any, Dict, List, Optional
 

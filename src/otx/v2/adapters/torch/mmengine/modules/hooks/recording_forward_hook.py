@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Sequence, Union
 
 import numpy as np
 import torch

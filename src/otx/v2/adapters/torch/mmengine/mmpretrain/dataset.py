@@ -36,39 +36,27 @@ SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 def get_default_pipeline(semisl: bool = False) -> Union[Dict, List]:
     # TODO: This is function for experiment // Need to remove this function
-    try:
-        import mmpretrain
+    default_pipeline = [
+        dict(type="Resize", scale=[224, 224]),
+        dict(type="mmpretrain.PackInputs"),
+    ]
+    if semisl:
+        strong_pipeline = [
+            dict(type="OTXRandAugment", num_aug=8, magnitude=10),
+        ]
+        return {
+            "train": default_pipeline,
+            "unlabeled": [
+                dict(type="Resize", scale=[224, 224]),
+                dict(type="PostAug", keys=dict(img_strong=strong_pipeline)),
+                dict(type="mmpretrain.PackMultiKeyInputs", input_key="img", multi_key=["img_strong"]),
+            ],
+        }
 
-        default_pipeline = [
-            dict(type="Resize", scale=[224, 224]),
-            dict(type="mmpretrain.PackInputs"),
-        ]
-        if semisl:
-            strong_pipeline = [
-                dict(type="OTXRandAugment", num_aug=8, magnitude=10),
-            ]
-            return {
-                "train": default_pipeline,
-                "unlabeled": [
-                    dict(type="Resize", scale=[224, 224]),
-                    dict(type="PostAug", keys=dict(img_strong=strong_pipeline)),
-                    dict(type="mmpretrain.PackMultiKeyInputs", input_key="img", multi_key=["img_strong"]),
-                ],
-            }
-
-        return [
-            dict(type="Resize", scale=[224, 224]),
-            dict(type="mmpretrain.PackInputs"),
-        ]
-    except:
-        return [
-            dict(type="Resize", size=224),
-            dict(type="PILImageToNDArray", keys=["img"]),
-            dict(type="Normalize", mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True),
-            dict(type="ImageToTensor", keys=["img"]),
-            dict(type="ToTensor", keys=["gt_label"]),
-            dict(type="Collect", keys=["img", "gt_label"]),
-        ]
+    return [
+        dict(type="Resize", scale=[224, 224]),
+        dict(type="mmpretrain.PackInputs"),
+    ]
 
 
 @add_subset_dataloader(SUBSET_LIST)

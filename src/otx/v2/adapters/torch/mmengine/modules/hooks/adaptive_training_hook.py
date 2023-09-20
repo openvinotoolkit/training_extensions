@@ -76,19 +76,19 @@ class AdaptiveTrainSchedulingHook(Hook):
             iter_per_epoch = len(runner.data_loader)
             adaptive_interval = self.get_adaptive_interval(iter_per_epoch)
             for hook in runner.hooks:
-                # TODO: Check New MMEngine's Metric & ValLoop
+                # TODO: There is no longer an EvalHook in mmX.
                 # if isinstance(hook, EvalHook):
                 #     # make sure evaluation is done at last to save best checkpoint
                 #     limit = runner.max_epochs if hook.by_epoch else runner.max_iters
                 #     adaptive_interval = min(adaptive_interval, limit)
                 #     logger.info(f"Update EvalHook interval: {hook.interval} -> {adaptive_interval}")
                 #     hook.interval = adaptive_interval
-                # TODO: Check New MMEngine's LRScheduler
+                # TODO: There is no longer an LrUpdaterHook in mmX.
                 # elif isinstance(hook, LrUpdaterHook):
                 #     if hasattr(hook, "interval") and hasattr(hook, "patience"):
                 #         hook.interval = adaptive_interval
                 if isinstance(hook, EarlyStoppingHook):
-                    logger.info(f"Update EarlyStoppingHook patience: {hook.patience} -> {patience}")
+                    # logger.info(f"Update EarlyStoppingHook patience: {hook.patience} -> {patience}")
                     hook.start = adaptive_interval
                     hook.interval = adaptive_interval
                 elif isinstance(hook, CheckpointHook):
@@ -107,8 +107,9 @@ class AdaptiveTrainSchedulingHook(Hook):
     def get_evalhook(self, runner):
         """Get evaluation hook."""
         target_hook = None
-        for hook in runner.hooks:
-            if isinstance(hook, EvalHook):
-                assert target_hook is None, "More than 1 EvalHook is found in runner."
-                target_hook = hook
+        # TODO: There is no longer an EvalHook in mmX.
+        # for hook in runner.hooks:
+        #     if isinstance(hook, EvalHook):
+        #         assert target_hook is None, "More than 1 EvalHook is found in runner."
+        #         target_hook = hook
         return target_hook
