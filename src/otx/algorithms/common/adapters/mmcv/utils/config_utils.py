@@ -724,7 +724,7 @@ class InputSizeManager:
 
     def get_input_size_from_cfg(
         self, subset: Union[str, List[str]] = ["test", "val", "train"]
-    ) -> Union[None, Tuple[int, int]]:
+    ) -> Optional[Tuple[int, int]]:
         """Estimate image size using data pipeline.
 
         Args:
@@ -920,22 +920,22 @@ class InputSizeManager:
         if len(preset_sizes) == 0:
             return input_size
 
-        def scale_of(x):
+        def to_log_scale(x):
             return np.log(np.sqrt(x[0] * x[1]))
 
-        input_scale = scale_of(input_size)
-        preset_scales = np.array(list(map(scale_of, preset_sizes)))
+        input_scale = to_log_scale(input_size)
+        preset_scales = np.array(list(map(to_log_scale, preset_sizes)))
         abs_diff = np.abs(preset_scales - input_scale)
         return preset_sizes[np.argmin(abs_diff)]
 
     def adapt_input_size_to_dataset(
-        self, max_image_size: float, min_object_size: float = None, downscale_only: bool = True
+        self, max_image_size: int, min_object_size: Optional[int] = None, downscale_only: bool = True
     ) -> Tuple[int, int]:
         """Compute appropriate model input size w.r.t. dataset statistics.
 
         Args:
             max_image_size (int): Typical large image size of dataset in pixels.
-            min_object_size (int): Typical small object size of dataset in pixels.
+            min_object_size (int, optional): Typical small object size of dataset in pixels.
                 None to consider only image size. Defaults to None.
             downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
 
@@ -947,7 +947,7 @@ class InputSizeManager:
 
         base_input_size = self.base_input_size
         if isinstance(base_input_size, Dict):
-            base_input_size = base_input_size.get("test", None)
+            base_input_size = base_input_size.get("train", base_input_size.get("test", None))
         logger.info(f"-> Current base input size: {base_input_size}")
 
         if max_image_size <= 0:

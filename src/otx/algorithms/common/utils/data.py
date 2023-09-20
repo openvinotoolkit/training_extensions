@@ -284,13 +284,13 @@ def compute_robust_dataset_statistics(dataset: DatasetEntity, ann_stat=False, ma
 
     Returns:
         Dict[str, Any]: Robust avg, min, max values for images, and annotations optionally.
-            e.x) stat = {
-                     "image": {"avg": ...},
-                     "annotation": {
-                        "num_per_image": {"avg": ...},
-                        "size_of_shape": {"avg": ...},
-                     }
-                 }
+            ex) stat = {
+                    "image": {"avg": ...},
+                    "annotation": {
+                       "num_per_image": {"avg": ...},
+                       "size_of_shape": {"avg": ...},
+                    }
+                }
     """
     stat: Dict = {}
     if len(dataset) == 0 or max_samples <= 0:

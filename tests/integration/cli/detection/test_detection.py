@@ -97,7 +97,7 @@ class TestDetectionCLI:
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         _args = args.copy()
-        # FIXME: remove this block once Issue#2054 resolved
+        # FIXME: remove this block once Issue#2504 resolved
         if "DINO" in template.name:
             _args["train_params"] = [
                 "params",
@@ -116,7 +116,7 @@ class TestDetectionCLI:
         tmp_dir_path = tmp_dir_path / "detection/test_resume"
         _args = args.copy()
         _resume_params = resume_params.copy()
-        # FIXME: remove this block once Issue#2054 resolved
+        # FIXME: remove this block once Issue#2504 resolved
         if "DINO" in template.name:
             _args["train_params"].extend(["--learning_parameters.input_size", "Default"])
             _resume_params.extend(["--learning_parameters.input_size", "Default"])
