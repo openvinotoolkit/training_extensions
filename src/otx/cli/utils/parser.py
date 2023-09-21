@@ -237,7 +237,7 @@ def get_parser_and_hprams_data():
 
     template = parsed.template
     hyper_parameters = {}
-    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, exit_on_error=False)
     template_config = find_and_parse_model_template(template)
     template_help_str = (
         "Enter the path or ID or name of the template file. \n"
