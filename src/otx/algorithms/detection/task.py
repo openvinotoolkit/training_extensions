@@ -512,7 +512,7 @@ class OTXDetectionTask(OTXTask, ABC):
                     self._task_type is TaskType.ROTATED_DETECTION,
                 )
         else:
-            raise RuntimeError(f"MPA results assignment not implemented for task: {self._task_type}")
+            raise RuntimeError(f"OTX results assignment not implemented for task: {self._task_type}")
         return shapes
 
     def _add_explanations_to_dataset(

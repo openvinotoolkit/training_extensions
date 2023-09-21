@@ -9,7 +9,7 @@ import pytest
 import torch
 from mmdet.models import build_detector
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.hooks import DetClassProbabilityMapHook
 from otx.algorithms.detection.adapters.mmdet.hooks.det_class_probability_map_hook import MaskRCNNRecordingForwardHook
 from otx.cli.registry import Registry
@@ -25,19 +25,31 @@ templates_two_stage_det_ids = [template.model_template_id for template in templa
 class TestExplainMethods:
     ref_saliency_shapes = {
         "MobileNetV2-ATSS": (2, 4, 4),
+        "ResNeXt101-ATSS": (2, 4, 4),
         "SSD": (81, 13, 13),
-        "YOLOX": (80, 13, 13),
+        "YOLOX-TINY": (80, 13, 13),
+        "YOLOX-S": (80, 13, 13),
+        "YOLOX-L": (80, 13, 13),
+        "YOLOX-X": (80, 13, 13),
     }
 
     ref_saliency_vals_det = {
         "MobileNetV2-ATSS": np.array([67, 216, 255, 57], dtype=np.uint8),
-        "YOLOX": np.array([80, 28, 42, 53, 49, 68, 72, 75, 69, 57, 65, 6, 157], dtype=np.uint8),
-        "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 28, 44, 23, 61], dtype=np.uint8),
+        "ResNeXt101-ATSS": np.array([75, 214, 229, 173], dtype=np.uint8),
+        "YOLOX-TINY": np.array([80, 28, 42, 53, 49, 68, 72, 75, 69, 57, 65, 6, 157], dtype=np.uint8),
+        "YOLOX-S": np.array([75, 178, 151, 159, 150, 148, 144, 144, 147, 144, 147, 142, 189], dtype=np.uint8),
+        "YOLOX-L": np.array([43, 28, 0, 6, 7, 19, 22, 17, 14, 18, 25, 7, 34], dtype=np.uint8),
+        "YOLOX-X": np.array([255, 144, 83, 76, 83, 86, 82, 90, 91, 93, 110, 104, 83], dtype=np.uint8),
+        "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 27, 44, 23, 61], dtype=np.uint8),
     }
 
     ref_saliency_vals_det_wo_postprocess = {
         "MobileNetV2-ATSS": -0.10465062,
-        "YOLOX": 0.04948914,
+        "ResNeXt101-ATSS": -0.073549636,
+        "YOLOX-TINY": 0.04948914,
+        "YOLOX-S": 0.01133332,
+        "YOLOX-L": 0.01870133,
+        "YOLOX-X": 0.0043506604,
         "SSD": 0.6629989,
     }
 
@@ -47,7 +59,7 @@ class TestExplainMethods:
 
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
         cfg_path = os.path.join(base_dir, "model.py")
-        cfg = MPAConfig.fromfile(cfg_path)
+        cfg = OTXConfig.fromfile(cfg_path)
 
         model = build_detector(cfg.model)
         model = model.eval()
@@ -80,8 +92,9 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
-        actual_sal_vals = saliency_maps[0][0][0].astype(np.int8)
-        ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.int8)
+        # convert to int16 in case of negative value difference
+        actual_sal_vals = saliency_maps[0][0][0].astype(np.int16)
+        ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.uint8)
         assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
 
     @e2e_pytest_unit

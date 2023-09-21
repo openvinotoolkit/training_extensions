@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Object_Detection_YOLOX_X
-name: YOLOX_X
+model_template_id: Custom_Object_Detection_YOLOX
+name: YOLOX-TINY
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for YOLOX_X
+summary: Class-Incremental Object Detection for YOLOX-TINY
 application: ~
 
 # Algo backend.
@@ -31,7 +31,7 @@ hyper_parameters:
       inference_batch_size:
         default_value: 8
       learning_rate:
-        default_value: 0.001
+        default_value: 0.0002
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 3
@@ -57,10 +57,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 352.42
-size: 378
-# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-# inference_targets:
-#   - CPU
-#   - GPU
-#   - VPU
+gigaflops: 6.5
+size: 20.4
+
+# Model spec
+model_category: SPEED

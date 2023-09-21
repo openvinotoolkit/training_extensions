@@ -78,9 +78,9 @@
       },
       "tiling": {
         "multi_class": {
-          "--train-data-roots": "detection/coco_subset_cls_decr",
-          "--val-data-roots": "detection/coco_subset_cls_decr",
-          "--test-data-roots": "detection/coco_subset_cls_decr",
+          "--train-data-roots": "detection/coco_subset",
+          "--val-data-roots": "detection/coco_subset",
+          "--test-data-roots": "detection/coco_subset",
           "--input": "detection/coco_subset/images/test"
         }
       }
@@ -425,31 +425,46 @@
             "Lite-HRNet-s-mod2": 0.636,
             "Lite-HRNet-18-mod2": 0.692,
             "Lite-HRNet-18": 0.801,
-            "Lite-HRNet-x-mod3": 0.693
+            "Lite-HRNet-x-mod3": 0.693,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "export": {
             "Lite-HRNet-s-mod2": 0.636,
             "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.692
+            "Lite-HRNet-x-mod3": 0.692,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "deploy": {
             "Lite-HRNet-s-mod2": 0.636,
             "Lite-HRNet-18-mod2": 0.691,
             "Lite-HRNet-18": 0.8,
-            "Lite-HRNet-x-mod3": 0.692
+            "Lite-HRNet-x-mod3": 0.692,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "nncf": {
             "Lite-HRNet-s-mod2": 0.678,
             "Lite-HRNet-18-mod2": 0.707,
             "Lite-HRNet-18": 0.79,
-            "Lite-HRNet-x-mod3": 0.668
+            "Lite-HRNet-x-mod3": 0.668,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           },
           "ptq": {
             "Lite-HRNet-s-mod2": 0.725,
             "Lite-HRNet-18-mod2": 0.269,
             "Lite-HRNet-18": 0.115,
-            "Lite-HRNet-x-mod3": 0.041
+            "Lite-HRNet-x-mod3": 0.041,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         },
         "supcon": {
@@ -457,7 +472,10 @@
             "Lite-HRNet-s-mod2": 0.691,
             "Lite-HRNet-18-mod2": 0.676,
             "Lite-HRNet-18": 0.682,
-            "Lite-HRNet-x-mod3": 0.698
+            "Lite-HRNet-x-mod3": 0.698,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -467,7 +485,10 @@
             "Lite-HRNet-s-mod2": 0.66,
             "Lite-HRNet-18-mod2": 0.768,
             "Lite-HRNet-18": 0.669,
-            "Lite-HRNet-x-mod3": 0.712
+            "Lite-HRNet-x-mod3": 0.712,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -477,7 +498,10 @@
             "Lite-HRNet-s-mod2": 0.681,
             "Lite-HRNet-18-mod2": 0.696,
             "Lite-HRNet-18": 0.742,
-            "Lite-HRNet-x-mod3": 0.802
+            "Lite-HRNet-x-mod3": 0.802,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -487,7 +511,10 @@
             "Lite-HRNet-s-mod2": 0.785,
             "Lite-HRNet-18-mod2": 0.798,
             "Lite-HRNet-18": 0.782,
-            "Lite-HRNet-x-mod3": 0.785
+            "Lite-HRNet-x-mod3": 0.785,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       }
@@ -1642,7 +1669,10 @@
             "Lite-HRNet-s-mod2": 393.137,
             "Lite-HRNet-18-mod2": 443.94,
             "Lite-HRNet-18": 446.99,
-            "Lite-HRNet-x-mod3": 667.493
+            "Lite-HRNet-x-mod3": 667.493,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         },
         "supcon": {
@@ -1650,7 +1680,10 @@
             "Lite-HRNet-s-mod2": 241.88,
             "Lite-HRNet-18-mod2": 279.19,
             "Lite-HRNet-18": 279.71,
-            "Lite-HRNet-x-mod3": 454.31
+            "Lite-HRNet-x-mod3": 454.31,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -1660,7 +1693,10 @@
             "Lite-HRNet-s-mod2": 447.762,
             "Lite-HRNet-18-mod2": 474.511,
             "Lite-HRNet-18": 486.038,
-            "Lite-HRNet-x-mod3": 759.906
+            "Lite-HRNet-x-mod3": 759.906,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -1670,7 +1706,10 @@
             "Lite-HRNet-s-mod2": 564.257,
             "Lite-HRNet-18-mod2": 715.882,
             "Lite-HRNet-18": 601.665,
-            "Lite-HRNet-x-mod3": 902.047
+            "Lite-HRNet-x-mod3": 902.047,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -1680,7 +1719,10 @@
             "Lite-HRNet-s-mod2": 727.372,
             "Lite-HRNet-18-mod2": 756.383,
             "Lite-HRNet-18": 750.812,
-            "Lite-HRNet-x-mod3": 1017.624
+            "Lite-HRNet-x-mod3": 1017.624,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       }
@@ -1689,8 +1731,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 5857.729,
-            "MaskRCNN-EfficientNetB2B": 4869.547
+            "MaskRCNN-ResNet50": 7234.698,
+            "MaskRCNN-EfficientNetB2B": 3450.991
           }
         }
       },
@@ -2051,7 +2093,10 @@
             "Lite-HRNet-s-mod2": 36.656,
             "Lite-HRNet-18-mod2": 42.2,
             "Lite-HRNet-18": 43.046,
-            "Lite-HRNet-x-mod3": 59.053
+            "Lite-HRNet-x-mod3": 59.053,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         },
         "supcon": {
@@ -2059,7 +2104,10 @@
             "Lite-HRNet-s-mod2": 13.835,
             "Lite-HRNet-18-mod2": 16.39,
             "Lite-HRNet-18": 16.23,
-            "Lite-HRNet-x-mod3": 26.549
+            "Lite-HRNet-x-mod3": 26.549,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -2069,7 +2117,10 @@
             "Lite-HRNet-s-mod2": 43.425,
             "Lite-HRNet-18-mod2": 48.536,
             "Lite-HRNet-18": 43.817,
-            "Lite-HRNet-x-mod3": 74.163
+            "Lite-HRNet-x-mod3": 74.163,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -2079,7 +2130,10 @@
             "Lite-HRNet-s-mod2": 43.347,
             "Lite-HRNet-18-mod2": 51.605,
             "Lite-HRNet-18": 47.816,
-            "Lite-HRNet-x-mod3": 56.125
+            "Lite-HRNet-x-mod3": 56.125,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       },
@@ -2089,7 +2143,10 @@
             "Lite-HRNet-s-mod2": 37.616,
             "Lite-HRNet-18-mod2": 36.786,
             "Lite-HRNet-18": 44.935,
-            "Lite-HRNet-x-mod3": 52.59
+            "Lite-HRNet-x-mod3": 52.59,
+            "SegNext-B": 0.0,
+            "SegNext-s": 0.0,
+            "SegNext-t": 0.0
           }
         }
       }
@@ -2098,8 +2155,8 @@
       "supervised": {
         "multi_class": {
           "train": {
-            "MaskRCNN-ResNet50": 142.759,
-            "MaskRCNN-EfficientNetB2B": 119.753
+            "MaskRCNN-ResNet50": 443.869,
+            "MaskRCNN-EfficientNetB2B": 451.211
           }
         }
       },

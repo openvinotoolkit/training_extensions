@@ -1,4 +1,4 @@
-"""Initialization of YOLOX model for Semi-SL Detection Task."""
+"""Initialization of YOLOX Tiny model for Semi-SL Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
