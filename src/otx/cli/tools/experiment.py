@@ -502,12 +502,12 @@ def run_experiment_recipe(exp_recipe: Dict):
 
     current_dir = os.getcwd()
     os.chdir(output_path)
+    failed_case: List[Dict[str, Any]] = []
     for command_info in command_list:
         original_command = command_info["command"]
         command_var = command_info["variable"]
         exp_name = "_".join(command_var.values())
 
-        failed_case: List[Dict[str, Any]] = []
         for repeat_idx in range(repeat):
             workspace = Path(exp_name.replace('/', '_') + f"_repeat_{repeat_idx}")
             command_var["repeat"] = str(repeat_idx)
