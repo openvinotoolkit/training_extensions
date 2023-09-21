@@ -61,7 +61,6 @@ def get_annotation_mmdet_format(
     gt_labels = []
     gt_polygons = []
     gt_ann_ids = []
-    gt_bbox_sizes = []
 
     label_idx = {label.id: i for i, label in enumerate(labels)}
 
@@ -84,7 +83,6 @@ def get_annotation_mmdet_format(
         gt_labels.extend(class_indices)
         item_id = getattr(dataset_item, "id_", None)
         gt_ann_ids.append((item_id, annotation.id_))
-        gt_bbox_sizes.append(box.width * width * box.height * height)
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
@@ -92,7 +90,6 @@ def get_annotation_mmdet_format(
             labels=np.array(gt_labels, dtype=int),
             masks=PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
             ann_ids=gt_ann_ids,
-            bbox_sizes=np.array(gt_bbox_sizes, dtype=np.float32),
         )
     else:
         ann_info = dict(
@@ -100,7 +97,6 @@ def get_annotation_mmdet_format(
             labels=np.array([], dtype=int),
             masks=[],
             ann_ids=[],
-            bbox_sizes=np.array([], dtype=np.float32),
         )
     return ann_info
 

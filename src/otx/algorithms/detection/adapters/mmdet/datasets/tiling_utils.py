@@ -83,7 +83,7 @@ def tile_rboxes_overlap(tile_box: np.ndarray, rboxes: np.ndarray, angle_version:
     return match_indices
 
 
-def shift_boxes(tile_bboxes, shift_x, shift_y):
+def translate_boxes(tile_bboxes, shift_x, shift_y):
     """Shift boxes by shift_x and shift_y and clip to tile_edge_size.
 
     Args:
@@ -101,7 +101,7 @@ def shift_boxes(tile_bboxes, shift_x, shift_y):
     return tile_bboxes
 
 
-def shift_rboxes(tile_rboxes, shift_x, shift_y):
+def translate_rboxes(tile_rboxes, shift_x, shift_y):
     """Shift rotated boxes by shift_x and shift_y and clip to tile_edge_size.
 
     Args:

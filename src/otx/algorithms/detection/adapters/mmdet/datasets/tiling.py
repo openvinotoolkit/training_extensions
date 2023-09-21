@@ -25,8 +25,8 @@ from otx.api.utils.dataset_utils import non_linear_normalization
 from .tiling_utils import (
     multiclass_nms,
     rbbox2result,
-    shift_boxes,
-    shift_rboxes,
+    translate_boxes,
+    translate_rboxes,
     tile_boxes_overlap,
     tile_rboxes_overlap,
 )
@@ -111,11 +111,11 @@ class Tile:
         if self.domain == Domain.ROTATED_DETECTION:
             self.box2result_func = rbbox2result
             self.box_overlap_func = partial(tile_rboxes_overlap, angle_version=self.dataset.angle_version)
-            self.box_shift_func = shift_rboxes
+            self.box_translate_func = translate_rboxes
         else:
             self.box2result_func = bbox2result
             self.box_overlap_func = tile_boxes_overlap  # type: ignore[assignment]
-            self.box_shift_func = shift_boxes
+            self.box_translate_func = translate_boxes
 
         self.tiles_all, self.cached_results = self.gen_tile_ann(include_full_img)
         self.sample_num = max(int(len(self.tiles_all) * sampling_ratio), 1)
@@ -284,7 +284,7 @@ class Tile:
         if len(matched_indices):
             tile_lables = gt_labels[matched_indices][:]
             tile_bboxes = gt_bboxes[matched_indices][:]
-            tile_bboxes = self.box_shift_func(tile_bboxes, -x_1, -y_1)
+            tile_bboxes = self.box_translate_func(tile_bboxes, -x_1, -y_1)
             tile_result["gt_bboxes"] = tile_bboxes
             tile_result["gt_labels"] = tile_lables
             tile_result["gt_masks"] = gt_masks[matched_indices].crop(tile_box[0]) if gt_masks is not None else []
@@ -435,7 +435,7 @@ class Tile:
             for cls_idx, cls_result in enumerate(zip(bbox_result, mask_result)):
                 cls_bbox_result, cls_mask_result = cls_result
 
-                shift_result = self.box_shift_func(cls_bbox_result, tile_x1, tile_y1)
+                shift_result = self.box_translate_func(cls_bbox_result, tile_x1, tile_y1)
                 merged_box_results[img_idx] = np.concatenate((merged_box_results[img_idx], shift_result))
                 merged_label_results[img_idx] = np.concatenate(
                     [merged_label_results[img_idx], len(cls_bbox_result) * [cls_idx]]

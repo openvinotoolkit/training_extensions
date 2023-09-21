@@ -1,5 +1,4 @@
-"""Custom Rotated RetinaNet and FCOS models."""
-from .custom_rotated_fcos import CustomRotatedFCOS
+"""Custom Rotated ATSS RetinaNet."""
 from .custom_rotated_retinanet import CustomRotatedRetinaNet
 
-__all__ = ["CustomRotatedRetinaNet", "CustomRotatedFCOS"]
+__all__ = ["CustomRotatedRetinaNet"]
