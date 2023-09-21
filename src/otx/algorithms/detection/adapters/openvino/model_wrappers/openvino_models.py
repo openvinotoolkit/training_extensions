@@ -1,6 +1,6 @@
-"""OTXMaskRCNNModel & OTXSSDModel of OTX Detection."""
+"""OTX_MMROTATED_Model of OTX Rotated Detection."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,27 @@
 # and limitations under the License.
 
 import numpy as np
-from openvino.model_api.models.ssd import SSD, find_layer_by_name
 from mmrotate.core import obb2poly_np
+from openvino.model_api.models.ssd import SSD, find_layer_by_name
 
 
 class QuadrilateralDetection:
-    def __init__(self, x0: float, y0: float, x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, score: float, id: int, str_label: str = None):
+    """Quadrilateral detection representation."""
+
+    def __init__(
+        self,
+        x0: float,
+        y0: float,
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        x3: float,
+        y3: float,
+        score: float,
+        id: int,
+        str_label: str = None,
+    ):
         self.x0 = x0
         self.y0 = y0
         self.x1 = x1
@@ -34,7 +49,11 @@ class QuadrilateralDetection:
         self.str_label = str_label
 
     def __str__(self):
-        return f"{self.x0}, {self.y0}, {self.x1}, {self.y1}, {self.x2}, {self.y2}, {self.x3}, {self.y3}, {self.id}, {self.str_label}, {self.score:.3f}"
+        """Returns string representation of the detection."""
+        return (
+            f"{self.x0}, {self.y0}, {self.x1}, {self.y1}, {self.x2}, {self.y2}, {self.x3}, {self.y3}, "
+            "{self.id}, {self.str_label}, {self.score:.3f}"
+        )
 
 
 class OTX_MMROTATED_Model(SSD):
@@ -49,7 +68,7 @@ class OTX_MMROTATED_Model(SSD):
         self.output_parser = RotateBoxesLabelsParser(
             self.outputs,
             self.inputs[self.image_blob_name].shape[2:][::-1],
-            configuration['angle_version'],
+            configuration["angle_version"],
         )
 
     def _resize_detections(self, detections, meta):
@@ -70,13 +89,8 @@ class OTX_MMROTATED_Model(SSD):
         inverted_scale_y = input_img_height / self.h
         pad_left = 0
         pad_top = 0
-        if (
-            "fit_to_window" == self.resize_type
-            or "fit_to_window_letterbox" == self.resize_type
-        ):
-            inverted_scale_x = inverted_scale_y = max(
-                inverted_scale_x, inverted_scale_y
-            )
+        if "fit_to_window" == self.resize_type or "fit_to_window_letterbox" == self.resize_type:
+            inverted_scale_x = inverted_scale_y = max(inverted_scale_x, inverted_scale_y)
             if "fit_to_window_letterbox" == self.resize_type:
                 pad_left = (self.w - round(input_img_width / inverted_scale_x)) // 2
                 pad_top = (self.h - round(input_img_height / inverted_scale_y)) // 2
@@ -118,6 +132,8 @@ class OTX_MMROTATED_Model(SSD):
 
 
 class RotateBoxesLabelsParser:
+    """Parser for rotated boxes and labels."""
+
     def __init__(self, layers, input_size, angle_version, labels_layer="labels", default_label=0):
         try:
             self.labels_layer = find_layer_by_name(labels_layer, layers)
@@ -134,6 +150,7 @@ class RotateBoxesLabelsParser:
 
     @staticmethod
     def find_layer_rboxes_output(layers):
+        """Find output layer with format as cx, cy, w, h, angle, score."""
         filter_outputs = [
             name
             for name, data in layers.items()

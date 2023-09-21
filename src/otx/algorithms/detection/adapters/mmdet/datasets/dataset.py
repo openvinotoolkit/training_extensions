@@ -26,7 +26,6 @@ from mmdet.datasets.builder import DATASETS, build_dataset
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 from mmrotate.core import poly2obb_np
-from shapely.geometry import Polygon as shapely_polygon
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
 from otx.algorithms.detection.adapters.mmdet.evaluation import Evaluator
