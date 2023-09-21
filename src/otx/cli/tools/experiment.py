@@ -9,6 +9,7 @@ import re
 import csv
 import os
 import sys
+import shutil
 import json
 import statistics
 import yaml
@@ -356,6 +357,9 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
     if isinstance(exp_dir, str):
         exp_dir = Path(exp_dir)
 
+    tensorboard_dir = exp_dir / "tensorboard"
+    tensorboard_dir.mkdir(exist_ok=True)
+
     meta_header: Union[List[str], None] = None
     metric_header = set()
     all_exp_result: List[Dict[str, str]] = []
@@ -389,6 +393,11 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
             exp_result_aggregation[exp_name]["num"] += 1
         else:
             exp_result_aggregation[exp_name] = {"result" : exp_result, "num" : 1, "meta" : exp_meta}
+
+        # copy tensorboard log into tensorboard dir
+        exp_tb_dir = list(each_exp.rglob("tf_logs"))
+        if exp_tb_dir:
+            shutil.copytree(exp_tb_dir[0], tensorboard_dir / each_exp.name, dirs_exist_ok=True)
 
     if not all_exp_result:
         print("There aren't any experiment results.")
