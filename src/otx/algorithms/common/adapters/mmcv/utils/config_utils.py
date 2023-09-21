@@ -974,6 +974,7 @@ class InputSizeManager:
         logger.info(f"-> Closest preset: {input_size}")
         return input_size
 
+
 def get_proper_repeat_times(
     n_data: int,
     batch_size: int,
