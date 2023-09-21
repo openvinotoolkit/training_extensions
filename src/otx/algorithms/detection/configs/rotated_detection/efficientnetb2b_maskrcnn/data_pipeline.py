@@ -106,4 +106,3 @@ data = dict(
         pipeline=test_pipeline,
     ),
 )
-

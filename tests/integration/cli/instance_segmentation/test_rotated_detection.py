@@ -33,8 +33,8 @@ templates_ids = [template.model_template_id for template in templates]
 
 TestRotatedDetectionModelTemplates = generate_model_template_testing(templates)
 
-#NOTE: Most of implementation parts are same with the ISeg tasks.
-# So, currently just added the `test_otx_train` function to check 
+# NOTE: Most of implementation parts are same with the ISeg tasks.
+# So, currently just added the `test_otx_train` function to check
 # Whether further modifications make Rotated detection fails or not
 class TestRotatedDetectionCLI:
     @e2e_pytest_component
