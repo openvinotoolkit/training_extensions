@@ -445,6 +445,7 @@ def adaptive_tile_params(
 
     """
     assert rule in ["min", "avg"], f"Unknown rule: {rule}"
+
     stat = compute_robust_dataset_statistics(dataset, ann_stat=True)
     max_num_objects = round(stat["annotation"]["num_per_image"]["max"])
     avg_size = stat["annotation"]["size_of_shape"]["avg"]

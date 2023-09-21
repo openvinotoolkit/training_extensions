@@ -25,10 +25,10 @@ from otx.api.utils.dataset_utils import non_linear_normalization
 from .tiling_utils import (
     multiclass_nms,
     rbbox2result,
-    translate_boxes,
-    translate_rboxes,
     tile_boxes_overlap,
     tile_rboxes_overlap,
+    translate_boxes,
+    translate_rboxes,
 )
 
 
@@ -435,8 +435,8 @@ class Tile:
             for cls_idx, cls_result in enumerate(zip(bbox_result, mask_result)):
                 cls_bbox_result, cls_mask_result = cls_result
 
-                shift_result = self.box_translate_func(cls_bbox_result, tile_x1, tile_y1)
-                merged_box_results[img_idx] = np.concatenate((merged_box_results[img_idx], shift_result))
+                translated_result = self.box_translate_func(cls_bbox_result, tile_x1, tile_y1)
+                merged_box_results[img_idx] = np.concatenate((merged_box_results[img_idx], translated_result))
                 merged_label_results[img_idx] = np.concatenate(
                     [merged_label_results[img_idx], len(cls_bbox_result) * [cls_idx]]
                 )
