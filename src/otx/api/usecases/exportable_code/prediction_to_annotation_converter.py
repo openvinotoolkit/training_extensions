@@ -610,3 +610,49 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
             annotations=annotations,
         )
         return annotation_scene
+
+
+class QuadrilateralToAnnotationConverter(IPredictionToAnnotationConverter):
+    def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
+        self.labels = labels.get_labels(include_empty=False)
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
+
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        height, width, _ = metadata["original_shape"]
+        annotations = []
+        for quad in predictions.objects:
+            if quad.score < self.confidence_threshold:
+                continue
+            points = [
+                Point(
+                    x=quad.x0 / width,
+                    y=quad.y0 / height,
+                ),
+                Point(
+                    x=quad.x1 / width,
+                    y=quad.y1 / height,
+                ),
+                Point(
+                    x=quad.x2 / width,
+                    y=quad.y2 / height,
+                ),
+                Point(
+                    x=quad.x3 / width,
+                    y=quad.y3 / height,
+                ),
+            ]
+            shape = Polygon(points=points)
+            annotations.append(
+                Annotation(
+                    shape,
+                    labels=[ScoredLabel(self.labels[quad.id], float(quad.score))],
+                )
+            )
+        annotation_scene = AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION,
+            annotations=annotations,
+        )
+        return annotation_scene

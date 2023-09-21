@@ -76,6 +76,7 @@ from otx.api.usecases.exportable_code.prediction_to_annotation_converter import 
     DetectionToAnnotationConverter,
     IPredictionToAnnotationConverter,
     MaskToAnnotationConverter,
+    QuadrilateralToAnnotationConverter,
     RotatedRectToAnnotationConverter,
 )
 from otx.api.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
@@ -225,6 +226,50 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         configuration.update(model_configuration)
         model = Model.create_model(model_adapter, "SSD", configuration, preload=True)
         converter = DetectionToAnnotationConverter(label_schema, configuration)
+
+        super().__init__(configuration, model, converter)
+
+
+class OpenVINORotatedInferencer(BaseInferencerWithConverter):
+    """Inferencer implementation for OTXDetection using OpenVINO backend."""
+
+    def __init__(
+        self,
+        hparams: DetectionConfig,
+        label_schema: LabelSchemaEntity,
+        model_file: Union[str, bytes],
+        weight_file: Union[str, bytes, None] = None,
+        device: str = "CPU",
+        num_requests: int = 1,
+        model_configuration: Dict[str, Any] = {},
+    ):
+        """Initialize for OpenVINODetectionInferencer.
+
+        :param hparams: Hyper parameters that the model should use.
+        :param label_schema: LabelSchemaEntity that was used during model training.
+        :param model_file: Path OpenVINO IR model definition file.
+        :param weight_file: Path OpenVINO IR model weights file.
+        :param device: Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
+        :param num_requests: Maximum number of requests that the inferencer can make. Defaults to 1.
+        """
+
+        model_adapter = OpenvinoAdapter(
+            create_core(),
+            model_file,
+            weight_file,
+            device=device,
+            max_num_requests=num_requests,
+            plugin_config={"PERFORMANCE_HINT": "THROUGHPUT"},
+        )
+        configuration = {
+            **attr.asdict(
+                hparams.postprocessing,
+                filter=lambda attr, _: attr.name not in ["header", "description", "type", "visible_in_ui"],
+            )
+        }
+        configuration.update(model_configuration)
+        model = Model.create_model(model_adapter, "OTX_MMROTATED_Model", configuration, preload=True)
+        converter = QuadrilateralToAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -421,7 +466,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     ) -> Union[
         OpenVINODetectionInferencer,
         OpenVINOMaskInferencer,
-        OpenVINORotatedRectInferencer,
+        OpenVINORotatedInferencer,
         OpenVINOTileClassifierWrapper,
     ]:
         """load_inferencer function of OpenVINO Detection Task."""
@@ -456,7 +501,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 args.append({"resize_type": "fit_to_window_letterbox"})
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
-            inferencer = OpenVINORotatedRectInferencer(*args)
+            # TODO[EUGENE]: read angle version from openvino.xml _hparams
+            # HOW TO DEPRECATE THIS? OpenVINORotatedRectInferencer
+            # inferencer = OpenVINORotatedRectInferencer(*args)
+            args.append({"angle_version": "le135"})
+            inferencer = OpenVINORotatedInferencer(*args)
         if self.config.tiling_parameters.enable_tiling:
             logger.info("Tiling is enabled. Wrap inferencer with tile inference.")
             tile_classifier_model_file, tile_classifier_weight_file = None, None
@@ -478,7 +527,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             (
                 OpenVINODetectionInferencer,
                 OpenVINOMaskInferencer,
-                OpenVINORotatedRectInferencer,
+                OpenVINORotatedInferencer,
                 OpenVINOTileClassifierWrapper,
             ),
         ):

@@ -1,4 +1,4 @@
 """OTX Adapters - mmrotate."""
-from . import models
+from . import models, ops
 
-__all__ = ["models"]
+__all__ = ["models", "ops"]

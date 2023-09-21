@@ -120,7 +120,8 @@ def get_det_model_api_configuration(
             omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
     if task_type == TaskType.ROTATED_DETECTION:
         omz_config[("model_info", "model_type")] = "rotated_detection"
-        all_labels = "otx_empty_lbl "
+        # TODO[EUGENE]: remove this when inst-seg based rotated detection is deprecated
+        # all_labels = "otx_empty_lbl "
         if tiling_parameters.enable_tiling:
             omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
 

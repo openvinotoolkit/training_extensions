@@ -62,5 +62,4 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                             id_=datumaro_item.id,
                         )
                         dataset_items.append(dataset_item)
-        self.remove_unused_label_entities(used_labels)
         return DatasetEntity(items=dataset_items)

@@ -25,7 +25,9 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_vfnet_head impo
 from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head import (
     CustomYOLOXHead,
 )
-from otx.algorithms.detection.adapters.mmrotate.models.heads.custom_rotated_atss_head import CustomRotatedATSSHead
+from otx.algorithms.detection.adapters.mmrotate.models.heads.custom_rotated_atss_head import (
+    CustomRotatedATSSHead,
+)
 
 # pylint: disable=too-many-locals
 
