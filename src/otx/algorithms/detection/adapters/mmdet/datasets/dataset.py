@@ -130,12 +130,11 @@ def get_annotation_mmrotate_format(
     gt_bboxes = []
     gt_labels = []
     gt_ann_ids = []
-    gt_bbox_sizes = []
 
     label_idx = {label.id: i for i, label in enumerate(labels)}
 
     for annotation in dataset_item.get_annotations(labels=labels, include_empty=False, preserve_id=True):
-        if annotation.shape.get_area() > 0:
+        if annotation.shape.get_area() * width * height > 1:
             class_indices = [
                 label_idx[label.id] for label in annotation.get_labels(include_empty=False) if label.domain == domain
             ]
@@ -153,21 +152,18 @@ def get_annotation_mmrotate_format(
                 gt_labels.extend(class_indices)
                 item_id = getattr(dataset_item, "id_", None)
                 gt_ann_ids.append((item_id, annotation.id_))
-                gt_bbox_sizes.append(shapely_polygon(points.reshape(-1, 2)).area)
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
             bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 5),
             labels=np.array(gt_labels, dtype=int),
             ann_ids=gt_ann_ids,
-            bbox_sizes=np.array(gt_bbox_sizes, dtype=np.float32),
         )
     else:
         ann_info = dict(
             bboxes=np.zeros((0, 5), dtype=np.float32),
             labels=np.array([], dtype=int),
             ann_ids=[],
-            bbox_sizes=np.array([], dtype=np.float32),
         )
     return ann_info
 
