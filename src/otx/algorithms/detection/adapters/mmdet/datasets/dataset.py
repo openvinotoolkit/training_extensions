@@ -122,7 +122,7 @@ def get_annotation_mmrotate_format(
     width, height = dataset_item.width, dataset_item.height
 
     # load annotations for item
-    gt_bboxes = []
+    gt_rboxes = []
     gt_labels = []
     gt_ann_ids = []
 
@@ -143,14 +143,14 @@ def get_annotation_mmrotate_format(
             obb = poly2obb_np(points, angle_version)
             if obb is not None:
                 x, y, w, h, a = obb
-                gt_bboxes.append([x, y, w, h, a])
+                gt_rboxes.append([x, y, w, h, a])
                 gt_labels.extend(class_indices)
                 item_id = getattr(dataset_item, "id_", None)
                 gt_ann_ids.append((item_id, annotation.id_))
 
-    if len(gt_bboxes) > 0:
+    if len(gt_rboxes) > 0:
         ann_info = dict(
-            bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 5),
+            bboxes=np.array(gt_rboxes, dtype=np.float32).reshape(-1, 5),
             labels=np.array(gt_labels, dtype=int),
             ann_ids=gt_ann_ids,
         )
