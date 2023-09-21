@@ -68,7 +68,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
         # CustomEvalHook => exclude validation in classification task
         idx_hooks_to_remove = []
-        hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook"]
+        hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook", "AdaptiveRepeatDataHook"]
         for i, hook in enumerate(copied_cfg.custom_hooks):
             if not validate and hook["type"] == "AdaptiveTrainSchedulingHook":
                 hook["enable_eval_before_run"] = False
@@ -79,6 +79,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         if idx_hooks_to_remove:
             idx_hooks_to_remove.sort()
             for i in reversed(idx_hooks_to_remove):
+                print(f"{copied_cfg.custom_hooks[i]} deleted.")
                 del copied_cfg.custom_hooks[i]
 
         new_datasets = [SubDataset(datasets[0], batch_size)]
@@ -90,7 +91,6 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         )
 
     default_bs = _get_batch_size(cfg)
-
     bs_search_algo = BsSearchAlgo(
         train_func=train_func_single_iter,
         default_bs=default_bs,
@@ -126,6 +126,10 @@ def _set_batch_size(cfg, batch_size: int):
         cfg.data.videos_per_gpu = batch_size
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
+
+        for custom_hook in cfg.custom_hooks:
+            if custom_hook["type"] == "AdaptiveRepeatDataHook":
+                custom_hook["train_batch_size"] = batch_size
 
 
 def _set_max_epoch(cfg, max_epoch: int):

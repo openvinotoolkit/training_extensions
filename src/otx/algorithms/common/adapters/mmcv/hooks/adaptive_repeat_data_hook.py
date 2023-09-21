@@ -37,14 +37,16 @@ class AdaptiveRepeatDataHook(Hook):
 
     def before_run(self, runner):
         """Change the runner's max_iter."""
-        iter_per_epoch = int(self.n_train_data / self.train_batch_size)
+        if self.n_repeats > 1:
+            iter_per_epoch = int(self.n_train_data / self.train_batch_size)
 
-        logger.info("Adaptive repeat is enabled")
-        logger.info(f"- Repeat times: {self.n_repeats}")
-        logger.info(f"- Num iters per epoch: {iter_per_epoch} -> {iter_per_epoch * self.n_repeats}")
-        logger.info(f"- Total iters: {runner.max_iters} -> {runner.max_iters * self.n_repeats}")
+            logger.info("Adaptive repeat is enabled")
+            logger.info(f"- Repeat times: {self.n_repeats}")
+            logger.info(f"- Batch size: {self.train_batch_size}")
+            logger.info(f"- Num iters per epoch: {iter_per_epoch} -> {iter_per_epoch * self.n_repeats}")
+            logger.info(f"- Total iters: {runner.max_iters} -> {runner.max_iters * self.n_repeats}")
 
-        runner._max_iters = int(runner.max_iters * self.n_repeats)
+            runner._max_iters = int(runner.max_iters * self.n_repeats)
 
     def before_epoch(self, runner):
         """Convert to OTX Sampler."""
