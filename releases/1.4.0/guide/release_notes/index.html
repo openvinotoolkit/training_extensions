@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Releases &#8212; OpenVINO™ Training Extensions 1.4.2rc5 documentation</title>
+    <title>Releases &#8212; OpenVINO™ Training Extensions 1.4.2 documentation</title>
   
   
   
@@ -423,7 +423,9 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Release Notes</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Releases</a></li>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Releases</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-46" name="toctree-checkbox-46" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-46"><i class="fa-solid fa-chevron-down"></i></label><ul class="simple">
+</ul>
+</li>
 </ul>
 
   </div>
@@ -457,8 +459,27 @@
               
   <section id="releases">
 <h1>Releases<a class="headerlink" href="#releases" title="Permalink to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="v1-4-2-4q23">
+<h2>v1.4.2 (4Q23)<a class="headerlink" href="#v1-4-2-4q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Upgrade nncf version to 2.6.0</p></li>
+<li><p>Bump datumaro version to 1.5.0</p></li>
+<li><p>Set tox version constraint</p></li>
+<li><p>Add model category attributes to model template</p></li>
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
+<section id="v1-4-1-3q23">
+<h2>v1.4.1 (3Q23)<a class="headerlink" href="#v1-4-1-3q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Update the README file in exportable code</p></li>
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
 <section id="v1-4-0-3q23">
-<h2>[v1.4.0] (3Q23)<a class="headerlink" href="#v1-4-0-3q23" title="Permalink to this heading">#</a></h2>
+<h2>v1.4.0 (3Q23)<a class="headerlink" href="#v1-4-0-3q23" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Support encrypted dataset training</p></li>
 <li><p>Add custom max iou assigner to prevent CPU OOM when large annotations are used</p></li>
@@ -468,10 +489,26 @@
 <li><p>Add new object detector DINO</p></li>
 <li><p>Add new visual prompting task</p></li>
 <li><p>Add new object detector ResNeXt101-ATSS</p></li>
+<li><p>Introduce channel_last parameter to improve the performance</p></li>
+<li><p>Decrease time for making a workspace</p></li>
+<li><p>Set persistent_workers and pin_memory as True in detection task</p></li>
+<li><p>New algorithm for Semi-SL semantic segmentation based on metric learning via class prototypes</p></li>
+<li><p>Self-SL for classification now can recieve just folder with any images to start contrastive pretraining</p></li>
+<li><p>Update OpenVINO version to 2023.0, and NNCF verion to 2.5</p></li>
+<li><p>Improve XAI saliency map generation for tiling detection and tiling instance segmentation</p></li>
+<li><p>Remove CenterCrop from Classification test pipeline and editing missing docs link</p></li>
+<li><p>Switch to PTQ for sseg</p></li>
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
+<section id="v1-3-1-2q23">
+<h2>v1.3.1 (2Q23)<a class="headerlink" href="#v1-3-1-2q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Minor bug fixes</p></li>
 </ul>
 </section>
 <section id="v1-3-0-2q23">
-<h2>[v1.3.0] (2Q23)<a class="headerlink" href="#v1-3-0-2q23" title="Permalink to this heading">#</a></h2>
+<h2>v1.3.0 (2Q23)<a class="headerlink" href="#v1-3-0-2q23" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Support direct annotation input for COCO format</p></li>
 <li><p>Action task supports multi GPU training</p></li>
@@ -480,10 +517,43 @@
 <li><p>Support auto adapting batch size</p></li>
 <li><p>Support auto adapting num_workers</p></li>
 <li><p>Support noisy label detection for detection tasks</p></li>
+<li><p>Make semantic segmentation OpenVINO models compatible with ModelAPI</p></li>
+<li><p>Support label hierarchy through LabelTree in LabelSchema for classification task</p></li>
+<li><p>Enhance exportable code file structure, video inference and default value for demo</p></li>
+<li><p>Speedup OpenVINO inference in image classificaiton, semantic segmentation, object detection and instance segmentation tasks</p></li>
+<li><p>Refactoring of ONNX export functionality</p></li>
+<li><p>Minor bug fixes</p></li>
 </ul>
 </section>
-<section id="v1-2-0-1q23">
-<h2>v1.2.0 (1Q23)<a class="headerlink" href="#v1-2-0-1q23" title="Permalink to this heading">#</a></h2>
+<section id="v1-2-4-3q23">
+<h2>v1.2.4 (3Q23)<a class="headerlink" href="#v1-2-4-3q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Per-class saliency maps for M-RCNN</p></li>
+<li><p>Disable semantic segmentation soft prediction processing</p></li>
+<li><p>Update export and nncf hyperparameters</p></li>
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
+<section id="v1-2-3-2q23">
+<h2>v1.2.3 (2Q23)<a class="headerlink" href="#v1-2-3-2q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Improve warning message for tiling configurable parameter</p></li>
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
+<section id="v1-2-1-2q23">
+<h2>v1.2.1 (2Q23)<a class="headerlink" href="#v1-2-1-2q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Upgrade mmdeploy==0.14.0 from official PyPI</p></li>
+<li><p>Integrate new ignored loss in semantic segmentation</p></li>
+<li><p>Optimize YOLOX data pipeline</p></li>
+<li><p>Tiling Spatial Concatenation for OpenVINO IR</p></li>
+<li><p>Optimize counting train &amp; inference speed and memory consumption</p></li>
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
+<section id="v1-2-0-2q23">
+<h2>v1.2.0 (2Q23)<a class="headerlink" href="#v1-2-0-2q23" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Add generating feature cli_report.log in output for otx training</p></li>
 <li><p>Support multiple python versions up to 3.10</p></li>
@@ -491,6 +561,28 @@
 <li><p>Add option to save images after inference in OTX CLI demo together with demo in exportable code</p></li>
 <li><p>Support storage cache in Apache Arrow using Datumaro for cls, det, seg tasks</p></li>
 <li><p>Add noisy label detection for multi-class classification task</p></li>
+<li><p>Clean up and refactor the output of the OTX CLI</p></li>
+<li><p>Enhance DetCon logic and SupCon for semantic segmentation</p></li>
+<li><p>Detection task refactoring</p></li>
+<li><p>Classification task refactoring</p></li>
+<li><p>Extend OTX explain CLI</p></li>
+<li><p>Segmentation task refactoring</p></li>
+<li><p>Action task refactoring</p></li>
+<li><p>Optimize data preprocessing time and enhance overall performance in semantic segmentation</p></li>
+<li><p>Support automatic batch size decrease when there is no enough GPU memory</p></li>
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
+<section id="v1-1-2-2q23">
+<h2>v1.1.2 (2Q23)<a class="headerlink" href="#v1-1-2-2q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Minor bug fixes</p></li>
+</ul>
+</section>
+<section id="v1-1-1-1q23">
+<h2>v1.1.1 (1Q23)<a class="headerlink" href="#v1-1-1-1q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Minor bug fixes</p></li>
 </ul>
 </section>
 <section id="v1-1-0-1q23">
@@ -505,6 +597,20 @@
 <li><p>Add embedding of inference configuration to IR for classification</p></li>
 <li><p>Enable VOC dataset in OTX</p></li>
 <li><p>Add mmcls.VisionTransformer backbone support</p></li>
+<li><p>Parametrize saliency maps dumping in export</p></li>
+<li><p>Bring mmdeploy to action recognition model export &amp; Test optimization of action tasks</p></li>
+<li><p>Update backbone lists</p></li>
+<li><p>Add explanation for XAI &amp; minor doc fixes</p></li>
+<li><p>Refactor phase#1: MPA modules</p></li>
+</ul>
+</section>
+<section id="v1-0-1-1q23">
+<h2>v1.0.1 (1Q23)<a class="headerlink" href="#v1-0-1-1q23" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Refine documents by proof review</p></li>
+<li><p>Separate installation for each tasks</p></li>
+<li><p>Improve POT efficiency by setting stat_requests_number parameter to 1</p></li>
+<li><p>Minor bug fixes</p></li>
 </ul>
 </section>
 <section id="v1-0-0-1q23">
@@ -553,23 +659,68 @@
 <nav id="bd-toc-nav" class="page-toc">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-4-2-4q23">
+   v1.4.2 (4Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-4-1-3q23">
+   v1.4.1 (3Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#v1-4-0-3q23">
-   [v1.4.0] (3Q23)
+   v1.4.0 (3Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-3-1-2q23">
+   v1.3.1 (2Q23)
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#v1-3-0-2q23">
-   [v1.3.0] (2Q23)
+   v1.3.0 (2Q23)
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#v1-2-0-1q23">
-   v1.2.0 (1Q23)
+  <a class="reference internal nav-link" href="#v1-2-4-3q23">
+   v1.2.4 (3Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-2-3-2q23">
+   v1.2.3 (2Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-2-1-2q23">
+   v1.2.1 (2Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-2-0-2q23">
+   v1.2.0 (2Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-1-2-2q23">
+   v1.1.2 (2Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-1-1-1q23">
+   v1.1.1 (1Q23)
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#v1-1-0-1q23">
    v1.1.0 (1Q23)
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#v1-0-1-1q23">
+   v1.0.1 (1Q23)
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
