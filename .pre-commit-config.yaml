@@ -61,7 +61,7 @@ repos:
     rev: "v0.0.258"
     hooks:
       - id: ruff
-        exclude: "tests|src/otx/recipes"
+        exclude: "tests|src/otx/recipes|src/otx/v2/demo|src/otx/v2/pseudo_code|src/otx/algorithms|src/otx/v2/api/entities"
         args: [--fix]
 
   # # Git conflict marker
