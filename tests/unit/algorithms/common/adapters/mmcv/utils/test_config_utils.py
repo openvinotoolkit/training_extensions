@@ -455,7 +455,7 @@ class TestInputSizeManager:
         assert manager.select_closest_size(input_size, preset_sizes) == (128, 128)
 
     def test_adapt_input_size_to_dataset(self):
-        base_input_size = (128, 128)
+        base_input_size = (512, 512)
         manager = InputSizeManager({}, base_input_size)
         input_size = manager.adapt_input_size_to_dataset(
             max_image_size=-1,
@@ -463,31 +463,31 @@ class TestInputSizeManager:
         assert input_size == base_input_size
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
-        )  # 200 -> 128
+            max_image_size=1024,
+        )  # 1024 -> 512
         assert input_size == base_input_size
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             downscale_only=False,
-        )  # 200 -> 224
-        assert input_size == (224, 224)
+        )  # 512 -> 1024
+        assert input_size == (1024, 1024)
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             min_object_size=128,
-        )  # 50 -> 64
-        assert input_size == (64, 64)
+        )  # 1024 -> 256
+        assert input_size == (256, 256)
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             min_object_size=16,
-        )  # 400 -> 128
+        )  # 1024 -> 2048 -> 512
         assert input_size == base_input_size
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             min_object_size=16,
             downscale_only=False,
-        )  # 400 -> 384
-        assert input_size == (384, 384)
+        )  # 1024 -> 2048 -> 1024
+        assert input_size == (1024, 1024)
