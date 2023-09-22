@@ -5,12 +5,13 @@
 
 import math
 from dataclasses import dataclass, field
+from typing import Optional, Union
 
 import torch
 from torch.nn import functional
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from .builder import OPS
+from .op import Attribute, Operation
 
 
 @dataclass
@@ -27,8 +28,9 @@ class SoftMaxV0(Operation[SoftMaxV0Attribute]):
     TYPE = "Softmax"
     VERSION = 0
     ATTRIBUTE_FACTORY = SoftMaxV0Attribute
+    attrs: SoftMaxV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """SoftMaxV0's forward function."""
         return functional.softmax(input=inputs, dim=self.attrs.axis)
 
@@ -47,8 +49,9 @@ class SoftMaxV1(Operation[SoftMaxV1Attribute]):
     TYPE = "Softmax"
     VERSION = 1
     ATTRIBUTE_FACTORY = SoftMaxV1Attribute
+    attrs: SoftMaxV1Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """SoftMaxV1's forward function."""
         return functional.softmax(input=inputs, dim=self.attrs.axis)
 
@@ -67,8 +70,9 @@ class ReluV0(Operation[ReluV0Attribute]):
     TYPE = "Relu"
     VERSION = 0
     ATTRIBUTE_FACTORY = ReluV0Attribute
+    attrs: ReluV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ReluV0's forward function."""
         return functional.relu(inputs)
 
@@ -87,8 +91,9 @@ class SwishV4(Operation[SwishV4Attribute]):
     TYPE = "Swish"
     VERSION = 4
     ATTRIBUTE_FACTORY = SwishV4Attribute
+    attrs: SwishV4Attribute
 
-    def forward(self, inputs, beta=1.0):
+    def forward(self, inputs: torch.Tensor, beta: float = 1.0) -> torch.Tensor:
         """SwishV4's forward function."""
         return inputs * torch.sigmoid(inputs * beta)
 
@@ -107,8 +112,9 @@ class SigmoidV0(Operation[SigmoidV0Attribute]):
     TYPE = "Sigmoid"
     VERSION = 0
     ATTRIBUTE_FACTORY = SigmoidV0Attribute
+    attrs: SigmoidV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """SigmoidV0's forward function."""
         return torch.sigmoid(inputs)
 
@@ -128,8 +134,9 @@ class ClampV0(Operation[ClampV0Attribute]):
     TYPE = "Clamp"
     VERSION = 0
     ATTRIBUTE_FACTORY = ClampV0Attribute
+    attrs: ClampV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ClampV0's forward function."""
         return inputs.clamp(min=self.attrs.min, max=self.attrs.max)
 
@@ -148,8 +155,9 @@ class PReluV0(Operation[PReluV0Attribute]):
     TYPE = "PRelu"
     VERSION = 0
     ATTRIBUTE_FACTORY = PReluV0Attribute
+    attrs: PReluV0Attribute
 
-    def forward(self, inputs, slope):
+    def forward(self, inputs: torch.Tensor, slope: torch.Tensor) -> torch.Tensor:
         """PReluV0's forward function."""
         return functional.prelu(input=inputs, weight=slope)
 
@@ -168,8 +176,9 @@ class TanhV0(Operation[TanhV0Attribute]):
     TYPE = "Tanh"
     VERSION = 0
     ATTRIBUTE_FACTORY = TanhV0Attribute
+    attrs: TanhV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """TanhV0's forward function."""
         return functional.tanh(inputs)
 
@@ -188,8 +197,9 @@ class EluV0(Operation[EluV0Attribute]):
     TYPE = "Elu"
     VERSION = 0
     ATTRIBUTE_FACTORY = EluV0Attribute
+    attrs: EluV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """EluV0's forward function."""
         return functional.elu(input=inputs, alpha=self.attrs.alpha)
 
@@ -208,8 +218,9 @@ class SeluV0(Operation[SeluV0Attribute]):
     TYPE = "Selu"
     VERSION = 0
     ATTRIBUTE_FACTORY = SeluV0Attribute
+    attrs: SeluV0Attribute
 
-    def forward(self, inputs, alpha, lambda_):
+    def forward(self, inputs: torch.Tensor, alpha: float, lambda_: torch.Tensor) -> torch.Tensor:
         """SeluV0's forward function."""
         return lambda_ * functional.elu(input=inputs, alpha=alpha)
 
@@ -228,8 +239,9 @@ class MishV4(Operation[MishV4Attribute]):
     TYPE = "Mish"
     VERSION = 4
     ATTRIBUTE_FACTORY = MishV4Attribute
+    attrs: MishV4Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """MishV4's forward function."""
         # NOTE: pytorch 1.8.2 does not have mish function
         #  return functional.mish(input=input)
@@ -250,8 +262,9 @@ class HSwishV4(Operation[HSwishV4Attribute]):
     TYPE = "HSwish"
     VERSION = 4
     ATTRIBUTE_FACTORY = HSwishV4Attribute
+    attrs: HSwishV4Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """HSwishV4's forward function."""
         return functional.hardswish(input=inputs)
 
@@ -270,8 +283,9 @@ class HSigmoidV5(Operation[HSigmoidV5Attribute]):
     TYPE = "HSigmoid"
     VERSION = 5
     ATTRIBUTE_FACTORY = HSigmoidV5Attribute
+    attrs: HSigmoidV5Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """HSigmoidV5's forward function."""
         return functional.hardsigmoid(input=inputs)
 
@@ -290,8 +304,9 @@ class ExpV0(Operation[ExpV0Attribute]):
     TYPE = "Exp"
     VERSION = 0
     ATTRIBUTE_FACTORY = ExpV0Attribute
+    attrs: ExpV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ExpV0's forward function."""
         return torch.exp(inputs)
 
@@ -310,8 +325,9 @@ class HardSigmoidV0(Operation[HardSigmoidV0Attribute]):
     TYPE = "HardSigmoid"
     VERSION = 0
     ATTRIBUTE_FACTORY = HardSigmoidV0Attribute
+    attrs: HardSigmoidV0Attribute
 
-    def forward(self, inputs, alpha, beta):
+    def forward(self, inputs: torch.Tensor, alpha: float, beta: float) -> torch.Tensor:
         """HardSigmoidV0's forward function."""
         return torch.maximum(
             torch.zeros_like(inputs),
@@ -325,7 +341,7 @@ class GeluV7Attribute(Attribute):
 
     approximation_mode: str = field(default="ERF")
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """GeluV7Attribute's post init function."""
         super().__post_init__()
         valid_approximation_mode = ["ERF", "tanh"]
@@ -343,8 +359,9 @@ class GeluV7(Operation[GeluV7Attribute]):
     TYPE = "Gelu"
     VERSION = 7
     ATTRIBUTE_FACTORY = GeluV7Attribute
+    attrs: GeluV7Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> Optional[Union[torch.Tensor, tuple]]:
         """GeluV7's forward function."""
         mode = self.attrs.approximation_mode
         if mode == "ERF":

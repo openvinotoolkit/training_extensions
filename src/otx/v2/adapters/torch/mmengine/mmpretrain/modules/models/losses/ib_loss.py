@@ -14,7 +14,7 @@ from torch.nn import functional
 class IBLoss(CrossEntropyLoss):
     """IB Loss, Influence-Balanced Loss for Imbalanced Visual Classification, https://arxiv.org/abs/2110.02444."""
 
-    def __init__(self, num_classes, start=5, alpha=1000.0, reduction: str = "mean") -> None:
+    def __init__(self, num_classes: int, start: int = 5, alpha: float = 1000.0, reduction: str = "mean") -> None:
         """Init fuction of IBLoss.
 
         Args:
@@ -36,15 +36,15 @@ class IBLoss(CrossEntropyLoss):
             raise ValueError(f"reduction={reduction} is not allowed.")
 
     @property
-    def cur_epoch(self):
+    def cur_epoch(self) -> int:
         """Return current epoch."""
         return self._cur_epoch
 
     @cur_epoch.setter
-    def cur_epoch(self, epoch):
+    def cur_epoch(self, epoch: int) -> None:
         self._cur_epoch = epoch
 
-    def update_weight(self, cls_num_list):
+    def update_weight(self, cls_num_list: list) -> None:
         """Update loss weight per class."""
         if len(cls_num_list) == 0:
             raise ValueError("Cannot compute the IB loss weight with empty cls_num_list.")
@@ -53,7 +53,7 @@ class IBLoss(CrossEntropyLoss):
         per_cls_weights = torch.FloatTensor(per_cls_weights)
         self.weight.data = per_cls_weights.to(device=self.weight.device)
 
-    def forward(self, x, target, feature):
+    def forward(self, x: torch.Tensor, target: torch.Tensor, feature: torch.Tensor) -> torch.Tensor:
         """Forward fuction of IBLoss."""
         if self._cur_epoch < self._start_epoch:
             return super().forward(x, target)

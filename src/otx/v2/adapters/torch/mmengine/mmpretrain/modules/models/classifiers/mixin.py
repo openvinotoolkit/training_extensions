@@ -4,11 +4,13 @@
 #
 
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Optional
 
 import datumaro as dm
 import numpy as np
 import pandas as pd
+import torch
+from mmpretrain.models.classifiers.image import ImageClassifier
 
 from otx.v2.adapters.datumaro.noisy_label_detection import (
     LossDynamicsTracker,
@@ -20,15 +22,6 @@ from otx.v2.api.utils.logger import get_logger
 logger = get_logger()
 
 
-class SAMClassifierMixin:
-    """SAM-enabled BaseClassifier mix-in."""
-
-    def train_step(self, data, optim_wrapper=None, **kwargs):
-        """Saving current batch data to compute SAM gradient."""
-        self.current_batch = data
-        return super().train_step(data, optim_wrapper, **kwargs)
-
-
 class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
     """Loss dynamics tracker for multi-class classification task."""
 
@@ -36,9 +29,9 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
 
     def __init__(self) -> None:
         super().__init__()
-        self._loss_dynamics: Dict[Any, List] = defaultdict(list)
+        self._loss_dynamics: dict = defaultdict(list)
 
-    def _convert_anns(self, item: DatasetItemEntityWithID):
+    def _convert_anns(self, item: DatasetItemEntityWithID) -> list:
         labels = [
             dm.Label(label=self.otx_label_map[label.id_])
             for ann in item.get_annotations()
@@ -46,7 +39,7 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
         ]
         return labels
 
-    def accumulate(self, outputs, iter) -> None:
+    def accumulate(self, outputs: dict, iter: int) -> None:
         """Accumulate training loss dynamics for each training step."""
         entity_ids = outputs["entity_ids"]
         label_ids = np.squeeze(outputs["label_ids"])
@@ -94,7 +87,7 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
         # since LossDynamicsTrackingMixin.__init__() creates self._loss_dyns_tracker
         self._loss_dyns_tracker = MultiClassClsLossDynamicsTracker()
 
-    def train_step(self, data, optim_wrapper=None, **kwargs):
+    def predict(self, data: torch.Tensor, optim_wrapper: Optional[list] = None, **kwargs) -> dict:
         """The iteration step for training.
 
         If self._track_loss_dynamics = False, just follow BaseClassifier.train_step().
@@ -102,9 +95,11 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
         """
         if self.loss_dyns_tracker.initialized:
             return self._train_step_with_tracking(data, optim_wrapper, **kwargs)
-        return super().train_step(data, optim_wrapper, **kwargs)
+        return super().predict(data, optim_wrapper, **kwargs)  # type: ignore
 
-    def _train_step_with_tracking(self, data, optim_wrapper=None, **kwargs):
+    def _train_step_with_tracking(
+        self: ImageClassifier, data: torch.Tensor, optim_wrapper: Optional[list] = None, **kwargs
+    ) -> dict:
         losses = self(**data)
 
         loss_dyns = losses["loss"].detach().cpu().numpy()

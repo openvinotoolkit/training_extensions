@@ -4,9 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 import numpy as np
+import torch
 from torch.nn import functional
 
 from .builder import OPS
@@ -29,7 +30,7 @@ class InterpolateV4Attribute(Attribute):
     pads_end: List[int] = field(default_factory=lambda: [0])
     cube_coeff: float = field(default=-0.75)
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """InterpolateV4Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["nearest", "linear", "linear_onnx", "cubic"]
@@ -71,12 +72,15 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
     TYPE = "Interpolate"
     VERSION = 4
     ATTRIBUTE_FACTORY = InterpolateV4Attribute
+    attrs: InterpolateV4Attribute
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.pad = PadV1("tmp", shape=self.shape, pad_mode="constant")
 
-    def forward(self, inputs, sizes, scales, axes=None):
+    def forward(
+        self, inputs: torch.Tensor, sizes: torch.Tensor, scales: torch.Tensor, axes: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """InterpolateV4's forward function."""
         # TODO list
         # - handle 'linear_onnx' mode

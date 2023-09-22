@@ -3,12 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Any, Dict, List, Optional
+from typing import Optional, Union
 
 import torch
 from mmpretrain.models import ClsDataPreprocessor
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import DataSample
 
 from otx.v2.api.utils.logger import get_logger
 
@@ -52,7 +51,7 @@ class SemiSLClassifier(CustomImageClassifier):
             data_preprocessor = MODELS.build(data_preprocessor)
         super().__init__(data_preprocessor=data_preprocessor, **kwargs)
 
-    def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> Dict[str, torch.Tensor]:
+    def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Data is transmitted as a classifier training function.
 
         Args:
@@ -81,7 +80,7 @@ class SemiSLClassifier(CustomImageClassifier):
 
         return losses
 
-    def loss(self, inputs: torch.Tensor, data_samples: List[DataSample], **kwargs):
+    def loss(self, inputs: torch.Tensor, data_samples: list, **kwargs) -> dict:
         if "gt_score" in data_samples[0]:
             # Batch augmentation may convert labels to one-hot format scores.
             gt_label = torch.stack([i.gt_score for i in data_samples])
@@ -92,10 +91,10 @@ class SemiSLClassifier(CustomImageClassifier):
     def forward(
         self,
         inputs: torch.Tensor,
-        data_samples: List[DataSample],
-        extra_0: Optional[Dict[str, Any]] = None,
+        data_samples: list,
+        extra_0: Optional[dict] = None,
         mode: str = "tensor",
-    ):
+    ) -> Union[dict, torch.Tensor]:
         if mode == "tensor":
             feats = self.extract_feat(inputs)
             return self.head(feats) if self.with_head else feats

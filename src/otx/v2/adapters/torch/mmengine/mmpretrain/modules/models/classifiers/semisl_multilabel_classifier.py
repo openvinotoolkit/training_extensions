@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import torch
 from mmpretrain.registry import MODELS
 
 from otx.v2.api.utils.logger import get_logger
@@ -16,7 +17,7 @@ logger = get_logger()
 class SemiSLMultilabelClassifier(CustomImageClassifier):
     """Semi-SL Multilabel Classifier which supports unlabeled data by overriding forward_train."""
 
-    def forward_train(self, img, gt_label, **kwargs):
+    def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Data is transmitted as a classifier training function.
 
         Args:

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from typing import Any, Dict, Optional, Union
+from typing import Iterable, Optional, Union
 
 import albumentations as al
 import yaml
@@ -12,6 +12,7 @@ from anomalib.data.base.datamodule import collate_fn
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader as TorchDataLoader
 from torch.utils.data import Dataset as TorchDataset
+from torch.utils.data import Sampler
 
 from otx.v2.adapters.torch.anomalib.modules.data.data import OTXAnomalyDataset
 from otx.v2.api.core.dataset import BaseDataset
@@ -66,7 +67,7 @@ class Dataset(BaseDataset):
         self,
         subset: str,
         pipeline: Optional[Union[str, al.Compose]] = None,  # transform_config
-        config: Optional[Union[str, DictConfig, Dict[str, Any]]] = None,
+        config: Optional[Union[str, DictConfig, dict]] = None,
     ) -> Optional[TorchDataset]:
         if not self.initialize:
             self._initialize()
@@ -98,7 +99,7 @@ class Dataset(BaseDataset):
         shuffle: bool = False,
         pin_memory: bool = False,
         drop_last: bool = False,
-        sampler=None,
+        sampler: Optional[Union[Sampler, Iterable]] = None,
         persistent_workers: bool = False,
         distributed: bool = False,
         **kwargs,
@@ -130,14 +131,14 @@ class Dataset(BaseDataset):
         batch_size: Optional[int] = 1,
         num_workers: Optional[int] = 0,
         distributed: bool = False,
-        config: Optional[Union[str, Dict[str, Any]]] = None,
+        config: Optional[Union[str, dict]] = None,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
-        sampler=None,
+        sampler: Optional[Union[Sampler, Iterable]] = None,
         persistent_workers: bool = False,
         **kwargs,
-    ):
+    ) -> Optional[TorchDataLoader]:
         super().subset_dataloader(
             subset,
             pipeline,
@@ -147,7 +148,7 @@ class Dataset(BaseDataset):
         )
         if subset == "predict":
             pass
-        _config: Dict[str, Any] = {}
+        _config: dict = {}
         if isinstance(config, str):
             _config = yaml.load(open(config), Loader=yaml.FullLoader)
         elif config is not None:
@@ -174,7 +175,7 @@ class Dataset(BaseDataset):
         )
 
     @property
-    def num_classes(self):
+    def num_classes(self) -> int:
         if not self.initialize:
             self._initialize()
         return len(self.label_schema.get_labels(include_empty=False))

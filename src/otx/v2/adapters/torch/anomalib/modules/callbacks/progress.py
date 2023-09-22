@@ -17,12 +17,12 @@ TODO Since only one progressbar callback is supported HPO is combined into one c
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Optional, Union
+from typing import Optional
 
+import torch
+from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
-from otx.v2.api.entities.inference_parameters import InferenceParameters
-from otx.v2.api.entities.optimization_parameters import OptimizationParameters
 from otx.v2.api.entities.train_parameters import TrainParameters, default_progress_callback
 
 
@@ -32,9 +32,7 @@ class ProgressCallback(TQDMProgressBar):
     Modify progress callback to show completion of the entire training step.
     """
 
-    def __init__(
-        self, parameters: Optional[Union[TrainParameters, InferenceParameters, OptimizationParameters]] = None
-    ) -> None:
+    def __init__(self, parameters: Optional[TrainParameters] = None) -> None:
         super().__init__()
         self.current_epoch: int = 0
         self.max_epochs: int = 0
@@ -45,40 +43,60 @@ class ProgressCallback(TQDMProgressBar):
         else:
             self.progress_and_hpo_callback = default_progress_callback
 
-    def on_train_start(self, trainer, pl_module):
+    def on_train_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Store max epochs and current epoch from trainer."""
         super().on_train_start(trainer, pl_module)
         self.current_epoch = trainer.current_epoch
         self.max_epochs = trainer.max_epochs
         self._reset_progress()
 
-    def on_predict_start(self, trainer, pl_module):
+    def on_predict_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Reset progress bar when prediction starts."""
         super().on_predict_start(trainer, pl_module)
         self._reset_progress()
 
-    def on_test_start(self, trainer, pl_module):
+    def on_test_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Reset progress bar when testing starts."""
         super().on_test_start(trainer, pl_module)
         self._reset_progress()
 
-    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
+    def on_train_batch_end(
+        self, trainer: Trainer, pl_module: LightningModule, outputs: torch.Tensor, batch: torch.Tensor, batch_idx: int
+    ) -> None:
         """Adds training completion percentage to the progress bar."""
         super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx)
         self.current_epoch = trainer.current_epoch
         self._update_progress(stage="train")
 
-    def on_predict_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_predict_batch_end(
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        outputs: torch.Tensor,
+        batch: torch.Tensor,
+        batch_idx: int,
+        dataloader_idx: int,
+    ) -> None:
         """Adds prediction completion percentage to the progress bar."""
         super().on_predict_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self._update_progress(stage="predict")
 
-    def on_test_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
+    def on_test_batch_end(
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        outputs: torch.Tensor,
+        batch: torch.Tensor,
+        batch_idx: int,
+        dataloader_idx: int,
+    ) -> None:
         """Adds testing completion percentage to the progress bar."""
         super().on_test_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self._update_progress(stage="test")
 
-    def on_validation_epoch_end(self, trainer, pl_module):  # pylint: disable=unused-argument
+    def on_validation_epoch_end(
+        self, trainer: Trainer, pl_module: LightningModule
+    ) -> None:  # pylint: disable=unused-argument
         """If score exists in trainer.logged_metrics, report the score."""
         if self.progress_and_hpo_callback is not None:
             score = None
@@ -89,7 +107,7 @@ class ProgressCallback(TQDMProgressBar):
             # Always assumes that hpo validation step is called during training.
             self.progress_and_hpo_callback(int(self._get_progress("train")), score)  # pylint: disable=not-callable
 
-    def _reset_progress(self):
+    def _reset_progress(self) -> None:
         self._progress = 0.0
 
     def _get_progress(self, stage: str = "train") -> float:
@@ -116,6 +134,6 @@ class ProgressCallback(TQDMProgressBar):
 
         return self._progress
 
-    def _update_progress(self, stage: str):
+    def _update_progress(self, stage: str) -> None:
         progress = self._get_progress(stage)
         self.progress_and_hpo_callback(int(progress), None)

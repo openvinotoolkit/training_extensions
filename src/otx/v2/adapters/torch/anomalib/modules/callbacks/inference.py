@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, List
+from typing import List
 
 import numpy as np
 import pytorch_lightning as pl
@@ -46,7 +46,7 @@ class AnomalyInferenceCallback(Callback):
         self.task_type = task_type
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
-    def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: List[Any]):
+    def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: list) -> None:
         """Call when the predict epoch ends."""
         # TODO; refactor Ignore too many locals
         # pylint: disable=too-many-locals
@@ -86,7 +86,7 @@ class AnomalyInferenceCallback(Callback):
                 )
             )
 
-    def _process_classification_predictions(self, pred_labels: Tensor, pred_scores: Tensor):
+    def _process_classification_predictions(self, pred_labels: Tensor, pred_scores: Tensor) -> None:
         """Add classification predictions to the dataset items.
 
         Args:
@@ -107,7 +107,7 @@ class AnomalyInferenceCallback(Callback):
         box_labels: List[Tensor],
         pred_scores: Tensor,
         image_size: torch.Size,
-    ):
+    ) -> None:
         """Add detection predictions to the dataset items.
 
         Args:
@@ -134,9 +134,9 @@ class AnomalyInferenceCallback(Callback):
                     x2=box[2].item() / width,
                     y2=box[3].item() / height,
                 )
-                label = self.label_map[label.item()]
+                _label = self.label_map[label.item()]
                 probability = score.item()
-                annotations.append(Annotation(shape=shape, labels=[ScoredLabel(label=label, probability=probability)]))
+                annotations.append(Annotation(shape=shape, labels=[ScoredLabel(label=_label, probability=probability)]))
             # get label
             label = self.anomalous_label if annotations else self.normal_label
             probability = pred_score if label.is_anomalous else 1 - pred_score
@@ -144,7 +144,7 @@ class AnomalyInferenceCallback(Callback):
             dataset_item.append_annotations(annotations)
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
 
-    def _process_segmentation_predictions(self, pred_masks: Tensor, anomaly_maps: Tensor, pred_scores: Tensor):
+    def _process_segmentation_predictions(self, pred_masks: Tensor, anomaly_maps: Tensor, pred_scores: Tensor) -> None:
         """Add segmentation predictions to the dataset items.
 
         Args:

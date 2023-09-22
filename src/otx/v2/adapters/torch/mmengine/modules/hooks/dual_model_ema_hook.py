@@ -8,6 +8,7 @@ import math
 import torch
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 
 from otx.v2.api.utils.logger import get_logger
 
@@ -44,12 +45,12 @@ class DualModelEMAHook(Hook):
 
     def __init__(
         self,
-        momentum=0.0002,
-        epoch_momentum=0.0,
-        interval=1,
-        start_epoch=5,
-        src_model_name="model_s",
-        dst_model_name="model_t",
+        momentum: float = 0.0002,
+        epoch_momentum: float = 0.0,
+        interval: float = 1,
+        start_epoch: int = 5,
+        src_model_name: str = "model_s",
+        dst_model_name: str = "model_t",
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -61,11 +62,11 @@ class DualModelEMAHook(Hook):
         self.dst_model = None
         self.src_model_name = src_model_name
         self.dst_model_name = dst_model_name
-        self.src_params = None
-        self.dst_params = None
+        self.src_params: dict = {}
+        self.dst_params: dict = {}
         self.enabled = False
 
-    def before_run(self, runner):
+    def before_run(self, runner: Runner) -> None:
         """Set up src & dst model parameters."""
         model = self._get_model(runner)
         self.src_model = getattr(model, self.src_model_name, None)
@@ -74,7 +75,7 @@ class DualModelEMAHook(Hook):
             self.src_params = self.src_model.state_dict(keep_vars=True)
             self.dst_params = self.dst_model.state_dict(keep_vars=True)
 
-    def before_train_epoch(self, runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Momentum update."""
         if runner.epoch == self.start_epoch:
             self._copy_model()
@@ -88,7 +89,7 @@ class DualModelEMAHook(Hook):
             logger.info(f"EMA: epoch_decay={epoch_decay} / iter_decay={iter_decay}")
             self.epoch_momentum = 0.0  # disable re-compute
 
-    def after_train_iter(self, runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Update ema parameter every self.interval iterations."""
         if not self.enabled or (runner.iter % self.interval != 0):
             return
@@ -96,31 +97,31 @@ class DualModelEMAHook(Hook):
         # EMA
         self._ema_model()
 
-    def after_train_epoch(self, runner):
+    def after_train_epoch(self, runner: Runner) -> None:
         """Log difference between models if enabled."""
         if self.enabled:
             logger.info(f"model_s model_t diff: {self._diff_model()}")
 
-    def _get_model(self, runner):
+    def _get_model(self, runner: Runner) -> torch.nn.Module:
         model = runner.model
         if hasattr(model, "module"):
             model = model.module
         return model
 
-    def _copy_model(self):
+    def _copy_model(self) -> None:
         with torch.no_grad():
             for name, src_param in self.src_params.items():
                 dst_param = self.dst_params[name]
                 dst_param.data.copy_(src_param.data)
 
-    def _ema_model(self):
+    def _ema_model(self) -> None:
         momentum = min(self.momentum, 1.0)
         with torch.no_grad():
             for name, src_param in self.src_params.items():
                 dst_param = self.dst_params[name]
                 dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
 
-    def _diff_model(self):
+    def _diff_model(self) -> float:
         diff_sum = 0.0
         with torch.no_grad():
             for name, src_param in self.src_params.items():

@@ -4,7 +4,7 @@
 #
 
 import random
-from typing import Dict, Union
+from typing import Union
 
 from numpy import ndarray
 from PIL import Image, ImageEnhance, ImageOps
@@ -22,8 +22,8 @@ class Augments:  # pylint: disable=unused-argument
     """Augments class that implements various augmentations via plain PIL."""
 
     @staticmethod
-    def _check_args_tf(kwargs) -> Dict:
-        def _interpolation(kwargs) -> Resampling:
+    def _check_args_tf(kwargs: dict) -> dict:
+        def _interpolation(kwargs: dict) -> Resampling:
             interpolation = kwargs.pop("resample", Resampling.BILINEAR)
             if isinstance(interpolation, (list, tuple)):
                 # disable B311 random - used for the random sampling not for security/crypto
@@ -208,7 +208,7 @@ class CythonAugments(Augments):
         raise NotImplementedError(f"Unknown type: {type(img)}")
 
     @staticmethod
-    def blend(src: ImgTypes, dst: ndarray, weight: float = 0.0):
+    def blend(src: ImgTypes, dst: ndarray, weight: float = 0.0) -> ImgTypes:
         """Apply blend for an given image."""
         assert isinstance(dst, ndarray), f"Type of dst should be numpy array, but type(dst)={type(dst)}."
         if Image.isImageType(src):

@@ -105,7 +105,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         if init_weight:
             if not isinstance(init_weight, Callable):
                 # internal init weight
-                def init_weight(module, graph):  # pylint: disable=function-redefined
+                def init_weight(module: torch.nn.Module, graph: Graph) -> None:  # pylint: disable=function-redefined
                     from ..ops.op import Operation
 
                     if not isinstance(module, Operation):
@@ -162,32 +162,32 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
             self._output_shapes[output] = output_shapes[output]
 
     @property
-    def inputs(self):
+    def inputs(self) -> list:
         """Property inputs."""
         return self._inputs
 
     @property
-    def outputs(self):
+    def outputs(self) -> list:
         """Property outputs."""
         return self._outputs
 
     @property
-    def features(self):
+    def features(self) -> dict:
         """Property features."""
         return self._feature_dict
 
     @property
-    def input_shapes(self):
+    def input_shapes(self) -> OrderedDict:
         """Property input_shapes."""
         return self._input_shapes
 
     @property
-    def output_shapes(self):
+    def output_shapes(self) -> OrderedDict:
         """Property output_shapes."""
         return self._output_shapes
 
     @staticmethod
-    def build_graph(model_path_or_model, weight_path=None):
+    def build_graph(model_path_or_model: Union[ov.Model, str], weight_path: Optional[str] = None) -> Graph:
         """Function build_graph."""
         with tempfile.TemporaryDirectory() as tempdir:
             if isinstance(model_path_or_model, ov.Model):
@@ -205,7 +205,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         return graph
 
     @staticmethod
-    def build_custom_outputs(graph, outputs):  # noqa: C901
+    def build_custom_outputs(graph: Graph, outputs: Union[list, str]) -> list:  # noqa: C901
         """Function build_custom_outputs."""
         cls_result = OPS.get_by_type_version("Result", 0)
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
@@ -216,15 +216,15 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         nodes_to_remove = []
         edges_to_add = {}
         for i, output in enumerate(outputs):
-            output = normalize_name(output)
-            output = output.split(CONNECTION_SEPARATOR)
+            _output = normalize_name(output)
+            _output = _output.split(CONNECTION_SEPARATOR)
             explicit_tgt = False
 
-            if len(output) == 1:
-                src = output[0]
+            if len(_output) == 1:
+                src = _output[0]
                 tgt = None
-            elif len(output) == 2:
-                src, tgt = output
+            elif len(_output) == 2:
+                src, tgt = _output
                 explicit_tgt = True
             else:
                 raise ValueError()
@@ -287,7 +287,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         return outputs
 
     @staticmethod
-    def build_custom_inputs(graph, inputs: Union[str, List[str]]):  # noqa: C901
+    def build_custom_inputs(graph: Graph, inputs: Union[str, list]) -> list:  # noqa: C901
         """Function build_custom_inputs."""
         cls_param = OPS.get_by_type_version("Parameter", 0)
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
@@ -298,15 +298,15 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         edges_to_add = {}
         nodes_to_remove = []
         for i, input_ in enumerate(inputs):
-            input_ = normalize_name(input_)
-            input_ = input_.split(CONNECTION_SEPARATOR)
+            _input = normalize_name(input_)
+            _input = _input.split(CONNECTION_SEPARATOR)
             explicit_src = False
 
-            if len(input_) == 1:
+            if len(_input) == 1:
                 src = None
-                tgt = input_[0]
-            elif len(input_) == 2:
-                src, tgt = input_
+                tgt = _input[0]
+            elif len(_input) == 2:
+                src, tgt = _input
                 explicit_src = True
             else:
                 raise ValueError()
@@ -379,7 +379,9 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         return inputs
 
     @staticmethod
-    def clean_up(graph, inputs=None, outputs=None):
+    def clean_up(
+        graph: Graph, inputs: Optional[Union[str, list]] = None, outputs: Optional[Union[str, list]] = None
+    ) -> None:
         """Function clean_up."""
         inputs = inputs if inputs else []
         outputs = outputs if outputs else []
@@ -389,7 +391,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
             if node.name in inputs or node.name in outputs:
                 nodes_to_keep.append(node)
 
-        def get_nodes_without_successors(graph, ignores=None):
+        def get_nodes_without_successors(graph: Graph, ignores: Optional[list] = None) -> list:
             ignores = ignores if ignores else []
             outputs = []
             for node in reversed(list(graph.topological_sort())):
@@ -405,12 +407,12 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         graph.clean_up(nodes_to_keep)
 
     @staticmethod
-    def build_torch_module(graph):
+    def build_torch_module(graph: Graph) -> torch.nn.ModuleDict:
         """Function build_torch_module."""
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
         return torch.nn.ModuleDict(list(node_dict.items()))
 
-    def _build_forward_inputs(self, *args, **kwargs):
+    def _build_forward_inputs(self, *args, **kwargs) -> dict:
         """Function _build_forward_inputs."""
         inputs = {}
         if args:
@@ -423,7 +425,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                 inputs[key] = arg
         return inputs
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args, **kwargs) -> OrderedDict:
         """Function forward."""
         self._feature_dict.clear()
         inputs = self._build_forward_inputs(*args, **kwargs)

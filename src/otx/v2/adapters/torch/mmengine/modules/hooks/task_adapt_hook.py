@@ -6,6 +6,7 @@
 from mmengine.dist import get_dist_info
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.modules.dataloaders.samplers import (
@@ -31,12 +32,12 @@ class TaskAdaptHook(Hook):
 
     def __init__(
         self,
-        src_classes,
-        dst_classes,
-        model_type="FasterRCNN",
-        sampler_flag=False,
-        sampler_type="cls_incr",
-        efficient_mode=False,
+        src_classes: list,
+        dst_classes: list,
+        model_type: str = "FasterRCNN",
+        sampler_flag: bool = False,
+        sampler_type: str = "cls_incr",
+        efficient_mode: bool = False,
     ) -> None:
         self.src_classes = src_classes
         self.dst_classes = dst_classes
@@ -50,7 +51,7 @@ class TaskAdaptHook(Hook):
         logger.info(f"- Sampler type: {self.sampler_type}")
         logger.info(f"- Sampler flag: {self.sampler_flag}")
 
-    def before_epoch(self, runner):
+    def before_epoch(self, runner: Runner) -> None:
         """Produce a proper sampler for task-adaptation."""
         if self.sampler_flag:
             dataset = runner.data_loader.dataset

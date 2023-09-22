@@ -1,7 +1,9 @@
 """Balanced sampler for imbalanced data."""
 import math
+from typing import Iterator
 
 import numpy as np
+from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
 from otx.v2.api.utils.logger import get_logger
@@ -23,7 +25,15 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         efficient_mode (bool): Flag about using efficient mode
     """
 
-    def __init__(self, dataset, batch_size, efficient_mode=True, num_replicas=1, rank=0, drop_last=False) -> None:
+    def __init__(
+        self,
+        dataset: Dataset,
+        batch_size: int,
+        efficient_mode: bool = True,
+        num_replicas: int = 1,
+        rank: int = 0,
+        drop_last: bool = False,
+    ) -> None:
         self.batch_size = batch_size
         self.repeat = 1
         if hasattr(dataset, "times"):
@@ -76,17 +86,17 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         return num_samples
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         """Iter."""
-        indices = []
+        _indices = []
         for _ in range(self.repeat):
             for _ in range(self.num_trials):
                 indice = np.concatenate(
                     [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices.keys()]
                 )
-                indices.append(indice)
+                _indices.append(indice)
 
-        indices = np.concatenate(indices)
+        indices = np.concatenate(_indices)
         indices = indices.astype(np.int64).tolist()
 
         if self.num_replicas > 1:

@@ -15,9 +15,7 @@
 # and limitations under the License.
 
 import copy
-import glob
 import multiprocessing
-import os
 import os.path as osp
 import platform
 import shutil
@@ -35,10 +33,8 @@ from mmengine.config.config import BASE_KEY, DEPRECATION_KEY
 from mmengine.utils import check_file_exist, import_modules_from_strings
 from torch.utils.data import DataLoader
 
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.utils.logger import get_logger
 
-from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
 
 logger = get_logger()
@@ -165,7 +161,7 @@ class CustomConfig(Config):
         return CustomConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
 
     @property
-    def pretty_text(self):
+    def pretty_text(self) -> str:
         """Make python file human-readable.
 
         It's almost same as mmengine.Config's code but code to reformat using yapf is removed to reduce time.
@@ -173,17 +169,17 @@ class CustomConfig(Config):
 
         indent = 4
 
-        def _indent(s_, num_spaces):
+        def _indent(s_: str, num_spaces: int) -> str:
             s = s_.split("\n")
             if len(s) == 1:
                 return s_
             first = s.pop(0)
             s = [(num_spaces * " ") + line for line in s]
-            s = "\n".join(s)
-            s = first + "\n" + s
-            return s
+            _s = "\n".join(s)
+            _s = first + "\n" + _s
+            return _s
 
-        def _format_basic_types(k, v, use_mapping=False):
+        def _format_basic_types(k: str, v: list, use_mapping: bool = False) -> str:
             if isinstance(v, str):
                 v_str = f"'{v}'"
             else:
@@ -198,7 +194,7 @@ class CustomConfig(Config):
 
             return attr_str
 
-        def _format_list(k, v, use_mapping=False):
+        def _format_list(k: str, v: list, use_mapping: bool = False) -> str:
             # check if all items in the list are dict
             if all(isinstance(_, dict) for _ in v):
                 v_str = "[\n"
@@ -213,13 +209,13 @@ class CustomConfig(Config):
                 attr_str = _format_basic_types(k, v, use_mapping)
             return attr_str
 
-        def _contain_invalid_identifier(dict_str):
+        def _contain_invalid_identifier(dict_str: dict) -> bool:
             contain_invalid_identifier = False
             for key_name in dict_str:
                 contain_invalid_identifier |= not str(key_name).isidentifier()
             return contain_invalid_identifier
 
-        def _format_dict(input_dict, outest_level=False):
+        def _format_dict(input_dict: dict, outest_level: bool = False) -> str:
             r = ""
             s = []
 
@@ -261,7 +257,7 @@ class CustomConfig(Config):
             cfg_dict = cfg_dict._cfg_dict.to_dict()
         return CustomConfig._merge_a_into_b(cfg_dict, base_dict)
 
-    def dump(self, file: Optional[Union[str, Path]] = None):
+    def dump(self, file: Optional[Union[str, Path]] = None) -> None:
         """Dump config to file or return config text.
 
         Args:
@@ -290,7 +286,7 @@ class CustomConfig(Config):
         #     return dump(cfg_dict, file=file, file_format=file_format)
 
 
-def copy_config(cfg):
+def copy_config(cfg: Config) -> None:
     """A function that creates a deep copy of the input configuration object.
 
     :param cfg: Config object, an instance of `Config` class to be copied.
@@ -307,7 +303,7 @@ def copy_config(cfg):
     return pickle.loads(data)  # nosec B301
 
 
-def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict):
+def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict) -> None:
     """Update hook cfg if same type is in custom_hook or append it."""
     custom_hooks = cfg.get("custom_hooks", [])
     custom_hooks_updated = False
@@ -321,7 +317,7 @@ def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict):
     cfg["custom_hooks"] = custom_hooks
 
 
-def remove_custom_hook(cfg: Config, hook_type: str):
+def remove_custom_hook(cfg: Config, hook_type: str) -> None:
     """Remove hook cfg if hook_type is in custom_hook."""
     custom_hooks = cfg.get("custom_hooks", [])
     if len(custom_hooks) > 0:
@@ -337,8 +333,8 @@ def remove_custom_hook(cfg: Config, hook_type: str):
 def recursively_update_cfg(
     cfg: Union[Config, dict],
     criterion: Callable[[Any, Any], bool],
-    update_dict: Any,
-):
+    update_dict: Union[Config, dict, ConfigDict],
+) -> None:
     """A function that recursively updates the input dictionary or `Config` object with a new dictionary.
 
     :param cfg: Union[Config, dict], an input dictionary or `Config` object to be updated.
@@ -354,7 +350,7 @@ def recursively_update_cfg(
             cfg.update(update_dict)
 
 
-def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict):
+def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict) -> None:
     """A function that adds a custom hook to the input `Config` object if it doesn't already exist.
 
     :param cfg: Config object, an instance of `Config` class to which the custom hook will be added.
@@ -372,7 +368,7 @@ def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict):
         cfg["custom_hooks"] = custom_hooks
 
 
-def remove_from_config(config: Union[Config, ConfigDict], key: str):
+def remove_from_config(config: Union[Config, ConfigDict], key: str) -> None:
     """Update & Remove configs."""
     if key in config:
         if isinstance(config, Config):
@@ -383,7 +379,7 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
             raise ValueError(f"Unknown config type {type(config)}")
 
 
-def remove_from_configs_by_type(configs: List[ConfigDict], type_name: str):
+def remove_from_configs_by_type(configs: List[ConfigDict], type_name: str) -> None:
     """Update & remove by type."""
     indices = []
     for i, config in enumerate(configs):
@@ -396,8 +392,8 @@ def remove_from_configs_by_type(configs: List[ConfigDict], type_name: str):
 
 def update_config(
     config: Union[Config, ConfigDict],
-    pairs: Dict[Tuple[Any, ...], Any],
-):
+    pairs: dict,
+) -> None:
     """Update configs by path as a key and value as a target."""
     for path, value in pairs.items():
         path_ = list(reversed(path))
@@ -416,34 +412,6 @@ def update_config(
             ptr = ptr[key]
 
 
-def get_dataset_configs(config: Union[Config, ConfigDict], subset: str) -> List[ConfigDict]:
-    """A function that retrieves 'datasets' configurations from the input `Config` object or `ConfigDict` object.
-
-    :param config: Union[Config, ConfigDict], an instance of `Config` class or `ConfigDict` class containing the
-                   configurations.
-    :param subset: str, a string representing the subset for which the 'datasets' configuration is required.
-    :return: List[ConfigDict], a list of 'datasets' configuration dictionaries.
-    """
-    if config.data.get(subset, None) is None:
-        return []
-    data_cfg = config.data[subset]
-    data_cfgs = get_configs_by_keys(data_cfg, ["dataset", "datasets"])
-    return data_cfgs if data_cfgs else [data_cfg]
-
-
-def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntity) -> Config:
-    """Prepare configs for testing phase."""
-    config = copy.deepcopy(config)
-    # FIXME. Should working directories be modified here?
-    config.data.test.otx_dataset = dataset
-    return config
-
-
-def is_epoch_based_runner(runner_config: ConfigDict):
-    """Check Epoch based or Iter based runner."""
-    return "Epoch" in runner_config.type
-
-
 def config_from_string(config_string: str) -> Config:
     """Generate an mmengine config dict object from a string.
 
@@ -456,28 +424,7 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
-def patch_default_config(config: Config):
-    """Patch default config."""
-    if "runner" not in config:
-        config.runner = ConfigDict({"type": "EpochBasedRunner"})
-    if "log_config" not in config:
-        config.log_config = ConfigDict()
-    if "evaluation" not in config:
-        config.evaluation = ConfigDict()
-    if "checkpoint_config" not in config:
-        config.checkpoint_config = ConfigDict({"type": "CheckpointHook", "interval": 1})
-
-
-def patch_data_pipeline(config: Config, data_pipeline: str = ""):
-    """Replace data pipeline to data_pipeline.py if it exist."""
-    if os.path.isfile(data_pipeline):
-        data_pipeline_cfg = Config.fromfile(data_pipeline)
-        config.merge_from_dict(data_pipeline_cfg)
-    else:
-        raise FileNotFoundError(f"data_pipeline: {data_pipeline} not founded")
-
-
-def patch_color_conversion(config: Config):
+def patch_color_conversion(config: Config) -> None:
     """Patch color conversion."""
     assert "data" in config
 
@@ -488,45 +435,7 @@ def patch_color_conversion(config: Config):
         cfg.to_rgb = not bool(to_rgb)
 
 
-def patch_runner(config: Config):
-    """Patch runner."""
-    assert "runner" in config
-
-    # Check that there is no conflict in specification of number of training epochs.
-    # Move global definition of epochs inside runner config.
-    if "total_epochs" in config:
-        if is_epoch_based_runner(config.runner):
-            if config.runner.max_epochs != config.total_epochs:
-                logger.warning("Conflicting declaration of training epochs number.")
-            config.runner.max_epochs = config.total_epochs
-        else:
-            logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
-        remove_from_config(config, "total_epochs")
-
-    # Change runner's type.
-    if config.runner.type != "AccuracyAwareRunner":
-        if is_epoch_based_runner(config.runner) and config.runner.type != "EpochRunnerWithCancel":
-            logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-            config.runner.type = "EpochRunnerWithCancel"
-        elif not is_epoch_based_runner(config.runner) and config.runner.type != "IterBasedRunnerWithCancel":
-            logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-            config.runner.type = "IterBasedRunnerWithCancel"
-
-
-def patch_fp16(config: Config):
-    """Remove FP16 config if running on CPU device and revert to FP32.
-
-    Please refer https://github.com/pytorch/pytorch/issues/23377
-    """
-    if not torch.cuda.is_available() and "fp16" in config:
-        logger.info("Revert FP16 to FP32 on CPU device")
-        if isinstance(config, Config):
-            del config._cfg_dict["fp16"]  # pylint: disable=protected-access
-        elif isinstance(config, ConfigDict):
-            del config["fp16"]
-
-
-def patch_adaptive_interval_training(config: Config):
+def patch_adaptive_interval_training(config: Config) -> None:
     """Update adaptive interval settings for OTX training.
 
     This function can be removed by adding custom hook cfg into recipe.py directly.
@@ -558,7 +467,7 @@ def patch_adaptive_interval_training(config: Config):
         config.pop("adaptive_validation_interval", None)
 
 
-def patch_early_stopping(config: Config):
+def patch_early_stopping(config: Config) -> None:
     """Update early stop settings for OTX training.
 
     This function can be removed by adding custom hook cfg into recipe.py directly.
@@ -587,7 +496,7 @@ def patch_early_stopping(config: Config):
     )
 
 
-def patch_persistent_workers(config: Config):
+def patch_persistent_workers(config: Config) -> None:
     """If num_workers is 0, persistent_workers must be False."""
     data_cfg = config.data
     for subset in ["train", "val", "test", "unlabeled"]:
@@ -618,7 +527,7 @@ def get_adaptive_num_workers() -> Union[int, None]:
     return min(multiprocessing.cpu_count() // num_gpus, 8)  # max available num_workers is 8
 
 
-def patch_from_hyperparams(config: Config, hyperparams):
+def patch_from_hyperparams(config: Config, hyperparams: Union[Config, ConfigDict]) -> None:
     """Patch config parameters from hyperparams."""
     params = hyperparams.learning_parameters
     warmup_iters = int(params.learning_rate_warmup_iters)
@@ -661,23 +570,6 @@ def patch_from_hyperparams(config: Config, hyperparams):
     config.merge_from_dict(hparams)
 
 
-def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
-    """Align data_cfg with recipe_cfg."""
-    # we assumed config has 'otx_dataset' and 'labels' key in it
-    # by 'patch_datasets' function
-
-    data_config = data_config.data
-    config = config.data
-    for subset in data_config.keys():
-        subset_config = data_config.get(subset, {})
-        for key in list(subset_config.keys()):
-            found_config = get_configs_by_keys(config.get(subset), key, return_path=True)
-            assert len(found_config) == 1
-            value = subset_config.pop(key)
-            path = list(found_config.keys())[0]
-            update_config(subset_config, {path: value})
-
-
 DEFAULT_META_KEYS = (
     "filename",
     "ori_filename",
@@ -691,34 +583,13 @@ DEFAULT_META_KEYS = (
 )
 
 
-def get_meta_keys(pipeline_step, add_meta_keys: List[str] = []):
+def get_meta_keys(pipeline_step: dict, add_meta_keys: List[str] = []) -> dict:
     """Update meta_keys for ignore_labels."""
     meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
     meta_keys.append("ignored_labels")
     meta_keys += add_meta_keys
     pipeline_step["meta_keys"] = set(meta_keys)
     return pipeline_step
-
-
-def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
-    """Prepare configs of working directory."""
-    base_work_dir = config.work_dir
-    checkpoint_dirs = glob.glob(os.path.join(base_work_dir, "checkpoints_round_*"))
-    train_round_checkpoint_dir = os.path.join(base_work_dir, f"checkpoints_round_{len(checkpoint_dirs)}")
-    os.makedirs(train_round_checkpoint_dir)
-    config.work_dir = train_round_checkpoint_dir
-    if "meta" not in config.runner:
-        config.runner.meta = ConfigDict()
-    config.runner.meta.exp_name = f"train_round_{len(checkpoint_dirs)}"
-    return train_round_checkpoint_dir
-
-
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
 
 
 WARN_MSG = (

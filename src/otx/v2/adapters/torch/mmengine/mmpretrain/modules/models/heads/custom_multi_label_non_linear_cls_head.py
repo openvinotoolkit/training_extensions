@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from mmcv.cnn import build_activation_layer
@@ -82,18 +82,23 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
                 constant_init(module, 1)
 
     def loss(
-        self, cls_score: torch.Tensor, gt_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None
+        self,
+        logits: torch.Tensor,
+        gt_label: torch.Tensor,
+        valid_label_mask: Optional[torch.Tensor] = None,
+        features: Optional[tuple] = None,
+        **kwargs,
     ) -> dict:
         """Calculate loss for given cls_score/gt_label."""
-        gt_label = gt_label.type_as(cls_score)
-        num_samples = len(cls_score)
+        gt_label = gt_label.type_as(logits)
+        num_samples = len(logits)
         losses = dict()
 
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)
         # compute loss
         loss = self.loss_module(
-            cls_score,
+            logits,
             _gt_label,
             valid_label_mask=valid_label_mask,
             avg_factor=num_samples,
@@ -101,7 +106,7 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         losses["loss"] = loss / self.scale
         return losses
 
-    def forward(self, x: torch.Tensor) -> Union[list, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of CustomMultiLabelNonLinearClsHead."""
         return self.simple_test(x)
 

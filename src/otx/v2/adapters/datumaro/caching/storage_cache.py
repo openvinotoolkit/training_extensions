@@ -46,14 +46,14 @@ def arrow_cache_helper(
             if os.path.isdir(source_path):
                 for root, dirs, files in os.walk(source_path):
                     for file in files:
-                        file = os.path.join(root, file)
-                        _hash.update(str(os.stat(file)[stat.ST_MTIME]).encode("utf-8"))
+                        _file = os.path.join(root, file)
+                        _hash.update(str(os.stat(_file)[stat.ST_MTIME]).encode("utf-8"))
                     for _dir in dirs:
                         _dir = os.path.join(root, _dir)
                         _hash.update(str(os.stat(_dir)[stat.ST_MTIME]).encode("utf-8"))
         return _hash.hexdigest()
 
-    def get_file_hash(file: Union[str, Path]):
+    def get_file_hash(file: Union[str, Path]) -> str:
         _hash = hashlib.sha256()
         _hash.update(str(file).encode("utf-8"))
         _hash.update(str(os.stat(file)[stat.ST_MTIME]).encode("utf-8"))
@@ -70,12 +70,12 @@ def arrow_cache_helper(
         if not cache_path.endswith(".arrow"):
             continue
         cache_hit.append(False)
-        cache_path = os.path.join(cache_dir, cache_path)
-        cache_paths.append(cache_path)
-        hash_path = f"{cache_path}.hash"
-        if os.path.exists(cache_path) and os.path.exists(hash_path):
+        _cache_path = os.path.join(cache_dir, cache_path)
+        cache_paths.append(_cache_path)
+        hash_path = f"{_cache_path}.hash"
+        if os.path.exists(_cache_path) and os.path.exists(hash_path):
             with open(hash_path, encoding="utf-8") as f:
-                if get_file_hash(cache_path) == f.read():
+                if get_file_hash(_cache_path) == f.read():
                     cache_hit[-1] = True
 
     if cache_hit and all(cache_hit):
@@ -94,11 +94,11 @@ def arrow_cache_helper(
     for cache_path in os.listdir(cache_dir):
         if not cache_path.endswith(".arrow"):
             continue
-        cache_path = os.path.join(cache_dir, cache_path)
-        cache_paths.append(cache_path)
-        hash_path = f"{cache_path}.hash"
+        _cache_path = os.path.join(cache_dir, cache_path)
+        cache_paths.append(_cache_path)
+        hash_path = f"{_cache_path}.hash"
         with open(hash_path, "w", encoding="utf-8") as f:
-            f.write(get_file_hash(cache_path))
+            f.write(get_file_hash(_cache_path))
 
     return cache_paths
 

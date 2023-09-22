@@ -48,7 +48,7 @@ class MMOVModel(OVModel, ParserMixin):
             **kwargs,
         )
 
-    def forward(self, inputs, gt_label=None):
+    def forward(self, inputs: Union[torch.Tensor, tuple], gt_label: Optional[torch.Tensor] = None) -> tuple:
         """Function forward."""
         if isinstance(inputs, torch.Tensor):
             inputs = (inputs,)

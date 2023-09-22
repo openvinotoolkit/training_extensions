@@ -4,13 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
-from typing import Callable, List
+from typing import List
 
+import torch
 from torch.nn import functional
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.movements import get_torch_padding
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from .builder import OPS
+from .movements import get_torch_padding
+from .op import Attribute, Operation
 
 # pylint: disable=too-many-instance-attributes
 
@@ -29,7 +30,7 @@ class MaxPoolV0Attribute(Attribute):
     index_element_type: str = field(default="i64")
     axis: int = field(default=0)
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """MaxPoolV0Attribute's post-init functions."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
@@ -61,8 +62,9 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
     TYPE = "MaxPool"
     VERSION = 0
     ATTRIBUTE_FACTORY = MaxPoolV0Attribute
+    attrs: MaxPoolV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """MaxPoolV0's forward function."""
         if inputs.dim() == 3:
             func = functional.max_pool1d
@@ -81,7 +83,7 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
             self.attrs.kernel,
             self.attrs.strides,
         )
-        if isinstance(padding, Callable):
+        if isinstance(padding, functional.pad):
             inputs = padding(input=inputs)
             padding = 0
 
@@ -108,7 +110,7 @@ class AvgPoolV1Attribute(Attribute):
     rounding_type: str = field(default="floor")
     auto_pad: str = field(default="explicit")
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """AvgPoolV1Attribute's post-init function."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
@@ -128,13 +130,14 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
     TYPE = "AvgPool"
     VERSION = 1
     ATTRIBUTE_FACTORY = AvgPoolV1Attribute
+    attrs: AvgPoolV1Attribute
 
     def __init__(self, *args, **kwargs) -> None:
         if "exclude-pad" in kwargs:
             kwargs["exclude_pad"] = kwargs.pop("exclude-pad")
         super().__init__(*args, **kwargs)
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """AvgPoolV1's forward function."""
         if inputs.dim() == 3:
             func = functional.avg_pool1d
@@ -153,7 +156,7 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
             self.attrs.kernel,
             self.attrs.strides,
         )
-        if isinstance(padding, Callable):
+        if isinstance(padding, functional.pad):
             inputs = padding(input=inputs)
             padding = 0
 

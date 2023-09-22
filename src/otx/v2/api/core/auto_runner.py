@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Optional, Union
 
 import yaml
 
@@ -107,7 +107,7 @@ class AutoRunner:
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         data_format: Optional[str] = None,
-        config: Optional[Union[Dict, str]] = None,
+        config: Optional[Union[dict, str]] = None,
     ) -> None:
         r"""AutoRunner, which is responsible for OTX's automated training APIs.
 
@@ -141,7 +141,7 @@ class AutoRunner:
         self.work_dir = work_dir
 
         self.cache = {"model": None, "checkpoint": None}
-        self.subset_dls: Dict[str, Any] = {}
+        self.subset_dls: dict = {}
 
         self.config = set_dataset_paths(
             self.config,
@@ -196,7 +196,7 @@ class AutoRunner:
             config["model"] = {}
         return config
 
-    def _configure_model(self, model: Optional[Union[str, dict, object]]) -> object:
+    def _configure_model(self, model: Optional[Union[str, dict, list, object]]):  # noqa: ANN202
         # Configure Model if model is None
         if model is None:
             if self.cache.get("model") is not None:
@@ -249,7 +249,7 @@ class AutoRunner:
         """Create the selected framework Engine."""
         self.engine = self.framework_engine(work_dir=self.work_dir, config=self.config)
 
-    def subset_dataloader(
+    def subset_dataloader(  # noqa: ANN201
         self,
         subset: str,
         pipeline: Optional[Union[dict, list]] = None,
@@ -257,7 +257,7 @@ class AutoRunner:
         num_workers: Optional[int] = None,
         distributed: bool = False,
         **kwargs,
-    ) -> object:
+    ):
         subset_dl = self.dataset.subset_dataloader(subset, pipeline, batch_size, num_workers, distributed, **kwargs)
         self.subset_dls[subset] = subset_dl
         return subset_dl
@@ -406,9 +406,9 @@ class AutoRunner:
         img: Optional[Union[str, Path, object]],
         model: Optional[Union[str, dict, list, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[List[Dict]] = None,
+        pipeline: Optional[list] = None,
         **kwargs,
-    ) -> List[Dict]:
+    ) -> list:
         model = self._configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")

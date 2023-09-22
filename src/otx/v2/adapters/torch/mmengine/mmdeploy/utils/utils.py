@@ -4,12 +4,13 @@
 #
 
 from collections.abc import MutableMapping
+from typing import Union
 
 import numpy as np
 import torch
 
 
-def sync_batchnorm_2_batchnorm(module: torch.nn.Module, dim=2) -> torch.nn.Module:
+def sync_batchnorm_2_batchnorm(module: torch.nn.Module, dim: int = 2) -> torch.nn.Module:
     """Syncs the BatchNorm layers in a model to use regular BatchNorm layers."""
     if dim == 1:
         bn = torch.nn.BatchNorm1d
@@ -49,7 +50,7 @@ def sync_batchnorm_2_batchnorm(module: torch.nn.Module, dim=2) -> torch.nn.Modul
     return module_output
 
 
-def numpy_2_list(data):
+def numpy_2_list(data: Union[np.ndarray, MutableMapping, list, tuple]) -> Union[MutableMapping, list, tuple]:
     """Converts NumPy arrays to Python lists."""
 
     if isinstance(data, np.ndarray):

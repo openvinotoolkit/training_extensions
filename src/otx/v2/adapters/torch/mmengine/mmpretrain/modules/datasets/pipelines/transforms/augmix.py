@@ -6,11 +6,11 @@
 import random
 import re
 from copy import deepcopy
+from typing import Optional
 
 import numpy as np
 from mmengine.config import ConfigDict
 from mmpretrain.datasets.transforms import TRANSFORMS
-from typing import Optional
 from PIL import Image
 
 from otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.augments import (
@@ -44,7 +44,7 @@ _AUGMIX_TRANSFORMS = [
 class OpsFabric:
     """OpsFabric class."""
 
-    def __init__(self, name, magnitude, hparams, prob=1.0) -> None:
+    def __init__(self, name: str, magnitude: int, hparams: dict, prob: float = 1.0) -> None:
         self.max_level = 10
         self.prob = prob
         self.hparams = hparams
@@ -88,57 +88,57 @@ class OpsFabric:
         )
 
     @staticmethod
-    def randomly_negate(value):
+    def randomly_negate(value: float) -> float:
         """With 50% prob, negate the value."""
         # disable B311 random - used for the random sampling not for security/crypto
         return -value if random.random() > 0.5 else value  # nosec B311
 
-    def _rotate_level_to_arg(self, level, _hparams):
+    def _rotate_level_to_arg(self, level: float, _hparams: dict) -> tuple:
         # range [-30, 30]
         level = (level / self.max_level) * 30.0
         level = self.randomly_negate(level)
         return (level,)
 
-    def _enhance_increasing_level_to_arg(self, level, _hparams):
+    def _enhance_increasing_level_to_arg(self, level: float, _hparams: dict) -> tuple:
         # range [0.1, 1.9]
         level = (level / self.max_level) * 0.9
         level = 1.0 + self.randomly_negate(level)
         return (level,)
 
-    def _shear_level_to_arg(self, level, _hparams):
+    def _shear_level_to_arg(self, level: float, _hparams: dict) -> tuple:
         # range [-0.3, 0.3]
         level = (level / self.max_level) * 0.3
         level = self.randomly_negate(level)
         return (level,)
 
-    def _translate_rel_level_to_arg(self, level, hparams):
+    def _translate_rel_level_to_arg(self, level: float, hparams: dict) -> tuple:
         # default range [-0.45, 0.45]
         translate_pct = hparams.get("translate_pct", 0.45)
         level = (level / self.max_level) * translate_pct
         level = self.randomly_negate(level)
         return (level,)
 
-    def _posterize_level_to_arg(self, level, _hparams):
+    def _posterize_level_to_arg(self, level: float, _hparams: dict) -> tuple:
         # range [0, 4], 'keep 0 up to 4 MSB of original image'
         # intensity/severity of augmentation decreases with level
         return (int((level / self.max_level) * 4),)
 
-    def _posterize_increasing_level_to_arg(self, level, hparams):
+    def _posterize_increasing_level_to_arg(self, level: float, hparams: dict) -> tuple:
         # range [4, 0], 'keep 4 down to 0 MSB of original image',
         # intensity/severity of augmentation increases with level
         return (4 - self._posterize_level_to_arg(level, hparams)[0],)
 
-    def _solarize_level_to_arg(self, level, _hparams):
+    def _solarize_level_to_arg(self, level: float, _hparams: dict) -> tuple:
         # range [0, 256]
         # intensity/severity of augmentation decreases with level
         return (int((level / self.max_level) * 256),)
 
-    def _solarize_increasing_level_to_arg(self, level, _hparams):
+    def _solarize_increasing_level_to_arg(self, level: float, _hparams: dict) -> tuple:
         # range [0, 256]
         # intensity/severity of augmentation increases with level
         return (256 - self._solarize_level_to_arg(level, _hparams)[0],)
 
-    def __call__(self, img):
+    def __call__(self, img: np.ndarray) -> np.ndarray:
         """Call method of OpsFabric class."""
         # disable B311 random - used for the random sampling not for security/crypto
         if self.prob < 1.0 and random.random() > self.prob:  # nosec B311
@@ -166,10 +166,10 @@ class AugMixAugment:
     https://arxiv.org/abs/1912.02781.
     """
 
-    def __init__(self, config_str, image_mean=None, grey=False) -> None:
+    def __init__(self, config_str: str, image_mean: Optional[list] = None, grey: bool = False) -> None:
         self.ops, self.alpha, self.width, self.depth = self._augmix_ops(config_str, image_mean, grey=grey)
 
-    def _apply_basic(self, img, mixing_weights, m):  # pylint: disable=invalid-name
+    def _apply_basic(self, img: np.ndarray, mixing_weights: list, m: float) -> np.ndarray:
         # This is a literal adaptation of the paper/official implementation without normalizations and
         # PIL <-> Numpy conversions between every op. It is still quite CPU compute heavy compared to the
         # typical augmentation transforms, could use a GPU / Kornia implementation.
@@ -178,7 +178,7 @@ class AugMixAugment:
             depth = self.depth if self.depth > 0 else np.random.randint(1, 4)
             ops = np.random.choice(self.ops, depth, replace=True)
             img_aug = deepcopy(img)
-            for op in ops:  # pylint: disable=invalid-name
+            for op in ops:
                 img_aug = op(img_aug)
             CythonAugments.blend(img_aug, mixed, mix_weight * m)
         np.clip(mixed, 0, 255.0, out=mixed)
@@ -225,7 +225,7 @@ class AugMixAugment:
             aug_params.depth,
         )
 
-    def __call__(self, results):
+    def __call__(self, results: dict) -> dict:
         """Call function applies augmix on image."""
         for key in results.get("img_fields", ["img"]):
             img = results[key]

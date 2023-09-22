@@ -79,7 +79,7 @@ class DatasetManager:
         return None
 
     @staticmethod
-    def export_dataset(dataset: Dataset, output_dir: str, data_format: str, save_media=True):
+    def export_dataset(dataset: Dataset, output_dir: str, data_format: str, save_media: bool = True) -> None:
         """Export the Datumaro Dataset."""
         return dataset.export(output_dir, data_format, save_media=save_media)
 

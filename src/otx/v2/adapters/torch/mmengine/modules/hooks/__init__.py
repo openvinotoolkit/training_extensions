@@ -29,9 +29,6 @@ from .early_stopping_hook import (
     ReduceLROnPlateauLrUpdaterHook,
     StopLossNanTrainingHook,
 )
-
-# TODO: MMEngine - the model evaluation function of EvalHook is delegated to ValLoop or TestLoop.
-# from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .ib_loss_hook import IBLossHook
 from .logger_hook import LoggerReplaceHook, OTXLoggerHook
@@ -46,13 +43,8 @@ from .recording_forward_hook import (
     EigenCamHook,
     FeatureVectorHook,
 )
-
-# TODO: MMEngine - Unify the backpropagation and gradient update operations into OptimWrapper rather than hooks.
-# from .sam_optimizer_hook import SAMOptimizerHook
-# from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
 from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
-from .two_crop_transform_hook import TwoCropTransformHook
 from .unbiased_teacher_hook import UnbiasedTeacherHook
 
 __all__ = [
@@ -62,13 +54,10 @@ __all__ = [
     "CheckpointHookWithValResults",
     "EnsureCorrectBestCheckpointHook",
     "ComposedDataLoadersHook",
-    # "CustomEvalHook",
-    # "DistCustomEvalHook",
     "LazyEarlyStoppingHook",
     "ReduceLROnPlateauLrUpdaterHook",
     "EMAMomentumUpdateHook",
     "ForceTrainModeHook",
-    # "Fp16SAMOptimizerHook",
     "StopLossNanTrainingHook",
     "IBLossHook",
     "OTXLoggerHook",
@@ -82,11 +71,9 @@ __all__ = [
     "EigenCamHook",
     "ActivationMapHook",
     "FeatureVectorHook",
-    # "SAMOptimizerHook",
     "SaveInitialWeightHook",
     "SemiSLClsHook",
     "TaskAdaptHook",
-    "TwoCropTransformHook",
     "UnbiasedTeacherHook",
     "MemCacheHook",
     "LossDynamicsTrackingHook",

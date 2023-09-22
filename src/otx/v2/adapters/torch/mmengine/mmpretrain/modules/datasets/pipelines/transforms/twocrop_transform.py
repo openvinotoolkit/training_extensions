@@ -15,11 +15,12 @@ from mmpretrain.datasets.transforms.formatting import to_tensor
 class TwoCropTransform:
     """Generate two different cropped views of an image."""
 
-    def __init__(self, pipeline) -> None:
+    def __init__(self, pipeline: list) -> None:
+        self.is_both: bool
         self.pipeline1 = Compose([build_from_cfg(p, TRANSFORMS) for p in pipeline])
         self.pipeline2 = Compose([build_from_cfg(p, TRANSFORMS) for p in pipeline])
 
-    def __call__(self, data):
+    def __call__(self, data: dict) -> dict:
         """Call method for TwoCropTransform class."""
         data1 = self.pipeline1(deepcopy(data))
         data2 = self.pipeline2(deepcopy(data))

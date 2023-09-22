@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict, Optional
+from typing import Callable, Optional, Union
 
 
 class Registry:
@@ -13,44 +13,44 @@ class Registry:
 
     def __init__(self, name: str, add_name_as_attr: bool = False) -> None:
         self._name = name
-        self._registry_dict: Dict[str, Any] = {}
+        self._registry_dict: dict = {}
         self._add_name_as_attr = add_name_as_attr
 
     @property
-    def registry_dict(self) -> Dict[Any, Any]:
+    def registry_dict(self) -> dict:
         """Dictionary of registered module."""
         return self._registry_dict
 
-    def _register(self, obj: Any, name: Any):
+    def _register(self, obj: object, name: str, types: Optional[str] = None, version: Optional[int] = None) -> None:
         """Register obj with name."""
         if name in self._registry_dict:
             raise KeyError(f"{name} is already registered in {self._name}")
         self._registry_dict[name] = obj
 
-    def register(self, name: Optional[Any] = None):
+    def register(self, name: Optional[str] = None) -> Callable:
         """Register from name."""
 
-        def wrap(obj):
+        def wrap(obj, **kwargs) -> object:  # noqa: ANN001
             cls_name = name
             if cls_name is None:
                 cls_name = obj.__name__
             if self._add_name_as_attr:
                 setattr(obj, self.REGISTERED_NAME_ATTR, cls_name)
-            self._register(obj, cls_name)
+            self._register(obj, cls_name, **kwargs)
             return obj
 
         return wrap
 
-    def get(self, key: Any) -> Any:
+    def get(self, key: str) -> Union[str, object]:
         """Get from module name (key)."""
         if key not in self._registry_dict:
             self._key_not_found(key)
         return self._registry_dict[key]
 
-    def _key_not_found(self, key: Any):
+    def _key_not_found(self, key: str) -> KeyError:
         """Raise KeyError when key not founded."""
         raise KeyError(f"{key} is not found in {self._name}")
 
-    def __contains__(self, item) -> bool:
+    def __contains__(self, item: Union[str, object]) -> bool:
         """Check containing of item."""
         return item in self._registry_dict.values()

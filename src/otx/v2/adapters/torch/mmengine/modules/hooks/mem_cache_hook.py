@@ -5,6 +5,7 @@
 
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 
 from otx.v2.adapters.datumaro.caching.mem_cache_handler import MemCacheHandlerSingleton
 
@@ -19,12 +20,12 @@ class MemCacheHook(Hook):
         # We don't want to cache validation samples first.
         self.handler.freeze()
 
-    def before_epoch(self, runner):
+    def before_epoch(self, runner: Runner) -> None:
         """Before training, unfreeze the handler."""
         # We want to cache training samples first.
         self.handler.unfreeze()
 
-    def after_epoch(self, runner):
+    def after_epoch(self, runner: Runner) -> None:
         """After epoch. Log the handler statistics.
 
         To prevent it from skipping the validation samples,

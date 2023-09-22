@@ -3,15 +3,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, List
+from typing import List, Optional
 
 import torch
 
-from otx.v2.adapters.openvino.graph import Graph
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.infrastructures import ConstantV0
-from otx.v2.adapters.openvino.ops.op import Operation
 from otx.v2.api.utils.logger import get_logger
+
+from ..graph import Graph
+from ..ops.builder import OPS
+from ..ops.infrastructures import ConstantV0
+from ..ops.op import Operation
 
 # pylint: disable=too-many-locals, protected-access, too-many-branches, too-many-statements, too-many-nested-blocks
 logger = get_logger()
@@ -26,7 +27,9 @@ def get_constant_input_nodes(graph: Graph, node: Operation) -> List[Operation]:
     return found
 
 
-def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None):  # noqa: C901
+def handle_merging_into_batchnorm(
+    graph: Graph, type_patterns: Optional[list] = None, type_mappings: Optional[list] = None
+) -> None:  # noqa: C901
     """Merge function graph into batchnorm."""
     type_patterns = type_patterns if type_patterns else [["Multiply", "Add"]]
     type_mappings = type_mappings if type_mappings else [{"gamma": 0, "beta": 1}]
@@ -63,8 +66,8 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
         shapes = []
         constants = []
         is_valid = True
-        for node in nodes:
-            constant = get_constant_input_nodes(graph, node)
+        for _node in nodes:
+            constant = get_constant_input_nodes(graph, _node)
             if len(constant) != 1:
                 is_valid = False
                 break
@@ -73,7 +76,8 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
             constants.append(constant)
         if not is_valid:
             logger.info(
-                f"Skip merging {[i.name for i in nodes]} " f"becuase it has more than one weights for node {node.name}."
+                f"Skip merging {[i.name for i in nodes]} "
+                f"becuase it has more than one weights for node {_node.name}."
             )
             continue
 
@@ -83,7 +87,9 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
             )
             continue
 
-        if len(set(shapes[0][2:])) != 1 or shapes[0][2] != 1:
+        if shapes[0] is None:
+            return
+        if len(shapes[0]) >= 3 and len(set(shapes[0][2:])) != 1 or shapes[0][2] != 1:
             logger.info(f"Skip merging {[i.name for i in nodes]} " f"becuase shape of weights are not 1. ({shapes})")
             continue
 
@@ -147,8 +153,8 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
             assert len(edges_attrs) == 1
             for edge_attrs in edges_attrs:
                 edges.append({"node_from": batchnorm, "node_to": successor, **edge_attrs})
-        for node in nodes:
-            graph.remove_node(node)
+        for _node in nodes:
+            graph.remove_node(_node)
         for edge in edges:
             graph.add_edge(**edge)
         graph.add_edge(gamma, batchnorm)
@@ -157,7 +163,9 @@ def handle_merging_into_batchnorm(graph, type_patterns=None, type_mappings=None)
         graph.add_edge(running_variance, batchnorm)
 
 
-def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["Convolution", "GroupConvolution"]):
+def handle_paired_batchnorm(
+    graph: Graph, replace: bool = False, types: List[str] = ["Convolution", "GroupConvolution"]
+) -> None:
     """Handle function paired batchnorm."""
     batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
     constant_cls = OPS.get_by_type_version("Constant", 0)
@@ -177,7 +185,7 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["C
             )
             continue
 
-        bias_node_list: List[Any] = [n for n in graph.successors(node) if n.type == "Add"]
+        bias_node_list: list = [n for n in graph.successors(node) if n.type == "Add"]
         if len(bias_node_list) == 1:
             bias_node = bias_node_list[0]
         else:
@@ -273,7 +281,7 @@ def handle_paired_batchnorm(graph, replace: bool = False, types: List[str] = ["C
         graph.add_edge(running_variance, batchnorm)
 
 
-def handle_reshape(graph):
+def handle_reshape(graph: Graph) -> None:
     """Reshape function."""
     for result in graph.get_nodes_by_types(["Result"]):
         for node in graph.predecessors(result):

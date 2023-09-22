@@ -4,8 +4,9 @@
 #
 
 
-import torch
 from typing import Union
+
+import torch
 
 
 class OTXHeadMixin:

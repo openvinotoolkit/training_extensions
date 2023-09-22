@@ -6,7 +6,6 @@
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, unused-argument, too-many-arguments
 
-from otx.v2.api.core.dataset import BaseDatasetAdapter
 import os
 from abc import abstractmethod
 from copy import deepcopy
@@ -25,6 +24,7 @@ from datumaro.components.dataset import eager_mode
 from datumaro.components.media import Image as DatumImage
 from datumaro.components.media import MediaElement as DatumMediaElement
 
+from otx.v2.api.core.dataset import BaseDatasetAdapter
 from otx.v2.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -177,7 +177,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
 
     def _import_dataset(
         self, data_roots: Optional[str], ann_files: Optional[str], encryption_key: Optional[str], mode: Subset
-    ):
+    ) -> DatumDataset:
         # Find self.data_type and task_type
         mode_to_str = {Subset.TRAINING: "train", Subset.VALIDATION: "val", Subset.TESTING: "test"}
         str_mode = mode_to_str[mode]
@@ -220,16 +220,17 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             subsets = list(dataset.subsets().keys())
 
             for s in [subset, "default"]:
-                if subset == "val" and s != "default":
-                    s = "valid"
-                exact_subset = get_close_matches(s, subsets, cutoff=0.5)
+                _s = s
+                if subset == "val" and _s != "default":
+                    _s = "valid"
+                exact_subset = get_close_matches(_s, subsets, cutoff=0.5)
 
                 if exact_subset:
                     return dataset.subsets()[exact_subset[0]].as_dataset()
                 elif subset == "test":
                     # If there is not test dataset in data.yml, then validation set will be test dataset
-                    s = "valid"
-                    exact_subset = get_close_matches(s, subsets, cutoff=0.5)
+                    _s = "valid"
+                    exact_subset = get_close_matches(_s, subsets, cutoff=0.5)
                     if exact_subset:
                         return dataset.subsets()[exact_subset[0]].as_dataset()
 
@@ -366,7 +367,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             mask, labels=[ScoredLabel(label=self.label_entities[annotation.label])]  # type: ignore[arg-type]
         )
 
-    def remove_unused_label_entities(self, used_labels: List):
+    def remove_unused_label_entities(self, used_labels: list) -> None:
         """Remove unused label from label entities.
 
         Because label entities will be used to make Label Schema,
@@ -381,7 +382,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             clean_label_entities.append(self.label_entities[used_label])
         self.label_entities = clean_label_entities
 
-    def _filter_unlabeled_data(self, unlabeled_dataset: DatumDataset, unlabeled_file_list: str):
+    def _filter_unlabeled_data(self, unlabeled_dataset: DatumDataset, unlabeled_file_list: str) -> None:
         """Filter out unlabeled dataset which isn't included in unlabeled file list."""
         allowed_extensions = ["jpg", "png", "jpeg"]
         file_list = []
@@ -408,7 +409,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             if path and os.path.exists(path) and not datumaro_media.is_encrypted:
                 return Image(file_path=path, size=size)
 
-            def helper():
+            def helper() -> cv2.typing.MatLike:
                 data = datumaro_media.data  # pylint: disable=protected-access
                 # OTX expects unint8 data type
                 data = data.astype(np.uint8)

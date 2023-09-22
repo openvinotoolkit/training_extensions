@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 
 import torch
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from .builder import OPS
+from .op import Attribute, Operation
 
 
 @dataclass
@@ -26,8 +26,9 @@ class MatMulV0(Operation[MatMulV0Attribute]):
     TYPE = "MatMul"
     VERSION = 0
     ATTRIBUTE_FACTORY = MatMulV0Attribute
+    attrs: MatMulV0Attribute
 
-    def forward(self, input_a, input_b):
+    def forward(self, input_a: torch.Tensor, input_b: torch.Tensor) -> torch.Tensor:
         """MatMulV0's forward function."""
         if self.attrs.transpose_a:
             input_a = torch.transpose(input_a, -1, -2)
@@ -50,7 +51,8 @@ class EinsumV7(Operation[EinsumV7Attribute]):
     TYPE = "Einsum"
     VERSION = 7
     ATTRIBUTE_FACTORY = EinsumV7Attribute
+    attrs: EinsumV7Attribute
 
-    def forward(self, *inputs):
+    def forward(self, *inputs) -> torch.Tensor:
         """EinsumV7's forward function."""
         return torch.einsum(self.attrs.equation, *inputs)

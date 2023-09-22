@@ -5,7 +5,7 @@
 
 from typing import List, Optional
 
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from otx.v2.api.utils.logger import get_logger
 
@@ -15,12 +15,12 @@ logger = get_logger()
 class CDLIterator:
     """Iterator for aligning the number of batches as many as samples in the first iterator."""
 
-    def __init__(self, cdl) -> None:
+    def __init__(self, cdl: "ComposedDL") -> None:
         self._cdl = cdl
         self._index = 0
         self._cdl_iter = [iter(dl) for dl in self._cdl.loaders]
 
-    def __next__(self):
+    def __next__(self) -> dict:
         """Generate the next batch."""
         if self._index < self._cdl.max_iter:
             batches = {}
@@ -44,10 +44,10 @@ class ComposedDL:
     class DummySampler:
         """Dummy sampler class to relay set_epoch() call to the list of data loaders in the CDL."""
 
-        def __init__(self, cdl) -> None:
+        def __init__(self, cdl: "ComposedDL") -> None:
             self.cdl = cdl
 
-        def set_epoch(self, epoch):
+        def set_epoch(self, epoch: int) -> None:
             """Set epoch."""
             loaders = self.cdl.loaders
             for loader in loaders:
@@ -65,16 +65,16 @@ class ComposedDL:
         """Return length of the first loader."""
         return self.max_iter
 
-    def __iter__(self):
+    def __iter__(self) -> CDLIterator:
         """Iter."""
         return CDLIterator(self)
 
     @property
-    def sampler(self):
+    def sampler(self) -> DummySampler:
         """Return sampler."""
         return self._sampler
 
     @property
-    def dataset(self):
+    def dataset(self) -> Dataset:
         # FIXME: Workarounds
         return self.loaders[0].dataset

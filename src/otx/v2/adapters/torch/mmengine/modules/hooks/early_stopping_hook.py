@@ -35,7 +35,7 @@ class LazyEarlyStoppingHook(EarlyStoppingHook):
         self.start = start
         super().__init__(interval, metric, rule, patience, iteration_patience, min_delta)
 
-    def _should_check_stopping(self, runner):
+    def _should_check_stopping(self, runner: Runner) -> bool:
         if self.by_epoch:
             current = runner.epoch
             check_time = self.every_n_epochs
@@ -161,7 +161,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
         """Check whether current iter is a next iter after multiples of interval."""
         return runner.iter % interval == 0 if interval > 0 and runner.iter != 0 else False
 
-    def get_lr(self, runner: Runner, base_lr: float):
+    def get_lr(self, runner: Runner, base_lr: float) -> float:
         """Called get_lr in ReduceLROnPlateauLrUpdaterHook."""
         if self.current_lr < 0:
             self.current_lr = base_lr
@@ -206,7 +206,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
             self.current_lr = max(self.current_lr * self.factor, self.min_lr)
         return self.current_lr
 
-    def before_run(self, runner: Runner):
+    def before_run(self, runner: Runner) -> None:
         """Called before_run in ReduceLROnPlateauLrUpdaterHook."""
         # TODO: remove overloaded method after fixing the issue
         #  https://github.com/open-mmlab/mmdetection/issues/6572
@@ -223,7 +223,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
 class StopLossNanTrainingHook(Hook):
     """StopLossNanTrainingHook."""
 
-    def after_train_iter(self, runner: Runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Called after_train_iter in StopLossNanTrainingHook."""
         if isnan(runner.outputs["loss"].item()):
             logger.warning("Early Stopping since loss is NaN")

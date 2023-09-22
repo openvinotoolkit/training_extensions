@@ -7,7 +7,7 @@ This MLP consists of fc (conv) - norm - relu - fc (conv).
 # SPDX-License-Identifier: Apache-2.0
 #
 # pylint: disable=missing-module-docstring
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
 
 import torch
 from mmcv.cnn import build_norm_layer
@@ -62,7 +62,7 @@ class SelfSLMLP(nn.Module):
                 nn.Linear(hid_channels, out_channels),
             )
 
-    def init_weights(self, init_linear: str = "normal", std: float = 0.01, bias: float = 0.0):
+    def init_weights(self, init_linear: str = "normal", std: float = 0.01, bias: float = 0.0) -> None:
         """Initialize SelfSLMLP weights.
 
         Args:
@@ -84,7 +84,7 @@ class SelfSLMLP(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
-    def forward(self, x: Union[torch.Tensor, Tuple, List]):
+    def forward(self, x: Union[torch.Tensor, tuple, list]) -> torch.Tensor:
         """Forward SelfSLMLP.
 
         Args:

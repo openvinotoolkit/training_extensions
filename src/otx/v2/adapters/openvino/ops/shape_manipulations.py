@@ -4,12 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
+from typing import Optional
 
 import torch
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
-from otx.v2.adapters.openvino.ops.type_conversions import ConvertV0
+from .builder import OPS
+from .op import Attribute, Operation
+from .type_conversions import ConvertV0
 
 
 @dataclass
@@ -27,7 +28,7 @@ class SqueezeV0(Operation[SqueezeV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = SqueezeV0Attribute
 
-    def forward(self, inputs, dims=None):
+    def forward(self, inputs: torch.Tensor, dims: Optional[torch.Tensor] = None) -> torch.Tensor:
         """SqueezeV0's forward function."""
         if dims is None:
             return torch.squeeze(inputs)
@@ -63,7 +64,7 @@ class UnsqueezeV0(Operation[UnsqueezeV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = UnsqueezeV0Attribute
 
-    def forward(self, inputs, dims):
+    def forward(self, inputs: torch.Tensor, dims: torch.Tensor) -> torch.Tensor:
         """UnsqueezeV0's forward function."""
         if dims.dim() == 0:
             dims = torch.unsqueeze(dims, 0)
@@ -96,8 +97,9 @@ class ReshapeV1(Operation[ReshapeV1Attribute]):
     TYPE = "Reshape"
     VERSION = 1
     ATTRIBUTE_FACTORY = ReshapeV1Attribute
+    attrs: ReshapeV1Attribute
 
-    def forward(self, inputs, shape):
+    def forward(self, inputs: torch.Tensor, shape: torch.Tensor) -> torch.Tensor:
         """ReshapeV1's forward function."""
         target_shape = shape.detach().cpu().tolist()
         origin_shape = list(inputs.shape)
@@ -129,7 +131,7 @@ class ShapeOfV0(Operation[ShapeOfV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = ShapeOfV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ShapeOfV0's forward function."""
         return torch.tensor(inputs.shape, device=inputs.device)
 
@@ -140,7 +142,7 @@ class ShapeOfV3Attribute(Attribute):
 
     output_type: str = field(default="i64")
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """ShapeOfV3Attribute's post-init function."""
         super().__post_init__()
         valid_output_type = ["i64", "i32"]
@@ -155,8 +157,9 @@ class ShapeOfV3(Operation[ShapeOfV3Attribute]):
     TYPE = "ShapeOf"
     VERSION = 3
     ATTRIBUTE_FACTORY = ShapeOfV3Attribute
+    attrs: ShapeOfV3Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ShapeOfV3's forward function."""
         return ConvertV0("temp", shape=self.shape, destination_type=self.attrs.output_type)(
             torch.tensor(inputs.shape, device=inputs.device)

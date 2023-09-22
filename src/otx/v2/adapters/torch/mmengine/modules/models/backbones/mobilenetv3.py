@@ -385,3 +385,44 @@ class OTXMobileNetV3(MobileNetV3):
         elif pretrained is not None:
             load_checkpoint(self, pretrained_urls[self.key])
             logger.info(f"init weight - {pretrained_urls[self.key]}")
+
+
+def get_state_dict_hook(module: nn.Module, state_dict: dict, prefix: str) -> dict:
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        _key = key
+        if not prefix or _key.startswith(prefix):
+            _key = _key.replace(prefix, "", 1)
+            if _key.startswith("backbone"):
+                _key = _key.replace("backbone.", "", 1)
+            elif _key.startswith("head"):
+                _key = _key.replace("head.", "", 1)
+                if "3" in _key:  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
+                    _key = _key.replace("3", "4")
+                    if module.multilabel and not module.is_export:
+                        val = val.t()
+            _key = prefix + _key
+        state_dict[_key] = val
+    return state_dict
+
+
+def load_state_dict_pre_hook(module: nn.Module, state_dict: dict, prefix: str) -> dict:
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        _key = key
+        if not prefix or _key.startswith(prefix):
+            _key = _key.replace(prefix, "", 1)
+            if _key.startswith("classifier."):
+                if "4" in _key:
+                    _key = "head." + _key.replace("4", "3")
+                    if module.multilabel:
+                        val = val.t()
+                else:
+                    _key = "head." + _key
+            elif _key.startswith("act"):
+                _key = "head." + _key
+            elif not _key.startswith("backbone."):
+                _key = "backbone." + _key
+            _key = prefix + _key
+        state_dict[_key] = val
+    return state_dict

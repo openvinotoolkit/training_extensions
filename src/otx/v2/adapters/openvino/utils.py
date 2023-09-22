@@ -38,23 +38,23 @@ def to_dynamic_model(ov_model: Model) -> Model:
         shape = [str(i) for i in input_node.get_partial_shape()]
         for i, (layout_name, shape_) in enumerate(zip(layout, shape)):
             try:
-                shape_ = int(shape_)
+                _shape = int(shape_)
             except ValueError:
-                shape_ = -1
+                _shape = -1
 
             for target_layout_ in target_layout.values():
                 target_layout_name = target_layout_[0]
                 if layout_name == target_layout_name:
                     target_layout_[1] = i
-                    target_layout_[2] = shape_
-                    shape_ = -1
+                    target_layout_[2] = _shape
+                    _shape = -1
                     break
-            shape[i] = shape_
+            shape[i] = _shape
 
         shapes[any_name] = shape
         target_layouts[any_name] = target_layout
 
-    def reshape_model(ov_model, shapes):
+    def reshape_model(ov_model: Model, shapes: dict) -> bool:
         try:
             ov_model.reshape(shapes)
             return True

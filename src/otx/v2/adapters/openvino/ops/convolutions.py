@@ -4,13 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
-from typing import Callable, List
+from typing import List
 
+import torch
 from torch.nn import functional
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.movements import get_torch_padding
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from .builder import OPS
+from .movements import get_torch_padding
+from .op import Attribute, Operation
 
 
 @dataclass
@@ -23,7 +24,7 @@ class ConvolutionV1Attribute(Attribute):
     dilations: List[int]
     auto_pad: str = field(default="explicit")
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """ConvolutionV1Attribute's post-init function."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
@@ -38,8 +39,9 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
     TYPE = "Convolution"
     VERSION = 1
     ATTRIBUTE_FACTORY = ConvolutionV1Attribute
+    attrs: ConvolutionV1Attribute
 
-    def forward(self, inputs, weight):
+    def forward(self, inputs: torch.Tensor, weight: torch.Tensor) -> torch.Tensor:
         """ConvolutionV1's forward function."""
         if weight.dim() == 3:
             func = functional.conv1d
@@ -59,7 +61,7 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
             self.attrs.strides,
             self.attrs.dilations,
         )
-        if isinstance(padding, Callable):
+        if isinstance(padding, functional.pad):
             inputs = padding(input=inputs)
             padding = 0
 
@@ -87,8 +89,9 @@ class GroupConvolutionV1(Operation[GroupConvolutionV1Attribute]):
     TYPE = "GroupConvolution"
     VERSION = 1
     ATTRIBUTE_FACTORY = GroupConvolutionV1Attribute
+    attrs: GroupConvolutionV1Attribute
 
-    def forward(self, inputs, weight):
+    def forward(self, inputs: torch.Tensor, weight: torch.Tensor) -> torch.Tensor:
         """GroupConvolutionV1's forward function."""
         if weight.dim() == 4:
             func = functional.conv1d
@@ -112,7 +115,7 @@ class GroupConvolutionV1(Operation[GroupConvolutionV1Attribute]):
             self.attrs.strides,
             self.attrs.dilations,
         )
-        if isinstance(padding, Callable):
+        if isinstance(padding, functional.pad):
             inputs = padding(input=inputs)
             padding = 0
 

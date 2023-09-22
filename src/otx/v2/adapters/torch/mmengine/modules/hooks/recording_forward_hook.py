@@ -16,7 +16,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Any, Sequence
+from typing import Sequence
 
 import numpy as np
 import torch
@@ -54,7 +54,7 @@ class BaseRecordingForwardHook(ABC):
         self._norm_saliency_maps = normalize
 
     @property
-    def records(self):
+    def records(self) -> list:
         """Return records."""
         return self._records
 
@@ -85,7 +85,7 @@ class BaseRecordingForwardHook(ABC):
 
     def _recording_forward(
         self, _: torch.nn.Module, x: torch.Tensor, output: torch.Tensor
-    ):  # pylint: disable=unused-argument
+    ) -> None:  # pylint: disable=unused-argument
         tensors = self.func(output)
         if isinstance(tensors, torch.Tensor):
             tensors_np = tensors.detach().cpu().numpy()
@@ -98,7 +98,7 @@ class BaseRecordingForwardHook(ABC):
         for tensor in tensors_np:
             self._records.append(tensor)
 
-    def _torch_to_numpy_from_list(self, tensor_list: list[Any]):
+    def _torch_to_numpy_from_list(self, tensor_list: list) -> None:
         for i in range(len(tensor_list)):
             if isinstance(tensor_list[i], list):
                 self._torch_to_numpy_from_list(tensor_list[i])
@@ -110,9 +110,10 @@ class BaseRecordingForwardHook(ABC):
         self._handle = self._module.backbone.register_forward_hook(self._recording_forward)
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, **kwargs) -> None:
         """Exit."""
-        self._handle.remove()
+        if self._handle is not None:
+            self._handle.remove()
 
 
 class EigenCamHook(BaseRecordingForwardHook):

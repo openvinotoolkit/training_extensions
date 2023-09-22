@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Callable, Optional
+
 import torch
 from mmengine.registry import OPTIMIZERS
 from torch.optim.optimizer import Optimizer
@@ -37,15 +39,15 @@ class LARS(Optimizer):
 
     def __init__(
         self,
-        params,
-        lr,
-        momentum=0,
-        dampening=0,
-        weight_decay=0,
-        eta=0.001,
-        nesterov=False,
-        mode=None,
-        exclude_bn_from_weight_decay=False,
+        params: dict,
+        lr: float,
+        momentum: float = 0.0,
+        dampening: float = 0.0,
+        weight_decay: float = 0.0,
+        eta: float = 0.001,
+        nesterov: bool = False,
+        mode: Optional[str] = None,
+        exclude_bn_from_weight_decay: bool = False,
     ) -> None:  # pylint: disable=too-many-arguments, too-many-locals
         if lr < 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
@@ -95,14 +97,14 @@ class LARS(Optimizer):
 
         super().__init__(new_param_groups, defaults)
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: dict) -> None:
         """Set state for parameter groups."""
         super().__setstate__(state)
         for group in self.param_groups:
             group.setdefault("nesterov", False)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, closure: Optional[Callable] = None) -> torch.nn.Module:
         """Performs a single optimization step.
 
         Args:

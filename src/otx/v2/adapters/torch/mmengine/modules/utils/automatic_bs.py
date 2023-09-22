@@ -5,17 +5,19 @@
 
 from copy import deepcopy
 from math import sqrt
-from typing import Callable, Dict, List
+from typing import Any, Callable, List
 
 import numpy as np
+from torch.utils.data import Dataset
 
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.modules.utils import BsSearchAlgo
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 
 
-def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
+def _set_value_at_dict_in_dict(target: dict, key_path: str, value: int) -> None:
     """Set value at dictionary hierarchy structure.
 
     This function is for setting a value at leaf dictionary node in dictionary hierarchy structure.
@@ -37,7 +39,9 @@ def _set_value_at_dict_in_dict(target: Dict, key_path: str, value):
     target[keys[-1]] = value
 
 
-def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool = False, not_increase: bool = True):
+def adapt_batch_size(
+    train_func: Callable, cfg: Config, datasets: List, validate: bool = False, not_increase: bool = True
+) -> None:
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
     This function just setup for single iteration training to reduce time for adapting.
@@ -53,7 +57,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         not_increase (bool) : Whether adapting batch size to larger value than default value or not.
     """
 
-    def train_func_single_iter(batch_size):
+    def train_func_single_iter(batch_size: int) -> None:
         copied_cfg = deepcopy(cfg)
         _set_batch_size(copied_cfg, batch_size)
         _set_max_epoch(copied_cfg, 1)  # setup for training a single iter to reduce time
@@ -110,20 +114,20 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         logger.info("Adapting batch size is done. Batch size isn't changed.")
 
 
-def _get_batch_size(cfg) -> int:
+def _get_batch_size(cfg: Config) -> int:
     if "action" in str(cfg.domain).lower():
         return cfg.data.videos_per_gpu
     return cfg.data.train_dataloader["samples_per_gpu"]
 
 
-def _set_batch_size(cfg, batch_size: int):
+def _set_batch_size(cfg: Config, batch_size: int) -> None:
     if "action" in str(cfg.domain).lower():
         cfg.data.videos_per_gpu = batch_size
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
 
 
-def _set_max_epoch(cfg, max_epoch: int):
+def _set_max_epoch(cfg: Config, max_epoch: int) -> None:
     if cfg.runner.get("type") == "AccuracyAwareRunner":  # nncf case
         if "nncf_config" in cfg.runner:
             _set_value_at_dict_in_dict(
@@ -145,7 +149,7 @@ class SubDataset:
         num_samples (int): Number of images to pretend to have. It should be positive.
     """
 
-    def __init__(self, fullset, num_samples: int) -> None:
+    def __init__(self, fullset: Dataset, num_samples: int) -> None:
         if num_samples <= 0:
             raise ValueError(f"num_samples should be positive. But, current value is {num_samples}.")
 
@@ -160,18 +164,18 @@ class SubDataset:
         """Get length of subset."""
         return self.num_samples
 
-    def __getitem__(self, indx) -> dict:
+    def __getitem__(self, index: int) -> dict:
         """Get dataset at index."""
-        return self.fullset[indx]
+        return self.fullset[index]
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:  # noqa: ANN401
         """When trying to get other attributes, not dataset, get values from fullset."""
         if name == "__setstate__":
             raise AttributeError(name)
         return getattr(self.fullset, name)
 
     @property
-    def flag(self):
+    def flag(self) -> np.ndarray:
         """Getter of flag for detection task.
 
         Sampler of the detection task decides length of dataset checking sum of flag array.

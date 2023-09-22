@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional
+
+import torch
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import VisionTransformerClsHead
 
@@ -15,7 +18,7 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
         super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
-    def loss(self, cls_score, gt_label, feature=None):
+    def loss(self, cls_score: torch.Tensor, gt_label: torch.Tensor, feature: Optional[torch.Tensor] = None) -> dict:
         """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         losses = dict()

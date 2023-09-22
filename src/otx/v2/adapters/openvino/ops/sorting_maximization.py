@@ -5,8 +5,10 @@
 
 from dataclasses import dataclass, field
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+import torch
+
+from .builder import OPS
+from .op import Attribute, Operation
 
 
 @dataclass
@@ -18,7 +20,7 @@ class TopKV3Attribute(Attribute):
     sort: str
     index_element_type: str = field(default="i32")
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """TopKV3Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["min", "max"]
@@ -45,7 +47,7 @@ class TopKV3(Operation[TopKV3Attribute]):
     VERSION = 3
     ATTRIBUTE_FACTORY = TopKV3Attribute
 
-    def forward(self, inputs, k):
+    def forward(self, inputs: torch.Tensor, k: int) -> torch.Tensor:
         """TopKV3's forward function."""
         raise NotImplementedError
 
@@ -66,16 +68,17 @@ class NonMaxSuppressionV5(Operation[NonMaxSuppressionV5Attribute]):
     TYPE = "NonMaxSuppression"
     VERSION = 5
     ATTRIBUTE_FACTORY = NonMaxSuppressionV5Attribute
+    attrs: NonMaxSuppressionV5Attribute
 
     def forward(
         self,
-        boxes,
-        scores,
-        max_output_boxes_per_class,
-        iou_threshold=0,
-        score_threshold=0,
-        soft_nms_sigma=0,
-    ):
+        boxes: torch.Tensor,
+        scores: torch.Tensor,
+        max_output_boxes_per_class: list,
+        iou_threshold: int = 0,
+        score_threshold: int = 0,
+        soft_nms_sigma: int = 0,
+    ) -> torch.Tensor:
         """NonMaxSuppressionV5's forward function."""
         raise NotImplementedError
 
@@ -99,12 +102,12 @@ class NonMaxSuppressionV9(Operation[NonMaxSuppressionV9Attribute]):
 
     def forward(
         self,
-        boxes,
-        scores,
-        max_output_boxes_per_class,
-        iou_threshold=0,
-        score_threshold=0,
-        soft_nms_sigma=0,
-    ):
+        boxes: torch.Tensor,
+        scores: torch.Tensor,
+        max_output_boxes_per_class: list,
+        iou_threshold: int = 0,
+        score_threshold: int = 0,
+        soft_nms_sigma: int = 0,
+    ) -> torch.Tensor:
         """NonMaxSuppressionV9's forward function."""
         raise NotImplementedError

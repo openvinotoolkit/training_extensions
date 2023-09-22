@@ -16,6 +16,7 @@
 
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 
 from otx.v2.api.utils.logger import get_logger
 
@@ -34,6 +35,6 @@ class ForceTrainModeHook(Hook):
     with the lowest priority.
     """
 
-    def before_train_epoch(self, runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Make sure to put a model in a training mode before train epoch."""
         runner.model.train()

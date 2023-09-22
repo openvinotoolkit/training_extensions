@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import torch
 from mmpretrain.evaluation.metrics import Accuracy
 from mmpretrain.models.builder import HEADS
-from mmpretrain.models.heads import LinearClsHead, ClsHead
-from mmpretrain.structures import DataSample
+from mmpretrain.models.heads import ClsHead, LinearClsHead
 
 from otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.heads.non_linear_cls_head import (
     NonLinearClsHead,
@@ -49,7 +48,7 @@ class SemiClsHead(OTXHeadMixin, ClsHead):
         gt_label: torch.Tensor,
         pseudo_label: Optional[torch.Tensor] = None,
         mask: Optional[torch.Tensor] = None,
-    ):
+    ) -> dict:
         """Loss function in which unlabeled data is considered.
 
         Args:
@@ -86,7 +85,7 @@ class SemiClsHead(OTXHeadMixin, ClsHead):
         x: Union[dict, torch.Tensor],
         gt_label: torch.Tensor,
         final_layer: Union[torch.nn.Linear, torch.nn.Sequential],
-    ):  # pylint: disable=too-many-locals
+    ) -> dict:  # pylint: disable=too-many-locals
         """Forward_train head using pseudo-label selected through threshold.
 
         Args:
@@ -181,7 +180,7 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         LinearClsHead.__init__(self, num_classes, in_channels, loss=loss, topk=topk)
         SemiClsHead.__init__(self, num_classes, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of SemiLinearClsHead class."""
         return self.simple_test(x)
 
@@ -190,7 +189,7 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         x: torch.Tensor,
         gt_label: torch.Tensor,
         final_layer: Optional[Union[torch.nn.Linear, torch.nn.Sequential]] = None,
-    ):
+    ) -> dict:
         """Forward_train fuction of SemiLinearClsHead class."""
         final_layer = final_layer if final_layer is not None else self.fc
         return SemiClsHead.forward_train(self, x, gt_label, final_layer=final_layer)
@@ -248,7 +247,7 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         )
         SemiClsHead.__init__(self, num_classes, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of SemiNonLinearClsHead class."""
         return self.simple_test(x)
 
@@ -257,7 +256,7 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         x: torch.Tensor,
         gt_label: torch.Tensor,
         final_layer: Optional[Union[torch.nn.Linear, torch.nn.Sequential]] = None,
-    ):
+    ) -> dict:
         """Forward_train fuction of SemiNonLinearClsHead class."""
         final_layer = final_layer if final_layer is not None else self.fc
         return SemiClsHead.forward_train(self, x, gt_label, final_layer=final_layer)

@@ -3,13 +3,24 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional
+
+import torch
 from mmpretrain.models.builder import LOSSES
 from mmpretrain.models.losses.utils import weight_reduce_loss
 from torch import nn
 from torch.nn import functional
 
 
-def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, class_weight=None, ignore_index=None):
+def cross_entropy(
+    pred: torch.Tensor,
+    label: torch.Tensor,
+    weight: Optional[torch.Tensor] = None,
+    reduction: str = "mean",
+    avg_factor: Optional[torch.Tensor] = None,
+    class_weight: Optional[torch.Tensor] = None,
+    ignore_index: Optional[int] = None,
+) -> torch.Tensor:
     """Calculate cross entropy for given pred, label pairs."""
     # element-wise losses
     if ignore_index is not None:
@@ -29,7 +40,7 @@ def cross_entropy(pred, label, weight=None, reduction="mean", avg_factor=None, c
 class CrossEntropyLossWithIgnore(nn.Module):
     """Defining CrossEntropyLossWothIgnore which supports ignored_label masking."""
 
-    def __init__(self, reduction="mean", loss_weight=1.0, ignore_index=None) -> None:
+    def __init__(self, reduction: str = "mean", loss_weight: float = 1.0, ignore_index: Optional[int] = None) -> None:
         super().__init__()
         self.reduction = reduction
         self.loss_weight = loss_weight
@@ -37,7 +48,15 @@ class CrossEntropyLossWithIgnore(nn.Module):
 
         self.cls_criterion = cross_entropy
 
-    def forward(self, cls_score, label, weight=None, avg_factor=None, reduction_override=None, **kwargs):
+    def forward(
+        self,
+        cls_score: torch.Tensor,
+        label: torch.Tensor,
+        weight: Optional[torch.Tensor] = None,
+        avg_factor: Optional[torch.Tensor] = None,
+        reduction_override: Optional[str] = None,
+        **kwargs,
+    ) -> torch.Tensor:
         """Forward function of CrossEntropyLossWithIgnore class."""
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction

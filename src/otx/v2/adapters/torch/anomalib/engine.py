@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import subprocess  # nosec B404
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from subprocess import run
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import pytorch_lightning as pl
@@ -28,8 +28,8 @@ from pytorch_lightning.trainer.connectors.accelerator_connector import (
     _PRECISION_INPUT,
 )
 from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-from torch.utils.data import DataLoader
 from torch.optim import Optimizer
+from torch.utils.data import DataLoader
 
 from otx.v2.api.core.engine import Engine
 
@@ -42,19 +42,19 @@ class AnomalibEngine(Engine):
     def __init__(
         self,
         work_dir: Optional[Union[str, Path]] = None,
-        config: Optional[Union[str, Dict]] = None,
+        config: Optional[Union[str, dict]] = None,
         task: str = "classification",
     ) -> None:
         super().__init__(work_dir=work_dir)
         self.trainer: Trainer
-        self.trainer_config: Dict = {}
+        self.trainer_config: dict = {}
         self.latest_model = {"model": None, "checkpoint": None}
         self.task = task
         self.config = self._initial_config(config)
         self.config.default_root_dir = self.work_dir
         self.registry = AnomalibRegistry()
 
-    def _initial_config(self, config: Optional[Union[str, Dict]] = None):
+    def _initial_config(self, config: Optional[Union[str, dict]] = None) -> DictConfig:
         if isinstance(config, str) and config.endswith(".yaml"):
             config = yaml.load(open(config), Loader=yaml.FullLoader)
         elif config is None:
@@ -63,9 +63,9 @@ class AnomalibEngine(Engine):
 
     def _update_config(
         self,
-        func_args: Dict,
+        func_args: dict,
         **kwargs,
-    ):
+    ) -> bool:
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
@@ -96,7 +96,7 @@ class AnomalibEngine(Engine):
 
         return update_check
 
-    def get_callbacks(self, metrics: Optional[Dict] = None):
+    def get_callbacks(self, metrics: Optional[dict] = None) -> list:
         # TODO: Need to check callbacks
         if metrics is None:
             metrics = self.config.get("metrics", {})
@@ -132,7 +132,7 @@ class AnomalibEngine(Engine):
         precision: Optional[_PRECISION_INPUT] = None,
         val_interval: Optional[int] = None,
         **kwargs,  # Trainer.__init__ arguments
-    ):
+    ) -> dict:
         train_args = {
             "max_iters": max_iters,
             "max_epochs": max_epochs,
@@ -181,11 +181,11 @@ class AnomalibEngine(Engine):
     def validate(
         self,
         model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
-        val_dataloader: Optional[Union[DataLoader, Dict]] = None,
+        val_dataloader: Optional[Union[DataLoader, dict]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[_PRECISION_INPUT] = None,
         **kwargs,
-    ) -> Dict[str, float]:  # Metric (data_class or dict)
+    ) -> dict:  # Metric (data_class or dict)
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
 
         datamodule = self.trainer_config.pop("datamodule", None)
@@ -219,7 +219,7 @@ class AnomalibEngine(Engine):
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[_PRECISION_INPUT] = None,
         **kwargs,
-    ) -> Dict[str, float]:  # Metric (data_class or dict)
+    ) -> dict:  # Metric (data_class or dict)
         _ = self._update_config(func_args={"precision": precision}, **kwargs)
         if model is None:
             model = self.latest_model.get("model", None)
@@ -250,11 +250,11 @@ class AnomalibEngine(Engine):
         model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
         img: Optional[Union[PREDICT_FORMAT, EVAL_DATALOADERS, LightningDataModule]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[Union[Dict, List]] = None,
+        pipeline: Optional[Union[dict, list]] = None,
         device: str = "auto",  # ["auto", "cpu", "gpu", "cuda"]
         visualization_mode: str = "simple",  # ["full", "simple"]
         **kwargs,
-    ) -> List[Dict]:
+    ) -> list:
         results = []
         if model is None:
             model = self.latest_model.get("model", None)
@@ -318,7 +318,7 @@ class AnomalibEngine(Engine):
         device: Optional[str] = None,
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
-    ) -> Dict[str, Dict[str, str]]:  # Output: IR Models
+    ) -> dict:  # Output: IR Models
         # Set input_shape (input_size)
         if model is None:
             model = self.latest_model.get("model", None)
@@ -345,7 +345,7 @@ class AnomalibEngine(Engine):
             opset_version=11,
         )
 
-        results: Dict[str, Dict[str, str]] = {"outputs": {}}
+        results: dict = {"outputs": {}}
         results["outputs"]["onnx"] = onnx_model
 
         if export_type.upper() == "OPENVINO":
@@ -363,7 +363,7 @@ class AnomalibEngine(Engine):
             ]
             if precision in ("16", 16, "fp16"):
                 optimize_command.append("--compress_to_fp16")
-            _ = subprocess.run(optimize_command)
+            _ = run(optimize_command)
             bin_file = Path(ir_dir) / "openvino.bin"
             xml_file = Path(ir_dir) / "openvino.xml"
             if bin_file.exists() and xml_file.exists():

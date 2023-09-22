@@ -109,7 +109,7 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
         if is_removed is False:
             self.updated_label_id = {k + 1: v for k, v in self.updated_label_id.items()}
 
-    def _remove_labels(self, label_names: List):
+    def _remove_labels(self, label_names: list) -> bool:
         """Remove background label in label entity set."""
         is_removed = False
         new_label_entities = []

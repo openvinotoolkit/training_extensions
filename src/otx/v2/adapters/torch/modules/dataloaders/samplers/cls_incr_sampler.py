@@ -5,10 +5,11 @@
 
 import math
 import random
+from typing import Iterator
 
 import numpy as np
-from torch.utils.data.sampler import Sampler
 from torch.utils.data import Dataset
+from torch.utils.data.sampler import Sampler
 
 
 def unwrap_dataset(dataset: Dataset) -> tuple:
@@ -106,17 +107,17 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
 
         return num_samples
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         """Iter."""
-        indices = []
+        _indices = []
         for _ in range(self.repeat):
             for _ in range(int(self.data_length / (1 + self.old_new_ratio))):
                 indice = np.concatenate(
                     [np.random.choice(self.new_indices, 1), np.random.choice(self.old_indices, self.old_new_ratio)]
                 )
-                indices.append(indice)
+                _indices.append(indice)
 
-        indices = np.concatenate(indices)
+        indices = np.concatenate(_indices)
         if not self.drop_last:
             num_extra = int(
                 np.ceil(self.data_length * self.repeat / self.samples_per_gpu)

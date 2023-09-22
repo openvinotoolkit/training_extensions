@@ -5,9 +5,9 @@
 
 
 from importlib import import_module
+from typing import Callable, Optional
 
 from anomalib.models import _snake_to_pascal_case
-from typing import Callable, Optional
 
 from otx.v2.api.core.registry import BaseRegistry
 
@@ -31,7 +31,7 @@ model_list = [
 
 
 class AnomalibRegistry(BaseRegistry):
-    def __init__(self, name="anomalib") -> None:
+    def __init__(self, name: str = "anomalib") -> None:
         super().__init__(name)
         self._initialize()
 

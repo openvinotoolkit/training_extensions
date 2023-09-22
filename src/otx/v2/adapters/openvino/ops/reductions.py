@@ -4,11 +4,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
+from typing import Optional, Union
 
 import torch
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from .builder import OPS
+from .op import Attribute, Operation
 
 
 @dataclass
@@ -25,8 +26,9 @@ class ReduceMeanV1(Operation[ReduceMeanV1Attribute]):
     TYPE = "ReduceMean"
     VERSION = 1
     ATTRIBUTE_FACTORY = ReduceMeanV1Attribute
+    attrs: ReduceMeanV1Attribute
 
-    def forward(self, inputs, axes):
+    def forward(self, inputs: torch.Tensor, axes: Optional[Union[list, torch.Tensor]]) -> torch.Tensor:
         """ReduceMeanV1's forward function."""
         if isinstance(axes, torch.Tensor):
             axes = axes.tolist()
@@ -53,8 +55,9 @@ class ReduceProdV1(Operation[ReduceProdV1Attribute]):
     TYPE = "ReduceProd"
     VERSION = 1
     ATTRIBUTE_FACTORY = ReduceProdV1Attribute
+    attrs: ReduceProdV1Attribute
 
-    def forward(self, inputs, axes):
+    def forward(self, inputs: torch.Tensor, axes: Optional[Union[list, torch.Tensor]]) -> torch.Tensor:
         """ReduceMeanV1Attribute's forward function."""
         if isinstance(axes, torch.Tensor):
             axes = axes.tolist()
@@ -87,8 +90,9 @@ class ReduceMinV1(Operation[ReduceMinV1Attribute]):
     TYPE = "ReduceMin"
     VERSION = 1
     ATTRIBUTE_FACTORY = ReduceMinV1Attribute
+    attrs: ReduceMinV1Attribute
 
-    def forward(self, inputs, axes):
+    def forward(self, inputs: torch.Tensor, axes: Optional[Union[list, torch.Tensor]]) -> torch.Tensor:
         """ReduceMinV1's forward function."""
         if isinstance(axes, torch.Tensor):
             axes = axes.tolist()
@@ -121,8 +125,9 @@ class ReduceSumV1(Operation[ReduceSumV1Attribute]):
     TYPE = "ReduceSum"
     VERSION = 1
     ATTRIBUTE_FACTORY = ReduceSumV1Attribute
+    attrs: ReduceSumV1Attribute
 
-    def forward(self, inputs, axes):
+    def forward(self, inputs: torch.Tensor, axes: Optional[Union[list, torch.Tensor]]) -> torch.Tensor:
         """ReduceSumV1's forward function."""
         if isinstance(axes, torch.Tensor):
             axes = axes.tolist()

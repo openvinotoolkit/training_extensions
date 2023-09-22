@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Optional, Union, Callable
+from typing import Callable, Optional, Union
 
 import torch
 from mmcv.cnn import build_activation_layer
@@ -97,7 +97,7 @@ class CustomHierarchicalNonLinearClsHead(
         gt_label: torch.Tensor,
         multilabel: bool = False,
         valid_label_mask: Optional[torch.Tensor] = None,
-    ):
+    ) -> torch.Tensor:
         """Calculate loss for given cls_score and gt_label."""
         num_samples = len(cls_score)
         # compute loss

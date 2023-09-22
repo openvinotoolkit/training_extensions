@@ -5,6 +5,8 @@
 
 from typing import Dict, List, Optional
 
+import networkx as nx
+
 from otx.v2.api.utils.logger import get_logger
 
 from ..builder import PARSERS
@@ -28,7 +30,7 @@ NECK_TYPES = [
 
 
 @PARSERS.register()
-def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, List[str]]]:
+def cls_base_parser(graph: nx.MultiDiGraph, component: str = "backbone") -> Optional[Dict[str, List[str]]]:
     """Class base parser for OMZ models."""
     assert component in ["backbone", "neck", "head"]
 

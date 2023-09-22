@@ -34,9 +34,9 @@ class OTXProgressHook(Hook):
         super().__init__()
         self.time_monitor = time_monitor
         self.verbose = verbose
-        self.print_threshold = 1
+        self.print_threshold = 1.0
 
-    def before_run(self, runner: Runner):
+    def before_run(self, runner: Runner) -> None:
         """Called before_run in OTXProgressHook."""
         total_epochs = runner.max_epochs if runner.max_epochs is not None else 1
         self.time_monitor.total_epochs = total_epochs
@@ -47,46 +47,46 @@ class OTXProgressHook(Hook):
         self.time_monitor.current_epoch = 0
         self.time_monitor.on_train_begin()
 
-    def before_epoch(self, runner: Runner):
+    def before_epoch(self, runner: Runner) -> None:
         """Called before_epoch in OTXProgressHook."""
         self.time_monitor.on_epoch_begin(runner.epoch)
 
-    def after_epoch(self, runner: Runner):
+    def after_epoch(self, runner: Runner) -> None:
         """Called after_epoch in OTXProgressHook."""
         # put some runner's training status to use on the other hooks
         runner.log_buffer.output["current_iters"] = runner.iter
         self.time_monitor.on_epoch_end(runner.epoch, runner.log_buffer.output)
 
-    def before_iter(self, runner: Runner):
+    def before_iter(self, runner: Runner) -> None:
         """Called before_iter in OTXProgressHook."""
         self.time_monitor.on_train_batch_begin(1)
 
-    def after_iter(self, runner: Runner):
+    def after_iter(self, runner: Runner) -> None:
         """Called after_iter in OTXProgressHook."""
         # put some runner's training status to use on the other hooks
         runner.log_buffer.output["current_iters"] = runner.iter
         self.time_monitor.on_train_batch_end(1)
-        if self.verbose:
+        if self.verbose and self.progress is not None:
             progress = self.progress
             if progress >= self.print_threshold:
                 logger.warning(f"training progress {progress:.0f}%")
                 self.print_threshold = (progress + 10) // 10 * 10
 
-    def before_val_iter(self, runner: Runner):
+    def before_val_iter(self, runner: Runner) -> None:
         """Called before_val_iter in OTXProgressHook."""
         self.time_monitor.on_test_batch_begin(1, logger)
 
-    def after_val_iter(self, runner: Runner):
+    def after_val_iter(self, runner: Runner) -> None:
         """Called after_val_iter in OTXProgressHook."""
         self.time_monitor.on_test_batch_end(1, logger)
 
-    def after_run(self, runner: Runner):
+    def after_run(self, runner: Runner) -> None:
         """Called after_run in OTXProgressHook."""
         self.time_monitor.on_train_end(1)
         if self.time_monitor.update_progress_callback:
             self.time_monitor.update_progress_callback(int(self.time_monitor.get_progress()))
 
     @property
-    def progress(self):
+    def progress(self) -> float:
         """Getting Progress from time monitor."""
         return self.time_monitor.get_progress()

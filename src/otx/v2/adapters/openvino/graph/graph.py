@@ -9,15 +9,15 @@ import inspect
 from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import asdict
-from typing import Any, Dict, Generator, List, Optional, Tuple, Union
+from typing import Dict, Generator, Iterable, List, Optional, Tuple, Union
 
 import _collections_abc
 import networkx as nx
-from openvino.runtime import Model  # pylint: disable=no-name-in-module
+from openvino.runtime import Model, Node  # pylint: disable=no-name-in-module
 
 from otx.v2.api.utils.logger import get_logger
 
-from ..ops.op import Operation
+from ..ops import Operation
 from ..ops.utils import convert_op_to_torch
 from ..utils import get_op_name
 
@@ -33,7 +33,7 @@ class SortedDictKeysView(_collections_abc.KeysView):
         """Function repr of SortedDictKeysView."""
         return f"{self.__class__.__name__}({list(self._mapping)})"
 
-    def __reversed__(self):
+    def __reversed__(self) -> Generator:
         """Function reversed of SortedDictKeysView."""
         yield from reversed(self._mapping)
 
@@ -45,7 +45,7 @@ class SortedDictValuesView(_collections_abc.ValuesView):
         """Sorteddictvaluesview's repr function."""
         return f"{self.__class__.__name__}({[self._mapping[i] for i in self._mapping]})"
 
-    def __reversed__(self):
+    def __reversed__(self) -> Generator:
         """Sorteddictvaluesview's reversed function."""
         for key in reversed(self._mapping):
             yield self._mapping[key]
@@ -58,7 +58,7 @@ class SortedDictItemsView(_collections_abc.ItemsView):
         """Sorteddictitemsview's repr function."""
         return f"{self.__class__.__name__}({[(i, self._mapping[i]) for i in self._mapping]})"
 
-    def __reversed__(self):
+    def __reversed__(self) -> tuple:
         """Sorteddictitemsview's reversed function."""
         for key in reversed(self._mapping):
             yield (key, self._mapping[key])
@@ -73,12 +73,12 @@ class NOOP:
 class SortedDict(dict):
     """SortedDict class."""
 
-    def __init__(self, sort_key, *args, **kwargs) -> None:
+    def __init__(self, sort_key: str, *args, **kwargs) -> None:
         self._sort_key = sort_key
         self._sorted_keys = []
         super().__init__(self, *args, **kwargs)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: dict) -> None:
         """Sorteddict's setitem function."""
         assert len(value) == 1
         edge_key, edge_attr = next(iter(value.items()))
@@ -91,7 +91,7 @@ class SortedDict(dict):
         else:
             super().__setitem__(key, value)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         """Sorteddict's delitem function."""
         super().__delitem__(key)
         for i, (_, key_in, _) in enumerate(self._sorted_keys):
@@ -99,12 +99,12 @@ class SortedDict(dict):
                 break
         self._sorted_keys.pop(i)  # pylint: disable=undefined-loop-variable
 
-    def __iter__(self):
+    def __iter__(self) -> str:
         """Sorteddict's iter function."""
         for _, key, _ in self._sorted_keys:
             yield key
 
-    def __reversed__(self):
+    def __reversed__(self) -> str:
         """Sorteddict's reversed function."""
         for _, key, _ in self._sorted_keys[::-1]:
             yield key
@@ -120,7 +120,7 @@ class SortedDict(dict):
         repr_ += "}"
         return repr_
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: dict) -> dict:
         """Sorteddict's deepcopy function."""
         cls = self.__class__
         result = cls(self._sort_key)
@@ -129,12 +129,12 @@ class SortedDict(dict):
             result[key] = deepcopy(value, memo)
         return result
 
-    def clear(self):
+    def clear(self) -> None:
         """Sorteddict's clear function."""
         super().clear()
         self._sorted_keys = []
 
-    def pop(self, key, default=NOOP()):
+    def pop(self, key: str, default: NOOP = NOOP()) -> dict:
         """Sorteddict's pop function."""
         if isinstance(default, NOOP):
             value = super().pop(key)
@@ -148,24 +148,24 @@ class SortedDict(dict):
 
         return value
 
-    def popitem(self):
+    def popitem(self) -> NotImplementedError:
         """Sorteddict's popitem function."""
         raise NotImplementedError
 
     @staticmethod
-    def fromkeys(iterable, value=None):
+    def fromkeys(iterable: Iterable, value: Optional[dict] = None) -> NotImplementedError:
         """Sorteddict's fromkeys function."""
         raise NotImplementedError
 
-    def keys(self):
+    def keys(self) -> SortedDictKeysView:
         """Sorteddict's keys function."""
         return SortedDictKeysView(self)
 
-    def values(self):
+    def values(self) -> SortedDictKeysView:
         """Sorteddict's values function."""
         return SortedDictValuesView(self)
 
-    def items(self):
+    def items(self) -> SortedDictKeysView:
         """Sorteddict's items function."""
         return SortedDictItemsView(self)
 
@@ -173,11 +173,11 @@ class SortedDict(dict):
 class SortedDictHelper(dict):
     """SortedDictHelper class."""
 
-    def __init__(self, sort_key=None, *args, **kwargs) -> None:  # pylint: disable=keyword-arg-before-vararg
+    def __init__(self, sort_key: str = None, *args, **kwargs) -> None:  # pylint: disable=keyword-arg-before-vararg
         self._sort_key = sort_key
         super().__init__(*args, **kwargs)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: dict) -> None:
         """Sorteddicthelper's setitem function."""
         super().__setitem__(key, SortedDict(self._sort_key))
         for v_key, v_value in value.items():
@@ -258,14 +258,16 @@ class Graph(nx.MultiDiGraph):
 
         return graph
 
-    def get_edge_data(self, node_from: Operation, node_to: Operation, default=None) -> Optional[List[Dict[Any, Any]]]:
+    def get_edge_data(
+        self, node_from: Operation, node_to: Operation, default: Optional[object] = None
+    ) -> Optional[list]:
         """Graph's get_edge_data function."""
         edge_data = super().get_edge_data(node_from, node_to, None, default)
         if edge_data is not None:
             return list(edge_data.values())
         return None
 
-    def remove_node(self, node: Operation, keep_connect: bool = False):
+    def remove_node(self, node: Operation, keep_connect: bool = False) -> None:
         """Graph's remove_node function."""
         edges_to_keep = []
         if keep_connect:
@@ -291,7 +293,7 @@ class Graph(nx.MultiDiGraph):
             node_from, node_to, attrs = edge
             self.add_edge(node_from, node_to, **attrs)
 
-    def replace_node(self, old_node: Operation, new_node: Operation):
+    def replace_node(self, old_node: Operation, new_node: Operation) -> None:
         """Graph's replace_node function."""
         edges = []
         for successor in self.successors(old_node):
@@ -314,7 +316,7 @@ class Graph(nx.MultiDiGraph):
         out_port: Optional[int] = None,
         in_port: Optional[int] = None,
         **kwargs,
-    ):
+    ) -> None:
         """Graph's add_edge function."""
         if node_from not in self:
             self.add_node(node_from)
@@ -421,7 +423,9 @@ class Graph(nx.MultiDiGraph):
     #      else:
     #          return nx.dfs_predecessors(self, node, depth_limit)
 
-    def get_nodes_by_type_pattern(self, pattern: List[str], start_node: Optional[Operation] = None, reverse=False):
+    def get_nodes_by_type_pattern(
+        self, pattern: List[str], start_node: Optional[Operation] = None, reverse: bool = False
+    ) -> list:
         """Graph's get_nodes_by_type_pattern function."""
         if len(pattern) < 1:
             raise ValueError(f"pattern must be longer than 2 but {len(pattern)} is given")
@@ -439,9 +443,10 @@ class Graph(nx.MultiDiGraph):
             found_ = {start_node: None for start_node in start_nodes}
             for start_node_ in start_nodes:
                 for s_value, ts_ in self.bfs(start_node_, reverse, 1):
-                    if not isinstance(ts_, tuple):
-                        ts_ = (ts_,)
-                    for t in ts_:
+                    _ts = ts_
+                    if not isinstance(_ts, tuple):
+                        _ts = (_ts,)
+                    for t in _ts:
                         if [s_value.type, t.type] == pattern_pair:
                             if reverse:
                                 found_[t] = s_value
@@ -466,7 +471,7 @@ class Graph(nx.MultiDiGraph):
         """Graph's _freeze_normalize_nodes function."""
         invariant_types = ["Transpose", "Convert"]
 
-        def test_constant(node):
+        def test_constant(node: Node) -> bool:
             """Graph's test_constant function."""
             constant_nodes = [node_ for node_ in self.predecessors(node) if node_.type == "Constant"]
             if len(constant_nodes) != 1:
@@ -477,12 +482,12 @@ class Graph(nx.MultiDiGraph):
             return True
 
         def get_nodes_by_type_from_node(
-            node,
-            types,
-            ignore_types=None,
-            reverse=False,
-            depth_limit=-1,
-        ):
+            node: Node,
+            types: str,
+            ignore_types: Optional[list] = None,
+            reverse: bool = False,
+            depth_limit: int = -1,
+        ) -> list:
             """Graph's get_nodes_by_type_from_node function."""
             ignore_types = ignore_types if ignore_types else []
             func = self.successors
@@ -500,7 +505,7 @@ class Graph(nx.MultiDiGraph):
                     candidates.extend([(i, cur_depth + 1) for i in func(candidate)])
             return found
 
-        def find_multiply_add(node):
+        def find_multiply_add(node: Node) -> tuple:
             """Graph's find_multiply_add function."""
             scale_node = None
             mean_node = None
@@ -520,7 +525,7 @@ class Graph(nx.MultiDiGraph):
 
             return (scale_node, mean_node)
 
-        def find_subtract_divide(node):
+        def find_subtract_divide(node: Node) -> tuple:
             """Graph's find_subtract_divide function."""
             mean_node = None
             scale_node = None
@@ -540,7 +545,7 @@ class Graph(nx.MultiDiGraph):
 
             return (mean_node, scale_node)
 
-        def find_subtract_multiply(node):
+        def find_subtract_multiply(node: Node) -> tuple:
             """Graph's find_subtract_multiply function."""
             mean_node = None
             scale_node = None
@@ -592,7 +597,7 @@ class Graph(nx.MultiDiGraph):
                     )
                     self.replace_node(constant_node, new_constant_node)
 
-    def remove_normalize_nodes(self):
+    def remove_normalize_nodes(self) -> None:
         """Graph's remove_normalize_nodes function."""
         for nodes in self._normalize_nodes:
             first_node, second_node = nodes
@@ -610,11 +615,11 @@ class Graph(nx.MultiDiGraph):
                 pass
         self._normalize_nodes = []
 
-    def topological_sort(self):
+    def topological_sort(self) -> Generator:
         """Graph's topological_sort function."""
         return nx.topological_sort(self)
 
-    def has_path(self, node_from: Operation, node_to: Operation):
+    def has_path(self, node_from: Operation, node_to: Operation) -> bool:
         """Graph's has_path function."""
         return nx.has_path(self, node_from, node_to)
 
@@ -622,7 +627,7 @@ class Graph(nx.MultiDiGraph):
         self,
         nodes_to_keep: List[Operation] = None,
         remove_sub_components: bool = True,
-    ):
+    ) -> None:
         """Graph's clean_up function."""
         nodes_to_keep = nodes_to_keep if nodes_to_keep else []
         if remove_sub_components:

@@ -8,6 +8,8 @@ import math
 from mmengine.hooks import Hook
 from mmengine.model import is_model_wrapper
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
+from torch import nn
 
 
 @HOOKS.register_module()
@@ -27,13 +29,13 @@ class SemiSLClsHook(Hook):
             If False, Semi-SL uses 1 as unlabeled loss coefficient
     """
 
-    def __init__(self, total_steps=0, unlabeled_warmup=True) -> None:
+    def __init__(self, total_steps: int = 0, unlabeled_warmup: bool = True) -> None:
         self.unlabeled_warmup = unlabeled_warmup
         self.total_steps = total_steps
-        self.current_step, self.unlabeled_coef = 0, 0
+        self.current_step, self.unlabeled_coef = 0.0, 0.0
         self.num_pseudo_label = 0
 
-    def before_train_iter(self, runner):
+    def before_train_iter(self, runner: Runner) -> None:
         """Calculate the unlabeled warm-up loss coefficient before training iteration."""
         if self.unlabeled_warmup and self.unlabeled_coef < 1.0:
             if self.total_steps == 0:
@@ -45,19 +47,19 @@ class SemiSLClsHook(Hook):
             model.head.unlabeled_coef = self.unlabeled_coef
         self.current_step += 1
 
-    def after_train_iter(self, runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Add the number of pseudo-labels correctly selected from iteration."""
         model = self._get_model(runner)
         self.num_pseudo_label += int(model.head.num_pseudo_label)
 
-    def after_epoch(self, runner):
+    def after_epoch(self, runner: Runner) -> None:
         """Add data related to Semi-SL to the log."""
         if self.unlabeled_warmup:
             runner.log_buffer.output.update({"unlabeled_coef": round(self.unlabeled_coef, 4)})
         runner.log_buffer.output.update({"pseudo_label": self.num_pseudo_label})
         self.num_pseudo_label = 0
 
-    def _get_model(self, runner):
+    def _get_model(self, runner: Runner) -> nn.Module:
         model = runner.model
         if is_model_wrapper(model):
             model = model.module

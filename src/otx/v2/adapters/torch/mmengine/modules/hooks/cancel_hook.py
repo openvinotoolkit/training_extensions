@@ -33,7 +33,7 @@ class CancelTrainingHook(Hook):
         self.interval = interval
 
     @staticmethod
-    def _check_for_stop_signal(runner: Runner):
+    def _check_for_stop_signal(runner: Runner) -> None:
         """Log _check_for_stop_signal for CancelTrainingHook."""
         work_dir = runner.work_dir
         stop_filepath = os.path.join(work_dir, ".stop_training")
@@ -44,7 +44,7 @@ class CancelTrainingHook(Hook):
             runner.should_stop = True  # Set this flag to true to stop the current training epoch
             os.remove(stop_filepath)
 
-    def after_train_iter(self, runner: Runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Log after_train_iter for CancelTrainingHook."""
         if not self.every_n_iters(runner, self.interval):
             return
@@ -55,12 +55,12 @@ class CancelTrainingHook(Hook):
 class CancelInterfaceHook(Hook):
     """Cancel interface. If called, running job will be terminated."""
 
-    def __init__(self, init_callback: Callable, interval=5) -> None:
+    def __init__(self, init_callback: Callable, interval: int = 5) -> None:
         self.on_init_callback = init_callback
         self.runner = None
         self.interval = interval
 
-    def cancel(self):
+    def cancel(self) -> None:
         """Cancel."""
         logger.info("CancelInterfaceHook.cancel() is called.")
         if self.runner is None:
@@ -77,11 +77,11 @@ class CancelInterfaceHook(Hook):
         self.runner.should_stop = True  # Set this flag to true to stop the current training epoch
         logger.info("requested stopping to the runner")
 
-    def before_run(self, runner):
+    def before_run(self, runner: Runner) -> None:
         """Before run."""
         self.runner = runner
         self.on_init_callback(self)
 
-    def after_run(self, runner):
+    def after_run(self, runner: Runner) -> None:
         """After run."""
         self.runner = None

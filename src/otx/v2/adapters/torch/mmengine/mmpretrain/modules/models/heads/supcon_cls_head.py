@@ -2,6 +2,8 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import Optional
+
 import torch
 from mmpretrain.models.builder import HEADS, build_loss
 
@@ -25,7 +27,14 @@ class SupConClsHead(ClsHead):
     """
 
     def __init__(
-        self, num_classes: int, in_channels: int, aux_mlp, loss, aux_loss, topk=(1,), init_cfg=None
+        self,
+        num_classes: int,
+        in_channels: int,
+        aux_mlp: dict,
+        loss: dict,
+        aux_loss: dict,
+        topk: tuple = (1,),
+        init_cfg: Optional[dict] = None,
     ) -> None:  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
@@ -61,11 +70,11 @@ class SupConClsHead(ClsHead):
         else:
             self.aux_mlp = nn.Linear(in_features=in_channels, out_features=out_channels)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of SupConClsHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, x, gt_label):
+    def forward_train(self, x: torch.Tensor, gt_label: torch.Tensor) -> dict:
         """Forward train head using the Supervised Contrastive Loss.
 
         Args:
@@ -90,7 +99,7 @@ class SupConClsHead(ClsHead):
         losses["loss"] = loss + aux_loss
         return losses
 
-    def simple_test(self, img):
+    def simple_test(self, img: torch.Tensor) -> torch.Tensor:
         """Test without data augmentation."""
         cls_score = self.fc(img)
         if isinstance(cls_score, list):

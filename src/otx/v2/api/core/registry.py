@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Optional
 
 from rich.console import Console
 from rich.table import Table
@@ -8,8 +8,8 @@ from rich.table import Table
 class BaseRegistry:
     def __init__(self, name: str) -> None:
         self._name = name
-        self._module_dict: Dict[str, Any] = dict()
-        self._registry_dict: Dict[str, Any] = dict()
+        self._module_dict: dict = {}
+        self._registry_dict: dict = {}
 
     def get(self, module_type: str) -> Optional[Callable]:
         # Return Registry
@@ -59,12 +59,12 @@ class BaseRegistry:
         return self._name
 
     @property
-    def module_dict(self) -> Dict[Any, Any]:
+    def module_dict(self) -> dict:
         """Dictionary of registered module."""
         return self._module_dict
 
     @property
-    def registry_dict(self) -> Dict[Any, Any]:
+    def registry_dict(self) -> dict:
         """Dictionary of registries."""
         return self._registry_dict
 

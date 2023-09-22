@@ -23,11 +23,10 @@ from rich.console import Console
 from otx.v2 import OTX_LOGO, __version__
 from otx.v2.api.core import AutoRunner, BaseDataset, Engine
 from otx.v2.api.utils.logger import get_logger
+from otx.v2.cli.extensions import CLI_EXTENSIONS
+from otx.v2.cli.utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments
 from otx.v2.cli.utils.help_formatter import OTXHelpFormatter, render_guide
-
-from .extensions import CLI_EXTENSIONS
-from .utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments
-from .utils.workspace import Workspace
+from otx.v2.cli.utils.workspace import Workspace
 
 ArgsType = Optional[Union[List[str], Dict[str, Any], Namespace]]
 

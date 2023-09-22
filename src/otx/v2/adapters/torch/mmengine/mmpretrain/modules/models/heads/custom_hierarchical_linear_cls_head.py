@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 import torch
 from mmengine.model import normal_init
@@ -66,7 +66,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         gt_label: torch.Tensor,
         multilabel: bool = False,
         valid_label_mask: Optional[torch.Tensor] = None,
-    ):
+    ) -> torch.Tensor:
         """Calculate loss for given cls_score/gt_label."""
         num_samples = len(cls_score)
         # compute loss

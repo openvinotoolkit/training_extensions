@@ -7,7 +7,7 @@ from mmpretrain.models.builder import LOSSES
 from torch import Tensor, nn
 
 
-def off_diagonal(x: Tensor):
+def off_diagonal(x: Tensor) -> Tensor:
     """Return a tensor containing all the elements outside the diagonal of x."""
     assert x.shape[0] == x.shape[1]
     return x.flatten()[:-1].view(x.shape[0] - 1, x.shape[0] + 1)[:, 1:].flatten()
@@ -21,12 +21,12 @@ class BarlowTwinsLoss(nn.Module):
     Code adapted from https://github.com/facebookresearch/barlowtwins.
     """
 
-    def __init__(self, off_diag_penality, loss_weight=1.0) -> None:
+    def __init__(self, off_diag_penality: Tensor, loss_weight: float = 1.0) -> None:
         super().__init__()
         self.penalty = off_diag_penality
         self.loss_weight = loss_weight
 
-    def forward(self, feats1: Tensor, feats2: Tensor):
+    def forward(self, feats1: Tensor, feats2: Tensor) -> Tensor:
         """Compute Barlow Twins Loss and, if labels are not none, also the Cross-Entropy loss.
 
         Args:

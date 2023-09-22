@@ -1312,3 +1312,39 @@ class OTXEfficientNet(EfficientNet):
         elif pretrained is not None:
             download_model(net=self, model_name=self.model_name)
             logger.info(f"init weight - {pretrained_urls[self.model_name]}")
+
+
+def get_state_dict_hook(module: nn.Module, state_dict: dict, prefix: str) -> dict:
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        _key = key
+        if not prefix or _key.startswith(prefix):
+            _key = _key.replace(prefix, "", 1)
+            if _key.startswith("backbone"):
+                _key = _key.replace("backbone.", "", 1)
+            elif _key.startswith("head"):
+                _key = _key.replace("head", "output", 1)
+                if not module.hierarchical and not module.is_export:
+                    _key = _key.replace("fc", "asl")
+                    val = val.t()
+            _key = prefix + _key
+        state_dict[_key] = val
+    return state_dict
+
+
+def load_state_dict_pre_hook(module: nn.Module, state_dict: dict, prefix: str) -> dict:
+    for key in list(state_dict.keys()):
+        val = state_dict.pop(key)
+        _key = key
+        if not prefix or _key.startswith(prefix):
+            _key = _key.replace(prefix, "", 1)
+            if _key.startswith("features.") and "activ" not in _key:
+                _key = "backbone." + _key
+            elif _key.startswith("output."):
+                _key = _key.replace("output", "head")
+                if not module.hierarchical:
+                    _key = _key.replace("asl", "fc")
+                    val = val.t()
+            _key = prefix + _key
+        state_dict[_key] = val
+    return state_dict

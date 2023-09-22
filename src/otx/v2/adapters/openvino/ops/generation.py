@@ -7,9 +7,9 @@ from dataclasses import dataclass
 
 import torch
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
-from otx.v2.adapters.openvino.ops.type_conversions import _ov_to_torch
+from .builder import OPS
+from .op import Attribute, Operation
+from .type_conversions import _ov_to_torch
 
 
 @dataclass
@@ -26,8 +26,9 @@ class RangeV4(Operation[RangeV4Attribute]):
     TYPE = "Range"
     VERSION = 4
     ATTRIBUTE_FACTORY = RangeV4Attribute
+    attrs: RangeV4Attribute
 
-    def forward(self, start, stop, step):
+    def forward(self, start: torch.types.Number, stop: torch.types.Number, step: torch.types.Number) -> torch.Tensor:
         """RangeV4's forward function."""
         dtype = _ov_to_torch[self.attrs.output_type]
         return torch.arange(

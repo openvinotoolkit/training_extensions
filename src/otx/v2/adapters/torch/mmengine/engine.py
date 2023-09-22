@@ -8,7 +8,7 @@ import copy
 import glob
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -22,7 +22,7 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
-from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.api.core.engine import Engine
@@ -37,7 +37,7 @@ class MMXEngine(Engine):
     def __init__(
         self,
         work_dir: Optional[Union[str, Path]] = None,
-        config: Optional[Union[Dict, Config, str]] = None,
+        config: Optional[Union[dict, Config, str]] = None,
     ) -> None:
         super().__init__(work_dir=work_dir)
         self.runner: Runner
@@ -46,7 +46,7 @@ class MMXEngine(Engine):
         self._initial_config(config)
         self.dumped_config = Config({})
 
-    def _initial_config(self, config: Optional[Union[Dict, Config, str]]):
+    def _initial_config(self, config: Optional[Union[dict, Config, str]]) -> None:
         if config is not None:
             if isinstance(config, str):
                 self.config = Config.fromfile(config)
@@ -59,20 +59,22 @@ class MMXEngine(Engine):
 
     def _update_config(
         self,
-        func_args: Dict,
+        func_args: dict,
         **kwargs,
-    ):
+    ) -> bool:
         # TODO: Need to clean up.
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
 
-        def _get_config_value(arg_key: str, positional_args: Dict[str, Any], default: Any = None):
+        def _get_config_value(
+            arg_key: str, positional_args: dict, default: Optional[Union[int, str]] = None
+        ) -> Optional[Union[dict, list]]:
             arg_config = positional_args.get(arg_key, None)
             arg_config = self.config.get(arg_key, default) if arg_config is None else arg_config
             return arg_config
 
-        def _set_evaluator(evaluator: Union[List, Dict], num_classes: int) -> Union[List, Dict]:
+        def _set_evaluator(evaluator: Union[list, dict], num_classes: int) -> Union[list, dict]:
             if isinstance(evaluator, list):
                 for metric in evaluator:
                     if isinstance(metric, dict):
@@ -237,9 +239,9 @@ class MMXEngine(Engine):
 
     def train(
         self,
-        model: Optional[Union[torch.nn.Module, Dict]] = None,
-        train_dataloader: Optional[Union[DataLoader, Dict]] = None,
-        val_dataloader: Optional[Union[DataLoader, Dict]] = None,
+        model: Optional[Union[torch.nn.Module, dict]] = None,
+        train_dataloader: Optional[Union[DataLoader, dict]] = None,
+        val_dataloader: Optional[Union[DataLoader, dict]] = None,
         optimizer: Optional[Union[dict, Optimizer]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
@@ -249,13 +251,13 @@ class MMXEngine(Engine):
         deterministic: Optional[bool] = None,
         precision: Optional[str] = None,
         val_interval: Optional[int] = None,
-        val_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
-        param_scheduler: Optional[Union[_ParamScheduler, Dict, List]] = None,
-        default_hooks: Optional[Dict[str, Union[Hook, Dict[str, Any]]]] = None,
-        custom_hooks: Optional[Union[List, Dict, Hook]] = None,
-        visualizer: Optional[Union[Visualizer, Dict]] = None,
+        val_evaluator: Optional[Union[Evaluator, dict, list]] = None,
+        param_scheduler: Optional[Union[_ParamScheduler, dict, list]] = None,
+        default_hooks: Optional[dict] = None,
+        custom_hooks: Optional[Union[list, dict, Hook]] = None,
+        visualizer: Optional[Union[Visualizer, dict]] = None,
         **kwargs,
-    ):
+    ) -> dict:
         r"""Training Functions with the MMEngine Framework.
 
         Args:
@@ -355,13 +357,13 @@ class MMXEngine(Engine):
 
     def validate(
         self,
-        model: Optional[Union[torch.nn.Module, Dict]] = None,
-        val_dataloader: Optional[Union[DataLoader, Dict]] = None,
+        model: Optional[Union[torch.nn.Module, dict]] = None,
+        val_dataloader: Optional[Union[DataLoader, dict]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
-        val_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
+        val_evaluator: Optional[Union[Evaluator, dict, list]] = None,
         **kwargs,
-    ) -> Dict[str, float]:  # Metric (data_class or dict)
+    ) -> dict:  # Metric (data_class or dict)
         val_args = {
             "model": model,
             "val_dataloader": val_dataloader,
@@ -395,13 +397,13 @@ class MMXEngine(Engine):
 
     def test(
         self,
-        model: Optional[Union[torch.nn.Module, Dict]] = None,
+        model: Optional[Union[torch.nn.Module, dict]] = None,
         test_dataloader: Optional[DataLoader] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
-        test_evaluator: Optional[Union[Evaluator, Dict, List]] = None,
+        test_evaluator: Optional[Union[Evaluator, dict, list]] = None,
         **kwargs,
-    ) -> Dict[str, float]:  # Metric (data_class or dict)
+    ) -> dict:  # Metric (data_class or dict)
         test_args = {
             "model": model,
             "test_dataloader": test_dataloader,
@@ -435,12 +437,12 @@ class MMXEngine(Engine):
 
     def predict(
         self,
-        model: Optional[Union[torch.nn.Module, Dict, str]] = None,
+        model: Optional[Union[torch.nn.Module, dict, str]] = None,
         img: Optional[Union[str, np.ndarray, list]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[Union[Dict, List]] = None,
+        pipeline: Optional[Union[dict, list]] = None,
         **kwargs,
-    ):
+    ) -> list:
         raise NotImplementedError(f"{self}.predict is not implemented.")
 
     def export(
@@ -458,7 +460,7 @@ class MMXEngine(Engine):
         device: str = "cpu",
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
-    ):  # Output: IR Models
+    ) -> dict:  # Output: IR Models
         if not AVAILABLE:
             raise ModuleNotFoundError("MMXEngine's export is dependent on mmdeploy.")
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config

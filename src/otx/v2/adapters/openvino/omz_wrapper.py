@@ -10,11 +10,11 @@ import string
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 import requests
 from openvino.model_zoo import _common, _reporting
-from openvino.model_zoo._configuration import load_models
+from openvino.model_zoo._configuration import Model, load_models
 from openvino.model_zoo.download_engine.downloader import Downloader
 from openvino.model_zoo.download_engine.postprocessing import PostprocUnpackArchive
 from openvino.model_zoo.omz_converter import ModelOptimizerProperties, convert_to_onnx
@@ -98,11 +98,15 @@ for models_ in OMZ_PUBLIC_MODELS.values():
 class NameSpace:
     """NameSpace class for otx.v2.adapters.openvino.omz_wrapper."""
 
+    python: str
+    dry_run: bool
+    download_dir: str
+
     def __init__(self, **kwargs) -> None:
         self.__dict__.update(kwargs)
 
 
-def _get_etag(url):
+def _get_etag(url: str) -> Optional[Union[dict, str]]:
     """Getter etag function from url."""
     try:
         response = requests.head(url, allow_redirects=True, timeout=100)
@@ -113,7 +117,7 @@ def _get_etag(url):
         return None
 
 
-def _get_ir_path(directory):
+def _get_ir_path(directory: Union[str, Path]) -> Optional[dict]:
     """Getter IR path function from directory path."""
     directory = Path(directory)
     model_path = list(directory.glob("**/*.xml"))
@@ -124,7 +128,9 @@ def _get_ir_path(directory):
     return None
 
 
-def _run_pre_convert(reporter, model, output_dir, args):
+def _run_pre_convert(
+    reporter: _reporting.Reporter, model: Model, output_dir: Union[str, Path], args: NameSpace
+) -> bool:
     """Run pre-converting function."""
     script = _common.MODEL_ROOT / model.subdirectory_ori / "pre-convert.py"
     if not script.exists():
@@ -154,13 +160,13 @@ def _run_pre_convert(reporter, model, output_dir, args):
     return success
 
 
-def _update_model(model):
+def _update_model(model: Model) -> None:
     """Update model configs for omz_wrapper."""
     m_hash = hashlib.sha256()
     for file in model.files:
         url = file.source.url
         etag = _get_etag(url)
-        if etag is not None:
+        if etag is not None and isinstance(etag, str):
             m_hash.update(bytes(etag, "utf-8"))
     model.subdirectory_ori = model.subdirectory
     model.subdirectory = Path(m_hash.hexdigest())
@@ -174,7 +180,7 @@ def _update_model(model):
         model.conversion_to_onnx_args.append("--model-path=")
 
 
-def get_model_configuration(model_name):
+def get_model_configuration(model_name: str) -> Optional[Model]:
     """Getter function of model configuration from name."""
     model_configurations = load_models(_common.MODEL_ROOT, {})
     for model in model_configurations:
@@ -184,7 +190,12 @@ def get_model_configuration(model_name):
     return None
 
 
-def download_model(model, download_dir=OMZ_CACHE, precisions=None, force=False):
+def download_model(
+    model: Model,
+    download_dir: Optional[Union[str, Path]] = OMZ_CACHE,
+    precisions: Optional[Union[dict, set]] = None,
+    force: bool = False,
+) -> None:
     """Function for downloading model from directory."""
     download_dir = Path("") if download_dir is None else Path(download_dir)
     precisions = precisions if precisions else {"FP32"}
@@ -220,7 +231,14 @@ def download_model(model, download_dir=OMZ_CACHE, precisions=None, force=False):
         sys.exit(1)
 
 
-def _convert(reporter, model, output_dir, namespace, mo_props, requested_precisions):
+def _convert(
+    reporter: _reporting.Reporter,
+    model: Model,
+    output_dir: Union[str, Path],
+    namespace: NameSpace,
+    mo_props: ModelOptimizerProperties,
+    requested_precisions: Union[dict, tuple, set],
+) -> bool:
     """Convert function for OMZ wrapper."""
     if model.mo_args is None:
         reporter.print_section_heading("Skipping {} (no conversions defined)", model.name)
@@ -311,13 +329,13 @@ def _convert(reporter, model, output_dir, namespace, mo_props, requested_precisi
 
 
 def convert_model(
-    model,
-    download_dir=OMZ_CACHE,
-    output_dir=OMZ_CACHE,
-    precisions=None,
-    force=False,
+    model: Model,
+    download_dir: Optional[Union[str, Path]] = OMZ_CACHE,
+    output_dir: Optional[Union[str, Path]] = OMZ_CACHE,
+    precisions: Optional[Union[dict, set]] = None,
+    force: bool = False,
     *args,
-):  # pylint: disable=keyword-arg-before-vararg
+) -> Model:  # pylint: disable=keyword-arg-before-vararg
     """Converting model for OMZ wrapping."""
     download_dir = Path("") if download_dir is None else Path(download_dir)
     output_dir = Path("") if output_dir is None else Path(output_dir)
@@ -358,7 +376,7 @@ def convert_model(
         mo_dir = mo_package_path
 
         if mo_package_path is None:
-            mo_package_path, stderr = _common.get_package_path(args.python, "mo")
+            mo_package_path, stderr = _common.get_package_path(namespace.python, "mo")
             if mo_package_path is None:
                 sys.exit(f"Unable to load Model Optimizer. Errors occurred: {stderr}")
             mo_dir = mo_package_path.parent
@@ -369,16 +387,15 @@ def convert_model(
         extra_args=[],
         base_dir=mo_dir,
     )
-    shared_convert_args = (output_dir, namespace, mo_props, precisions)
 
     results = []
     models = []
     if model.model_stages:
         for model_stage in model.model_stages:
-            results.append(_convert(reporter, model_stage, *shared_convert_args))
+            results.append(_convert(reporter, model_stage, output_dir, namespace, mo_props, precisions))
             models.append(model_stage)
     else:
-        results.append(_convert(reporter, model, *shared_convert_args))
+        results.append(_convert(reporter, model, output_dir, namespace, mo_props, precisions))
         models.append(model)
 
     failed_models = [model.name for model, successful in zip(models, results) if not successful]
@@ -392,7 +409,9 @@ def convert_model(
     return _get_ir_path(output_dir / model.subdirectory)
 
 
-def get_omz_model(model_name, download_dir=OMZ_CACHE, output_dir=OMZ_CACHE, force=False):
+def get_omz_model(
+    model_name: str, download_dir: str = OMZ_CACHE, output_dir: str = OMZ_CACHE, force: bool = False
+) -> Model:
     """Get OMZ model from name and download_dir."""
     model = get_model_configuration(model_name)
     download_model(model, download_dir=download_dir, force=force)

@@ -11,6 +11,7 @@ import openvino.runtime as ov
 
 from otx.v2.api.utils.logger import get_logger
 
+from ..graph import Graph
 from ..graph.parsers.builder import PARSERS
 from .ov_model import OVModel
 
@@ -57,6 +58,8 @@ class ParserMixin:
         return inputs, outputs
 
     @staticmethod
-    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:  # pylint: disable=unused-argument
+    def parser(
+        graph: Graph, **kwargs
+    ) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:  # pylint: disable=unused-argument
         """Function parser."""
         return dict(inputs=[], outputs=[])

@@ -17,10 +17,10 @@ logger = get_logger()
 
 
 class _DummyLock:
-    def __enter__(self, *args, **kwargs):
+    def __enter__(self, *args, **kwargs) -> None:
         pass
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, *args, **kwargs) -> None:
         pass
 
 
@@ -33,7 +33,7 @@ class MemCacheHandlerBase:
     def __init__(self, mem_size: int) -> None:
         self._init_data_structs(mem_size)
 
-    def _init_data_structs(self, mem_size: int):
+    def _init_data_structs(self, mem_size: int) -> None:
         self._arr = (ct.c_uint8 * mem_size)()
         self._cur_page = ct.c_size_t(0)
         self._cache_addr: Union[Dict, DictProxy] = {}
@@ -49,7 +49,7 @@ class MemCacheHandlerBase:
         """Get the reserved memory pool size (bytes)."""
         return len(self._arr)
 
-    def get(self, key: Any) -> Optional[np.ndarray]:
+    def get(self, key: Any) -> Optional[np.ndarray]:  # noqa: ANN401
         """Try to look up the cached item with the given key.
 
         Args:
@@ -68,7 +68,7 @@ class MemCacheHandlerBase:
         data = np.frombuffer(self._arr, dtype=np.uint8, count=count, offset=offset)
         return np.lib.stride_tricks.as_strided(data, shape, strides)
 
-    def put(self, key: Any, data: np.ndarray) -> Optional[int]:
+    def put(self, key: Any, data: np.ndarray) -> Optional[int]:  # noqa: ANN401
         """Try to store np.ndarray with a key to the reserved memory pool.
 
         Args:
@@ -132,7 +132,7 @@ class MemCacheHandlerForMP(MemCacheHandlerBase):
     Use if PyTorch's DataLoader.num_workers > 0.
     """
 
-    def _init_data_structs(self, mem_size: int):
+    def _init_data_structs(self, mem_size: int) -> None:
         self._arr = mp.Array(ct.c_uint8, mem_size, lock=False)
         self._cur_page = mp.Value(ct.c_size_t, 0, lock=False)
 
@@ -156,7 +156,7 @@ class MemCacheHandlerSingleton:
     instance: MemCacheHandlerBase
 
     @classmethod
-    def get(cls) -> MemCacheHandlerBase:
+    def get(cls) -> MemCacheHandlerBase:  # noqa: ANN102
         """Get the created MemCacheHandlerBase.
 
         If no one is created before, raise RuntimeError.
@@ -168,7 +168,7 @@ class MemCacheHandlerSingleton:
         return cls.instance
 
     @classmethod
-    def create(cls, mode: str, mem_size: int) -> MemCacheHandlerBase:
+    def create(cls, mode: str, mem_size: int) -> MemCacheHandlerBase:  # noqa: ANN102
         """Create a new MemCacheHandlerBase instance.
 
         Args:
@@ -202,7 +202,7 @@ class MemCacheHandlerSingleton:
         return cls.instance
 
     @classmethod
-    def delete(cls) -> None:
+    def delete(cls) -> None:  # noqa: ANN102
         """Delete the existing MemCacheHandlerBase instance."""
         if hasattr(cls, "instance"):
             del cls.instance

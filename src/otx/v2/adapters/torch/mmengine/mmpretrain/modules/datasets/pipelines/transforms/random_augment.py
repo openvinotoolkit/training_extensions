@@ -10,6 +10,7 @@ https://github.com/google-research/fixmatch/blob/master/libml/ctaugment.py
 """
 
 import random
+from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
 import PIL
@@ -18,30 +19,30 @@ from mmpretrain.datasets.transforms import TRANSFORMS
 PARAMETER_MAX = 10
 
 
-def auto_contrast(img, **kwargs):
+def auto_contrast(img: np.ndarray, **kwargs) -> tuple:
     """Applies auto contrast to an image."""
     return PIL.ImageOps.autocontrast(img), None
 
 
-def brightness(img, value, max_value, bias=0):
+def brightness(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies brightness adjustment to an image."""
     value = _float_parameter(value, max_value) + bias
     return PIL.ImageEnhance.Brightness(img).enhance(value), value
 
 
-def color(img, value, max_value, bias=0):
+def color(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies color adjustment to an image."""
     value = _float_parameter(value, max_value) + bias
     return PIL.ImageEnhance.Color(img).enhance(value), value
 
 
-def contrast(img, value, max_value, bias=0):
+def contrast(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies contrast adjustment to an image."""
     value = _float_parameter(value, max_value) + bias
     return PIL.ImageEnhance.Contrast(img).enhance(value), value
 
 
-def cutout(img, value, max_value, bias=0):
+def cutout(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies cutout augmentation to an image."""
     if value == 0:
         return img
@@ -50,7 +51,7 @@ def cutout(img, value, max_value, bias=0):
     return cutout_abs(img, value), value
 
 
-def cutout_abs(img, value, **kwargs):
+def cutout_abs(img: np.ndarray, value: float, **kwargs) -> tuple:
     """Applies cutout with absolute pixel size to an image."""
     w, h = img.size
     x0 = np.random.uniform(0, w)
@@ -67,23 +68,23 @@ def cutout_abs(img, value, **kwargs):
     return img, xy, rec_color
 
 
-def equalize(img, **kwargs):
+def equalize(img: np.ndarray, **kwargs) -> tuple:
     """Applies equalization to an image."""
     return PIL.ImageOps.equalize(img), None
 
 
-def identity(img, **kwargs):
+def identity(img: np.ndarray, **kwargs) -> tuple:
     """Returns the original image without any transformation."""
     return img, None
 
 
-def posterize(img, value, max_value, bias=0):
+def posterize(img: np.ndarray, value: int, max_value: int, bias: int = 0) -> tuple:
     """Applies posterization to an image."""
     value = _int_parameter(value, max_value) + bias
     return PIL.ImageOps.posterize(img, value), value
 
 
-def rotate(img, value, max_value, bias=0):
+def rotate(img: np.ndarray, value: int, max_value: int, bias: int = 0) -> tuple:
     """Applies rotation to an image."""
     value = _int_parameter(value, max_value) + bias
     # disable B311 random - used for the random sampling not for security/crypto
@@ -92,13 +93,13 @@ def rotate(img, value, max_value, bias=0):
     return img.rotate(value), value
 
 
-def sharpness(img, value, max_value, bias=0):
+def sharpness(img: np.ndarray, value: float, max_value: float, bias: int = 0) -> tuple:
     """Applies Sharpness to an image."""
     value = _float_parameter(value, max_value) + bias
     return PIL.ImageEnhance.Sharpness(img).enhance(value), value
 
 
-def shear_x(img, value, max_value, bias=0):
+def shear_x(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies ShearX to an image."""
     value = _float_parameter(value, max_value) + bias
     # disable B311 random - used for the random sampling not for security/crypto
@@ -107,7 +108,7 @@ def shear_x(img, value, max_value, bias=0):
     return img.transform(img.size, PIL.Image.AFFINE, (1, value, 0, 0, 1, 0)), value
 
 
-def shear_y(img, value, max_value, bias=0):
+def shear_y(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies ShearY to an image."""
     value = _float_parameter(value, max_value) + bias
     # disable B311 random - used for the random sampling not for security/crypto
@@ -116,13 +117,13 @@ def shear_y(img, value, max_value, bias=0):
     return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, value, 1, 0)), value
 
 
-def solarize(img, value, max_value, bias=0):
+def solarize(img: np.ndarray, value: int, max_value: int, bias: int = 0) -> tuple:
     """Applies Solarize to an image."""
     value = _int_parameter(value, max_value) + bias
     return PIL.ImageOps.solarize(img, 256 - value), value
 
 
-def translate_x(img, value, max_value, bias=0):
+def translate_x(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies TranslateX to an image."""
     value = _float_parameter(value, max_value) + bias
     # disable B311 random - used for the random sampling not for security/crypto
@@ -132,7 +133,7 @@ def translate_x(img, value, max_value, bias=0):
     return img.transform(img.size, PIL.Image.AFFINE, (1, 0, value, 0, 1, 0)), value
 
 
-def translate_y(img, value, max_value, bias=0):
+def translate_y(img: np.ndarray, value: float, max_value: float, bias: float = 0.0) -> tuple:
     """Applies TranslateX to an image."""
     value = _float_parameter(value, max_value) + bias
     # disable B311 random - used for the random sampling not for security/crypto
@@ -142,15 +143,15 @@ def translate_y(img, value, max_value, bias=0):
     return img.transform(img.size, PIL.Image.AFFINE, (1, 0, 0, 0, 1, value)), value
 
 
-def _float_parameter(value, max_value):
+def _float_parameter(value: float, max_value: float) -> float:
     return float(value) * max_value / PARAMETER_MAX
 
 
-def _int_parameter(value, max_value):
+def _int_parameter(value: int, max_value: int) -> int:
     return int(value * max_value / PARAMETER_MAX)
 
 
-rand_augment_pool = [
+rand_augment_pool: List[Tuple[Callable, Optional[Union[int, float]], Optional[Union[int, float]]]] = [
     (auto_contrast, None, None),
     (brightness, 0.9, 0.05),
     (color, 0.9, 0.05),
@@ -173,7 +174,7 @@ rand_augment_pool = [
 class OTXRandAugment:
     """RandAugment class for OTX classification."""
 
-    def __init__(self, num_aug, magnitude, cutout_value=16) -> None:
+    def __init__(self, num_aug: int, magnitude: int, cutout_value: int = 16) -> None:
         assert num_aug >= 1
         assert 1 <= magnitude <= 10
         self.num_aug = num_aug
@@ -181,7 +182,7 @@ class OTXRandAugment:
         self.cutout_value = cutout_value
         self.augment_pool = rand_augment_pool
 
-    def __call__(self, results):
+    def __call__(self, results: dict) -> dict:
         """Call function of OTXRandAugment class."""
         for key in results.get("img_fields", ["img"]):
             img = results[key]

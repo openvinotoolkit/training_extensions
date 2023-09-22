@@ -3,9 +3,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict, Optional
+from typing import Callable, Optional
 
-from otx.v2.adapters.openvino.registry import Registry
+from ..registry import Registry
+from .op import Operation
 
 
 class OperationRegistry(Registry):
@@ -13,12 +14,12 @@ class OperationRegistry(Registry):
 
     def __init__(self, name: str, add_name_as_attr: bool = False) -> None:
         super().__init__(name, add_name_as_attr)
-        self._registry_dict_by_type: Dict[str, Any] = {}
+        self._registry_dict_by_type: dict = {}
 
-    def register(self, name: Optional[Any] = None):
+    def register(self, name: Optional[str] = None) -> Callable:
         """Register function from name."""
 
-        def wrap(obj):
+        def wrap(obj) -> object:  # noqa: ANN001
             layer_name = name
             if layer_name is None:
                 layer_name = obj.__name__
@@ -32,20 +33,22 @@ class OperationRegistry(Registry):
 
         return wrap
 
-    def _register(self, obj, name, types, version):
+    def _register(self, obj: object, name: str, types: Optional[str] = None, version: Optional[int] = None) -> None:
         """Register function from obj and obj name."""
-        super()._register(obj, name)
+        super()._register(obj, name, types, version)
+        if types is None or version is None:
+            return
         if types not in self._registry_dict_by_type:
             self._registry_dict_by_type[types] = {}
         if version in self._registry_dict_by_type[types]:
             raise KeyError(f"{version} is already registered in {types}")
         self._registry_dict_by_type[types][version] = obj
 
-    def get_by_name(self, name):
+    def get_by_name(self, name: str) -> object:
         """Get obj from name."""
         return self.get(name)
 
-    def get_by_type_version(self, types: str, version: int) -> Any:
+    def get_by_type_version(self, types: str, version: int) -> Operation:
         """Get obj from type and version."""
         if types not in self._registry_dict_by_type:
             raise KeyError(f"type {types} is not registered in {self._name}")
@@ -54,4 +57,4 @@ class OperationRegistry(Registry):
         return self._registry_dict_by_type[types][version]
 
 
-OPS = OperationRegistry("ov ops")
+OPS: OperationRegistry = OperationRegistry("ov ops")

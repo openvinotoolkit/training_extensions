@@ -7,9 +7,8 @@ import inspect
 from typing import Dict, List, Optional, Union
 
 import torch
-from openvino.runtime import Node  # pylint: disable=no-name-in-module
 
-from ..op import Operation
+from ..op import Attribute, Operation
 from ..utils import convert_op_to_torch
 
 
@@ -43,7 +42,7 @@ class OperationModule(torch.nn.Module):
         else:
             raise NotImplementedError
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args, **kwargs) -> torch.Tensor:
         """Operationmodule's forward function."""
         inputs = {k: v() if v is not None else None for k, v in self._dependent_ops.items()}
 
@@ -62,32 +61,32 @@ class OperationModule(torch.nn.Module):
         return self.op_v(**inputs)
 
     @property
-    def type(self):  # pylint: disable=invalid-overridden-method
+    def type(self) -> str:  # pylint: disable=invalid-overridden-method
         """Operationmodule's type property."""
         return self.op_v.type
 
     @property
-    def version(self):
+    def version(self) -> int:
         """Operationmodule's version property."""
         return self.op_v.version
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Operationmodule's name property."""
         return self.op_v.name
 
     @property
-    def shape(self):
+    def shape(self) -> Optional[tuple]:
         """Operationmodule's shape property."""
         return self.op_v.shape
 
     @property
-    def attrs(self):
+    def attrs(self) -> Attribute:
         """Operationmodule's attrs property."""
         return self.op_v.attrs
 
 
-def convert_op_to_torch_module(target_op: Node):
+def convert_op_to_torch_module(target_op: Operation) -> OperationModule:
     """Convert op Node to torch module."""
     dependent_modules = []
     for in_port in target_op.inputs():

@@ -3,7 +3,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import copy
-from typing import Any, Dict, List
+from typing import List
 
 import numpy as np
 from mmengine.dataset import Compose
@@ -28,7 +28,7 @@ class RandomAppliedTrans:
         t = [build_from_cfg(t, TRANSFORMS) for t in transforms]  # pylint: disable=invalid-name
         self.trans = tv_transforms.RandomApply(t, p=p)
 
-    def __call__(self, results: Dict[str, Any]):
+    def __call__(self, results: dict) -> dict:
         """Callback function of RandomAppliedTrans.
 
         :param results: Inputs to be transformed.
@@ -48,7 +48,7 @@ class OTXColorJitter(tv_transforms.ColorJitter):
     Use this instead of mmpretrain's because there is no `hue` parameter in mmpretrain ColorJitter.
     """
 
-    def __call__(self, results):
+    def __call__(self, results: dict) -> dict:
         """Callback function of OTXColorJitter.
 
         :param results: Inputs to be transformed.
@@ -68,10 +68,10 @@ class PILImageToNDArray:
         keys (list[str]): list to support multiple image converting from PIL to NDArray.
     """
 
-    def __init__(self, keys=None) -> None:
+    def __init__(self, keys: list = []) -> None:
         self.keys = keys
 
-    def __call__(self, results):
+    def __call__(self, results: dict) -> dict:
         """Callback function of PILImageToNDArray."""
         for key in self.keys:
             img = results[key]
@@ -104,7 +104,7 @@ class PostAug:
     def __init__(self, keys: dict) -> None:
         self.pipelines = {key: Compose(pipeline) for key, pipeline in keys.items()}
 
-    def __call__(self, results):
+    def __call__(self, results: dict) -> dict:
         """Callback function of PostAug."""
         for key, pipeline in self.pipelines.items():
             results[key] = pipeline(copy.deepcopy(results))["img"]

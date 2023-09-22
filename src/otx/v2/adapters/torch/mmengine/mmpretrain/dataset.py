@@ -24,7 +24,7 @@ from otx.v2.adapters.torch.mmengine.mmpretrain.modules.datasets import (
     OTXMultilabelClsDataset,
     SelfSLDataset,
 )
-from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
 from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
@@ -336,7 +336,7 @@ class Dataset(BaseDataset):
         return subset_dataloader
 
     @property
-    def num_classes(self):
+    def num_classes(self) -> int:
         if not self.initialize:
             self._initialize()
         return len(self.label_schema.get_labels(include_empty=False))

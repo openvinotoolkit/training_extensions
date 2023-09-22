@@ -6,7 +6,7 @@
 import math
 from dataclasses import dataclass, field
 from functools import partial
-from typing import List
+from typing import Callable, List, Optional, Union
 
 import torch
 from torch.nn import functional
@@ -23,7 +23,7 @@ class PadV1Attribute(Attribute):
 
     pad_mode: str
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """PadV1Attribute's post-init function."""
         super().__post_init__()
         valid_pad_mode = ["constant", "edge", "reflect", "symmetric"]
@@ -38,6 +38,7 @@ class PadV1(Operation[PadV1Attribute]):
     TYPE = "Pad"
     VERSION = 1
     ATTRIBUTE_FACTORY = PadV1Attribute
+    attrs: PadV1Attribute
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -55,12 +56,18 @@ class PadV1(Operation[PadV1Attribute]):
         raise NotImplementedError
 
     @staticmethod
-    def get_torch_pad_dim(pads_begin, pads_end):
+    def get_torch_pad_dim(pads_begin: list, pads_end: list) -> list:
         """PadV1's get_torch_pad_dim function."""
         # reverse padding
         return [val for tup in zip(pads_begin[::-1], pads_end[::-1]) for val in tup]
 
-    def forward(self, inputs, pads_begin, pads_end, pad_value=0):
+    def forward(
+        self,
+        inputs: torch.Tensor,
+        pads_begin: Union[list, torch.Tensor],
+        pads_end: Union[list, torch.Tensor],
+        pad_value: int = 0,
+    ) -> torch.Tensor:
         """PadV1's forward function."""
         pads_begin = pads_begin if isinstance(pads_begin, list) else pads_begin.detach().cpu().tolist()
         pads_end = pads_end if isinstance(pads_end, list) else pads_end.detach().cpu().tolist()
@@ -83,8 +90,9 @@ class ConcatV0(Operation[ConcatV0Attribute]):
     TYPE = "Concat"
     VERSION = 0
     ATTRIBUTE_FACTORY = ConcatV0Attribute
+    attrs: ConcatV0Attribute
 
-    def forward(self, *inputs):
+    def forward(self, *inputs) -> torch.Tensor:
         """ConcatV0's forward function."""
         return torch.cat(inputs, self.attrs.axis)
 
@@ -103,8 +111,9 @@ class TransposeV1(Operation[TransposeV1Attribute]):
     TYPE = "Transpose"
     VERSION = 1
     ATTRIBUTE_FACTORY = TransposeV1Attribute
+    attrs: TransposeV1Attribute
 
-    def forward(self, inputs, order):
+    def forward(self, inputs: torch.Tensor, order: torch.Tensor) -> torch.Tensor:
         """TransposeV1's forward function."""
         if order.numel() == 0:
             order = list(range(inputs.dim()))[::-1]
@@ -127,8 +136,9 @@ class GatherV0(Operation[GatherV0Attribute]):
     TYPE = "Gather"
     VERSION = 0
     ATTRIBUTE_FACTORY = GatherV0Attribute
+    attrs: GatherV0Attribute
 
-    def forward(self, inputs, indices, axis):
+    def forward(self, inputs: torch.Tensor, indices: torch.Tensor, axis: torch.Tensor) -> torch.Tensor:
         """GatherV0's forward function."""
         assert axis.numel() == 1
         axis = axis.squeeze()
@@ -180,8 +190,9 @@ class GatherV1(Operation[GatherV1Attribute]):
     TYPE = "Gather"
     VERSION = 1
     ATTRIBUTE_FACTORY = GatherV1Attribute
+    attrs: GatherV1Attribute
 
-    def forward(self, inputs, indices, axis):
+    def forward(self, inputs: torch.Tensor, indices: torch.Tensor, axis: int) -> torch.Tensor:
         """GatherV1's forward function."""
         return torch.gather(input=inputs, dim=axis, index=indices)
 
@@ -204,8 +215,11 @@ class StridedSliceV1(Operation[StridedSliceV1Attribute]):
     TYPE = "StridedSlice"
     VERSION = 1
     ATTRIBUTE_FACTORY = StridedSliceV1Attribute
+    attrs: StridedSliceV1Attribute
 
-    def forward(self, inputs, begin, end, stride=None):
+    def forward(
+        self, inputs: torch.Tensor, begin: torch.Tensor, end: list, stride: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """StridedSliceV1's forward function."""
         if sum(self.attrs.ellipsis_mask) > 0:
             raise NotImplementedError
@@ -225,33 +239,33 @@ class StridedSliceV1(Operation[StridedSliceV1Attribute]):
             length = inputs.size(i)
 
             # begin index is inclusive
-            b = torch.clamp(b, -length, length - 1)
+            _b = torch.clamp(b, -length, length - 1)
             # end index is exclusive
-            e = torch.clamp(e, -length - 1, length)
+            _e = torch.clamp(e, -length - 1, length)
 
             if stride_0 > 0:
-                b = b + length if b < 0 else b
-                e = e + length if e < 0 else e
-                indices = torch.arange(b, e, stride_0, device=inputs.device)
+                _b = _b + length if _b < 0 else _b
+                _e = _e + length if _e < 0 else _e
+                indices = torch.arange(_b, _e, stride_0, device=inputs.device)
             else:
-                b = b - length if b >= 0 else b
-                e = e - length if e >= 0 else e
-                indices = torch.arange(b, e, stride_0, device=inputs.device)
+                _b = _b - length if _b >= 0 else _b
+                _e = _e - length if _e >= 0 else _e
+                indices = torch.arange(_b, _e, stride_0, device=inputs.device)
                 indices += length
 
             output = torch.index_select(output, i, indices)
 
         for i, mask in enumerate(self.attrs.new_axis_mask[::-1]):
             if mask == 1:
-                i = abs(i - len(self.attrs.new_axis_mask) + 1)
-                output = output.unsqueeze(i)
+                _i = abs(i - len(self.attrs.new_axis_mask) + 1)
+                output = output.unsqueeze(_i)
 
         for i, mask in enumerate(self.attrs.shrink_axis_mask[::-1]):
             if mask == 1:
-                i = abs(i - len(self.attrs.new_axis_mask) + 1)
-                if output.size(i) != 1:
+                _i = abs(i - len(self.attrs.new_axis_mask) + 1)
+                if output.size(_i) != 1:
                     raise NotImplementedError
-                output = output.squeeze(i)
+                output = output.squeeze(_i)
 
         return output
 
@@ -270,8 +284,9 @@ class SplitV1(Operation[SplitV1Attribute]):
     TYPE = "Split"
     VERSION = 1
     ATTRIBUTE_FACTORY = SplitV1Attribute
+    attrs: SplitV1Attribute
 
-    def forward(self, inputs, axis):
+    def forward(self, inputs: torch.Tensor, axis: int) -> torch.Tensor:
         """SplitV1's forward function."""
         split_size = inputs.shape[axis] // self.attrs.num_splits
         return torch.split(tensor=inputs, split_size_or_sections=split_size, dim=axis)
@@ -291,14 +306,15 @@ class VariadicSplitV1(Operation[VariadicSplitV1Attribute]):
     TYPE = "VariadicSplit"
     VERSION = 1
     ATTRIBUTE_FACTORY = VariadicSplitV1Attribute
+    attrs: VariadicSplitV1Attribute
 
-    def forward(self, inputs, axis, split_lengths):
+    def forward(self, inputs: torch.Tensor, axis: int, split_lengths: list) -> tuple:
         """VariadicSplitV1's forward function."""
         idx = [i for i, j in enumerate(split_lengths) if j == -1]
         if idx:
             assert len(idx) == 1
-            idx = idx[0]
-            split_lengths[idx] = inputs.size(axis) - sum(split_lengths) - 1
+            _idx = idx[0]
+            split_lengths[_idx] = inputs.size(axis) - sum(split_lengths) - 1
         assert inputs.size(axis) == sum(split_lengths)
         outputs = []
         start_idx = 0
@@ -329,8 +345,9 @@ class ShuffleChannelsV0(Operation[ShuffleChannelsV0Attribute]):
     TYPE = "ShuffleChannels"
     VERSION = 0
     ATTRIBUTE_FACTORY = ShuffleChannelsV0Attribute
+    attrs: ShuffleChannelsV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ShuffleChannelsV0's forward function."""
         #  n, c, h, w = input.shape
         assert inputs.dim() == 4
@@ -369,7 +386,7 @@ class BroadcastV3Attribute(Attribute):
 
     mode: str = field(default="numpy")
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """BroadcastV3Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["numpy", "explicit", "bidirectional"]
@@ -384,8 +401,9 @@ class BroadcastV3(Operation[BroadcastV3Attribute]):
     TYPE = "Broadcast"
     VERSION = 3
     ATTRIBUTE_FACTORY = BroadcastV3Attribute
+    attrs: BroadcastV3Attribute
 
-    def forward(self, inputs, target_shape, axes_mapping=None):
+    def forward(self, inputs: torch.Tensor, target_shape: list, axes_mapping: Optional[list] = None) -> torch.Tensor:
         """BroadcastV3's forward function."""
         if self.attrs.mode == "numpy":
             return inputs.expand(*target_shape)
@@ -417,8 +435,9 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
     TYPE = "ScatterNDUpdate"
     VERSION = 3
     ATTRIBUTE_FACTORY = ScatterNDUpdateV3Attribute
+    attrs: ScatterNDUpdateV3Attribute
 
-    def forward(self, inputs, indicies, updates):
+    def forward(self, inputs: torch.Tensor, indicies: torch.Tensor, updates: torch.Tensor) -> torch.Tensor:
         """ScatterNDUpdateV3's forward function."""
         # TODO: need to verify
         if updates.numel() == 1:
@@ -451,11 +470,12 @@ class ScatterUpdateV3(Operation[ScatterUpdateV3Attribute]):
     TYPE = "ScatterUpdate"
     VERSION = 3
     ATTRIBUTE_FACTORY = ScatterUpdateV3Attribute
+    attrs: ScatterUpdateV3Attribute
 
-    def forward(self, inputs, indicies, updates, axis):
+    def forward(self, inputs: torch.Tensor, indicies: torch.Tensor, updates: torch.Tensor, axis: int) -> torch.Tensor:
         """ScatterUpdateV3's forward function."""
         # TODO: need to verify
-        axis = axis.item()
+        # axis = axis.item()
 
         if inputs.dtype != updates.dtype:
             updates = updates.type(inputs.dtype)
@@ -484,13 +504,22 @@ class TileV0(Operation[TileV0Attribute]):
     TYPE = "Tile"
     VERSION = 0
     ATTRIBUTE_FACTORY = TileV0Attribute
+    attrs: TileV0Attribute
 
-    def forward(self, inputs, repeats):
+    def forward(self, inputs: torch.Tensor, repeats: torch.Tensor) -> torch.Tensor:
         """TileV0's forward function."""
         return torch.tile(inputs, repeats.tolist())
 
 
-def get_torch_padding(pads_begin, pads_end, auto_pad, input_size, weight_size, stride, dilation=None):
+def get_torch_padding(
+    pads_begin: list,
+    pads_end: list,
+    auto_pad: str,
+    input_size: list,
+    weight_size: list,
+    stride: list,
+    dilation: Optional[list] = None,
+) -> Union[Callable, int]:
     """Getter function for torch padding."""
     if dilation is None:
         dilation = [1 for _ in input_size]

@@ -4,9 +4,11 @@
 #
 
 import math
+from typing import Optional
 
 from mmengine.hooks import CheckpointHook, Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 
 from otx.v2.adapters.torch.mmengine.modules.hooks.early_stopping_hook import (
     EarlyStoppingHook,
@@ -37,10 +39,10 @@ class AdaptiveTrainSchedulingHook(Hook):
 
     def __init__(
         self,
-        max_interval=5,
-        decay=-0.025,
-        enable_adaptive_interval_hook=False,
-        enable_eval_before_run=False,
+        max_interval: int = 5,
+        decay: float = -0.025,
+        enable_adaptive_interval_hook: bool = False,
+        enable_eval_before_run: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -53,7 +55,7 @@ class AdaptiveTrainSchedulingHook(Hook):
         self._initialized = False
         self._original_interval = None
 
-    def before_run(self, runner):
+    def before_run(self, runner: Runner) -> None:
         """Before run."""
         if self.enable_eval_before_run:
             hook = self.get_evalhook(runner)
@@ -64,7 +66,7 @@ class AdaptiveTrainSchedulingHook(Hook):
             hook.interval = 1
             hook.start = 0
 
-    def before_train_iter(self, runner):
+    def before_train_iter(self, runner: Runner) -> None:
         """Before train iter."""
         if self.enable_eval_before_run and self._original_interval is not None:
             hook = self.get_evalhook(runner)
@@ -99,12 +101,12 @@ class AdaptiveTrainSchedulingHook(Hook):
                     hook.interval = adaptive_interval
             self._initialized = True
 
-    def get_adaptive_interval(self, iter_per_epoch):
+    def get_adaptive_interval(self, iter_per_epoch: int) -> int:
         """Get adaptive interval."""
         adaptive_interval = max(round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1)
         return adaptive_interval
 
-    def get_evalhook(self, runner):
+    def get_evalhook(self, runner: Runner) -> Optional[Hook]:
         """Get evaluation hook."""
         target_hook = None
         # TODO: There is no longer an EvalHook in mmX.

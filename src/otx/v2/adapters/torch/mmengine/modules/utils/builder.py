@@ -32,7 +32,7 @@ def build_dataset(
 
 
 def build_dataloader(
-    dataset,
+    dataset: Dataset,
     config: Config,
     subset: str,
     dataloader_builder: Callable,

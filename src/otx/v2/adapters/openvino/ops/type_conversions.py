@@ -7,8 +7,8 @@ from dataclasses import dataclass
 
 import torch
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from .builder import OPS
+from .op import Attribute, Operation
 
 _torch_to_ov = {
     torch.uint8: ["u1", "u4", "u8"],
@@ -52,21 +52,22 @@ class ConvertV0(Operation[ConvertV0Attribute]):
     TYPE = "Convert"
     VERSION = 0
     ATTRIBUTE_FACTORY = ConvertV0Attribute
+    attrs: ConvertV0Attribute
 
     @staticmethod
-    def convert_ov_type(ov_type):
+    def convert_ov_type(ov_type: str) -> type:
         """ConvertV0's convert_ov_type function."""
         if ov_type not in _ov_to_torch:
             raise NotImplementedError
         return _ov_to_torch[ov_type]
 
     @staticmethod
-    def convert_torch_type(torch_type):
+    def convert_torch_type(torch_type: type) -> str:
         """ConvertV0's convert_torch_type function."""
         if torch_type not in _torch_to_ov:
             raise NotImplementedError
         return _torch_to_ov[torch_type][-1]
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ConvertV0's forward function."""
         return inputs.type(self.convert_ov_type(self.attrs.destination_type))

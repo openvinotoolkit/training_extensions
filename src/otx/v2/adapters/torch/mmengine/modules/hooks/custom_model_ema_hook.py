@@ -20,13 +20,13 @@ logger = get_logger()
 class CustomModelEMAHook(EMAHook):
     """Custom EMAHook to update momentum for ema over training."""
 
-    def __init__(self, momentum=0.0002, epoch_momentum=0.0, interval=1, **kwargs) -> None:
+    def __init__(self, momentum: float = 0.0002, epoch_momentum: float = 0.0, interval: int = 1, **kwargs) -> None:
         super().__init__(momentum=momentum, interval=interval, **kwargs)
         self.momentum = momentum
         self.epoch_momentum = epoch_momentum
         self.interval = interval
 
-    def before_train_epoch(self, runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Update the momentum."""
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
@@ -57,7 +57,7 @@ class EMAMomentumUpdateHook(Hook):
         self.end_momentum = end_momentum
         self.update_interval = update_interval
 
-    def before_train_epoch(self, runner: Runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Called before_train_epoch in EMAMomentumUpdateHook."""
         if not self.by_epoch:
             return
@@ -81,7 +81,7 @@ class EMAMomentumUpdateHook(Hook):
             )
             model.momentum = updated_m
 
-    def before_train_iter(self, runner: Runner):
+    def before_train_iter(self, runner: Runner) -> None:
         """Called before_train_iter in EMAMomentumUpdateHook."""
         if self.by_epoch:
             return
@@ -105,7 +105,7 @@ class EMAMomentumUpdateHook(Hook):
             )
             model.momentum = updated_m
 
-    def after_train_iter(self, runner: Runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Called after_train_iter in EMAMomentumUpdateHook."""
         if self.every_n_iters(runner, self.update_interval):
             if is_model_wrapper(runner.model):

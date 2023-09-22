@@ -12,7 +12,7 @@ import torch
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
-from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
@@ -101,7 +101,7 @@ class MMPTEngine(MMXEngine):
         device: str = "cpu",
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
-    ):
+    ) -> dict:
         return super().export(
             model=model,
             checkpoint=checkpoint,

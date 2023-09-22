@@ -4,6 +4,7 @@
 #
 
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 
 from otx.v2.adapters.torch.mmengine.modules.hooks.dual_model_ema_hook import (
     DualModelEMAHook,
@@ -17,12 +18,12 @@ logger = get_logger()
 class UnbiasedTeacherHook(DualModelEMAHook):
     """UnbiasedTeacherHook for semi-supervised learnings."""
 
-    def __init__(self, min_pseudo_label_ratio=0.1, **kwargs) -> None:
+    def __init__(self, min_pseudo_label_ratio: float = 0.1, **kwargs) -> None:
         super().__init__(**kwargs)
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
         self.unlabeled_loss_enabled = False
 
-    def before_train_epoch(self, runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Enable unlabeled loss if over start epoch."""
         super().before_train_epoch(runner)
 
@@ -38,7 +39,7 @@ class UnbiasedTeacherHook(DualModelEMAHook):
             self.unlabeled_loss_enabled = True
             logger.info("---------- Enabled unlabeled loss")
 
-    def after_train_iter(self, runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Update ema parameter every self.interval iterations."""
         if runner.iter % self.interval != 0:
             # Skip update
@@ -52,7 +53,7 @@ class UnbiasedTeacherHook(DualModelEMAHook):
         # EMA
         self._ema_model()
 
-    def _get_average_pseudo_label_ratio(self, runner):
+    def _get_average_pseudo_label_ratio(self, runner: Runner) -> float:
         output_backup = runner.log_buffer.output.copy()
         was_ready = runner.log_buffer.ready
         runner.log_buffer.average(100)

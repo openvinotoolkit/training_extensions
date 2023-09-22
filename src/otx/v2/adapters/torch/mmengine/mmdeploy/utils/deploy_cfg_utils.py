@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 from mmengine.config import ConfigDict
 
-from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 
 
 def patch_input_preprocessing(
@@ -15,7 +15,7 @@ def patch_input_preprocessing(
     mean: List[float] = [],
     std: List[float] = [],
     to_rgb: bool = False,
-):
+) -> None:
     """Update backend configuration with input preprocessing options.
 
     - If `"to_rgb"` in Normalize config is truthy, it adds `"--reverse_input_channels"` as a flag.

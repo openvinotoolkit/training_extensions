@@ -13,7 +13,7 @@ from mmpretrain import get_model as get_mmpretrain_model
 from mmpretrain import list_models as list_mmpretrain_model
 from mmpretrain.models import build_backbone, build_neck
 
-from otx.v2.adapters.torch.mmengine.modules.utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 from otx.v2.api.utils.logger import get_logger
 
@@ -88,7 +88,7 @@ def get_model(
     channel_last: bool = False,
     return_dict: bool = False,
     **kwargs,
-):
+) -> torch.nn.Module:
     model_name = None
     if isinstance(model, dict):
         model = Config(cfg_dict=model)

@@ -59,7 +59,7 @@ class OTXLoggerHook(LoggerHook):
         self.curves = curves if curves is not None else defaultdict(self.Curve)
 
     @master_only
-    def log(self, runner: Runner):
+    def log(self, runner: Runner) -> None:
         """Log function for OTXLoggerHook."""
         tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=self._TAGS_TO_SKIP)
         if runner.max_epochs is not None:
@@ -67,8 +67,8 @@ class OTXLoggerHook(LoggerHook):
         else:
             normalized_iter = self.get_iter(runner)
         for tag, value in tags.items():
-            tag = self._TAGS_TO_RENAME.get(tag, tag)
-            curve = self.curves[tag]
+            _tag = self._TAGS_TO_RENAME.get(tag, tag)
+            curve = self.curves[_tag]
             # Remove duplicates.
             if len(curve.x) > 0 and curve.x[-1] == normalized_iter:
                 curve.x.pop()
@@ -76,12 +76,12 @@ class OTXLoggerHook(LoggerHook):
             curve.x.append(normalized_iter)
             curve.y.append(value)
 
-    def before_run(self, runner: Runner):
+    def before_run(self, runner: Runner) -> None:
         """Called before_run in OTXLoggerHook."""
         super().before_run(runner)
         self.curves.clear()
 
-    def after_train_epoch(self, runner: Runner):
+    def after_train_epoch(self, runner: Runner) -> None:
         """Called after_train_epoch in OTXLoggerHook."""
         # Iteration counter is increased right after the last iteration in the epoch,
         # temporarily decrease it back.
@@ -101,7 +101,7 @@ class LoggerReplaceHook(Hook):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def before_run(self, runner):
+    def before_run(self, runner: Runner) -> None:
         """Replace logger."""
         runner.logger = logger
         logger.info("logger in the runner is replaced to the MPA logger")

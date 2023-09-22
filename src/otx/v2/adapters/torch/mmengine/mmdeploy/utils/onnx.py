@@ -40,7 +40,7 @@ def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:
     return model
 
 
-def is_op(node: NodeProto, op_name) -> bool:
+def is_op(node: NodeProto, op_name: str) -> bool:
     """Check if an op is identity."""
     return node.op_type == op_name
 
@@ -107,7 +107,7 @@ def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
     remove_nodes(model, new_op)
 
 
-def remove_nodes_by_op_type(onnx_model, op_type):
+def remove_nodes_by_op_type(onnx_model: ModelProto, op_type: str) -> ModelProto:
     """Remove all nodes of a specified op type from the ONNX model."""
     # TODO: support more nodes
     remove_node(onnx_model, op_type)
@@ -115,7 +115,7 @@ def remove_nodes_by_op_type(onnx_model, op_type):
     return onnx_model
 
 
-def prepare_onnx_for_openvino(in_path, out_path):
+def prepare_onnx_for_openvino(in_path: str, out_path: str) -> None:
     """Modify the specified ONNX model to be compatible with OpenVINO by removing 'Mark' op nodes."""
     onnx_model = onnx.load(in_path)
     onnx_model = remove_nodes_by_op_type(onnx_model, "Mark")

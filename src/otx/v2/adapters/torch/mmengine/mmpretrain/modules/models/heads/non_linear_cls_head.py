@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional
+
 import torch
 from mmcv.cnn import build_activation_layer
 from mmengine.model import constant_init, normal_init
@@ -28,13 +30,13 @@ class NonLinearClsHead(ClsHead):
 
     def __init__(
         self,
-        num_classes,
-        in_channels,
-        hid_channels=1280,
-        act_cfg=None,
-        loss=None,
-        topk=(1,),
-        dropout=False,
+        num_classes: int,
+        in_channels: int,
+        hid_channels: int = 1280,
+        act_cfg: Optional[dict] = None,
+        loss: Optional[dict] = None,
+        topk: tuple = (1,),
+        dropout: bool = False,
         **kwargs,
     ) -> None:  # pylint: disable=too-many-arguments
         topk = (1,) if num_classes < 5 else (1, 5)
@@ -69,7 +71,7 @@ class NonLinearClsHead(ClsHead):
                 nn.Linear(self.hid_channels, self.num_classes),
             )
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         """Initialize weights of head."""
         for module in self.classifier:
             if isinstance(module, nn.Linear):
@@ -88,11 +90,11 @@ class NonLinearClsHead(ClsHead):
         pred = list(pred.detach().cpu().numpy())
         return pred
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of NonLinearClsHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor) -> dict:
         """Forward_train fuction of NonLinearClsHead class."""
         logit = self.classifier(cls_score)
         losses = self.loss(logit, gt_label)

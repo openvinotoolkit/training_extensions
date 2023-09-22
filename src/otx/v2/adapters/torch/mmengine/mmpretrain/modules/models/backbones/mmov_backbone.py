@@ -1,7 +1,8 @@
 """Module for the MMOVBackbone class."""
 
-from typing import Dict, List, Union
+from typing import Optional, Union
 
+import networkx as nx
 from mmpretrain.models.builder import BACKBONES
 
 from otx.v2.adapters.openvino.graph.parsers.cls import cls_base_parser
@@ -18,7 +19,7 @@ class MMOVBackbone(MMOVModel):
     """
 
     @staticmethod
-    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
+    def parser(graph: nx.MultiDiGraph, **kwargs) -> dict:
         """Parses the input and output of the model.
 
         Args:
@@ -33,7 +34,7 @@ class MMOVBackbone(MMOVModel):
             raise ValueError("Parser can not determine input and output of model. Please provide them explicitly")
         return output
 
-    def init_weights(self, pretrained=None):  # pylint: disable=unused-argument
+    def init_weights(self, pretrained: Optional[Union[bool, str]] = None) -> None:  # pylint: disable=unused-argument
         """Initializes the weights of the model.
 
         Args:

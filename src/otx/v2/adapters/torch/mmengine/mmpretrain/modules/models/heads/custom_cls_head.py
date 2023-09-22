@@ -22,7 +22,9 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
-    def _get_loss(self, cls_score: torch.Tensor, data_samples, feature=None, **kwargs):
+    def _get_loss(
+        self, cls_score: torch.Tensor, data_samples: List[DataSample], feature: Optional[torch.Tensor] = None, **kwargs
+    ) -> dict:
         num_samples = len(cls_score)
         losses = dict()
         if "gt_score" in data_samples[0]:
@@ -43,7 +45,9 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         losses["loss"] = loss
         return losses
 
-    def loss(self, feats: torch.Tensor, data_samples: List[DataSample], feature=None, **kwargs):
+    def loss(
+        self, feats: torch.Tensor, data_samples: List[DataSample], feature: Optional[torch.Tensor] = None, **kwargs
+    ) -> dict:
         """Calculate loss for given cls_score/gt_label."""
         cls_score = self.classifier(feats)
         losses = self._get_loss(cls_score, data_samples, feature, **kwargs)

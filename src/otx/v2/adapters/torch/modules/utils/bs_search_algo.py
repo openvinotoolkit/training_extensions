@@ -164,7 +164,7 @@ class BsSearchAlgo:
         if len(self._bs_try_history) < 2:
             raise RuntimeError("At least two trials should be done without CUDA OOM to estimate batch size.")
 
-        def distance_from_bound(val):
+        def distance_from_bound(val: tuple) -> int:
             if val[1] < self._mem_lower_bound:
                 # if memory usage is same, then higher batch size is preferred
                 return self._mem_lower_bound - val[1] - val[0] / 10000

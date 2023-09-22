@@ -4,13 +4,14 @@
 #
 
 import numpy as np
+from torch.utils.data import Dataset
 
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 
 
-def map_class_names(src_classes, dst_classes):
+def map_class_names(src_classes: list, dst_classes: list) -> list:
     """Computes src to dst index mapping.
 
     src2dst[src_idx] = dst_idx
@@ -30,7 +31,7 @@ def map_class_names(src_classes, dst_classes):
     return src2dst
 
 
-def refine_results(results):
+def refine_results(results: list) -> np.ndarray:
     """A function that concatenates the results of multiple runs into a single array.
 
     :param results: list, a list of dictionaries or arrays containing the results.
@@ -46,14 +47,16 @@ def refine_results(results):
     return res_refine
 
 
-def extract_anchor_ratio(dataset, num_ratios=5):
+def extract_anchor_ratio(dataset: Dataset, num_ratios: int = 5) -> list:
     """A function that extracts anchor ratios from a given dataset.
 
     :param dataset: dataset object, an instance of a dataset.
     :param num_ratios: int, the number of anchor ratios to be extracted.
     :return: list, a list of extracted anchor ratios.
     """
-    ratio_dict = dict(info=[], step=-1)
+    ratio_dict: dict = {}
+    ratio_dict["info"] = []
+    ratio_dict["step"] = -1
     dataset, _ = unwrap_dataset(dataset)
     for item in dataset:
         ori_shape = item["img_metas"].data["ori_shape"]
@@ -75,7 +78,7 @@ def extract_anchor_ratio(dataset, num_ratios=5):
     return proposal_ratio
 
 
-def map_cat_and_cls_as_order(classes, cats):
+def map_cat_and_cls_as_order(classes: list, cats: dict) -> tuple:
     """A function that maps classes and categories to label orders.
 
     :param classes: list, a list of class names.
@@ -93,7 +96,7 @@ def map_cat_and_cls_as_order(classes, cats):
     return cat2label, cat_ids
 
 
-def unwrap_dataset(dataset):
+def unwrap_dataset(dataset: Dataset) -> tuple:
     """A function that unwraps a dataset object to its base dataset.
 
     :param dataset: dataset object, an instance of a dataset.

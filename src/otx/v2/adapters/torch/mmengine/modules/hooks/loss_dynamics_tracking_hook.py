@@ -29,12 +29,12 @@ class LossDynamicsTrackingHook(Hook):
     def __init__(self, output_path: str, alpha: float = 0.001) -> None:
         self._output_fpath = osp.join(output_path, "noisy_label_detection")
 
-    def before_run(self, runner):
+    def before_run(self, runner: Runner) -> None:
         """Before run, check the type of model for safe running."""
         if not isinstance(runner.model, DataParallel):
             raise NotImplementedError(f"Except DataParallel, runner.model={type(runner.model)} is not supported now.")
 
-    def before_train_epoch(self, runner: Runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Initialize the tracker for training loss dynamics tracking.
 
         Tracker needs the training dataset for initialization.
@@ -59,7 +59,7 @@ class LossDynamicsTrackingHook(Hook):
         logger.info("Initialize training loss dynamics tracker.")
         tracker.init_with_otx_dataset(otx_dataset)
 
-    def after_train_iter(self, runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Accumulate training loss dynamics.
 
         It should be here because it needs to access the training iteration.
@@ -77,7 +77,7 @@ class LossDynamicsTrackingHook(Hook):
             tracker.export(self._output_fpath)
 
     @classmethod
-    def configure_recipe(cls, recipe_cfg: Config, output_path: str) -> None:
+    def configure_recipe(cls: Hook, recipe_cfg: Config, output_path: str) -> None:
         """Configure recipe to enable loss dynamics tracking."""
         recipe_cfg.model["track_loss_dynamics"] = True
 

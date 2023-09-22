@@ -26,7 +26,7 @@ class ConstrastiveHead(nn.Module):
         self.predictor = build_neck(predictor)
         self.size_average = size_average
 
-    def init_weights(self, init_linear: str = "normal"):
+    def init_weights(self, init_linear: str = "normal") -> None:
         """Initialize predictor weights.
 
         Args:
@@ -34,7 +34,7 @@ class ConstrastiveHead(nn.Module):
         """
         self.predictor.init_weights(init_linear=init_linear)
 
-    def forward(self, inputs: torch.Tensor, targets: torch.Tensor):
+    def forward(self, inputs: torch.Tensor, targets: torch.Tensor) -> dict:
         """Forward head.
 
         Args:

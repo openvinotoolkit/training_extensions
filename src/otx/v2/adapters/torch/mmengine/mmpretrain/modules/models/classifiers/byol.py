@@ -76,7 +76,7 @@ class OTXBYOL(nn.Module):
         # Hooks for super_type transparent weight save
         self._register_state_dict_hook(self.state_dict_hook)
 
-    def init_weights(self, pretrained: Optional[str] = None):
+    def init_weights(self, pretrained: Optional[str] = None) -> None:
         """Initialize the weights of model.
 
         Args:
@@ -104,7 +104,7 @@ class OTXBYOL(nn.Module):
         self.head.init_weights()
 
     @torch.no_grad()
-    def _momentum_update(self):
+    def _momentum_update(self) -> None:
         """Momentum update of the target network."""
         for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
             param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
@@ -113,11 +113,11 @@ class OTXBYOL(nn.Module):
             param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
     @torch.no_grad()
-    def momentum_update(self):
+    def momentum_update(self) -> None:
         """Momentum update of the target network."""
         self._momentum_update()
 
-    def forward(self, img1: torch.Tensor, img2: torch.Tensor, **kwargs):
+    def forward(self, img1: torch.Tensor, img2: torch.Tensor, **kwargs) -> dict:
         """Forward computation during training.
 
         Args:
@@ -139,7 +139,7 @@ class OTXBYOL(nn.Module):
         loss = self.head(proj_1, proj_2_tgt)["loss"] + self.head(proj_2, proj_1_tgt)["loss"]
         return dict(loss=loss)
 
-    def train_step(self, data: Dict[str, Any], optimizer):
+    def train_step(self, data: Dict[str, Any], optimizer: torch.optim.Optimizer) -> dict:
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
@@ -172,11 +172,11 @@ class OTXBYOL(nn.Module):
 
         return outputs
 
-    def val_step(self, *args):
+    def val_step(self, *args) -> None:
         """Disable validation step during self-supervised learning."""
         pass
 
-    def _parse_losses(self, losses: Dict[str, Any]):
+    def _parse_losses(self, losses: dict) -> tuple:
         """Parse loss dictionary.
 
         Args:
@@ -206,22 +206,23 @@ class OTXBYOL(nn.Module):
         for loss_name, loss_value in log_vars.items():
             # reduce loss when distributed training
             if dist.is_available() and dist.is_initialized():
-                loss_value = loss_value.data.clone()
-                dist.all_reduce(loss_value.div_(dist.get_world_size()))
-            log_vars[loss_name] = loss_value.item()
+                _loss_value = loss_value.data.clone()
+                dist.all_reduce(_loss_value.div_(dist.get_world_size()))
+            log_vars[loss_name] = _loss_value.item()
 
         return loss, log_vars
 
     @staticmethod
-    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):
+    def state_dict_hook(module: torch.nn.Module, state_dict: dict, prefix: str, *args, **kwargs) -> dict:
         """Save only online backbone as output state_dict."""
         logger.info("----------------- BYOL.state_dict_hook() called")
         for k in list(state_dict.keys()):
             v = state_dict.pop(k)
-            if not prefix or k.startswith(prefix):
-                k = k.replace(prefix, "", 1)
-                if k.startswith("online_backbone."):
-                    k = k.replace("online_backbone.", "", 1)
-                k = prefix + k
-            state_dict[k] = v
+            _k = k
+            if not prefix or _k.startswith(prefix):
+                _k = _k.replace(prefix, "", 1)
+                if _k.startswith("online_backbone."):
+                    _k = _k.replace("online_backbone.", "", 1)
+                _k = prefix + _k
+            state_dict[_k] = v
         return state_dict

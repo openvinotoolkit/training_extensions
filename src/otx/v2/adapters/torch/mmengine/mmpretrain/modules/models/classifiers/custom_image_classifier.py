@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from functools import partial
-from typing import Dict
+from typing import Optional, Sequence, Union
 
 import torch
 from mmpretrain.models.classifiers.image import ImageClassifier
@@ -13,13 +13,13 @@ from otx.v2.adapters.torch.mmengine.mmdeploy.utils import is_mmdeploy_enabled
 from otx.v2.adapters.torch.mmengine.modules.utils.task_adapt import map_class_names
 from otx.v2.api.utils.logger import get_logger
 
-from .mixin import ClsLossDynamicsTrackingMixin, SAMClassifierMixin
+from .mixin import ClsLossDynamicsTrackingMixin
 
 logger = get_logger()
 
 
 @MODELS.register_module()
-class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, ImageClassifier):
+class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
     """SAM-enabled ImageClassifier."""
 
     def __init__(self, **kwargs) -> None:
@@ -41,7 +41,7 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
                 )
             )
 
-    def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> Dict[str, torch.Tensor]:
+    def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward computation during training.
 
         Args:
@@ -76,7 +76,7 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
         return losses
 
     @staticmethod
-    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
+    def state_dict_hook(module: torch.nn.Module, state_dict: dict, prefix: str, *args, **kwargs) -> Optional[dict]:
         # pylint: disable=unused-argument, too-many-branches
         """Redirect model as output state_dict for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
@@ -84,56 +84,19 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
             return None
 
         if backbone_type == "OTXMobileNetV3":  # pylint: disable=too-many-nested-blocks
-            for key in list(state_dict.keys()):
-                val = state_dict.pop(key)
-                if not prefix or key.startswith(prefix):
-                    key = key.replace(prefix, "", 1)
-                    if key.startswith("backbone"):
-                        key = key.replace("backbone.", "", 1)
-                    elif key.startswith("head"):
-                        key = key.replace("head.", "", 1)
-                        if (
-                            "3" in key
-                        ):  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
-                            key = key.replace("3", "4")
-                            if module.multilabel and not module.is_export:
-                                val = val.t()
-                    key = prefix + key
-                state_dict[key] = val
-
+            from otx.v2.adapters.torch.mmengine.modules.models.backbones.mobilenetv3 import get_state_dict_hook
         elif backbone_type == "OTXEfficientNet":
-            for key in list(state_dict.keys()):
-                val = state_dict.pop(key)
-                if not prefix or key.startswith(prefix):
-                    key = key.replace(prefix, "", 1)
-                    if key.startswith("backbone"):
-                        key = key.replace("backbone.", "", 1)
-                    elif key.startswith("head"):
-                        key = key.replace("head", "output", 1)
-                        if not module.hierarchical and not module.is_export:
-                            key = key.replace("fc", "asl")
-                            val = val.t()
-                    key = prefix + key
-                state_dict[key] = val
-
+            from otx.v2.adapters.torch.mmengine.modules.models.backbones.efficientnet import get_state_dict_hook
         elif backbone_type == "OTXEfficientNetV2":
-            for key in list(state_dict.keys()):
-                val = state_dict.pop(key)
-                if not prefix or key.startswith(prefix):
-                    key = key.replace(prefix, "", 1)
-                    if key.startswith("backbone"):
-                        key = key.replace("backbone.", "", 1)
-                    elif key == "head.fc.weight":
-                        key = key.replace("head.fc", "model.classifier")
-                        if not module.hierarchical and not module.is_export:
-                            val = val.t()
-                    key = prefix + key
-                state_dict[key] = val
+            from otx.v2.adapters.torch.mmengine.modules.models.backbones.efficientnetv2 import get_state_dict_hook
 
+        state_dict = get_state_dict_hook(module, state_dict, prefix)
         return state_dict
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):  # noqa: C901
+    def load_state_dict_pre_hook(
+        module: torch.nn.Module, state_dict: dict, prefix: str, *args, **kwargs
+    ) -> None:  # noqa: C901
         # pylint: disable=unused-argument, too-many-branches
         """Redirect input state_dict to model for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
@@ -141,59 +104,23 @@ class CustomImageClassifier(SAMClassifierMixin, ClsLossDynamicsTrackingMixin, Im
             return
 
         if backbone_type == "OTXMobileNetV3":  # pylint: disable=too-many-nested-blocks
-            for key in list(state_dict.keys()):
-                val = state_dict.pop(key)
-                if not prefix or key.startswith(prefix):
-                    key = key.replace(prefix, "", 1)
-                    if key.startswith("classifier."):
-                        if "4" in key:
-                            key = "head." + key.replace("4", "3")
-                            if module.multilabel:
-                                val = val.t()
-                        else:
-                            key = "head." + key
-                    elif key.startswith("act"):
-                        key = "head." + key
-                    elif not key.startswith("backbone."):
-                        key = "backbone." + key
-                    key = prefix + key
-                state_dict[key] = val
-
+            from otx.v2.adapters.torch.mmengine.modules.models.backbones.mobilenetv3 import load_state_dict_pre_hook
         elif backbone_type == "OTXEfficientNet":
-            for key in list(state_dict.keys()):
-                val = state_dict.pop(key)
-                if not prefix or key.startswith(prefix):
-                    key = key.replace(prefix, "", 1)
-                    if key.startswith("features.") and "activ" not in key:
-                        key = "backbone." + key
-                    elif key.startswith("output."):
-                        key = key.replace("output", "head")
-                        if not module.hierarchical:
-                            key = key.replace("asl", "fc")
-                            val = val.t()
-                    key = prefix + key
-                state_dict[key] = val
-
+            from otx.v2.adapters.torch.mmengine.modules.models.backbones.efficientnet import load_state_dict_pre_hook
         elif backbone_type == "OTXEfficientNetV2":
-            for key in list(state_dict.keys()):
-                val = state_dict.pop(key)
-                if not prefix or key.startswith(prefix):
-                    key = key.replace(prefix, "", 1)
-                    if key.startswith("model.classifier"):
-                        key = key.replace("model.classifier", "head.fc")
-                        if not module.hierarchical:
-                            val = val.t()
-                    elif key.startswith("model"):
-                        key = "backbone." + key
-                    key = prefix + key
-                state_dict[key] = val
-        else:
-            logger.info("conversion is not required.")
+            from otx.v2.adapters.torch.mmengine.modules.models.backbones.efficientnetv2 import load_state_dict_pre_hook
+        state_dict = load_state_dict_pre_hook(module, state_dict, prefix)
 
     @staticmethod
     def load_state_dict_mixing_hook(
-        model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs
-    ):  # pylint: disable=unused-argument, too-many-branches, too-many-locals
+        model: torch.nn.Module,
+        model_classes: Sequence,
+        chkpt_classes: Sequence,
+        chkpt_dict: dict,
+        prefix: str,
+        *args,
+        **kwargs,
+    ) -> None:  # pylint: disable=unused-argument, too-many-branches, too-many-locals
         """Modify input state_dict according to class name matching before weight loading."""
         backbone_type = type(model.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
@@ -270,7 +197,9 @@ if is_mmdeploy_enabled():
     @FUNCTION_REWRITER.register_rewriter(
         "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.extract_feat"
     )
-    def sam_image_classifier__extract_feat(self, img, **kwargs):  # pylint: disable=unused-argument
+    def sam_image_classifier__extract_feat(
+        self: CustomImageClassifier, img: torch.Tensor, **kwargs
+    ) -> Union[tuple, torch.Tensor]:  # pylint: disable=unused-argument
         """Feature extraction function for SAMClassifier with mmdeploy."""
         dump_features = kwargs.get("dump_features", False)
         feat = self.backbone(img)
@@ -288,7 +217,9 @@ if is_mmdeploy_enabled():
     @FUNCTION_REWRITER.register_rewriter(
         "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.predict"
     )
-    def sam_image_classifier__predict(self, img, **kwargs):  # pylint: disable=unused-argument
+    def sam_image_classifier__predict(
+        self: CustomImageClassifier, img: torch.Tensor, **kwargs
+    ) -> Union[tuple, torch.Tensor]:  # pylint: disable=unused-argument
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
         feat, backbone_feat = self.extract_feat(img, dump_features=True)
         logit = self.head.simple_test(feat)

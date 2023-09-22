@@ -14,7 +14,7 @@ from mmengine.config import Config, ConfigDict
 @overload
 def get_configs_by_keys(
     configs: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]],
-    keys: Union[Any, List[Any]],
+    keys: list,
     *,
     return_path: Literal[True],
 ) -> Dict[Tuple[Any, ...], ConfigDict]:
@@ -24,7 +24,7 @@ def get_configs_by_keys(
 @overload
 def get_configs_by_keys(
     configs: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]],
-    keys: Union[Any, List[Any]],
+    keys: list,
     *,
     return_path: Literal[False] = False,
 ) -> List[ConfigDict]:
@@ -34,7 +34,7 @@ def get_configs_by_keys(
 @overload
 def get_configs_by_keys(
     configs: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]],
-    keys: Union[Any, List[Any]],
+    keys: list,
     *,
     return_path: bool,
 ) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:

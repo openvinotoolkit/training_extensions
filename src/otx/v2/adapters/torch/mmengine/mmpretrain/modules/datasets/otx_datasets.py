@@ -6,7 +6,8 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 
-from typing import Any, Dict, List, Union
+import logging
+from typing import Optional, Union
 
 import numpy as np
 from mmengine.dataset import Compose
@@ -20,7 +21,6 @@ from torch.utils.data import Dataset
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import TRANSFORMS
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
 from otx.v2.api.utils.logger import get_logger
 
@@ -33,7 +33,7 @@ class OTXClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
     def __init__(
-        self, otx_dataset: DatasetEntity, labels: List[LabelEntity], empty_label=None, **kwargs
+        self, otx_dataset: DatasetEntity, labels: list, empty_label: Optional[list] = None, **kwargs
     ) -> None:  # pylint: disable=super-init-not-called
         self.otx_dataset = otx_dataset
         self.labels = labels
@@ -44,7 +44,7 @@ class OTXClsDataset(BaseDataset):
         self.class_acc = False
 
         self._metainfo = self._load_metainfo({"classes": list(label.name for label in labels)})
-        self.gt_labels = []  # type: List
+        self.gt_labels: list = []
         pipeline = kwargs.get("pipeline", [])
         self.num_classes = len(self.CLASSES)
 
@@ -63,7 +63,7 @@ class OTXClsDataset(BaseDataset):
         self.pipeline = Compose(pipeline_modules)
         self.load_annotations()
 
-    def get_indices(self, *args) -> Dict[str, List[int]]:  # pylint: disable=unused-argument
+    def get_indices(self, num_classes: list, *args) -> dict:  # pylint: disable=unused-argument
         """Get indices."""
         return get_cls_img_indices(self.labels, self.otx_dataset)
 
@@ -85,7 +85,7 @@ class OTXClsDataset(BaseDataset):
             self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> dict:
         """Get item from dataset."""
         dataset = self.otx_dataset
         item = dataset[index]
@@ -109,10 +109,10 @@ class OTXClsDataset(BaseDataset):
             return data_info
         return self.pipeline(data_info)
 
-    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, List[ID]]:
+    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, list]:
         return self.idx_to_label_id.get(gt_label.item(), ID())
 
-    def get_gt_labels(self):
+    def get_gt_labels(self) -> np.ndarray:
         """Get all ground-truth labels (categories).
 
         Returns:
@@ -126,8 +126,13 @@ class OTXClsDataset(BaseDataset):
         return len(self.otx_dataset)
 
     def evaluate(
-        self, results, metric="accuracy", metric_options=None, logger=None
-    ):  # pylint: disable=redefined-outer-name
+        self,
+        results: list,
+        metric: Union[str, list] = "accuracy",
+        metric_options: Optional[dict] = None,
+        indices: Optional[list] = None,
+        logger: Optional[logging.Logger] = None,
+    ) -> dict:  # pylint: disable=redefined-outer-name
         """Evaluate the dataset with new metric class_accuracy.
 
         Args:
@@ -176,7 +181,7 @@ class OTXClsDataset(BaseDataset):
         eval_results["accuracy"] = eval_results["accuracy_top-1"]
         return eval_results
 
-    def class_accuracy(self, results, gt_labels):
+    def class_accuracy(self, results: np.ndarray, gt_labels: list) -> list:
         """Return per-class accuracy."""
         accracies = []
         pred_label = results.argsort(axis=1)[:, -1:][:, ::-1]
@@ -192,11 +197,11 @@ class OTXClsDataset(BaseDataset):
 class OTXMultilabelClsDataset(OTXClsDataset):
     """Multi-label classification dataset class."""
 
-    def get_indices(self, new_classes):
+    def get_indices(self, new_classes: list, *args) -> dict:
         """Get indices."""
         return get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
 
-    def load_annotations(self):
+    def load_annotations(self) -> None:
         """Load annotations."""
         include_empty = self.empty_label in self.labels
         for i, _ in enumerate(self.otx_dataset):
@@ -216,8 +221,13 @@ class OTXMultilabelClsDataset(OTXClsDataset):
         self.gt_labels = np.array(self.gt_labels)
 
     def evaluate(
-        self, results, metric="mAP", metric_options=None, indices=None, logger=None
-    ):  # pylint: disable=unused-argument, redefined-outer-name, arguments-renamed
+        self,
+        results: list,
+        metric: Union[str, list] = "mAP",
+        metric_options: Optional[dict] = None,
+        indices: Optional[list] = None,
+        logger: Optional[logging.Logger] = None,
+    ) -> dict:  # pylint: disable=unused-argument, redefined-outer-name, arguments-renamed
         """Evaluate the dataset.
 
         Args:
@@ -294,7 +304,7 @@ class OTXMultilabelClsDataset(OTXClsDataset):
 
         return eval_results
 
-    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, List[ID]]:
+    def _get_label_id(self, gt_label: np.ndarray) -> Union[ID, list]:
         return [self.idx_to_label_id.get(idx, ID()) for idx, v in enumerate(gt_label) if v == 1]
 
 
@@ -303,26 +313,25 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
     """Hierarchical classification dataset class."""
 
     def __init__(self, **kwargs) -> None:
-        self.hierarchical_info = kwargs.pop("hierarchical_info", None)
+        self.hierarchical_info = kwargs.pop("hierarchical_info", {})
         super().__init__(**kwargs)
 
-    def load_annotations(self):
+    def load_annotations(self) -> None:
         """Load annotations."""
         include_empty = self.empty_label in self.labels
         for i, _ in enumerate(self.otx_dataset):
             class_indices = []
             item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
             ignored_labels = self.otx_dataset[i].ignored_labels
+            num_cls_heads = self.hierarchical_info.get("num_multiclass_heads", 0)
+            num_ml_classes = self.hierarchical_info.get("num_multilabel_classes", 0)
             if item_labels:
-                num_cls_heads = self.hierarchical_info["num_multiclass_heads"]
-
-                class_indices = [0] * (
-                    self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"]
-                )
+                class_indices = [0] * (num_cls_heads + num_ml_classes)
                 for j in range(num_cls_heads):
                     class_indices[j] = -1
+                class_to_group_idx = self.hierarchical_info.get("class_to_group_idx", {})
                 for otx_lbl in item_labels:
-                    group_idx, in_group_idx = self.hierarchical_info["class_to_group_idx"][otx_lbl.name]
+                    group_idx, in_group_idx = class_to_group_idx.get(otx_lbl.name)
                     if group_idx < num_cls_heads:
                         class_indices[group_idx] = in_group_idx
                     elif otx_lbl not in ignored_labels:
@@ -330,24 +339,22 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
                     else:
                         class_indices[num_cls_heads + in_group_idx] = -1
             else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
-                class_indices = [-1] * (
-                    self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"]
-                )
+                class_indices = [-1] * (num_cls_heads + num_ml_classes)
             self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
     @staticmethod
-    def mean_top_k_accuracy(scores, labels, k=1):
+    def mean_top_k_accuracy(scores: float, labels: list, k: int = 1) -> np.ndarray:
         """Return mean of top-k accuracy."""
         idx = np.argsort(-scores, axis=-1)[:, :k]
-        labels = np.array(labels)
-        matches = np.any(idx == labels.reshape([-1, 1]), axis=-1)
+        np_labels = np.array(labels)
+        matches = np.any(idx == np_labels.reshape([-1, 1]), axis=-1)
 
-        classes = np.unique(labels)
+        classes = np.unique(np_labels)
 
         accuracy_values = []
         for class_id in classes:
-            mask = labels == class_id
+            mask = np_labels == class_id
             num_valid = np.sum(mask)
             if num_valid == 0:
                 continue
@@ -357,8 +364,13 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         return np.mean(accuracy_values) * 100 if len(accuracy_values) > 0 else 1.0
 
     def evaluate(
-        self, results, metric="MHAcc", metric_options=None, indices=None, logger=None
-    ):  # pylint: disable=unused-argument, redefined-outer-name
+        self,
+        results: list,
+        metric: Union[str, list] = "MHAcc",
+        metric_options: Optional[dict] = None,
+        indices: Optional[list] = None,
+        logger: Optional[logging.Logger] = None,
+    ) -> dict:  # pylint: disable=unused-argument, redefined-outer-name
         """Evaluate the dataset.
 
         Args:
@@ -386,11 +398,11 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
 
         allowed_metrics = ["MHAcc", "avgClsAcc", "mAP"]
         eval_results = {}
-        results = np.vstack(results)
+        np_results = np.vstack(results)
         gt_labels = self.get_gt_labels()
         if indices is not None:
             gt_labels = gt_labels[indices]
-        num_imgs = len(results)
+        num_imgs = len(np_results)
         assert len(gt_labels) == num_imgs, "dataset testing results should " "be of the same length as gt_labels."
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
@@ -399,8 +411,9 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
 
         total_acc = 0.0
         total_acc_sl = 0.0
-        for i in range(self.hierarchical_info["num_multiclass_heads"]):
-            multiclass_logit = results[
+        num_multiclass_heads = self.hierarchical_info.get("num_multiclass_heads")
+        for i in range(num_multiclass_heads):
+            multiclass_logit = np_results[
                 :,
                 self.hierarchical_info["head_idx_to_logits_range"][str(i)][0] : self.hierarchical_info[
                     "head_idx_to_logits_range"
@@ -412,18 +425,16 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
             total_acc_sl += cls_acc
 
         map_value = 0.0
-        if self.hierarchical_info["num_multilabel_classes"] and "mAP" in metrics:
-            multilabel_logits = results[:, self.hierarchical_info["num_single_label_classes"] :]
-            multilabel_gt = gt_labels[:, self.hierarchical_info["num_multiclass_heads"] :]
+        if num_multiclass_heads and "mAP" in metrics:
+            multilabel_logits = np_results[:, self.hierarchical_info["num_single_label_classes"] :]
+            multilabel_gt = gt_labels[:, num_multiclass_heads:]
             map_value = AveragePrecision.calculate(multilabel_logits, multilabel_gt)
 
         total_acc += map_value
-        total_acc /= self.hierarchical_info["num_multiclass_heads"] + int(
-            self.hierarchical_info["num_multilabel_classes"] > 0
-        )
+        total_acc /= num_multiclass_heads + int(self.hierarchical_info["num_multilabel_classes"] > 0)
 
         eval_results["MHAcc"] = total_acc
-        eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
+        eval_results["avgClsAcc"] = total_acc_sl / num_multiclass_heads
         eval_results["mAP"] = map_value
         eval_results["accuracy"] = total_acc
 
@@ -436,9 +447,7 @@ class SelfSLDataset(Dataset):
 
     CLASSES = None
 
-    def __init__(
-        self, otx_dataset: DatasetEntity, pipeline: Dict[str, Any], **kwargs
-    ) -> None:  # pylint: disable=unused-argument
+    def __init__(self, otx_dataset: DatasetEntity, pipeline: dict, **kwargs) -> None:  # pylint: disable=unused-argument
         super().__init__()
         self.otx_dataset = otx_dataset
 
@@ -450,7 +459,7 @@ class SelfSLDataset(Dataset):
         """Get dataset length."""
         return len(self.otx_dataset)
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> dict:
         """Get item from dataset."""
         dataset = self.otx_dataset
         item = dataset[index]

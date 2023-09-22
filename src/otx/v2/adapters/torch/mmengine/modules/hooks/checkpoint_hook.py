@@ -5,7 +5,7 @@
 
 # Copyright (c) Open-MMLab. All rights reserved.
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from mmengine.dist import all_reduce_params, master_only
 from mmengine.hooks import Hook
@@ -38,12 +38,12 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
 
     def __init__(
         self,
-        interval=-1,
-        by_epoch=True,
-        save_optimizer=True,
-        out_dir=None,
-        max_keep_ckpts=-1,
-        sync_buffer=False,
+        interval: int = -1,
+        by_epoch: bool = True,
+        save_optimizer: bool = True,
+        out_dir: Optional[Union[str, Path]] = None,
+        max_keep_ckpts: int = -1,
+        sync_buffer: bool = False,
         **kwargs,
     ) -> None:
         self.interval = interval
@@ -55,12 +55,7 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
         self.sync_buffer = sync_buffer
         self._best_model_weight: Optional[Path] = None
 
-    def before_run(self, runner):
-        """Set output directopy if not set."""
-        if not self.out_dir:
-            self.out_dir = runner.work_dir
-
-    def after_train_epoch(self, runner, **kwargs):
+    def after_train_epoch(self, runner: Runner, **kwargs) -> None:
         """Checkpoint stuffs after train epoch."""
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
@@ -83,10 +78,12 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
             runner.save_ema_model = False
 
     @master_only
-    def _save_best_checkpoint(self, runner):
+    def _save_best_checkpoint(self, runner: Runner) -> None:
         """Save the current checkpoint and delete unwanted checkpoint."""
+        if self.out_dir is None:
+            self.out_dir = runner.work_dir
         if self._best_model_weight is not None:  # remove previous best model weight
-            prev_model_weight = self.out_dir / self._best_model_weight
+            prev_model_weight = Path(self.out_dir) / self._best_model_weight
             if prev_model_weight.exists():
                 prev_model_weight.unlink()
 
@@ -102,8 +99,10 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
             runner.meta["hook_msgs"]["best_ckpt"] = str(self.out_dir / self._best_model_weight)
 
     @master_only
-    def _save_latest_checkpoint(self, runner):
+    def _save_latest_checkpoint(self, runner: Runner) -> None:
         """Save the current checkpoint and delete unwanted checkpoint."""
+        if self.out_dir is None:
+            self.out_dir = runner.work_dir
         if self.by_epoch:
             weight_name_format = "epoch_{}.pth"
             cur_step = runner.epoch + 1
@@ -121,16 +120,16 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
         # remove other checkpoints
         if self.max_keep_ckpts > 0:
             for _step in range(cur_step - self.max_keep_ckpts * self.interval, 0, -self.interval):
-                ckpt_path = self.out_dir / Path(weight_name_format.format(_step))
+                ckpt_path = Path(self.out_dir) / Path(weight_name_format.format(_step))
                 if ckpt_path.exists():
                     ckpt_path.unlink()
 
         if runner.meta is not None:
             cur_ckpt_filename = Path(self.args.get("filename_tmpl", weight_name_format.format(cur_step)))
             runner.meta.setdefault("hook_msgs", dict())
-            runner.meta["hook_msgs"]["last_ckpt"] = str(self.out_dir / cur_ckpt_filename)
+            runner.meta["hook_msgs"]["last_ckpt"] = str(Path(self.out_dir) / cur_ckpt_filename)
 
-    def after_train_iter(self, runner, **kwargs):
+    def after_train_iter(self, runner: Runner, **kwargs) -> None:
         """Checkpoint stuffs after train iteration."""
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
@@ -152,7 +151,7 @@ class EnsureCorrectBestCheckpointHook(Hook):
     created in the last epoch.
     """
 
-    def after_run(self, runner: Runner):
+    def after_run(self, runner: Runner) -> None:
         """Called after train epoch hooks."""
         runner.call_hook("after_train_epoch")
 
@@ -161,12 +160,12 @@ class EnsureCorrectBestCheckpointHook(Hook):
 class SaveInitialWeightHook(Hook):
     """Save the initial weights before training."""
 
-    def __init__(self, save_path, file_name: str = "weights.pth", **kwargs) -> None:
+    def __init__(self, save_path: str, file_name: str = "weights.pth", **kwargs) -> None:
         self._save_path = save_path
         self._file_name = file_name
         self._args = kwargs
 
-    def before_run(self, runner):
+    def before_run(self, runner: Runner) -> None:
         """Save initial the weights before training."""
         runner.logger.info("Saving weight before training")
         runner.save_checkpoint(

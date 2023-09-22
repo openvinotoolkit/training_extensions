@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 
 import torch
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from .builder import OPS
+from .op import Attribute, Operation
 
 
 @dataclass
@@ -25,8 +25,9 @@ class MultiplyV1(Operation[MultiplyV1Attribute]):
     TYPE = "Multiply"
     VERSION = 1
     ATTRIBUTE_FACTORY = MultiplyV1Attribute
+    attrs: MultiplyV1Attribute
 
-    def forward(self, input_0, input_1):
+    def forward(self, input_0: torch.Tensor, input_1: torch.Tensor) -> torch.Tensor:
         """MultiplyV1's forward function."""
         broadcast = self.attrs.auto_broadcast
 
@@ -53,8 +54,9 @@ class DivideV1(Operation[DivideV1Attribute]):
     TYPE = "Divide"
     VERSION = 1
     ATTRIBUTE_FACTORY = DivideV1Attribute
+    attrs: DivideV1Attribute
 
-    def forward(self, input_0, input_1):
+    def forward(self, input_0: torch.Tensor, input_1: torch.Tensor) -> torch.Tensor:
         """DivideV1's forward function."""
         broadcast = self.attrs.auto_broadcast
 
@@ -87,8 +89,9 @@ class AddV1(Operation[AddV1Attribute]):
     TYPE = "Add"
     VERSION = 1
     ATTRIBUTE_FACTORY = AddV1Attribute
+    attrs: AddV1Attribute
 
-    def forward(self, input_0, input_1):
+    def forward(self, input_0: torch.Tensor, input_1: torch.Tensor) -> torch.Tensor:
         """AddV1's forward function."""
         broadcast = self.attrs.auto_broadcast
 
@@ -114,8 +117,9 @@ class SubtractV1(Operation[SubtractV1Attribute]):
     TYPE = "Subtract"
     VERSION = 1
     ATTRIBUTE_FACTORY = SubtractV1Attribute
+    attrs: SubtractV1Attribute
 
-    def forward(self, input_0, input_1):
+    def forward(self, input_0: torch.Tensor, input_1: torch.Tensor) -> torch.Tensor:
         """SubtractV1's forward function."""
         broadcast = self.attrs.auto_broadcast
 
@@ -142,6 +146,6 @@ class TanV0(Operation[TanV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = TanV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """TanV0's forward function."""
         return torch.tan(inputs)

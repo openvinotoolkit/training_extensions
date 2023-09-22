@@ -17,7 +17,7 @@ class AnomalyBase(SegmentationModel):
     __model__ = "anomaly_base"
 
     @classmethod
-    def parameters(cls):
+    def parameters(cls: SegmentationModel) -> dict:
         """Dictionary containing model parameters."""
         parameters = super().parameters()
         parameters["resize_type"].update_default_value("standard")

@@ -5,9 +5,10 @@
 
 import re
 from dataclasses import dataclass, fields
-from typing import Generic, Optional, Tuple, Type, TypeVar, Union
+from typing import Generic, Optional, Type, TypeVar
 
 import torch
+from openvino.runtime import Node
 
 from ..utils import get_op_name  # type: ignore[attr-defined]
 from .utils import get_dynamic_shape
@@ -17,9 +18,9 @@ from .utils import get_dynamic_shape
 class Attribute:
     """Attribute class."""
 
-    shape: Optional[Union[Tuple[Tuple[int]], Tuple[int]]]
+    shape: Optional[tuple]
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """Attribute's post-init function."""
         if self.shape is not None and not isinstance(self.shape, tuple):
             raise ValueError("shape must be a tuple of ints or a tuple of tuples of ints.")
@@ -41,7 +42,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
         self._attrs = self.ATTRIBUTE_FACTORY(**kwargs)
 
     @classmethod
-    def from_ov(cls, ov_op):
+    def from_ov(cls: torch.nn.Module, ov_op: Node) -> "Operation":
         """Operation's from_ov function."""
         op_type = ov_op.get_type_name()
         op_version = ov_op.get_version()
@@ -55,8 +56,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
             shapes = []
             for output in ov_op.outputs():
                 shapes.append(get_dynamic_shape(output))
-            shapes = tuple(tuple(shape) for shape in shapes)
-            attrs["shape"] = shapes
+            attrs["shape"] = tuple(tuple(shape) for shape in shapes)
 
         return cls(name=op_name, **attrs)
 
@@ -76,12 +76,12 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
         return self._name
 
     @property
-    def attrs(self):
+    def attrs(self) -> Attribute:
         """Operation's attrs property."""
         return self._attrs
 
     @property
-    def shape(self) -> Optional[Union[Tuple[Tuple[int]], Tuple[int]]]:
+    def shape(self) -> Optional[tuple]:
         """Operation's shape property."""
         return self.attrs.shape
 

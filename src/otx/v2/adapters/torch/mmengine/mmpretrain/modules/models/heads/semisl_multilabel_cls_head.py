@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 import torch
 from mmpretrain.models.builder import HEADS, build_loss
+from mmpretrain.models.heads import ClsHead
 from torch import nn
 
 from otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.heads.custom_multi_label_linear_cls_head import (
@@ -19,7 +20,7 @@ from otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.heads.custom_multi
 from .mixin import OTXHeadMixin
 
 
-def generate_aux_mlp(aux_mlp_cfg: dict, in_channels: int):
+def generate_aux_mlp(aux_mlp_cfg: dict, in_channels: int) -> nn.Module:
     """Generate auxiliary MLP."""
     out_channels = aux_mlp_cfg["out_channels"]
     if out_channels <= 0:
@@ -47,13 +48,13 @@ class EMAMeter:
             alpha (float): Smoothing factor for the exponential moving average. Defaults to 0.9.
         """
         self.alpha = alpha
-        self.val = 0
+        self.val = 0.0
 
-    def reset(self):
+    def reset(self) -> None:
         """Reset the Exponential Moving Average Meter."""
-        self.val = 0
+        self.val = 0.0
 
-    def update(self, val):
+    def update(self, val: float) -> None:
         """Update the Exponential Moving Average Meter with new value.
 
         Args:
@@ -65,7 +66,7 @@ class EMAMeter:
 class LossBalancer:
     """Loss Balancer class."""
 
-    def __init__(self, num_losses: int, weights: Optional[List[float]] = None, ema_weight=0.7) -> None:
+    def __init__(self, num_losses: int, weights: Optional[List[float]] = None, ema_weight: float = 0.7) -> None:
         """Initialize the Loss Balancer.
 
         Args:
@@ -82,7 +83,7 @@ class LossBalancer:
         else:
             self.final_weights = [1.0] * num_losses
 
-    def balance_losses(self, losses):
+    def balance_losses(self, losses: Iterable) -> float:
         """Balance the given losses using the weights and exponential moving average.
 
         Args:
@@ -100,7 +101,7 @@ class LossBalancer:
         return total_loss
 
 
-class SemiMultilabelClsHead(OTXHeadMixin):
+class SemiMultilabelClsHead(OTXHeadMixin, ClsHead):
     """Multilabel Classification head for Semi-SL.
 
     Args:
@@ -111,9 +112,9 @@ class SemiMultilabelClsHead(OTXHeadMixin):
 
     def __init__(
         self,
-        unlabeled_coef=0.1,
-        use_dynamic_loss_weighting=True,
-        aux_loss=None,
+        unlabeled_coef: float = 0.1,
+        use_dynamic_loss_weighting: bool = True,
+        aux_loss: Optional[dict] = None,
     ) -> None:
         aux_loss = (
             aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
@@ -126,17 +127,26 @@ class SemiMultilabelClsHead(OTXHeadMixin):
             self.loss_balancer = LossBalancer(2, [1.0, unlabeled_coef])
         self.num_pseudo_label = 0
 
-    def loss(self, logits, gt_label, features):
+    def loss(
+        self,
+        logits: torch.Tensor,
+        gt_label: torch.Tensor,
+        valid_label_mask: Optional[torch.Tensor] = None,
+        features: Optional[tuple] = None,
+        **kwargs,
+    ) -> dict:
         """Loss function in which unlabeled data is considered.
 
         Args:
             logits (Tensor): Labeled data logits
             gt_label (Tensor): target features for labeled data
-            features (set): (weak data features, strong data features)
+            features (tuple): (weak data features, strong data features)
 
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
+        if features is None:
+            raise ValueError("features should tuple.")
         num_samples = gt_label.shape[0]
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)
@@ -150,7 +160,7 @@ class SemiMultilabelClsHead(OTXHeadMixin):
         aux_loss = self.aux_loss(features_weak, features_strong)
 
         losses = dict(loss=0.0)
-        if self.use_dynamic_loss_weighting:
+        if self.use_dynamic_loss_weighting and self.loss_balancer is not None:
             losses["loss"] = self.loss_balancer.balance_losses((l_labeled, aux_loss))
         else:
             losses["loss"] = l_labeled + self.unlabeled_coef * aux_loss
@@ -158,7 +168,9 @@ class SemiMultilabelClsHead(OTXHeadMixin):
 
         return losses
 
-    def forward_train_with_last_layers(self, x, gt_label, final_cls_layer, final_emb_layer):
+    def forward_train_with_last_layers(
+        self, x: torch.Tensor, gt_label: torch.Tensor, final_cls_layer: nn.Module, final_emb_layer: nn.Module
+    ) -> dict:
         """Forwards multilabel semi-sl head and losses.
 
         Args:
@@ -197,15 +209,15 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
 
     def __init__(
         self,
-        num_classes,
-        in_channels,
-        scale=1.0,
-        normalized=False,
-        aux_mlp=None,
-        loss=None,
-        unlabeled_coef=0.1,
-        aux_loss=None,
-        use_dynamic_loss_weighting=True,
+        num_classes: int,
+        in_channels: int,
+        scale: float = 1.0,
+        normalized: bool = False,
+        aux_mlp: Optional[dict] = None,
+        loss: Optional[dict] = None,
+        unlabeled_coef: float = 0.1,
+        aux_loss: Optional[dict] = None,
+        use_dynamic_loss_weighting: bool = True,
     ) -> None:  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
@@ -221,15 +233,22 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
 
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
-    def loss(self, logits, gt_label, features):
+    def loss(
+        self,
+        logits: torch.Tensor,
+        gt_label: torch.Tensor,
+        valid_label_mask: Optional[torch.Tensor] = None,
+        features: Optional[tuple] = None,
+        **kwargs,
+    ) -> dict:
         """Calculate loss for given logits/gt_label."""
-        return SemiMultilabelClsHead.loss(self, logits, gt_label, features)
+        return SemiMultilabelClsHead.loss(self, logits, gt_label, features, **kwargs)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of SemiLinearMultilabelClsHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of SemiLinearMultilabelClsHead class."""
         return self.forward_train_with_last_layers(
             cls_score, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp
@@ -249,25 +268,25 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         aux_mlp (dict): Config for embeddings MLP
         act_cfg (dict): Config of activation layer
         loss (dict): configuration of loss, default is CrossEntropyLoss
-        topk (set): evaluation topk score, default is (1, )
+        topk (tuple): evaluation topk score, default is (1, )
         unlabeled_coef (float): unlabeled loss coefficient, default is 0.1
         use_dynamic_loss_weighting (boolean): whether to use dynamic unlabeled loss weighting, default is True
     """
 
     def __init__(
         self,
-        num_classes,
-        in_channels,
-        hid_channels=1280,
-        scale=1.0,
-        normalized=False,
-        aux_mlp=None,
-        act_cfg=None,
-        loss=None,
-        aux_loss=None,
-        dropout=False,
-        unlabeled_coef=0.1,
-        use_dynamic_loss_weighting=True,
+        num_classes: int,
+        in_channels: int,
+        hid_channels: int = 1280,
+        scale: float = 1.0,
+        normalized: bool = False,
+        aux_mlp: Optional[dict] = None,
+        act_cfg: Optional[dict] = None,
+        loss: Optional[dict] = None,
+        aux_loss: Optional[dict] = None,
+        dropout: bool = False,
+        unlabeled_coef: float = 0.1,
+        use_dynamic_loss_weighting: bool = True,
     ) -> None:  # pylint: disable=too-many-arguments
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
@@ -294,15 +313,22 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
 
         self.aux_mlp = generate_aux_mlp(aux_mlp, in_channels)
 
-    def loss(self, logits, gt_label, features):
+    def loss(
+        self,
+        logits: torch.Tensor,
+        gt_label: torch.Tensor,
+        valid_label_mask: Optional[torch.Tensor] = None,
+        features: Optional[tuple] = None,
+        **kwargs,
+    ) -> dict:
         """Calculate loss for given logits/gt_label."""
         return SemiMultilabelClsHead.loss(self, logits, gt_label, features)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of SemiNonLinearMultilabelClsHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of SemiNonLinearMultilabelClsHead class."""
         return self.forward_train_with_last_layers(
             cls_score, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp

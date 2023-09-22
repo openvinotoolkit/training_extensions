@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Optional
+
 import torch
 from mmpretrain.models.builder import LOSSES
 from mmpretrain.models.losses.utils import weight_reduce_loss
@@ -10,17 +12,17 @@ from torch import nn
 
 
 def asymmetric_angular_loss_with_ignore(
-    pred,
-    target,
-    valid_label_mask=None,
-    weight=None,
-    gamma_pos=0.0,
-    gamma_neg=1.0,
-    clip=0.05,
-    k=0.8,
-    reduction="mean",
-    avg_factor=None,
-):  # pylint: disable=too-many-arguments, too-many-locals
+    pred: torch.Tensor,
+    target: torch.Tensor,
+    valid_label_mask: Optional[torch.Tensor] = None,
+    weight: Optional[torch.Tensor] = None,
+    gamma_pos: float = 0.0,
+    gamma_neg: float = 1.0,
+    clip: float = 0.05,
+    k: float = 0.8,
+    reduction: str = "mean",
+    avg_factor: Optional[int] = None,
+) -> torch.Tensor:  # pylint: disable=too-many-arguments, too-many-locals
     """Asymmetric angular loss.
 
     Args:
@@ -100,7 +102,15 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         loss_weight (float): Weight of loss. Defaults to 1.0.
     """
 
-    def __init__(self, gamma_pos=0.0, gamma_neg=1.0, k=0.8, clip=0.05, reduction="mean", loss_weight=1.0) -> None:
+    def __init__(
+        self,
+        gamma_pos: float = 0.0,
+        gamma_neg: float = 1.0,
+        k: float = 0.8,
+        clip: float = 0.05,
+        reduction: str = "mean",
+        loss_weight: float = 1.0,
+    ) -> None:
         """Init fuction of AsymmetricAngularLossWithIgnore class."""
         super().__init__()
         self.gamma_pos = gamma_pos
@@ -110,7 +120,15 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self, pred, target, valid_label_mask=None, weight=None, avg_factor=None, reduction_override=None):
+    def forward(
+        self,
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        valid_label_mask: Optional[torch.Tensor] = None,
+        weight: Optional[torch.Tensor] = None,
+        avg_factor: Optional[int] = None,
+        reduction_override: Optional[str] = None,
+    ) -> torch.Tensor:
         """Asymmetric angular loss."""
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction

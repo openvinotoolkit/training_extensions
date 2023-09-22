@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
@@ -27,11 +28,11 @@ class ComposedDataLoadersHook(Hook):
         data_loaders: Union[Sequence[DataLoader], DataLoader],
     ) -> None:
         self.data_loaders: List[DataLoader] = []
-        self.composed_loader = None
+        self.composed_loader: Optional[ComposedDL] = None
 
         self.add_dataloaders(data_loaders)
 
-    def add_dataloaders(self, data_loaders: Union[Sequence[DataLoader], DataLoader]):
+    def add_dataloaders(self, data_loaders: Union[Sequence[DataLoader], DataLoader]) -> None:
         """Create data_loaders to be added into composed dataloader."""
         if isinstance(data_loaders, DataLoader):
             data_loaders = [data_loaders]
@@ -41,7 +42,7 @@ class ComposedDataLoadersHook(Hook):
         self.data_loaders.extend(data_loaders)
         self.composed_loader = None
 
-    def before_epoch(self, runner):
+    def before_epoch(self, runner: Runner) -> None:
         """Create composedDL before running epoch."""
         if self.composed_loader is None:
             logger.info("Creating ComposedDL " f"(runner's -> {runner.data_loader}, " f"hook's -> {self.data_loaders})")

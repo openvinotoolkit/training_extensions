@@ -58,17 +58,22 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             normal_init(self.fc, mean=0, std=0.01, bias=0)
 
     def loss(
-        self, cls_score: torch.Tensor, gt_label: torch.Tensor, valid_label_mask: Optional[torch.Tensor] = None
+        self,
+        logits: torch.Tensor,
+        gt_label: torch.Tensor,
+        valid_label_mask: Optional[torch.Tensor] = None,
+        features: Optional[tuple] = None,
+        **kwargs,
     ) -> dict:
         """Calculate loss for given cls_score/gt_label."""
-        gt_label = gt_label.type_as(cls_score)
-        num_samples = len(cls_score)
+        gt_label = gt_label.type_as(logits)
+        num_samples = len(logits)
         losses = dict()
 
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)
         # compute loss
-        loss = self.loss_module(cls_score, _gt_label, valid_label_mask=valid_label_mask, avg_factor=num_samples)
+        loss = self.loss_module(logits, _gt_label, valid_label_mask=valid_label_mask, avg_factor=num_samples)
         losses["loss"] = loss / self.scale
         return losses
 

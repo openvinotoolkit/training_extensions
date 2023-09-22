@@ -5,7 +5,7 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Type
 
 import numpy as np
 import torch
@@ -44,7 +44,7 @@ class ParameterV0Attribute(Attribute):
     permute: Optional[Tuple[int]] = field(default=None)
     verify_shape: bool = field(default=True)
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """ParameterV0Attribute's post-init function."""
         super().__post_init__()
         # fmt: off
@@ -65,8 +65,9 @@ class ParameterV0(Operation[ParameterV0Attribute]):
     TYPE = "Parameter"
     VERSION = 0
     ATTRIBUTE_FACTORY = ParameterV0Attribute
+    attrs: ParameterV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ParameterV0's forward function."""
         # TODO: validate shape
         # need to handle new generated op from reshaped model
@@ -85,7 +86,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
         return inputs
 
     @classmethod
-    def from_ov(cls, ov_op):
+    def from_ov(cls: Type["ParameterV0"], ov_op: Operation) -> "ParameterV0":
         """ParameterV0's from_ov function."""
         op_type = ov_op.get_type_name()
         op_version = ov_op.get_version()
@@ -99,8 +100,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
             shapes = []
             for output in ov_op.outputs():
                 shapes.append(get_dynamic_shape(output))
-            shapes = tuple(tuple(shape) for shape in shapes)
-            attrs["shape"] = shapes
+            attrs["shape"] = tuple(tuple(shape) for shape in shapes)
 
         layout = ov_op.get_layout()
         if not layout.empty:
@@ -126,7 +126,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
             # TODO: here, we force the batch dim to be dynamic
             # but this should be done when loading ov model
             i = layout.index("N")
-            new_shape = []
+            new_shape: list = []
             for shape in attrs["shape"]:
                 new_shape.append([-1 if j == i else k for j, k in enumerate(shape)])
             new_shape = [tuple(shape) for shape in new_shape]
@@ -162,7 +162,7 @@ class ResultV0(Operation[ResultV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = ResultV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ResultV0's forward function."""
         return inputs
 
@@ -177,7 +177,7 @@ class ConstantV0Attribute(Attribute):
 
     is_parameter: bool = field(default=False)
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """ConstantV0Attribute's post-init function."""
         super().__post_init__()
         # fmt: off
@@ -197,6 +197,7 @@ class ConstantV0(Operation[ConstantV0Attribute]):
     TYPE = "Constant"
     VERSION = 0
     ATTRIBUTE_FACTORY = ConstantV0Attribute
+    attrs: ConstantV0Attribute
 
     def __init__(self, *args, **kwargs) -> None:
         data = kwargs.pop("data", None)
@@ -210,12 +211,12 @@ class ConstantV0(Operation[ConstantV0Attribute]):
         else:
             self.register_buffer("data", data)
 
-    def forward(self):
+    def forward(self) -> torch.Tensor:
         """ConstantV0's forward function."""
         return self.data
 
     @classmethod
-    def from_ov(cls, ov_op):
+    def from_ov(cls: Type["ConstantV0"], ov_op: Operation) -> "ConstantV0":
         """ConstantV0's from_ov function."""
         op_type = ov_op.get_type_name()
         op_version = ov_op.get_version()

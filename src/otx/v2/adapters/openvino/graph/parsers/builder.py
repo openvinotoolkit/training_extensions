@@ -3,6 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from otx.v2.adapters.openvino.registry import Registry
+from ...registry import Registry
 
 PARSERS = Registry("ov graph parsers")

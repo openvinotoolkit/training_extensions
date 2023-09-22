@@ -5,6 +5,7 @@
 
 from typing import Dict, List, Union
 
+import networkx as nx
 from mmpretrain.models.builder import NECKS
 
 from otx.v2.adapters.openvino.graph.parsers.cls import cls_base_parser
@@ -19,7 +20,7 @@ class MMOVNeck(MMOVModel):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
+    def parser(graph: nx.MultiDiGraph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
         """Parser function returns base_parser for given graph."""
         output = cls_base_parser(graph, "neck")
         if output is None:

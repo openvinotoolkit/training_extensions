@@ -5,6 +5,7 @@
 
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 from torch import nn
 
 from otx.v2.api.utils.logger import get_logger
@@ -20,7 +21,7 @@ class NoBiasDecayHook(Hook):
     [weight with decay, weight without decay, bias without decay].
     """
 
-    def before_train_epoch(self, runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Split weights into decay/no-decay groups."""
         weight_decay, bias_no_decay, weight_no_decay = [], [], []
         for module in runner.model.modules():
@@ -52,7 +53,7 @@ class NoBiasDecayHook(Hook):
         param_groups = [weight_decay_group, bias_group, weight_no_decay_group]
         runner.optimizer.param_groups = param_groups
 
-    def after_train_epoch(self, runner):
+    def after_train_epoch(self, runner: Runner) -> None:
         """Merge splited groups before saving checkpoint."""
         params = []
         for module in runner.model.modules():

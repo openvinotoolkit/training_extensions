@@ -6,8 +6,10 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+import torch
+
+from .builder import OPS
+from .op import Attribute, Operation
 
 # pylint: disable=too-many-instance-attributes
 
@@ -31,7 +33,7 @@ class ProposalV4Attribute(Attribute):
     box_coordinate_scale: float = field(default=1.0)
     framework: str = field(default="")
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """ProposalV4Attribute's post-init function."""
         super().__post_init__()
         valid_framework = ["", "tensorflow"]
@@ -46,8 +48,9 @@ class ProposalV4(Operation[ProposalV4Attribute]):
     TYPE = "Proposal"
     VERSION = 4
     ATTRIBUTE_FACTORY = ProposalV4Attribute
+    attrs: ProposalV4Attribute
 
-    def forward(self, class_probs, bbox_deltas, image_shape):
+    def forward(self, class_probs: torch.Tensor, bbox_deltas: torch.Tensor, image_shape: torch.Tensor) -> torch.Tensor:
         """ProposalV4's forward function."""
         raise NotImplementedError
 
@@ -62,7 +65,7 @@ class ROIPoolingV0Attribute(Attribute):
     method: str = field(default="max")
     output_size: List[int] = field(default_factory=lambda: [])
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """ROIPoolingV0Attribute's post-init function."""
         super().__post_init__()
         valid_method = ["max", "bilinear"]
@@ -78,7 +81,7 @@ class ROIPoolingV0(Operation[ROIPoolingV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = ROIPoolingV0Attribute
 
-    def forward(self, inputs, boxes):
+    def forward(self, inputs: torch.Tensor, boxes: torch.Tensor) -> torch.Tensor:
         """ROIPoolingV0's forward function."""
         raise NotImplementedError
 
@@ -103,7 +106,7 @@ class DetectionOutputV0Attribute(Attribute):
     input_width: int = field(default=1)
     objectness_score: float = field(default=0)
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """DetectionOutputV0Attribute's post-init function."""
         super().__post_init__()
         valid_code_type = [
@@ -121,8 +124,16 @@ class DetectionOutputV0(Operation[DetectionOutputV0Attribute]):
     TYPE = "DetectionOutput"
     VERSION = 0
     ATTRIBUTE_FACTORY = DetectionOutputV0Attribute
+    attrs: DetectionOutputV0Attribute
 
-    def forward(self, loc_data, conf_data, prior_data, arm_conf_data=None, arm_loc_data=None):
+    def forward(
+        self,
+        loc_data: torch.Tensor,
+        conf_data: torch.Tensor,
+        prior_data: torch.Tensor,
+        arm_conf_data: Optional[torch.Tensor] = None,
+        arm_loc_data: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
         """DetectionOutputV0's forward."""
         raise NotImplementedError
 
@@ -149,7 +160,7 @@ class RegionYoloV0(Operation[RegionYoloV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = RegionYoloV0Attribute
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """RegionYoloV0's forward function."""
         raise NotImplementedError
 
@@ -180,7 +191,7 @@ class PriorBoxV0(Operation[PriorBoxV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = PriorBoxV0Attribute
 
-    def forward(self, output_size, image_size):
+    def forward(self, output_size: torch.Tensor, image_size: torch.Tensor) -> torch.Tensor:
         """PriorBoxV0's forward function."""
         raise NotImplementedError
 
@@ -207,6 +218,6 @@ class PriorBoxClusteredV0(Operation[PriorBoxClusteredV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = PriorBoxClusteredV0Attribute
 
-    def forward(self, output_size, image_size):
+    def forward(self, output_size: torch.Tensor, image_size: torch.Tensor) -> torch.Tensor:
         """PriorBoxClusteredV0's forward function."""
         raise NotImplementedError

@@ -4,13 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
+from typing import Union
 
 import torch
 from torch.nn import functional
 
-from otx.v2.adapters.openvino.ops.builder import OPS
-from otx.v2.adapters.openvino.ops.op import Attribute, Operation
-from otx.v2.adapters.openvino.ops.poolings import AvgPoolV1
+from .builder import OPS
+from .op import Attribute, Operation
+from .poolings import AvgPoolV1
 
 
 @dataclass
@@ -28,12 +29,15 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
     TYPE = "BatchNormInference"
     VERSION = 0
     ATTRIBUTE_FACTORY = BatchNormalizationV0Attribute
+    attrs: BatchNormalizationV0Attribute
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.register_buffer("_num_init_iter", torch.tensor(0))
 
-    def forward(self, inputs, gamma, beta, mean, variance):
+    def forward(
+        self, inputs: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor, mean: torch.Tensor, variance: torch.Tensor
+    ) -> torch.Tensor:
         """BatchNormalizationV0's forward function."""
 
         output = functional.batch_norm(
@@ -84,8 +88,9 @@ class LocalResponseNormalizationV0(Operation[LocalResponseNormalizationV0Attribu
     TYPE = "LRN"
     VERSION = 0
     ATTRIBUTE_FACTORY = LocalResponseNormalizationV0Attribute
+    attrs: LocalResponseNormalizationV0Attribute
 
-    def forward(self, inputs, axes):
+    def forward(self, inputs: torch.Tensor, axes: torch.Tensor) -> torch.Tensor:
         """LocalResponseNormalizationV0's forward function."""
         dim = inputs.dim()
 
@@ -128,7 +133,7 @@ class NormalizeL2V0Attribute(Attribute):
     eps: float
     eps_mode: str
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """NormalizeL2V0Attribute post-init function."""
         super().__post_init__()
         valid_eps_mode = ["add", "max"]
@@ -143,8 +148,9 @@ class NormalizeL2V0(Operation[NormalizeL2V0Attribute]):
     TYPE = "NormalizeL2"
     VERSION = 0
     ATTRIBUTE_FACTORY = NormalizeL2V0Attribute
+    attrs: NormalizeL2V0Attribute
 
-    def forward(self, inputs, axes):
+    def forward(self, inputs: torch.Tensor, axes: Union[list, torch.Tensor]) -> torch.Tensor:
         """NormalizeL2V0's forward function."""
         eps = self.attrs.eps
         eps_mode = self.attrs.eps_mode
@@ -177,7 +183,7 @@ class MVNV6Attribute(Attribute):
     eps: float
     eps_mode: str
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: ANN204
         """MVNV6Attribute's post-init function."""
         super().__post_init__()
         valid_eps_mode = ["INSIDE_SQRT", "OUTSIDE_SQRT"]
@@ -192,8 +198,9 @@ class MVNV6(Operation[MVNV6Attribute]):
     TYPE = "MVN"
     VERSION = 6
     ATTRIBUTE_FACTORY = MVNV6Attribute
+    attrs: MVNV6Attribute
 
-    def forward(self, inputs, axes):
+    def forward(self, inputs: torch.Tensor, axes: torch.Tensor) -> torch.Tensor:
         """MVNV6's forward function."""
         output = inputs - inputs.mean(axes.tolist(), keepdim=True)
         if self.attrs.normalize_variance:

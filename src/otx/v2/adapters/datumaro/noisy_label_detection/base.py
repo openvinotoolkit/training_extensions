@@ -50,7 +50,7 @@ class LossDynamicsTracker:
     def _convert_anns(self, item: DatasetItemEntityWithID) -> List[dm.Annotation]:
         raise NotImplementedError()
 
-    def accumulate(self, outputs, iter) -> None:
+    def accumulate(self, outputs: dict, iter: int) -> None:
         """Accumulate training loss dynamics for each training step."""
         raise NotImplementedError()
 

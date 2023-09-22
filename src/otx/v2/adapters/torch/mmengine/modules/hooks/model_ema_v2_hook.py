@@ -4,10 +4,12 @@
 #
 
 from copy import deepcopy
+from typing import Callable, Optional
 
 import torch
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
+from mmengine.runner import Runner
 from torch import nn
 
 from otx.v2.api.utils.logger import get_logger
@@ -34,15 +36,17 @@ class ModelEmaV2Hook(Hook):
         dataset_len_thr (int): number of train images in the dataset when to enable the EMA hook
     """
 
-    def __init__(self, ema_decay=0.9995, interval=1, start_epoch=0, dataset_len_thr=2000, **kwargs) -> None:
+    def __init__(
+        self, ema_decay: float = 0.9995, interval: int = 1, start_epoch: int = 0, dataset_len_thr: int = 2000, **kwargs
+    ) -> None:
         super().__init__(**kwargs)
+        self.use_ema: bool = False
         self.ema_decay = ema_decay
         self.interval = interval
         self.start_epoch = start_epoch
         self.dataset_len_thr = dataset_len_thr
-        self.use_ema = None
 
-    def before_train_epoch(self, runner):
+    def before_train_epoch(self, runner: Runner) -> None:
         """Make emav2 model before run epoch."""
         if not hasattr(self, "use_ema"):
             self.use_ema = len(runner.data_loader.dataset) > self.dataset_len_thr
@@ -52,11 +56,11 @@ class ModelEmaV2Hook(Hook):
             ema_model = ModelEmaV2(model, decay=self.ema_decay, dataset_len_thr=self.dataset_len_thr)
             runner.ema_model = ema_model
 
-    def before_run(self, runner):
+    def before_run(self, runner: Runner) -> None:
         """Log before run."""
         logger.info("\t* EMA V2 Enable")
 
-    def after_train_iter(self, runner):
+    def after_train_iter(self, runner: Runner) -> None:
         """Update ema parameter every self.interval iterations."""
         if not self.use_ema:
             return
@@ -92,7 +96,13 @@ class ModelEmaV2(nn.Module):
     GPU assignment and distributed training wrappers.
     """
 
-    def __init__(self, model, decay=0.9999, dataset_len_thr=None, device=None) -> None:
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        decay: float = 0.9999,
+        dataset_len_thr: Optional[int] = None,
+        device: Optional[str] = None,
+    ) -> None:
         super().__init__()
         # make a copy of the model for accumulating moving average of weights
         self.module = deepcopy(model)
@@ -105,17 +115,19 @@ class ModelEmaV2(nn.Module):
         if self.device is not None:
             self.module.to(device=device)
 
-    def forward(self):
+    def forward(self) -> None:
         """Forward."""
         return
 
-    def _update(self, update_fn):
+    def _update(self, update_fn: Callable) -> None:
         with torch.no_grad():
             for ema_v, model_v in zip(self.dst_model.values(), self.src_model.values()):
                 if self.device is not None:
-                    model_v = model_v.to(device=self.device)
-                ema_v.copy_(update_fn(ema_v, model_v))
+                    _model_v = model_v.to(device=self.device)
+                else:
+                    _model_v = model_v
+                ema_v.copy_(update_fn(ema_v, _model_v))
 
-    def update(self):
+    def update(self) -> None:
         """Update."""
         self._update(update_fn=lambda e, m: self.decay * e + (1.0 - self.decay) * m)

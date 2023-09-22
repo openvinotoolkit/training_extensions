@@ -6,6 +6,7 @@
 from typing import Dict, List, Optional, Union
 
 import openvino.runtime as ov
+import torch
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads import ClsHead
 from torch.nn import functional
@@ -66,11 +67,11 @@ class MMOVClsHead(ClsHead):
             parser_kwargs=dict(component="head"),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of MMOVClsHead class."""
         return self.simple_test(x)
 
-    def forward_train(self, cls_score, gt_label, **kwargs):
+    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of MMOVClsHead."""
         cls_score = self.model(cls_score)
         while cls_score.dim() > 2:
@@ -78,7 +79,7 @@ class MMOVClsHead(ClsHead):
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, cls_score):
+    def simple_test(self, cls_score: torch.Tensor) -> torch.Tensor:
         """Test without augmentation."""
         cls_score = self.model(cls_score)
         while cls_score.dim() > 2:

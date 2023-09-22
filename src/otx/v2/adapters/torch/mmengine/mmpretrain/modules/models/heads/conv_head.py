@@ -36,13 +36,15 @@ class ConvClsHead(ClsHead):
 
         self.conv = nn.Conv2d(self.in_channels, self.num_classes, (1, 1))
 
-    def pre_logits(self, x: Union[tuple, torch.Tensor]):
+    def pre_logits(self, x: Union[tuple, torch.Tensor]) -> torch.Tensor:
         """Preprocess logits."""
         if isinstance(x, tuple):
             x = x[-1]
         return x
 
-    def simple_test(self, x: Union[tuple, torch.Tensor], softmax: bool = True, post_process: bool = True):
+    def simple_test(
+        self, x: Union[tuple, torch.Tensor], softmax: bool = True, post_process: bool = True
+    ) -> torch.Tensor:
         """Inference without augmentation.
 
         Args:
