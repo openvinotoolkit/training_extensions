@@ -72,10 +72,7 @@ class Dataset(BaseDataset):
         if not self.initialize:
             self._initialize()
 
-        if isinstance(config, str):
-            config = OmegaConf.load(filename=config)
-        else:
-            config = DictConfig({})
+        config = OmegaConf.load(filename=config) if isinstance(config, str) else DictConfig({})
 
         config.dataset = {"transform_config": {"train": pipeline}, "image_size": [256, 256]}
         otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
@@ -84,10 +81,7 @@ class Dataset(BaseDataset):
 
         if subset == "val":
             global_dataset, local_dataset = split_local_global_dataset(otx_dataset)
-            if contains_anomalous_images(local_dataset):
-                otx_dataset = local_dataset
-            else:
-                otx_dataset = global_dataset
+            otx_dataset = local_dataset if contains_anomalous_images(local_dataset) else global_dataset
         task_type = str_to_task_type(self.task) if isinstance(self.task, str) else self.task
         return OTXAnomalyDataset(config=config, dataset=otx_dataset, task_type=task_type)
 

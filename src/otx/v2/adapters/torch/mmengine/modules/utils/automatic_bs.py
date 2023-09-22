@@ -5,7 +5,7 @@
 
 from copy import deepcopy
 from math import sqrt
-from typing import Any, Callable, List
+from typing import Callable, List, TypeVar
 
 import numpy as np
 from torch.utils.data import Dataset
@@ -40,7 +40,11 @@ def _set_value_at_dict_in_dict(target: dict, key_path: str, value: int) -> None:
 
 
 def adapt_batch_size(
-    train_func: Callable, cfg: Config, datasets: List, validate: bool = False, not_increase: bool = True
+    train_func: Callable,
+    cfg: Config,
+    datasets: List,
+    validate: bool = False,
+    not_increase: bool = True,
 ) -> None:
     """Decrease batch size if default batch size isn't fit to current GPU device.
 
@@ -131,7 +135,9 @@ def _set_max_epoch(cfg: Config, max_epoch: int) -> None:
     if cfg.runner.get("type") == "AccuracyAwareRunner":  # nncf case
         if "nncf_config" in cfg.runner:
             _set_value_at_dict_in_dict(
-                cfg.runner["nncf_config"], "accuracy_aware_training.params.maximal_total_epochs", max_epoch
+                cfg.runner["nncf_config"],
+                "accuracy_aware_training.params.maximal_total_epochs",
+                max_epoch,
             )
     else:
         runner_type = cfg.runner.get("type")
@@ -156,8 +162,8 @@ class SubDataset:
         self.fullset = fullset
         self.num_samples = num_samples
         self.img_indices = {  # for class incremental case
-            "old": [i for i in range(num_samples // 2)],
-            "new": [i for i in range(num_samples // 2, num_samples)],
+            "old": list(range(num_samples // 2)),
+            "new": list(range(num_samples // 2, num_samples)),
         }
 
     def __len__(self) -> int:
@@ -168,7 +174,7 @@ class SubDataset:
         """Get dataset at index."""
         return self.fullset[index]
 
-    def __getattr__(self, name: str) -> Any:  # noqa: ANN401
+    def __getattr__(self, name: str) -> TypeVar:
         """When trying to get other attributes, not dataset, get values from fullset."""
         if name == "__setstate__":
             raise AttributeError(name)

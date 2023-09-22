@@ -13,12 +13,12 @@ Original papers:
 
 import math
 import os
+from typing import Optional, Union
 
 from mmengine.runner import load_checkpoint
 from mmpretrain.models.utils import make_divisible
 from torch import nn
 from torch.nn import functional
-from typing import Optional, Union
 
 from otx.v2.api.utils.logger import get_logger
 

@@ -17,7 +17,6 @@ from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.v2.api.entities.subset import Subset
 
@@ -111,7 +110,7 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
         Returns:
             DatasetEntity:
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
@@ -127,7 +126,6 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = self.datum_media_2_otx_media(datumaro_item.media)
-                    assert isinstance(image, Image)
                     shapes: List[Annotation] = []
                     for annotation in datumaro_item.annotations:
                         if annotation.type == AnnotationType.label:
@@ -139,11 +137,14 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
                             video_id=video_name,
                             frame_idx=int(frame_idx),
                             is_empty_frame=False,
-                        )
+                        ),
                     )
 
                     dataset_item = DatasetItemEntity(
-                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[metadata_item]
+                        image,
+                        self._get_ann_scene_entity(shapes),
+                        subset=subset,
+                        metadata=[metadata_item],
                     )
                     dataset_items.append(dataset_item)
 
@@ -168,7 +169,6 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = self.datum_media_2_otx_media(datumaro_item.media)
-                    assert isinstance(image, Image)
                     shapes: List[Annotation] = []
                     is_empty_frame = False
                     for annotation in datumaro_item.annotations:
@@ -185,10 +185,13 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
                             video_id=video_name,
                             frame_idx=int(frame_name.split("_")[-1]),
                             is_empty_frame=is_empty_frame,
-                        )
+                        ),
                     )
                     dataset_item = DatasetItemEntity(
-                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[metadata_item]
+                        image,
+                        self._get_ann_scene_entity(shapes),
+                        subset=subset,
+                        metadata=[metadata_item],
                     )
                     dataset_items.append(dataset_item)
 

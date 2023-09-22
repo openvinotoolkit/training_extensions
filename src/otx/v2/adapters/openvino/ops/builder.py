@@ -3,9 +3,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Callable, Optional
+from typing import Callable, Optional, TypeVar, Union
 
-from ..registry import Registry
+from otx.v2.adapters.openvino.registry import Registry
+
 from .op import Operation
 
 
@@ -19,13 +20,12 @@ class OperationRegistry(Registry):
     def register(self, name: Optional[str] = None) -> Callable:
         """Register function from name."""
 
-        def wrap(obj) -> object:  # noqa: ANN001
+        def wrap(obj) -> TypeVar:  # noqa: ANN001
             layer_name = name
             if layer_name is None:
                 layer_name = obj.__name__
             layer_type = obj.TYPE
             layer_version = obj.VERSION
-            assert layer_type and layer_version >= 0
             if self._add_name_as_attr:
                 setattr(obj, self.REGISTERED_NAME_ATTR, layer_name)
             self._register(obj, layer_name, layer_type, layer_version)
@@ -33,7 +33,7 @@ class OperationRegistry(Registry):
 
         return wrap
 
-    def _register(self, obj: object, name: str, types: Optional[str] = None, version: Optional[int] = None) -> None:
+    def _register(self, obj: TypeVar, name: str, types: Optional[str] = None, version: Optional[int] = None) -> None:
         """Register function from obj and obj name."""
         super()._register(obj, name, types, version)
         if types is None or version is None:
@@ -44,7 +44,7 @@ class OperationRegistry(Registry):
             raise KeyError(f"{version} is already registered in {types}")
         self._registry_dict_by_type[types][version] = obj
 
-    def get_by_name(self, name: str) -> object:
+    def get_by_name(self, name: Union[str, TypeVar]) -> Union[str, TypeVar]:
         """Get obj from name."""
         return self.get(name)
 

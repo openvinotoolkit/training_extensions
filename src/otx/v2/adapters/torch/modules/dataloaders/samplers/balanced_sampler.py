@@ -78,7 +78,7 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
                     # `type:ignore` is required because Dataset cannot provide a default __len__
                     # see NOTE in pytorch/torch/utils/data/sampler.py
                     (num_samples - self.num_replicas)
-                    / self.num_replicas  # type: ignore
+                    / self.num_replicas,  # type: ignore
                 )
             else:
                 num_samples = math.ceil(num_samples / self.num_replicas)  # type: ignore
@@ -92,7 +92,7 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         for _ in range(self.repeat):
             for _ in range(self.num_trials):
                 indice = np.concatenate(
-                    [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices.keys()]
+                    [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices],
                 )
                 _indices.append(indice)
 
@@ -110,15 +110,12 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             else:
                 # remove tail of data to make it evenly divisible.
                 indices = indices[: self.total_size]
-            assert len(indices) == self.total_size
 
             # split and distribute indices
             len_indices = len(indices)
             indices = indices[
                 self.rank * len_indices // self.num_replicas : (self.rank + 1) * len_indices // self.num_replicas
             ]
-
-            assert len(indices) == self.num_samples
 
         return iter(indices)
 

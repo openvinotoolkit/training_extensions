@@ -98,24 +98,26 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
         return super().predict(data, optim_wrapper, **kwargs)  # type: ignore
 
     def _train_step_with_tracking(
-        self: ImageClassifier, data: torch.Tensor, optim_wrapper: Optional[list] = None, **kwargs
+        self: ImageClassifier,
+        data: torch.Tensor,
+        optim_wrapper: Optional[list] = None,
+        **kwargs,
     ) -> dict:
         losses = self(**data)
 
         loss_dyns = losses["loss"].detach().cpu().numpy()
-        assert not np.isscalar(loss_dyns)
 
         entity_ids = [img_meta["entity_id"] for img_meta in data["img_metas"]]
         label_ids = [img_meta["label_id"] for img_meta in data["img_metas"]]
         loss, log_vars = self._parse_losses(losses)
 
-        outputs = dict(
-            loss=loss,
-            log_vars=log_vars,
-            loss_dyns=loss_dyns,
-            entity_ids=entity_ids,
-            label_ids=label_ids,
-            num_samples=len(data["img"].data),
-        )
+        outputs = {
+            "loss": loss,
+            "log_vars": log_vars,
+            "loss_dyns": loss_dyns,
+            "entity_ids": entity_ids,
+            "label_ids": label_ids,
+            "num_samples": len(data["img"].data),
+        }
 
         return outputs

@@ -37,7 +37,12 @@ class ModelEmaV2Hook(Hook):
     """
 
     def __init__(
-        self, ema_decay: float = 0.9995, interval: int = 1, start_epoch: int = 0, dataset_len_thr: int = 2000, **kwargs
+        self,
+        ema_decay: float = 0.9995,
+        interval: int = 1,
+        start_epoch: int = 0,
+        dataset_len_thr: int = 2000,
+        **kwargs,
     ) -> None:
         super().__init__(**kwargs)
         self.use_ema: bool = False
@@ -122,10 +127,7 @@ class ModelEmaV2(nn.Module):
     def _update(self, update_fn: Callable) -> None:
         with torch.no_grad():
             for ema_v, model_v in zip(self.dst_model.values(), self.src_model.values()):
-                if self.device is not None:
-                    _model_v = model_v.to(device=self.device)
-                else:
-                    _model_v = model_v
+                _model_v = model_v.to(device=self.device) if self.device is not None else model_v
                 ema_v.copy_(update_fn(ema_v, _model_v))
 
     def update(self) -> None:

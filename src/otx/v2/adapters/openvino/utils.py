@@ -11,14 +11,13 @@ from typing import Optional
 
 from openvino.runtime import Core, Model, Node
 
-from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
+from .omz_wrapper import get_omz_model
 
 # pylint: disable=too-many-locals
 
 
 def to_dynamic_model(ov_model: Model) -> Model:
     """Convert ov_model to dynamic Model."""
-    assert isinstance(ov_model, Model)
 
     shapes = {}
     target_layouts = {}
@@ -85,7 +84,6 @@ def load_ov_model(model_path: str, weight_path: Optional[str] = None, convert_dy
     model_path = str(model_path)
     if model_path.startswith("omz://"):
         model_path = model_path.replace("omz://", "")
-        assert model_path in AVAILABLE_OMZ_MODELS
         ov_ir_path = get_omz_model(model_path)
         model_path = ov_ir_path["model_path"]
         weight_path = ov_ir_path["weight_path"]

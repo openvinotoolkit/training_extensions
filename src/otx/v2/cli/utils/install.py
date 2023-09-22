@@ -32,7 +32,6 @@ MM_REQUIREMENTS = [
 
 # NOTE: We might need to move this to a more centralized location and use it for other modules as well.
 # NOTE: In this case, requirement fileanames are to be renamed.
-# SUPPORTED_TASKS = ["action", "anomaly", "classification", "detection", "segmentation", "visual_prompting", "full"]
 SUPPORTED_TASKS = ["classification", "anomaly"]
 
 
@@ -58,7 +57,7 @@ def get_requirements_from_file(filenames: str | list[str]) -> list[Requirement]:
     requirements: list[Requirement] = []
     for filename in filenames:
         with open(filename) as file:
-            reqs = [req for req in pkg_resources.parse_requirements(file)]
+            reqs = list(pkg_resources.parse_requirements(file))
             requirements.extend(reqs)
 
     return requirements
@@ -146,7 +145,7 @@ def parse_requirements(
 
     if not torch_requirement:
         raise ValueError(
-            "Could not find torch requirement. OTX depends on torch. " "Please add torch to your requirements."
+            "Could not find torch requirement. OTX depends on torch. " "Please add torch to your requirements.",
         )
 
     # Get the unique list of the requirements.
@@ -255,7 +254,7 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
             f"Max supported CUDA version by PyTorch v{torch_version} is CUDA v{max_supported_cuda}.\n"
             f"This script will use CUDA v{max_supported_cuda}.\n"
             f"However, this may not be safe, and you are advised to install the correct version of CUDA.\n"
-            f"For more details, refer to https://pytorch.org/get-started/locally/"
+            f"For more details, refer to https://pytorch.org/get-started/locally/",
         )
         cuda_version = max_supported_cuda
 
@@ -265,7 +264,7 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
             f"Min supported CUDA version by PyTorch v{torch_version} is CUDA v{min_supported_cuda}.\n"
             f"This script will use CUDA v{min_supported_cuda}.\n"
             f"However, this may not be safe, and you are advised to install the correct version of CUDA.\n"
-            f"For more details, refer to https://pytorch.org/get-started/locally/"
+            f"For more details, refer to https://pytorch.org/get-started/locally/",
         )
         cuda_version = min_supported_cuda
 
@@ -401,7 +400,6 @@ def add_hardware_suffix_to_torch(
         updated_version = version + f"+{hardware_suffix}"
 
         # ``specs`` contains operators and versions as follows:
-        # [('<=', '1.9.1+cu111'), ('>=', '1.8.1+cu111')]
         # These are to be concatenated again for the updated version.
         updated_specs.append(operator + updated_version)
 
@@ -418,7 +416,7 @@ def add_hardware_suffix_to_torch(
             raise ValueError(
                 f"Requirement version can be a single value or a range. \n"
                 f"For example it could be torch>=1.8.1 or torch>=1.8.1, <=1.9.1\n"
-                f"Got {updated_specs} instead."
+                f"Got {updated_specs} instead.",
             )
     return updated_requirement
 
@@ -518,7 +516,7 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
         )
 
         # Return the install arguments.
-        install_args = ["--find-links", mmcv_index_url] + mmcv_requirements
+        install_args = ["--find-links", mmcv_index_url, *mmcv_requirements]
     else:
         raise RuntimeError(f"Unsupported OS: {platform.system()}")
 

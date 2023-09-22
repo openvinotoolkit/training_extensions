@@ -27,8 +27,8 @@ OMZ_CACHE = os.path.join(OTX_CACHE, "omz")
 os.makedirs(OMZ_CACHE, exist_ok=True)
 
 
-OMZ_PUBLIC_MODELS: Dict[str, List[str]] = dict(
-    cls=[
+OMZ_PUBLIC_MODELS: Dict[str, List[str]] = {
+    "cls": [
         "alexnet",
         "caffenet",
         #  "convnext-tiny",                # omz_downloader does not support
@@ -84,9 +84,9 @@ OMZ_PUBLIC_MODELS: Dict[str, List[str]] = dict(
         "vgg16",
         "vgg19",
     ],
-    det=[],
-    seg=[],
-)
+    "det": [],
+    "seg": [],
+}
 
 
 AVAILABLE_OMZ_MODELS: List[str] = []
@@ -123,13 +123,15 @@ def _get_ir_path(directory: Union[str, Path]) -> Optional[dict]:
     model_path = list(directory.glob("**/*.xml"))
     weight_path = list(directory.glob("**/*.bin"))
     if model_path and weight_path:
-        assert len(model_path) == 1 and len(weight_path) == 1
-        return dict(model_path=model_path[0], weight_path=weight_path[0])
+        return {"model_path": model_path[0], "weight_path": weight_path[0]}
     return None
 
 
 def _run_pre_convert(
-    reporter: _reporting.Reporter, model: Model, output_dir: Union[str, Path], args: NameSpace
+    reporter: _reporting.Reporter,
+    model: Model,
+    output_dir: Union[str, Path],
+    args: NameSpace,
 ) -> bool:
     """Run pre-converting function."""
     script = _common.MODEL_ROOT / model.subdirectory_ori / "pre-convert.py"
@@ -174,7 +176,7 @@ def _update_model(model: Model) -> None:
     # FIXME: a bug from openvino-dev==2022.3.0
     # It has been fixed on master branch.
     # After upgrading openvino-dev, we can remove this temporary patch
-    if getattr(model, "conversion_to_onnx_args") and not [
+    if model.conversion_to_onnx_args and not [
         arg for arg in model.conversion_to_onnx_args if arg.startswith("--model-path")
     ]:
         model.conversion_to_onnx_args.append("--model-path=")
@@ -363,7 +365,7 @@ def convert_model(
         except KeyError:
             sys.exit(
                 "Unable to locate Model Optimizer. "
-                + "Use --mo or run setupvars.sh/setupvars.bat from the OpenVINO toolkit."
+                + "Use --mo or run setupvars.sh/setupvars.bat from the OpenVINO toolkit.",
             )
 
     mo_path = mo_path.resolve()
@@ -410,7 +412,10 @@ def convert_model(
 
 
 def get_omz_model(
-    model_name: str, download_dir: str = OMZ_CACHE, output_dir: str = OMZ_CACHE, force: bool = False
+    model_name: str,
+    download_dir: str = OMZ_CACHE,
+    output_dir: str = OMZ_CACHE,
+    force: bool = False,
 ) -> Model:
     """Get OMZ model from name and download_dir."""
     model = get_model_configuration(model_name)

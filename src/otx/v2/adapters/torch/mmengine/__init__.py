@@ -9,7 +9,7 @@ VERSION = None
 DEBUG = None
 
 try:
-    import mmengine  # noqa: F401
+    import mmengine
 
     VERSION = mmengine.__version__
 except ImportError as e:

@@ -12,7 +12,7 @@ try:
     if platform.system() not in ("Linux", "Windows"):
         raise ImportError("mmdeploy is only supports Windows and Linux.")
 
-    import mmdeploy  # noqa: F401
+    import mmdeploy
 
     VERSION = mmdeploy.__version__
 except ImportError as e:

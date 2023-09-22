@@ -35,7 +35,9 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         scale: float = 1.0,
         loss: Optional[dict] = None,
     ) -> None:
-        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
+        loss = (
+            loss if loss else {"type": "CrossEntropyLoss", "use_sigmoid": True, "reduction": "mean", "loss_weight": 1.0}
+        )
         super().__init__(loss=loss)
         if num_classes <= 0:
             raise ValueError(f"num_classes={num_classes} must be a positive integer")
@@ -68,7 +70,7 @@ class CustomMultiLabelLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         """Calculate loss for given cls_score/gt_label."""
         gt_label = gt_label.type_as(logits)
         num_samples = len(logits)
-        losses = dict()
+        losses = {}
 
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)
@@ -143,6 +145,6 @@ class AnglularLinear(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward fuction of AngularLinear class."""
         cos_theta = functional.normalize(x.view(x.shape[0], -1), dim=1).mm(
-            functional.normalize(self.weight.t(), p=2, dim=0)
+            functional.normalize(self.weight.t(), p=2, dim=0),
         )
         return cos_theta.clamp(-1, 1)

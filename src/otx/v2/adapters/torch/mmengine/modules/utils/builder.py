@@ -21,10 +21,7 @@ def build_dataset(
 ) -> Dataset:
     """Build dataset."""
 
-    if subset in ["test", "val"]:
-        default_args = dict(test_mode=True)
-    else:
-        default_args = dict(test_mode=False)
+    default_args = {"test_mode": True} if subset in ["test", "val"] else {"test_mode": False}
 
     dataset_cfg = config.data.pop(subset) if consume else config.data.get(subset)
     dataset = dataset_builder(dataset_cfg, default_args)
@@ -43,14 +40,14 @@ def build_dataloader(
 ) -> DataLoader:
     """Build dataloader."""
 
-    loader_cfg = dict(
-        samples_per_gpu=config.data.get("samples_per_gpu", 1),
-        workers_per_gpu=config.data.get("workers_per_gpu", 0),
-        num_gpus=len(config.gpu_ids),
-        dist=distributed,
-        seed=config.get("seed", None),
-        shuffle=False if subset in ["test", "val"] else True,  # pylint: disable=simplifiable-if-expression
-    )
+    loader_cfg = {
+        "samples_per_gpu": config.data.get("samples_per_gpu", 1),
+        "workers_per_gpu": config.data.get("workers_per_gpu", 0),
+        "num_gpus": len(config.gpu_ids),
+        "dist": distributed,
+        "seed": config.get("seed", None),
+        "shuffle": not subset in ["test", "val"],  # pylint: disable=simplifiable-if-expression
+    }
 
     # The overall dataloader settings
     loader_cfg.update(
@@ -68,7 +65,7 @@ def build_dataloader(
                 "test_dataloader",
                 "unlabeled_dataloader",
             ]
-        }
+        },
     )
 
     specific_loader_cfg = (

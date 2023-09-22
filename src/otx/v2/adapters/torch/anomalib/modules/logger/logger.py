@@ -11,7 +11,10 @@ logger_initialized: Dict[str, bool] = {}
 
 
 def get_logger(
-    name: str, log_file: Optional[str] = None, log_level: int = logging.INFO, file_mode: str = "w"
+    name: str,
+    log_file: Optional[str] = None,
+    log_level: int = logging.INFO,
+    file_mode: str = "w",
 ) -> Logger:
     """Get logger.
 
@@ -57,10 +60,7 @@ def get_logger(
 
     handlers: List[Handler] = [StreamHandler()]
 
-    if dist.is_available() and dist.is_initialized():
-        rank = dist.get_rank()
-    else:
-        rank = 0
+    rank = dist.get_rank() if dist.is_available() and dist.is_initialized() else 0
 
     # only rank 0 will add a FileHandler
     if rank == 0 and log_file is not None:

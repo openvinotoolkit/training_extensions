@@ -73,7 +73,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
                     ann_file_path=train_ann_file,
                     data_root_dir=train_data_root,
                     subset=Subset.TRAINING,
-                )
+                ),
             )
 
         if val_subset is not None:
@@ -84,7 +84,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
                     ann_file_path=val_ann_file,
                     data_root_dir=val_data_root,
                     subset=Subset.VALIDATION,
-                )
+                ),
             )
 
         if test_subset is not None:
@@ -95,7 +95,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
                     ann_file_path=test_ann_file,
                     data_root_dir=test_data_root,
                     subset=Subset.TESTING,
-                )
+                ),
             )
 
         super().__init__(items=items)
@@ -212,7 +212,7 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
                 Annotation(
                     Rectangle.generate_full_box(),
                     labels=[ScoredLabel(label=label, probability=1.0)],
-                )
+                ),
             ]
             if isinstance(sample.masks, list) and len(sample.masks) > 0:
                 for contour in sample.masks:
@@ -225,7 +225,7 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
                                 shape=polygon,
                                 labels=[ScoredLabel(label, 1.0)],
                                 id=ID(ObjectId()),
-                            )
+                            ),
                         )
                     else:
                         # Contour is a closed polygon with area == 0
@@ -292,7 +292,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
                 Annotation(
                     Rectangle.generate_full_box(),
                     labels=[ScoredLabel(label=label, probability=1.0)],
-                )
+                ),
             ]
             if isinstance(sample.bboxes, list) and len(sample.bboxes) > 0:
                 for bbox in sample.bboxes:
@@ -304,7 +304,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
                                 shape=box,
                                 labels=[ScoredLabel(label, 1.0)],
                                 id=ID(ObjectId()),
-                            )
+                            ),
                         )
                     else:
                         # Contour is a closed polygon with area == 0

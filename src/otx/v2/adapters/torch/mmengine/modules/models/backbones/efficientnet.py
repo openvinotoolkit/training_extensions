@@ -13,6 +13,7 @@ Original papers:
 
 import math
 import os
+from typing import Callable, Optional, Union
 
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import ConvModule
@@ -20,7 +21,6 @@ from mmengine.runner import load_checkpoint
 from pytorchcv.models.model_store import download_model
 from torch import nn
 from torch.nn import functional, init
-from typing import Union, Optional, Callable
 
 from otx.v2.api.utils.logger import get_logger
 

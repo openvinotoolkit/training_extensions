@@ -8,8 +8,8 @@ from typing import Dict, List, Optional, Union
 
 import torch
 
-from ..op import Attribute, Operation
-from ..utils import convert_op_to_torch
+from otx.v2.adapters.openvino.ops.op import Attribute, Operation
+from otx.v2.adapters.openvino.ops.utils import convert_op_to_torch
 
 
 class OperationModule(torch.nn.Module):
@@ -33,7 +33,6 @@ class OperationModule(torch.nn.Module):
             self._dependents_with_defaults = spec.args[-len(spec.defaults) :]
 
         if isinstance(dependent_ops, list):
-            assert len(dependent_ops) == len(kwargs)
             for op_, kwarg in zip(dependent_ops, kwargs):
                 self._dependent_ops[kwarg] = op_
         elif isinstance(dependent_ops, dict):
@@ -55,8 +54,6 @@ class OperationModule(torch.nn.Module):
                 if inputs[key] is not None:
                     raise ValueError(f"duplicated key {key}")
                 inputs[key] = val
-
-        assert all(v is not None for v in inputs.values() if v not in self._dependents_with_defaults)
 
         return self.op_v(**inputs)
 

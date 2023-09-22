@@ -47,7 +47,7 @@ class LossDynamicsTrackingHook(Hook):
 
         if not isinstance(model, LossDynamicsTrackingMixin):
             raise RuntimeError(
-                f"The model should be an instance of LossDynamicsTrackingMixin, but type(model)={type(model)}."
+                f"The model should be an instance of LossDynamicsTrackingMixin, but type(model)={type(model)}.",
             )
         return model.loss_dyns_tracker
 

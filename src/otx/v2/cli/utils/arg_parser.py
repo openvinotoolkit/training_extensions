@@ -5,7 +5,7 @@
 
 
 import sys
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, TypeVar
 
 import docstring_parser
 import yaml
@@ -61,7 +61,7 @@ def pre_parse_arguments() -> Dict[str, Optional[str]]:
     return arguments
 
 
-def get_short_docstring(component: object) -> Optional[str]:
+def get_short_docstring(component: TypeVar) -> Optional[str]:
     """Gets the short description from the docstring.
 
     Args:
@@ -139,7 +139,7 @@ class OTXArgumentParser(ArgumentParser):
                 instantiate=instantiate,
                 sub_configs=True,
             )
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def check_config(
         self,

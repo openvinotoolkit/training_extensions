@@ -83,7 +83,7 @@ class AnomalyInferenceCallback(Callback):
                     label=dataset_item.annotation_scene.get_labels()[0],
                     annotation_scene=dataset_item.annotation_scene,
                     numpy=(anomaly_map * 255).squeeze().cpu().numpy().astype(np.uint8),
-                )
+                ),
             )
 
     def _process_classification_predictions(self, pred_labels: Tensor, pred_scores: Tensor) -> None:
@@ -121,7 +121,11 @@ class AnomalyInferenceCallback(Callback):
         # pylint: disable=too-many-locals
         height, width = image_size
         for dataset_item, im_boxes, im_box_scores, im_box_labels, pred_score in zip(
-            self.otx_dataset, pred_boxes, box_scores, box_labels, pred_scores
+            self.otx_dataset,
+            pred_boxes,
+            box_scores,
+            box_labels,
+            pred_scores,
         ):
             # generate annotations
             annotations: List[Annotation] = []
@@ -153,7 +157,10 @@ class AnomalyInferenceCallback(Callback):
             pred_scores (Tensor): Predicted image-level anomaly scores.
         """
         for dataset_item, pred_mask, anomaly_map, pred_score in zip(
-            self.otx_dataset, pred_masks, anomaly_maps, pred_scores
+            self.otx_dataset,
+            pred_masks,
+            anomaly_maps,
+            pred_scores,
         ):
             # generate polygon annotations
             annotations = create_annotation_from_segmentation_map(

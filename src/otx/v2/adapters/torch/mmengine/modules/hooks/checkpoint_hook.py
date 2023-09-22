@@ -87,15 +87,12 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
             if prev_model_weight.exists():
                 prev_model_weight.unlink()
 
-        if self.by_epoch:
-            weight_name = f"best_epoch_{runner.epoch + 1}.pth"
-        else:
-            weight_name = f"best_iter_{runner.iter + 1}.pth"
+        weight_name = f"best_epoch_{runner.epoch + 1}.pth" if self.by_epoch else f"best_iter_{runner.iter + 1}.pth"
         runner.save_checkpoint(self.out_dir, filename=weight_name, save_optimizer=self.save_optimizer, **self.args)
 
         self._best_model_weight = Path(weight_name)
         if runner.meta is not None:
-            runner.meta.setdefault("hook_msgs", dict())
+            runner.meta.setdefault("hook_msgs", {})
             runner.meta["hook_msgs"]["best_ckpt"] = str(self.out_dir / self._best_model_weight)
 
     @master_only
@@ -126,7 +123,7 @@ class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-a
 
         if runner.meta is not None:
             cur_ckpt_filename = Path(self.args.get("filename_tmpl", weight_name_format.format(cur_step)))
-            runner.meta.setdefault("hook_msgs", dict())
+            runner.meta.setdefault("hook_msgs", {})
             runner.meta["hook_msgs"]["last_ckpt"] = str(Path(self.out_dir) / cur_ckpt_filename)
 
     def after_train_iter(self, runner: Runner, **kwargs) -> None:
@@ -169,5 +166,9 @@ class SaveInitialWeightHook(Hook):
         """Save initial the weights before training."""
         runner.logger.info("Saving weight before training")
         runner.save_checkpoint(
-            self._save_path, filename=self._file_name, save_optimizer=False, create_symlink=False, **self._args
+            self._save_path,
+            filename=self._file_name,
+            save_optimizer=False,
+            create_symlink=False,
+            **self._args,
         )

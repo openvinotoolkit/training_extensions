@@ -26,7 +26,9 @@ def add_doctor_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
     """
     sub_parser = prepare_parser()
     parser._subcommands_action.add_subcommand(
-        "doctor", sub_parser, help="View diagnostic information about the current environment."
+        "doctor",
+        sub_parser,
+        help="View diagnostic information about the current environment.",
     )
 
     return parser
@@ -42,7 +44,10 @@ def prepare_parser() -> OTXArgumentParser:
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default=None, type=str)
     parser.add_argument(
-        "-v", "--verbose", help="Print more detailed output. (All the dependency & TraceBack)", action="store_true"
+        "-v",
+        "--verbose",
+        help="Print more detailed output. (All the dependency & TraceBack)",
+        action="store_true",
     )
 
     return parser
@@ -92,7 +97,9 @@ def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
                     console.log(f"{red_mark} {target}: [bold red]{warning_mark} {exception}[/bold red]")
                 if verbose and isinstance(exception, Exception):
                     traceback = Traceback.from_exception(
-                        exc_type=type(exception), exc_value=exception, traceback=exception.__traceback__
+                        exc_type=type(exception),
+                        exc_value=exception,
+                        traceback=exception.__traceback__,
                     )
                     console.print(traceback)
             console.log(f"\t - Please try this command: 'otx install {target}' or 'otx install full'\n")

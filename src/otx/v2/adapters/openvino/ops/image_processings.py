@@ -30,7 +30,7 @@ class InterpolateV4Attribute(Attribute):
     pads_end: List[int] = field(default_factory=lambda: [0])
     cube_coeff: float = field(default=-0.75)
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """InterpolateV4Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["nearest", "linear", "linear_onnx", "cubic"]
@@ -40,7 +40,7 @@ class InterpolateV4Attribute(Attribute):
         if self.shape_calculation_mode not in valid_shape_calculation_mode:
             raise ValueError(
                 f"Invalid shape_calculation_mode {self.shape_calculation_mode}. "
-                f"It must be one of {valid_shape_calculation_mode}."
+                f"It must be one of {valid_shape_calculation_mode}.",
             )
         valid_coordinate_transformation_mode = [
             "half_pixel",
@@ -52,7 +52,7 @@ class InterpolateV4Attribute(Attribute):
         if self.coordinate_transformation_mode not in valid_coordinate_transformation_mode:
             raise ValueError(
                 f"Invalid coordinate_transformation_mode {self.coordinate_transformation_mode}. "
-                f"It must be one of {valid_coordinate_transformation_mode}."
+                f"It must be one of {valid_coordinate_transformation_mode}.",
             )
         valid_nearest_mode = [
             "round_prefer_floor",
@@ -79,7 +79,11 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
         self.pad = PadV1("tmp", shape=self.shape, pad_mode="constant")
 
     def forward(
-        self, inputs: torch.Tensor, sizes: torch.Tensor, scales: torch.Tensor, axes: Optional[torch.Tensor] = None
+        self,
+        inputs: torch.Tensor,
+        sizes: torch.Tensor,
+        scales: torch.Tensor,
+        axes: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """InterpolateV4's forward function."""
         # TODO list
@@ -89,10 +93,7 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
         # - cube_coeff
         # - antialias
 
-        if axes is None:
-            axes = list(range(inputs.dim()))
-        else:
-            axes = axes.detach().cpu().tolist()
+        axes = list(range(inputs.dim())) if axes is None else axes.detach().cpu().tolist()
 
         output = self.pad(inputs, self.attrs.pads_begin, self.attrs.pads_end, 0)
 

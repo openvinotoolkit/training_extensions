@@ -99,7 +99,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
                     # `type:ignore` is required because Dataset cannot provide a default __len__
                     # see NOTE in pytorch/torch/utils/data/sampler.py
                     (num_samples - self.num_replicas)
-                    / self.num_replicas  # type: ignore
+                    / self.num_replicas,  # type: ignore
                 )
             else:
                 num_samples = math.ceil(num_samples / self.num_replicas)  # type: ignore
@@ -113,14 +113,14 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         for _ in range(self.repeat):
             for _ in range(int(self.data_length / (1 + self.old_new_ratio))):
                 indice = np.concatenate(
-                    [np.random.choice(self.new_indices, 1), np.random.choice(self.old_indices, self.old_new_ratio)]
+                    [np.random.choice(self.new_indices, 1), np.random.choice(self.old_indices, self.old_new_ratio)],
                 )
                 _indices.append(indice)
 
         indices = np.concatenate(_indices)
         if not self.drop_last:
             num_extra = int(
-                np.ceil(self.data_length * self.repeat / self.samples_per_gpu)
+                np.ceil(self.data_length * self.repeat / self.samples_per_gpu),
             ) * self.samples_per_gpu - len(indices)
             indices = np.concatenate([indices, np.random.choice(indices, num_extra)])
         indices = indices.astype(np.int64).tolist()
@@ -137,14 +137,12 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             else:
                 # remove tail of data to make it evenly divisible.
                 indices = indices[: self.total_size]
-            assert len(indices) == self.total_size
 
             # shuffle before distributing indices
             random.shuffle(indices)
 
             # subsample
             indices = indices[self.rank : self.total_size : self.num_replicas]
-            assert len(indices) == self.num_samples
 
         return iter(indices)
 

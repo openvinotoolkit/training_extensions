@@ -20,7 +20,7 @@ class TopKV3Attribute(Attribute):
     sort: str
     index_element_type: str = field(default="i32")
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """TopKV3Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["min", "max"]
@@ -35,7 +35,7 @@ class TopKV3Attribute(Attribute):
         if self.index_element_type not in valid_index_element_type:
             raise ValueError(
                 f"Invalid index_element_type {self.index_element_type}. "
-                f"It must be one of {valid_index_element_type}."
+                f"It must be one of {valid_index_element_type}.",
             )
 
 

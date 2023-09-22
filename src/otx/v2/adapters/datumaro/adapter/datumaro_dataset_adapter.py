@@ -24,6 +24,7 @@ from datumaro.components.dataset import eager_mode
 from datumaro.components.media import Image as DatumImage
 from datumaro.components.media import MediaElement as DatumMediaElement
 
+from otx.v2.adapters.datumaro.caching.storage_cache import init_arrow_cache
 from otx.v2.api.core.dataset import BaseDatasetAdapter
 from otx.v2.api.entities.annotation import (
     Annotation,
@@ -42,8 +43,6 @@ from otx.v2.api.entities.shapes.polygon import Point, Polygon
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
-
-from ..caching.storage_cache import init_arrow_cache
 
 
 class DatumaroDatasetAdapter(BaseDatasetAdapter):
@@ -154,7 +153,6 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         if train_data_roots is not None:
             train_dataset = self._import_dataset(train_data_roots, train_ann_files, encryption_key, Subset.TRAINING)
             dataset[Subset.TRAINING] = self._get_subset_data("train", train_dataset)
-            # self.is_train_phase = True
 
             # If validation is manually defined --> set the validation data according to user's input
             if val_data_roots:
@@ -167,7 +165,6 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             test_dataset = self._import_dataset(test_data_roots, test_ann_files, encryption_key, Subset.TESTING)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
             # FIXME: The flow for is_train_phase needs to be modified.
-            # self.is_train_phase = False
 
         if unlabeled_data_roots is not None:
             dataset[Subset.UNLABELED] = DatumDataset.import_from(unlabeled_data_roots, format="image_dir")
@@ -176,7 +173,11 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         return dataset
 
     def _import_dataset(
-        self, data_roots: Optional[str], ann_files: Optional[str], encryption_key: Optional[str], mode: Subset
+        self,
+        data_roots: Optional[str],
+        ann_files: Optional[str],
+        encryption_key: Optional[str],
+        mode: Subset,
     ) -> DatumDataset:
         # Find self.data_type and task_type
         mode_to_str = {Subset.TRAINING: "train", Subset.VALIDATION: "val", Subset.TESTING: "test"}
@@ -189,7 +190,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         if ann_files is not None:
             if self.data_type not in ("coco"):
                 raise NotImplementedError(
-                    f"Specifying '--{str_mode}-ann-files' is not supported for data type '{self.data_type}'"
+                    f"Specifying '--{str_mode}-ann-files' is not supported for data type '{self.data_type}'",
                 )
             dataset_kwargs["path"] = ann_files
             dataset_kwargs["subset"] = str_mode
@@ -197,9 +198,8 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         if encryption_key is not None:
             dataset_kwargs["encryption_key"] = encryption_key
 
-        if self.task_type == TaskType.VISUAL_PROMPTING:
-            if self.data_type in ["coco"]:
-                dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
+        if self.task_type == TaskType.VISUAL_PROMPTING and self.data_type in ["coco"]:
+            dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
 
         dataset = DatumDataset.import_from(**dataset_kwargs)
 
@@ -314,7 +314,8 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
     def _get_label_entity(self, annotation: DatumAnnotation) -> Annotation:
         """Get label entity."""
         return Annotation(
-            Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.label_entities[annotation.label])]
+            Rectangle.generate_full_box(),
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
     def _get_normalized_bbox_entity(self, annotation: DatumAnnotation, width: int, height: int) -> Annotation:
@@ -343,14 +344,18 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         )
 
     def _get_polygon_entity(
-        self, annotation: DatumAnnotation, width: int, height: int, num_polygons: int = -1
+        self,
+        annotation: DatumAnnotation,
+        width: int,
+        height: int,
+        num_polygons: int = -1,
     ) -> Annotation:
         """Get polygon entity."""
         polygon = Polygon(
             points=[
                 Point(x=annotation.points[i] / width, y=annotation.points[i + 1] / height)
                 for i in range(0, len(annotation.points), 2)
-            ]
+            ],
         )
         step = 1 if num_polygons == -1 else len(polygon.points) // num_polygons
         points = [polygon.points[i] for i in range(0, len(polygon.points), step)]
@@ -364,7 +369,8 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         """Get mask entity."""
         mask = Image(data=annotation.image, size=annotation.image.shape)
         return Annotation(
-            mask, labels=[ScoredLabel(label=self.label_entities[annotation.label])]  # type: ignore[arg-type]
+            mask,
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],  # type: ignore[arg-type]
         )
 
     def remove_unused_label_entities(self, used_labels: list) -> None:

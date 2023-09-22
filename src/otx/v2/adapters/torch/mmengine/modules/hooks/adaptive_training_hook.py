@@ -81,16 +81,9 @@ class AdaptiveTrainSchedulingHook(Hook):
                 # TODO: There is no longer an EvalHook in mmX.
                 # if isinstance(hook, EvalHook):
                 #     # make sure evaluation is done at last to save best checkpoint
-                #     limit = runner.max_epochs if hook.by_epoch else runner.max_iters
-                #     adaptive_interval = min(adaptive_interval, limit)
-                #     logger.info(f"Update EvalHook interval: {hook.interval} -> {adaptive_interval}")
-                #     hook.interval = adaptive_interval
                 # TODO: There is no longer an LrUpdaterHook in mmX.
-                # elif isinstance(hook, LrUpdaterHook):
                 #     if hasattr(hook, "interval") and hasattr(hook, "patience"):
-                #         hook.interval = adaptive_interval
                 if isinstance(hook, EarlyStoppingHook):
-                    # logger.info(f"Update EarlyStoppingHook patience: {hook.patience} -> {patience}")
                     hook.start = adaptive_interval
                     hook.interval = adaptive_interval
                 elif isinstance(hook, CheckpointHook):
@@ -113,5 +106,4 @@ class AdaptiveTrainSchedulingHook(Hook):
         # for hook in runner.hooks:
         #     if isinstance(hook, EvalHook):
         #         assert target_hook is None, "More than 1 EvalHook is found in runner."
-        #         target_hook = hook
         return target_hook

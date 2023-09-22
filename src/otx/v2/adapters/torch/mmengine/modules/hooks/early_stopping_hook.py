@@ -59,7 +59,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
     """Reduce learning rate when a metric has stopped improving.
 
     Models often benefit from reducing the learning rate by a factor of 2-10 once learning stagnates.
-    This scheduler reads a metrics quantity and if no improvement is seen for a ‘patience’
+    This scheduler reads a metrics quantity and if no improvement is seen for a `patience`
     number of epochs, the learning rate is reduced.
 
     :param min_lr: minimum learning rate. The lower bound of the desired learning rate.
@@ -73,7 +73,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
     :param patience: Number of epochs with no improvement after which learning rate will be reduced.
                      For example, if patience = 2, then we will ignore the first 2 epochs with no
                      improvement, and will only drop LR after the 3rd epoch if the metric still
-                     hasn’t improved then
+                     hasn`t improved then
     :param iteration_patience: Number of iterations must be trained after the last improvement
                                before LR drops. The same as patience but the LR remains the same if
                                the number of iteration is lower than iteration_patience. This
@@ -142,7 +142,7 @@ class ReduceLROnPlateauLrUpdaterHook(ParamSchedulerHook):
                 rule = "less"
             else:
                 raise ValueError(
-                    f"Cannot infer the rule for key " f"{key_indicator}, thus a specific rule " f"must be specified."
+                    f"Cannot infer the rule for key " f"{key_indicator}, thus a specific rule " f"must be specified.",
                 )
         self.rule = rule
         self.key_indicator = key_indicator

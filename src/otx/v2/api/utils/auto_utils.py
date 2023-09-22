@@ -67,7 +67,7 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
         if not Path(unlabeled_dir).is_dir() or not Path(unlabeled_dir).iterdir():
             raise ValueError(
                 "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. "
-                "Please, check command line and directory path."
+                "Please, check command line and directory path.",
             )
 
         all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir, recursive=True)
@@ -78,7 +78,7 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
         logging.warning(
             "WARNING: There are none or too litle images to start Semi-SL training. "
             "It should be more than relative threshold (at least 7% of labeled images) "
-            "Start Supervised training instead."
+            "Start Supervised training instead.",
         )
         return False
 

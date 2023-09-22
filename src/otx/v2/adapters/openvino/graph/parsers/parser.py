@@ -5,7 +5,7 @@
 
 from typing import List
 
-from ...graph import Graph
+from otx.v2.adapters.openvino.graph import Graph
 
 
 def type_parser(graph: Graph, types: list) -> List[str]:

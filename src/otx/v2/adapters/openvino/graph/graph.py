@@ -9,17 +9,16 @@ import inspect
 from collections import OrderedDict
 from copy import deepcopy
 from dataclasses import asdict
-from typing import Dict, Generator, Iterable, List, Optional, Tuple, Union
+from typing import Dict, Generator, Iterable, List, Optional, Tuple, TypeVar, Union
 
 import _collections_abc
 import networkx as nx
 from openvino.runtime import Model, Node  # pylint: disable=no-name-in-module
 
+from otx.v2.adapters.openvino.ops import Operation
+from otx.v2.adapters.openvino.ops.utils import convert_op_to_torch
+from otx.v2.adapters.openvino.utils import get_op_name
 from otx.v2.api.utils.logger import get_logger
-
-from ..ops import Operation
-from ..ops.utils import convert_op_to_torch
-from ..utils import get_op_name
 
 # pylint: disable=too-many-locals, too-many-nested-blocks, arguments-renamed, too-many-branches, too-many-statements
 
@@ -67,7 +66,7 @@ class SortedDictItemsView(_collections_abc.ItemsView):
 class NOOP:
     """NOOP class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 class SortedDict(dict):
@@ -80,13 +79,11 @@ class SortedDict(dict):
 
     def __setitem__(self, key: str, value: dict) -> None:
         """Sorteddict's setitem function."""
-        assert len(value) == 1
         edge_key, edge_attr = next(iter(value.items()))
         sort_value = float("inf") if self._sort_key not in edge_attr else edge_attr[self._sort_key]
         self._sorted_keys.append([sort_value, key, edge_key])
         self._sorted_keys.sort(key=lambda x: x[0])
         if key in self:
-            assert edge_key not in self[key]
             self[key].update(value)
         else:
             super().__setitem__(key, value)
@@ -136,10 +133,7 @@ class SortedDict(dict):
 
     def pop(self, key: str, default: NOOP = NOOP()) -> dict:
         """Sorteddict's pop function."""
-        if isinstance(default, NOOP):
-            value = super().pop(key)
-        else:
-            value = super().pop(key, default)
+        value = super().pop(key) if isinstance(default, NOOP) else super().pop(key, default)
 
         for i, (_, key_in, _) in enumerate(self._sorted_keys):
             if key_in == key:
@@ -235,14 +229,6 @@ class Graph(nx.MultiDiGraph):
                 out_port_id = out_port.get_index()
                 parents_dict[op_name].append([out_port_id, in_port_id, get_op_name(out_port.get_node())])
 
-        # validate graph
-        for node, children in children_dict.items():
-            for _, _, child in children:
-                assert node in [i[-1] for i in parents_dict[child]], f"{node} is not a parent of {child}"
-        for node, parents in parents_dict.items():
-            for _, _, parent in parents:
-                assert node in [i[-1] for i in children_dict[parent]], f"{node} is not a child of {parent}"
-
         # add edges
         for src, tgts in children_dict.items():
             for out_port_id, in_port_id, tgt in tgts:
@@ -259,7 +245,10 @@ class Graph(nx.MultiDiGraph):
         return graph
 
     def get_edge_data(
-        self, node_from: Operation, node_to: Operation, default: Optional[object] = None
+        self,
+        node_from: Operation,
+        node_to: Operation,
+        default: Optional[TypeVar] = None,
     ) -> Optional[list]:
         """Graph's get_edge_data function."""
         edge_data = super().get_edge_data(node_from, node_to, None, default)
@@ -277,13 +266,11 @@ class Graph(nx.MultiDiGraph):
                 if hasattr(predecessor, "type") and predecessor.type != "Constant"
             ]
             if predecessors:
-                assert len(predecessors) == 1
                 predecessor = predecessors[0]
 
                 for successor in self.successors(node):
                     for predecessor_ in self.predecessors(successor):
                         edges_attrs = self.get_edge_data(predecessor_, successor)
-                        assert len(edges_attrs) == 1
                         if predecessor_ == node:
                             for edge_attrs in edges_attrs:
                                 edges_to_keep.append([predecessor, successor, edge_attrs])
@@ -333,7 +320,6 @@ class Graph(nx.MultiDiGraph):
                 for predecessor in self.predecessors(node_to)
                 for edge in self.get_edge_data(predecessor, node_to)
             ]
-            assert len(occupied) == len(set(occupied))
             if occupied:
                 for i in range(max(occupied)):
                     if i not in occupied:
@@ -354,10 +340,8 @@ class Graph(nx.MultiDiGraph):
             occupied = [
                 edge["in_port"] for predecessor in predecessors for edge in self.get_edge_data(predecessor, node_to)
             ]
-            assert len(occupied) == len(set(occupied))
-        if occupied:
-            if in_port in occupied:
-                raise ValueError(f"in_port {in_port} is occupied for {node_to.name}.")
+        if occupied and in_port in occupied:
+            raise ValueError(f"in_port {in_port} is occupied for {node_to.name}.")
 
         # out_port validation is not able to do
 
@@ -398,7 +382,10 @@ class Graph(nx.MultiDiGraph):
         return found
 
     def bfs(
-        self, node: Operation, reverse: bool = False, depth_limit: Optional[int] = None
+        self,
+        node: Operation,
+        reverse: bool = False,
+        depth_limit: Optional[int] = None,
     ) -> Generator[Union[Tuple[Operation, Operation], Tuple[Operation, Tuple[Operation]]], None, None]:
         """Graph's bfs function."""
         if reverse:
@@ -419,12 +406,12 @@ class Graph(nx.MultiDiGraph):
 
     #  def dfs(self, node: Operation, forward=True, depth_limit=None):
     #      if forward:
-    #          return nx.dfs_successors(self, node, depth_limit)
-    #      else:
-    #          return nx.dfs_predecessors(self, node, depth_limit)
 
     def get_nodes_by_type_pattern(
-        self, pattern: List[str], start_node: Optional[Operation] = None, reverse: bool = False
+        self,
+        pattern: List[str],
+        start_node: Optional[Operation] = None,
+        reverse: bool = False,
     ) -> list:
         """Graph's get_nodes_by_type_pattern function."""
         if len(pattern) < 1:
@@ -432,10 +419,7 @@ class Graph(nx.MultiDiGraph):
         pattern_pairs = [pattern[i : i + 2] for i in range(len(pattern) - 1)]
 
         if start_node is None:
-            if reverse:
-                start_node = list(self.topological_sort())[-1]
-            else:
-                start_node = list(self.topological_sort())[0]
+            start_node = list(self.topological_sort())[-1] if reverse else list(self.topological_sort())[0]
 
         founds = []
         start_nodes = [start_node]
@@ -611,8 +595,8 @@ class Graph(nx.MultiDiGraph):
             try:
                 self.remove_node(second_node, keep_connect=True)
                 logger.info(f"Remove normalize node {second_node.name}")
-            except Exception:  # pylint: disable=broad-exception-caught
-                pass
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.warning(e)
         self._normalize_nodes = []
 
     def topological_sort(self) -> Generator:

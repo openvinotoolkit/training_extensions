@@ -49,7 +49,7 @@ class OpsFabric:
         self.prob = prob
         self.hparams = hparams
         # kwargs for augment functions
-        self.aug_kwargs = dict(fillcolor=hparams["img_mean"], resample=(Image.BILINEAR, Image.BICUBIC))
+        self.aug_kwargs = {"fillcolor": hparams["img_mean"], "resample": (Image.BILINEAR, Image.BICUBIC)}
         self.level_to_arg = {
             "AutoContrast": None,
             "Equalize": None,
@@ -94,19 +94,16 @@ class OpsFabric:
         return -value if random.random() > 0.5 else value  # nosec B311
 
     def _rotate_level_to_arg(self, level: float, _hparams: dict) -> tuple:
-        # range [-30, 30]
         level = (level / self.max_level) * 30.0
         level = self.randomly_negate(level)
         return (level,)
 
     def _enhance_increasing_level_to_arg(self, level: float, _hparams: dict) -> tuple:
-        # range [0.1, 1.9]
         level = (level / self.max_level) * 0.9
         level = 1.0 + self.randomly_negate(level)
         return (level,)
 
     def _shear_level_to_arg(self, level: float, _hparams: dict) -> tuple:
-        # range [-0.3, 0.3]
         level = (level / self.max_level) * 0.3
         level = self.randomly_negate(level)
         return (level,)
@@ -119,22 +116,18 @@ class OpsFabric:
         return (level,)
 
     def _posterize_level_to_arg(self, level: float, _hparams: dict) -> tuple:
-        # range [0, 4], 'keep 0 up to 4 MSB of original image'
         # intensity/severity of augmentation decreases with level
         return (int((level / self.max_level) * 4),)
 
     def _posterize_increasing_level_to_arg(self, level: float, hparams: dict) -> tuple:
-        # range [4, 0], 'keep 4 down to 0 MSB of original image',
         # intensity/severity of augmentation increases with level
         return (4 - self._posterize_level_to_arg(level, hparams)[0],)
 
     def _solarize_level_to_arg(self, level: float, _hparams: dict) -> tuple:
-        # range [0, 256]
         # intensity/severity of augmentation decreases with level
         return (int((level / self.max_level) * 256),)
 
     def _solarize_increasing_level_to_arg(self, level: float, _hparams: dict) -> tuple:
-        # range [0, 256]
         # intensity/severity of augmentation increases with level
         return (256 - self._solarize_level_to_arg(level, _hparams)[0],)
 
@@ -153,7 +146,7 @@ class OpsFabric:
             elif magnitude_std > 0:
                 magnitude = random.gauss(magnitude, magnitude_std)
         magnitude = min(self.max_level, max(0, magnitude))  # clip to valid range
-        level_args = level_fn(magnitude, self.hparams) if level_fn is not None else tuple()
+        level_args = level_fn(magnitude, self.hparams) if level_fn is not None else ()
         return self.aug_factory.aug_fn(img, *level_args, **self.aug_kwargs)
 
 
@@ -185,18 +178,21 @@ class AugMixAugment:
         return Image.fromarray(mixed.astype(np.uint8))
 
     def _augmix_ops(
-        self, config_str: str, image_mean: Optional[list] = None, translate_const: int = 250, grey: bool = False
+        self,
+        config_str: str,
+        image_mean: Optional[list] = None,
+        translate_const: int = 250,
+        grey: bool = False,
     ) -> tuple:
         if image_mean is None:
             image_mean = [0.485, 0.456, 0.406]  # imagenet mean
         aug_params = ConfigDict(magnitude=3, width=3, depth=-1, alpha=1.0, p=1.0)
-        hparams = dict(
-            translate_const=translate_const,
-            img_mean=tuple(int(c * 256) for c in image_mean),
-            magnitude_std=float("inf"),
-        )
+        hparams = {
+            "translate_const": translate_const,
+            "img_mean": tuple(int(c * 256) for c in image_mean),
+            "magnitude_std": float("inf"),
+        }
         config = config_str.split("-")
-        assert config[0] == "augmix"
         config = config[1:]
         for cfg in config:
             cfgs = re.split(r"(\d.*)", cfg)
@@ -215,8 +211,6 @@ class AugMixAugment:
                 aug_params.alpha = float(val)
             elif key == "p":
                 aug_params.p = float(val)
-            else:
-                assert False, "Unknown AugMix config section"
         aug_politics = _AUGMIX_TRANSFORMS_GREY if grey else _AUGMIX_TRANSFORMS
         return (
             [OpsFabric(name, aug_params.magnitude, hparams, aug_params.p) for name in aug_politics],

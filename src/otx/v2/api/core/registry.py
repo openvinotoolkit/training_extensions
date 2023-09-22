@@ -43,7 +43,7 @@ class BaseRegistry:
             table.add_row("Custom", name, str(obj))
 
         if hasattr(self, "_registry_dict"):
-            for registry_key in self._registry_dict.keys():
+            for registry_key in self._registry_dict:
                 registry = self._registry_dict[registry_key]
                 for name, obj in sorted(registry._module_dict.items()):
                     table.add_row(registry_key, name, str(obj))

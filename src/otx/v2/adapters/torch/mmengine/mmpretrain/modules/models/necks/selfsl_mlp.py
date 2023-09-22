@@ -39,7 +39,7 @@ class SelfSLMLP(nn.Module):
         use_conv: bool = False,
         with_avg_pool: bool = True,
     ) -> None:
-        norm_cfg = norm_cfg if norm_cfg else dict(type="BN1d")
+        norm_cfg = norm_cfg if norm_cfg else {"type": "BN1d"}
         super().__init__()
 
         self.with_avg_pool = with_avg_pool

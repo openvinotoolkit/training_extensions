@@ -84,7 +84,10 @@ class BaseRecordingForwardHook(ABC):
         raise NotImplementedError
 
     def _recording_forward(
-        self, _: torch.nn.Module, x: torch.Tensor, output: torch.Tensor
+        self,
+        _: torch.nn.Module,
+        x: torch.Tensor,
+        output: torch.Tensor,
     ) -> None:  # pylint: disable=unused-argument
         tensors = self.func(output)
         if isinstance(tensors, torch.Tensor):
@@ -144,9 +147,6 @@ class ActivationMapHook(BaseRecordingForwardHook):
     def func(self, feature_map: torch.Tensor | Sequence[torch.Tensor], fpn_idx: int = -1) -> torch.Tensor:
         """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
         if isinstance(feature_map, (list, tuple)):
-            assert fpn_idx < len(
-                feature_map
-            ), f"fpn_idx: {fpn_idx} is out of scope of feature_map length {len(feature_map)}!"
             feature_map = feature_map[fpn_idx]
 
         batch_size, _, h, w = feature_map.size()
@@ -256,7 +256,11 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
     """
 
     def __init__(
-        self, module: torch.nn.Module, layer_index: int = -1, use_gaussian: bool = True, cls_token: bool = True
+        self,
+        module: torch.nn.Module,
+        layer_index: int = -1,
+        use_gaussian: bool = True,
+        cls_token: bool = True,
     ) -> None:
         super().__init__(module)
         self._layer_index = layer_index
@@ -269,12 +273,10 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
 
     def _get_target_layernorm(self) -> torch.nn.Module:
         """Returns the first (out of two) layernorm layer from the layer_index backbone layer."""
-        assert self._layer_index < 0, "negative index expected, e.g. -1 for the last layer."
         layernorm_layers = []
         for module in self._module.backbone.modules():
             if isinstance(module, LayerNorm):
                 layernorm_layers.append(module)
-        assert len(layernorm_layers) == self._module.backbone.num_layers * 2 + int(self._module.backbone.final_norm)
         target_layernorm_index = self._layer_index * 2 - int(self._module.backbone.final_norm)
         return layernorm_layers[target_layernorm_index]
 
@@ -315,7 +317,7 @@ class ViTReciproCAMHook(BaseRecordingForwardHook):
 
             spacial_order = torch.arange(h * w).reshape(h, w)
             gaussian = torch.tensor(
-                [[1 / 16.0, 1 / 8.0, 1 / 16.0], [1 / 8.0, 1 / 4.0, 1 / 8.0], [1 / 16.0, 1 / 8.0, 1 / 16.0]]
+                [[1 / 16.0, 1 / 8.0, 1 / 16.0], [1 / 8.0, 1 / 4.0, 1 / 8.0], [1 / 16.0, 1 / 8.0, 1 / 16.0]],
             ).to(feature_map.device)
             mosaic_feature_map_mask_padded = torch.zeros(h * w, h + 2, w + 2).to(feature_map.device)
             for i in range(h):

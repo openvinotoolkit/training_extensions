@@ -42,8 +42,10 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         dropout: bool = False,
         normalized: bool = False,
     ) -> None:
-        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
-        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
+        act_cfg = act_cfg if act_cfg else {"type": "ReLU"}
+        loss = (
+            loss if loss else {"type": "CrossEntropyLoss", "use_sigmoid": True, "reduction": "mean", "loss_weight": 1.0}
+        )
         super().__init__(loss=loss)
 
         self.in_channels = in_channels
@@ -92,7 +94,7 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         """Calculate loss for given cls_score/gt_label."""
         gt_label = gt_label.type_as(logits)
         num_samples = len(logits)
-        losses = dict()
+        losses = {}
 
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)

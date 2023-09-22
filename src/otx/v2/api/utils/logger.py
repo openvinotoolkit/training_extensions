@@ -11,7 +11,6 @@ import os
 import sys
 from typing import Callable, Optional
 
-# __all__ = ['config_logger', 'get_log_dir', 'get_logger']
 __all__ = ["config_logger", "get_log_dir"]
 
 _LOGGING_FORMAT = "%(asctime)s | %(levelname)s : %(message)s"
@@ -49,8 +48,6 @@ _logger = _get_logger()
 # _override_methods = ['setLevel', 'addHandler', 'addFilter', 'info',
 #                      'warning', 'error', 'critical', 'print']
 # for fn in _override_methods:
-#     locals()[fn] = getattr(_logger, fn)
-#     __all__.append(fn)
 
 
 def config_logger(log_file: str, level: str = "WARNING") -> None:

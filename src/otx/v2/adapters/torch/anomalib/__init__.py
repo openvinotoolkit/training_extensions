@@ -8,7 +8,7 @@ VERSION = None
 DEBUG = None
 
 try:
-    import anomalib  # noqa: F401
+    import anomalib
 
     VERSION = anomalib.__version__
 

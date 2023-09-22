@@ -16,16 +16,11 @@ import openvino.runtime as ov
 import torch
 from torch.nn import init
 
+from otx.v2.adapters.openvino.graph import Graph
+from otx.v2.adapters.openvino.graph.utils import handle_merging_into_batchnorm, handle_paired_batchnorm, handle_reshape
+from otx.v2.adapters.openvino.ops.builder import OPS
+from otx.v2.adapters.openvino.utils import load_ov_model, normalize_name
 from otx.v2.api.utils.logger import get_logger
-
-from ..graph import Graph
-from ..graph.utils import (
-    handle_merging_into_batchnorm,
-    handle_paired_batchnorm,
-    handle_reshape,
-)
-from ..ops.builder import OPS
-from ..utils import load_ov_model, normalize_name
 
 CONNECTION_SEPARATOR = "||"
 
@@ -72,7 +67,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         # handle inputs
         if inputs:
             inputs = inputs if isinstance(inputs, list) else [inputs]
-            assert all(isinstance(i, str) for i in inputs), f"input must be string but {inputs} is given"
             inputs = self.build_custom_inputs(graph, deepcopy(inputs))
         else:
             inputs = [node.name for node in graph.get_nodes_by_types(["Parameter"])]
@@ -81,7 +75,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         # handle outputs
         if outputs:
             outputs = outputs if isinstance(outputs, list) else [outputs]
-            assert all(isinstance(i, str) for i in outputs), f"input must be string but {outputs} is given"
             outputs = self.build_custom_outputs(graph, deepcopy(outputs))
         else:
             outputs = [node.name for node in graph.get_nodes_by_types(["Result"])]
@@ -106,7 +99,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
             if not isinstance(init_weight, Callable):
                 # internal init weight
                 def init_weight(module: torch.nn.Module, graph: Graph) -> None:  # pylint: disable=function-redefined
-                    from ..ops.op import Operation
+                    from otx.v2.adapters.openvino.ops.op import Operation
 
                     if not isinstance(module, Operation):
                         return
@@ -136,7 +129,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                         for weight in graph.predecessors(module):
                             if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
                                 fan_in, _ = init._calculate_fan_in_and_fan_out(  # pylint: disable=protected-access
-                                    weight.data
+                                    weight.data,
                                 )
                                 bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
                                 init.uniform_(weight.data, -bound, bound)
@@ -191,7 +184,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         """Function build_graph."""
         with tempfile.TemporaryDirectory() as tempdir:
             if isinstance(model_path_or_model, ov.Model):
-                assert weight_path is None, "if openvino model is given 'weight_path' must be None"
                 ov.serialize(
                     model_path_or_model,
                     os.path.join(tempdir, "model.xml"),
@@ -205,7 +197,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         return graph
 
     @staticmethod
-    def build_custom_outputs(graph: Graph, outputs: Union[list, str]) -> list:  # noqa: C901
+    def build_custom_outputs(graph: Graph, outputs: Union[list, str]) -> list:
         """Function build_custom_outputs."""
         cls_result = OPS.get_by_type_version("Result", 0)
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
@@ -227,16 +219,13 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                 src, tgt = _output
                 explicit_tgt = True
             else:
-                raise ValueError()
+                raise ValueError
 
             src = node_dict[src]
             if src.type == "Result":
                 continue
 
-            if explicit_tgt:
-                tgt = node_dict[tgt]
-            else:
-                tgt = list(graph.successors(src))[0]
+            tgt = node_dict[tgt] if explicit_tgt else list(graph.successors(src))[0]
 
             output_result = f"{src.name}/result_{i}"
             outputs[i] = output_result
@@ -247,7 +236,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
             for successor in graph.successors(src):
                 if tgt == successor:
                     edges_attrs = graph.get_edge_data(src, successor)
-                    assert len(edges_attrs) == 1
 
                     output_result = cls_result(output_result, shape=src.shape)
                     for edge_attrs in edges_attrs:
@@ -275,7 +263,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
             for edges in edges_to_add.values():
                 for edge in edges:
                     edge["in_port"] = 0
-            assert {len(edges) for edges in edges_to_add.values()} == {1}
             edges_to_add = [edge for edges in edges_to_add.values() for edge in edges]
         else:
             edges_to_add = []
@@ -309,16 +296,13 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                 src, tgt = _input
                 explicit_src = True
             else:
-                raise ValueError()
+                raise ValueError
 
             tgt = node_dict[tgt]
             if tgt.type == "Parameter":
                 continue
 
-            if explicit_src:
-                src = node_dict[src]
-            else:
-                src = list(graph.predecessors(tgt))[0]
+            src = node_dict[src] if explicit_src else list(graph.predecessors(tgt))[0]
 
             input_parameter = f"{tgt.name}/parameter_{i}"
             inputs[i] = input_parameter
@@ -329,7 +313,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
             for predecessor in graph.predecessors(tgt):
                 if src == predecessor:
                     edges_attrs = graph.get_edge_data(predecessor, tgt)
-                    assert len(edges_attrs) == 1
 
                     # TODO: here, we force the batch dim to be dynamic
                     # it is assumed to be dim 0
@@ -367,7 +350,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
             for edges in edges_to_add.values():
                 for edge in edges:
                     edge["out_port"] = 0
-            assert {len(edges) for edges in edges_to_add.values()} == {1}
             edges_to_add = [edge for edges in edges_to_add.values() for edge in edges]
         else:
             edges_to_add = []
@@ -380,7 +362,9 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
 
     @staticmethod
     def clean_up(
-        graph: Graph, inputs: Optional[Union[str, list]] = None, outputs: Optional[Union[str, list]] = None
+        graph: Graph,
+        inputs: Optional[Union[str, list]] = None,
+        outputs: Optional[Union[str, list]] = None,
     ) -> None:
         """Function clean_up."""
         inputs = inputs if inputs else []
@@ -443,14 +427,13 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                     self._feature_dict[node_name] = node()
                 else:
                     raise ValueError(
-                        f"Broken graph. Node {node_name} is a type of {node.type} " "but it has no in edges."
+                        f"Broken graph. Node {node_name} is a type of {node.type} " "but it has no in edges.",
                     )
             else:
                 input_nodes, edges = list(map(list, zip(*predecessors_with_edge)))
                 input_node_names = [input_node.name for input_node in input_nodes]
 
                 input_features = [edge["in_port"] for edges_ in edges for edge in edges_]
-                assert len(input_features) == len(set(input_features))
                 input_features = [None for _ in input_features]
                 for idx, input_node_name in enumerate(input_node_names):
                     if self._features_to_keep is not None and input_node_name in self._features_to_keep:
@@ -467,7 +450,6 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                     else:
                         for edges_ in edges[idx]:
                             input_features[edges_["in_port"]] = input_feature
-                assert all(input_feature is not None for input_feature in input_features)
                 self._feature_dict[node_name] = node(*input_features)
 
         outputs = OrderedDict()

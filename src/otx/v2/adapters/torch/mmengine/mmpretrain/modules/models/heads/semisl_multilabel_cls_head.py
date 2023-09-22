@@ -78,7 +78,6 @@ class LossBalancer:
         self.avg_estimators = [EMAMeter(ema_weight) for _ in range(num_losses)]
 
         if weights is not None:
-            assert len(weights) == num_losses
             self.final_weights = weights
         else:
             self.final_weights = [1.0] * num_losses
@@ -117,7 +116,7 @@ class SemiMultilabelClsHead(OTXHeadMixin, ClsHead):
         aux_loss: Optional[dict] = None,
     ) -> None:
         aux_loss = (
-            aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
+            aux_loss if aux_loss else {"type": "BarlowTwinsLoss", "off_diag_penality": 1.0 / 128.0, "loss_weight": 1.0}
         )
         self.unlabeled_coef = unlabeled_coef
         self.use_dynamic_loss_weighting = use_dynamic_loss_weighting
@@ -159,7 +158,7 @@ class SemiMultilabelClsHead(OTXHeadMixin, ClsHead):
         features_weak, features_strong = features
         aux_loss = self.aux_loss(features_weak, features_strong)
 
-        losses = dict(loss=0.0)
+        losses = {"loss": 0.0}
         if self.use_dynamic_loss_weighting and self.loss_balancer is not None:
             losses["loss"] = self.loss_balancer.balance_losses((l_labeled, aux_loss))
         else:
@@ -169,7 +168,11 @@ class SemiMultilabelClsHead(OTXHeadMixin, ClsHead):
         return losses
 
     def forward_train_with_last_layers(
-        self, x: torch.Tensor, gt_label: torch.Tensor, final_cls_layer: nn.Module, final_emb_layer: nn.Module
+        self,
+        x: torch.Tensor,
+        gt_label: torch.Tensor,
+        final_cls_layer: nn.Module,
+        final_emb_layer: nn.Module,
     ) -> dict:
         """Forwards multilabel semi-sl head and losses.
 
@@ -182,7 +185,7 @@ class SemiMultilabelClsHead(OTXHeadMixin, ClsHead):
         Returns:
             dict[str, Tensor]: A dictionary of loss components.
         """
-        for key in x.keys():
+        for key in x:
             x[key] = self.pre_logits(x[key])
         logits = final_cls_layer(x["labeled_weak"])
         features_weak = torch.cat((final_emb_layer(x["labeled_weak"]), final_emb_layer(x["unlabeled_weak"])))
@@ -223,10 +226,10 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
             raise ValueError("at least one class must be exist num_classes.")
-        aux_mlp = aux_mlp if aux_mlp else dict(hid_channels=0, out_channels=1024)
-        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
+        aux_mlp = aux_mlp if aux_mlp else {"hid_channels": 0, "out_channels": 1024}
+        loss = loss if loss else {"type": "CrossEntropyLoss", "loss_weight": 1.0}
         aux_loss = (
-            aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
+            aux_loss if aux_loss else {"type": "BarlowTwinsLoss", "off_diag_penality": 1.0 / 128.0, "loss_weight": 1.0}
         )
         CustomMultiLabelLinearClsHead.__init__(self, num_classes, in_channels, normalized, scale, loss)
         SemiMultilabelClsHead.__init__(self, unlabeled_coef, use_dynamic_loss_weighting, aux_loss)
@@ -251,7 +254,10 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
     def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of SemiLinearMultilabelClsHead class."""
         return self.forward_train_with_last_layers(
-            cls_score, gt_label, final_cls_layer=self.fc, final_emb_layer=self.aux_mlp
+            cls_score,
+            gt_label,
+            final_cls_layer=self.fc,
+            final_emb_layer=self.aux_mlp,
         )
 
 
@@ -292,11 +298,11 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
             raise ValueError("at least one class must be exist num_classes.")
-        aux_mlp = aux_mlp if aux_mlp else dict(hid_channels=0, out_channels=1024)
-        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
-        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
+        aux_mlp = aux_mlp if aux_mlp else {"hid_channels": 0, "out_channels": 1024}
+        act_cfg = act_cfg if act_cfg else {"type": "ReLU"}
+        loss = loss if loss else {"type": "CrossEntropyLoss", "loss_weight": 1.0}
         aux_loss = (
-            aux_loss if aux_loss else dict(type="BarlowTwinsLoss", off_diag_penality=1.0 / 128.0, loss_weight=1.0)
+            aux_loss if aux_loss else {"type": "BarlowTwinsLoss", "off_diag_penality": 1.0 / 128.0, "loss_weight": 1.0}
         )
         CustomMultiLabelNonLinearClsHead.__init__(
             self,
@@ -331,5 +337,8 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
     def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
         """Forward_train fuction of SemiNonLinearMultilabelClsHead class."""
         return self.forward_train_with_last_layers(
-            cls_score, gt_label, final_cls_layer=self.classifier, final_emb_layer=self.aux_mlp
+            cls_score,
+            gt_label,
+            final_cls_layer=self.classifier,
+            final_emb_layer=self.aux_mlp,
         )

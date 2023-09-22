@@ -9,10 +9,10 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import openvino.runtime as ov
 
+from otx.v2.adapters.openvino.graph import Graph
+from otx.v2.adapters.openvino.graph.parsers.builder import PARSERS
 from otx.v2.api.utils.logger import get_logger
 
-from ..graph import Graph
-from ..graph.parsers.builder import PARSERS
 from .ov_model import OVModel
 
 logger = get_logger()
@@ -47,11 +47,11 @@ class ParserMixin:
                 if set(parsed["inputs"].keys()) != set(parsed["outputs"].keys()):
                     raise ValueError(
                         f"input keys {parsed['inputs'].keys()} and "
-                        f"output keys {parsed['outputs'].keys()} are different."
+                        f"output keys {parsed['outputs'].keys()} are different.",
                     )
 
-            inputs = parsed["inputs"] if not inputs else inputs
-            outputs = parsed["outputs"] if not outputs else outputs
+            inputs = inputs if inputs else parsed["inputs"]
+            outputs = outputs if outputs else parsed["outputs"]
             logger.info(f"inputs: {inputs}")
             logger.info(f"outputs: {outputs}")
 
@@ -59,7 +59,8 @@ class ParserMixin:
 
     @staticmethod
     def parser(
-        graph: Graph, **kwargs
+        graph: Graph,
+        **kwargs,
     ) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:  # pylint: disable=unused-argument
         """Function parser."""
-        return dict(inputs=[], outputs=[])
+        return {"inputs": [], "outputs": []}

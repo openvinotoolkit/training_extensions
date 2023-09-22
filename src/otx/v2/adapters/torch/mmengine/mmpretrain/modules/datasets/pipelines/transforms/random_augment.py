@@ -175,8 +175,6 @@ class OTXRandAugment:
     """RandAugment class for OTX classification."""
 
     def __init__(self, num_aug: int, magnitude: int, cutout_value: int = 16) -> None:
-        assert num_aug >= 1
-        assert 1 <= magnitude <= 10
         self.num_aug = num_aug
         self.magnitude = magnitude
         self.cutout_value = cutout_value

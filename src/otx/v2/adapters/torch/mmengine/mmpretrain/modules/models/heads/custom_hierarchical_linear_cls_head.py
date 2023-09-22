@@ -33,12 +33,13 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         multilabel_loss: Optional[dict] = None,
         **kwargs,
     ) -> None:
-        loss = loss if loss else dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0)
+        loss = (
+            loss if loss else {"type": "CrossEntropyLoss", "use_sigmoid": True, "reduction": "mean", "loss_weight": 1.0}
+        )
         multilabel_loss = (
-            multilabel_loss if multilabel_loss else dict(type="AsymmetricLoss", reduction="mean", loss_weight=1.0)
+            multilabel_loss if multilabel_loss else {"type": "AsymmetricLoss", "reduction": "mean", "loss_weight": 1.0}
         )
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
-        assert self.hierarchical_info
         super().__init__(loss=loss)
         if self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"] == 0:
             raise ValueError("Invalid classification heads configuration")
@@ -76,7 +77,10 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             _gt_label = torch.abs(gt_label)
 
             loss = self.compute_multilabel_loss(
-                cls_score, _gt_label, valid_label_mask=valid_label_mask, avg_factor=num_samples
+                cls_score,
+                _gt_label,
+                valid_label_mask=valid_label_mask,
+                avg_factor=num_samples,
             )
         else:
             loss = self.loss_module(cls_score, gt_label, avg_factor=num_samples)
@@ -94,7 +98,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         gt_label = gt_label.type_as(cls_score)
         cls_score = self.fc(cls_score)
 
-        losses = dict(loss=0.0)
+        losses = {"loss": 0.0}
         for i in range(self.hierarchical_info["num_multiclass_heads"]):
             head_gt = gt_label[:, i]
             head_logits = cls_score[
@@ -122,7 +126,8 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
             # multilabel_loss is assumed to perform no batch averaging
             if img_metas is not None:
                 valid_label_mask = self.get_valid_label_mask(img_metas=img_metas)[
-                    :, self.hierarchical_info["num_single_label_classes"] :
+                    :,
+                    self.hierarchical_info["num_single_label_classes"] :,
                 ]
                 valid_label_mask = valid_label_mask.to(cls_score.device)
                 valid_label_mask = valid_label_mask[valid_batch_mask]

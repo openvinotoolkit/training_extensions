@@ -144,7 +144,9 @@ def get_cls_img_indices(labels: List[LabelEntity], dataset: DatasetEntity) -> Di
 
 
 def get_old_new_img_indices(
-    labels: List[LabelEntity], new_classes: List[str], dataset: DatasetEntity
+    labels: List[LabelEntity],
+    new_classes: List[str],
+    dataset: DatasetEntity,
 ) -> Dict[str, list]:
     """Function for getting old & new indices of dataset.
 

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
@@ -82,7 +82,7 @@ def get_local_subset(
                     annotation
                     for annotation in item.get_annotations()
                     if not any(label.label.is_anomalous for label in annotation.get_labels())
-                ]
+                ],
             )
         local_items.append(
             DatasetItemEntity(
@@ -95,7 +95,7 @@ def get_local_subset(
                 subset=item.subset,
                 roi=item.roi,
                 ignored_labels=item.ignored_labels,
-            )
+            ),
         )
     return DatasetEntity(local_items, purpose=dataset.purpose)
 
@@ -122,7 +122,7 @@ def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
                 subset=item.subset,
                 roi=item.roi,
                 ignored_labels=item.ignored_labels,
-            )
+            ),
         )
     return DatasetEntity(global_items, purpose=dataset.purpose)
 
@@ -195,7 +195,7 @@ def contains_anomalous_images(dataset: DatasetEntity) -> bool:
 def add_saliency_maps_to_dataset_item(
     dataset_item: DatasetItemEntity,
     saliency_map: Union[List[Optional[np.ndarray]], np.ndarray],
-    model: Any,  # FIXME: It's originally ModelTemplate. However, it has now been deleted.  # noqa: ANN401
+    model: TypeVar,
     labels: List[LabelEntity],
     predicted_scored_labels: Optional[List[ScoredLabel]] = None,
     explain_predicted_classes: bool = True,
@@ -236,7 +236,8 @@ def add_saliency_maps_to_dataset_item(
             if class_wise_saliency_map is not None and label in explain_targets:
                 if process_saliency_maps:
                     _class_wise_saliency_map = get_actmap(
-                        class_wise_saliency_map, (dataset_item.width, dataset_item.height)
+                        class_wise_saliency_map,
+                        (dataset_item.width, dataset_item.height),
                     )
                 saliency_media = ResultMediaEntity(
                     name=label.name,

@@ -9,7 +9,6 @@ from torch import Tensor, nn
 
 def off_diagonal(x: Tensor) -> Tensor:
     """Return a tensor containing all the elements outside the diagonal of x."""
-    assert x.shape[0] == x.shape[1]
     return x.flatten()[:-1].view(x.shape[0] - 1, x.shape[0] + 1)[:, 1:].flatten()
 
 
@@ -38,9 +37,7 @@ class BarlowTwinsLoss(nn.Module):
         """
 
         batch_size = feats1.shape[0]
-        assert batch_size == feats2.shape[0]
         dimensionality = feats1.shape[1]
-        assert dimensionality == feats2.shape[1]
 
         # Barlow Twins loss: redundancy reduction
         batch_norm = nn.BatchNorm1d(dimensionality, affine=False, track_running_stats=False)

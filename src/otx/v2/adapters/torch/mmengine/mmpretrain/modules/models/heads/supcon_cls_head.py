@@ -43,8 +43,6 @@ class SupConClsHead(ClsHead):
 
         if isinstance(topk, int):
             topk = (topk,)
-        for _topk in topk:
-            assert _topk > 0, "Top-k should be larger than 0"
         topk = (1,) if num_classes < 5 else (1, 5)
         super().__init__(init_cfg=init_cfg)
 
@@ -85,12 +83,11 @@ class SupConClsHead(ClsHead):
             dict[str, Tensor]: A dictionary of loss components.
         """
 
-        losses = dict(loss=0.0)
+        losses = {"loss": 0.0}
         cls_score = self.fc(x)
 
         bsz = gt_label.shape[0]
         # make sure we have two views for each label and split them
-        assert x.shape[0] == 2 * bsz
         feats1, feats2 = torch.split(self.aux_mlp(x), [bsz, bsz], dim=0)
         gt_label = torch.cat([gt_label, gt_label], dim=0)
 

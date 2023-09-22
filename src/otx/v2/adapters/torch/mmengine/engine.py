@@ -55,7 +55,7 @@ class MMXEngine(Engine):
             elif isinstance(config, dict):
                 self.config = Config(config)
         else:
-            self.config = Config(dict())
+            self.config = Config({})
 
     def _update_config(
         self,
@@ -68,7 +68,9 @@ class MMXEngine(Engine):
         )
 
         def _get_config_value(
-            arg_key: str, positional_args: dict, default: Optional[Union[int, str]] = None
+            arg_key: str,
+            positional_args: dict,
+            default: Optional[Union[int, str]] = None,
         ) -> Optional[Union[dict, list]]:
             arg_config = positional_args.get(arg_key, None)
             arg_config = self.config.get(arg_key, default) if arg_config is None else arg_config
@@ -118,7 +120,7 @@ class MMXEngine(Engine):
             if max_iters is not None and max_epochs is not None:
                 raise ValueError("Only one of `max_epochs` or `max_iters` can be set.")
             if "train_cfg" not in kwargs or kwargs["train_cfg"] is None:
-                kwargs["train_cfg"] = dict(val_interval=val_interval, by_epoch=True)
+                kwargs["train_cfg"] = {"val_interval": val_interval, "by_epoch": True}
             if max_epochs is not None:
                 kwargs["train_cfg"]["by_epoch"] = True
                 kwargs["train_cfg"]["max_epochs"] = max_epochs
@@ -130,12 +132,12 @@ class MMXEngine(Engine):
                 optimizer = _get_config_value("optimizer", func_args)
                 if optimizer is None:
                     # FIXME: Remove default setting here
-                    optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0005)
+                    optimizer = {"type": "SGD", "lr": 0.01, "momentum": 0.9, "weight_decay": 0.0005}
                 if get_device() not in ("cuda", "gpu", "npu", "mlu"):
                     logger.warning(f"{get_device()} device do not support mixed precision.")
-                    kwargs["optim_wrapper"] = dict(type="OptimWrapper", optimizer=optimizer)
+                    kwargs["optim_wrapper"] = {"type": "OptimWrapper", "optimizer": optimizer}
                 else:
-                    kwargs["optim_wrapper"] = dict(type="AmpOptimWrapper", dtype=precision, optimizer=optimizer)
+                    kwargs["optim_wrapper"] = {"type": "AmpOptimWrapper", "dtype": precision, "optimizer": optimizer}
         elif isinstance(self.config.get("train_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
             self.config["train_dataloader"] = None
@@ -145,14 +147,14 @@ class MMXEngine(Engine):
         # Update val_cfg (ValLoop)
         if kwargs.get("val_dataloader", None) is not None:
             if "val_cfg" not in kwargs or kwargs["val_cfg"] is None:
-                kwargs["val_cfg"] = dict()
+                kwargs["val_cfg"] = {}
             if precision in ["float16", "fp16"]:
                 kwargs["val_cfg"]["fp16"] = True
             # Update val_evaluator
             val_evaluator = _get_config_value("val_evaluator", func_args)
             if val_evaluator is None:
                 # FIXME: Need to set val_evaluator as task-agnostic way
-                val_evaluator = [dict(type="Accuracy")]
+                val_evaluator = [{"type": "Accuracy"}]
             kwargs["val_evaluator"] = _set_evaluator(val_evaluator, num_classes=num_classes)
         elif isinstance(self.config.get("val_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
@@ -164,14 +166,14 @@ class MMXEngine(Engine):
         # Update test_cfg (TestLoop)
         if kwargs.get("test_dataloader", None) is not None:
             if "test_cfg" not in kwargs or kwargs["test_cfg"] is None:
-                kwargs["test_cfg"] = dict()
+                kwargs["test_cfg"] = {}
             if precision in ["float16", "fp16"]:
                 kwargs["test_cfg"]["fp16"] = True
             # Update test_evaluator
             test_evaluator = _get_config_value("test_evaluator", func_args)
             if test_evaluator is None:
                 # FIXME: Need to set test_evaluator as task-agnostic way
-                test_evaluator = self.config.get("val_evaluator", [dict(type="Accuracy")])
+                test_evaluator = self.config.get("val_evaluator", [{"type": "Accuracy"}])
             kwargs["test_evaluator"] = _set_evaluator(test_evaluator, num_classes=num_classes)
         elif isinstance(self.config.get("test_dataloader", None), dict):
             # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
@@ -184,30 +186,30 @@ class MMXEngine(Engine):
         seed = func_args.get("seed", self.config.pop("seed", None))
         deterministic = func_args.get("deterministic", self.config.pop("deterministic", None))
         if seed is not None:
-            kwargs["randomness"] = dict(seed=seed, deterministic=deterministic)
+            kwargs["randomness"] = {"seed": seed, "deterministic": deterministic}
 
         distributed = _get_config_value("distributed", func_args, default=False)
         default_hooks = _get_config_value("default_hooks", func_args)
         if default_hooks is None:
             # FIXME: Default hooks need to align
-            default_hooks = dict(
+            default_hooks = {
                 # record the time of every iterations.
-                timer=dict(type="IterTimerHook"),
+                "timer": {"type": "IterTimerHook"},
                 # print log every 100 iterations.
-                logger=dict(type="LoggerHook", interval=100),
+                "logger": {"type": "LoggerHook", "interval": 100},
                 # enable the parameter scheduler.
                 # TODO: lr_config -> param_scheduler
-                param_scheduler=dict(type="ParamSchedulerHook"),
+                "param_scheduler": {"type": "ParamSchedulerHook"},
                 # save checkpoint per epoch, and automatically save the best checkpoint.
-                checkpoint=dict(
-                    type="CheckpointHook",
-                    interval=1,
-                    max_keep_ckpts=1,
-                    save_best="auto",
-                ),
+                "checkpoint": {
+                    "type": "CheckpointHook",
+                    "interval": 1,
+                    "max_keep_ckpts": 1,
+                    "save_best": "auto",
+                },
                 # set sampler seed in distributed evrionment.
-                sampler_seed=dict(type="DistSamplerSeedHook") if distributed else None,
-            )
+                "sampler_seed": {"type": "DistSamplerSeedHook"} if distributed else None,
+            }
         kwargs["default_hooks"] = default_hooks
         visualizer = _get_config_value("visualizer", func_args)
         if visualizer is not None:
@@ -228,7 +230,7 @@ class MMXEngine(Engine):
         # Last Check for Runner.__init__
         runner_arg_list = get_all_args(Runner.__init__)
         removed_key = []
-        for config_key in self.config.keys():
+        for config_key in self.config:
             if config_key not in runner_arg_list:
                 removed_key.append(config_key)
         if removed_key:
@@ -324,7 +326,7 @@ class MMXEngine(Engine):
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_train",
-                cfg=Config(dict()),  # To prevent unnecessary dumps.
+                cfg=Config({}),  # To prevent unnecessary dumps.
                 **self.config,
             )
         # TODO: Need to align outputs
@@ -380,7 +382,7 @@ class MMXEngine(Engine):
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_validate",
-                cfg=Config(dict()),  # To prevent unnecessary dumps.
+                cfg=Config({}),  # To prevent unnecessary dumps.
                 **self.config,
             )
         elif update_check:
@@ -420,7 +422,7 @@ class MMXEngine(Engine):
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_test",
-                cfg=Config(dict()),  # To prevent unnecessary dumps.
+                cfg=Config({}),  # To prevent unnecessary dumps.
                 **self.config,
             )
         elif update_check:
@@ -481,7 +483,7 @@ class MMXEngine(Engine):
             elif isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
                 model_cfg = model._config.get("model", model._config)
             else:
-                raise NotImplementedError()
+                raise NotImplementedError
         elif self.dumped_config.get("model", None) and self.dumped_config["model"] is not None:
             if isinstance(self.dumped_config["model"], dict):
                 model_cfg = Config(self.dumped_config["model"])
@@ -510,26 +512,26 @@ class MMXEngine(Engine):
         # CODEBASE_COFIG Update
         if codebase_config is None:
             codebase = codebase if codebase is not None else self.registry.name
-            codebase_config = dict(type=codebase, task=task)
+            codebase_config = {"type": codebase, "task": task}
             deploy_config_dict["codebase_config"] = codebase_config
         # IR_COFIG Update
         if ir_config is None:
-            ir_config = dict(
-                type="onnx",
-                export_params=True,
-                keep_initializers_as_inputs=False,
-                opset_version=11,
-                save_file="end2end.onnx",
-                input_names=["input"],
-                output_names=["output"],
-                input_shape=None,
-                optimize=True,
-                dynamic_axes={"input": {0: "batch", 2: "height", 3: "width"}, "output": {0: "batch"}},
-            )
+            ir_config = {
+                "type": "onnx",
+                "export_params": True,
+                "keep_initializers_as_inputs": False,
+                "opset_version": 11,
+                "save_file": "end2end.onnx",
+                "input_names": ["input"],
+                "output_names": ["output"],
+                "input_shape": None,
+                "optimize": True,
+                "dynamic_axes": {"input": {0: "batch", 2: "height", 3: "width"}, "output": {0: "batch"}},
+            }
             deploy_config_dict["ir_config"] = ir_config
         # BACKEND_CONFIG Update
         if backend_config is None:
-            backend_config = dict(type="openvino", model_inputs=[dict(opt_shapes=dict(input=[1, 3, 224, 224]))])
+            backend_config = {"type": "openvino", "model_inputs": [{"opt_shapes": {"input": [1, 3, 224, 224]}}]}
             deploy_config_dict["backend_config"] = backend_config
 
         # Patch input's configuration

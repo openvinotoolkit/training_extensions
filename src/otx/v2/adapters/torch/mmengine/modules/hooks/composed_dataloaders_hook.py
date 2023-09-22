@@ -34,10 +34,7 @@ class ComposedDataLoadersHook(Hook):
 
     def add_dataloaders(self, data_loaders: Union[Sequence[DataLoader], DataLoader]) -> None:
         """Create data_loaders to be added into composed dataloader."""
-        if isinstance(data_loaders, DataLoader):
-            data_loaders = [data_loaders]
-        else:
-            data_loaders = list(data_loaders)
+        data_loaders = [data_loaders] if isinstance(data_loaders, DataLoader) else list(data_loaders)
 
         self.data_loaders.extend(data_loaders)
         self.composed_loader = None

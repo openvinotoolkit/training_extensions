@@ -7,9 +7,8 @@ from typing import Tuple
 
 import numpy as np
 
+from otx.v2.adapters.datumaro.caching import MemCacheHandlerError, MemCacheHandlerSingleton
 from otx.v2.api.utils.data_utils import get_image
-
-from ..caching import MemCacheHandlerError, MemCacheHandlerSingleton
 
 _CACHE_DIR = TemporaryDirectory(prefix="img-cache-")  # pylint: disable=consider-using-with
 
@@ -76,11 +75,11 @@ class LoadImageFromOTXDataset:
         # Set initial values for default meta_keys
         results["pad_shape"] = shape
         num_channels = 1 if len(shape) < 3 else shape[2]
-        results["img_norm_cfg"] = dict(
-            mean=np.zeros(num_channels, dtype=np.float32),
-            std=np.ones(num_channels, dtype=np.float32),
-            to_rgb=False,
-        )
+        results["img_norm_cfg"] = {
+            "mean": np.zeros(num_channels, dtype=np.float32),
+            "std": np.ones(num_channels, dtype=np.float32),
+            "to_rgb": False,
+        }
         results["img_fields"] = ["img"]
         results["entity_id"] = results.get("entity_id")
         results["label_id"] = results.get("label_id")

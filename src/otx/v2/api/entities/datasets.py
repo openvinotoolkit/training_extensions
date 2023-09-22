@@ -206,7 +206,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
         """Returns the number of items in the dataset."""
         return len(self._items)
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: "DatasetEntity") -> bool:
         """Checks whether the dataset is equal to the operand.
 
         Args:

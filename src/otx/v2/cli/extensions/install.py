@@ -88,7 +88,6 @@ def install(task: str) -> int:
     mmcv_install_args = []
     if mmcv_requirements:
         mmcv_install_args = get_mmcv_install_args(torch_requirement, mmcv_requirements)
-        # install_args += mmcv_install_args
         install_args += ["openmim"]
 
     # Install requirements.

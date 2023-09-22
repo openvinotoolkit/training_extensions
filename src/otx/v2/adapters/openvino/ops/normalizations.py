@@ -36,7 +36,12 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
         self.register_buffer("_num_init_iter", torch.tensor(0))
 
     def forward(
-        self, inputs: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor, mean: torch.Tensor, variance: torch.Tensor
+        self,
+        inputs: torch.Tensor,
+        gamma: torch.Tensor,
+        beta: torch.Tensor,
+        mean: torch.Tensor,
+        variance: torch.Tensor,
     ) -> torch.Tensor:
         """BatchNormalizationV0's forward function."""
 
@@ -95,7 +100,6 @@ class LocalResponseNormalizationV0(Operation[LocalResponseNormalizationV0Attribu
         dim = inputs.dim()
 
         axes = axes.detach().cpu().tolist()
-        assert all(ax >= 1 for ax in axes)
 
         axes = [ax - 1 for ax in axes]
         kernel = [1 for _ in range(dim - 1)]
@@ -133,7 +137,7 @@ class NormalizeL2V0Attribute(Attribute):
     eps: float
     eps_mode: str
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """NormalizeL2V0Attribute post-init function."""
         super().__post_init__()
         valid_eps_mode = ["add", "max"]
@@ -162,10 +166,7 @@ class NormalizeL2V0(Operation[NormalizeL2V0Attribute]):
 
         # normalization layer convert to FP32 in FP16 training
         input_float = inputs.float()
-        if axes:
-            norm = input_float.pow(2).sum(axes, keepdim=True)
-        else:
-            norm = input_float
+        norm = input_float.pow(2).sum(axes, keepdim=True) if axes else input_float
 
         if eps_mode == "add":
             norm = norm + eps
@@ -183,7 +184,7 @@ class MVNV6Attribute(Attribute):
     eps: float
     eps_mode: str
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """MVNV6Attribute's post-init function."""
         super().__post_init__()
         valid_eps_mode = ["INSIDE_SQRT", "OUTSIDE_SQRT"]

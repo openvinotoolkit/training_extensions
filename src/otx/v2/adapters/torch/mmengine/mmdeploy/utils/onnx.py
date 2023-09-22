@@ -25,8 +25,6 @@ def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:
         connect = None
         for i, node in enumerate(model.graph.node):
             if predicate(node):
-                assert len(node.input) == 1
-                assert len(node.output) == 1
                 connect = (node.input[0], node.output[0])
                 del model.graph.node[i]
                 break

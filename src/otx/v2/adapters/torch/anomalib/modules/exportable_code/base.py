@@ -25,7 +25,7 @@ class AnomalyBase(SegmentationModel):
             {
                 "metadata": DictValue(description="Metadata for inference"),
                 "threshold": NumericalValue(description="Threshold used to classify anomaly"),
-            }
+            },
         )
 
         return parameters

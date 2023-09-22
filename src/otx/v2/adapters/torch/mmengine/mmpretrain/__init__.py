@@ -9,7 +9,7 @@ VERSION = None
 DEBUG = None
 
 try:
-    import mmpretrain  # noqa: F401
+    import mmpretrain
 
     VERSION = mmpretrain.__version__
     from mmpretrain.utils import register_all_modules

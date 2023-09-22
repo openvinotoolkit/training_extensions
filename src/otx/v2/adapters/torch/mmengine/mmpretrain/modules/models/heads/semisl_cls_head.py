@@ -62,7 +62,7 @@ class SemiClsHead(OTXHeadMixin, ClsHead):
         """
         logits_x, logits_u_s = logits
         num_samples = len(logits_x)
-        losses = dict()
+        losses = {}
 
         # compute supervised loss
         labeled_loss = self.loss_module(logits_x, gt_label, avg_factor=num_samples)
@@ -98,7 +98,7 @@ class SemiClsHead(OTXHeadMixin, ClsHead):
         """
         label_u, mask = None, None
         if isinstance(x, dict):
-            for key in x.keys():
+            for key in x:
                 x[key] = self.pre_logits(x[key])
             outputs = final_layer(x["labeled"])  # Logit of Labeled Img
             batch_size = len(outputs)
@@ -176,7 +176,7 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
             raise ValueError("at least one class must be exist num_classes.")
 
         topk = (1,) if num_classes < 5 else (1, 5)
-        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
+        loss = loss if loss else {"type": "CrossEntropyLoss", "loss_weight": 1.0}
         LinearClsHead.__init__(self, num_classes, in_channels, loss=loss, topk=topk)
         SemiClsHead.__init__(self, num_classes, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
@@ -233,8 +233,8 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
             raise ValueError("at least one class must be exist num_classes.")
 
         topk = (1,) if num_classes < 5 else (1, 5)
-        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
-        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
+        act_cfg = act_cfg if act_cfg else {"type": "ReLU"}
+        loss = loss if loss else {"type": "CrossEntropyLoss", "loss_weight": 1.0}
         NonLinearClsHead.__init__(
             self,
             num_classes,

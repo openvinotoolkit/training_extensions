@@ -26,11 +26,11 @@ class MaxPoolV0Attribute(Attribute):
     kernel: List[int]
     rounding_type: str = field(default="floor")
     auto_pad: str = field(default="explicit")
-    dilations: List[int] = field(default_factory=lambda: [])
+    dilations: List[int] = field(default_factory=list)
     index_element_type: str = field(default="i64")
     axis: int = field(default=0)
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """MaxPoolV0Attribute's post-init functions."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
@@ -39,13 +39,13 @@ class MaxPoolV0Attribute(Attribute):
         valid_rounding_type = ["ceil", "floor"]
         if self.rounding_type not in valid_rounding_type:
             raise ValueError(
-                f"Invalid rounding_type {self.rounding_type}. " f"It must be one of {valid_rounding_type}."
+                f"Invalid rounding_type {self.rounding_type}. " f"It must be one of {valid_rounding_type}.",
             )
         valid_index_element_type = ["i32", "i64"]
         if self.index_element_type not in valid_index_element_type:
             raise ValueError(
                 f"Invalid index_element_type {self.index_element_type}. "
-                f"It must be one of {valid_index_element_type}."
+                f"It must be one of {valid_index_element_type}.",
             )
 
         if not self.dilations:
@@ -110,7 +110,7 @@ class AvgPoolV1Attribute(Attribute):
     rounding_type: str = field(default="floor")
     auto_pad: str = field(default="explicit")
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """AvgPoolV1Attribute's post-init function."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
@@ -119,7 +119,7 @@ class AvgPoolV1Attribute(Attribute):
         valid_rounding_type = ["ceil", "floor"]
         if self.rounding_type not in valid_rounding_type:
             raise ValueError(
-                f"Invalid rounding_type {self.rounding_type}. " f"It must be one of {valid_rounding_type}."
+                f"Invalid rounding_type {self.rounding_type}. " f"It must be one of {valid_rounding_type}.",
             )
 
 

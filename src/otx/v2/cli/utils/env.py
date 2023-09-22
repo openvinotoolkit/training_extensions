@@ -74,7 +74,7 @@ def get_environment_table(verbose: bool = False) -> str:
             requirements = REQUIRED_ADAPTERS_PER_TASK[task]
         i = 0
         for req in requirements:
-            end_section = True if i == len(requirements) - 1 else False
+            end_section = i == len(requirements) - 1
             if verbose:
                 required = str(req)
                 current_version = get_module_version(req.project_name)

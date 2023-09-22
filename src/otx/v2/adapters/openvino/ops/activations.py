@@ -60,7 +60,7 @@ class SoftMaxV1(Operation[SoftMaxV1Attribute]):
 class ReluV0Attribute(Attribute):
     """ReluV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -81,7 +81,7 @@ class ReluV0(Operation[ReluV0Attribute]):
 class SwishV4Attribute(Attribute):
     """SwishV4Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -102,7 +102,7 @@ class SwishV4(Operation[SwishV4Attribute]):
 class SigmoidV0Attribute(Attribute):
     """SigmoidV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -145,7 +145,7 @@ class ClampV0(Operation[ClampV0Attribute]):
 class PReluV0Attribute(Attribute):
     """PReluV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -166,7 +166,7 @@ class PReluV0(Operation[PReluV0Attribute]):
 class TanhV0Attribute(Attribute):
     """TanhV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -208,7 +208,7 @@ class EluV0(Operation[EluV0Attribute]):
 class SeluV0Attribute(Attribute):
     """SeluV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -229,7 +229,7 @@ class SeluV0(Operation[SeluV0Attribute]):
 class MishV4Attribute(Attribute):
     """MishV4Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -244,7 +244,6 @@ class MishV4(Operation[MishV4Attribute]):
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """MishV4's forward function."""
         # NOTE: pytorch 1.8.2 does not have mish function
-        #  return functional.mish(input=input)
         return inputs * functional.tanh(functional.softplus(inputs))
 
 
@@ -252,7 +251,7 @@ class MishV4(Operation[MishV4Attribute]):
 class HSwishV4Attribute(Attribute):
     """HSwishV4Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -273,7 +272,7 @@ class HSwishV4(Operation[HSwishV4Attribute]):
 class HSigmoidV5Attribute(Attribute):
     """HSigmoidV5Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -294,7 +293,7 @@ class HSigmoidV5(Operation[HSigmoidV5Attribute]):
 class ExpV0Attribute(Attribute):
     """ExpV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -315,7 +314,7 @@ class ExpV0(Operation[ExpV0Attribute]):
 class HardSigmoidV0Attribute(Attribute):
     """HardSigmoidV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -341,14 +340,14 @@ class GeluV7Attribute(Attribute):
 
     approximation_mode: str = field(default="ERF")
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """GeluV7Attribute's post init function."""
         super().__post_init__()
         valid_approximation_mode = ["ERF", "tanh"]
         if self.approximation_mode not in valid_approximation_mode:
             raise ValueError(
                 f"Invalid approximation_mode {self.approximation_mode}. "
-                f"It must be one of {valid_approximation_mode}."
+                f"It must be one of {valid_approximation_mode}.",
             )
 
 

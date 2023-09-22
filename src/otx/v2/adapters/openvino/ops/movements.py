@@ -23,7 +23,7 @@ class PadV1Attribute(Attribute):
 
     pad_mode: str
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """PadV1Attribute's post-init function."""
         super().__post_init__()
         valid_pad_mode = ["constant", "edge", "reflect", "symmetric"]
@@ -101,7 +101,7 @@ class ConcatV0(Operation[ConcatV0Attribute]):
 class TransposeV1Attribute(Attribute):
     """TransposeV1Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -140,7 +140,6 @@ class GatherV0(Operation[GatherV0Attribute]):
 
     def forward(self, inputs: torch.Tensor, indices: torch.Tensor, axis: torch.Tensor) -> torch.Tensor:
         """GatherV0's forward function."""
-        assert axis.numel() == 1
         axis = axis.squeeze()
         squeeze_axis = indices.dim() == 0
 
@@ -165,7 +164,6 @@ class GatherV0(Operation[GatherV0Attribute]):
                 if i == axis:
                     repeat.append(1)
                 else:
-                    assert j % k == 0
                     repeat.append(j // k)
             indices = indices.repeat(repeat)
         output = torch.gather(input=inputs, dim=axis, index=indices.type(torch.int64))
@@ -180,7 +178,7 @@ class GatherV0(Operation[GatherV0Attribute]):
 class GatherV1Attribute(Attribute):
     """GatherV1Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -218,7 +216,11 @@ class StridedSliceV1(Operation[StridedSliceV1Attribute]):
     attrs: StridedSliceV1Attribute
 
     def forward(
-        self, inputs: torch.Tensor, begin: torch.Tensor, end: list, stride: Optional[torch.Tensor] = None
+        self,
+        inputs: torch.Tensor,
+        begin: torch.Tensor,
+        end: list,
+        stride: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """StridedSliceV1's forward function."""
         if sum(self.attrs.ellipsis_mask) > 0:
@@ -296,7 +298,7 @@ class SplitV1(Operation[SplitV1Attribute]):
 class VariadicSplitV1Attribute(Attribute):
     """VariadicSplitV1Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -312,10 +314,8 @@ class VariadicSplitV1(Operation[VariadicSplitV1Attribute]):
         """VariadicSplitV1's forward function."""
         idx = [i for i, j in enumerate(split_lengths) if j == -1]
         if idx:
-            assert len(idx) == 1
             _idx = idx[0]
             split_lengths[_idx] = inputs.size(axis) - sum(split_lengths) - 1
-        assert inputs.size(axis) == sum(split_lengths)
         outputs = []
         start_idx = 0
         for length in split_lengths:
@@ -324,7 +324,7 @@ class VariadicSplitV1(Operation[VariadicSplitV1Attribute]):
                     inputs,
                     axis,
                     torch.arange(start_idx, start_idx + length, device=inputs.device),
-                )
+                ),
             )
             start_idx += length
         return tuple(outputs)
@@ -349,11 +349,8 @@ class ShuffleChannelsV0(Operation[ShuffleChannelsV0Attribute]):
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ShuffleChannelsV0's forward function."""
-        #  n, c, h, w = input.shape
-        assert inputs.dim() == 4
         origin_shape = inputs.shape
         origin_dim = inputs.dim()
-        assert origin_shape[self.attrs.axis] % self.attrs.group == 0
 
         axis = self.attrs.axis
         axis = axis if axis >= 0 else axis + inputs.dim()
@@ -386,7 +383,7 @@ class BroadcastV3Attribute(Attribute):
 
     mode: str = field(default="numpy")
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """BroadcastV3Attribute's post-init function."""
         super().__post_init__()
         valid_mode = ["numpy", "explicit", "bidirectional"]
@@ -403,13 +400,12 @@ class BroadcastV3(Operation[BroadcastV3Attribute]):
     ATTRIBUTE_FACTORY = BroadcastV3Attribute
     attrs: BroadcastV3Attribute
 
-    def forward(self, inputs: torch.Tensor, target_shape: list, axes_mapping: Optional[list] = None) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor, target_shape: list, axes_mapping: list = []) -> torch.Tensor:
         """BroadcastV3's forward function."""
         if self.attrs.mode == "numpy":
             return inputs.expand(*target_shape)
         if self.attrs.mode == "bidirectional":
             return torch.ones(*target_shape, device=inputs.device) * inputs
-        assert axes_mapping is not None
         prev = -1
         for axes in axes_mapping:
             prev += 1
@@ -425,7 +421,7 @@ class BroadcastV3(Operation[BroadcastV3Attribute]):
 class ScatterNDUpdateV3Attribute(Attribute):
     """ScatterNDUpdateV3Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -444,9 +440,7 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
             raise NotImplementedError
 
         # FIXME: hard-coded
-        last_dim = indicies.shape[-1]
-        assert last_dim == 2
-        assert indicies[..., -2].sum() == 0
+        indicies.shape[-1]
         inputs.shape[indicies.shape[-1] :]  # pylint: disable=pointless-statement
         index = indicies[..., -1]
         for i in inputs.shape[indicies.shape[-1] :]:
@@ -460,7 +454,7 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
 class ScatterUpdateV3Attribute(Attribute):
     """ScatterUpdateV3Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -475,13 +469,11 @@ class ScatterUpdateV3(Operation[ScatterUpdateV3Attribute]):
     def forward(self, inputs: torch.Tensor, indicies: torch.Tensor, updates: torch.Tensor, axis: int) -> torch.Tensor:
         """ScatterUpdateV3's forward function."""
         # TODO: need to verify
-        # axis = axis.item()
 
         if inputs.dtype != updates.dtype:
             updates = updates.type(inputs.dtype)
 
         if indicies.dim() == 0:
-            assert axis == 0
             output = inputs
             output[indicies] = updates
 
@@ -494,7 +486,7 @@ class ScatterUpdateV3(Operation[ScatterUpdateV3Attribute]):
 class TileV0Attribute(Attribute):
     """TileV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -527,7 +519,6 @@ def get_torch_padding(
     if auto_pad == "valid":
         return 0
     if auto_pad in ("same_upper", "same_lower"):
-        assert len(set(dilation)) == 1 and dilation[0] == 1
         pads_begin = []
         pads_end = []
         for input_size_, weight_size_, stride_, _ in zip(input_size, weight_size, stride, dilation):

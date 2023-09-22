@@ -9,7 +9,7 @@ VERSION = None
 DEBUG = None
 
 try:
-    import datumaro  # noqa: F401
+    import datumaro
 
     VERSION = datumaro.__version__
 except ImportError as e:

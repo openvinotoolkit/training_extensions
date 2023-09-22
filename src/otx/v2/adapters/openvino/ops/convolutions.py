@@ -24,7 +24,7 @@ class ConvolutionV1Attribute(Attribute):
     dilations: List[int]
     auto_pad: str = field(default="explicit")
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """ConvolutionV1Attribute's post-init function."""
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
@@ -79,7 +79,7 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
 class GroupConvolutionV1Attribute(ConvolutionV1Attribute):
     """GroupConvolutionV1Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()

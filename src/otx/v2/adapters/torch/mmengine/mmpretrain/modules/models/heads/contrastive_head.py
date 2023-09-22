@@ -51,4 +51,4 @@ class ConstrastiveHead(nn.Module):
         if self.size_average:
             loss /= inputs.size(0)
 
-        return dict(loss=loss)
+        return {"loss": loss}

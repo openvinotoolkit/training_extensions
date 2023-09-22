@@ -17,7 +17,7 @@ import logging
 import math
 import time
 from copy import deepcopy
-from typing import List, Union
+from typing import List, TypeVar, Union
 
 import dill
 
@@ -61,7 +61,7 @@ class Callback:
         # pylint: disable=W0201
         self.params = params
 
-    def set_model(self, model: object) -> None:
+    def set_model(self, model: TypeVar) -> None:
         """Sets callback model."""
         # pylint: disable=W0201
         self.model = model
@@ -201,7 +201,7 @@ class TimeMonitorCallback(Callback):
                 logger.error(
                     f"Step {self.current_step} has taken {step_duration}s which is "
                     f">{min_abs_threshold}s and  {factor} times "
-                    f"more than the expected {self.average_step}s"
+                    f"more than the expected {self.average_step}s",
                 )
                 return True
         return False

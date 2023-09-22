@@ -37,25 +37,25 @@ SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 def get_default_pipeline(semisl: bool = False) -> Union[Dict, List]:
     # TODO: This is function for experiment // Need to remove this function
     default_pipeline = [
-        dict(type="Resize", scale=[224, 224]),
-        dict(type="mmpretrain.PackInputs"),
+        {"type": "Resize", "scale": [224, 224]},
+        {"type": "mmpretrain.PackInputs"},
     ]
     if semisl:
         strong_pipeline = [
-            dict(type="OTXRandAugment", num_aug=8, magnitude=10),
+            {"type": "OTXRandAugment", "num_aug": 8, "magnitude": 10},
         ]
         return {
             "train": default_pipeline,
             "unlabeled": [
-                dict(type="Resize", scale=[224, 224]),
-                dict(type="PostAug", keys=dict(img_strong=strong_pipeline)),
-                dict(type="mmpretrain.PackMultiKeyInputs", input_key="img", multi_key=["img_strong"]),
+                {"type": "Resize", "scale": [224, 224]},
+                {"type": "PostAug", "keys": {"img_strong": strong_pipeline}},
+                {"type": "mmpretrain.PackMultiKeyInputs", "input_key": "img", "multi_key": ["img_strong"]},
             ],
         }
 
     return [
-        dict(type="Resize", scale=[224, 224]),
-        dict(type="mmpretrain.PackInputs"),
+        {"type": "Resize", "scale": [224, 224]},
+        {"type": "mmpretrain.PackInputs"},
     ]
 
 
@@ -217,17 +217,17 @@ class Dataset(BaseDataset):
             drop_last=drop_last,
             **kwargs,
         )
-        sampler_cfg = sampler if isinstance(sampler, dict) else dict(type=f"{sampler.__class__.__qualname__}")
+        sampler_cfg = sampler if isinstance(sampler, dict) else {"type": f"{sampler.__class__.__qualname__}"}
         dataset_cfg = dataset._build_config if hasattr(dataset, "_build_config") else dataset
-        dataloader._build_config = dict(
-            batch_size=batch_size,
-            sampler=sampler_cfg,
-            num_workers=num_workers,
-            collate_fn=dict(type="default_collate"),
-            pin_memory=pin_memory,
-            shuffle=shuffle,
-            dataset=dataset_cfg,
-        )
+        dataloader._build_config = {
+            "batch_size": batch_size,
+            "sampler": sampler_cfg,
+            "num_workers": num_workers,
+            "collate_fn": {"type": "default_collate"},
+            "pin_memory": pin_memory,
+            "shuffle": shuffle,
+            "dataset": dataset_cfg,
+        }
         return dataloader
 
     def subset_dataloader(

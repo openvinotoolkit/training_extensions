@@ -9,7 +9,7 @@ VERSION = None
 DEBUG = None
 
 try:
-    import torch  # noqa: F401
+    import torch
 
     VERSION = torch.__version__
 except ImportError as e:

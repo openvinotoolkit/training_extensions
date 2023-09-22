@@ -66,7 +66,9 @@ class Workspace:
         print(f"[*] Workspace Path: {self.work_dir}")
 
     def dump_config(
-        self, config: Optional[Union[str, Path, Dict]] = None, filename: Optional[Union[str, Path]] = None
+        self,
+        config: Optional[Union[str, Path, Dict]] = None,
+        filename: Optional[Union[str, Path]] = None,
     ) -> None:
         """Dump output configuration.
 

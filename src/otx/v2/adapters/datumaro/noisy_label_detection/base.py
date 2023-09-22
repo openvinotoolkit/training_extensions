@@ -35,7 +35,8 @@ class LossDynamicsTracker:
                     media=dm.Image.from_file(path=item.media.path, size=(item.media.height, item.media.width))
                     if item.media.path
                     else dm.Image.from_numpy(
-                        data=getattr(item.media, "_Image__data"), size=(item.media.height, item.media.width)
+                        data=item.media._Image__data,
+                        size=(item.media.height, item.media.width),
                     ),
                     annotations=self._convert_anns(item),
                 )
@@ -48,15 +49,15 @@ class LossDynamicsTracker:
         self.initialized = True
 
     def _convert_anns(self, item: DatasetItemEntityWithID) -> List[dm.Annotation]:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def accumulate(self, outputs: dict, iter: int) -> None:
         """Accumulate training loss dynamics for each training step."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def export(self, output_path: str) -> None:
         """Export loss dynamics statistics to Datumaro format."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class LossDynamicsTrackingMixin:

@@ -58,7 +58,6 @@ class CrossEntropyLossWithIgnore(nn.Module):
         **kwargs,
     ) -> torch.Tensor:
         """Forward function of CrossEntropyLossWithIgnore class."""
-        assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * self.cls_criterion(
             cls_score,

@@ -8,7 +8,7 @@ VERSION = None
 DEBUG = None
 
 try:
-    import openvino  # noqa: F401
+    import openvino
     from openvino.runtime import get_version
 
     VERSION = get_version().split("-")[0]

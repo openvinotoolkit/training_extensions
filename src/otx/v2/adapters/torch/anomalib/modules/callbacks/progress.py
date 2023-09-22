@@ -61,7 +61,12 @@ class ProgressCallback(TQDMProgressBar):
         self._reset_progress()
 
     def on_train_batch_end(
-        self, trainer: Trainer, pl_module: LightningModule, outputs: torch.Tensor, batch: torch.Tensor, batch_idx: int
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
+        outputs: torch.Tensor,
+        batch: torch.Tensor,
+        batch_idx: int,
     ) -> None:
         """Adds training completion percentage to the progress bar."""
         super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx)
@@ -95,7 +100,9 @@ class ProgressCallback(TQDMProgressBar):
         self._update_progress(stage="test")
 
     def on_validation_epoch_end(
-        self, trainer: Trainer, pl_module: LightningModule
+        self,
+        trainer: Trainer,
+        pl_module: LightningModule,
     ) -> None:  # pylint: disable=unused-argument
         """If score exists in trainer.logged_metrics, report the score."""
         if self.progress_and_hpo_callback is not None:

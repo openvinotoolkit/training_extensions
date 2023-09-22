@@ -65,6 +65,6 @@ if __name__ == "__main__":
             "layers": ["layer1", "layer2", "layer3"],
             "normalization_method": "min_max",
             "input_size": [256, 256],
-        }
+        },
     }
     model = get_model(model_config)

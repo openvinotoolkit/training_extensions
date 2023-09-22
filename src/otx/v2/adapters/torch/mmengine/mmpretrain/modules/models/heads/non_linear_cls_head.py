@@ -26,7 +26,7 @@ class NonLinearClsHead(ClsHead):
         act_cfg (dict): Config of activation layer.
         loss (dict): Config of classification loss.
         topk (int | tuple): Top-k accuracy.
-    """  # noqa: W605
+    """
 
     def __init__(
         self,
@@ -40,8 +40,8 @@ class NonLinearClsHead(ClsHead):
         **kwargs,
     ) -> None:  # pylint: disable=too-many-arguments
         topk = (1,) if num_classes < 5 else (1, 5)
-        act_cfg = act_cfg if act_cfg else dict(type="ReLU")
-        loss = loss if loss else dict(type="CrossEntropyLoss", loss_weight=1.0)
+        act_cfg = act_cfg if act_cfg else {"type": "ReLU"}
+        loss = loss if loss else {"type": "CrossEntropyLoss", "loss_weight": 1.0}
         super().__init__(loss=loss, topk=topk, **kwargs)
         self.in_channels = in_channels
         self.hid_channels = hid_channels

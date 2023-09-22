@@ -68,7 +68,9 @@ class OTXAnomalyDataset(Dataset):
 
         # TODO: distinguish between train and val config here
         self.transform = get_transforms(
-            config=config.dataset.transform_config.train, image_size=tuple(config.dataset.image_size), to_tensor=True
+            config=config.dataset.transform_config.train,
+            image_size=tuple(config.dataset.image_size),
+            to_tensor=True,
         )
 
     def __len__(self) -> int:
@@ -112,8 +114,8 @@ class OTXAnomalyDataset(Dataset):
                                 annotation.shape.y1 * height,
                                 annotation.shape.x2 * width,
                                 annotation.shape.y2 * height,
-                            ]
-                        )
+                            ],
+                        ),
                     )
                 if boxes:
                     item["boxes"] = torch.stack(boxes)
@@ -121,7 +123,7 @@ class OTXAnomalyDataset(Dataset):
             if any(isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations()):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
-                mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
+                mask = np.zeros(dataset_item.numpy.shape[:2]).astype(int)
             pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
@@ -175,7 +177,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             stage (Optional[str], optional): train/val/test stages.
                 Defaults to None.
         """
-        if not stage == "predict":
+        if stage != "predict":
             self.summary()
 
         if stage == "fit" or stage is None:

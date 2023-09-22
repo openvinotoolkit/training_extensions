@@ -10,7 +10,8 @@ from typing import Generic, Optional, Type, TypeVar
 import torch
 from openvino.runtime import Node
 
-from ..utils import get_op_name  # type: ignore[attr-defined]
+from otx.v2.adapters.openvino.utils import get_op_name  # type: ignore[attr-defined]
+
 from .utils import get_dynamic_shape
 
 
@@ -20,7 +21,7 @@ class Attribute:
 
     shape: Optional[tuple]
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """Attribute's post-init function."""
         if self.shape is not None and not isinstance(self.shape, tuple):
             raise ValueError("shape must be a tuple of ints or a tuple of tuples of ints.")
@@ -44,12 +45,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
     @classmethod
     def from_ov(cls: torch.nn.Module, ov_op: Node) -> "Operation":
         """Operation's from_ov function."""
-        op_type = ov_op.get_type_name()
-        op_version = ov_op.get_version()
         op_name = get_op_name(ov_op)
-        assert cls.TYPE and cls.VERSION >= 0
-        assert op_type == cls.TYPE
-        assert op_version == cls.VERSION
 
         attrs = ov_op.get_attributes()
         if "shape" not in attrs:

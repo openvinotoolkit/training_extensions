@@ -20,13 +20,17 @@ class CustomNonLinearClsHead(NonLinearClsHead):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
+        self.loss_type = kwargs.get("loss", {"type": "CrossEntropyLoss"})["type"]
 
     def _get_loss(
-        self, cls_score: torch.Tensor, data_samples: List[DataSample], feature: Optional[torch.Tensor] = None, **kwargs
+        self,
+        cls_score: torch.Tensor,
+        data_samples: List[DataSample],
+        feature: Optional[torch.Tensor] = None,
+        **kwargs,
     ) -> dict:
         num_samples = len(cls_score)
-        losses = dict()
+        losses = {}
         if "gt_score" in data_samples[0]:
             # Batch augmentation may convert labels to one-hot format scores.
             gt_label = torch.stack([i.gt_score for i in data_samples])
@@ -40,13 +44,16 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         if self.cal_acc:
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
-            assert len(acc) == len(self.topk)
             losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         losses["loss"] = loss
         return losses
 
     def loss(
-        self, feats: torch.Tensor, data_samples: List[DataSample], feature: Optional[torch.Tensor] = None, **kwargs
+        self,
+        feats: torch.Tensor,
+        data_samples: List[DataSample],
+        feature: Optional[torch.Tensor] = None,
+        **kwargs,
     ) -> dict:
         """Calculate loss for given cls_score/gt_label."""
         cls_score = self.classifier(feats)
@@ -71,15 +78,19 @@ class CustomLinearClsHead(LinearClsHead):
     """
 
     def __init__(self, num_classes: int, in_channels: int, init_cfg: Optional[dict] = None, **kwargs) -> None:
-        init_cfg = init_cfg if init_cfg else dict(type="Normal", layer="Linear", std=0.01)
+        init_cfg = init_cfg if init_cfg else {"type": "Normal", "layer": "Linear", "std": 0.01}
         super().__init__(num_classes, in_channels, init_cfg=init_cfg, **kwargs)
-        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
+        self.loss_type = kwargs.get("loss", {"type": "CrossEntropyLoss"})["type"]
 
     def _get_loss(
-        self, cls_score: torch.Tensor, data_samples: List[DataSample], feature: Optional[torch.Tensor] = None, **kwargs
+        self,
+        cls_score: torch.Tensor,
+        data_samples: List[DataSample],
+        feature: Optional[torch.Tensor] = None,
+        **kwargs,
     ) -> dict:
         num_samples = len(cls_score)
-        losses = dict()
+        losses = {}
         if "gt_score" in data_samples[0]:
             # Batch augmentation may convert labels to one-hot format scores.
             gt_label = torch.stack([i.gt_score for i in data_samples])
@@ -93,7 +104,6 @@ class CustomLinearClsHead(LinearClsHead):
         if self.cal_acc:
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
-            assert len(acc) == len(self.topk)
             losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         losses["loss"] = loss
         return losses

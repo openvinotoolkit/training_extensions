@@ -107,7 +107,7 @@ class Annotation(metaclass=abc.ABCMeta):
         """
         self.__labels = labels
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: "Annotation") -> bool:
         """Checks if the two annotations are equal.
 
         Args:

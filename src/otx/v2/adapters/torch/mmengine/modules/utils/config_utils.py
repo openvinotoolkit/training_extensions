@@ -46,7 +46,8 @@ class CustomConfig(Config):
 
     @staticmethod
     def _file2dict(
-        filename: str, use_predefined_variables: bool = True
+        filename: str,
+        use_predefined_variables: bool = True,
     ) -> Tuple[Config, str]:  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Static method that loads the configuration file and returns a dictionary of its contents.
 
@@ -116,16 +117,13 @@ class CustomConfig(Config):
                 cfg_dict_list.append(_cfg_dict)
                 cfg_text_list.append(_cfg_text)
 
-            base_cfg_dict: Union[Config, Dict] = dict()
+            base_cfg_dict: Union[Config, Dict] = {}
             # for c in cfg_dict_list:
-            #     duplicate_keys = base_cfg_dict.keys() & c.keys()
             #     if len(duplicate_keys) > 0:
             #         raise KeyError('Duplicate key is not allowed among bases. '
             #                        f'Duplicate keys: {duplicate_keys}')
-            #     base_cfg_dict.update(c)
             for c in cfg_dict_list:
                 if len(base_cfg_dict.keys() & c.keys()) > 0:
-                    # raise KeyError(f'Duplicate key is not allowed among bases [{base_cfg_dict.keys() & c.keys()}]')
                     logger.warning(f"Duplicate key is detected among bases [{base_cfg_dict.keys() & c.keys()}]")
                     logger.debug(f"base = {base_cfg_dict}, cfg = {c}")
                     base_cfg_dict = Config._merge_a_into_b(base_cfg_dict, c)
@@ -180,10 +178,7 @@ class CustomConfig(Config):
             return _s
 
         def _format_basic_types(k: str, v: list, use_mapping: bool = False) -> str:
-            if isinstance(v, str):
-                v_str = f"'{v}'"
-            else:
-                v_str = str(v)
+            v_str = f"'{v}'" if isinstance(v, str) else str(v)
 
             if use_mapping:
                 k_str = f"'{k}'" if isinstance(k, str) else str(k)
@@ -269,21 +264,9 @@ class CustomConfig(Config):
             str or None: Config text.
         """
         # FIXME: OTX yaml
-        pass
-        # file = str(file) if isinstance(file, Path) else file
-        # cfg_dict = super().__getattribute__('_cfg_dict').to_dict()
         # if file is None:
         #     if self.filename is None or self.filename.endswith('.py'):
-        #         return self.pretty_text
-        #     else:
-        #         file_format = self.filename.split('.')[-1]
-        #         return dump(cfg_dict, file_format=file_format)
-        # elif file.endswith('.py'):
         #     with open(file, 'w', encoding='utf-8') as f:
-        #         f.write(self.pretty_text)
-        # else:
-        #     file_format = file.split('.')[-1]
-        #     return dump(cfg_dict, file=file, file_format=file_format)
 
 
 def copy_config(cfg: Config) -> None:
@@ -401,12 +384,8 @@ def update_config(
         key = None
         while path_:
             key = path_.pop()
-            if isinstance(ptr, (Config, Mapping)):
-                if key not in ptr:
-                    ptr[key] = ConfigDict()
-            elif isinstance(ptr, (list, tuple)):
-                assert isinstance(key, int), f"{key} of {path} must be int for ({type(ptr)}: {ptr})"
-                assert len(ptr) < key, f"{key} of {path} exceeds {len(ptr)}"
+            if isinstance(ptr, (Config, Mapping)) and key not in ptr:
+                ptr[key] = ConfigDict()
             if len(path_) == 0:
                 ptr[key] = value
             ptr = ptr[key]
@@ -426,9 +405,8 @@ def config_from_string(config_string: str) -> Config:
 
 def patch_color_conversion(config: Config) -> None:
     """Patch color conversion."""
-    assert "data" in config
 
-    for cfg in get_configs_by_pairs(config.data, dict(type="Normalize")):
+    for cfg in get_configs_by_pairs(config.data, {"type": "Normalize"}):
         to_rgb = False
         if "to_rgb" in cfg:
             to_rgb = cfg.to_rgb
@@ -460,7 +438,7 @@ def patch_adaptive_interval_training(config: Config) -> None:
                     "enable_adaptive_interval_hook": True,
                     "enable_eval_before_run": True,
                     **config.pop("adaptive_validation_interval", {}),
-                }
+                },
             ),
         )
     else:
@@ -626,7 +604,6 @@ def dump_lazy_config(config: Config, file: Optional[Union[str, Path]] = None, sc
             output_config[f"{subset}_dataloader"] = dl_config
     if file is not None:
         # TODO: filename is not member of runner.__init__
-        # config["filename"] = str(file)
         output_config.dump(file=file)
 
     return output_config

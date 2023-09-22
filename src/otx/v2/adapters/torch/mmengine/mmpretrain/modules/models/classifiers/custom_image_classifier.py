@@ -38,7 +38,7 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
                     self,  # model
                     task_adapt["dst_classes"],  # model_classes
                     task_adapt["src_classes"],  # chkpt_classes
-                )
+                ),
             )
 
     def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:
@@ -63,7 +63,7 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
 
         x = self.extract_feat(img)
 
-        losses = dict()
+        losses = {}
 
         if self.multilabel or self.hierarchical:
             loss = self.head.forward_train(x, gt_label, **kwargs)
@@ -95,8 +95,12 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
 
     @staticmethod
     def load_state_dict_pre_hook(
-        module: torch.nn.Module, state_dict: dict, prefix: str, *args, **kwargs
-    ) -> None:  # noqa: C901
+        module: torch.nn.Module,
+        state_dict: dict,
+        prefix: str,
+        *args,
+        **kwargs,
+    ) -> None:
         # pylint: disable=unused-argument, too-many-branches
         """Redirect input state_dict to model for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
@@ -134,22 +138,16 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
         model_dict = model.state_dict()
 
         if backbone_type == "OTXMobileNetV3":
-            if model.multilabel:
-                param_names = ["classifier.4.weight"]
-            else:
-                param_names = ["classifier.4.weight", "classifier.4.bias"]
+            param_names = ["classifier.4.weight"] if model.multilabel else ["classifier.4.weight", "classifier.4.bias"]
 
         elif backbone_type == "OTXEfficientNet":
-            if not model.hierarchical:
-                param_names = ["output.asl.weight"]
-            else:
-                param_names = ["output.fc.weight"]
+            param_names = ["output.asl.weight"] if not model.hierarchical else ["output.fc.weight"]
 
         elif backbone_type == "OTXEfficientNetV2":
             param_names = [
                 "model.classifier.weight",
             ]
-            if "head.fc.bias" in chkpt_dict.keys():
+            if "head.fc.bias" in chkpt_dict:
                 param_names.append("head.fc.bias")
 
         for model_name in param_names:
@@ -195,10 +193,12 @@ if is_mmdeploy_enabled():
     )
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.extract_feat"
+        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.extract_feat",
     )
     def sam_image_classifier__extract_feat(
-        self: CustomImageClassifier, img: torch.Tensor, **kwargs
+        self: CustomImageClassifier,
+        img: torch.Tensor,
+        **kwargs,
     ) -> Union[tuple, torch.Tensor]:  # pylint: disable=unused-argument
         """Feature extraction function for SAMClassifier with mmdeploy."""
         dump_features = kwargs.get("dump_features", False)
@@ -215,10 +215,12 @@ if is_mmdeploy_enabled():
         return feat
 
     @FUNCTION_REWRITER.register_rewriter(
-        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.predict"
+        "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.predict",
     )
     def sam_image_classifier__predict(
-        self: CustomImageClassifier, img: torch.Tensor, **kwargs
+        self: CustomImageClassifier,
+        img: torch.Tensor,
+        **kwargs,
     ) -> Union[tuple, torch.Tensor]:  # pylint: disable=unused-argument
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
         feat, backbone_feat = self.extract_feat(img, dump_features=True)

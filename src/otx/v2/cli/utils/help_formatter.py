@@ -16,20 +16,18 @@ from rich_argparse import RichHelpFormatter
 from otx.v2.api.core import Engine
 
 # TODO: Let's think about how to manage it more efficiently.
-NONSKIP_LIST = set(
-    (
-        "config",
-        "print_config",
-        "data.train_data_roots",
-        "data.val_data_roots",
-        "data.test_data_roots",
-        "model.name",
-        "checkpoint",
-        "data.task",
-        "img",
-        "work_dir",
-    )
-)
+NONSKIP_LIST = {
+    "config",
+    "print_config",
+    "data.train_data_roots",
+    "data.val_data_roots",
+    "data.test_data_roots",
+    "model.name",
+    "checkpoint",
+    "data.task",
+    "img",
+    "work_dir",
+}
 
 
 def get_verbose_usage(subcommand: str = "train") -> str:

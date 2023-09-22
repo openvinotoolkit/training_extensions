@@ -9,7 +9,7 @@ import copy
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass, invalid-name  # noqa: E501
+# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass, invalid-name
 from collections import OrderedDict
 from typing import Any, Dict, Optional
 
@@ -137,7 +137,7 @@ class OTXBYOL(nn.Module):
             proj_2_tgt = self.target_projector(self.target_backbone(img2)).clone().detach()
 
         loss = self.head(proj_1, proj_2_tgt)["loss"] + self.head(proj_2, proj_1_tgt)["loss"]
-        return dict(loss=loss)
+        return {"loss": loss}
 
     def train_step(self, data: Dict[str, Any], optimizer: torch.optim.Optimizer) -> dict:
         """The iteration step during training.
@@ -168,13 +168,12 @@ class OTXBYOL(nn.Module):
         losses = self(**data)
         loss, log_vars = self._parse_losses(losses)
 
-        outputs = dict(loss=loss, log_vars=log_vars, num_samples=len(data["img1"].data))
+        outputs = {"loss": loss, "log_vars": log_vars, "num_samples": len(data["img1"].data)}
 
         return outputs
 
     def val_step(self, *args) -> None:
         """Disable validation step during self-supervised learning."""
-        pass
 
     def _parse_losses(self, losses: dict) -> tuple:
         """Parse loss dictionary.

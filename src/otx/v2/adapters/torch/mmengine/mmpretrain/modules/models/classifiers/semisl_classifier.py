@@ -74,7 +74,7 @@ class SemiSLClassifier(CustomImageClassifier):
         img_us = unlabeled_data["img_strong"]["inputs"]
         x["unlabeled_strong"] = self.extract_feat(img_us)
 
-        losses = dict()
+        losses = {}
         loss = self.head.forward_train(x, gt_label)
         losses.update(loss)
 

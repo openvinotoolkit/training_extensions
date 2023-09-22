@@ -29,19 +29,19 @@ ADAPTERS = {
         "Incremental": {
             "module_name": "detection_dataset_adapter",
             "class": "DetectionDatasetAdapter",
-        }
+        },
     },
     TaskType.ROTATED_DETECTION: {
         "Incremental": {
             "module_name": "detection_dataset_adapter",
             "class": "DetectionDatasetAdapter",
-        }
+        },
     },
     TaskType.INSTANCE_SEGMENTATION: {
         "Incremental": {
             "module_name": "detection_dataset_adapter",
             "class": "DetectionDatasetAdapter",
-        }
+        },
     },
     TaskType.SEGMENTATION: {
         "Incremental": {
@@ -57,19 +57,19 @@ ADAPTERS = {
         "Incremental": {
             "module_name": "anomaly_dataset_adapter",
             "class": "AnomalyClassificationDatasetAdapter",
-        }
+        },
     },
     TaskType.ANOMALY_DETECTION: {
         "Incremental": {
             "module_name": "anomaly_dataset_adapter",
             "class": "AnomalyDetectionDatasetAdapter",
-        }
+        },
     },
     TaskType.ANOMALY_SEGMENTATION: {
         "Incremental": {
             "module_name": "anomaly_dataset_adapter",
             "class": "AnomalySegmentationDatasetAdapter",
-        }
+        },
     },
 }
 if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
@@ -79,15 +79,15 @@ if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
                 "Incremental": {
                     "module_name": "action_dataset_adapter",
                     "class": "ActionClassificationDatasetAdapter",
-                }
+                },
             },
             TaskType.ACTION_DETECTION: {
                 "Incremental": {
                     "module_name": "action_dataset_adapter",
                     "class": "ActionDetectionDatasetAdapter",
-                }
+                },
             },
-        }
+        },
     )
 # TODO: update to real template
 if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
@@ -97,9 +97,9 @@ if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
                 "Incremental": {
                     "module_name": "visual_prompting_dataset_adapter",
                     "class": "VisualPromptingDatasetAdapter",
-                }
+                },
             },
-        }
+        },
     )
 
 
@@ -163,7 +163,7 @@ def get_dataset_adapter(
     """
 
     train_type_to_be_called = str(
-        train_type if train_type == TrainType.Selfsupervised.value else TrainType.Incremental.value
+        train_type if train_type == TrainType.Selfsupervised.value else TrainType.Incremental.value,
     )
     module_root = "otx.v2.adapters.datumaro.adapter."
     module = importlib.import_module(module_root + ADAPTERS[task_type][train_type_to_be_called]["module_name"])
@@ -302,7 +302,7 @@ class BaseDataset:
 
     @property
     def num_classes(self) -> int:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def train_data_roots(self) -> Optional[str]:

@@ -17,10 +17,10 @@
 import importlib
 import inspect
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, TypeVar, Union
 
 
-def get_impl_class(impl_path: str) -> object:
+def get_impl_class(impl_path: str) -> TypeVar:
     """Returns a class by its path in package."""
 
     task_impl_module = None
@@ -32,7 +32,7 @@ def get_impl_class(impl_path: str) -> object:
         return task_impl_class
     except Exception as e:
         if hasattr(task_impl_module, "DEBUG"):
-            exception = getattr(task_impl_module, "DEBUG")
+            exception = getattr(task_impl_module, "DEBUG", None)
             if isinstance(exception, Exception):
                 raise exception
         raise e

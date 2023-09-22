@@ -12,7 +12,6 @@ from datumaro.plugins.transforms import MasksToPolygons
 
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.entities.image import Image
 
 from .segmentation_dataset_adapter import SegmentationDatasetAdapter
 
@@ -49,7 +48,6 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = self.datum_media_2_otx_media(datumaro_item.media)
-                    assert isinstance(image, Image)
                     shapes = []
                     for ann in datumaro_item.annotations:
                         if ann.type == DatumAnnotationType.polygon:

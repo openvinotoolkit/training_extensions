@@ -49,8 +49,8 @@ class MMPTEngine(MMXEngine):
 
             pipeline = get_default_pipeline()
         config = Config({})
-        if hasattr(model, "_config"):
-            config = getattr(model, "_config")
+        if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
+            config = model._config
         elif isinstance(model, dict) and "_config" in model:
             config = model["_config"]
         config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}
@@ -62,11 +62,7 @@ class MMPTEngine(MMXEngine):
         # Check if the model can use mmpretrain's inference api.
         if isinstance(checkpoint, Path):
             checkpoint = str(checkpoint)
-        if (
-            isinstance(model, BaseModel)
-            and getattr(model, "_metainfo") is not None
-            and getattr(model._metainfo, "results") is not None
-        ):
+        if isinstance(model, BaseModel) and model._metainfo is not None and model._metainfo.results is not None:
             task = [result.task for result in model._metainfo.results][0]
             inputs = {
                 "model": model,
@@ -79,7 +75,7 @@ class MMPTEngine(MMXEngine):
                 inputs["images"] = inputs.pop("inputs")
             return [inference_model(**inputs, **kwargs)]
         elif task is not None and task != "Image Classification":
-            raise NotImplementedError()
+            raise NotImplementedError
         inferencer = ImageClassificationInferencer(
             model=model,
             pretrained=checkpoint,

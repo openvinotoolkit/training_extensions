@@ -74,8 +74,6 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
             dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
             if val_data_roots:
                 dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format="image_dir")
-            # else:
-            #     raise NotImplementedError("Anomaly task needs validation dataset.")
         if test_data_roots:
             dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
         return dataset
@@ -93,7 +91,7 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Get DatasetEntity."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
@@ -115,7 +113,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
                         Annotation(
                             Rectangle.generate_full_box(),
                             labels=[ScoredLabel(label=label, probability=1.0)],
-                        )
+                        ),
                     ]
                     annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
@@ -123,7 +121,8 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
                         annotation_scene = AnnotationSceneEntity(
-                            kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
+                            kind=AnnotationSceneKind.ANNOTATION,
+                            annotations=shapes,
                         )
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
@@ -150,7 +149,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                         Annotation(
                             Rectangle.generate_full_box(),
                             labels=[ScoredLabel(label=label, probability=1.0)],
-                        )
+                        ),
                     ]
                     # TODO: avoid hard coding, plan to enable MVTec to Datumaro
                     mask_file_path = os.path.join(
@@ -172,7 +171,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                                         y2=y2 / image.height,
                                     ),
                                     labels=[ScoredLabel(label=abnormal_label)],
-                                )
+                                ),
                             )
                     annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
@@ -180,7 +179,8 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
                         annotation_scene = AnnotationSceneEntity(
-                            kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
+                            kind=AnnotationSceneKind.ANNOTATION,
+                            annotations=shapes,
                         )
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
@@ -207,7 +207,7 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
                         Annotation(
                             Rectangle.generate_full_box(),
                             labels=[ScoredLabel(label=label, probability=1.0)],
-                        )
+                        ),
                     ]
                     # TODO: avoid hard coding, plan to enable MVTec to Datumaro
                     mask_file_path = os.path.join(
@@ -222,7 +222,7 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
                                 hard_prediction=mask,
                                 soft_prediction=np.ones_like(mask),
                                 label_map={0: normal_label, 1: abnormal_label},
-                            )
+                            ),
                         )
                     annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
@@ -230,7 +230,8 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
                         annotation_scene = AnnotationSceneEntity(
-                            kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
+                            kind=AnnotationSceneKind.ANNOTATION,
+                            annotations=shapes,
                         )
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)

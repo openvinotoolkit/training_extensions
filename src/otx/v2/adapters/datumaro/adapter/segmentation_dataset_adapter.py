@@ -27,7 +27,6 @@ from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.utils.logger import get_logger
 
@@ -71,7 +70,6 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = self.datum_media_2_otx_media(datumaro_item.media)
-                    assert isinstance(image, Image)
                     shapes: List[Annotation] = []
                     for ann in datumaro_item.annotations:
                         if ann.type == DatumAnnotationType.mask:
@@ -113,7 +111,7 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
         """Remove background label in label entity set."""
         is_removed = False
         new_label_entities = []
-        for i, entity in enumerate(self.label_entities):
+        for _i, entity in enumerate(self.label_entities):
             if entity.name not in label_names:
                 new_label_entities.append(entity)
             else:
@@ -203,7 +201,10 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
                     # Stack label_id to save dataset_meta.json
                     total_labels.append(label_id)
                 annotations.append(
-                    Mask(image=CommonSemanticSegmentationBase._lazy_extract_mask(pseudo_mask, label_id), label=label_id)
+                    Mask(
+                        image=CommonSemanticSegmentationBase._lazy_extract_mask(pseudo_mask, label_id),
+                        label=label_id,
+                    ),
                 )
             item.annotations = annotations
 

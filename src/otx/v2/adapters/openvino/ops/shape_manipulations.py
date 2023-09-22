@@ -17,7 +17,7 @@ from .type_conversions import ConvertV0
 class SqueezeV0Attribute(Attribute):
     """SqueezeV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -53,7 +53,7 @@ class SqueezeV0(Operation[SqueezeV0Attribute]):
 class UnsqueezeV0Attribute(Attribute):
     """UnsqueezeV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -120,7 +120,7 @@ class ReshapeV1(Operation[ReshapeV1Attribute]):
 class ShapeOfV0Attribute(Attribute):
     """ShapeOfV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -142,7 +142,7 @@ class ShapeOfV3Attribute(Attribute):
 
     output_type: str = field(default="i64")
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """ShapeOfV3Attribute's post-init function."""
         super().__post_init__()
         valid_output_type = ["i64", "i32"]
@@ -162,5 +162,5 @@ class ShapeOfV3(Operation[ShapeOfV3Attribute]):
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """ShapeOfV3's forward function."""
         return ConvertV0("temp", shape=self.shape, destination_type=self.attrs.output_type)(
-            torch.tensor(inputs.shape, device=inputs.device)
+            torch.tensor(inputs.shape, device=inputs.device),
         )

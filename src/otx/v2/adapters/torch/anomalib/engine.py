@@ -278,16 +278,17 @@ class AnomalibEngine(Engine):
         dataloader = None
         if isinstance(img, (str, Path)):
             dataset_config = self.config.get("dataset", {})
-            transform_config = (
-                dataset_config.transform_config.eval if "transform_config" in dataset_config.keys() else None
-            )
+            transform_config = dataset_config.transform_config.eval if "transform_config" in dataset_config else None
             image_size = dataset_config.get("image_size", (256, 256))
             center_crop = dataset_config.get("center_crop")
             if center_crop is not None:
                 center_crop = tuple(center_crop)
             normalization = InputNormalizationMethod(dataset_config.get("normalization", "imagenet"))
             transform = get_transforms(
-                config=transform_config, image_size=image_size, center_crop=center_crop, normalization=normalization
+                config=transform_config,
+                image_size=image_size,
+                center_crop=center_crop,
+                normalization=normalization,
             )
             dataset = InferenceDataset(img, image_size=image_size, transform=transform)  # type: ignore
             dataloader = DataLoader(dataset)

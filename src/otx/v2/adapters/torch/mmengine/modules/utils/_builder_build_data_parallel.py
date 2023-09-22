@@ -77,7 +77,7 @@ def build_data_parallel(
     else:
         # temporarily disable cuda for cpu data parallel
         bak = torch.cuda.is_available
-        setattr(torch.cuda, "is_available", lambda: False)
+        torch.cuda.is_available = lambda: False
         model = DataParallel(model, device_ids=[])
         torch.cuda.is_available = bak
     return model

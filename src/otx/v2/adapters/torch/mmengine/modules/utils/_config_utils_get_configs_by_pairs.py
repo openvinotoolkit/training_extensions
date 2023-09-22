@@ -41,7 +41,7 @@ def get_configs_by_pairs(
     ...
 
 
-def get_configs_by_pairs(  # noqa: C901
+def get_configs_by_pairs(
     configs: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]],
     pairs: Union[Dict[Any, Any], List[Dict[Any, Any]]],
     *,
@@ -54,7 +54,8 @@ def get_configs_by_pairs(  # noqa: C901
         pairs = [pairs]
 
     def get_config(
-        config: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]], path: Tuple = ()
+        config: Union[Config, ConfigDict, Sequence[Config], Sequence[ConfigDict]],
+        path: Tuple = (),
     ) -> Dict[Tuple[Any, ...], Union[Any, Sequence[Any]]]:
         out = {}
         if isinstance(config, (Config, Mapping)):

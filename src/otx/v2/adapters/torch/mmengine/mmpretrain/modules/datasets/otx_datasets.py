@@ -33,7 +33,11 @@ class OTXClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
     def __init__(
-        self, otx_dataset: DatasetEntity, labels: list, empty_label: Optional[list] = None, **kwargs
+        self,
+        otx_dataset: DatasetEntity,
+        labels: list,
+        empty_label: Optional[list] = None,
+        **kwargs,
     ) -> None:  # pylint: disable=super-init-not-called
         self.otx_dataset = otx_dataset
         self.labels = labels
@@ -43,7 +47,7 @@ class OTXClsDataset(BaseDataset):
         self.empty_label = empty_label
         self.class_acc = False
 
-        self._metainfo = self._load_metainfo({"classes": list(label.name for label in labels)})
+        self._metainfo = self._load_metainfo({"classes": [label.name for label in labels]})
         self.gt_labels: list = []
         pipeline = kwargs.get("pipeline", [])
         self.num_classes = len(self.CLASSES)
@@ -53,7 +57,7 @@ class OTXClsDataset(BaseDataset):
             new_classes = kwargs.pop("new_classes", [])
             self.img_indices = self.get_indices(new_classes)
 
-        _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
+        _pipeline = [{"type": "LoadImageFromOTXDataset"}, *pipeline]
         pipeline_modules = []
         for p in _pipeline:
             if isinstance(p, dict):
@@ -94,16 +98,16 @@ class OTXClsDataset(BaseDataset):
         height, width = item.height, item.width
 
         gt_label = self.gt_labels[index]
-        data_info = dict(
-            dataset_item=item,
-            width=width,
-            height=height,
-            index=index,
-            gt_label=gt_label,
-            ignored_labels=ignored_labels,
-            entity_id=getattr(item, "id_", None),
-            label_id=self._get_label_id(gt_label),
-        )
+        data_info = {
+            "dataset_item": item,
+            "width": width,
+            "height": height,
+            "index": index,
+            "gt_label": gt_label,
+            "ignored_labels": ignored_labels,
+            "entity_id": getattr(item, "id_", None),
+            "label_id": self._get_label_id(gt_label),
+        }
 
         if self.pipeline is None:
             return data_info
@@ -153,10 +157,7 @@ class OTXClsDataset(BaseDataset):
         if metric_options is None:
             metric_options = {"topk": (1, 5) if self.num_classes >= 5 else (1,)}
 
-        if isinstance(metric, str):
-            metrics = [metric]
-        else:
-            metrics = metric
+        metrics = [metric] if isinstance(metric, str) else metric
 
         if "class_accuracy" in metrics:
             metrics.remove("class_accuracy")
@@ -247,18 +248,14 @@ class OTXMultilabelClsDataset(OTXClsDataset):
         if metric_options is None or metric_options == {}:
             metric_options = {"thr": 0.5}
 
-        if isinstance(metric, str):
-            metrics = [metric]
-        else:
-            metrics = metric
+        metrics = [metric] if isinstance(metric, str) else metric
         allowed_metrics = ["accuracy-mlc", "mAP", "CP", "CR", "CF1", "OP", "OR", "OF1"]
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
         if indices is not None:
             gt_labels = gt_labels[indices]
-        num_imgs = len(results)
-        assert len(gt_labels) == num_imgs, "dataset testing results should " "be of the same length as gt_labels."
+        len(results)
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
@@ -273,14 +270,14 @@ class OTXMultilabelClsDataset(OTXClsDataset):
             pred_label = results > pos_thr
             cls_index = [i + 1 for i in range(len(self.labels))]
             for true_lbl, pred_lbl in zip(true_label, pred_label):
-                true_lbl_idx = set(true_lbl * cls_index) - set([0])  # except empty
-                pred_lbl_idx = set(pred_lbl * cls_index) - set([0])
+                true_lbl_idx = set(true_lbl * cls_index) - {0}  # except empty
+                pred_lbl_idx = set(pred_lbl * cls_index) - {0}
                 true_label_idx.append(true_lbl_idx)
                 pred_label_idx.append(pred_lbl_idx)
 
             confusion_matrices = []
             for cls_idx in cls_index:
-                group_labels_idx = set([cls_idx - 1])
+                group_labels_idx = {cls_idx - 1}
                 y_true = [int(not group_labels_idx.issubset(true_labels)) for true_labels in true_label_idx]
                 y_pred = [int(not group_labels_idx.issubset(pred_labels)) for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
@@ -391,10 +388,7 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         if metric_options is None or metric_options == {}:
             metric_options = {"thr": 0.5}
 
-        if isinstance(metric, str):
-            metrics = [metric]
-        else:
-            metrics = metric
+        metrics = [metric] if isinstance(metric, str) else metric
 
         allowed_metrics = ["MHAcc", "avgClsAcc", "mAP"]
         eval_results = {}
@@ -402,8 +396,6 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         gt_labels = self.get_gt_labels()
         if indices is not None:
             gt_labels = gt_labels[indices]
-        num_imgs = len(np_results)
-        assert len(gt_labels) == num_imgs, "dataset testing results should " "be of the same length as gt_labels."
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
@@ -418,7 +410,7 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
                 self.hierarchical_info["head_idx_to_logits_range"][str(i)][0] : self.hierarchical_info[
                     "head_idx_to_logits_range"
                 ][str(i)][1],
-            ]  # noqa: E127
+            ]
             multiclass_gt = gt_labels[:, i]
             cls_acc = self.mean_top_k_accuracy(multiclass_logit, multiclass_gt, k=1)
             total_acc += cls_acc
@@ -451,7 +443,7 @@ class SelfSLDataset(Dataset):
         super().__init__()
         self.otx_dataset = otx_dataset
 
-        self.load_pipeline = build_from_cfg(dict(type="LoadImageFromOTXDataset"), TRANSFORMS)
+        self.load_pipeline = build_from_cfg({"type": "LoadImageFromOTXDataset"}, TRANSFORMS)
         self.view0 = Compose([build_from_cfg(p, TRANSFORMS) for p in pipeline["view0"]])
         self.view1 = Compose([build_from_cfg(p, TRANSFORMS) for p in pipeline["view1"]])
 
@@ -466,12 +458,12 @@ class SelfSLDataset(Dataset):
 
         height, width = item.height, item.width
 
-        data_info = dict(
-            dataset_item=item,
-            width=width,
-            height=height,
-            index=index,
-        )
+        data_info = {
+            "dataset_item": item,
+            "width": width,
+            "height": height,
+            "index": index,
+        }
 
         loaded_results = self.load_pipeline(data_info)
         results1 = self.view0(loaded_results.copy())

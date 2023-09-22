@@ -14,7 +14,6 @@ from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.v2.api.entities.scored_label import ScoredLabel
@@ -38,7 +37,6 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = self.datum_media_2_otx_media(datumaro_item.media)
-                    assert isinstance(image, Image)
                     if not fake_ann:
                         datumaro_labels = []
                         for ann in datumaro_item.annotations:
@@ -49,7 +47,10 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
 
                     shapes = self._get_cls_shapes(datumaro_labels)
                     dataset_item = DatasetItemEntityWithID(
-                        image, self._get_ann_scene_entity(shapes), subset=subset, id_=datumaro_item.id
+                        image,
+                        self._get_ann_scene_entity(shapes),
+                        subset=subset,
+                        id_=datumaro_item.id,
                     )
 
                     dataset_items.append(dataset_item)
@@ -100,8 +101,10 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
 
                 label_schema.add_group(
                     LabelGroup(
-                        name=label_group.name, labels=group_label_entity_list, group_type=LabelGroupType.EXCLUSIVE
-                    )
+                        name=label_group.name,
+                        labels=group_label_entity_list,
+                        group_type=LabelGroupType.EXCLUSIVE,
+                    ),
                 )
             label_schema.add_group(self._generate_empty_label_entity())
         else:
@@ -113,7 +116,7 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
             parent = [i for i in label_entities if i.name == category_item.parent]
             if len(me) != 1:
                 raise ValueError(
-                    f"Label name must be unique but {len(me)} labels found for label name '{category_item.name}'."
+                    f"Label name must be unique but {len(me)} labels found for label name '{category_item.name}'.",
                 )
             if len(parent) == 0:
                 label_schema.label_tree.add_node(me[0])
@@ -121,7 +124,7 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
                 label_schema.add_child(parent[0], me[0])
             else:
                 raise ValueError(
-                    f"Label name must be unique but {len(parent)} labels found for label name '{category_item.parent}'."
+                    f"Label name must be unique but {len(parent)} labels found for label name '{category_item.parent}'.",
                 )
 
         return label_schema

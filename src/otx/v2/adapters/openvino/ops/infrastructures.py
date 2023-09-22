@@ -10,26 +10,24 @@ from typing import Optional, Tuple, Type
 import numpy as np
 import torch
 
+from otx.v2.adapters.openvino.utils import get_op_name  # type: ignore[attr-defined]
 from otx.v2.api.utils.logger import get_logger
 
-from ..utils import get_op_name  # type: ignore[attr-defined]
 from .builder import OPS
 from .op import Attribute, Operation
 from .type_conversions import ConvertV0
 from .utils import get_dynamic_shape
 
-NODE_TYPES_WITH_WEIGHT = set(
-    [
-        "Convolution",
-        "GroupConvolution",
-        "MatMul",
-        "BatchNormInference",
-        "Multiply",
-        "Divide",
-        "Add",
-        "Subtract",
-    ]
-)
+NODE_TYPES_WITH_WEIGHT = {
+    "Convolution",
+    "GroupConvolution",
+    "MatMul",
+    "BatchNormInference",
+    "Multiply",
+    "Divide",
+    "Add",
+    "Subtract",
+}
 
 logger = get_logger()
 
@@ -44,14 +42,14 @@ class ParameterV0Attribute(Attribute):
     permute: Optional[Tuple[int]] = field(default=None)
     verify_shape: bool = field(default=True)
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """ParameterV0Attribute's post-init function."""
         super().__post_init__()
         # fmt: off
         valid_element_type = [
             None,
             "u1", "u4", "u8", "u16", "u32", "u64",
-            "i4", "i8", "i16", "i32", "i64", "f16", "f32", "boolean", "bf16"
+            "i4", "i8", "i16", "i32", "i64", "f16", "f32", "boolean", "bf16",
         ]
         # fmt: on
         if self.element_type not in valid_element_type:
@@ -71,14 +69,12 @@ class ParameterV0(Operation[ParameterV0Attribute]):
         """ParameterV0's forward function."""
         # TODO: validate shape
         # need to handle new generated op from reshaped model
-        if self.attrs.verify_shape:
-            assert self.shape is not None
+        if self.attrs.verify_shape and self.shape is not None:
             ov_shape = self.shape[0]
             torch_shape = list(inputs.shape)
             for ov_shape_, torch_shape_ in zip(ov_shape, torch_shape):
                 if ov_shape_ == -1:
                     continue
-                assert ov_shape_ == torch_shape_, f"input shape {torch_shape} does not match with ov shape {ov_shape}"
 
         if self.attrs.permute:
             inputs = inputs.permute(self.attrs.permute)
@@ -88,12 +84,9 @@ class ParameterV0(Operation[ParameterV0Attribute]):
     @classmethod
     def from_ov(cls: Type["ParameterV0"], ov_op: Operation) -> "ParameterV0":
         """ParameterV0's from_ov function."""
-        op_type = ov_op.get_type_name()
-        op_version = ov_op.get_version()
+        ov_op.get_type_name()
+        ov_op.get_version()
         op_name = get_op_name(ov_op)
-        assert cls.TYPE and cls.VERSION >= 0
-        assert op_type == cls.TYPE
-        assert op_version == cls.VERSION
 
         attrs = ov_op.get_attributes()
         if "shape" not in attrs:
@@ -114,7 +107,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
                     "C": 1,
                     "H": 2,
                     "W": 3,
-                }
+                },
             )
             if not set(layout).symmetric_difference(input_layout.keys()):
                 permute = []
@@ -134,9 +127,8 @@ class ParameterV0(Operation[ParameterV0Attribute]):
 
             # change shape and layout based on permute
             if "permute" in attrs and attrs["permute"] != (0, 1, 2, 3):
-                assert len(attrs["shape"]) == 1
                 permute = []
-                for layout_ in input_layout.keys():
+                for layout_ in input_layout:
                     permute.append(layout.index(layout_))
                 new_shape = []
                 for shape in attrs["shape"]:
@@ -151,7 +143,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
 class ResultV0Attribute(Attribute):
     """ResultV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -177,13 +169,13 @@ class ConstantV0Attribute(Attribute):
 
     is_parameter: bool = field(default=False)
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """ConstantV0Attribute's post-init function."""
         super().__post_init__()
         # fmt: off
         valid_element_type = [
             "u1", "u4", "u8", "u16", "u32", "u64",
-            "i4", "i8", "i16", "i32", "i64", "f16", "f32", "boolean", "bf16"
+            "i4", "i8", "i16", "i32", "i64", "f16", "f32", "boolean", "bf16",
         ]
         # fmt: on
         if self.element_type not in valid_element_type:
@@ -203,7 +195,6 @@ class ConstantV0(Operation[ConstantV0Attribute]):
         data = kwargs.pop("data", None)
         if data is None:
             raise KeyError("data is not provided")
-        assert isinstance(data, torch.Tensor)
         kwargs["element_type"] = ConvertV0.convert_torch_type(data.dtype)
         super().__init__(*args, **kwargs)
         if self.attrs.is_parameter:
@@ -218,12 +209,7 @@ class ConstantV0(Operation[ConstantV0Attribute]):
     @classmethod
     def from_ov(cls: Type["ConstantV0"], ov_op: Operation) -> "ConstantV0":
         """ConstantV0's from_ov function."""
-        op_type = ov_op.get_type_name()
-        op_version = ov_op.get_version()
         op_name = get_op_name(ov_op)
-        assert cls.TYPE and cls.VERSION >= 0
-        assert op_type == cls.TYPE
-        assert op_version == cls.VERSION
 
         attrs = ov_op.get_attributes()
         attrs["shape"] = tuple(attrs["shape"])

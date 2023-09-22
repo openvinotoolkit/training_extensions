@@ -31,7 +31,7 @@ class SupConClassifier(ImageClassifier):
         if len(img.shape) == 5:
             img = torch.cat([img[:, d, :, :, :] for d in range(img.shape[1])], dim=0)
         x = self.extract_feat(img)
-        losses = dict()
+        losses = {}
         if self.multilabel or self.hierarchical:
             loss = self.head.forward_train(x, gt_label, **kwargs)
         else:

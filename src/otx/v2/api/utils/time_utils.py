@@ -130,7 +130,7 @@ class TimeEstimator:
             if self.first_update_time is None or self.first_update_progress is None:
                 raise AssertionError(
                     "first_update_time and first_update_progress both can not be None when calling "
-                    "TimeEstimator.update()."
+                    "TimeEstimator.update().",
                 )
 
             self.last_update_progress = progress

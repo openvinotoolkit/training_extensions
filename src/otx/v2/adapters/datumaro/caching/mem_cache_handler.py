@@ -6,7 +6,7 @@
 import ctypes as ct
 import multiprocessing as mp
 from multiprocessing.managers import DictProxy
-from typing import Any, Dict, Optional, Union
+from typing import Dict, Optional, Type, Union
 
 import numpy as np
 from multiprocess.synchronize import Lock
@@ -49,7 +49,7 @@ class MemCacheHandlerBase:
         """Get the reserved memory pool size (bytes)."""
         return len(self._arr)
 
-    def get(self, key: Any) -> Optional[np.ndarray]:  # noqa: ANN401
+    def get(self, key: Union[str, tuple]) -> Optional[np.ndarray]:
         """Try to look up the cached item with the given key.
 
         Args:
@@ -68,7 +68,7 @@ class MemCacheHandlerBase:
         data = np.frombuffer(self._arr, dtype=np.uint8, count=count, offset=offset)
         return np.lib.stride_tricks.as_strided(data, shape, strides)
 
-    def put(self, key: Any, data: np.ndarray) -> Optional[int]:  # noqa: ANN401
+    def put(self, key: Union[str, tuple], data: np.ndarray) -> Optional[int]:
         """Try to store np.ndarray with a key to the reserved memory pool.
 
         Args:
@@ -80,8 +80,6 @@ class MemCacheHandlerBase:
         """
         if self._freeze.value:
             return None
-
-        assert data.dtype == np.uint8
 
         with self._lock:
             new_page = self._cur_page.value + data.size
@@ -156,7 +154,7 @@ class MemCacheHandlerSingleton:
     instance: MemCacheHandlerBase
 
     @classmethod
-    def get(cls) -> MemCacheHandlerBase:  # noqa: ANN102
+    def get(cls: Type["MemCacheHandlerSingleton"]) -> MemCacheHandlerBase:
         """Get the created MemCacheHandlerBase.
 
         If no one is created before, raise RuntimeError.
@@ -168,7 +166,7 @@ class MemCacheHandlerSingleton:
         return cls.instance
 
     @classmethod
-    def create(cls, mode: str, mem_size: int) -> MemCacheHandlerBase:  # noqa: ANN102
+    def create(cls: Type["MemCacheHandlerSingleton"], mode: str, mem_size: int) -> MemCacheHandlerBase:
         """Create a new MemCacheHandlerBase instance.
 
         Args:
@@ -180,10 +178,7 @@ class MemCacheHandlerSingleton:
         # COPY FROM mmcv.runner.get_dist_info
         from torch import distributed
 
-        if distributed.is_available() and distributed.is_initialized():
-            world_size = distributed.get_world_size()
-        else:
-            world_size = 1
+        world_size = distributed.get_world_size() if distributed.is_available() and distributed.is_initialized() else 1
 
         if world_size > 1:
             mem_size = mem_size // world_size
@@ -202,7 +197,7 @@ class MemCacheHandlerSingleton:
         return cls.instance
 
     @classmethod
-    def delete(cls) -> None:  # noqa: ANN102
+    def delete(cls: Type["MemCacheHandlerSingleton"]) -> None:
         """Delete the existing MemCacheHandlerBase instance."""
         if hasattr(cls, "instance"):
             del cls.instance

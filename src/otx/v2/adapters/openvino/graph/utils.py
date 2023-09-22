@@ -7,12 +7,11 @@ from typing import List, Optional
 
 import torch
 
+from otx.v2.adapters.openvino.graph import Graph
+from otx.v2.adapters.openvino.ops.builder import OPS
+from otx.v2.adapters.openvino.ops.infrastructures import ConstantV0
+from otx.v2.adapters.openvino.ops.op import Operation
 from otx.v2.api.utils.logger import get_logger
-
-from ..graph import Graph
-from ..ops.builder import OPS
-from ..ops.infrastructures import ConstantV0
-from ..ops.op import Operation
 
 # pylint: disable=too-many-locals, protected-access, too-many-branches, too-many-statements, too-many-nested-blocks
 logger = get_logger()
@@ -28,12 +27,13 @@ def get_constant_input_nodes(graph: Graph, node: Operation) -> List[Operation]:
 
 
 def handle_merging_into_batchnorm(
-    graph: Graph, type_patterns: Optional[list] = None, type_mappings: Optional[list] = None
-) -> None:  # noqa: C901
+    graph: Graph,
+    type_patterns: Optional[list] = None,
+    type_mappings: Optional[list] = None,
+) -> None:
     """Merge function graph into batchnorm."""
     type_patterns = type_patterns if type_patterns else [["Multiply", "Add"]]
     type_mappings = type_mappings if type_mappings else [{"gamma": 0, "beta": 1}]
-    assert len(type_patterns) == len(type_mappings)
     batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
     constant_cls = OPS.get_by_type_version("Constant", 0)
 
@@ -59,7 +59,7 @@ def handle_merging_into_batchnorm(
         if is_normalize:
             logger.info(
                 f"Skip merging {[i.name for i in nodes]} "
-                f"becuase they are part of normalization (preprocessing of IR)"
+                f"becuase they are part of normalization (preprocessing of IR)",
             )
             continue
 
@@ -77,13 +77,13 @@ def handle_merging_into_batchnorm(
         if not is_valid:
             logger.info(
                 f"Skip merging {[i.name for i in nodes]} "
-                f"becuase it has more than one weights for node {_node.name}."
+                f"becuase it has more than one weights for node {_node.name}.",
             )
             continue
 
         if len(set(shapes)) != 1:
             logger.info(
-                f"Skip merging {[i.name for i in nodes]} " f"becuase shape of weights are not the same. ({shapes})"
+                f"Skip merging {[i.name for i in nodes]} " f"becuase shape of weights are not the same. ({shapes})",
             )
             continue
 
@@ -145,12 +145,10 @@ def handle_merging_into_batchnorm(
         for predecessor in graph.predecessors(nodes[0]):
             if predecessor.type != "Constant":
                 edges_attrs = graph.get_edge_data(predecessor, nodes[0])
-                assert len(edges_attrs) == 1
                 for edge_attrs in edges_attrs:
                     edges.append({"node_from": predecessor, "node_to": batchnorm, **edge_attrs})
         for successor in graph.successors(nodes[-1]):
             edges_attrs = graph.get_edge_data(nodes[-1], successor)
-            assert len(edges_attrs) == 1
             for edge_attrs in edges_attrs:
                 edges.append({"node_from": batchnorm, "node_to": successor, **edge_attrs})
         for _node in nodes:
@@ -164,7 +162,9 @@ def handle_merging_into_batchnorm(
 
 
 def handle_paired_batchnorm(
-    graph: Graph, replace: bool = False, types: List[str] = ["Convolution", "GroupConvolution"]
+    graph: Graph,
+    replace: bool = False,
+    types: List[str] = ["Convolution", "GroupConvolution"],
 ) -> None:
     """Handle function paired batchnorm."""
     batchnorm_cls = OPS.get_by_type_version("BatchNormInference", 0)
@@ -176,20 +176,16 @@ def handle_paired_batchnorm(
 
         # if input is 1x1x... this node is probably in Squeeze-and-exitation network
         input_node, edge = list(graph.predecessors(node, True))[0]
-        assert len(edge) == 1
         edge = edge[0]
         input_shape = input_node.shape[edge["out_port"]][2:]
         if len(set(input_shape)) == 1 and input_shape[0] == 1:
             logger.info(
-                f"Skip a paired batch normalization for {node.name} " f"becuase input shape to it is {input_shape}."
+                f"Skip a paired batch normalization for {node.name} " f"becuase input shape to it is {input_shape}.",
             )
             continue
 
         bias_node_list: list = [n for n in graph.successors(node) if n.type == "Add"]
-        if len(bias_node_list) == 1:
-            bias_node = bias_node_list[0]
-        else:
-            bias_node = None
+        bias_node = bias_node_list[0] if len(bias_node_list) == 1 else None
 
         # if bias node is not found we do not need to add batchnorm
         if bias_node is None:
@@ -198,7 +194,8 @@ def handle_paired_batchnorm(
         # if add node is not bias add node
         if not isinstance(list(graph.predecessors(bias_node))[1], ConstantV0):
             logger.info(
-                f"Skip a pared batch normalization for {node.name} " f"because {bias_node.name} is not a bias add node."
+                f"Skip a pared batch normalization for {node.name} "
+                f"because {bias_node.name} is not a bias add node.",
             )
             continue
 
@@ -244,20 +241,18 @@ def handle_paired_batchnorm(
             edges = []
             for successor in graph.successors(bias_node):
                 edges_attrs = graph.get_edge_data(bias_node, successor)
-                assert len(edges_attrs) == 1
                 for edge_attrs in edges_attrs:
                     edges.append({"node_from": batchnorm, "node_to": successor, **edge_attrs})
             for predecessor in graph.predecessors(bias_node):
                 if predecessor.type != "Constant":
                     edges_attrs = graph.get_edge_data(predecessor, bias_node)
-                    assert len(edges_attrs) == 1
                     for edge_attrs in edges_attrs:
                         edges.append(
                             {
                                 "node_from": predecessor,
                                 "node_to": batchnorm,
                                 **edge_attrs,
-                            }
+                            },
                         )
             graph.remove_node(bias_node)
             for edge in edges:
@@ -267,7 +262,6 @@ def handle_paired_batchnorm(
             edges = []
             for successor in graph.successors(node):
                 edges_attrs = graph.get_edge_data(node, successor)
-                assert len(edges_attrs) == 1
                 for edge_attrs in edges_attrs:
                     edges.append({"node_from": batchnorm, "node_to": successor, **edge_attrs})
                 graph.remove_edge(node, successor)

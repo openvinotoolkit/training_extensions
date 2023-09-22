@@ -33,7 +33,7 @@ class ProposalV4Attribute(Attribute):
     box_coordinate_scale: float = field(default=1.0)
     framework: str = field(default="")
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """ProposalV4Attribute's post-init function."""
         super().__post_init__()
         valid_framework = ["", "tensorflow"]
@@ -63,9 +63,9 @@ class ROIPoolingV0Attribute(Attribute):
     pooled_w: int
     spatial_scale: float
     method: str = field(default="max")
-    output_size: List[int] = field(default_factory=lambda: [])
+    output_size: List[int] = field(default_factory=list)
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """ROIPoolingV0Attribute's post-init function."""
         super().__post_init__()
         valid_method = ["max", "bilinear"]
@@ -106,7 +106,7 @@ class DetectionOutputV0Attribute(Attribute):
     input_width: int = field(default=1)
     objectness_score: float = field(default=0)
 
-    def __post_init__(self):  # noqa: ANN204
+    def __post_init__(self) -> None:
         """DetectionOutputV0Attribute's post-init function."""
         super().__post_init__()
         valid_code_type = [
@@ -149,7 +149,7 @@ class RegionYoloV0Attribute(Attribute):
     num: int
     anchors: Optional[List[float]] = field(default=None)
     do_softmax: bool = field(default=True)
-    mask: List[int] = field(default_factory=lambda: [])
+    mask: List[int] = field(default_factory=list)
 
 
 @OPS.register()
@@ -170,17 +170,17 @@ class PriorBoxV0Attribute(Attribute):
     """PriorBoxV0Attribute class."""
 
     offset: float
-    min_size: List[float] = field(default_factory=lambda: [])
-    max_size: List[float] = field(default_factory=lambda: [])
-    aspect_ratio: List[float] = field(default_factory=lambda: [])
+    min_size: List[float] = field(default_factory=list)
+    max_size: List[float] = field(default_factory=list)
+    aspect_ratio: List[float] = field(default_factory=list)
     flip: bool = field(default=False)
     clip: bool = field(default=False)
     step: float = field(default=0)
-    variance: List[float] = field(default_factory=lambda: [])
+    variance: List[float] = field(default_factory=list)
     scale_all_sizes: bool = field(default=True)
-    fixed_ratio: List[float] = field(default_factory=lambda: [])
-    fixed_size: List[float] = field(default_factory=lambda: [])
-    density: List[float] = field(default_factory=lambda: [])
+    fixed_ratio: List[float] = field(default_factory=list)
+    fixed_size: List[float] = field(default_factory=list)
+    density: List[float] = field(default_factory=list)
 
 
 @OPS.register()
@@ -207,7 +207,7 @@ class PriorBoxClusteredV0Attribute(Attribute):
     step: float = field(default=0.0)
     step_w: float = field(default=0.0)
     step_h: float = field(default=0.0)
-    variance: List[float] = field(default_factory=lambda: [])
+    variance: List[float] = field(default_factory=list)
 
 
 @OPS.register()

@@ -62,10 +62,7 @@ class EMAMomentumUpdateHook(Hook):
         if not self.by_epoch:
             return
 
-        if is_model_wrapper(runner.model):
-            model = runner.model.module
-        else:
-            model = runner.model
+        model = runner.model.module if is_model_wrapper(runner.model) else runner.model
 
         if not hasattr(model, "momentum"):
             raise AttributeError('The model must have attribute "momentum".')
@@ -86,10 +83,7 @@ class EMAMomentumUpdateHook(Hook):
         if self.by_epoch:
             return
 
-        if is_model_wrapper(runner.model):
-            model = runner.model.module
-        else:
-            model = runner.model
+        model = runner.model.module if is_model_wrapper(runner.model) else runner.model
 
         if not hasattr(model, "momentum"):
             raise AttributeError('The model must have attribute "momentum".')

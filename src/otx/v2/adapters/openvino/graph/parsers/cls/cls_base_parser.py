@@ -7,10 +7,9 @@ from typing import Dict, List, Optional
 
 import networkx as nx
 
+from otx.v2.adapters.openvino.graph.parsers.builder import PARSERS
+from otx.v2.adapters.openvino.graph.parsers.parser import parameter_parser
 from otx.v2.api.utils.logger import get_logger
-
-from ..builder import PARSERS
-from ..parser import parameter_parser
 
 # pylint: disable=too-many-return-statements, too-many-branches
 
@@ -32,7 +31,6 @@ NECK_TYPES = [
 @PARSERS.register()
 def cls_base_parser(graph: nx.MultiDiGraph, component: str = "backbone") -> Optional[Dict[str, List[str]]]:
     """Class base parser for OMZ models."""
-    assert component in ["backbone", "neck", "head"]
 
     result_nodes = graph.get_nodes_by_types(["Result"])
     if len(result_nodes) != 1:
@@ -48,7 +46,6 @@ def cls_base_parser(graph: nx.MultiDiGraph, component: str = "backbone") -> Opti
             break
 
     if neck_input is None:
-        # logger.debug("Can not determine the output of backbone.")
         return None
 
     neck_output = neck_input
@@ -73,16 +70,16 @@ def cls_base_parser(graph: nx.MultiDiGraph, component: str = "backbone") -> Opti
             logger.debug("More than on parameter nodes are found.")
             return None
 
-        return dict(
-            inputs=inputs,
-            outputs=outputs,
-        )
+        return {
+            "inputs": inputs,
+            "outputs": outputs,
+        }
 
     if component == "neck":
-        return dict(
-            inputs=[neck_input.name],
-            outputs=[neck_output.name],
-        )
+        return {
+            "inputs": [neck_input.name],
+            "outputs": [neck_output.name],
+        }
 
     if component == "head":
         head_inputs = list(graph.successors(neck_output))
@@ -100,8 +97,8 @@ def cls_base_parser(graph: nx.MultiDiGraph, component: str = "backbone") -> Opti
             logger.debug(f"input({head_inputs[0].name}) and output({outputs[0].name}) are reversed")
             return None
 
-        return dict(
-            inputs=[input_.name for input_ in head_inputs],
-            outputs=[output.name for output in outputs],
-        )
+        return {
+            "inputs": [input_.name for input_ in head_inputs],
+            "outputs": [output.name for output in outputs],
+        }
     return None

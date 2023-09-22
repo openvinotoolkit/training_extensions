@@ -58,7 +58,7 @@ class BsSearchAlgo:
 
         logger.debug(
             f"Adapting Batch size => bs : {bs}, CUDA_OOM : {cuda_oom}, "
-            f"GPU memory usage : {max_memory_allocated / self._total_mem}%"
+            f"GPU memory usage : {max_memory_allocated / self._total_mem}%",
         )
         torch.cuda.empty_cache()
 

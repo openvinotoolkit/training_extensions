@@ -19,7 +19,7 @@ def sync_batchnorm_2_batchnorm(module: torch.nn.Module, dim: int = 2) -> torch.n
     elif dim == 3:
         bn = torch.nn.BatchNorm3d
     else:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     module_output = module
     if isinstance(module, torch.nn.SyncBatchNorm):
@@ -63,8 +63,5 @@ def numpy_2_list(data: Union[np.ndarray, MutableMapping, list, tuple]) -> Union[
         data_ = []
         for value in data:
             data_.append(numpy_2_list(value))
-        if isinstance(data, tuple):
-            data = tuple(data_)
-        else:
-            data = data_
+        data = tuple(data_) if isinstance(data, tuple) else data_
     return data

@@ -210,7 +210,6 @@ class CythonAugments(Augments):
     @staticmethod
     def blend(src: ImgTypes, dst: ndarray, weight: float = 0.0) -> ImgTypes:
         """Apply blend for an given image."""
-        assert isinstance(dst, ndarray), f"Type of dst should be numpy array, but type(dst)={type(dst)}."
         if Image.isImageType(src):
             return pil_aug.blend(src, dst, weight)
         raise NotImplementedError(f"Unknown type: {type(src)}")

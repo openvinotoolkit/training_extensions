@@ -64,7 +64,7 @@ class MMOVClsHead(ClsHead):
             init_weight=init_weight,
             verify_shape=verify_shape,
             parser=cls_base_parser,
-            parser_kwargs=dict(component="head"),
+            parser_kwargs={"component": "head"},
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

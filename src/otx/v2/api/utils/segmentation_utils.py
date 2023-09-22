@@ -22,7 +22,9 @@ from otx.v2.api.utils.shape_factory import ShapeFactory
 
 
 def mask_from_dataset_item(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity], use_otx_adapter: bool = True
+    dataset_item: DatasetItemEntity,
+    labels: List[LabelEntity],
+    use_otx_adapter: bool = True,
 ) -> np.ndarray:
     """Creates a mask from dataset item.
 
@@ -62,7 +64,10 @@ def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
 
 
 def mask_from_annotation(
-    annotations: List[Annotation], labels: List[LabelEntity], width: int, height: int
+    annotations: List[Annotation],
+    labels: List[LabelEntity],
+    width: int,
+    height: int,
 ) -> np.ndarray:
     """Generate a segmentation mask of a numpy image, and a list of shapes.
 
@@ -108,7 +113,9 @@ def mask_from_annotation(
 
 
 def create_hard_prediction_from_soft_prediction(
-    soft_prediction: np.ndarray, soft_threshold: float, blur_strength: int = 5
+    soft_prediction: np.ndarray,
+    soft_threshold: float,
+    blur_strength: int = 5,
 ) -> np.ndarray:
     """Creates a hard prediction containing the final label index per pixel.
 
@@ -137,7 +144,7 @@ def create_hard_prediction_from_soft_prediction(
         hard_prediction = soft_prediction_blurred > soft_threshold
     else:
         raise ValueError(
-            f"Invalid prediction input of shape {soft_prediction.shape}. " f"Expected either a 2D or 3D array."
+            f"Invalid prediction input of shape {soft_prediction.shape}. " f"Expected either a 2D or 3D array.",
         )
     return hard_prediction
 
@@ -172,7 +179,7 @@ def get_subcontours(contour: Contour) -> List[Contour]:
     for loop in loops:
         i, j = loop
         subcontour = base_contour[i:j]
-        subcontour = list(x for x in subcontour if x is not None)
+        subcontour = [x for x in subcontour if x is not None]
         subcontours.append(cast(Contour, subcontour))
         base_contour[i:j] = [None] * (j - i)
 
@@ -181,7 +188,9 @@ def get_subcontours(contour: Contour) -> List[Contour]:
 
 
 def create_annotation_from_segmentation_map(
-    hard_prediction: np.ndarray, soft_prediction: np.ndarray, label_map: dict
+    hard_prediction: np.ndarray,
+    soft_prediction: np.ndarray,
+    label_map: dict,
 ) -> List[Annotation]:
     """Creates polygons from the soft predictions.
 
@@ -234,7 +243,7 @@ def create_annotation_from_segmentation_map(
 
                 if hierarchy[3] == -1:
                     # In this case a contour does not represent a hole
-                    _contour = list((point[0][0], point[0][1]) for point in contour)
+                    _contour = [(point[0][0], point[0][1]) for point in contour]
 
                     # Split contour into subcontours that do not have self intersections.
                     subcontours = get_subcontours(_contour)
@@ -261,7 +270,7 @@ def create_annotation_from_segmentation_map(
                                     shape=polygon,
                                     labels=[ScoredLabel(label, probability)],
                                     id=ID(ObjectId()),
-                                )
+                                ),
                             )
                         else:
                             # Contour is a closed polygon with area == 0

@@ -32,7 +32,6 @@ class MultiplyV1(Operation[MultiplyV1Attribute]):
         broadcast = self.attrs.auto_broadcast
 
         if broadcast == "none":
-            assert input_0.shape == input_1.shape
             return input_0 * input_1
         if broadcast == "numpy":
             return input_0 * input_1
@@ -61,7 +60,6 @@ class DivideV1(Operation[DivideV1Attribute]):
         broadcast = self.attrs.auto_broadcast
 
         if broadcast == "none":
-            assert input_0.shape == input_1.shape
             output = input_0 / input_1
         elif broadcast == "numpy":
             output = input_0 / input_1
@@ -96,7 +94,6 @@ class AddV1(Operation[AddV1Attribute]):
         broadcast = self.attrs.auto_broadcast
 
         if broadcast == "none":
-            assert input_0.shape == input_1.shape
             return input_0 + input_1
         if broadcast == "numpy":
             return input_0 + input_1
@@ -124,7 +121,6 @@ class SubtractV1(Operation[SubtractV1Attribute]):
         broadcast = self.attrs.auto_broadcast
 
         if broadcast == "none":
-            assert input_0.shape == input_1.shape
             return input_0 - input_1
         if broadcast == "numpy":
             return input_0 - input_1
@@ -135,7 +131,7 @@ class SubtractV1(Operation[SubtractV1Attribute]):
 class TanV0Attribute(Attribute):
     """TanV0Attribute class."""
 
-    pass  # pylint: disable=unnecessary-pass
+    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()

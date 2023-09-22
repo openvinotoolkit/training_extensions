@@ -93,7 +93,11 @@ class OTXCLIv2:
         """Method that instantiates the argument parser."""
         parser = OTXArgumentParser(default_config_files=default_config_files, **kwargs)
         parser.add_argument(
-            "-V", "--version", action="version", version=f"%(prog)s {__version__}", help="Display OTX version number."
+            "-V",
+            "--version",
+            action="version",
+            version=f"%(prog)s {__version__}",
+            help="Display OTX version number.",
         )
         parser.add_argument(
             "-v",
@@ -102,7 +106,10 @@ class OTXCLIv2:
             help="Verbose mode. This shows a configuration argument that allows for more specific overrides. Multiple -v options increase the verbosity. The maximum is 2.",
         )
         parser.add_argument(
-            "-c", "--config", action=ActionConfigFile, help="Path to a configuration file in yaml format."
+            "-c",
+            "--config",
+            action=ActionConfigFile,
+            help="Path to a configuration file in yaml format.",
         )
         parser.add_argument(
             "-o",
@@ -152,7 +159,7 @@ class OTXCLIv2:
         )
 
         # register all subcommands in separate subcommand parsers under the main parser
-        for subcommand in self.engine_subcommands().keys():
+        for subcommand in self.engine_subcommands():
             fn = getattr(self._engine_class, subcommand)
             # extract the first line description in the docstring for the subcommand help message
             description = get_short_docstring(fn)
@@ -250,7 +257,7 @@ class OTXCLIv2:
                 raise ValueError("The appropriate model was not found in config..")
             model = self.auto_runner.get_model(model=model_name)
             if model is None:
-                raise ValueError()
+                raise ValueError
             if model_name in self.auto_runner.config_list:
                 default_configs.append(self.auto_runner.config_list[model_name])
             self.model_name = model_name
@@ -272,7 +279,7 @@ class OTXCLIv2:
                 # Raise an existing raised exception only when the actual command is executed.
                 raise self.error
             raise ValueError(
-                "Couldn't run because it couldn't find a suitable task. Make sure you have enough commands entered."
+                "Couldn't run because it couldn't find a suitable task. Make sure you have enough commands entered.",
             )
         self.config_init = self.parser.instantiate_classes(self.config)
         data_cfg = self._pop(self.config_init, "data")
@@ -339,7 +346,7 @@ class OTXCLIv2:
                     "val_dataloader": {**val_dl_kwargs},
                     **subcommand_kwargs,
                     **left_kwargs,
-                }
+                },
             )
             # TODO: Cleanup for output
             # The configuration dump is saved next to the checkpoint file.
@@ -356,7 +363,9 @@ class OTXCLIv2:
             test_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "test")
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.test(
-                self.model, test_dataloader=self.data.test_dataloader(**test_dl_kwargs), **subcommand_kwargs
+                self.model,
+                test_dataloader=self.data.test_dataloader(**test_dl_kwargs),
+                **subcommand_kwargs,
             )
             # TODO: Cleanup for output
             self.console.print(results)

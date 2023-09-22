@@ -25,7 +25,7 @@ class ConvClsHead(ClsHead):
     """
 
     def __init__(self, num_classes: int, in_channels: int, init_cfg: Optional[dict] = None, **kwargs) -> None:
-        init_cfg = init_cfg if init_cfg else dict(type="Kaiming", layer=["Conv2d"])
+        init_cfg = init_cfg if init_cfg else {"type": "Kaiming", "layer": ["Conv2d"]}
         super().__init__(init_cfg=init_cfg, **kwargs)
 
         self.in_channels = in_channels
@@ -43,7 +43,10 @@ class ConvClsHead(ClsHead):
         return x
 
     def simple_test(
-        self, x: Union[tuple, torch.Tensor], softmax: bool = True, post_process: bool = True
+        self,
+        x: Union[tuple, torch.Tensor],
+        softmax: bool = True,
+        post_process: bool = True,
     ) -> torch.Tensor:
         """Inference without augmentation.
 
@@ -67,10 +70,7 @@ class ConvClsHead(ClsHead):
         x = self.pre_logits(x)
         cls_score = self.conv(x).squeeze()
 
-        if softmax:
-            pred = functional.softmax(cls_score, dim=1) if cls_score is not None else None
-        else:
-            pred = cls_score
+        pred = (functional.softmax(cls_score, dim=1) if cls_score is not None else None) if softmax else cls_score
 
         if post_process:
             return self.post_process(pred)

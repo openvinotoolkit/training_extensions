@@ -66,9 +66,9 @@ class Exporter:
         model = self.task_processor.build_pytorch_model(None)
         if self.checkpoint is not None:
             state_dict = torch.load(self.checkpoint)
-            if "model" in state_dict.keys():
+            if "model" in state_dict:
                 state_dict = state_dict["model"]
-            if "state_dict" in state_dict.keys():
+            if "state_dict" in state_dict:
                 state_dict = state_dict["state_dict"]
             model.load_state_dict(state_dict)
         model = sync_batchnorm_2_batchnorm(model)

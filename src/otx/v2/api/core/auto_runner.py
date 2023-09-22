@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, TypeVar, Union
 
 import yaml
 
@@ -196,7 +196,7 @@ class AutoRunner:
             config["model"] = {}
         return config
 
-    def _configure_model(self, model: Optional[Union[str, dict, list, object]]):  # noqa: ANN202
+    def _configure_model(self, model: Optional[Union[str, dict, list, object]]) -> object:
         # Configure Model if model is None
         if model is None:
             if self.cache.get("model") is not None:
@@ -265,9 +265,9 @@ class AutoRunner:
     def train(
         self,
         model: Optional[Union[str, dict, list, object]] = None,
-        train_dataloader: object = None,
-        val_dataloader: object = None,
-        optimizer: Optional[Union[dict, object]] = None,
+        train_dataloader: Optional[TypeVar] = None,
+        val_dataloader: Optional[TypeVar] = None,
+        optimizer: Optional[Union[dict, TypeVar]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         max_iters: Optional[int] = None,
         max_epochs: Optional[int] = None,

@@ -41,11 +41,11 @@ def configure_in_channels(config: Config, input_shape: List[int] = [3, 224, 224]
     layer = build_backbone(model_config["backbone"])
     layer.eval()
     if hasattr(layer, "input_shapes"):
-        input_shape = next(iter(getattr(layer, "input_shapes").values()))
+        input_shape = next(iter(layer.input_shapes.values()))
         input_shape = input_shape[1:]
         if any(i < 0 for i in input_shape):
             input_shape = [3, 244, 244]
-    output = layer(torch.rand([1] + list(input_shape)))
+    output = layer(torch.rand([1, *list(input_shape)]))
     if isinstance(output, (tuple, list)):
         output = output[-1]
 
@@ -54,28 +54,26 @@ def configure_in_channels(config: Config, input_shape: List[int] = [3, 224, 224]
         _, output = output
 
     in_channels = output.shape[1]
-    if model_config.get("neck") is not None:
-        if model_config["neck"].get("in_channels") is not None:
-            logger.info(
-                f"'in_channels' config in model.neck is updated from "
-                f"{model_config['neck']['in_channels']} to {in_channels}"
-            )
-            model_config["neck"].in_channels = in_channels
-            logger.debug(f"input shape for neck {input_shape}")
+    if model_config.get("neck") is not None and model_config["neck"].get("in_channels") is not None:
+        logger.info(
+            f"'in_channels' config in model.neck is updated from "
+            f"{model_config['neck']['in_channels']} to {in_channels}",
+        )
+        model_config["neck"].in_channels = in_channels
+        logger.debug(f"input shape for neck {input_shape}")
 
-            layer = build_neck(model_config["neck"])
-            layer.eval()
-            output = layer(torch.rand(output.shape))
-            if isinstance(output, (tuple, list)):
-                output = output[-1]
-            in_channels = output.shape[1]
-    if model_config.get("head") is not None:
-        if model_config["head"].get("in_channels") is not None:
-            logger.info(
-                f"'in_channels' config in model.head is updated from "
-                f"{model_config['head']['in_channels']} to {in_channels}"
-            )
-            model_config["head"]["in_channels"] = in_channels
+        layer = build_neck(model_config["neck"])
+        layer.eval()
+        output = layer(torch.rand(output.shape))
+        if isinstance(output, (tuple, list)):
+            output = output[-1]
+        in_channels = output.shape[1]
+    if model_config.get("head") is not None and model_config["head"].get("in_channels") is not None:
+        logger.info(
+            f"'in_channels' config in model.head is updated from "
+            f"{model_config['head']['in_channels']} to {in_channels}",
+        )
+        model_config["head"]["in_channels"] = in_channels
     if wrap_model:
         config["model"] = model_config
     return config
@@ -140,7 +138,7 @@ def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
         # Always match keys with any postfix.
         model_list = set(fnmatch.filter(model_list, pattern + "*"))
 
-    return sorted(list(model_list))
+    return sorted(model_list)
 
 
 if __name__ == "__main__":

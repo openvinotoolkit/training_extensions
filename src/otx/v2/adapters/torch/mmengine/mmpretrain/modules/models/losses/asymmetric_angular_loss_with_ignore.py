@@ -47,7 +47,6 @@ def asymmetric_angular_loss_with_ignore(
     Returns:
         torch.Tensor: Loss.
     """
-    assert pred.shape == target.shape, "pred and target should be in the same shape."
 
     eps = 1e-8
     target = target.type_as(pred)
@@ -76,7 +75,6 @@ def asymmetric_angular_loss_with_ignore(
         loss = loss * valid_label_mask
 
     if weight is not None:
-        assert weight.dim() == 1
         weight = weight.float()
         if pred.dim() > 1:
             weight = weight.reshape(-1, 1)
@@ -130,7 +128,6 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         reduction_override: Optional[str] = None,
     ) -> torch.Tensor:
         """Asymmetric angular loss."""
-        assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * asymmetric_angular_loss_with_ignore(
             pred,

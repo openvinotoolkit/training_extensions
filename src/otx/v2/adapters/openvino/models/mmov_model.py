@@ -52,13 +52,11 @@ class MMOVModel(OVModel, ParserMixin):
         """Function forward."""
         if isinstance(inputs, torch.Tensor):
             inputs = (inputs,)
-        assert len(inputs) == len(self.inputs)
-        feed_dict = dict()
+        feed_dict = {}
         for key, input_ in zip(self.inputs, inputs):
             feed_dict[key] = input_
 
         if gt_label is not None:
-            assert "gt_label" not in self.features
             self.features["gt_label"] = gt_label
 
         outputs = super().forward(**feed_dict)

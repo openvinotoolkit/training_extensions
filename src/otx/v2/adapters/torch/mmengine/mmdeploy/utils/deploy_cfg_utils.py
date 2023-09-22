@@ -3,7 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from mmengine.config import ConfigDict
 
@@ -51,9 +51,8 @@ def patch_input_preprocessing(
     deploy_cfg.backend_config.mo_options = mo_options
 
 
-def patch_input_shape(deploy_cfg: Config, input_shape: Optional[Tuple[int, int]]) -> None:
-    assert input_shape is not None
-    assert all(isinstance(i, int) and i > 0 for i in input_shape)
+def patch_input_shape(deploy_cfg: Config, input_shape: Optional[tuple]) -> None:
     # default is static shape to prevent an unexpected error
     # when converting to OpenVINO IR
-    deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *input_shape]))]
+    _input_shape = [1, 3, *input_shape] if input_shape is not None else [1, 3, 256, 256]
+    deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=_input_shape))]
