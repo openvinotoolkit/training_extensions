@@ -39,8 +39,6 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "2",
-        "--learning_parameters.input_size",
-        "Auto",
     ],
 }
 
@@ -56,8 +54,6 @@ args_semisl = {
         "1",
         "--learning_parameters.batch_size",
         "2",
-        "--learning_parameters.input_size",
-        "Auto",
     ],
 }
 

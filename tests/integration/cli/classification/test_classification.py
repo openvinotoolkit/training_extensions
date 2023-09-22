@@ -45,8 +45,6 @@ args = {
         "1",
         "--learning_parameters.batch_size",
         "4",
-        "--learning_parameters.input_size",
-        "Auto",
     ],
 }
 
@@ -60,8 +58,6 @@ args_selfsl = {
         "1",
         "--learning_parameters.batch_size",
         "4",
-        "--learning_parameters.input_size",
-        "Auto",
     ],
 }
 
