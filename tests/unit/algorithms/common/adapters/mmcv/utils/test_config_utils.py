@@ -7,6 +7,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     patch_persistent_workers,
     get_adaptive_num_workers,
     InputSizeManager,
+    get_proper_repeat_times,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
@@ -491,3 +492,18 @@ class TestInputSizeManager:
             downscale_only=False,
         )  # 1024 -> 2048 -> 1024
         assert input_size == (1024, 1024)
+
+
+@e2e_pytest_unit
+def test_get_proper_repeat_times():
+    batch_size = 2
+    coef = 1.0
+    min_repeat = 1.0
+
+    data_size = 0
+    repeats = get_proper_repeat_times(data_size=data_size, batch_size=batch_size, coef=coef, min_repeat=min_repeat)
+    assert repeats == 1
+
+    batch_size = 0
+    repeats = get_proper_repeat_times(data_size=data_size, batch_size=batch_size, coef=coef, min_repeat=min_repeat)
+    assert repeats == 1

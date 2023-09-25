@@ -983,7 +983,7 @@ class InputSizeManager:
 
 
 def get_proper_repeat_times(
-    n_data: int,
+    data_size: int,
     batch_size: int,
     coef: float,
     min_repeat: float,
@@ -991,14 +991,14 @@ def get_proper_repeat_times(
     """Get proper repeat times for adaptive training.
 
     Args:
-        n_data (int): The total number of the training dataset
+        data_size (int): The total number of the training dataset
         batch_size (int): The batch size for the training data loader
         coef (float) : coefficient that effects to number of repeats
                        (coef * math.sqrt(num_iters-1)) +5
         min_repeat (float) : minimum repeats
     """
-    if n_data == 0 or batch_size == 0:
+    if data_size == 0 or batch_size == 0:
         logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
         return 1
-    n_iters_per_epoch = math.ceil(n_data / batch_size)
+    n_iters_per_epoch = math.ceil(data_size / batch_size)
     return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))

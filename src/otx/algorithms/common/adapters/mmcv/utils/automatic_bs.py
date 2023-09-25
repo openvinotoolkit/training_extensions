@@ -10,8 +10,8 @@ from typing import Callable, Dict, List
 import numpy as np
 from torch.cuda import is_available as cuda_available
 
-from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import update_or_add_custom_hook
+from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
@@ -127,10 +127,7 @@ def _set_batch_size(cfg, batch_size: int):
         cfg.data.videos_per_gpu = batch_size
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
-        update_or_add_custom_hook(cfg, {
-            "type": "AdaptiveRepeatDataHook",
-            "train_batch_size": batch_size
-        })
+        update_or_add_custom_hook(cfg, {"type": "AdaptiveRepeatDataHook", "train_batch_size": batch_size})
         for custom_hook in cfg.custom_hooks:
             if custom_hook["type"] == "AdaptiveRepeatDataHook":
                 custom_hook["train_batch_size"] = batch_size

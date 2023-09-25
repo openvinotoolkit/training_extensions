@@ -112,8 +112,8 @@ class BaseConfigurer:
         if data_cfg:
             for subset in data_cfg.data:
                 if subset in cfg.data:
-                    src_data_cfg = self.get_data_cfg(cfg, subset)
-                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
+                    src_data_cfg = self.get_subset_data_cfg(cfg, subset)
+                    new_data_cfg = self.get_subset_data_cfg(data_cfg, subset)
                     for key in new_data_cfg:
                         src_data_cfg[key] = new_data_cfg[key]
                 else:
@@ -204,7 +204,7 @@ class BaseConfigurer:
                 dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
                 samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
 
-                data_cfg = self.get_data_cfg(cfg, subset)
+                data_cfg = self.get_subset_data_cfg(cfg, subset)
                 if data_cfg.get("otx_dataset") is not None:
                     dataset_len = len(data_cfg.otx_dataset)
 
@@ -269,7 +269,7 @@ class BaseConfigurer:
         self.model_classes = model_classes
         self.data_classes = data_classes
         if data_classes is not None:
-            train_data_cfg = self.get_data_cfg(cfg, "train")
+            train_data_cfg = self.get_subset_data_cfg(cfg, "train")
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
@@ -417,14 +417,15 @@ class BaseConfigurer:
         if not self.training:
             remove_from_configs_by_type(cfg.custom_hooks, "AdaptiveRepeatDataHook")
             return
-        for custom_hook in cfg.custom_hooks:
-            if custom_hook["type"] == "AdaptiveRepeatDataHook":
-                data_cfg = cfg.get("data", {})
-                bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
-                bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
-                custom_hook["train_batch_size"] = bs
-                custom_hook["train_data_size"] = len(self.get_data_cfg(cfg, "train"))
-                break
+
+        data_cfg = cfg.get("data", {})
+        bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
+        bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
+        train_data_size = len(self.get_subset_data_cfg(cfg, "train").get("otx_dataset", []))
+
+        update_or_add_custom_hook(
+            cfg, {"type": "AdaptiveRepeatDataHook", "train_batch_size": bs, "train_data_size": train_data_size}
+        )
 
     @staticmethod
     def _update_caching_modules(cfg: Config) -> None:
@@ -491,7 +492,7 @@ class BaseConfigurer:
     def get_data_classes(self, cfg):
         """Get data classes from train cfg."""
         data_classes = []
-        train_cfg = self.get_data_cfg(cfg, "train")
+        train_cfg = self.get_subset_data_cfg(cfg, "train")
         if "data_classes" in train_cfg:
             data_classes = list(train_cfg.pop("data_classes", []))
         elif "classes" in train_cfg:
@@ -499,7 +500,7 @@ class BaseConfigurer:
         return data_classes
 
     @staticmethod
-    def get_data_cfg(cfg, subset):
+    def get_subset_data_cfg(cfg, subset):
         """Get subset's data cfg."""
         assert subset in ["train", "val", "test", "unlabeled"], f"Unknown subset:{subset}"
         if "dataset" in cfg.data[subset]:  # Concat|RepeatDataset
@@ -525,7 +526,7 @@ class BaseConfigurer:
             Tuple[int, int]: (width, height) or None
         """
 
-        data_cfg = BaseConfigurer.get_data_cfg(cfg, "train")
+        data_cfg = BaseConfigurer.get_subset_data_cfg(cfg, "train")
         dataset = data_cfg.get("otx_dataset", None)
         if dataset is None:
             return None

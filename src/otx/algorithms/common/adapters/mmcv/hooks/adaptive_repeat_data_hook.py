@@ -30,11 +30,13 @@ class AdaptiveRepeatDataHook(Hook):
         self.min_repeat = min_repeat
 
         self.train_batch_size = train_batch_size
-        self.train_data_size =train_data_size 
+        self.train_data_size = train_data_size
 
-        self.n_repeats = get_proper_repeat_times(self.train_data_size, self.train_batch_size, self.coef, self.min_repeat)
+        self.n_repeats = get_proper_repeat_times(
+            self.train_data_size, self.train_batch_size, self.coef, self.min_repeat
+        )
         self.rank, self.world_size = get_dist_info()
-        
+
         self.is_sampler_changed = False
 
     def before_run(self, runner):
@@ -52,7 +54,7 @@ class AdaptiveRepeatDataHook(Hook):
 
     def before_epoch(self, runner):
         """Convert to OTX Sampler."""
-        if self.is_sampler_changed == False:
+        if self.is_sampler_changed is False:
             dataset = runner.data_loader.dataset
             num_workers = runner.data_loader.num_workers
             collate_fn = runner.data_loader.collate_fn
