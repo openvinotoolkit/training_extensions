@@ -37,8 +37,6 @@ class AdaptiveRepeatDataHook(Hook):
         )
         self.rank, self.world_size = get_dist_info()
 
-        self.is_sampler_changed = False
-
     def before_run(self, runner):
         """Change the runner's max_iter."""
         if self.n_repeats > 1:
@@ -54,30 +52,28 @@ class AdaptiveRepeatDataHook(Hook):
 
     def before_epoch(self, runner):
         """Convert to OTX Sampler."""
-        if self.is_sampler_changed is False:
-            dataset = runner.data_loader.dataset
-            num_workers = runner.data_loader.num_workers
-            collate_fn = runner.data_loader.collate_fn
-            worker_init_fn = runner.data_loader.worker_init_fn
+        dataset = runner.data_loader.dataset
+        num_workers = runner.data_loader.num_workers
+        collate_fn = runner.data_loader.collate_fn
+        worker_init_fn = runner.data_loader.worker_init_fn
 
-            sampler = OTXSampler(
-                dataset=dataset,
-                samples_per_gpu=self.train_batch_size,
-                num_replicas=self.world_size,
-                rank=self.rank,
-                shuffle=True,
-                coef=self.coef,
-                min_repeat=self.min_repeat,
-                n_repeats=self.n_repeats,
-            )
+        sampler = OTXSampler(
+            dataset=dataset,
+            samples_per_gpu=self.train_batch_size,
+            num_replicas=self.world_size,
+            rank=self.rank,
+            shuffle=True,
+            coef=self.coef,
+            min_repeat=self.min_repeat,
+            n_repeats=self.n_repeats,
+        )
 
-            runner.data_loader = DataLoader(
-                dataset,
-                batch_size=self.train_batch_size,
-                sampler=sampler,
-                num_workers=num_workers,
-                collate_fn=collate_fn,
-                pin_memory=False,
-                worker_init_fn=worker_init_fn,
-            )
-            self.is_sampler_changed = True
+        runner.data_loader = DataLoader(
+            dataset,
+            batch_size=self.train_batch_size,
+            sampler=sampler,
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=False,
+            worker_init_fn=worker_init_fn,
+        )
