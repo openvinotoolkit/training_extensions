@@ -2,6 +2,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Tuple
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 from mmdet.core.bbox.assigners import AssignResult, BaseAssigner
@@ -12,6 +13,8 @@ from torch import Tensor
 
 INF = 100000000
 EPS = 1.0e-7
+BYTES_PER_FLOAT = 4
+GPU_MEM_LIMIT = 1024**3  # 1 GB memory limit
 
 
 def center_of_mass(masks: Tensor, eps: float = 1e-7) -> Tensor:
@@ -27,12 +30,23 @@ def center_of_mass(masks: Tensor, eps: float = 1e-7) -> Tensor:
         Tensor: The masks center of mass. Has shape (num_masks, 2).
     """
     n, h, w = masks.shape
-    grid_h = torch.arange(h, device=masks.device)[:, None]
-    grid_w = torch.arange(w, device=masks.device)
-    normalizer = masks.sum(dim=(1, 2)).float().clamp(min=eps)
-    center_y = (masks * grid_h).sum(dim=(1, 2)) / normalizer
-    center_x = (masks * grid_w).sum(dim=(1, 2)) / normalizer
-    center = torch.cat([center_x[:, None], center_y[:, None]], dim=1)
+    device = masks.device
+    gpu_usage = np.ceil(n * int(h) * int(w) * BYTES_PER_FLOAT)
+    if gpu_usage > GPU_MEM_LIMIT:
+        num_chunks = int(gpu_usage / GPU_MEM_LIMIT)
+    else:
+        num_chunks = n
+    assert num_chunks <= n, "Default GPU_MEM_LIMIT is too small; try increasing it"
+    chunks = np.split(np.arange(n), num_chunks) if num_chunks != n else [np.arange(n)]
+    grid_h = torch.arange(h, device=device)[:, None]
+    grid_w = torch.arange(w, device=device)
+    center = torch.zeros(n, 2, device=device, dtype=torch.float32)
+    for inds in chunks:
+        masks_chunk = masks[inds]
+        normalizer = masks_chunk.sum(dim=(1, 2)).float().clamp(min=eps)
+        center_y = (masks_chunk * grid_h).sum(dim=(1, 2)) / normalizer
+        center_x = (masks_chunk * grid_w).sum(dim=(1, 2)) / normalizer
+        center[inds] = torch.cat([center_x[:, None], center_y[:, None]], dim=1)
     return center
 
 
