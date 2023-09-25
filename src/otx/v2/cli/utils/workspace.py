@@ -22,8 +22,7 @@ def set_workspace(root: Optional[str] = None, name: str = "otx-workspace") -> st
     Returns:
         str: Workspace folder path.
     """
-    path = f"{root}/{name}" if root else f"./{name}"
-    return path
+    return f"{root}/{name}" if root else f"./{name}"
 
 
 class Workspace:

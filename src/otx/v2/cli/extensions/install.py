@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
 
 from pip._internal.commands import create_command
 
@@ -20,8 +21,11 @@ from otx.v2.cli.utils.install import (
     parse_requirements,
 )
 
+if TYPE_CHECKING:
+    from jsonargparse._actions import _ActionSubCommands
 
-def add_install_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
+
+def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for install command.
 
     Args:
@@ -31,9 +35,7 @@ def add_install_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
         OTXArgumentParser: Main parser with subparsers merged.
     """
     sub_parser = prepare_parser()
-    parser._subcommands_action.add_subcommand("install", sub_parser, help="Install OTX requirements.")
-
-    return parser
+    subcommands_action.add_subcommand("install", sub_parser, help="Install OTX requirements.")
 
 
 def prepare_parser() -> OTXArgumentParser:
@@ -70,7 +72,8 @@ def install(task: str) -> int:
     elif task in requirements_dict:
         requirements.extend(requirements_dict[task])
     else:
-        raise ValueError(f"Invalid subcommand: {task}" f"Supported tasks: {SUPPORTED_TASKS}")
+        msg = f"Invalid subcommand: {task}. Supported tasks: {SUPPORTED_TASKS}"
+        raise ValueError(msg)
 
     # Parse requirements into torch, mmcv and other requirements.
     # This is done to parse the correct version of torch (cpu/cuda) and mmcv (mmcv/mmcv-full).

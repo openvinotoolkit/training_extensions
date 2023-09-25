@@ -56,7 +56,7 @@ def get_requirements_from_file(filenames: str | list[str]) -> list[Requirement]:
 
     requirements: list[Requirement] = []
     for filename in filenames:
-        with open(filename) as file:
+        with Path(filename).open() as file:
             reqs = list(pkg_resources.parse_requirements(file))
             requirements.extend(reqs)
 
@@ -131,7 +131,10 @@ def parse_requirements(
         if requirement.unsafe_name == "torch":
             torch_requirement = str(requirement)
             if len(requirement.specs) > 1:
-                warn("requirements.txt contains " "Please remove other versions of torch from requirements.")
+                warn(
+                    "requirements.txt contains. Please remove other versions of torch from requirements.",
+                    stacklevel=2,
+                )
 
         elif requirement.unsafe_name in MM_REQUIREMENTS:
             mm_requirements.append(str(requirement))
@@ -144,8 +147,9 @@ def parse_requirements(
             other_requirements.append(str(requirement))
 
     if not torch_requirement:
+        msg = "Could not find torch requirement. OTX depends on torch. Please add torch to your requirements."
         raise ValueError(
-            "Could not find torch requirement. OTX depends on torch. " "Please add torch to your requirements.",
+            msg,
         )
 
     # Get the unique list of the requirements.
@@ -194,29 +198,27 @@ def get_cuda_version() -> str | None:
         # Check $CUDA_HOME/version.json file.
         version_file = Path(cuda_home) / "version.json"
         if version_file.is_file():
-            with open(version_file) as file:
+            with Path(version_file).open() as file:
                 data = json.load(file)
                 cuda_version = data.get("cuda", {}).get("version", None)
                 if cuda_version is not None:
                     cuda_version_parts = cuda_version.split(".")
-                    cuda_version = ".".join(cuda_version_parts[:2])
-                    return cuda_version
+                    return ".".join(cuda_version_parts[:2])
+    else:
+        # 2. 'nvcc --version' check
+        try:
+            result = subprocess.run(args=["nvcc", "--version"], capture_output=True, text=True, check=False)
+            output = result.stdout
 
-    # 2. 'nvcc --version' check
-    try:
-        result = subprocess.run(["nvcc", "--version"], capture_output=True, text=True)
-        output = result.stdout
+            cuda_version_pattern = r"cuda_(\d+\.\d+)"
+            cuda_version_match = re.search(cuda_version_pattern, output)
 
-        cuda_version_pattern = r"cuda_(\d+\.\d+)"
-        cuda_version_match = re.search(cuda_version_pattern, output)
-
-        if cuda_version_match is not None:
-            cuda_version = cuda_version_match.group(1)
-            return cuda_version
-        return None
-
-    except Exception:
-        return None
+            if cuda_version_match is not None:
+                return cuda_version_match.group(1)
+        except Exception:
+            msg = "Could not find cuda-version. Instead, the CPU version of torch will be installed."
+            warn(msg, stacklevel=2)
+    return None
 
 
 def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch_version: str) -> str:
@@ -255,6 +257,7 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
             f"This script will use CUDA v{max_supported_cuda}.\n"
             f"However, this may not be safe, and you are advised to install the correct version of CUDA.\n"
             f"For more details, refer to https://pytorch.org/get-started/locally/",
+            stacklevel=2,
         )
         cuda_version = max_supported_cuda
 
@@ -265,6 +268,7 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
             f"This script will use CUDA v{min_supported_cuda}.\n"
             f"However, this may not be safe, and you are advised to install the correct version of CUDA.\n"
             f"For more details, refer to https://pytorch.org/get-started/locally/",
+            stacklevel=2,
         )
         cuda_version = min_supported_cuda
 
@@ -296,8 +300,7 @@ def get_cuda_suffix(cuda_version: str) -> str:
     Returns:
         str: CUDA suffix for PyTorch or mmX version.
     """
-    cuda_suffix = f"cu{cuda_version.replace('.', '')}"
-    return cuda_suffix
+    return f"cu{cuda_version.replace('.', '')}"
 
 
 def get_hardware_suffix(with_available_torch_build: bool = False, torch_version: str | None = None) -> str:
@@ -339,7 +342,8 @@ def get_hardware_suffix(with_available_torch_build: bool = False, torch_version:
     if cuda_version:
         if with_available_torch_build:
             if torch_version is None:
-                raise ValueError("``torch_version`` must be provided when with_available_torch_build is True.")
+                msg = "``torch_version`` must be provided when with_available_torch_build is True."
+                raise ValueError(msg)
             cuda_version = update_cuda_version_with_available_torch_cuda_build(cuda_version, torch_version)
         hardware_suffix = get_cuda_suffix(cuda_version)
     else:
@@ -413,10 +417,9 @@ def add_hardware_suffix_to_torch(
         elif len(updated_specs) == 2:
             updated_requirement = name + updated_specs[0] + ", " + updated_specs[1]
         else:
+            msg = f"Requirement version can be a single value or a range. \nFor example it could be torch>=1.8.1 or torch>=1.8.1, <=1.9.1\nGot {updated_specs} instead."
             raise ValueError(
-                f"Requirement version can be a single value or a range. \n"
-                f"For example it could be torch>=1.8.1 or torch>=1.8.1, <=1.9.1\n"
-                f"Got {updated_specs} instead.",
+                msg,
             )
     return updated_requirement
 
@@ -479,7 +482,8 @@ def get_torch_install_args(requirement: str | Requirement) -> list[str]:
         torch_version = str(requirement)
         install_args += [torch_version]
     else:
-        raise RuntimeError(f"Unsupported OS: {platform.system()}")
+        msg = f"Unsupported OS: {platform.system()}"
+        raise RuntimeError(msg)
 
     return install_args
 
@@ -518,7 +522,8 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
         # Return the install arguments.
         install_args = ["--find-links", mmcv_index_url, *mmcv_requirements]
     else:
-        raise RuntimeError(f"Unsupported OS: {platform.system()}")
+        msg = f"Unsupported OS: {platform.system()}"
+        raise RuntimeError(msg)
 
     return install_args
 
@@ -533,7 +538,8 @@ def mim_installation(requirements: list[str]) -> None:
         ModuleNotFoundError: Raise an error if mim import is not possible.
     """
     if not find_spec("mim"):
-        raise ModuleNotFoundError("The mmX library installation requires mim." "mim is not currently installed.")
+        msg = "The mmX library installation requires mim. mim is not currently installed."
+        raise ModuleNotFoundError(msg)
     from mim import install
 
     install(requirements)

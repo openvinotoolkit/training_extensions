@@ -28,13 +28,15 @@ def configure_task_type(
     if data_format is None and data_roots is not None:
         try:
             from otx.v2.adapters.datumaro.manager.dataset_manager import DatasetManager
-        except:
-            raise ImportError("Need datumaro to automatically detect the task type.")
+        except ImportError as err:
+            msg = "Need datumaro to automatically detect the task type."
+            raise ImportError(msg) from err
         data_format = DatasetManager.get_data_format(data_roots)
     for task_key, data_value in TASK_TYPE_TO_SUPPORTED_FORMAT.items():
         if data_format in data_value:
             return task_key, data_format
-    raise ValueError(f"Can't find proper task. we are not support {data_format} format, yet.")
+    msg = f"Can't find proper task. we are not support {data_format} format, yet."
+    raise ValueError(msg)
 
 
 def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: Optional[str]) -> Optional[str]:
@@ -46,15 +48,12 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
     Overwise set Incremental training type.
     """
 
-    def _count_imgs_in_dir(dir: Union[str, Path], recursive: bool = False) -> int:
+    def _count_imgs_in_dir(dir_path: Union[str, Path]) -> int:
         """Count number of images in directory recursively."""
-        import glob
-
         valid_suff = ["jpg", "png", "jpeg", "gif"]
         num_valid_imgs = 0
-        for files in glob.iglob(f"{dir}/**", recursive=recursive):
-            suff = files.split(".")[-1]
-            if suff.lower() in valid_suff:
+        for file_path in Path(dir_path).rglob("*"):
+            if file_path.suffix[1:].lower() in valid_suff and file_path.is_file():
                 num_valid_imgs += 1
 
         return num_valid_imgs
@@ -65,12 +64,12 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
             return False
 
         if not Path(unlabeled_dir).is_dir() or not Path(unlabeled_dir).iterdir():
+            msg = "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. Please, check command line and directory path."
             raise ValueError(
-                "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. "
-                "Please, check command line and directory path.",
+                msg,
             )
 
-        all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir, recursive=True)
+        all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir)
         # check if number of unlabeled images is more than relative thershold
         if all_unlabeled_images > 1:
             return unlabeled_dir

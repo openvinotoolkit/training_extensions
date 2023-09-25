@@ -43,7 +43,7 @@ def get_adapters_status() -> Dict[str, Dict]:
     return adapters_status
 
 
-def get_environment_table(verbose: bool = False) -> str:
+def get_environment_table(verbose: Optional[bool] = None) -> str:
     """A table provides the availability of each tasks.
 
     Args:

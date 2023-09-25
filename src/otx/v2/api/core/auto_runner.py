@@ -4,16 +4,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
-from typing import Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
 import yaml
 
-from otx.v2.api.core.engine import Engine
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.auto_utils import configure_task_type, configure_train_type
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.importing import get_impl_class, get_otx_root_path
 from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
+
+if TYPE_CHECKING:
+    from otx.v2.api.core.engine import Engine
 
 # TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"
@@ -64,6 +66,14 @@ ADAPTER_QUICK_LINK = {
 }
 
 
+# Prevent ConstructorError: could not determine a constructor for the tag 'tag:yaml.org,2002:python/tuple'
+def construct_tuple(loader: yaml.SafeLoader, node: yaml.SequenceNode) -> tuple:
+    return tuple(loader.construct_sequence(node))
+
+
+yaml.SafeLoader.add_constructor("tag:yaml.org,2002:python/tuple", construct_tuple)
+
+
 def set_dataset_paths(config: dict, args: dict) -> dict:
     for key, value in args.items():
         if value is None:
@@ -77,12 +87,14 @@ def set_adapters_from_string(framework: str) -> tuple:
         adapter = f"{ADAPTERS_ROOT}.{ADAPTER_QUICK_LINK[framework.lower()]}"
     else:
         adapter = framework
-    sub_engine = get_impl_class(f"{adapter}.Engine")
+    adapter_engine = f"{adapter}.Engine"
+    sub_engine = get_impl_class(adapter_engine)
     if sub_engine is None:
-        raise NotImplementedError(f"{adapter}.Engine")
-    dataset_builder = get_impl_class(f"{adapter}.Dataset")
+        raise NotImplementedError(adapter_engine)
+    adapter_dataset = f"{adapter}.Dataset"
+    dataset_builder = get_impl_class(adapter_dataset)
     if dataset_builder is None:
-        raise NotImplementedError(f"{adapter}.Dataset")
+        raise NotImplementedError(adapter_dataset)
     get_model = get_impl_class(f"{adapter}.get_model")
     model_configs = get_impl_class(f"{adapter}.model.MODEL_CONFIGS")
     list_models = get_impl_class(f"{adapter}.model.list_models")
@@ -185,11 +197,13 @@ class AutoRunner:
         if config is not None:
             if isinstance(config, str):
                 self.config_path = config
-                config = yaml.load(open(config), Loader=yaml.FullLoader)
+                with Path(config).open() as file:
+                    config = yaml.safe_load(file)
         else:
             config = {}
         if not isinstance(config, dict):
-            raise TypeError("Config sould file path of yaml or dictionary")
+            msg = "Config sould file path of yaml or dictionary"
+            raise TypeError(msg)
         if "data" not in config:
             config["data"] = {}
         if "model" not in config:

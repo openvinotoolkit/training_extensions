@@ -16,13 +16,15 @@ map_subset_type = {str(subset_type.name).upper(): subset_type for subset_type in
 def str_to_task_type(task_type: str) -> TaskType:
     if task_type.upper() in map_task_type:
         return map_task_type[task_type.upper()]
-    raise ValueError(f"{task_type.upper()} is not supported task.")
+    msg = f"{task_type.upper()} is not supported task."
+    raise ValueError(msg)
 
 
 def str_to_train_type(train_type: str) -> TrainType:
     if train_type.upper() in map_train_type:
         return map_train_type[train_type.upper()]
-    raise ValueError(f"{train_type.upper()} is not supported train type.")
+    msg = f"{train_type.upper()} is not supported train type."
+    raise ValueError(msg)
 
 
 def str_to_subset_type(subset: str) -> Subset:
@@ -31,4 +33,5 @@ def str_to_subset_type(subset: str) -> Subset:
         subset = map_short_str[subset]
     if subset.upper() in map_subset_type:
         return map_subset_type[subset.upper()]
-    raise ValueError(f"{subset.upper()} is not supported subset type.")
+    msg = f"{subset.upper()} is not supported subset type."
+    raise ValueError(msg)

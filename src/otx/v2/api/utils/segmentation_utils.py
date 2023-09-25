@@ -56,11 +56,11 @@ def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
 
     mask_form_file = dataset_item.media.path
     if mask_form_file is None:
-        raise ValueError("Mask file doesn't exist or corrupted")
+        msg = "Mask file doesn't exist or corrupted"
+        raise ValueError(msg)
     mask_form_file = mask_form_file.replace("images", "masks")
     mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
-    mask = np.expand_dims(mask, axis=2)
-    return mask
+    return np.expand_dims(mask, axis=2)
 
 
 def mask_from_annotation(
@@ -143,8 +143,9 @@ def create_hard_prediction_from_soft_prediction(
         # In the binary case, simply apply threshold
         hard_prediction = soft_prediction_blurred > soft_threshold
     else:
+        msg = f"Invalid prediction input of shape {soft_prediction.shape}. Expected either a 2D or 3D array."
         raise ValueError(
-            f"Invalid prediction input of shape {soft_prediction.shape}. " f"Expected either a 2D or 3D array.",
+            msg,
         )
     return hard_prediction
 
@@ -183,8 +184,7 @@ def get_subcontours(contour: Contour) -> List[Contour]:
         subcontours.append(cast(Contour, subcontour))
         base_contour[i:j] = [None] * (j - i)
 
-    subcontours = [i for i in subcontours if len(i) > 2]
-    return subcontours
+    return [i for i in subcontours if len(i) > 2]
 
 
 def create_annotation_from_segmentation_map(
@@ -279,6 +279,7 @@ def create_annotation_from_segmentation_map(
                                 "is not fully supported. Polygons with a area of zero "
                                 "will be removed.",
                                 UserWarning,
+                                stacklevel=2,
                             )
                 else:
                     # If contour hierarchy[3] != -1 then contour has a parent and
@@ -289,6 +290,7 @@ def create_annotation_from_segmentation_map(
                         "The geometry of the segmentation map you are converting is "
                         "not fully supported. A hole was found and will be filled.",
                         UserWarning,
+                        stacklevel=2,
                     )
 
     return annotations

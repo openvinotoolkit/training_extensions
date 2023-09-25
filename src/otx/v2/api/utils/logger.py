@@ -9,6 +9,7 @@ import functools
 import logging
 import os
 import sys
+from pathlib import Path
 from typing import Callable, Optional
 
 __all__ = ["config_logger", "get_log_dir"]
@@ -62,8 +63,8 @@ def config_logger(log_file: str, level: str = "WARNING") -> None:
         _logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
 
-    _LOG_DIR = os.path.dirname(log_file)
-    os.makedirs(_LOG_DIR, exist_ok=True)
+    _LOG_DIR = Path(log_file).parent
+    _LOG_DIR.mkdir(parents=True, exist_ok=True)
     file = logging.FileHandler(log_file, mode="w", encoding="utf-8")
     file.setFormatter(logging.Formatter(_LOGGING_FORMAT))
     _FILE_HANDLER = file
@@ -90,7 +91,7 @@ def get_log_dir() -> Optional[str]:
 
     :return: str, a string representing the directory path of the log file.
     """
-    return _LOG_DIR
+    return str(_LOG_DIR)
 
 
 def local_master_only(func: Callable) -> Callable:

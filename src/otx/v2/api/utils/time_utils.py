@@ -128,9 +128,9 @@ class TimeEstimator:
 
         if self.last_update_progress is not None and progress - self.last_update_progress >= self.update_window:
             if self.first_update_time is None or self.first_update_progress is None:
+                msg = "first_update_time and first_update_progress both can not be None when calling TimeEstimator.update()."
                 raise AssertionError(
-                    "first_update_time and first_update_progress both can not be None when calling "
-                    "TimeEstimator.update().",
+                    msg,
                 )
 
             self.last_update_progress = progress

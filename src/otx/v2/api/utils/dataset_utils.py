@@ -212,16 +212,19 @@ def add_saliency_maps_to_dataset_item(
         elif saliency_map.ndim == 3:
             class_wise_saliency_map = True
         else:
-            raise ValueError(f"Saliency map has to be 2 or 3-dimensional array, " f"but got {saliency_map.ndim} dims.")
+            msg = f"Saliency map has to be 2 or 3-dimensional array, but got {saliency_map.ndim} dims."
+            raise ValueError(msg)
     else:
-        raise TypeError("Check saliency_map, it has to be list or np.ndarray.")
+        msg = "Check saliency_map, it has to be list or np.ndarray."
+        raise TypeError
 
     if class_wise_saliency_map:
         # Multiple saliency maps per image (class-wise saliency map), support e.g. ReciproCAM
         if explain_predicted_classes:
             # Explain only predicted classes
             if predicted_scored_labels is None:
-                raise ValueError("To explain only predictions, list of predicted scored labels have to be provided.")
+                msg = "To explain only predictions, list of predicted scored labels have to be provided."
+                raise ValueError(msg)
 
             explain_targets = set()
             for scored_label in predicted_scored_labels:

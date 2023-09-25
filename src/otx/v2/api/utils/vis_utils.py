@@ -30,8 +30,7 @@ def get_actmap(
         saliency_map = saliency_map[0]
 
     saliency_map = cv2.resize(saliency_map, output_res)
-    saliency_map = cv2.applyColorMap(saliency_map, cv2.COLORMAP_JET)
-    return saliency_map
+    return cv2.applyColorMap(saliency_map, cv2.COLORMAP_JET)
 
 
 def get_input_names_list(input_path: Union[str, int], capture) -> list:  # noqa: ANN001
@@ -42,8 +41,7 @@ def get_input_names_list(input_path: Union[str, int], capture) -> list:  # noqa:
         return []
     if "DIR" in str(capture.get_type()):
         return [f.name for f in Path(input_path).iterdir() if f.is_file()]
-    else:
-        return [Path(input_path).name]
+    return [Path(input_path).name]
 
 
 def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], capture) -> None:  # noqa: ANN001

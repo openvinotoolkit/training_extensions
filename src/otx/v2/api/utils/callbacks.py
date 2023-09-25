@@ -180,11 +180,13 @@ class TimeMonitorCallback(Callback):
 
     def on_train_batch_begin(self, batch: int, **kwargs) -> None:
         """Set the value of current step and start the timer."""
+        super().on_train_batch_begin(batch=batch, **kwargs)
         self.current_step += 1
         self.start_step_time = time.time()
 
     def on_train_batch_end(self, batch: int, **kwargs) -> None:
         """Compute average time taken to complete a step."""
+        super().on_train_batch_end(batch=batch, **kwargs)
         self.__calculate_average_step()
 
     def is_stalling(self) -> bool:
@@ -215,31 +217,37 @@ class TimeMonitorCallback(Callback):
 
     def on_test_batch_begin(self, batch: int, logger: logging.Logger, **kwargs) -> None:
         """Set the number of current epoch and start the timer."""
+        super().on_test_batch_begin(batch=batch, logger=logger, **kwargs)
         self.current_step += 1
         self.start_step_time = time.time()
 
     def on_test_batch_end(self, batch: int, logger: logging.Logger, **kwargs) -> None:
         """Compute average time taken to complete a step based on a running average of `step_history` steps."""
+        super().on_test_batch_end(batch=batch, logger=logger, **kwargs)
         self.__calculate_average_step()
 
     def on_train_begin(self, **kwargs) -> None:
         """Sets training to true."""
+        super().on_train_begin(**kwargs)
         self.is_training = True
 
     def on_train_end(self, batch: int, **kwargs) -> None:
         """Handles early stopping when the total_steps is greater than the current_step."""
         # To handle cases where early stopping stops the task the progress will still be accurate
+        super().on_train_end(batch=batch, **kwargs)
         self.current_step = self.total_steps - self.test_steps
         self.current_epoch = self.total_epochs
         self.is_training = False
 
     def on_epoch_begin(self, epoch: int, **kwargs) -> None:
         """Set the number of current epoch and start the timer."""
+        super().on_epoch_begin(epoch=epoch, **kwargs)
         self.current_epoch = epoch + 1
         self.start_epoch_time = time.time()
 
     def on_epoch_end(self, epoch: int, logs: str, **kwargs) -> None:
         """Computes the average time taken to complete an epoch based on a running average of `epoch_history` epochs."""
+        super().on_epoch_end(epoch=epoch, logs=logs, **kwargs)
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
         self.update_progress_callback(self.get_progress())

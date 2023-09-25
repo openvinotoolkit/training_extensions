@@ -4,11 +4,12 @@
 #
 
 import os
+from pathlib import Path
 
-OTX_CACHE = os.path.expanduser(
+OTX_CACHE = Path(
     os.getenv(
         "OTX_CACHE",
-        os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "otx"),
+        str(Path(os.getenv("XDG_CACHE_HOME", "~/.cache")) / "otx"),
     ),
-)
-os.makedirs(OTX_CACHE, exist_ok=True)
+).expanduser()
+OTX_CACHE.mkdir(parents=True, exist_ok=True)

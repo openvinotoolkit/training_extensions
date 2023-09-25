@@ -17,28 +17,29 @@
 import importlib
 import inspect
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Tuple, TypeVar, Union
+from typing import Callable, Dict, List, TypeVar, Union
 
 
 def get_impl_class(impl_path: str) -> TypeVar:
     """Returns a class by its path in package."""
 
     task_impl_module = None
+    result = None
     try:
         task_impl_module_name, task_impl_class_name = impl_path.rsplit(".", 1)
         task_impl_module = importlib.import_module(task_impl_module_name)
-        task_impl_class = getattr(task_impl_module, task_impl_class_name)
+        result = getattr(task_impl_module, task_impl_class_name)
 
-        return task_impl_class
     except Exception as e:
         if hasattr(task_impl_module, "DEBUG"):
             exception = getattr(task_impl_module, "DEBUG", None)
             if isinstance(exception, Exception):
-                raise exception
-        raise e
+                raise exception from e
+        raise e from None
+    return result
 
 
-def get_non_default_args(func: Callable) -> List[Tuple[str, Any]]:
+def get_non_default_args(func: Callable) -> list:
     signature = inspect.signature(func)
     non_default_args = []
 
@@ -60,7 +61,8 @@ def get_otx_root_path() -> str:
     if otx_module:
         file_path = inspect.getfile(otx_module)
         return str(Path(file_path).parent)
-    raise ModuleNotFoundError("Cannot found otx.")
+    msg = "Cannot found otx."
+    raise ModuleNotFoundError(msg)
 
 
 def get_files_dict(folder_path: Union[str, Path]) -> Dict[str, str]:
@@ -68,7 +70,8 @@ def get_files_dict(folder_path: Union[str, Path]) -> Dict[str, str]:
 
     _folder_path: Path = Path(folder_path)
     if not _folder_path.exists():
-        raise ValueError("The specified folder path does not exist.")
+        msg = "The specified folder path does not exist."
+        raise ValueError(msg)
 
     for file_path in _folder_path.iterdir():
         if file_path.is_file():

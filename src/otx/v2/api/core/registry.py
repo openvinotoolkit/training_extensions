@@ -16,8 +16,8 @@ class BaseRegistry:
         if module_type in self._registry_dict:
             return self._registry_dict[module_type]
         # The module_dict is the highest priority.
-        if module_type in self._module_dict:
-            return self._module_dict[module_type]
+        if module_type in self.module_dict:
+            return self.module_dict[module_type]
         # Search all registry
         for module in self._registry_dict.values():
             if module_type in module:
@@ -26,7 +26,7 @@ class BaseRegistry:
 
     def __len__(self) -> int:
         # Copy from mmcv.utils.registry.Registry
-        return len(self._module_dict)
+        return len(self.module_dict)
 
     def __contains__(self, key: str) -> bool:
         # Copy from mmcv.utils.registry.Registry
@@ -39,13 +39,13 @@ class BaseRegistry:
         table.add_column("Names", justify="left", style="cyan")
         table.add_column("Objects", justify="left", style="green")
 
-        for name, obj in sorted(self._module_dict.items()):
+        for name, obj in sorted(self.module_dict.items()):
             table.add_row("Custom", name, str(obj))
 
         if hasattr(self, "_registry_dict"):
             for registry_key in self._registry_dict:
                 registry = self._registry_dict[registry_key]
-                for name, obj in sorted(registry._module_dict.items()):
+                for name, obj in sorted(registry.module_dict.items()):
                     table.add_row(registry_key, name, str(obj))
 
         console = Console()
@@ -70,24 +70,26 @@ class BaseRegistry:
 
     def register_module(
         self,
-        type: Optional[str] = None,
+        type_name: Optional[str] = None,
         name: Optional[str] = None,
         module: Optional[object] = None,
         force: bool = False,
     ) -> None:
         # Copy from mmcv.utils.registry.Registry
         if not inspect.isclass(module) and not inspect.isfunction(module):
-            raise TypeError("module must be a class or a function, " f"but got {str(module)}")
+            msg = f"module must be a class or a function, but got {module!s}"
+            raise TypeError(msg)
 
-        if type is not None:
-            if type not in self._registry_dict:
-                self._registry_dict[type] = BaseRegistry(name=type)
-            self._registry_dict[type].register_module(name=name, module=module)
+        if type_name is not None:
+            if type_name not in self._registry_dict:
+                self._registry_dict[type_name] = BaseRegistry(name=type_name)
+            self._registry_dict[type_name].register_module(name=name, module=module)
         else:
             if name is None:
                 name = module.__name__
             name_lst = [name]
             for key in name_lst:
                 if not force and key in self._module_dict:
-                    raise KeyError(f"{key} is already registered " f"in {self.name}")
+                    msg = f"{key} is already registered in {self.name}"
+                    raise KeyError(msg)
                 self._module_dict[key] = module

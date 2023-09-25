@@ -90,10 +90,10 @@ class ShapeFactory:
             y1 = shape.min_y
             y2 = shape.max_y
         else:
-            raise NotImplementedError(f"Conversion of a {type(shape)} to a rectangle is not implemented yet: {shape}")
+            msg = f"Conversion of a {type(shape)} to a rectangle is not implemented yet: {shape}"
+            raise NotImplementedError(msg)
 
-        new_shape = Rectangle(x1=x1, y1=y1, x2=x2, y2=y2)
-        return new_shape
+        return Rectangle(x1=x1, y1=y1, x2=x2, y2=y2)
 
     @staticmethod
     def shape_as_polygon(shape: ShapeEntity) -> Polygon:
@@ -128,7 +128,8 @@ class ShapeFactory:
             points = [Point(x=point[0], y=point[1]) for point in coordinates]
             new_shape = Polygon(points=points)
         else:
-            raise NotImplementedError(f"Conversion of a {type(shape)} to a polygon is not implemented yet: " f"{shape}")
+            msg = f"Conversion of a {type(shape)} to a polygon is not implemented yet: {shape}"
+            raise NotImplementedError(msg)
         return new_shape
 
     @staticmethod
@@ -158,7 +159,8 @@ class ShapeFactory:
             y1 = shape.min_y
             y2 = shape.max_y
         else:
-            raise NotImplementedError(f"Conversion of a {type(shape)} to an ellipse is not implemented yet: {shape}")
+            msg = f"Conversion of a {type(shape)} to an ellipse is not implemented yet: {shape}"
+            raise NotImplementedError(msg)
         return Ellipse(x1=x1, y1=y1, x2=x2, y2=y2)
 
     @staticmethod

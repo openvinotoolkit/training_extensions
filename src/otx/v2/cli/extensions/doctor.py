@@ -6,6 +6,7 @@
 
 from typing import List, Optional
 
+from jsonargparse._actions import _ActionSubCommands
 from rich.console import Console
 from rich.traceback import Traceback
 
@@ -15,7 +16,7 @@ from otx.v2.cli.utils.env import check_torch_cuda, get_environment_table, get_ta
 from otx.v2.cli.utils.install import SUPPORTED_TASKS, get_cuda_version
 
 
-def add_doctor_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
+def add_doctor_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for doctor command.
 
     Args:
@@ -25,13 +26,11 @@ def add_doctor_parser(parser: OTXArgumentParser) -> OTXArgumentParser:
         OTXArgumentParser: Main parser with subparsers merged.
     """
     sub_parser = prepare_parser()
-    parser._subcommands_action.add_subcommand(
+    subcommands_action.add_subcommand(
         "doctor",
         sub_parser,
         help="View diagnostic information about the current environment.",
     )
-
-    return parser
 
 
 def prepare_parser() -> OTXArgumentParser:

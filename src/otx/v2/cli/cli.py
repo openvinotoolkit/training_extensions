@@ -8,7 +8,7 @@ import datetime
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Dict, List, Optional, Set, Tuple, Type, Union
 
 from jsonargparse import (
     ActionConfigFile,
@@ -28,7 +28,7 @@ from otx.v2.cli.utils.arg_parser import OTXArgumentParser, get_short_docstring, 
 from otx.v2.cli.utils.help_formatter import OTXHelpFormatter, render_guide
 from otx.v2.cli.utils.workspace import Workspace
 
-ArgsType = Optional[Union[List[str], Dict[str, Any], Namespace]]
+ArgsType = Optional[Union[list, dict, Namespace]]
 
 
 class OTXCLIv2:
@@ -37,7 +37,7 @@ class OTXCLIv2:
     def __init__(
         self,
         args: ArgsType = None,
-        parser_kwargs: Dict[str, Any] = {},
+        parser_kwargs: Optional[dict] = None,
     ) -> None:
         self.console = Console()
         self.error = None
@@ -83,7 +83,9 @@ class OTXCLIv2:
                 # Print TraceBack
                 self.console.print_exception(width=self.console.width)
 
-    def _setup_parser_kwargs(self, parser_kwargs: Dict[str, Any] = {}) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    def _setup_parser_kwargs(self, parser_kwargs: Optional[dict] = None) -> tuple:
+        if parser_kwargs is None:
+            parser_kwargs = {}
         subcommand_names = self.engine_subcommands().keys()
         main_kwargs = {k: v for k, v in parser_kwargs.items() if k not in subcommand_names}
         subparser_kwargs = {k: v for k, v in parser_kwargs.items() if k in subcommand_names}
@@ -126,8 +128,8 @@ class OTXCLIv2:
 
     def setup_parser(
         self,
-        main_kwargs: Dict[str, Any],
-        subparser_kwargs: Dict[str, Any],
+        main_kwargs: dict,
+        subparser_kwargs: dict,
     ) -> None:
         """Initialize and setup the parser, subcommands, and arguments."""
         self.parser = self.init_parser(**main_kwargs)
@@ -195,17 +197,18 @@ class OTXCLIv2:
         self._subcommand_method_arguments[subcommand] = added
         return parser
 
-    def _set_extension_subcommands_parser(self, **kwargs) -> None:
+    def _set_extension_subcommands_parser(self) -> None:
         for sub_command, functions in CLI_EXTENSIONS.items():
             add_parser_function = functions.get("add_parser", None)
             if add_parser_function is None:
-                raise NotImplementedError(f"The sub-parser function of {sub_command} was not found.")
-            else:
-                add_parser_function(self.parser)
+                msg = f"The sub-parser function of {sub_command} was not found."
+                raise NotImplementedError(msg)
+            add_parser_function(self.parser_subcommands)
 
     def get_auto_runner(self) -> Optional[AutoRunner]:
         # If the user puts --checkpoint in the command and doesn't put --config,
         # will use those configs as the default if they exist in the checkpoint folder location.
+        auto_runner = None
         if "checkpoint" in self.pre_args and self.pre_args.get("config", None) is None:
             checkpoint_path = self.pre_args.get("checkpoint", None)
             if checkpoint_path is not None:
@@ -213,9 +216,11 @@ class OTXCLIv2:
                 if config_candidate.exists():
                     self.pre_args["config"] = str(config_candidate)
                 elif Path(checkpoint_path).exists():
-                    raise FileNotFoundError(f"{config_candidate} not found. Please include --config.")
+                    msg = f"{config_candidate} not found. Please include --config."
+                    raise FileNotFoundError(msg)
                 else:
-                    raise FileNotFoundError(f"{checkpoint_path} not found. Double-check your checkpoint file.")
+                    msg = f"{checkpoint_path} not found. Double-check your checkpoint file."
+                    raise FileNotFoundError(msg)
         try:
             data_task = self.pre_args.get("data.task", None)
             auto_runner = self.auto_runner_class(
@@ -234,12 +239,11 @@ class OTXCLIv2:
                 data_format=self.pre_args.get("data.data_format", None),
                 config=self.pre_args.get("config", None),
             )
-            return auto_runner
         except Exception as e:
             self.error = e
-            return None
+        return auto_runner
 
-    def get_model_class(self) -> Tuple[Optional[Any], Optional[List[Optional[str]]]]:
+    def get_model_class(self) -> tuple:
         model_class = None
         default_configs = None
         if self.auto_runner is not None:
@@ -254,7 +258,8 @@ class OTXCLIv2:
                 model_cfg = framework_engine.config.get("model", {})
                 model_name = model_cfg.get("name", model_cfg.get("type", None))
             if model_name is None:
-                raise ValueError("The appropriate model was not found in config..")
+                msg = "The appropriate model was not found in config.."
+                raise ValueError(msg)
             model = self.auto_runner.get_model(model=model_name)
             if model is None:
                 raise ValueError
@@ -278,18 +283,19 @@ class OTXCLIv2:
             if self.error is not None:
                 # Raise an existing raised exception only when the actual command is executed.
                 raise self.error
+            msg = "Couldn't run because it couldn't find a suitable task. Make sure you have enough commands entered."
             raise ValueError(
-                "Couldn't run because it couldn't find a suitable task. Make sure you have enough commands entered.",
+                msg,
             )
         self.config_init = self.parser.instantiate_classes(self.config)
         data_cfg = self._pop(self.config_init, "data")
         if not isinstance(data_cfg, (dict, Namespace)):
-            # TODO: Exception
-            raise ValueError("")
+            msg = "There is a problem with data configuration. Please check it again."
+            raise TypeError(msg)
         model_cfg = self._pop(self.config_init, "model")
         if not isinstance(model_cfg, (dict, Namespace)):
-            # TODO: Exception
-            raise ValueError("")
+            msg = "There is a problem with model configuration. Please check it again."
+            raise TypeError(msg)
 
         # Build Dataset
         self.data = self.data_class(**data_cfg)
@@ -314,7 +320,12 @@ class OTXCLIv2:
         )
         self.workspace.add_config({"data": {**data_cfg}, "model": {**model_cfg}})
 
-    def _pop(self, config: Namespace, key: str, default: Optional[Any] = None) -> Optional[Union[dict, str, Namespace]]:
+    def _pop(
+        self,
+        config: Namespace,
+        key: str,
+        default: Optional[Union[dict, str, Namespace]] = None,
+    ) -> Optional[Union[dict, str, Namespace]]:
         """Utility to get a config value which might be inside a subcommand."""
         return config.get(str(self.subcommand), config).pop(key, default)
 
@@ -325,7 +336,8 @@ class OTXCLIv2:
             config = namespace_to_dict(self.config[subcommand])
             extension_function = CLI_EXTENSIONS[subcommand].get("main", None)
             if extension_function is None:
-                raise NotImplementedError(f"The main function of {subcommand} is not implemented.")
+                msg = f"The main function of {subcommand} is not implemented."
+                raise NotImplementedError(msg)
             extension_function(**config)
         elif subcommand == "train":
             self.instantiate_classes()
@@ -353,7 +365,7 @@ class OTXCLIv2:
             model_base_dir = Path(results["checkpoint"]).parent
             self.workspace.dump_config(filename=str(model_base_dir / "configs.yaml"))
             self.console.print(f"[*] OTX Model Weight: {results['checkpoint']}")
-            self.console.print(f"[*] OTX configuration used in the training: {str(model_base_dir / 'configs.yaml')}")
+            self.console.print(f"[*] OTX configuration used in the training: {model_base_dir / 'configs.yaml'!s}")
 
             # Latest dir update
             self.workspace.update_latest(model_base_dir)
@@ -402,7 +414,7 @@ class OTXCLIv2:
 
         return subcommand_kwargs, left_kwargs
 
-    def _prepare_dataloader_kwargs(self, subcommand: str, subset: str) -> Dict[str, Any]:
+    def _prepare_dataloader_kwargs(self, subcommand: str, subset: str) -> dict:
         dl_kwargs = self.config_init[subcommand].pop(f"{subset}_dataloader", None)
         dl_kwargs.pop("self", None)
         dl_kwargs.pop("subset", None)

@@ -5,7 +5,7 @@
 
 
 from abc import abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -18,7 +18,7 @@ class Engine:
             self.work_dir: Path = Path(work_dir).resolve()
             self.work_dir.mkdir(exist_ok=True, parents=True)
         self.registry = BaseRegistry(name="base")
-        self.timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.timestamp: str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
     @abstractmethod
     def train(

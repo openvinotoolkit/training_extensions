@@ -16,10 +16,9 @@
 
 # pylint: disable=invalid-name
 
-import glob
 import logging
-import os
-from typing import Any, Dict, List, Optional, Union
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -76,13 +75,13 @@ def get_unlabeled_filename(base_root: str, file_list_path: str) -> List[str]:
     def is_valid(file_path: str) -> bool:
         return file_path.lower().endswith(tuple(IMAGE_FILE_EXTENSIONS))
 
-    with open(file_list_path, encoding="UTF-8") as f:
+    with Path(file_list_path).open(encoding="UTF-8") as f:
         file_names = f.read().splitlines()
     unlabeled_files = []
     for fn in file_names:
-        file_path = os.path.join(base_root, fn.strip())
-        if is_valid(file_path) and os.path.isfile(file_path):
-            unlabeled_files.append(file_path)
+        file_path = Path(base_root) / fn.strip()
+        if is_valid(str(file_path)) and file_path.is_file():
+            unlabeled_files.append(str(file_path))
     return unlabeled_files
 
 
@@ -106,7 +105,8 @@ def load_unlabeled_dataset_items(
         data_list = []
 
         for ext in IMAGE_FILE_EXTENSIONS:
-            data_list.extend(glob.glob(f"{data_root_dir}/**/*{ext}", recursive=True))
+            glob_list = Path(data_root_dir).rglob(f"*{ext}")
+            data_list.extend([str(data) for data in glob_list])
 
     dataset_items = []
 
@@ -166,11 +166,11 @@ def get_old_new_img_indices(
     return {"old": ids_old, "new": ids_new}
 
 
-def get_image(results: Dict[str, Any], cache_dir: str, to_float32: bool = False) -> np.ndarray:
+def get_image(results: dict, cache_dir: str, to_float32: bool = False) -> np.ndarray:
     """Load an image and cache it if it's a training video frame.
 
     Args:
-        results (Dict[str, Any]): A dictionary that contains information about the dataset item.
+        results (dict): A dictionary that contains information about the dataset item.
         cache_dir (str): A directory path where the cached images will be stored.
         to_float32 (bool, optional): A flag indicating whether to convert the image to float32. Defaults to False.
 
@@ -186,14 +186,14 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32: bool = False)
             cached_img = cv2.imread(filename)
             if to_float32:
                 cached_img = cached_img.astype(np.float32)
-            return cached_img
         except Exception as e:  # pylint: disable=broad-except
             logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
             return None
+        return cached_img
 
     def save_image_to_cache(img: np.array, filename: str) -> None:
         tmp_filename = filename.replace(".png", "-tmp.png")
-        if os.path.exists(filename) or os.path.exists(tmp_filename):  # if image is cached or caching
+        if Path(filename).exists() or Path(tmp_filename).exists():  # if image is cached or caching
             return
         try:
             cv2.imwrite(tmp_filename, img=img)
@@ -201,20 +201,20 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32: bool = False)
             logger.warning(f"Skip caching for {filename} \nError msg: {e}")
             return
 
-        if os.path.exists(tmp_filename) and not os.path.exists(filename):
+        if Path(tmp_filename).exists() and not Path(filename).exists():
             try:
-                os.replace(tmp_filename, filename)
+                Path(tmp_filename).replace(filename)
             except Exception as e:  # pylint: disable=broad-except
-                os.remove(tmp_filename)
+                Path(tmp_filename).unlink()
                 logger.warning(f"Failed to rename {tmp_filename} -> {filename} \nError msg: {e}")
 
     subset = results["dataset_item"].subset
     media = results["dataset_item"].media
     if is_training_video_frame(subset, media):
         index = results["index"]
-        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.png")
-        if os.path.exists(filename):
-            loaded_img = load_image_from_cache(filename, to_float32=to_float32)
+        filename = Path(cache_dir) / f"{subset}-{index:06d}.png"
+        if Path(filename).exists():
+            loaded_img = load_image_from_cache(str(filename), to_float32=to_float32)
             if loaded_img is not None:
                 return loaded_img
 
@@ -223,6 +223,6 @@ def get_image(results: Dict[str, Any], cache_dir: str, to_float32: bool = False)
         img = img.astype(np.float32)
 
     if is_training_video_frame(subset, media):
-        save_image_to_cache(img, filename)
+        save_image_to_cache(img, str(filename))
 
     return img
