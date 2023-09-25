@@ -33,6 +33,7 @@ def get_model(
     Returns:
         AnomalyModule: _description_
     """
+    kwargs = kwargs or {}
     if isinstance(model, str):
         if model in MODEL_CONFIGS:
             model = MODEL_CONFIGS[model]
@@ -46,7 +47,7 @@ def get_model(
     return anomalib_get_model(config=model)
 
 
-def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
+def list_models(pattern: Optional[str] = None) -> List[str]:
     model_list = list(MODEL_CONFIGS.keys())
 
     if pattern is not None:

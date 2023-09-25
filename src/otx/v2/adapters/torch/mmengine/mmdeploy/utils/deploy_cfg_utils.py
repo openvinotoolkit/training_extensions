@@ -3,7 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional
+from typing import Optional
 
 from mmengine.config import ConfigDict
 
@@ -12,8 +12,8 @@ from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConf
 
 def patch_input_preprocessing(
     deploy_cfg: ConfigDict,
-    mean: List[float] = [],
-    std: List[float] = [],
+    mean: Optional[list] = None,
+    std: Optional[list] = None,
     to_rgb: bool = False,
 ) -> None:
     """Update backend configuration with input preprocessing options.
@@ -33,8 +33,8 @@ def patch_input_preprocessing(
     options = {
         "flags": ["--reverse_input_channels"] if to_rgb else [],
         "args": {
-            "--mean_values": list(mean),
-            "--scale_values": list(std),
+            "--mean_values": list(mean) if mean is not None else [],
+            "--scale_values": list(std) if std is not None else [],
         },
     }
 

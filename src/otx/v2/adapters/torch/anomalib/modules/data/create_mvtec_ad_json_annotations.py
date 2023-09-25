@@ -42,7 +42,6 @@ Example:
 """
 
 import json
-import os
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -101,9 +100,7 @@ def create_polygons_from_mask(mask_path: str) -> List[List[List[float]]]:
     height, width = mask.shape
 
     polygons = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
-    polygons = [[[point[0][0] / width, point[0][1] / height] for point in polygon] for polygon in polygons]
-
-    return polygons
+    return [[[point[0][0] / width, point[0][1] / height] for point in polygon] for polygon in polygons]
 
 
 def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
@@ -170,7 +167,7 @@ def save_json_items(json_items: Dict[str, Any], file: str) -> None:
         json_items (Dict[str, Any]): MVTec AD JSON items
         file (str): Path to save as a JSON file.
     """
-    with open(file=file, mode="w", encoding="utf-8") as f:
+    with Path(file).open(mode="w", encoding="utf-8") as f:
         json.dump(json_items, f)
 
 
@@ -185,8 +182,8 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
     Raises:
         ValueError: When task is not classification, detection or segmentation.
     """
-    annotation_path = os.path.join(annotation_path, task)
-    os.makedirs(annotation_path, exist_ok=True)
+    _annotation_path = Path(annotation_path) / task
+    _annotation_path.mkdir(exist_ok=True)
 
     for split in ["train", "val", "test"]:
         if task == "classification":
@@ -196,14 +193,15 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
         elif task == "segmentation":
             create_json_items = create_segmentation_json_items
         else:
-            raise ValueError(f"Unknown task {task}. Available tasks are classification, detection and segmentation.")
+            msg = f"Unknown task {task}. Available tasks are classification, detection and segmentation."
+            raise ValueError(msg)
 
         if split == "train":
             df_items = make_mvtec_dataset(root=Path(data_path), split=Split.TRAIN)
         else:
             df_items = make_mvtec_dataset(root=Path(data_path), split=Split.TEST)
         json_items = create_json_items(df_items)
-        save_json_items(json_items, f"{annotation_path}/{split}.json")
+        save_json_items(json_items, f"{_annotation_path!s}/{split}.json")
 
 
 def create_mvtec_ad_category_annotations(data_path: str, annotation_path: str) -> None:
@@ -247,9 +245,9 @@ def create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: Opt
 
     for category in categories:
         print(f"Creating annotations for {category}")
-        category_data_path = os.path.join(mvtec_data_path, category)
-        category_annotation_path = os.path.join(mvtec_annotation_path, category)
-        create_mvtec_ad_category_annotations(category_data_path, category_annotation_path)
+        category_data_path = Path(mvtec_data_path) / category
+        category_annotation_path = Path(mvtec_annotation_path) / category
+        create_mvtec_ad_category_annotations(str(category_data_path), str(category_annotation_path))
 
 
 def get_args() -> Namespace:

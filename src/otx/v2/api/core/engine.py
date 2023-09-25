@@ -123,8 +123,6 @@ class Engine:
         model: Optional[Union[str, dict, list, object]],
         img: Optional[Union[str, Path, object]],
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[Union[Dict, List]] = None,
-        **kwargs,
     ) -> List[Dict]:
         r"""OTX Engine predict function.
 
@@ -132,7 +130,6 @@ class Engine:
             model : Models to be used in prediction.
             img (optional): Image or Dataloader to use for prediction.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
-            pipeline (Optional[List[Dict]], optional): Data Pipeline to be used img. Defaults to None.
 
         Returns:
             List[Dict]: Prediction Results.
@@ -150,7 +147,6 @@ class Engine:
         model: Optional[Union[str, dict, list, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[str] = None,
-        **kwargs,
     ) -> dict:
         r"""OTX Engine export function.
 

@@ -152,7 +152,8 @@ class OtxMvtecDataset:
                 annotations = create_annotation_from_segmentation_map(mask, np.ones_like(mask), self.label_map)
                 annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
             else:
-                raise ValueError(f"Unknown task type: {self.task_type}")
+                msg = f"Unknown task type: {self.task_type}"
+                raise ValueError(msg)
 
             # Create dataset item
             dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=sample.subset)
@@ -160,5 +161,4 @@ class OtxMvtecDataset:
             # Add to dataset items
             dataset_items.append(dataset_item)
 
-        dataset = DatasetEntity(items=dataset_items)
-        return dataset
+        return DatasetEntity(items=dataset_items)

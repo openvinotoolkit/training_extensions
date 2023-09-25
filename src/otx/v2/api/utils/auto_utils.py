@@ -48,13 +48,17 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
     Overwise set Incremental training type.
     """
 
-    def _count_imgs_in_dir(dir_path: Union[str, Path]) -> int:
+    def _count_imgs_in_dir(dir_path: Union[str, Path], recursive: bool = False) -> int:
         """Count number of images in directory recursively."""
-        valid_suff = ["jpg", "png", "jpeg", "gif"]
+        valid_suff = [".jpg", ".png", ".jpeg", ".gif"]
         num_valid_imgs = 0
-        for file_path in Path(dir_path).rglob("*"):
-            if file_path.suffix[1:].lower() in valid_suff and file_path.is_file():
-                num_valid_imgs += 1
+        files_to_check = Path(dir_path).glob("**/*") if recursive else Path(dir_path).glob("*")
+
+        for file in files_to_check:
+            if file.is_file():
+                suffix = file.suffix.lower()
+                if suffix in valid_suff:
+                    num_valid_imgs += 1
 
         return num_valid_imgs
 
@@ -69,7 +73,7 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
                 msg,
             )
 
-        all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir)
+        all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir, recursive=True)
         # check if number of unlabeled images is more than relative thershold
         if all_unlabeled_images > 1:
             return unlabeled_dir

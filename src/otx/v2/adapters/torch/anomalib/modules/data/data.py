@@ -128,7 +128,8 @@ class OTXAnomalyDataset(Dataset):
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
-            raise ValueError(f"Unsupported task type: {self.task_type}")
+            msg = f"Unsupported task type: {self.task_type}"
+            raise ValueError(msg)
 
         if len(dataset_item.get_shapes_labels()) > 0 and dataset_item.get_shapes_labels()[0].is_anomalous:
             item["label"] = 1

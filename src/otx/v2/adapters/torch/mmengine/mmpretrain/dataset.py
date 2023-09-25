@@ -130,7 +130,8 @@ class Dataset(BaseDataset):
             self._initialize()
 
         if subset not in SUBSET_LIST:
-            raise ValueError(f"{subset} is not supported subset")
+            msg = f"{subset} is not supported subset"
+            raise ValueError(msg)
 
         otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
         labels = self.label_schema.get_labels(include_empty=False)
@@ -140,7 +141,7 @@ class Dataset(BaseDataset):
         if config is None:
             _pipeline = pipeline if pipeline is not None else get_default_pipeline()
             dataset = self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=_pipeline)
-            dataset._build_config = {
+            dataset.configs = {
                 "type": str(self.base_dataset.__qualname__),
                 "data_root": getattr(self, f"{subset}_data_roots"),
                 "ann_file": getattr(self, f"{subset}_ann_files"),
@@ -173,7 +174,7 @@ class Dataset(BaseDataset):
         if not dataset_config.get("pipeline", False):
             dataset_config["pipeline"] = get_default_pipeline()
         dataset = mmpretrain_build_dataset(dataset_config)
-        dataset._build_config = init_config
+        dataset.configs = init_config
         return dataset
 
     def build_dataloader(
@@ -186,7 +187,6 @@ class Dataset(BaseDataset):
         drop_last: bool = False,
         sampler: Optional[Union[Sampler, Iterable, Dict]] = None,
         persistent_workers: bool = False,
-        distributed: bool = False,
         **kwargs,
     ) -> Optional[TorchDataLoader]:
         if dataset is None:
@@ -218,8 +218,8 @@ class Dataset(BaseDataset):
             **kwargs,
         )
         sampler_cfg = sampler if isinstance(sampler, dict) else {"type": f"{sampler.__class__.__qualname__}"}
-        dataset_cfg = dataset._build_config if hasattr(dataset, "_build_config") else dataset
-        dataloader._build_config = {
+        dataset_cfg = dataset.configs if hasattr(dataset, "configs") else dataset
+        dataloader.configs = {
             "batch_size": batch_size,
             "sampler": sampler_cfg,
             "num_workers": num_workers,
@@ -236,7 +236,6 @@ class Dataset(BaseDataset):
         pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
-        distributed: bool = False,
         config: Optional[Union[str, Dict[str, Any]]] = None,
         shuffle: bool = True,
         pin_memory: bool = False,
@@ -253,7 +252,6 @@ class Dataset(BaseDataset):
             batch_size (Optional[int], optional): How many samples per batch to load. Defaults to None.
             num_workers (Optional[int], optional): How many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process. Defaults to None.
-            distributed (bool, optional): Distributed value for sampler. Defaults to False.
             config (Optional[Union[str, Dict[str, Any]]], optional): Path to configuration file or Config. Defaults to None.
             shuffle (bool, optional): Set to ``True`` to have the data reshuffled at every epoch. Defaults to True.
             pin_memory (bool, optional): If ``True``, the data loader will copy Tensors
@@ -276,7 +274,6 @@ class Dataset(BaseDataset):
             pipeline,
             batch_size,
             num_workers,
-            distributed,
         )
         # Config Setting
         if isinstance(config, str):
@@ -309,7 +306,6 @@ class Dataset(BaseDataset):
             drop_last=drop_last,
             sampler=sampler,
             persistent_workers=persistent_workers,
-            distributed=distributed,
             **kwargs,
         )
         if subset == "train" and self.train_type == TrainType.Semisupervised:
@@ -329,7 +325,6 @@ class Dataset(BaseDataset):
                 drop_last=drop_last,
                 sampler=sampler,
                 persistent_workers=persistent_workers,
-                distributed=distributed,
                 **kwargs,
             )
             return ComposedDL([subset_dataloader, unlabeled_dataloader])

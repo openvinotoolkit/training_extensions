@@ -105,6 +105,7 @@ class ProgressCallback(TQDMProgressBar):
         pl_module: LightningModule,
     ) -> None:  # pylint: disable=unused-argument
         """If score exists in trainer.logged_metrics, report the score."""
+        super().on_validation_epoch_end(trainer, pl_module)
         if self.progress_and_hpo_callback is not None:
             score = None
             metric = getattr(self.progress_and_hpo_callback, "metric", None)
@@ -137,7 +138,8 @@ class ProgressCallback(TQDMProgressBar):
         elif stage == "test":
             self._progress = (self.test_batch_idx / (self.total_test_batches_current_dataloader + 1e-10)) * 100
         else:
-            raise ValueError(f"Unknown stage {stage}. Available: train, predict and test")
+            msg = f"Unknown stage {stage}. Available: train, predict and test"
+            raise ValueError(msg)
 
         return self._progress
 

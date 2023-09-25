@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Optional, TypeVar, Union
 import yaml
 
 from otx.v2.api.entities.task_type import TaskType, TrainType
+from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.auto_utils import configure_task_type, configure_train_type
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.importing import get_impl_class, get_otx_root_path
@@ -64,14 +65,6 @@ ADAPTER_QUICK_LINK = {
     "mmseg": "torch.mmengine.mmseg",
     "anomalib": "torch.anomalib",
 }
-
-
-# Prevent ConstructorError: could not determine a constructor for the tag 'tag:yaml.org,2002:python/tuple'
-def construct_tuple(loader: yaml.SafeLoader, node: yaml.SequenceNode) -> tuple:
-    return tuple(loader.construct_sequence(node))
-
-
-yaml.SafeLoader.add_constructor("tag:yaml.org,2002:python/tuple", construct_tuple)
 
 
 def set_dataset_paths(config: dict, args: dict) -> dict:
@@ -197,6 +190,7 @@ class AutoRunner:
         if config is not None:
             if isinstance(config, str):
                 self.config_path = config
+                set_tuple_constructor()
                 with Path(config).open() as file:
                     config = yaml.safe_load(file)
         else:
@@ -269,10 +263,15 @@ class AutoRunner:
         pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
-        distributed: bool = False,
         **kwargs,
     ):
-        subset_dl = self.dataset.subset_dataloader(subset, pipeline, batch_size, num_workers, distributed, **kwargs)
+        subset_dl = self.dataset.subset_dataloader(
+            subset=subset,
+            pipeline=pipeline,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            **kwargs,
+        )
         self.subset_dls[subset] = subset_dl
         return subset_dl
 
@@ -315,7 +314,6 @@ class AutoRunner:
         dataloader_cfg = {
             "batch_size": kwargs.pop("batch_size", None),
             "num_workers": kwargs.pop("num_workers", None),
-            "distributed": kwargs.pop("distributed", None),
         }
 
         # Configure if dataloader is None
@@ -420,7 +418,6 @@ class AutoRunner:
         img: Optional[Union[str, Path, object]],
         model: Optional[Union[str, dict, list, object]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[list] = None,
         **kwargs,
     ) -> list:
         model = self._configure_model(model)
@@ -435,7 +432,6 @@ class AutoRunner:
             model=model,
             img=img,
             checkpoint=checkpoint,
-            pipeline=pipeline,
             **kwargs,
         )
 

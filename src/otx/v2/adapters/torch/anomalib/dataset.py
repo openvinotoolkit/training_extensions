@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from pathlib import Path
 from typing import Iterable, Optional, Union
 
 import albumentations as al
@@ -17,6 +18,7 @@ from torch.utils.data import Sampler
 from otx.v2.adapters.torch.anomalib.modules.data.data import OTXAnomalyDataset
 from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
+from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.dataset_utils import (
     contains_anomalous_images,
     split_local_global_dataset,
@@ -95,7 +97,6 @@ class Dataset(BaseDataset):
         drop_last: bool = False,
         sampler: Optional[Union[Sampler, Iterable]] = None,
         persistent_workers: bool = False,
-        distributed: bool = False,
         **kwargs,
     ) -> Optional[TorchDataLoader]:
         if dataset is None:
@@ -124,7 +125,6 @@ class Dataset(BaseDataset):
         pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = 1,
         num_workers: Optional[int] = 0,
-        distributed: bool = False,
         config: Optional[Union[str, dict]] = None,
         shuffle: bool = True,
         pin_memory: bool = False,
@@ -132,19 +132,20 @@ class Dataset(BaseDataset):
         sampler: Optional[Union[Sampler, Iterable]] = None,
         persistent_workers: bool = False,
         **kwargs,
-    ) -> Optional[TorchDataLoader]:
+    ) -> TorchDataLoader:
         super().subset_dataloader(
             subset,
             pipeline,
             batch_size,
             num_workers,
-            distributed,
         )
         if subset == "predict":
             pass
         _config: dict = {}
         if isinstance(config, str):
-            _config = yaml.load(open(config), Loader=yaml.FullLoader)
+            set_tuple_constructor()
+            with Path(config).open() as f:
+                _config = yaml.safe_load(f)
         elif config is not None:
             _config = config
 
@@ -164,7 +165,6 @@ class Dataset(BaseDataset):
             drop_last=drop_last,
             sampler=sampler,
             persistent_workers=persistent_workers,
-            distributed=distributed,
             **kwargs,
         )
 

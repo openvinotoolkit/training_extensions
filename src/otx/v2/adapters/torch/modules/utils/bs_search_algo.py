@@ -23,9 +23,11 @@ class BsSearchAlgo:
 
     def __init__(self, train_func: Callable[[int], None], default_bs: int, max_bs: int) -> None:
         if default_bs <= 0:
-            raise ValueError("Batch size should be bigger than 0.")
+            msg = "Batch size should be bigger than 0."
+            raise ValueError(msg)
         if max_bs <= 0:
-            raise ValueError("train data set size should be bigger than 0.")
+            msg = "train data set size should be bigger than 0."
+            raise ValueError(msg)
 
         if max_bs < default_bs:
             default_bs = max_bs
@@ -49,7 +51,7 @@ class BsSearchAlgo:
             if str(e).startswith("CUDA out of memory."):
                 cuda_oom = True
             else:
-                raise e
+                raise
 
         max_memory_allocated = torch.cuda.max_memory_allocated(device=None)
         if not cuda_oom:
@@ -97,7 +99,8 @@ class BsSearchAlgo:
                 break
 
         if available_bs == 0:
-            raise RuntimeError("Current device can't train model even with 2.")
+            msg = "Current device can't train model even with 2."
+            raise RuntimeError(msg)
 
         return available_bs
 
@@ -125,7 +128,8 @@ class BsSearchAlgo:
         if cuda_oom or bs_mem_usage > self._mem_upper_bound:
             self._default_bs -= 2
             if self._default_bs <= 0:
-                raise RuntimeError("Current device can't train model even with 2.")
+                msg = "Current device can't train model even with 2."
+                raise RuntimeError(msg)
 
             return self.auto_decrease_batch_size()
 
@@ -162,17 +166,17 @@ class BsSearchAlgo:
 
     def _estimate_batch_size(self, estimation_pct: float) -> int:
         if len(self._bs_try_history) < 2:
-            raise RuntimeError("At least two trials should be done without CUDA OOM to estimate batch size.")
+            msg = "At least two trials should be done without CUDA OOM to estimate batch size."
+            raise RuntimeError(msg)
 
         def distance_from_bound(val: tuple) -> int:
             if val[1] < self._mem_lower_bound:
                 # if memory usage is same, then higher batch size is preferred
                 return self._mem_lower_bound - val[1] - val[0] / 10000
-            elif self._mem_upper_bound < val[1]:
+            if self._mem_upper_bound < val[1]:
                 # if memory usage is same, then lower batch size is preferred
                 return val[1] - self._mem_upper_bound + val[0] / 10000
-            else:
-                return 0
+            return 0
 
         bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=distance_from_bound)
         bs1 = bs_arr[0][0]
@@ -187,12 +191,11 @@ class BsSearchAlgo:
         if graident == 0:  # all batch size history used same GPU memory
             if bs1_mem_usage < self._mem_lower_bound:
                 return bs1 + 2
-            elif bs1_mem_usage > self._mem_upper_bound:
+            if bs1_mem_usage > self._mem_upper_bound:
                 if bs1 <= 2:
                     return 2
                 return bs1 - 2
-            else:
-                return bs1
+            return bs1
 
         estimated_bs = round(((self._total_mem * estimation_pct) - b) / (graident * 2)) * 2
 

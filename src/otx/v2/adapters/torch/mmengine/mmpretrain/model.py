@@ -24,28 +24,36 @@ MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/classification/model
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
-def configure_in_channels(config: Config, input_shape: List[int] = [3, 224, 224]) -> Config:
+def configure_in_channels(config: Config, input_shape: Optional[List[int]] = None) -> Config:
     # COPY from otx.algorithms.classification.adapters.mmpretrain.configurer.ClassificationConfigurer::configure_in_channel
     configure_required = False
     wrap_model = hasattr(config, "model")
     model_config = config.get("model") if wrap_model else config
-    if model_config.get("neck") is not None:
-        if model_config["neck"].get("in_channels") is not None and model_config["neck"]["in_channels"] <= 0:
-            configure_required = True
-    if not configure_required and model_config.get("head") is not None:
-        if model_config["head"].get("in_channels") is not None and model_config["head"]["in_channels"] <= 0:
-            configure_required = True
+    if (
+        model_config.get("neck") is not None
+        and model_config["neck"].get("in_channels") is not None
+        and model_config["neck"]["in_channels"] <= 0
+    ):
+        configure_required = True
+    if (
+        not configure_required
+        and model_config.get("head") is not None
+        and model_config["head"].get("in_channels") is not None
+        and model_config["head"]["in_channels"] <= 0
+    ):
+        configure_required = True
     if not configure_required:
         return config
 
     layer = build_backbone(model_config["backbone"])
     layer.eval()
+    _input_shape = [3, 224, 224] if input_shape is None else input_shape
     if hasattr(layer, "input_shapes"):
-        input_shape = next(iter(layer.input_shapes.values()))
-        input_shape = input_shape[1:]
-        if any(i < 0 for i in input_shape):
-            input_shape = [3, 244, 244]
-    output = layer(torch.rand([1, *list(input_shape)]))
+        _input_shape = next(iter(layer.input_shapes.values()))
+        _input_shape = _input_shape[1:]
+        if any(i < 0 for i in _input_shape):
+            _input_shape = [3, 244, 244]
+    output = layer(torch.rand([1, *list(_input_shape)]))
     if isinstance(output, (tuple, list)):
         output = output[-1]
 
@@ -84,7 +92,6 @@ def get_model(
     pretrained: Union[str, bool] = False,
     num_classes: Optional[int] = None,
     channel_last: bool = False,
-    return_dict: bool = False,
     **kwargs,
 ) -> torch.nn.Module:
     model_name = None
@@ -118,8 +125,6 @@ def get_model(
             head = model.model.get("head", {})
             if head and hasattr(head, "num_classes"):
                 model["model"]["head"]["num_classes"] = num_classes
-        if return_dict:
-            return model.model._cfg_dict.to_dict()
 
     model = get_mmpretrain_model(model, pretrained=pretrained, **kwargs)
 

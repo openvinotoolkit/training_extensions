@@ -5,14 +5,11 @@
 
 
 import copy
-import glob
 import shutil
 from pathlib import Path
 from typing import Optional, Tuple, Union
 
-import numpy as np
 import torch
-from mmengine.device import get_device
 from mmengine.evaluator import Evaluator
 from mmengine.hooks import Hook
 from mmengine.optim import _ParamScheduler
@@ -25,6 +22,7 @@ from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
+from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config, update_runner_config
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils.importing import get_all_args, get_non_default_args
 from otx.v2.api.utils.logger import get_logger
@@ -67,28 +65,6 @@ class MMXEngine(Engine):
             value is None for value in kwargs.values()
         )
 
-        def _get_config_value(
-            arg_key: str,
-            positional_args: dict,
-            default: Optional[Union[int, str]] = None,
-        ) -> Optional[Union[dict, list]]:
-            arg_config = positional_args.get(arg_key, None)
-            arg_config = self.config.get(arg_key, default) if arg_config is None else arg_config
-            return arg_config
-
-        def _set_evaluator(evaluator: Union[list, dict], num_classes: int) -> Union[list, dict]:
-            if isinstance(evaluator, list):
-                for metric in evaluator:
-                    if isinstance(metric, dict):
-                        metric["_scope_"] = self.registry.name
-                        if "topk" in metric:
-                            metric["topk"] = [1] if num_classes < 5 else [1, 5]
-            elif isinstance(evaluator, dict):
-                evaluator["_scope_"] = self.registry.name
-                if "topk" in evaluator:
-                    evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
-            return evaluator
-
         # Update Model & Dataloaders & Custom hooks
         model = func_args.get("model", None)
         num_classes = -1
@@ -107,80 +83,22 @@ class MMXEngine(Engine):
         # Sub Arguments
         arg_keys = ["param_scheduler", "custom_hooks"]
         for arg_key in arg_keys:
-            arg_config = _get_config_value(arg_key, func_args)
+            arg_config = get_value_from_config(arg_key, func_args, config=self.config)
             if arg_config is not None:
                 kwargs[arg_key] = arg_config
 
-        # Update train_cfg
-        precision = _get_config_value("precision", func_args)
-        if kwargs.get("train_dataloader", None) is not None:
-            max_iters = _get_config_value("max_iters", func_args)
-            max_epochs = _get_config_value("max_epochs", func_args)
-            val_interval = _get_config_value("val_interval", func_args, default=1)
-            if max_iters is not None and max_epochs is not None:
-                raise ValueError("Only one of `max_epochs` or `max_iters` can be set.")
-            if "train_cfg" not in kwargs or kwargs["train_cfg"] is None:
-                kwargs["train_cfg"] = {"val_interval": val_interval, "by_epoch": True}
-            if max_epochs is not None:
-                kwargs["train_cfg"]["by_epoch"] = True
-                kwargs["train_cfg"]["max_epochs"] = max_epochs
-            elif max_iters is not None:
-                kwargs["train_cfg"]["by_epoch"] = False
-                kwargs["train_cfg"]["max_iters"] = max_iters
-            # Update Optimizer
-            if "optim_wrapper" not in kwargs or kwargs["optim_wrapper"] is None:
-                optimizer = _get_config_value("optimizer", func_args)
-                if optimizer is None:
-                    # FIXME: Remove default setting here
-                    optimizer = {"type": "SGD", "lr": 0.01, "momentum": 0.9, "weight_decay": 0.0005}
-                if get_device() not in ("cuda", "gpu", "npu", "mlu"):
-                    logger.warning(f"{get_device()} device do not support mixed precision.")
-                    kwargs["optim_wrapper"] = {"type": "OptimWrapper", "optimizer": optimizer}
-                else:
-                    kwargs["optim_wrapper"] = {"type": "AmpOptimWrapper", "dtype": precision, "optimizer": optimizer}
-        elif isinstance(self.config.get("train_dataloader", None), dict):
-            # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
-            self.config["train_dataloader"] = None
-            self.config["train_cfg"] = None
-            self.config["optim_wrapper"] = None
+        precision: Optional[str] = func_args.get("precision", None)
+        precision = self.config.get(arg_key, None) if precision is None else precision
 
-        # Update val_cfg (ValLoop)
-        if kwargs.get("val_dataloader", None) is not None:
-            if "val_cfg" not in kwargs or kwargs["val_cfg"] is None:
-                kwargs["val_cfg"] = {}
-            if precision in ["float16", "fp16"]:
-                kwargs["val_cfg"]["fp16"] = True
-            # Update val_evaluator
-            val_evaluator = _get_config_value("val_evaluator", func_args)
-            if val_evaluator is None:
-                # FIXME: Need to set val_evaluator as task-agnostic way
-                val_evaluator = [{"type": "Accuracy"}]
-            kwargs["val_evaluator"] = _set_evaluator(val_evaluator, num_classes=num_classes)
-        elif isinstance(self.config.get("val_dataloader", None), dict):
-            # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
-            logger.warning("Currently, OTX does not accept val_dataloader as a dict configuration.")
-            self.config["val_dataloader"] = None
-            self.config["val_cfg"] = None
-            self.config["val_evaluator"] = None
-
-        # Update test_cfg (TestLoop)
-        if kwargs.get("test_dataloader", None) is not None:
-            if "test_cfg" not in kwargs or kwargs["test_cfg"] is None:
-                kwargs["test_cfg"] = {}
-            if precision in ["float16", "fp16"]:
-                kwargs["test_cfg"]["fp16"] = True
-            # Update test_evaluator
-            test_evaluator = _get_config_value("test_evaluator", func_args)
-            if test_evaluator is None:
-                # FIXME: Need to set test_evaluator as task-agnostic way
-                test_evaluator = self.config.get("val_evaluator", [{"type": "Accuracy"}])
-            kwargs["test_evaluator"] = _set_evaluator(test_evaluator, num_classes=num_classes)
-        elif isinstance(self.config.get("test_dataloader", None), dict):
-            # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
-            logger.warning("Currently, OTX does not accept test_dataloader as a dict configuration.")
-            self.config["test_dataloader"] = None
-            self.config["test_cfg"] = None
-            self.config["test_evaluator"] = None
+        # Update train_cfg & val_cfg (ValLoop) & test_cfg (TestLoop)
+        self.config, kwargs = update_runner_config(
+            func_args=func_args,
+            config=self.config,
+            precision=precision,
+            num_classes=num_classes,
+            scope=self.registry.name,
+            **kwargs,
+        )
 
         # Update randomness
         seed = func_args.get("seed", self.config.pop("seed", None))
@@ -188,8 +106,8 @@ class MMXEngine(Engine):
         if seed is not None:
             kwargs["randomness"] = {"seed": seed, "deterministic": deterministic}
 
-        distributed = _get_config_value("distributed", func_args, default=False)
-        default_hooks = _get_config_value("default_hooks", func_args)
+        distributed = get_value_from_config("distributed", func_args, config=self.config, default=False)
+        default_hooks = get_value_from_config("default_hooks", func_args, config=self.config)
         if default_hooks is None:
             # FIXME: Default hooks need to align
             default_hooks = {
@@ -211,7 +129,7 @@ class MMXEngine(Engine):
                 "sampler_seed": {"type": "DistSamplerSeedHook"} if distributed else None,
             }
         kwargs["default_hooks"] = default_hooks
-        visualizer = _get_config_value("visualizer", func_args)
+        visualizer = get_value_from_config("visualizer", func_args, config=self.config)
         if visualizer is not None:
             self.config["visualizer"] = visualizer
             if isinstance(visualizer, dict):
@@ -234,7 +152,8 @@ class MMXEngine(Engine):
             if config_key not in runner_arg_list:
                 removed_key.append(config_key)
         if removed_key:
-            logger.warning(f"In Engine.config, remove {removed_key} " "that are unavailable to the Runner.")
+            msg = f"In Engine.config, remove {removed_key} that are unavailable to the Runner."
+            logger.warning(msg, stacklevel=2)
             for config_key in removed_key:
                 self.config.pop(config_key)
         return update_check
@@ -322,7 +241,8 @@ class MMXEngine(Engine):
             self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
             if base_runner is None:
-                raise ModuleNotFoundError("Runner not found.")
+                msg = "Runner not found."
+                raise ModuleNotFoundError(msg)
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_train",
@@ -337,13 +257,13 @@ class MMXEngine(Engine):
 
         # Get CKPT path
         if self.config.train_cfg.by_epoch:
-            ckpt_path = glob.glob(str(target_folder / "epoch*.pth"))[-1]
+            ckpt_path = list(Path(target_folder).glob("epoch*.pth"))[-1]
         else:
-            ckpt_path = glob.glob(str(target_folder / "iter*.pth"))[-1]
-        best_ckpt_path = glob.glob(str(target_folder / "best_*.pth"))
+            ckpt_path = list(Path(target_folder).glob("iter*.pth"))[-1]
+        best_ckpt_path = list(Path(target_folder).glob("best_*.pth"))
         if len(best_ckpt_path) >= 1:
             ckpt_path = best_ckpt_path[0]
-        last_ckpt = glob.glob(str(target_folder / "last_checkpoint"))[-1]
+        last_ckpt = list(Path(target_folder).glob("last_checkpoint"))[-1]
         # TODO: Clean up output
         # Copy & Remove weights file
         output_model_dir = target_folder / "models"
@@ -378,7 +298,8 @@ class MMXEngine(Engine):
             self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
             if base_runner is None:
-                raise ModuleNotFoundError("Runner not found.")
+                msg = "Runner not found."
+                raise ModuleNotFoundError(msg)
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_validate",
@@ -386,10 +307,11 @@ class MMXEngine(Engine):
                 **self.config,
             )
         elif update_check:
-            self.runner._val_dataloader = self.config["val_dataloader"]
-            self.runner._val_loop = self.config["val_cfg"]
-            self.runner._val_evaluator = self.config["val_evaluator"]
-            self.runner._experiment_name = f"otx_validate_{self.runner.timestamp}"
+            # FIXME: SLF001
+            self.runner._val_dataloader = self.config["val_dataloader"]  # noqa: SLF001
+            self.runner._val_loop = self.config["val_cfg"]  # noqa: SLF001
+            self.runner._val_evaluator = self.config["val_evaluator"]  # noqa: SLF001
+            self.runner._experiment_name = f"otx_validate_{self.runner.timestamp}"  # noqa: SLF001
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
 
@@ -418,7 +340,8 @@ class MMXEngine(Engine):
             self.config.pop("work_dir")
             base_runner = self.registry.get("Runner")
             if base_runner is None:
-                raise ModuleNotFoundError("Runner not found.")
+                msg = "Runner not found."
+                raise ModuleNotFoundError(msg)
             self.runner = base_runner(
                 work_dir=str(target_folder),
                 experiment_name="otx_test",
@@ -426,26 +349,17 @@ class MMXEngine(Engine):
                 **self.config,
             )
         elif update_check:
-            self.runner._test_dataloader = self.config["test_dataloader"]
-            self.runner._test_loop = self.config["test_cfg"]
-            self.runner._test_evaluator = self.config["test_evaluator"]
-            self.runner._experiment_name = f"otx_test_{self.runner.timestamp}"
+            # FIXME: SLF001
+            self.runner._test_dataloader = self.config["test_dataloader"]  # noqa: SLF001
+            self.runner._test_loop = self.config["test_cfg"]  # noqa: SLF001
+            self.runner._test_evaluator = self.config["test_evaluator"]  # noqa: SLF001
+            self.runner._experiment_name = f"otx_test_{self.runner.timestamp}"  # noqa: SLF001
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
 
         self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
 
         return self.runner.test()
-
-    def predict(
-        self,
-        model: Optional[Union[torch.nn.Module, dict, str]] = None,
-        img: Optional[Union[str, np.ndarray, list]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[Union[dict, list]] = None,
-        **kwargs,
-    ) -> list:
-        raise NotImplementedError(f"{self}.predict is not implemented.")
 
     def export(
         self,
@@ -458,13 +372,12 @@ class MMXEngine(Engine):
         codebase: Optional[str] = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: Optional[str] = None,  # File path only?
-        dump_features: bool = False,  # TODO
         device: str = "cpu",
         input_shape: Optional[Tuple[int, int]] = None,
-        **kwargs,
     ) -> dict:  # Output: IR Models
         if not AVAILABLE:
-            raise ModuleNotFoundError("MMXEngine's export is dependent on mmdeploy.")
+            msg = "MMXEngine's export is dependent on mmdeploy."
+            raise ModuleNotFoundError(msg)
         from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
 
         from otx.v2.adapters.torch.mmengine.mmdeploy.exporter import Exporter
@@ -481,7 +394,7 @@ class MMXEngine(Engine):
             elif isinstance(model, Config):
                 model_cfg = copy.deepcopy(model)
             elif isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
-                model_cfg = model._config.get("model", model._config)
+                model_cfg = model._config.get("model", model._config)  # noqa: SLF001
             else:
                 raise NotImplementedError
         elif self.dumped_config.get("model", None) and self.dumped_config["model"] is not None:
@@ -490,7 +403,8 @@ class MMXEngine(Engine):
             else:
                 model_cfg = self.dumped_config["model"]
         else:
-            raise ValueError("Not fount target model.")
+            msg = "Not fount target model."
+            raise ValueError(msg)
 
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)

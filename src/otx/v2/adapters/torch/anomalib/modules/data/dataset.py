@@ -234,6 +234,7 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
                             "is not fully supported. Polygons with a area of zero "
                             "will be removed.",
                             UserWarning,
+                            stacklevel=2,
                         )
             annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
@@ -313,6 +314,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
                             "is not fully supported. Polygons with a area of zero "
                             "will be removed.",
                             UserWarning,
+                            stacklevel=2,
                         )
             annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 

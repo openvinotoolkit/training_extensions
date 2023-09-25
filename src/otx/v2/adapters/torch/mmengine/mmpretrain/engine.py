@@ -23,7 +23,6 @@ class MMPTEngine(MMXEngine):
         self,
         work_dir: Optional[Union[str, Path]] = None,
         config: Optional[Union[Dict, Config, str]] = None,
-        **kwargs,
     ) -> None:
         super().__init__(work_dir=work_dir, config=config)
         self.registry = MMPretrainRegistry()
@@ -50,20 +49,21 @@ class MMPTEngine(MMXEngine):
             pipeline = get_default_pipeline()
         config = Config({})
         if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
-            config = model._config
+            config = model._config  # noqa: SLF001
         elif isinstance(model, dict) and "_config" in model:
             config = model["_config"]
         config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}
         if isinstance(model, dict):
             model.setdefault("_config", config)
         elif isinstance(model, torch.nn.Module):
-            model._config = config
+            model._config = config  # noqa: SLF001
 
         # Check if the model can use mmpretrain's inference api.
         if isinstance(checkpoint, Path):
             checkpoint = str(checkpoint)
-        if isinstance(model, BaseModel) and model._metainfo is not None and model._metainfo.results is not None:
-            task = [result.task for result in model._metainfo.results][0]
+        metainfo = getattr(model, "_metainfo", None)
+        if isinstance(model, BaseModel) and metainfo is not None and metainfo.results is not None:
+            task = next(result.task for result in metainfo.results)
             inputs = {
                 "model": model,
                 "pretrained": checkpoint,
@@ -74,7 +74,7 @@ class MMPTEngine(MMXEngine):
             if task in ("Image Caption", "Visual Grounding", "Visual Question Answering"):
                 inputs["images"] = inputs.pop("inputs")
             return [inference_model(**inputs, **kwargs)]
-        elif task is not None and task != "Image Classification":
+        if task is not None and task != "Image Classification":
             raise NotImplementedError
         inferencer = ImageClassificationInferencer(
             model=model,
@@ -93,7 +93,6 @@ class MMPTEngine(MMXEngine):
         codebase: Optional[str] = "mmpretrain",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: Optional[str] = None,  # File path only?
-        dump_features: bool = False,  # TODO
         device: str = "cpu",
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
@@ -106,7 +105,6 @@ class MMPTEngine(MMXEngine):
             codebase=codebase,
             export_type=export_type,
             deploy_config=deploy_config,
-            dump_features=dump_features,
             device=device,
             input_shape=input_shape,
             **kwargs,

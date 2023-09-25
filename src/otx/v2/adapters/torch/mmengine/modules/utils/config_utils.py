@@ -584,8 +584,8 @@ def dump_lazy_config(config: Config, file: Optional[Union[str, Path]] = None, sc
     model = output_config.get("model", None)
     if isinstance(model, torch.nn.Module):
         model_config = {}
-        if hasattr(model, "_build_config"):
-            model_config = model._build_config
+        if hasattr(model, "_config"):
+            model_config = model._config
         else:
             logger.warning(WARN_MSG)
         model_config["type"] = f"{model.__class__.__qualname__}"
@@ -596,8 +596,8 @@ def dump_lazy_config(config: Config, file: Optional[Union[str, Path]] = None, sc
         dataloader = output_config.get(f"{subset}_dataloader", None)
         if isinstance(dataloader, DataLoader):
             dl_config = {}
-            if hasattr(dataloader, "_build_config"):
-                dl_config = dataloader._build_config
+            if hasattr(dataloader, "configs"):
+                dl_config = dataloader.configs
             else:
                 logger.warning(WARN_MSG)
             dl_config["dataset"]["_scope_"] = scope

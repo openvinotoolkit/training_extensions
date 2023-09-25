@@ -54,7 +54,7 @@ def get_logger(
     # unexpectedly show up on the console, creating much unwanted clutter.
     # To fix this issue, we set the root logger's StreamHandler, if any, to log
     # at the ERROR level.
-    for handler in logger.root.handlers:  # type: ignore
+    for handler in logger.root.handlers:
         if isinstance(handler, StreamHandler):
             handler.setLevel(logging.ERROR)
 

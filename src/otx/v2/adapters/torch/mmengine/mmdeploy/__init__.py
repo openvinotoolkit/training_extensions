@@ -6,11 +6,18 @@
 AVAILABLE = True
 VERSION = None
 DEBUG = None
+
+
+def raise_import_error(msg: str) -> ImportError:
+    raise ImportError(msg)
+
+
 try:
     import platform
 
     if platform.system() not in ("Linux", "Windows"):
-        raise ImportError("mmdeploy is only supports Windows and Linux.")
+        msg = "mmdeploy is only supports Windows and Linux."
+        raise_import_error(msg)
 
     import mmdeploy
 

@@ -43,5 +43,6 @@ class AnomalyBase(SegmentationModel):
             normalized = np.minimum(normalized, 1)
             normalized = np.maximum(normalized, 0)
         else:
-            raise ValueError(f"Targets must be either Tensor or Numpy array. Received {type(targets)}")
+            msg = f"Targets must be either Tensor or Numpy array. Received {type(targets)}"
+            raise TypeError(msg)
         return normalized

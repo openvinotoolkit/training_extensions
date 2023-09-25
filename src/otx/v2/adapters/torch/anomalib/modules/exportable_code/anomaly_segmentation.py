@@ -38,6 +38,4 @@ class AnomalySegmentation(AnomalyBase):
 
         input_image_height = meta["original_shape"][0]
         input_image_width = meta["original_shape"][1]
-        result = cv2.resize(anomaly_map, (input_image_width, input_image_height))
-
-        return result
+        return cv2.resize(anomaly_map, (input_image_width, input_image_height))

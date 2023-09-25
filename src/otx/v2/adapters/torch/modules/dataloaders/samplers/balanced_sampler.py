@@ -54,7 +54,8 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             self.num_tail = min(len(cls_indices) for cls_indices in self.img_indices.values())
             base = 1 - (1 / self.num_tail)
             if base == 0:
-                raise ValueError("Required more than one sample per class")
+                msg = "Required more than one sample per class"
+                raise ValueError(msg)
             self.num_trials = int(math.log(0.001, base))
             if int(self.data_length / self.num_cls) < self.num_trials:
                 self.num_trials = int(self.data_length / self.num_cls)
@@ -70,7 +71,7 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         if self.num_replicas > 1:
             # If the dataset length is evenly divisible by # of replicas, then there
             # is no need to drop any data, since the dataset will be split equally.
-            if self.drop_last and num_samples % self.num_replicas != 0:  # type: ignore
+            if self.drop_last and num_samples % self.num_replicas != 0:
                 # Split to nearest available length that is evenly divisible.
                 # This is to ensure each rank receives the same amount of data when
                 # using this Sampler.
@@ -78,10 +79,10 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
                     # `type:ignore` is required because Dataset cannot provide a default __len__
                     # see NOTE in pytorch/torch/utils/data/sampler.py
                     (num_samples - self.num_replicas)
-                    / self.num_replicas,  # type: ignore
+                    / self.num_replicas,
                 )
             else:
-                num_samples = math.ceil(num_samples / self.num_replicas)  # type: ignore
+                num_samples = math.ceil(num_samples / self.num_replicas)
             self.total_size = num_samples * self.num_replicas
 
         return num_samples
@@ -89,10 +90,11 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     def __iter__(self) -> Iterator:
         """Iter."""
         _indices = []
+        rng = np.random.default_rng()
         for _ in range(self.repeat):
             for _ in range(self.num_trials):
                 indice = np.concatenate(
-                    [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices],
+                    [rng.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices],
                 )
                 _indices.append(indice)
 

@@ -63,7 +63,8 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             self.new_indices = self.dataset.img_indices["new"]
             self.old_indices = self.dataset.img_indices["old"]
         else:
-            raise TypeError(f"{self.dataset} type does not have img_indices")
+            msg = f"{self.dataset} type does not have img_indices"
+            raise TypeError(msg)
 
         if not len(self.new_indices) > 0:
             self.new_indices = self.old_indices
@@ -91,7 +92,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         if self.num_replicas > 1:
             # If the dataset length is evenly divisible by # of replicas, then there
             # is no need to drop any data, since the dataset will be split equally.
-            if self.drop_last and num_samples % self.num_replicas != 0:  # type: ignore
+            if self.drop_last and num_samples % self.num_replicas != 0:
                 # Split to nearest available length that is evenly divisible.
                 # This is to ensure each rank receives the same amount of data when
                 # using this Sampler.
@@ -99,10 +100,10 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
                     # `type:ignore` is required because Dataset cannot provide a default __len__
                     # see NOTE in pytorch/torch/utils/data/sampler.py
                     (num_samples - self.num_replicas)
-                    / self.num_replicas,  # type: ignore
+                    / self.num_replicas,
                 )
             else:
-                num_samples = math.ceil(num_samples / self.num_replicas)  # type: ignore
+                num_samples = math.ceil(num_samples / self.num_replicas)
             self.total_size = num_samples * self.num_replicas
 
         return num_samples
@@ -110,10 +111,11 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     def __iter__(self) -> Iterator:
         """Iter."""
         _indices = []
+        rng = np.random.default_rng()
         for _ in range(self.repeat):
             for _ in range(int(self.data_length / (1 + self.old_new_ratio))):
                 indice = np.concatenate(
-                    [np.random.choice(self.new_indices, 1), np.random.choice(self.old_indices, self.old_new_ratio)],
+                    [rng.choice(self.new_indices, 1), rng.choice(self.old_indices, self.old_new_ratio)],
                 )
                 _indices.append(indice)
 
@@ -122,7 +124,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             num_extra = int(
                 np.ceil(self.data_length * self.repeat / self.samples_per_gpu),
             ) * self.samples_per_gpu - len(indices)
-            indices = np.concatenate([indices, np.random.choice(indices, num_extra)])
+            indices = np.concatenate([indices, rng.choice(indices, num_extra)])
         indices = indices.astype(np.int64).tolist()
 
         if self.num_replicas > 1:

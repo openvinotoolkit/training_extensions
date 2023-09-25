@@ -278,7 +278,6 @@ class BaseDataset:
         pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
-        distributed: bool = False,
         **kwargs,
     ):
         """BaseDataset's subset_dataloader function.

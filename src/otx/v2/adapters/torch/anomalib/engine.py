@@ -32,6 +32,7 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
 from otx.v2.api.core.engine import Engine
+from otx.v2.api.utils import set_tuple_constructor
 
 from .registry import AnomalibRegistry
 
@@ -51,12 +52,15 @@ class AnomalibEngine(Engine):
         self.latest_model = {"model": None, "checkpoint": None}
         self.task = task
         self.config = self._initial_config(config)
-        self.config.default_root_dir = self.work_dir
+        if hasattr(self, "work_dir"):
+            self.config.default_root_dir = self.work_dir
         self.registry = AnomalibRegistry()
 
     def _initial_config(self, config: Optional[Union[str, dict]] = None) -> DictConfig:
         if isinstance(config, str) and config.endswith(".yaml"):
-            config = yaml.load(open(config), Loader=yaml.FullLoader)
+            set_tuple_constructor()
+            with Path(config).open() as f:
+                config = yaml.safe_load(f)
         elif config is None:
             config = {}
         return DictConfig(config)
@@ -101,7 +105,7 @@ class AnomalibEngine(Engine):
         if metrics is None:
             metrics = self.config.get("metrics", {})
         metric_threshold = metrics.get("threshold", {})
-        callbacks = [
+        return [
             MinMaxNormalizationCallback(),
             MetricsConfigurationCallback(
                 task=self.task,
@@ -115,7 +119,6 @@ class AnomalibEngine(Engine):
                 manual_pixel_threshold=metric_threshold.get("manual_pixel", None),
             ),
         ]
-        return callbacks
 
     def train(
         self,
@@ -133,6 +136,8 @@ class AnomalibEngine(Engine):
         val_interval: Optional[int] = None,
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
+        # TODO: distributed
+        _ = distributed
         train_args = {
             "max_iters": max_iters,
             "max_epochs": max_epochs,
@@ -204,13 +209,12 @@ class AnomalibEngine(Engine):
             )
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint")
-        results = self.trainer.validate(
+        return self.trainer.validate(
             model=model,
             dataloaders=val_dataloader,
             ckpt_path=checkpoint,
             datamodule=datamodule,
         )
-        return results
 
     def test(
         self,
@@ -239,27 +243,25 @@ class AnomalibEngine(Engine):
             resume_from_checkpoint=str(checkpoint) if checkpoint is not None else None,
             **self.trainer_config,
         )
-        results = self.trainer.test(
+        return self.trainer.test(
             model=model,
             dataloaders=[test_dataloader],
         )
-        return results
 
     def predict(
         self,
         model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
         img: Optional[Union[PREDICT_FORMAT, EVAL_DATALOADERS, LightningDataModule]] = None,
         checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[Union[dict, list]] = None,
-        device: str = "auto",  # ["auto", "cpu", "gpu", "cuda"]
-        visualization_mode: str = "simple",  # ["full", "simple"]
-        **kwargs,
+        device: Optional[list] = None,  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
-        results = []
+        # TODO: Set parameters
         if model is None:
             model = self.latest_model.get("model", None)
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
+        if device is None:
+            device = self.trainer_config.pop("device", None)
 
         logger = self.trainer_config.pop("logger", True)
         target_folder = f"{self.timestamp}_predict"
@@ -290,7 +292,7 @@ class AnomalibEngine(Engine):
                 center_crop=center_crop,
                 normalization=normalization,
             )
-            dataset = InferenceDataset(img, image_size=image_size, transform=transform)  # type: ignore
+            dataset = InferenceDataset(img, image_size=image_size, transform=transform)
             dataloader = DataLoader(dataset)
         elif isinstance(img, (DataLoader, LightningDataModule)):
             dataloader = [img]
@@ -298,11 +300,10 @@ class AnomalibEngine(Engine):
             # TODO: img -> np.ndarray?
             pass
         # Lightning Inferencer
-        results = trainer.predict(
+        return trainer.predict(
             model=model,
             dataloaders=[dataloader],
         )
-        return results
 
     def export(
         self,
@@ -311,18 +312,12 @@ class AnomalibEngine(Engine):
         ] = None,  # Module with _config OR Model Config OR config-file
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[_PRECISION_INPUT] = None,
-        task: Optional[str] = None,
-        codebase: Optional[str] = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: Optional[str] = None,  # File path only?
-        dump_features: bool = False,  # TODO
         device: Optional[str] = None,
         input_shape: Optional[Tuple[int, int]] = None,
-        **kwargs,
     ) -> dict:  # Output: IR Models
         # Set input_shape (input_size)
-        if model is None:
-            model = self.latest_model.get("model", None)
+        _model = self.latest_model.get("model", None) if model is None else model
         model_config = self.config.get("model", {})
         height, width = model_config.get("input_size", (256, 256))
         if input_shape is not None:
@@ -335,12 +330,18 @@ class AnomalibEngine(Engine):
         export_dir = self.work_dir / f"{self.timestamp}_export"
         export_dir.mkdir(exist_ok=True, parents=True)
 
+        if checkpoint is None:
+            checkpoint = self.latest_model.get("checkpoint", None)
+        # FIXME: load_checkpoint is not working
+        # if "model" in state_dict:
+        # if "state_dict" in state_dict:
+
         # Torch to onnx
         onnx_dir = export_dir / "onnx"
         onnx_dir.mkdir(exist_ok=True, parents=True)
         onnx_model = str(onnx_dir / "onnx_model.onnx")
         torch.onnx.export(
-            model=getattr(model, "model", model),
+            model=getattr(_model, "model", _model),
             args=torch.zeros((1, 3, height, width)).to(device),
             f=onnx_model,
             opset_version=11,
@@ -364,12 +365,13 @@ class AnomalibEngine(Engine):
             ]
             if precision in ("16", 16, "fp16"):
                 optimize_command.append("--compress_to_fp16")
-            _ = run(optimize_command)
+            _ = run(args=optimize_command, check=False)
             bin_file = Path(ir_dir) / "openvino.bin"
             xml_file = Path(ir_dir) / "openvino.xml"
             if bin_file.exists() and xml_file.exists():
                 results["outputs"]["bin"] = str(Path(ir_dir) / "openvino.bin")
                 results["outputs"]["xml"] = str(Path(ir_dir) / "openvino.xml")
             else:
-                raise RuntimeError("OpenVINO Export failed.")
+                msg = "OpenVINO Export failed."
+                raise RuntimeError(msg)
         return results
