@@ -245,11 +245,11 @@ learning_parameters:
     warning: null
   input_size:
     affects_outcome_of: INFERENCE
-    default_value: Default
+    default_value: Auto
     description:
       The input size of the given model could be configured to one of the predefined resolutions.
       Reduced training and inference time could be expected by using smaller input size.
-      Defaults to per-model default resolution.
+      Defaults to Auto, in which input size is automatically determined based on dataset statistics.
     editable: true
     enum_name: InputSizePreset
     header: Configure model input size.

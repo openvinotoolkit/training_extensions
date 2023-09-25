@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - Adapt timeout value of initialization for distributed training (<https://github.com/openvinotoolkit/training_extensions/pull/2422>)
 - Optimize data loading by merging load & resize operations w/ caching support for cls/det/iseg/sseg (<https://github.com/openvinotoolkit/training_extensions/pull/2438>, <https://github.com/openvinotoolkit/training_extensions/pull/2453>, <https://github.com/openvinotoolkit/training_extensions/pull/2460>)
 - Support torch==2.0.1 (<https://github.com/openvinotoolkit/training_extensions/pull/2465>)
+- Set "Auto" as default input size mode (<https://github.com/openvinotoolkit/training_extensions/pull/2515>)
 
 ### Bug fixes
 
