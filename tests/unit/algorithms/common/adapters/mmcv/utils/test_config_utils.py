@@ -14,7 +14,7 @@ from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-def get_data_cfg(workers_per_gpu: int = 2) -> dict:
+def get_subset_data_cfg(workers_per_gpu: int = 2) -> dict:
     data_cfg = {}
     for subset in ["train", "val", "test", "unlabeled"]:
         data_cfg[subset] = "fake"
@@ -26,7 +26,7 @@ def get_data_cfg(workers_per_gpu: int = 2) -> dict:
 @e2e_pytest_unit
 @pytest.mark.parametrize("workers_per_gpu", [0, 2])
 def test_patch_persistent_workers(mocker, workers_per_gpu):
-    data_cfg = get_data_cfg(workers_per_gpu)
+    data_cfg = get_subset_data_cfg(workers_per_gpu)
     config = mocker.MagicMock()
     config.data = data_cfg
 
@@ -44,7 +44,7 @@ def test_patch_persistent_workers(mocker, workers_per_gpu):
 
 @e2e_pytest_unit
 def test_patch_persistent_workers_dist_semisl(mocker):
-    data_cfg = get_data_cfg()
+    data_cfg = get_subset_data_cfg()
     config = mocker.MagicMock()
     config.data = data_cfg
 

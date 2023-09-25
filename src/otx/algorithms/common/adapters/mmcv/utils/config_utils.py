@@ -596,14 +596,6 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     return train_round_checkpoint_dir
 
 
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
-
-
 class InputSizeManager:
     """Class for changing input size and getting input size value by checking data pipeline.
 
