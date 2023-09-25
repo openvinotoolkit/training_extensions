@@ -350,6 +350,28 @@ algo_backend:
       type: UI_RULES
     visible_in_ui: false
     warning: null
+  storage_cache_scheme:
+    affects_outcome_of: TRAINING
+    default_value: NONE
+    description: Scheme for storage cache
+    editable: true
+    enum_name: StorageCacheScheme
+    header: Scheme for storage cache
+    options:
+      NONE: "NONE"
+      AS_IS: "AS-IS"
+      JPEG_75: "JPEG/75"
+      JPEG_95: "JPEG/95"
+      PNG: "PNG"
+      TIFF: "TIFF"
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
 type: CONFIGURABLE_PARAMETERS
