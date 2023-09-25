@@ -45,8 +45,8 @@ jobs:
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
     container:
-      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f019b59612a36a1e264ccbbc46fabb96f1e33114
-      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=5g"
+      image: ${{ inputs.container-image }}
+      options: ${{ inputs.container-options }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
       - name: Checkout repository

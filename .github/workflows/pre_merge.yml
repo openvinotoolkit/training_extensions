@@ -38,8 +38,8 @@ jobs:
         include:
           - python-version: "3.8"
             tox-env: "py38"
-          # - python-version: "3.9"
-          #   tox-env: "py39"
+          - python-version: "3.9"
+            tox-env: "py39"
     name: Unit-Test-${{ matrix.python-version }}
     # This is what will cancel the job concurrency
     concurrency:
@@ -55,52 +55,52 @@ jobs:
       upload-artifact: true
       artifact-prefix: "unit-test-results"
       runs-on: "['otx-gpu-t4-1']"
-  # Coverage:
-  #   runs-on: [otx-gpu-t4-1]
-  #   container:
-  #     image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f019b59612a36a1e264ccbbc46fabb96f1e33114
-  #     options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host --shm-size=10g"
-  #   needs: Code-Quality-Checks
-  #   timeout-minutes: 120
-  #   name: Coverage-with-Python3.10
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}
-  #     cancel-in-progress: true
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-  #     - name: Install Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.10"
-  #     - name: Install dependencies
-  #       run: python -m pip install -r requirements/dev.txt
-  #     - name: Run unit test with coverage
-  #       run: tox -vv -e unittest-all-py310-pt1
-  #     - name: Upload coverage artifact
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: coverage
-  #         path: .tox/coverage.xml
-  #     - name: Upload coverage reports to Codecov
-  #       run: |
-  #         # If the workflow is triggered from PR then it gets the commit id from the PR.
-  #         # else it uses the commit id of the latest commit. This is because the commit
-  #         # of the checked-out branch/commit does not exist in the tree as it is grafted.
-  #         # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
-  #         # This means that upload will fail for PRs from forks.
-  #         if [ -n "${{ github.event.pull_request.head.sha }}" ]
-  #         then
-  #           COMMIT_ID=${{ github.event.pull_request.head.sha }}
-  #         else
-  #           COMMIT_ID=${{ github.sha }}
-  #         fi
-  #         # current version of codecov-action does not support uploading reports through the proxy
-  #         # so we use the latest version of codecov uploader binary
-  #         curl -Os https://uploader.codecov.io/latest/linux/codecov
-  #         chmod +x codecov
-  #         ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
+  Coverage:
+    runs-on: [otx-gpu-t4-1]
+    container:
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f019b59612a36a1e264ccbbc46fabb96f1e33114
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --ipc=host --shm-size=10g"
+    # needs: Code-Quality-Checks
+    timeout-minutes: 120
+    name: Coverage-with-Python3.10
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Run unit test with coverage
+        run: tox -vv -e unittest-all-py310-pt1
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: .tox/coverage.xml
+      - name: Upload coverage reports to Codecov
+        run: |
+          # If the workflow is triggered from PR then it gets the commit id from the PR.
+          # else it uses the commit id of the latest commit. This is because the commit
+          # of the checked-out branch/commit does not exist in the tree as it is grafted.
+          # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
+          # This means that upload will fail for PRs from forks.
+          if [ -n "${{ github.event.pull_request.head.sha }}" ]
+          then
+            COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          else
+            COMMIT_ID=${{ github.sha }}
+          fi
+          # current version of codecov-action does not support uploading reports through the proxy
+          # so we use the latest version of codecov uploader binary
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
   # Integration-Test:
   #   needs: [Unit-Test, Coverage]
   #   strategy:
