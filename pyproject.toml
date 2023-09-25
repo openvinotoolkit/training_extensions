@@ -167,8 +167,8 @@ select = [
     "YTT",  # flake8-2020 (`YTT`)
     "ANN",  # flake8-annotations (`ANN`)
     "S",    # flake8-bandit (`S`)
-    "BLE",  # flake8-blind-except (`BLE`)
-    "FBT",  # flake8-boolean-trap (`FBT`)
+    # "BLE",  # flake8-blind-except (`BLE`)  -> Need to discuss new exception structure
+    # "FBT",  # flake8-boolean-trap (`FBT`)
     "B",    # flake8-bugbear (`B`)
     "A",    # flake8-builtins (`A`)
     "COM",  # flake8-commas (`COM`)
@@ -225,7 +225,9 @@ ignore = [
     # flake8-annotations
     "ANN101",   # Missing-type-self
     "ANN002",   # Missing type annotation for *args
-    "ANN003"    # Missing type annotation for **kwargs
+    "ANN003",   # Missing type annotation for **kwargs
+    # flake8-type-checking
+    "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
@@ -270,7 +272,10 @@ extend-exclude = [
     "src/otx/v2/demo",
     "src/otx/v2/pseudo_code",
     "src/otx/v2/configs",
-    "src/otx/v2/adapters/torch/mmengine/modules/models/backbones",
+    "src/otx/v2/adapters/openvino",
+    "src/otx/v2/adapters/datumaro",
+    "src/otx/v2/adapters/torch/mmengine/modules",
+    "src/otx/v2/adapters/torch/mmengine/mmpretrain/modules",
 ]
 
 # Same as Black.
