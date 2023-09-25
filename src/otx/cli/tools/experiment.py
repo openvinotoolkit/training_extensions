@@ -532,10 +532,14 @@ def run_experiment_recipe(exp_recipe: Dict):
         console = Console()
         console.rule("[bold red]List of failed cases")
         for each_fail_case in failed_case:
+            each_fail_case["exception"] = str(each_fail_case["exception"])
             console.print(f"Case : {each_fail_case['variable']}")
             console.print("Error log:", each_fail_case['exception'])
             console.print()
         console.rule()
+
+        with (output_path / "failed_cases.yaml").open("w") as f:
+            yaml.safe_dump(failed_case, f)
 
     aggregate_all_exp_result(output_path)
 
