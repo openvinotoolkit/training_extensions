@@ -19,26 +19,28 @@ class AdaptiveRepeatDataHook(Hook):
 
     Args:
         train_batch_size (int) : The batch size of the train dataloader
-        n_train_data (int) : The number of the training dataset
+        train_data_size (int) : The number of the training dataset
         coef (float, optional) : coefficient that effects to number of repeats
                        (coef * math.sqrt(num_iters-1)) +5
         min_repeat (float, optional) : minimum repeats
     """
 
-    def __init__(self, train_batch_size: int, n_train_data: int, coef: float = -0.7, min_repeat: float = 1.0):
+    def __init__(self, train_batch_size: int, train_data_size: int, coef: float = -0.7, min_repeat: float = 1.0):
         self.coef = coef
         self.min_repeat = min_repeat
 
         self.train_batch_size = train_batch_size
-        self.n_train_data = n_train_data
+        self.train_data_size =train_data_size 
 
-        self.n_repeats = get_proper_repeat_times(self.n_train_data, self.train_batch_size, self.coef, self.min_repeat)
+        self.n_repeats = get_proper_repeat_times(self.train_data_size, self.train_batch_size, self.coef, self.min_repeat)
         self.rank, self.world_size = get_dist_info()
+        
+        self.is_sampler_changed = False
 
     def before_run(self, runner):
         """Change the runner's max_iter."""
         if self.n_repeats > 1:
-            iter_per_epoch = int(self.n_train_data / self.train_batch_size)
+            iter_per_epoch = int(self.train_data_size / self.train_batch_size)
 
             logger.info("Adaptive repeat is enabled")
             logger.info(f"- Repeat times: {self.n_repeats}")
@@ -50,28 +52,30 @@ class AdaptiveRepeatDataHook(Hook):
 
     def before_epoch(self, runner):
         """Convert to OTX Sampler."""
-        dataset = runner.data_loader.dataset
-        num_workers = runner.data_loader.num_workers
-        collate_fn = runner.data_loader.collate_fn
-        worker_init_fn = runner.data_loader.worker_init_fn
+        if self.is_sampler_changed == False:
+            dataset = runner.data_loader.dataset
+            num_workers = runner.data_loader.num_workers
+            collate_fn = runner.data_loader.collate_fn
+            worker_init_fn = runner.data_loader.worker_init_fn
 
-        sampler = OTXSampler(
-            dataset=dataset,
-            samples_per_gpu=self.train_batch_size,
-            num_replicas=self.world_size,
-            rank=self.rank,
-            shuffle=True,
-            coef=self.coef,
-            min_repeat=self.min_repeat,
-            n_repeats=self.n_repeats,
-        )
+            sampler = OTXSampler(
+                dataset=dataset,
+                samples_per_gpu=self.train_batch_size,
+                num_replicas=self.world_size,
+                rank=self.rank,
+                shuffle=True,
+                coef=self.coef,
+                min_repeat=self.min_repeat,
+                n_repeats=self.n_repeats,
+            )
 
-        runner.data_loader = DataLoader(
-            dataset,
-            batch_size=self.train_batch_size,
-            sampler=sampler,
-            num_workers=num_workers,
-            collate_fn=collate_fn,
-            pin_memory=False,
-            worker_init_fn=worker_init_fn,
-        )
+            runner.data_loader = DataLoader(
+                dataset,
+                batch_size=self.train_batch_size,
+                sampler=sampler,
+                num_workers=num_workers,
+                collate_fn=collate_fn,
+                pin_memory=False,
+                worker_init_fn=worker_init_fn,
+            )
+            self.is_sampler_changed = True
