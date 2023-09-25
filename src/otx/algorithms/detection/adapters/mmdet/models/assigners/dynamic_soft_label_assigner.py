@@ -37,7 +37,8 @@ def center_of_mass(masks: Tensor, eps: float = 1e-7) -> Tensor:
     else:
         num_chunks = n
     assert num_chunks <= n, "Default GPU_MEM_LIMIT is too small; try increasing it"
-    chunks = np.split(np.arange(n), num_chunks) if num_chunks != n else [np.arange(n)]
+    indices = torch.arange(n, device=device)
+    chunks = torch.chunk(indices, num_chunks) if num_chunks != n else [indices]
     grid_h = torch.arange(h, device=device)[:, None]
     grid_w = torch.arange(w, device=device)
     center = torch.zeros(n, 2, device=device, dtype=torch.float32)
