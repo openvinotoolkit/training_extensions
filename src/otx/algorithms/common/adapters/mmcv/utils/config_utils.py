@@ -986,9 +986,9 @@ def get_proper_repeat_times(
     Args:
         n_data (int): The total number of the training dataset
         batch_size (int): The batch size for the training data loader
-        coef (float, optional) : coefficient that effects to number of repeats
+        coef (float) : coefficient that effects to number of repeats
                        (coef * math.sqrt(num_iters-1)) +5
-        min_repeat (float, optional) : minimum repeats
+        min_repeat (float) : minimum repeats
     """
     if n_data == 0 or batch_size == 0:
         logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
