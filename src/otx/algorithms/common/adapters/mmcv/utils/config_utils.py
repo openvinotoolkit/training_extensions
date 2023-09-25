@@ -638,6 +638,7 @@ class InputSizeManager:
 
     MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
     # meaning NxN input pixels being downscaled to 1x1 on feature map
+    MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
 
     def __init__(
         self,
@@ -956,6 +957,12 @@ class InputSizeManager:
         if min_object_size is not None and min_object_size > 0:
             image_size = round(image_size * self.MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
             logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
+            if image_size > max_image_size:
+                image_size = max_image_size
+                logger.info(f"-> Restrict to max image size: {image_size}")
+            if image_size < self.MIN_DETECTION_INPUT_SIZE:
+                image_size = self.MIN_DETECTION_INPUT_SIZE
+                logger.info(f"-> Based on minimum object detection input size: {image_size}")
 
         input_size = (round(image_size), round(image_size))
 
