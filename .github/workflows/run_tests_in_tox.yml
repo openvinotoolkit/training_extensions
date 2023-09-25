@@ -30,6 +30,9 @@ on:
       artifact-prefix:
         type: string
         default: "test-results"
+      toxenv-ptver:
+        type: string
+        default: "pt1"
 jobs:
   run_tests_in_tox:
     # tricky workaround to pass list from the string input type
@@ -45,14 +48,14 @@ jobs:
           python-version: ${{ inputs.python-version }}
       - name: Install dependencies
         run: python -m pip install -r requirements/dev.txt
-      - name: E2E Tests
-        run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-pt1 -- ${{ inputs.tests-dir }}
+      - name: Run Tests
+        run: tox -vv -e tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }} -- ${{ inputs.tests-dir }}
       - name: Upload test results
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.artifact-prefix }}-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}
+          name: ${{ inputs.artifact-prefix }}-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}
           path: |
-            .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}.csv
+            .tox/tests-${{ inputs.toxenv-task }}-${{ inputs.toxenv-pyver }}-${{ inputs.toxenv-ptver }}.csv
             .tox/tests-reg_${{ inputs.task }}_*.csv
             .tox/tests-reg_tiling_${{ inputs.task }}_*.csv
         # Use always() to always run this step to publish test results when there are test failures
