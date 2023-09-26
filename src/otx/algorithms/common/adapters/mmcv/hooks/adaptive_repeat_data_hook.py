@@ -48,8 +48,8 @@ class AdaptiveRepeatDataHook(Hook):
             logger.info(f"- Num iters per epoch: {iter_per_epoch} -> {iter_per_epoch * self.n_repeats}")
             logger.info(f"- Total iters: {runner.max_iters} -> {runner.max_iters * self.n_repeats}")
 
-            #FIXME, although runner._max_iters is the protected attribute, 
-            # There is no way to control the max_iters of runner. 
+            # FIXME, although runner._max_iters is the protected attribute,
+            # There is no way to control the max_iters of runner.
             runner._max_iters = int(runner.max_iters * self.n_repeats)
 
     def before_epoch(self, runner):
