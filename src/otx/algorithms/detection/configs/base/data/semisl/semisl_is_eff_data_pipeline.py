@@ -12,7 +12,6 @@ __img_size = (1024, 1024)
 __img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=True)
 
 common_pipeline = [
-    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="BranchImage", key_map=dict(img="img0")),
     dict(type="NDArrayToPILImage", keys=["img"]),
@@ -69,15 +68,23 @@ common_pipeline = [
 ]
 
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     dict(
-        type="LoadAnnotationFromOTXDataset",
-        domain="instance_segmentation",
-        with_bbox=True,
-        with_mask=True,
-        poly2mask=False,
+        type="LoadResizeDataFromOTXDataset",
+        load_ann_cfg=dict(
+            type="LoadAnnotationFromOTXDataset",
+            domain="instance_segmentation",
+            with_bbox=True,
+            with_mask=True,
+            poly2mask=False,
+        ),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_size,
+            keep_ratio=False,
+            downscale_only=False,
+        ),
+        enable_memcache=True,  # Cache after resizing image & annotations
     ),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="Pad", size_divisor=32),
@@ -102,7 +109,16 @@ train_pipeline = [
 ]
 
 unlabeled_pipeline = [
-    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_size,
+            keep_ratio=False,
+            downscale_only=False,
+        ),
+        enable_memcache=True,  # Cache after resizing image & annotations
+    ),
     *common_pipeline,
     dict(
         type="ToDataContainer",
@@ -116,6 +132,30 @@ unlabeled_pipeline = [
         keys=[
             "img",
             "img0",
+        ],
+    ),
+]
+
+val_pipeline = [
+    dict(
+        type="LoadResizeDataFromOTXDataset",
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_size,
+            keep_ratio=False,
+            downscale_only=False,
+        ),
+        enable_memcache=True,  # Cache after resizing image & annotations
+    ),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=__img_size,
+        flip=False,
+        transforms=[
+            dict(type="Normalize", **__img_norm_cfg),
+            dict(type="Pad", size_divisor=32),
+            dict(type="ImageToTensor", keys=["img"]),
+            dict(type="Collect", keys=["img"]),
         ],
     ),
 ]
@@ -143,7 +183,7 @@ data = dict(
     val=dict(
         type=__dataset_type,
         test_mode=True,
-        pipeline=test_pipeline,
+        pipeline=val_pipeline,
     ),
     test=dict(
         type=__dataset_type,
