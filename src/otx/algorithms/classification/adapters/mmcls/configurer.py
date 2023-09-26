@@ -19,7 +19,6 @@ from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    get_configured_input_size,
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
@@ -166,11 +165,17 @@ class ClassificationConfigurer(BaseConfigurer):
         cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt_path)
-        if input_size is None:
+        manager = InputSizeManager(cfg)
+        input_size = manager.get_configured_input_size(input_size_config, model_ckpt_path)
+        if input_size is None:  # InputSizePreset.DEFAULT
             return
 
-        InputSizeManager(cfg.data).set_input_size(input_size)
+        if input_size == (0, 0):  # InputSizePreset.AUTO
+            input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager)
+            if input_size is None:
+                return
+
+        manager.set_input_size(input_size)
         logger.info("Input size is changed to {}".format(input_size))
 
 

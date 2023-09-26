@@ -7,7 +7,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     patch_persistent_workers,
     get_adaptive_num_workers,
     InputSizeManager,
-    get_configured_input_size,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
@@ -291,24 +290,35 @@ mock_data_pipeline_to_estimate = {
 }
 
 
+def get_mock_model_ckpt(case):
+    if case == "none":
+        return None
+    if case == "no_input_size":
+        return {"config": {}}
+    if case == "input_size_default":
+        return {"config": {"learning_parameters": {"input_size": {"value": "Default"}}}}
+    if case == "input_size_exist":
+        return {"config": {"learning_parameters": {"input_size": {"value": "512x512"}}}}
+
+
 @e2e_pytest_unit
 class TestInputSizeManager:
     @pytest.mark.parametrize("base_input_size", [None, 100, [100, 200], {"train": 100}])
     def test_init(self, base_input_size):
         # prepare
-        mock_data_config = {"train": {"pipeline": []}}
+        mock_config = {"data": {"train": {"pipeline": []}}}
 
         # check
-        InputSizeManager(mock_data_config, base_input_size)
+        InputSizeManager(mock_config, base_input_size)
 
     def test_init_insufficient_base_input_size(self):
         # prepare
-        mock_data_config = {"train": {"pipeline": []}}
+        mock_config = {"data": {"train": {"pipeline": []}}}
         base_input_size = {"val": 100}
 
         # check if data pipeline has train but base_input_size doesn't have it, error is raised
         with pytest.raises(ValueError):
-            InputSizeManager(mock_data_config, base_input_size)
+            InputSizeManager(mock_config, base_input_size)
 
     @pytest.mark.parametrize("input_size", [200, (200, 100)])
     def test_set_input_size(self, mock_data_pipeline, input_size):
@@ -321,10 +331,10 @@ class TestInputSizeManager:
             expected_input_size_tuple = (input_size, input_size)
             expected_input_size_int = input_size
 
-        mock_data_config = {"train": {"pipeline": mock_data_pipeline}}
+        mock_config = {"data": {"train": {"pipeline": mock_data_pipeline}}}
 
         # execute
-        InputSizeManager(mock_data_config, base_input_size).set_input_size(input_size)
+        InputSizeManager(mock_config, base_input_size).set_input_size(input_size)
 
         # check all input sizes are updated as expected
         def check_val_changed(pipelines):
@@ -341,10 +351,26 @@ class TestInputSizeManager:
 
         check_val_changed(mock_data_pipeline)
 
+    @pytest.mark.parametrize("input_size", [(256, 256), (300, 300)])
+    def test_set_input_size_yolox(self, mock_data_pipeline, input_size):
+        mock_config = {
+            "model": {"type": "CustomYOLOX"},
+            "data": {"train": {"pipeline": mock_data_pipeline}},
+        }
+
+        manager = InputSizeManager(mock_config)
+
+        if input_size[0] % 32 != 0:
+            with pytest.raises(ValueError):
+                manager.set_input_size(input_size)
+        else:
+            manager.set_input_size(input_size)
+            assert mock_config["model"]["input_size"] == input_size
+
     @pytest.mark.parametrize("base_input_size", [100, [100, 200], {"train": 100}])
     def test_base_input_size_with_given_args(self, base_input_size):
         # prepare
-        mock_data_config = {"train": {"pipeline": []}}
+        mock_config = {"data": {"train": {"pipeline": []}}}
         if isinstance(base_input_size, int):
             base_input_size = [base_input_size, base_input_size]
         elif isinstance(base_input_size, dict):
@@ -353,7 +379,7 @@ class TestInputSizeManager:
                     base_input_size[task] = [base_input_size[task], base_input_size[task]]
 
         # execute
-        input_size_manager = InputSizeManager(mock_data_config, base_input_size)
+        input_size_manager = InputSizeManager(mock_config, base_input_size)
 
         # check base_input_size attribute is same as argument given when class initialization
         assert input_size_manager.base_input_size == base_input_size
@@ -374,46 +400,94 @@ class TestInputSizeManager:
         # prepare
         pipeline = mock_data_pipeline_to_estimate[test_case]["pipeline"]
         input_size = mock_data_pipeline_to_estimate[test_case]["input_size"]
-        mock_data_config = {"train": {"pipeline": pipeline}}
-        input_size_manager = InputSizeManager(mock_data_config)
+        mock_config = {"data": {"train": {"pipeline": pipeline}}}
+        input_size_manager = InputSizeManager(mock_config)
 
         # check input size is estimated as expected
         assert input_size_manager.get_input_size_from_cfg("train") == input_size
 
-
-def get_mock_model_ckpt(case):
-    if case == "none":
-        return None
-    if case == "no_input_size":
-        return {"config": {}}
-    if case == "input_size_default":
-        return {"config": {"learning_parameters": {"input_size": {"value": "Default"}}}}
-    if case == "input_size_exist":
-        return {"config": {"learning_parameters": {"input_size": {"value": "512x512"}}}}
-
-
-@e2e_pytest_unit
-@pytest.mark.parametrize("input_size_config", [InputSizePreset.DEFAULT, InputSizePreset._1024x1024])
-@pytest.mark.parametrize("model_ckpt_case", ["none", "no_input_size", "input_size_default", "input_size_exist"])
-def test_get_configured_input_size(mocker, input_size_config, model_ckpt_case):
-    # prepare
-    mock_torch = mocker.patch.object(config_utils, "torch")
-    mock_torch.load.return_value = get_mock_model_ckpt(model_ckpt_case)
-    input_size_parser = re.compile("(\d+)x(\d+)")
-
-    if input_size_config == InputSizePreset.DEFAULT:
-        if model_ckpt_case == "none" or model_ckpt_case == "no_input_size" or model_ckpt_case == "input_size_default":
-            expeted_value = None
-        elif model_ckpt_case == "input_size_exist":
-            input_size = get_mock_model_ckpt(model_ckpt_case)["config"]["learning_parameters"]["input_size"]["value"]
-            pattern = input_size_parser.search(input_size)
-            expeted_value = (int(pattern.group(1)), int(pattern.group(2)))
-    else:
-        pattern = input_size_parser.search(input_size_config.value)
-        expeted_value = (int(pattern.group(1)), int(pattern.group(2)))
-
-    # check expected value is returned
-    assert (
-        get_configured_input_size(input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock())
-        == expeted_value
+    @e2e_pytest_unit
+    @pytest.mark.parametrize(
+        "input_size_config", [InputSizePreset.DEFAULT, InputSizePreset.AUTO, InputSizePreset._1024x1024]
     )
+    @pytest.mark.parametrize("model_ckpt_case", ["none", "no_input_size", "input_size_default", "input_size_exist"])
+    def test_get_configured_input_size(self, mocker, input_size_config, model_ckpt_case):
+        # prepare
+        mock_torch = mocker.patch.object(config_utils, "torch")
+        mock_torch.load.return_value = get_mock_model_ckpt(model_ckpt_case)
+        input_size_parser = re.compile("(\d+)x(\d+)")
+
+        if input_size_config == InputSizePreset.DEFAULT:
+            if (
+                model_ckpt_case == "none"
+                or model_ckpt_case == "no_input_size"
+                or model_ckpt_case == "input_size_default"
+            ):
+                expected_value = None
+            elif model_ckpt_case == "input_size_exist":
+                input_size = get_mock_model_ckpt(model_ckpt_case)["config"]["learning_parameters"]["input_size"][
+                    "value"
+                ]
+                pattern = input_size_parser.search(input_size)
+                expected_value = (int(pattern.group(1)), int(pattern.group(2)))
+        elif input_size_config == InputSizePreset.AUTO:
+            expected_value = (0, 0)
+        else:
+            pattern = input_size_parser.search(input_size_config.value)
+            expected_value = (int(pattern.group(1)), int(pattern.group(2)))
+
+        # check expected value is returned
+        assert (
+            InputSizeManager.get_configured_input_size(
+                input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock()
+            )
+            == expected_value
+        )
+
+    def test_select_closest_size(self):
+        manager = InputSizeManager({})
+        input_size = (100, 100)
+        preset_sizes = []
+        assert manager.select_closest_size(input_size, preset_sizes) == input_size
+        preset_sizes = [(99, 99), (102, 102)]
+        assert manager.select_closest_size(input_size, preset_sizes) == (99, 99)
+        preset_sizes = InputSizePreset.input_sizes()
+        assert manager.select_closest_size(input_size, preset_sizes) == (128, 128)
+
+    def test_adapt_input_size_to_dataset(self):
+        base_input_size = (512, 512)
+        manager = InputSizeManager({}, base_input_size)
+        input_size = manager.adapt_input_size_to_dataset(
+            max_image_size=-1,
+        )
+        assert input_size == base_input_size
+
+        input_size = manager.adapt_input_size_to_dataset(
+            max_image_size=1024,
+        )  # 1024 -> 512
+        assert input_size == base_input_size
+
+        input_size = manager.adapt_input_size_to_dataset(
+            max_image_size=1024,
+            downscale_only=False,
+        )  # 512 -> 1024
+        assert input_size == (1024, 1024)
+
+        input_size = manager.adapt_input_size_to_dataset(
+            max_image_size=1024,
+            min_object_size=128,
+        )  # 1024 -> 256
+        assert input_size == (256, 256)
+
+        input_size = manager.adapt_input_size_to_dataset(
+            max_image_size=1024,
+            min_object_size=16,
+        )  # 1024 -> 2048 -> 512
+        assert input_size == base_input_size
+
+        input_size = manager.adapt_input_size_to_dataset(
+            max_image_size=1024,
+            min_object_size=16,
+            downscale_only=False,
+        )  # 1024 -> 2048 -> 1024
+        assert input_size == (1024, 1024)

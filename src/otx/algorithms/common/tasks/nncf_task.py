@@ -153,48 +153,48 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
                 ]
             ) = max_acc_drop
             # Force evaluation interval
-            self._recipe_cfg.evaluation.interval = 1
+            self._config.evaluation.interval = 1
         else:
             logger.info("NNCF config has no accuracy_aware_training parameters")
 
         return ConfigDict(optimization_config)
 
     def _prepare_optimize(self):
-        assert self._recipe_cfg is not None
+        assert self._config is not None
 
         # TODO: more delicate configuration change control in OTX side
 
         # last batch size of 1 causes undefined behaviour for batch normalization
         # when initializing and training NNCF
         if self._data_cfg is not None:
-            data_loader = self._recipe_cfg.data.get("train_dataloader", ConfigDict())
-            samples_per_gpu = data_loader.get("samples_per_gpu", self._recipe_cfg.data.get("samples_per_gpu"))
+            data_loader = self._config.data.get("train_dataloader", ConfigDict())
+            samples_per_gpu = data_loader.get("samples_per_gpu", self._config.data.get("samples_per_gpu"))
             otx_dataset = get_configs_by_keys(self._data_cfg.data.train, "otx_dataset")
             assert len(otx_dataset) == 1
             otx_dataset = otx_dataset[0]
             if otx_dataset is not None and len(otx_dataset) % samples_per_gpu == 1:
                 data_loader["drop_last"] = True
-                self._recipe_cfg.data["train_dataloader"] = data_loader
+                self._config.data["train_dataloader"] = data_loader
 
         # nncf does not suppoer FP16
-        if "fp16" in self._recipe_cfg:
-            remove_from_config(self._recipe_cfg, "fp16")
+        if "fp16" in self._config:
+            remove_from_config(self._config, "fp16")
             logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
 
         # FIXME: nncf quantizer does not work with SAMoptimizer
-        optimizer_config = self._recipe_cfg.optimizer_config
+        optimizer_config = self._config.optimizer_config
         if optimizer_config.get("type", "OptimizerHook") == "SAMOptimizerHook":
             optimizer_config.type = "OptimizerHook"
             logger.warning("Updateed SAMOptimizerHook to OptimizerHook as not supported.")
 
         # merge nncf_cfg
         nncf_cfg = self._init_nncf_cfg()
-        self._recipe_cfg.merge_from_dict(nncf_cfg)
+        self._config.merge_from_dict(nncf_cfg)
 
         # configure nncf
-        nncf_config = self._recipe_cfg.get("nncf_config", {})
+        nncf_config = self._config.get("nncf_config", {})
         if nncf_config.get("target_metric_name", None) is None:
-            metric_name = self._recipe_cfg.evaluation.metric
+            metric_name = self._config.evaluation.metric
             if isinstance(metric_name, list):
                 metric_name = metric_name[0]
             nncf_config.target_metric_name = metric_name
@@ -202,7 +202,7 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
 
         if is_accuracy_aware_training_set(nncf_config):
             # Prepare runner for Accuracy Aware
-            self._recipe_cfg.runner = {
+            self._config.runner = {
                 "type": "AccuracyAwareRunner",
                 "nncf_config": nncf_config,
             }
@@ -212,9 +212,9 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
             # To configure 'interval' to 'max_epoch' makes sure 'EvalHook' not to evaluate
             # during training.
             max_epoch = nncf_config.accuracy_aware_training.params.maximal_total_epochs
-            self._recipe_cfg.evaluation.interval = max_epoch
+            self._config.evaluation.interval = max_epoch
             # Disable 'AdaptiveTrainSchedulingHook' as training is managed by AccuracyAwareRunner
-            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "AdaptiveTrainSchedulingHook")
+            remove_from_configs_by_type(self._config.custom_hooks, "AdaptiveTrainSchedulingHook")
 
     @staticmethod
     def model_builder(
@@ -245,7 +245,7 @@ class NNCFBaseTask(IOptimizationTask):  # pylint: disable=too-many-instance-attr
 
         if is_export:
             compression_ctrl.prepare_for_export()
-            model.disable_dynamic_graph_building()
+            model.nncf.disable_dynamic_graph_building()
 
         if return_compression_ctrl:
             return compression_ctrl, model
