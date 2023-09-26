@@ -1,4 +1,5 @@
 """PTQ config file."""
+from nncf.parameters import ModelType
 from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 from nncf.quantization.range_estimator import (
     AggregatorType,
@@ -6,7 +7,6 @@ from nncf.quantization.range_estimator import (
     StatisticsCollectorParameters,
     StatisticsType,
 )
-from nncf.parameters import ModelType
 
 advanced_parameters = AdvancedQuantizationParameters(
     activations_range_estimator_params=RangeEstimatorParameters(
