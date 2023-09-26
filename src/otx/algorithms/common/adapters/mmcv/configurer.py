@@ -417,15 +417,14 @@ class BaseConfigurer:
         if not self.training:
             remove_from_configs_by_type(cfg.custom_hooks, "AdaptiveRepeatDataHook")
             return
-
-        data_cfg = cfg.get("data", {})
-        bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
-        bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
-        train_data_size = len(self.get_subset_data_cfg(cfg, "train").get("otx_dataset", []))
-
-        update_or_add_custom_hook(
-            cfg, {"type": "AdaptiveRepeatDataHook", "train_batch_size": bs, "train_data_size": train_data_size}
-        )
+        for custom_hook in cfg.custom_hooks:
+            if custom_hook["type"] == "AdaptiveRepeatDataHook":
+                data_cfg = cfg.get("data", {})
+                bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
+                bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
+                custom_hook["train_batch_size"] = bs
+                custom_hook["train_data_size"] = len(data_cfg.get("train", {}).get("otx_dataset", []))
+                break
 
     @staticmethod
     def _update_caching_modules(cfg: Config) -> None:
