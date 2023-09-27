@@ -82,7 +82,8 @@ class RegressionTestConfig(object):
         result_dir_prefix = kwargs.get("result_dir", "")
         if len(result_dir_prefix) > 0:
             result_dir_prefix = result_dir_prefix + "_"
-        self.result_dir = f"/tmp/regression_test_results/{result_dir_prefix}{task_type}"
+        tmp_results_root = kwargs.get("tmp_results_root", "tmp/regression_test_results")
+        self.result_dir = os.path.join(tmp_results_root, "regression_test_results", f"{result_dir_prefix}{task_type}")
         Path(self.result_dir).mkdir(parents=True, exist_ok=True)
 
         self.config_dict = self.load_config()
