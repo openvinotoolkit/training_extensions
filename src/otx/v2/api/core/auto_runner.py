@@ -4,19 +4,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, TypeVar, Union
+from typing import Optional, TypeVar, Union
 
 import yaml
 
+from otx.v2.api.core.engine import Engine
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.auto_utils import configure_task_type, configure_train_type
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.importing import get_impl_class, get_otx_root_path
 from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
-
-if TYPE_CHECKING:
-    from otx.v2.api.core.engine import Engine
 
 # TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"
@@ -75,23 +73,37 @@ def set_dataset_paths(config: dict, args: dict) -> dict:
     return config
 
 
-def set_adapters_from_string(framework: str) -> tuple:
+def set_adapters_from_string(
+    framework: str,
+    engine: bool = True,
+    dataset: bool = True,
+    get_model: bool = True,
+    list_models: bool = True,
+    model_configs: bool = True,
+) -> dict:
+    result = {}
     if framework.lower() in ADAPTER_QUICK_LINK:
         adapter = f"{ADAPTERS_ROOT}.{ADAPTER_QUICK_LINK[framework.lower()]}"
     else:
         adapter = framework
-    adapter_engine = f"{adapter}.Engine"
-    sub_engine = get_impl_class(adapter_engine)
-    if sub_engine is None:
-        raise NotImplementedError(adapter_engine)
-    adapter_dataset = f"{adapter}.Dataset"
-    dataset_builder = get_impl_class(adapter_dataset)
-    if dataset_builder is None:
-        raise NotImplementedError(adapter_dataset)
-    get_model = get_impl_class(f"{adapter}.get_model")
-    model_configs = get_impl_class(f"{adapter}.model.MODEL_CONFIGS")
-    list_models = get_impl_class(f"{adapter}.model.list_models")
-    return sub_engine, dataset_builder, get_model, model_configs, list_models
+    if engine:
+        adapter_engine = f"{adapter}.Engine"
+        sub_engine = get_impl_class(adapter_engine)
+        result["engine"] = sub_engine
+    if dataset:
+        adapter_dataset = f"{adapter}.Dataset"
+        dataset_builder = get_impl_class(adapter_dataset)
+        result["dataset"] = dataset_builder
+    if get_model:
+        get_model_module = get_impl_class(f"{adapter}.get_model")
+        result["get_model"] = get_model_module
+    if list_models:
+        list_models_module = get_impl_class(f"{adapter}.model.list_models")
+        result["list_models"] = list_models_module
+    if model_configs:
+        model_configs_list = get_impl_class(f"{adapter}.model.MODEL_CONFIGS")
+        result["model_configs"] = model_configs_list
+    return result
 
 
 @add_subset_dataloader(["train", "val", "test", "unlabeled"])
@@ -167,18 +179,19 @@ class AutoRunner:
         dataset_kwargs = self.config.get("data", None)
         if dataset_kwargs is not None:
             if task is None and dataset_kwargs.get("task", None) is not None:
-                task = str_to_task_type(dataset_kwargs.get("task"))
+                _task = dataset_kwargs.get("task")
+                task = str_to_task_type(_task) if isinstance(_task, str) else _task
             if train_type is None and dataset_kwargs.get("train_type", None) is not None:
-                train_type = str_to_train_type(dataset_kwargs.get("train_type"))
+                _train_type = dataset_kwargs.get("train_type")
+                train_type = str_to_train_type(_train_type) if isinstance(_train_type, str) else _train_type
         self.auto_configuration(framework, task, train_type)
 
-        (
-            self.framework_engine,
-            self.dataset_class,
-            self.get_model,
-            self.config_list,
-            self.list_models,
-        ) = set_adapters_from_string(self.framework)
+        self.adapters = set_adapters_from_string(self.framework)
+        self.framework_engine = self.adapters.get("engine", None)
+        self.dataset_class = self.adapters.get("dataset", None)
+        self.get_model = self.adapters.get("get_model", None)
+        self.list_models = self.adapters.get("list_models", None)
+        self.config_list = self.adapters.get("model_configs", None)
 
         # Create Dataset Builder
         dataset_kwargs["task"] = self.task
@@ -204,7 +217,7 @@ class AutoRunner:
             config["model"] = {}
         return config
 
-    def _configure_model(self, model: Optional[Union[str, dict, list, object]]) -> object:
+    def configure_model(self, model: Optional[Union[str, dict, list, object]]) -> object:
         # Configure Model if model is None
         if model is None:
             if self.cache.get("model") is not None:
@@ -229,11 +242,6 @@ class AutoRunner:
             train_type (Optional[Union[str, TrainType]]): Training Type. Refer to otx.v2.api.entities.task_type.TrainType.
         """
 
-        if framework is not None:
-            self.framework = framework
-        elif hasattr(self.config, "framework"):
-            self.framework = self.config.framework
-
         if task is None and "task" in self.config:
             task = self.config["task"]
         if train_type is None and "train_type" in self.config:
@@ -247,8 +255,13 @@ class AutoRunner:
             train_type = configure_train_type(data_roots, data_config.get("unlabeled_data_roots", None))
         self.task = str_to_task_type(task) if isinstance(task, str) else task
         self.train_type = str_to_train_type(train_type) if isinstance(train_type, str) else train_type
-        if not hasattr(self, "framework"):
-            self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["adapter"]
+        if framework is not None:
+            self.framework = framework
+        elif not hasattr(self, "framework"):
+            if "framework" in self.config:
+                self.framework = self.config["framework"]
+            else:
+                self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["adapter"]
         if self.config_path is None:
             self.config_path = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["default_config"]
             self.config = self._initial_config(self.config_path)
@@ -301,7 +314,6 @@ class AutoRunner:
             val_data_pipeline (optional):  Validation Dataset's pipeline. Defaults to None.
             max_epochs (Optional[int], optional): Specifies the maximum epoch of training. Defaults to None.
             max_iters (Optional[int], optional): Specifies the maximum iters of training. Defaults to None.
-            batch_size (Optional[int], optional): Specify the batch size for dataloader. Defaults to None.
             seed (Optional[int], optional): The seed to use for training. Defaults to None.
             deterministic (Optional[bool], optional): The deterministic to use for training. Defaults to None.
             precision (Optional[str], optional): The precision to use for training. Defaults to None.
@@ -329,7 +341,7 @@ class AutoRunner:
             else:
                 val_dataloader = self.subset_dataloader(subset="val", config=self.config, **dataloader_cfg)
 
-        model = self._configure_model(model)
+        model = self.configure_model(model)
 
         # Configure Engine
         if not hasattr(self, "engine"):
@@ -368,7 +380,7 @@ class AutoRunner:
             else:
                 val_dataloader = self.subset_dataloader(subset="val", config=self.config)
 
-        model = self._configure_model(model)
+        model = self.configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")
 
@@ -397,7 +409,7 @@ class AutoRunner:
                 test_dataloader = self.subset_dls["test"]
             else:
                 test_dataloader = self.subset_dataloader(subset="test", config=self.config)
-        model = self._configure_model(model)
+        model = self.configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")
 
@@ -420,7 +432,7 @@ class AutoRunner:
         checkpoint: Optional[Union[str, Path]] = None,
         **kwargs,
     ) -> list:
-        model = self._configure_model(model)
+        model = self.configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")
 
@@ -442,7 +454,7 @@ class AutoRunner:
         precision: str = "float32",
         **kwargs,
     ) -> dict:
-        model = self._configure_model(model)
+        model = self.configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")
 

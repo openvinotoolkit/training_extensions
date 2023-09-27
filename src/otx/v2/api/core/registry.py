@@ -1,5 +1,5 @@
 import inspect
-from typing import Callable, Optional
+from typing import Callable, Optional, Type, Union
 
 from rich.console import Console
 from rich.table import Table
@@ -72,7 +72,7 @@ class BaseRegistry:
         self,
         type_name: Optional[str] = None,
         name: Optional[str] = None,
-        module: Optional[object] = None,
+        module: Optional[Union[Type, Callable]] = None,
         force: bool = False,
     ) -> None:
         # Copy from mmcv.utils.registry.Registry
