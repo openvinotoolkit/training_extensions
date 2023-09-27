@@ -39,6 +39,45 @@ def configure_task_type(
     raise ValueError(msg)
 
 
+def count_imgs_in_dir(dir_path: Union[str, Path], recursive: bool = False) -> int:
+    """Count number of images in directory recursively."""
+    valid_suff = [".jpg", ".png", ".jpeg", ".gif"]
+    num_valid_imgs = 0
+    files_to_check = Path(dir_path).glob("**/*") if recursive else Path(dir_path).glob("*")
+
+    for file in files_to_check:
+        if file.is_file():
+            suffix = file.suffix.lower()
+            if suffix in valid_suff:
+                num_valid_imgs += 1
+
+    return num_valid_imgs
+
+
+def check_semisl_requirements(unlabeled_dir: Optional[Union[str, Path]]) -> Union[bool, str, Path]:
+    """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
+    if unlabeled_dir is None:
+        return False
+
+    if not Path(unlabeled_dir).is_dir() or not Path(unlabeled_dir).iterdir():
+        msg = "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. Please, check command line and directory path."
+        raise ValueError(
+            msg,
+        )
+
+    all_unlabeled_images = count_imgs_in_dir(unlabeled_dir, recursive=True)
+    # check if number of unlabeled images is more than relative thershold
+    if all_unlabeled_images > 1:
+        return unlabeled_dir
+
+    logging.warning(
+        "WARNING: There are none or too litle images to start Semi-SL training. "
+        "It should be more than relative threshold (at least 7% of labeled images) "
+        "Start Supervised training instead.",
+    )
+    return False
+
+
 def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: Optional[str]) -> Optional[str]:
     """Auto train type detection.
 
@@ -48,54 +87,17 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
     Overwise set Incremental training type.
     """
 
-    def _count_imgs_in_dir(dir_path: Union[str, Path], recursive: bool = False) -> int:
-        """Count number of images in directory recursively."""
-        valid_suff = [".jpg", ".png", ".jpeg", ".gif"]
-        num_valid_imgs = 0
-        files_to_check = Path(dir_path).glob("**/*") if recursive else Path(dir_path).glob("*")
-
-        for file in files_to_check:
-            if file.is_file():
-                suffix = file.suffix.lower()
-                if suffix in valid_suff:
-                    num_valid_imgs += 1
-
-        return num_valid_imgs
-
-    def _check_semisl_requirements(unlabeled_dir: Optional[Union[str, Path]]) -> Union[bool, str, Path]:
-        """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
-        if unlabeled_dir is None:
-            return False
-
-        if not Path(unlabeled_dir).is_dir() or not Path(unlabeled_dir).iterdir():
-            msg = "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. Please, check command line and directory path."
-            raise ValueError(
-                msg,
-            )
-
-        all_unlabeled_images = _count_imgs_in_dir(unlabeled_dir, recursive=True)
-        # check if number of unlabeled images is more than relative thershold
-        if all_unlabeled_images > 1:
-            return unlabeled_dir
-
-        logging.warning(
-            "WARNING: There are none or too litle images to start Semi-SL training. "
-            "It should be more than relative threshold (at least 7% of labeled images) "
-            "Start Supervised training instead.",
-        )
-        return False
-
     if train_data_roots is None or not Path(train_data_roots).is_dir() or not Path(train_data_roots).iterdir():
         return None
 
-    if _count_imgs_in_dir(train_data_roots):
+    if count_imgs_in_dir(train_data_roots):
         # If train folder with images only was passed to args
         # Then we start self-supervised training
         print("[*] Selfsupervised training type detected")
         return "Selfsupervised"
 
     # if user explicitly passed unlabeled images folder
-    valid_unlabeled_path = _check_semisl_requirements(unlabeled_data_roots)
+    valid_unlabeled_path = check_semisl_requirements(unlabeled_data_roots)
     if valid_unlabeled_path:
         print(f"[*] Semisupervised training type detected with unlabeled data: {valid_unlabeled_path}")
         return "Semisupervised"

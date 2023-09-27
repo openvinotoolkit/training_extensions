@@ -24,7 +24,7 @@ from otx.v2.api.entities.metadata import IMetadata, MetadataItemEntity
 from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
-from otx.v2.api.utils.shape_factory import ShapeFactory
+from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,7 @@ from typing import Optional
 
 from otx.v2.api.entities.color import Color
 from otx.v2.api.entities.id import ID
-from otx.v2.api.utils.time_utils import now
+from otx.v2.api.entities.utils.time_utils import now
 
 
 class Domain(Enum):

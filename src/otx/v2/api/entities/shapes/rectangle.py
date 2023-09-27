@@ -15,7 +15,7 @@ import numpy as np
 from shapely.geometry import Polygon as shapely_polygon
 
 from otx.v2.api.entities.shapes.shape import Shape, ShapeEntity, ShapeType
-from otx.v2.api.utils.time_utils import now
+from otx.v2.api.entities.utils.time_utils import now
 
 # pylint: disable=invalid-name
 

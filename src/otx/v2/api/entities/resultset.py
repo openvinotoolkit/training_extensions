@@ -13,7 +13,7 @@ from typing import Any, Optional
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.metrics import NullPerformance, Performance
-from otx.v2.api.utils.time_utils import now
+from otx.v2.api.entities.utils.time_utils import now
 
 
 class ResultsetPurpose(Enum):

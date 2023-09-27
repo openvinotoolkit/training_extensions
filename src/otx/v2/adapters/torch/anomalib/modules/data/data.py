@@ -31,11 +31,11 @@ from otx.v2.api.entities.shapes.polygon import Polygon
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
-from otx.v2.api.utils.dataset_utils import (
+from otx.v2.api.entities.utils.dataset_utils import (
     contains_anomalous_images,
     split_local_global_dataset,
 )
-from otx.v2.api.utils.segmentation_utils import mask_from_dataset_item
+from otx.v2.api.entities.utils.segmentation_utils import mask_from_dataset_item
 
 logger = get_logger(__name__)
 

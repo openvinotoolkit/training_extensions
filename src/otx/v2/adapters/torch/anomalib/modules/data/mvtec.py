@@ -54,7 +54,7 @@ from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
-from otx.v2.api.utils.segmentation_utils import create_annotation_from_segmentation_map
+from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
 
 
 class OtxMvtecDataset:

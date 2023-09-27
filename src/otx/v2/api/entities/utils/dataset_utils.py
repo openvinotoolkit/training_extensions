@@ -26,7 +26,7 @@ from otx.v2.api.entities.result_media import ResultMediaEntity
 from otx.v2.api.entities.resultset import ResultSetEntity
 from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.rectangle import Rectangle
-from otx.v2.api.utils.vis_utils import get_actmap
+from otx.v2.api.entities.utils.vis_utils import get_actmap
 
 
 def get_fully_annotated_idx(dataset: DatasetEntity) -> List[int]:

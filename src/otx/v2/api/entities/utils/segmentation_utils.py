@@ -18,7 +18,7 @@ from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.polygon import Point, Polygon
-from otx.v2.api.utils.shape_factory import ShapeFactory
+from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 
 
 def mask_from_dataset_item(

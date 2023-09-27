@@ -14,7 +14,7 @@ from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.shape import ShapeEntity
-from otx.v2.api.utils.time_utils import now
+from otx.v2.api.entities.utils.time_utils import now
 
 
 class Annotation(metaclass=abc.ABCMeta):

@@ -18,11 +18,11 @@ from torch.utils.data import Sampler
 from otx.v2.adapters.torch.anomalib.modules.data.data import OTXAnomalyDataset
 from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
-from otx.v2.api.utils import set_tuple_constructor
-from otx.v2.api.utils.dataset_utils import (
+from otx.v2.api.entities.utils.dataset_utils import (
     contains_anomalous_images,
     split_local_global_dataset,
 )
+from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type
 
