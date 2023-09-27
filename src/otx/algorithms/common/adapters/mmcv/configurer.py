@@ -14,7 +14,6 @@ from mmcv.utils import Config, ConfigDict
 from torch import distributed as dist
 
 from otx.algorithms.common.adapters.mmcv.utils import (
-    patch_adaptive_interval_training,
     patch_early_stopping,
     patch_persistent_workers,
     remove_from_configs_by_type,
@@ -233,7 +232,6 @@ class BaseConfigurer:
     def configure_recipe(self, cfg, **kwargs):
         """Configuration training recipe settings."""
 
-        patch_adaptive_interval_training(cfg)
         patch_early_stopping(cfg)
         self.configure_fp16(cfg)
 
@@ -418,12 +416,15 @@ class BaseConfigurer:
             remove_from_configs_by_type(cfg.custom_hooks, "AdaptiveRepeatDataHook")
             return
         for custom_hook in cfg.custom_hooks:
-            if custom_hook["type"] == "AdaptiveRepeatDataHook":
+            if custom_hook["type"] == "AdaptiveRepeatDataHook" and cfg.get("data") is not None:
                 data_cfg = cfg.get("data", {})
                 bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
                 bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
                 custom_hook["train_batch_size"] = bs
-                custom_hook["train_data_size"] = len(data_cfg.get("train", {}).get("otx_dataset", []))
+                train_data_cfg = self.get_subset_data_cfg(cfg, "train") 
+                otx_dataset = train_data_cfg.get("otx_dataset", [])
+                # YOLOX model used 'dataset' instead of 'otx_dataset'
+                custom_hook["train_data_size"] = len(otx_dataset)
                 break
 
     @staticmethod

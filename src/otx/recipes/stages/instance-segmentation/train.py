@@ -38,9 +38,7 @@ custom_hooks = [
         priority=75,
     ),
     dict(
-        type="AdaptiveTrainSchedulingHook",
-        enable_adaptive_interval_hook=False,
-        enable_eval_before_run=True,
+        type="EvalBeforeRunHook"
     ),
     dict(type="LoggerReplaceHook"),
     dict(
@@ -48,4 +46,8 @@ custom_hooks = [
         priority="ABOVE_NORMAL",
         epoch_momentum=0.4,
     ),
+    dict(
+        type="AdaptiveRepeatDataHook",
+        priority="ABOVE_NORMAL"
+    )
 ]

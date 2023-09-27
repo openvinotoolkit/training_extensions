@@ -421,29 +421,6 @@ def patch_color_conversion(config: Config):
         cfg.to_rgb = not bool(to_rgb)
 
 
-def patch_adaptive_interval_training(config: Config):
-    """Update adaptive interval settings for OTX training.
-
-    This function can be removed by adding custom hook cfg into recipe.py directly.
-    """
-    # Add/remove adaptive interval hook
-    if config.get("use_adaptive_interval", False):
-        update_or_add_custom_hook(
-            config,
-            ConfigDict(
-                {
-                    "type": "AdaptiveTrainSchedulingHook",
-                    "max_interval": 5,
-                    "enable_adaptive_interval_hook": True,
-                    "enable_eval_before_run": True,
-                    **config.pop("adaptive_validation_interval", {}),
-                }
-            ),
-        )
-    else:
-        config.pop("adaptive_validation_interval", None)
-
-
 def patch_early_stopping(config: Config):
     """Update early stop settings for OTX training.
 
@@ -579,7 +556,6 @@ def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
         )
         config.update(unlabeled_config)
 
-    hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
     config.merge_from_dict(hparams)
 
 

@@ -44,7 +44,6 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
-    patch_adaptive_interval_training,
     patch_early_stopping,
     patch_from_hyperparams,
     patch_persistent_workers,
@@ -199,7 +198,6 @@ class MMActionTask(OTXActionTask):
 
         recipe_cfg.data.videos_per_gpu = recipe_cfg.data.pop("samples_per_gpu", None)
 
-        patch_adaptive_interval_training(recipe_cfg)
         patch_early_stopping(recipe_cfg)
         patch_persistent_workers(recipe_cfg)
 

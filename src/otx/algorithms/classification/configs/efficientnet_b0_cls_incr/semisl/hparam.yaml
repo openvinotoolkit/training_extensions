@@ -18,8 +18,6 @@ hyper_parameters:
         default_value: 0
       num_iters:
         default_value: 90
-      use_adaptive_interval:
-        default_value: true
     algo_backend:
       train_type:
         default_value: Semisupervised

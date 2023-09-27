@@ -26,6 +26,13 @@ custom_hooks = [
         priority="ABOVE_NORMAL",
         momentum=0.1,
     ),
+    dict(
+        type="EvalBeforeRunHook"
+    ),
+    dict(
+        type="AdaptiveRepeatDataHook",
+        priority="ABOVE_NORMAL"
+    )
 ]
 
 lr_config = dict(
@@ -38,11 +45,4 @@ lr_config = dict(
     warmup="linear",
     warmup_iters=200,
     warmup_ratio=0.3333333333333333,
-)
-
-ignore = True
-adaptive_validation_interval = dict(
-    max_interval=5,
-    enable_adaptive_interval_hook=True,
-    enable_eval_before_run=True,
 )

@@ -31,7 +31,6 @@ class AdaptiveRepeatDataHook(Hook):
 
         self.train_batch_size = train_batch_size
         self.train_data_size = train_data_size
-
         self.n_repeats = get_proper_repeat_times(
             self.train_data_size, self.train_batch_size, self.coef, self.min_repeat
         )

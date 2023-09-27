@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from .adaptive_repeat_data_hook import AdaptiveRepeatDataHook
-from .adaptive_training_hook import AdaptiveTrainSchedulingHook
+from .eval_before_run_hook import EvalBeforeRunHook
 from .cancel_hook import CancelInterfaceHook, CancelTrainingHook
 from .checkpoint_hook import (
     CheckpointHookWithValResults,
@@ -55,11 +55,11 @@ from .two_crop_transform_hook import TwoCropTransformHook
 
 __all__ = [
     "AdaptiveRepeatDataHook",
-    "AdaptiveTrainSchedulingHook",
     "CancelInterfaceHook",
     "CancelTrainingHook",
     "CheckpointHookWithValResults",
     "EnsureCorrectBestCheckpointHook",
+    "EvalBeforeRunHook",
     "ComposedDataLoadersHook",
     "CustomEvalHook",
     "DistCustomEvalHook",

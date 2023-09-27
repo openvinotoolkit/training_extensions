@@ -16,8 +16,6 @@ hyper_parameters:
         default_value: 5000
       enable_early_stopping:
         default_value: false
-      use_adaptive_interval:
-        default_value: false
     algo_backend:
       train_type:
         default_value: Selfsupervised
