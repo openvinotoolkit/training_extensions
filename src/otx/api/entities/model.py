@@ -439,18 +439,6 @@ class ModelEntity:
         """Returns the dictionary of model adapters for each data key."""
         return self.__model_adapters
 
-    @property
-    def weight_paths(self) -> Dict[str, URL]:
-        """Returns the the path to URLs for each data key.
-
-        Note that this function will raise an error if the model was not saved to a database.
-        """
-        return {
-            key: model_adapter.data_source.binary_url
-            for key, model_adapter in self.model_adapters.items()
-            if model_adapter.from_file_storage
-        }
-
     def is_optimized(self) -> bool:
         """Returns a boolean indicating if the model has been optimized or not."""
         if self.optimization_type == ModelOptimizationType.NONE:
