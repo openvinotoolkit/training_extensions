@@ -15,19 +15,27 @@
       "lr": 0.0005
     },
     "nncf_config": {
-      "compression": [
-        {
-          "algorithm": "quantization"
-        }
-      ],
-      "accuracy_aware_training": {
-        "mode": "early_exit",
-        "params": {
-          "maximal_absolute_accuracy_degradation": 0.01,
-          "maximal_total_epochs": 20
+        "compression": [
+          {
+            "algorithm": "quantization",
+            "initializer": {
+              "range": {
+                "num_init_samples": 1000
+              },
+              "batchnorm_adaptation": {
+                "num_bn_adaptation_samples": 1000
+              }
+            }
+          }
+        ],
+        "accuracy_aware_training": {
+          "mode": "early_exit",
+          "params": {
+            "maximal_absolute_accuracy_degradation": 0.01,
+            "maximal_total_epochs": 20
+          }
         }
       }
-    }
   },
   "order_of_parts": ["nncf_quantization"]
 }

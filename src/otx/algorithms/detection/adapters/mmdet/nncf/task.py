@@ -57,6 +57,14 @@ class DetectionNNCFTask(NNCFBaseTask, MMDetectionTask):
         """Configure configs for nncf task."""
         super(NNCFBaseTask, self).configure(training, ir_options, train_dataset, export)
         self._prepare_optimize(export)
+
+        # TODO: NNCF should check & remove duplicate compression params. Refer to DefaultOptimizerConstructor.
+        # NOTE: NNCF may add duplicated compression parameters in Optimizer for RTMDet.
+        # Optimizer builder could raise ValueError: AdamW: some parameters appear in more than one parameter group
+        # if paramwise_cfg is not removed. https://github.com/open-mmlab/mmdetection/issues/3051
+        if "paramwise_cfg" in self._config.optimizer:
+            self._config.optimizer.pop("paramwise_cfg")
+
         return self._config
 
     def _prepare_optimize(self, export=False):
