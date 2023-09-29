@@ -19,6 +19,9 @@ from tests.test_suite.run_test_command import (
     otx_export_testing,
     otx_resume_testing,
     otx_train_testing,
+    ptq_optimize_testing,
+    ptq_validate_fq_testing,
+    ptq_eval_testing,
 )
 
 args = {
@@ -118,3 +121,24 @@ class TestToolsVisualPrompting:
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         tmp_dir_path = tmp_dir_path / "visual_prompting"
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2, half_precision=half_precision)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ptq_optimize(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "visual_prompting"
+        ptq_optimize_testing(template, tmp_dir_path, otx_dir, args, is_visual_prompting=True)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ptq_validate_fq(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "visual_prompting"
+        ptq_validate_fq_testing(template, tmp_dir_path, otx_dir, "visual_prompting", type(self).__name__)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ptq_eval(self, template, tmp_dir_path):
+        tmp_dir_path = tmp_dir_path / "visual_prompting"
+        ptq_eval_testing(template, tmp_dir_path, otx_dir, args)

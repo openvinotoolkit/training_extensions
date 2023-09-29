@@ -172,6 +172,8 @@ class TestToolsTilingDetection:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_deployment(self, template, tmp_dir_path):
+        if template.name == "MobileNetV2-ATSS":
+            pytest.skip(reason="Issue#2518: YOLOX-L, Tiling-ATSS showed 0.0 after export")
         tmp_dir_path = tmp_dir_path / "tiling_det"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 

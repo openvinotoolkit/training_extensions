@@ -307,7 +307,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                         f,
                         export_params=True,
                         verbose=False,
-                        opset_version=12,
+                        opset_version=13,
                         do_constant_folding=True,
                         input_names=list(dummy_inputs.keys()),
                         output_names=output_names,
