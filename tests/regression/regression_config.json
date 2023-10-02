@@ -524,23 +524,28 @@
         "multi_class": {
           "train": {
             "MaskRCNN-ResNet50": 0.466,
-            "MaskRCNN-EfficientNetB2B": 0.27
+            "MaskRCNN-EfficientNetB2B": 0.27,
+            "MaskRCNN-SwinT-FP16": 0.438
           },
           "export": {
             "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-SwinT-FP16": 0.438
           },
           "deploy": {
             "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-SwinT-FP16": 0.438
           },
           "nncf": {
             "MaskRCNN-ResNet50": 0.437,
-            "MaskRCNN-EfficientNetB2B": 0.286
+            "MaskRCNN-EfficientNetB2B": 0.286,
+            "MaskRCNN-SwinT-FP16": 0.438
           },
           "ptq": {
             "MaskRCNN-ResNet50": 0.0,
-            "MaskRCNN-EfficientNetB2B": 0.0
+            "MaskRCNN-EfficientNetB2B": 0.0,
+            "MaskRCNN-SwinT-FP16": 0.438
           }
         }
       },

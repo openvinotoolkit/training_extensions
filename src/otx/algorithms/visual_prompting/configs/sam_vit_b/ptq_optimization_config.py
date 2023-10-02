@@ -1,5 +1,5 @@
 """PTQ config file."""
-from nncf.common.quantization.structs import QuantizationPreset
+from nncf.parameters import ModelType
 from nncf.quantization.advanced_parameters import AdvancedQuantizationParameters
 from nncf.quantization.range_estimator import (
     AggregatorType,
@@ -17,7 +17,6 @@ advanced_parameters = AdvancedQuantizationParameters(
             statistics_type=StatisticsType.QUANTILE, aggregator_type=AggregatorType.MAX, quantile_outlier_prob=1e-4
         ),
     ),
-    # backend_params={"use_pot": True},
 )
 
-preset = QuantizationPreset.MIXED
+model_type = ModelType.TRANSFORMER

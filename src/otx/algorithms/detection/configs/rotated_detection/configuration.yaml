@@ -245,11 +245,11 @@ learning_parameters:
     warning: null
   input_size:
     affects_outcome_of: INFERENCE
-    default_value: Default
+    default_value: Auto
     description:
       The input size of the given model could be configured to one of the predefined resolutions.
       Reduced training and inference time could be expected by using smaller input size.
-      Defaults to per-model default resolution.
+      Defaults to Auto, in which input size is automatically determined based on dataset statistics.
     editable: true
     enum_name: InputSizePreset
     header: Configure model input size.
@@ -521,6 +521,22 @@ tiling_parameters:
     value: true
     visible_in_ui: true
     warning: "Tiling trades off speed for accuracy as it increases the number of images to be processed. In turn, it's memory efficient as smaller resolution patches are handled at onces so that the possibility of OOM issues could be reduced. Important: In the current version, depending on the dataset size and the available hardware resources, a model may not train successfully when tiling is enabled."
+
+  enable_tile_classifier:
+    header: Enable tile classifier
+    description: Enabling tile classifier enhances the speed of tiling inference by incorporating a tile classifier into the instance segmentation model. This feature prevents the detector from making predictions on tiles that do not contain any objects, thus optimizing its speed performance.
+    default_value: false
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: The tile classifier prioritizes inference speed over training speed, it requires more training in order to achieve its optimized performance.
 
   enable_adaptive_params:
     header: Enable adaptive tiling parameters
