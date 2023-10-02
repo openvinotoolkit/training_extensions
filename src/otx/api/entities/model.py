@@ -12,7 +12,6 @@ from otx.api.entities.id import ID
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import NullPerformance, Performance
 from otx.api.entities.model_template import TargetDevice
-from otx.api.entities.url import URL
 from otx.api.usecases.adapters.model_adapter import (
     ExportableCodeAdapter,
     IDataSource,
@@ -438,18 +437,6 @@ class ModelEntity:
     def model_adapters(self) -> Dict[str, ModelAdapter]:
         """Returns the dictionary of model adapters for each data key."""
         return self.__model_adapters
-
-    @property
-    def weight_paths(self) -> Dict[str, URL]:
-        """Returns the the path to URLs for each data key.
-
-        Note that this function will raise an error if the model was not saved to a database.
-        """
-        return {
-            key: model_adapter.data_source.binary_url
-            for key, model_adapter in self.model_adapters.items()
-            if model_adapter.from_file_storage
-        }
 
     def is_optimized(self) -> bool:
         """Returns a boolean indicating if the model has been optimized or not."""
