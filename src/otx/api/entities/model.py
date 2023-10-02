@@ -12,7 +12,6 @@ from otx.api.entities.id import ID
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metrics import NullPerformance, Performance
 from otx.api.entities.model_template import TargetDevice
-from otx.api.entities.url import URL
 from otx.api.usecases.adapters.model_adapter import (
     ExportableCodeAdapter,
     IDataSource,
