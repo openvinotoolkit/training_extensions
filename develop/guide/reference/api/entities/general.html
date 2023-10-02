@@ -3859,13 +3859,6 @@ model. Skip deletion parameter should only be true if replacing bytes data with 
 <dd><p>Gets or sets the version.</p>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.weight_paths">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">weight_paths</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.url.URL" title="otx.api.entities.url.URL"><span class="pre">URL</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.entities.model.ModelEntity.weight_paths" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns the the path to URLs for each data key.</p>
-<p>Note that this function will raise an error if the model was not saved to a database.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -4501,44 +4494,6 @@ training if for some reason training was suspended.</p>
 <dt class="sig sig-object py" id="otx.api.entities.train_parameters.default_save_model_callback">
 <span class="sig-prename descclassname"><span class="pre">otx.api.entities.train_parameters.</span></span><span class="sig-name descname"><span class="pre">default_save_model_callback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.train_parameters.default_save_model_callback" title="Permalink to this definition">#</a></dt>
 <dd><p>Default save model callback. It is a placeholder (does nothing) and is used in empty TrainParameters.</p>
-</dd></dl>
-
-<span class="target" id="module-otx.api.entities.url"></span><p>This file defines the URL class.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.api.entities.url.URL">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.url.</span></span><span class="sig-name descname"><span class="pre">URL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.url.URL" title="otx.api.entities.url.URL"><span class="pre">URL</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.entities.url.URL" title="Permalink to this definition">#</a></dt>
-<dd><p>Class for working with URLs.</p>
-<p>Provides functions for getting components of the URL such as &lt;scheme&gt;://&lt;host&gt;/&lt;path&gt;</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.url.URL.extension">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extension</span></span><a class="headerlink" href="#otx.api.entities.url.URL.extension" title="Permalink to this definition">#</a></dt>
-<dd><p>Gets the extension of the URL.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.url.URL.host">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">host</span></span><a class="headerlink" href="#otx.api.entities.url.URL.host" title="Permalink to this definition">#</a></dt>
-<dd><p>Gets the host of the URL.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.url.URL.path">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#otx.api.entities.url.URL.path" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns the full path to the full.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.url.URL.relative_path">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">relative_path</span></span><a class="headerlink" href="#otx.api.entities.url.URL.relative_path" title="Permalink to this definition">#</a></dt>
-<dd><p>Returns the relative path to the full.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="otx.api.entities.url.URL.scheme">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><a class="headerlink" href="#otx.api.entities.url.URL.scheme" title="Permalink to this definition">#</a></dt>
-<dd><p>Gets the scheme of the URL.</p>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -8401,15 +8356,6 @@ training if for some reason training was suspended.</p>
      </code>
     </a>
    </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.model.ModelEntity.weight_paths">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       ModelEntity.weight_paths
-      </span>
-     </code>
-    </a>
-   </li>
   </ul>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -9150,62 +9096,6 @@ training if for some reason training was suspended.</p>
     </span>
    </code>
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#otx.api.entities.url.URL">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     URL
-    </span>
-   </code>
-  </a>
-  <ul class="nav section-nav flex-column">
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.url.URL.extension">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       URL.extension
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.url.URL.host">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       URL.host
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.url.URL.path">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       URL.path
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.url.URL.relative_path">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       URL.relative_path
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#otx.api.entities.url.URL.scheme">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       URL.scheme
-      </span>
-     </code>
-    </a>
-   </li>
-  </ul>
  </li>
 </ul>
 
