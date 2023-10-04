@@ -323,12 +323,12 @@ class TestDetectionConfigurer:
         self.configurer.configure_compat_cfg(model_cfg)
 
     @e2e_pytest_unit
-    def test_get_data_cfg(self):
+    def test_get_subset_data_cfg(self):
         config = copy.deepcopy(self.model_cfg)
         data_pipeline_cfg = OTXConfig.fromfile(self.data_pipeline_path)
         config.merge_from_dict(data_pipeline_cfg)
         config.data.train.dataset = ConfigDict({"dataset": [1, 2, 3]})
-        assert [1, 2, 3] == self.configurer.get_data_cfg(config, "train")
+        assert [1, 2, 3] == self.configurer.get_subset_data_cfg(config, "train")
 
 
 class TestIncrDetectionConfigurer:

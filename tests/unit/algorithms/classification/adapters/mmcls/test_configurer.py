@@ -266,11 +266,11 @@ class TestClassificationConfigurer:
         self.configurer.configure_compat_cfg(model_cfg)
 
     @e2e_pytest_unit
-    def test_get_data_cfg(self):
+    def test_get_subset_data_cfg(self):
         config = copy.deepcopy(self.model_cfg)
         config.update(self.data_cfg)
         config.data.train.dataset = ConfigDict({"dataset": [1, 2, 3]})
-        assert [1, 2, 3] == self.configurer.get_data_cfg(config, "train")
+        assert [1, 2, 3] == self.configurer.get_subset_data_cfg(config, "train")
 
 
 class TestIncrClassificationConfigurer:
