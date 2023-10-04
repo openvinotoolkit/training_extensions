@@ -8,6 +8,7 @@ from .custom_deformable_detr_detector import CustomDeformableDETR
 from .custom_dino_detector import CustomDINO
 from .custom_lite_dino import CustomLiteDINO
 from .custom_maskrcnn_detector import CustomMaskRCNN
+from .custom_faster_rcnn_detector import CustomFasterRCNN
 from .custom_maskrcnn_tile_optimized import CustomMaskRCNNTileOptimized
 from .custom_single_stage_detector import CustomSingleStageDetector
 from .custom_two_stage_detector import CustomTwoStageDetector
@@ -31,4 +32,5 @@ __all__ = [
     "SAMDetectorMixin",
     "CustomMaskRCNNTileOptimized",
     "MeanTeacher",
+    "CustomFasterRCNN"
 ]
