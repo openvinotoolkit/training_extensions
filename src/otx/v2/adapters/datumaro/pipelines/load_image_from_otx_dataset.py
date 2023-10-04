@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from tempfile import TemporaryDirectory
-from typing import Tuple
 
 import numpy as np
 
@@ -38,7 +37,7 @@ class LoadImageFromOTXDataset:
             self.mem_cache_handler = MemCacheHandlerSingleton.get()
 
     @staticmethod
-    def _get_unique_key(results: dict) -> Tuple:
+    def _get_unique_key(results: dict) -> tuple:
         # TODO: We should improve it by assigning an unique id to DatasetItemEntity.
         # This is because there is a case which
         # d_item.media.path is None, but d_item.media.data is not None
@@ -49,7 +48,7 @@ class LoadImageFromOTXDataset:
         """Callback function of LoadImageFromOTXDataset."""
         key = self._get_unique_key(results)
 
-        img = self.mem_cache_handler.get(key)
+        img, _ = self.mem_cache_handler.get(key)
 
         if img is None:
             # Get image (possibly from cache)
