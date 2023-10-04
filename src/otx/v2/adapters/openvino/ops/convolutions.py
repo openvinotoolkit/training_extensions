@@ -37,7 +37,7 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
     """ConvolutionV1 class."""
 
     TYPE = "Convolution"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConvolutionV1Attribute
     attrs: ConvolutionV1Attribute
 
@@ -61,7 +61,7 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
             self.attrs.strides,
             self.attrs.dilations,
         )
-        if isinstance(padding, functional.pad):
+        if callable(padding):
             inputs = padding(input=inputs)
             padding = 0
 
@@ -87,7 +87,7 @@ class GroupConvolutionV1(Operation[GroupConvolutionV1Attribute]):
     """GroupConvolutionV1 class."""
 
     TYPE = "GroupConvolution"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = GroupConvolutionV1Attribute
     attrs: GroupConvolutionV1Attribute
 
@@ -115,7 +115,7 @@ class GroupConvolutionV1(Operation[GroupConvolutionV1Attribute]):
             self.attrs.strides,
             self.attrs.dilations,
         )
-        if isinstance(padding, functional.pad):
+        if callable(padding):
             inputs = padding(input=inputs)
             padding = 0
 

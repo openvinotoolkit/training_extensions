@@ -60,7 +60,7 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
     """MaxPoolV0 class."""
 
     TYPE = "MaxPool"
-    VERSION = 0
+    VERSION = "opset8"
     ATTRIBUTE_FACTORY = MaxPoolV0Attribute
     attrs: MaxPoolV0Attribute
 
@@ -83,7 +83,7 @@ class MaxPoolV0(Operation[MaxPoolV0Attribute]):
             self.attrs.kernel,
             self.attrs.strides,
         )
-        if isinstance(padding, functional.pad):
+        if callable(padding):
             inputs = padding(input=inputs)
             padding = 0
 
@@ -128,7 +128,7 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
     """AvgPoolV1 class."""
 
     TYPE = "AvgPool"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = AvgPoolV1Attribute
     attrs: AvgPoolV1Attribute
 
@@ -156,7 +156,7 @@ class AvgPoolV1(Operation[AvgPoolV1Attribute]):
             self.attrs.kernel,
             self.attrs.strides,
         )
-        if isinstance(padding, functional.pad):
+        if callable(padding):
             inputs = padding(input=inputs)
             padding = 0
 

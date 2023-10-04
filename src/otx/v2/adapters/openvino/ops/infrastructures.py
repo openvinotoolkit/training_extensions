@@ -61,7 +61,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
     """ParameterV0 class."""
 
     TYPE = "Parameter"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ParameterV0Attribute
     attrs: ParameterV0Attribute
 
@@ -84,8 +84,6 @@ class ParameterV0(Operation[ParameterV0Attribute]):
     @classmethod
     def from_ov(cls: Type["ParameterV0"], ov_op: Operation) -> "ParameterV0":
         """ParameterV0's from_ov function."""
-        ov_op.get_type_name()
-        ov_op.get_version()
         op_name = get_op_name(ov_op)
 
         attrs = ov_op.get_attributes()
@@ -107,7 +105,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
                     "C": 1,
                     "H": 2,
                     "W": 3,
-                },
+                }
             )
             if not set(layout).symmetric_difference(input_layout.keys()):
                 permute = []
@@ -151,7 +149,7 @@ class ResultV0(Operation[ResultV0Attribute]):
     """ResultV0 class."""
 
     TYPE = "Result"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ResultV0Attribute
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
@@ -187,7 +185,7 @@ class ConstantV0(Operation[ConstantV0Attribute]):
     """ConstantV0 class."""
 
     TYPE = "Constant"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConstantV0Attribute
     attrs: ConstantV0Attribute
 

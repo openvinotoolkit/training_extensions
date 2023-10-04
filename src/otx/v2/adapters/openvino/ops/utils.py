@@ -26,7 +26,7 @@ def get_dynamic_shape(output: Node) -> list:
 def convert_op_to_torch(op_node: Node) -> torch.nn.Module:
     """Convert op Node to torch."""
     op_type = op_node.get_type_name()
-    op_version = op_node.get_version()
+    op_version = op_node.get_type_info().version_id
 
     try:
         from .builder import OPS

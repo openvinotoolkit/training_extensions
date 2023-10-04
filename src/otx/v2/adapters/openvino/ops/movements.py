@@ -36,7 +36,7 @@ class PadV1(Operation[PadV1Attribute]):
     """PadV1 class."""
 
     TYPE = "Pad"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = PadV1Attribute
     attrs: PadV1Attribute
 
@@ -88,7 +88,7 @@ class ConcatV0(Operation[ConcatV0Attribute]):
     """ConcatV0 class."""
 
     TYPE = "Concat"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ConcatV0Attribute
     attrs: ConcatV0Attribute
 
@@ -109,7 +109,7 @@ class TransposeV1(Operation[TransposeV1Attribute]):
     """TransposeV1 class."""
 
     TYPE = "Transpose"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = TransposeV1Attribute
     attrs: TransposeV1Attribute
 
@@ -134,7 +134,7 @@ class GatherV0(Operation[GatherV0Attribute]):
     """GatherV0 class."""
 
     TYPE = "Gather"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = GatherV0Attribute
     attrs: GatherV0Attribute
 
@@ -186,7 +186,7 @@ class GatherV1(Operation[GatherV1Attribute]):
     """GatherV1 class."""
 
     TYPE = "Gather"
-    VERSION = 1
+    VERSION = "opset2"
     ATTRIBUTE_FACTORY = GatherV1Attribute
     attrs: GatherV1Attribute
 
@@ -211,7 +211,7 @@ class StridedSliceV1(Operation[StridedSliceV1Attribute]):
     """StridedSliceV1 class."""
 
     TYPE = "StridedSlice"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = StridedSliceV1Attribute
     attrs: StridedSliceV1Attribute
 
@@ -284,7 +284,7 @@ class SplitV1(Operation[SplitV1Attribute]):
     """SplitV1 class."""
 
     TYPE = "Split"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SplitV1Attribute
     attrs: SplitV1Attribute
 
@@ -306,7 +306,7 @@ class VariadicSplitV1(Operation[VariadicSplitV1Attribute]):
     """VariadicSplitV1 class."""
 
     TYPE = "VariadicSplit"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = VariadicSplitV1Attribute
     attrs: VariadicSplitV1Attribute
 
@@ -343,7 +343,7 @@ class ShuffleChannelsV0(Operation[ShuffleChannelsV0Attribute]):
     """ShuffleChannelsV0 class."""
 
     TYPE = "ShuffleChannels"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ShuffleChannelsV0Attribute
     attrs: ShuffleChannelsV0Attribute
 
@@ -396,7 +396,7 @@ class BroadcastV3(Operation[BroadcastV3Attribute]):
     """BroadcastV3 class."""
 
     TYPE = "Broadcast"
-    VERSION = 3
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = BroadcastV3Attribute
     attrs: BroadcastV3Attribute
 
@@ -429,7 +429,7 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
     """ScatterNDUpdateV3 class."""
 
     TYPE = "ScatterNDUpdate"
-    VERSION = 3
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ScatterNDUpdateV3Attribute
     attrs: ScatterNDUpdateV3Attribute
 
@@ -462,7 +462,7 @@ class ScatterUpdateV3(Operation[ScatterUpdateV3Attribute]):
     """ScatterUpdateV3 class."""
 
     TYPE = "ScatterUpdate"
-    VERSION = 3
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ScatterUpdateV3Attribute
     attrs: ScatterUpdateV3Attribute
 
@@ -494,7 +494,7 @@ class TileV0(Operation[TileV0Attribute]):
     """TileV0 class."""
 
     TYPE = "Tile"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = TileV0Attribute
     attrs: TileV0Attribute
 

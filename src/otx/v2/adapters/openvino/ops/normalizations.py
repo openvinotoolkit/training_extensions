@@ -27,7 +27,7 @@ class BatchNormalizationV0(Operation[BatchNormalizationV0Attribute]):
     """BatchNormalizationV0 class."""
 
     TYPE = "BatchNormInference"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = BatchNormalizationV0Attribute
     attrs: BatchNormalizationV0Attribute
 
@@ -91,7 +91,7 @@ class LocalResponseNormalizationV0(Operation[LocalResponseNormalizationV0Attribu
     """LocalResponseNormalizationV0 class."""
 
     TYPE = "LRN"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = LocalResponseNormalizationV0Attribute
     attrs: LocalResponseNormalizationV0Attribute
 
@@ -150,7 +150,7 @@ class NormalizeL2V0(Operation[NormalizeL2V0Attribute]):
     """NormalizeL2V0 class."""
 
     TYPE = "NormalizeL2"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = NormalizeL2V0Attribute
     attrs: NormalizeL2V0Attribute
 
@@ -197,7 +197,7 @@ class MVNV6(Operation[MVNV6Attribute]):
     """MVNV6 class."""
 
     TYPE = "MVN"
-    VERSION = 6
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = MVNV6Attribute
     attrs: MVNV6Attribute
 

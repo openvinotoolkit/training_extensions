@@ -199,7 +199,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
     @staticmethod
     def build_custom_outputs(graph: Graph, outputs: Union[list, str]) -> list:
         """Function build_custom_outputs."""
-        cls_result = OPS.get_by_type_version("Result", 0)
+        cls_result = OPS.get_by_type_version("Result", "opset1")
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
 
         if not isinstance(outputs, list):
@@ -276,7 +276,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
     @staticmethod
     def build_custom_inputs(graph: Graph, inputs: Union[str, list]) -> list:  # noqa: C901
         """Function build_custom_inputs."""
-        cls_param = OPS.get_by_type_version("Parameter", 0)
+        cls_param = OPS.get_by_type_version("Parameter", "opset1")
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())
 
         if not isinstance(inputs, list):

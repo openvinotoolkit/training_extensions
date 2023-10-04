@@ -46,7 +46,7 @@ class ProposalV4(Operation[ProposalV4Attribute]):
     """ProposalV4 class."""
 
     TYPE = "Proposal"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ProposalV4Attribute
     attrs: ProposalV4Attribute
 
@@ -78,7 +78,7 @@ class ROIPoolingV0(Operation[ROIPoolingV0Attribute]):
     """ROIPoolingV0 class."""
 
     TYPE = "ROIPooling"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ROIPoolingV0Attribute
 
     def forward(self, inputs: torch.Tensor, boxes: torch.Tensor) -> torch.Tensor:
@@ -122,7 +122,7 @@ class DetectionOutputV0(Operation[DetectionOutputV0Attribute]):
     """DetectionOutputV0 class."""
 
     TYPE = "DetectionOutput"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = DetectionOutputV0Attribute
     attrs: DetectionOutputV0Attribute
 
@@ -157,7 +157,7 @@ class RegionYoloV0(Operation[RegionYoloV0Attribute]):
     """RegionYoloV0 class."""
 
     TYPE = "RegionYolo"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = RegionYoloV0Attribute
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
@@ -188,7 +188,7 @@ class PriorBoxV0(Operation[PriorBoxV0Attribute]):
     """PriorBoxV0 class."""
 
     TYPE = "PriorBox"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = PriorBoxV0Attribute
 
     def forward(self, output_size: torch.Tensor, image_size: torch.Tensor) -> torch.Tensor:
@@ -215,7 +215,7 @@ class PriorBoxClusteredV0(Operation[PriorBoxClusteredV0Attribute]):
     """PriorBoxClusteredV0 class."""
 
     TYPE = "PriorBoxClustered"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = PriorBoxClusteredV0Attribute
 
     def forward(self, output_size: torch.Tensor, image_size: torch.Tensor) -> torch.Tensor:

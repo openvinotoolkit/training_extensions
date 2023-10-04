@@ -44,7 +44,7 @@ class TopKV3(Operation[TopKV3Attribute]):
     """TopKV3 class."""
 
     TYPE = "TopK"
-    VERSION = 3
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = TopKV3Attribute
 
     def forward(self, inputs: torch.Tensor, k: int) -> torch.Tensor:
@@ -66,7 +66,7 @@ class NonMaxSuppressionV5(Operation[NonMaxSuppressionV5Attribute]):
     """NonMaxSuppressionV5 class."""
 
     TYPE = "NonMaxSuppression"
-    VERSION = 5
+    VERSION = "opset5"
     ATTRIBUTE_FACTORY = NonMaxSuppressionV5Attribute
     attrs: NonMaxSuppressionV5Attribute
 
@@ -97,7 +97,7 @@ class NonMaxSuppressionV9(Operation[NonMaxSuppressionV9Attribute]):
     """NonMaxSuppressionV9 class."""
 
     TYPE = "NonMaxSuppression"
-    VERSION = 9
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = NonMaxSuppressionV9Attribute
 
     def forward(

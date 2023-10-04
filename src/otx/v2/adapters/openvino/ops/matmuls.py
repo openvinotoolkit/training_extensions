@@ -24,7 +24,7 @@ class MatMulV0(Operation[MatMulV0Attribute]):
     """MatMulV0 class."""
 
     TYPE = "MatMul"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = MatMulV0Attribute
     attrs: MatMulV0Attribute
 
@@ -49,7 +49,7 @@ class EinsumV7(Operation[EinsumV7Attribute]):
     """EinsumV7 class."""
 
     TYPE = "Einsum"
-    VERSION = 7
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = EinsumV7Attribute
     attrs: EinsumV7Attribute
 

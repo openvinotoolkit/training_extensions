@@ -34,7 +34,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
     """Operation class."""
 
     TYPE = ""
-    VERSION = -1
+    VERSION = ""
     ATTRIBUTE_FACTORY: Type[Attribute] = Attribute
 
     def __init__(self, name: str, **kwargs) -> None:
@@ -62,7 +62,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
         return self.TYPE
 
     @property
-    def version(self) -> int:
+    def version(self) -> str:
         """Operation's version property."""
         return self.VERSION
 

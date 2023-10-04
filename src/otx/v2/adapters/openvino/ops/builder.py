@@ -48,7 +48,7 @@ class OperationRegistry(Registry):
         """Get obj from name."""
         return self.get(name)
 
-    def get_by_type_version(self, types: str, version: int) -> Operation:
+    def get_by_type_version(self, types: str, version: str) -> Operation:
         """Get obj from type and version."""
         if types not in self._registry_dict_by_type:
             raise KeyError(f"type {types} is not registered in {self._name}")

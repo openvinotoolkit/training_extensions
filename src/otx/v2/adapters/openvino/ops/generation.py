@@ -24,7 +24,7 @@ class RangeV4(Operation[RangeV4Attribute]):
     """RangeV4 class."""
 
     TYPE = "Range"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = RangeV4Attribute
     attrs: RangeV4Attribute
 

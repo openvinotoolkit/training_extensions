@@ -25,7 +25,7 @@ class SqueezeV0(Operation[SqueezeV0Attribute]):
     """SqueezeV0 class."""
 
     TYPE = "Squeeze"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SqueezeV0Attribute
 
     def forward(self, inputs: torch.Tensor, dims: Optional[torch.Tensor] = None) -> torch.Tensor:
@@ -61,7 +61,7 @@ class UnsqueezeV0(Operation[UnsqueezeV0Attribute]):
     """UnsqueezeV0 class."""
 
     TYPE = "Unsqueeze"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = UnsqueezeV0Attribute
 
     def forward(self, inputs: torch.Tensor, dims: torch.Tensor) -> torch.Tensor:
@@ -95,7 +95,7 @@ class ReshapeV1(Operation[ReshapeV1Attribute]):
     """ReshapeV1 class."""
 
     TYPE = "Reshape"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReshapeV1Attribute
     attrs: ReshapeV1Attribute
 
@@ -128,7 +128,7 @@ class ShapeOfV0(Operation[ShapeOfV0Attribute]):
     """ShapeOfV0 class."""
 
     TYPE = "ShapeOf"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ShapeOfV0Attribute
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
@@ -155,7 +155,7 @@ class ShapeOfV3(Operation[ShapeOfV3Attribute]):
     """ShapeOfV3 class."""
 
     TYPE = "ShapeOf"
-    VERSION = 3
+    VERSION = "opset3"
     ATTRIBUTE_FACTORY = ShapeOfV3Attribute
     attrs: ShapeOfV3Attribute
 

@@ -24,7 +24,7 @@ class ReduceMeanV1(Operation[ReduceMeanV1Attribute]):
     """ReduceMeanV1 class."""
 
     TYPE = "ReduceMean"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceMeanV1Attribute
     attrs: ReduceMeanV1Attribute
 
@@ -53,7 +53,7 @@ class ReduceProdV1(Operation[ReduceProdV1Attribute]):
     """ReduceMeanV1Attribute class."""
 
     TYPE = "ReduceProd"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceProdV1Attribute
     attrs: ReduceProdV1Attribute
 
@@ -88,7 +88,7 @@ class ReduceMinV1(Operation[ReduceMinV1Attribute]):
     """ReduceMinV1 class."""
 
     TYPE = "ReduceMin"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceMinV1Attribute
     attrs: ReduceMinV1Attribute
 
@@ -123,7 +123,7 @@ class ReduceSumV1(Operation[ReduceSumV1Attribute]):
     """ReduceSumV1 class."""
 
     TYPE = "ReduceSum"
-    VERSION = 1
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReduceSumV1Attribute
     attrs: ReduceSumV1Attribute
 

@@ -26,7 +26,7 @@ class SoftMaxV0(Operation[SoftMaxV0Attribute]):
     """SoftMaxV0 class."""
 
     TYPE = "Softmax"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SoftMaxV0Attribute
     attrs: SoftMaxV0Attribute
 
@@ -47,7 +47,7 @@ class SoftMaxV1(Operation[SoftMaxV1Attribute]):
     """SoftMaxV1 class."""
 
     TYPE = "Softmax"
-    VERSION = 1
+    VERSION = "opset8"
     ATTRIBUTE_FACTORY = SoftMaxV1Attribute
     attrs: SoftMaxV1Attribute
 
@@ -68,7 +68,7 @@ class ReluV0(Operation[ReluV0Attribute]):
     """ReluV0 class."""
 
     TYPE = "Relu"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ReluV0Attribute
     attrs: ReluV0Attribute
 
@@ -89,7 +89,7 @@ class SwishV4(Operation[SwishV4Attribute]):
     """SwishV4 class."""
 
     TYPE = "Swish"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SwishV4Attribute
     attrs: SwishV4Attribute
 
@@ -110,7 +110,7 @@ class SigmoidV0(Operation[SigmoidV0Attribute]):
     """SigmoidV0 class."""
 
     TYPE = "Sigmoid"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SigmoidV0Attribute
     attrs: SigmoidV0Attribute
 
@@ -132,7 +132,7 @@ class ClampV0(Operation[ClampV0Attribute]):
     """ClampV0 class."""
 
     TYPE = "Clamp"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ClampV0Attribute
     attrs: ClampV0Attribute
 
@@ -153,7 +153,7 @@ class PReluV0(Operation[PReluV0Attribute]):
     """PReluV0 class."""
 
     TYPE = "PRelu"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = PReluV0Attribute
     attrs: PReluV0Attribute
 
@@ -174,7 +174,7 @@ class TanhV0(Operation[TanhV0Attribute]):
     """TanhV0 class."""
 
     TYPE = "Tanh"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = TanhV0Attribute
     attrs: TanhV0Attribute
 
@@ -195,7 +195,7 @@ class EluV0(Operation[EluV0Attribute]):
     """EluV0 class."""
 
     TYPE = "Elu"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = EluV0Attribute
     attrs: EluV0Attribute
 
@@ -216,7 +216,7 @@ class SeluV0(Operation[SeluV0Attribute]):
     """SeluV0 class."""
 
     TYPE = "Selu"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = SeluV0Attribute
     attrs: SeluV0Attribute
 
@@ -237,7 +237,7 @@ class MishV4(Operation[MishV4Attribute]):
     """MishV4 class."""
 
     TYPE = "Mish"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = MishV4Attribute
     attrs: MishV4Attribute
 
@@ -259,7 +259,7 @@ class HSwishV4(Operation[HSwishV4Attribute]):
     """HSwishV4 class."""
 
     TYPE = "HSwish"
-    VERSION = 4
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = HSwishV4Attribute
     attrs: HSwishV4Attribute
 
@@ -280,7 +280,7 @@ class HSigmoidV5(Operation[HSigmoidV5Attribute]):
     """HSigmoidV5 class."""
 
     TYPE = "HSigmoid"
-    VERSION = 5
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = HSigmoidV5Attribute
     attrs: HSigmoidV5Attribute
 
@@ -301,7 +301,7 @@ class ExpV0(Operation[ExpV0Attribute]):
     """ExpV0 class."""
 
     TYPE = "Exp"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = ExpV0Attribute
     attrs: ExpV0Attribute
 
@@ -322,7 +322,7 @@ class HardSigmoidV0(Operation[HardSigmoidV0Attribute]):
     """HardSigmoidV0 class."""
 
     TYPE = "HardSigmoid"
-    VERSION = 0
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = HardSigmoidV0Attribute
     attrs: HardSigmoidV0Attribute
 
@@ -356,7 +356,7 @@ class GeluV7(Operation[GeluV7Attribute]):
     """GeluV7 class."""
 
     TYPE = "Gelu"
-    VERSION = 7
+    VERSION = "opset1"
     ATTRIBUTE_FACTORY = GeluV7Attribute
     attrs: GeluV7Attribute
 

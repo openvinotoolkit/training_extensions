@@ -63,7 +63,7 @@ class OperationModule(torch.nn.Module):
         return self.op_v.type
 
     @property
-    def version(self) -> int:
+    def version(self) -> str:
         """Operationmodule's version property."""
         return self.op_v.version
 

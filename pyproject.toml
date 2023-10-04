@@ -263,6 +263,17 @@ exclude = [
 
 # Extended exclude for the project specific
 extend-exclude = [
+    "tests/assets",
+    "tests/e2e",
+    "tests/fuzzing",
+    "tests/integration",
+    "tests/regression",
+    "tests/test_suite",
+    "tests/unit",
+    "tests/conftest.py",
+    "tests/run_model_templates_tests.py",
+    "tests/test_helpers.py",
+
     "src/otx/api",
     "src/otx/algorithms",
     "src/otx/cli",
@@ -272,6 +283,9 @@ extend-exclude = [
     "src/otx/v2/demo",
     "src/otx/v2/pseudo_code",
     "src/otx/v2/configs",
+    "src/otx/v2/api/entities",
+
+    # TODO: Enable below
     "src/otx/v2/adapters/openvino",
     "src/otx/v2/adapters/datumaro",
     "src/otx/v2/adapters/torch/mmengine/modules",
@@ -299,3 +313,12 @@ max-args = 20
 max-branches = 50
 max-statements = 150
 max-returns = 10
+
+[tool.ruff.per-file-ignores]
+# Declare an additional exclude rule for test code
+"tests/**/*.py" = [
+    "S101", # pytest-style allows `assert` statements in tests.
+    "SLF001", # We sometimes need to inspect private functions for testing.
+    "TCH003", # It doesn't seem necessary to use TYPE_CHECKING in tests.
+    "PT004", # fixture ignore type returning.
+]
