@@ -24,7 +24,7 @@ from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config, update_runner_config
 from otx.v2.api.core.engine import Engine
-from otx.v2.api.utils.importing import get_all_args, get_non_default_args
+from otx.v2.api.utils.importing import get_all_args, get_default_args
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
@@ -141,7 +141,7 @@ class MMXEngine(Engine):
                 continue
             self.config[kwarg_key] = kwarg_value
         # Check Config Default is not None
-        runner_default_args = get_non_default_args(Runner.__init__)
+        runner_default_args = get_default_args(Runner.__init__)
         for not_none_arg, default_value in runner_default_args:
             if self.config.get(not_none_arg) is None:
                 self.config[not_none_arg] = default_value

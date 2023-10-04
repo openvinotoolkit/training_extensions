@@ -1,13 +1,15 @@
-# Copyright (C) 2021-2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
+"""OTX V2 API-utils Unit-Test codes (Callbacks)."""
 
-# FIXME: This test is copied from otx 1.X test. so we need to check again.
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+# TODO: This test is copied from otx 1.X test. so we need to check again.
 
 from time import time
 
 from otx.v2.api.entities.train_parameters import UpdateProgressCallback, default_progress_callback
 from otx.v2.api.utils.callbacks import Callback, TimeMonitorCallback
+from pytest_mock.plugin import MockerFixture
 
 
 class TestCallback:
@@ -36,6 +38,16 @@ class TestCallback:
         callback.on_test_batch_begin(batch=1, logger=None)
         callback.on_test_batch_end(batch=1, logger=None)
 
+    def test_set_params(self) -> None:
+        callback = Callback()
+        callback.set_params({"param1": "value1", "param2": "value2"})
+        assert callback.params == {"param1": "value1", "param2": "value2"}
+
+    def test_set_model(self, mocker: MockerFixture) -> None:
+        callback = Callback()
+        model = mocker.MagicMock()
+        callback.set_model(model=model)
+        assert callback.model == model
 
 class TestTimeMonitorCallback:
     @staticmethod
@@ -436,3 +448,31 @@ class TestTimeMonitorCallback:
         time_monitor_callback.current_step = 16
         time_monitor_callback.total_steps = 64
         assert time_monitor_callback.get_progress() == 25.0  # (current_step / total_steps)*100
+
+    def test_getstate(self, mocker: MockerFixture) -> None:
+        """
+        Test the getstate method of the TimeMonitorCallback class.
+
+        This method tests whether the getstate method of the TimeMonitorCallback class returns the expected state of the
+        object. It does this by pickling the object and checking whether the pickled data is of type bytes.
+
+        Args:
+            mocker (pytest_mock.plugin.MockerFixture): A pytest-mock mocker fixture.
+
+        Returns:
+            None
+        """
+        import pickle
+        time_monitor_callback = self.time_monitor_callback()
+        with mocker.patch("otx.v2.api.utils.callbacks.dill.pickles", return_value=False):
+            callback_data = pickle.dumps(time_monitor_callback)
+            assert isinstance(callback_data, bytes)
+
+    def test_deepcopy(self) -> None:
+        """
+        Test the deepcopy functionality of the time_monitor_callback object.
+        """
+        import copy
+        time_monitor_callback = self.time_monitor_callback()
+        callback_copy = copy.deepcopy(time_monitor_callback)
+        assert time_monitor_callback.__dict__ == callback_copy.__dict__

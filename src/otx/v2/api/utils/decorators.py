@@ -6,7 +6,7 @@
 
 from typing import TYPE_CHECKING, Callable, List, TypeVar, Union
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from otx.v2.api.core.auto_runner import AutoRunner
     from otx.v2.api.core.dataset import BaseDataset
 

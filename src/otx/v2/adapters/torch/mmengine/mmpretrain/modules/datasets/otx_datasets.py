@@ -21,7 +21,7 @@ from torch.utils.data import Dataset
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import TRANSFORMS
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
-from otx.v2.api.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
+from otx.v2.api.entities.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
 from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()

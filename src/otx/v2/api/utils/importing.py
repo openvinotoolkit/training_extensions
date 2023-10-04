@@ -39,7 +39,7 @@ def get_impl_class(impl_path: str) -> TypeVar:
     return result
 
 
-def get_non_default_args(func: Callable) -> list:
+def get_default_args(func: Callable) -> list:
     signature = inspect.signature(func)
     non_default_args = []
 
