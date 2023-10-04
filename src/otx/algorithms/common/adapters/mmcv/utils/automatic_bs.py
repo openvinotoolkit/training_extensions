@@ -10,7 +10,6 @@ from typing import Callable, Dict, List
 import numpy as np
 from torch.cuda import is_available as cuda_available
 
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import update_or_add_custom_hook
 from otx.algorithms.common.adapters.torch.utils import BsSearchAlgo
 from otx.algorithms.common.utils.logger import get_logger
 
