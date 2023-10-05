@@ -250,8 +250,7 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
             if input_size:
                 with open(path_to_xml, encoding="utf-8") as xml_stream:
                     xml_model = xml_stream.read()
-                    assert f"{input_size[0]},{input_size[1]}" in xml_model
-                    assert False
+                    assert f"{input_size[1]},{input_size[0]}" in xml_model
     else:
         if "Visual_Prompting" in template.model_template_id:
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))

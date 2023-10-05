@@ -163,7 +163,7 @@ class SegmentationConfigurer(BaseConfigurer):
 
         if input_size == (0, 0):  # InputSizePreset.AUTO
             if training:
-                input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=True)
+                input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=False)
             else:
                 input_size = manager.get_trained_input_size(model_ckpt_path)
             if input_size is None:

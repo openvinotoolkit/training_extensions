@@ -294,11 +294,11 @@ def get_mock_model_ckpt(case):
     if case == "none":
         return None
     if case == "no_input_size":
-        return {"config": {}}
+        return {}
     if case == "input_size_default":
-        return {"config": {"learning_parameters": {"input_size": {"value": "Default"}}}}
+        return {"input_size": None}
     if case == "input_size_exist":
-        return {"config": {"learning_parameters": {"input_size": {"value": "512x512"}}}}
+        return {"input_size": (512, 512)}
 
 
 @e2e_pytest_unit
@@ -407,40 +407,20 @@ class TestInputSizeManager:
         assert input_size_manager.get_input_size_from_cfg("train") == input_size
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize(
-        "input_size_config", [InputSizePreset.DEFAULT, InputSizePreset.AUTO, InputSizePreset._1024x1024]
-    )
     @pytest.mark.parametrize("model_ckpt_case", ["none", "no_input_size", "input_size_default", "input_size_exist"])
-    def test_get_configured_input_size(self, mocker, input_size_config, model_ckpt_case):
+    def test_get_trained_input_size(self, mocker, model_ckpt_case):
         # prepare
         mock_torch = mocker.patch.object(config_utils, "torch")
         mock_torch.load.return_value = get_mock_model_ckpt(model_ckpt_case)
-        input_size_parser = re.compile("(\d+)x(\d+)")
 
-        if input_size_config == InputSizePreset.DEFAULT:
-            if (
-                model_ckpt_case == "none"
-                or model_ckpt_case == "no_input_size"
-                or model_ckpt_case == "input_size_default"
-            ):
-                expected_value = None
-            elif model_ckpt_case == "input_size_exist":
-                input_size = get_mock_model_ckpt(model_ckpt_case)["config"]["learning_parameters"]["input_size"][
-                    "value"
-                ]
-                pattern = input_size_parser.search(input_size)
-                expected_value = (int(pattern.group(1)), int(pattern.group(2)))
-        elif input_size_config == InputSizePreset.AUTO:
-            expected_value = (0, 0)
+        if model_ckpt_case == "none" or model_ckpt_case == "no_input_size" or model_ckpt_case == "input_size_default":
+            expected_value = None
         else:
-            pattern = input_size_parser.search(input_size_config.value)
-            expected_value = (int(pattern.group(1)), int(pattern.group(2)))
+            expected_value = (512, 512)
 
         # check expected value is returned
         assert (
-            InputSizeManager.get_configured_input_size(
-                input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock()
-            )
+            InputSizeManager.get_trained_input_size(None if model_ckpt_case == "none" else mocker.MagicMock())
             == expected_value
         )
 

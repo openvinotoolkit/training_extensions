@@ -525,6 +525,7 @@ class BaseConfigurer:
                 return f"{obj:.2f}"
             if isinstance(obj, dict):
                 return {k: format_float(v) for k, v in obj.items()}
+            return obj
 
         logger.info(f"Dataset stat: {json.dumps(format_float(stat), indent=4)}")
 
