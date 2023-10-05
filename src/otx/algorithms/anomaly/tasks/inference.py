@@ -357,7 +357,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         if "min" in metadata and "max" in metadata:
             extra_model_data[("model_info", "normalization_scale")] = metadata["max"] - metadata["min"]
 
-        extra_model_data[("model_info", "reverse_input_channels")] = True
+        extra_model_data[("model_info", "reverse_input_channels")] = False
         extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
         extra_model_data[("model_info", "labels")] = "Normal Anomaly"
         if export_type == ExportType.OPENVINO:
