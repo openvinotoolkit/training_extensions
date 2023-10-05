@@ -6,6 +6,7 @@
 from typing import Callable, Dict, Tuple
 
 import torch
+import torch.distributed as dist
 
 from otx.algorithms.common.utils.logger import get_logger
 
@@ -51,7 +52,31 @@ class BsSearchAlgo:
             else:
                 raise e
 
-        max_memory_allocated = torch.cuda.max_memory_allocated(device=None)
+        max_memory_allocated = torch.cuda.max_memory_reserved(device=None)
+
+        if dist.is_initialized():  # Aggregate all results and broadcast to all processes
+            rank = dist.get_rank()
+            try_result = torch.tensor([int(cuda_oom), max_memory_allocated], dtype=torch.int64).cuda()
+
+            if rank == 0:
+                try_result_arr = [torch.empty(2, dtype=torch.int64).cuda() for _ in range(dist.get_world_size())]
+                dist.gather(try_result, gather_list=try_result_arr, dst=0)
+            else:
+                dist.gather(try_result, dst=0)
+
+            if rank == 0:
+                try_result_arr = torch.stack(try_result_arr)
+                cuda_oom = torch.any(try_result_arr[:, 0])
+                max_memory_allocated = torch.max(try_result_arr[:, 1])
+                total_try_result = torch.tensor([cuda_oom, max_memory_allocated], dtype=torch.int64).cuda()
+            else:
+                total_try_result = torch.empty(2, dtype=torch.int64).cuda()
+
+            dist.broadcast(total_try_result, src=0)
+
+            cuda_oom = total_try_result[0].bool().item()
+            max_memory_allocated = total_try_result[1].to(torch.int64).item()
+
         if not cuda_oom:
             # Because heapq only supports min heap, use negatized batch size
             self._bs_try_history[bs] = max_memory_allocated
@@ -138,7 +163,7 @@ class BsSearchAlgo:
             return self._default_bs
 
         # estimate batch size using equation
-        estimation_pct = 0.82
+        estimation_pct = 0.90
         while True:
             estimated_bs = self._estimate_batch_size(estimation_pct)
             if estimated_bs in self._bs_try_history:
@@ -153,7 +178,7 @@ class BsSearchAlgo:
             elif self._mem_lower_bound <= mem_usage <= self._mem_upper_bound:
                 break
             else:
-                estimation_pct = 0.82
+                estimation_pct = 0.90
 
         if drop_last and (self._max_bs // 2 < estimated_bs < self._max_bs):
             estimated_bs = self._max_bs // 2
