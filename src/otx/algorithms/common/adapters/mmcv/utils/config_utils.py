@@ -969,5 +969,5 @@ def get_proper_repeat_times(
         logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
         return 1
     n_iters_per_epoch = math.ceil(data_size / batch_size)
-    # return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))
-    return max(round(math.exp(-0.025 * n_iters_per_epoch) * 6), 1)
+    return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))
+    # return max(round(math.exp(-0.025 * n_iters_per_epoch) * 6), 1)
