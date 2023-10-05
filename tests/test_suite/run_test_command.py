@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import sys
+import torch
 from pathlib import Path
 from typing import Dict
 import onnx
@@ -244,6 +245,13 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         else:
             assert os.path.exists(path_to_xml)
             assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+            ckpt = torch.load(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth")
+            input_size = ckpt.get("input_size", None)
+            if input_size:
+                with open(path_to_xml, encoding="utf-8") as xml_stream:
+                    xml_model = xml_stream.read()
+                    assert f"{input_size[0]},{input_size[1]}" in xml_model
+                    assert False
     else:
         if "Visual_Prompting" in template.model_template_id:
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
