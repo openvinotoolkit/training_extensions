@@ -416,7 +416,7 @@ class BaseConfigurer:
             remove_from_configs_by_type(cfg.custom_hooks, "AdaptiveRepeatDataHook")
             return
         for custom_hook in cfg.custom_hooks:
-            if custom_hook["type"] == "AdaptiveRepeatDataHook" and cfg.get("data") is not None:
+            if custom_hook["type"] == "AdaptiveRepeatDataHook":
                 data_cfg = cfg.get("data", {})
                 bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
                 bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)

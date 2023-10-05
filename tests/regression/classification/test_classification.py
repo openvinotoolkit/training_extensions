@@ -52,17 +52,19 @@ class TestRegressionMultiClassClassification:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            tmp_results_root=tmp_dir_path,
         )
 
         yield cls.reg_cfg
 
+        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
         with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
@@ -464,17 +466,19 @@ class TestRegressionMultiLabelClassification:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            tmp_results_root=tmp_dir_path,
         )
 
         yield cls.reg_cfg
 
+        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
         with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
@@ -727,17 +731,19 @@ class TestRegressionHierarchicalLabelClassification:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            tmp_results_root=tmp_dir_path,
         )
 
         yield cls.reg_cfg
 
+        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
         with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
@@ -933,17 +939,19 @@ class TestRegressionSupconClassification:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            tmp_results_root=tmp_dir_path,
         )
 
         yield cls.reg_cfg
 
+        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
         with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 

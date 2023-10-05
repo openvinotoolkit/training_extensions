@@ -125,7 +125,6 @@ def _set_batch_size(cfg, batch_size: int):
         cfg.data.videos_per_gpu = batch_size
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
-        update_or_add_custom_hook(cfg, {"type": "AdaptiveRepeatDataHook", "train_batch_size": batch_size})
         for custom_hook in cfg.custom_hooks:
             if custom_hook["type"] == "AdaptiveRepeatDataHook":
                 custom_hook["train_batch_size"] = batch_size
