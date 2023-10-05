@@ -19,7 +19,7 @@ import json
 import os
 import random
 import tempfile
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import nncf
@@ -34,6 +34,7 @@ from openvino.model_api.models import AnomalyDetection, AnomalyResult
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.utils import read_py_config
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
@@ -369,10 +370,80 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         """
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
-        return AnomalyDetection.create_model(
-            model=self.task_environment.model.get_data("openvino.xml"),
-            weights_path=self.task_environment.model.get_data("openvino.bin"),
-        )
+        try:
+            model = AnomalyDetection.create_model(
+                model=self.task_environment.model.get_data("openvino.xml"),
+                weights_path=self.task_environment.model.get_data("openvino.bin"),
+            )
+        except RuntimeError as exception:
+            logger.exception(exception)
+            logger.info("Possibly a legacy model is being loaded.")
+            self._create_from_legacy()
+            model = AnomalyDetection.create_model(
+                model=self.task_environment.model.get_data("openvino.xml"),
+                weights_path=self.task_environment.model.get_data("openvino.bin"),
+            )
+
+        return model
+
+    def _create_from_legacy(self) -> None:
+        """Generates an OpenVINO model in new format from the legacy model.
+
+        TODO: This needs to be removed once all projects in Geti have been migrated to the newer version.
+
+        Args:
+            model_file (str): The XML model file.
+        """
+        metadata = self.get_metadata()
+        extra_model_data: Dict[Tuple[str, str], Any] = {}
+        for key, value in metadata.items():
+            if key in ("transform", "min", "max"):
+                continue
+            extra_model_data[("model_info", key)] = value
+        # Add transforms
+        if "transform" in metadata:
+            for transform_dict in metadata["transform"]["transform"]["transforms"]:
+                transform = transform_dict.pop("__class_fullname__")
+                if transform == "Normalize":
+                    extra_model_data[("model_info", "mean_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["mean"]]
+                    )
+                    extra_model_data[("model_info", "scale_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["std"]]
+                    )
+                elif transform == "Resize":
+                    extra_model_data[("model_info", "orig_height")] = transform_dict["height"]
+                    extra_model_data[("model_info", "orig_width")] = transform_dict["width"]
+                else:
+                    logger.warn(f"Transform {transform} is not supported currently")
+        # Since we only need the diff of max and min, we fuse the min and max into one op
+        if "min" in metadata and "max" in metadata:
+            extra_model_data[("model_info", "normalization_scale")] = metadata["max"] - metadata["min"]
+
+        extra_model_data[("model_info", "reverse_input_channels")] = False
+        extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
+        extra_model_data[("model_info", "labels")] = "Normal Anomaly"
+
+        for key, value in extra_model_data.items():
+            if isinstance(value, np.ndarray):
+                extra_model_data[key] = value.tolist()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            xml_data = self.task_environment.model.get_data("openvino.xml")
+            bin_data = self.task_environment.model.get_data("openvino.bin")
+            with open(f"{temp_dir}/openvino.xml", "wb") as file:
+                file.write(xml_data)
+            with open(f"{temp_dir}/openvino.bin", "wb") as file:
+                file.write(bin_data)
+            embed_ir_model_data(f"{temp_dir}/openvino.xml", extra_model_data)
+            with open(f"{temp_dir}/openvino.xml", "rb") as file:
+                self.task_environment.model.set_data("openvino.xml", file.read())
+            with open(f"{temp_dir}/openvino.bin", "rb") as file:
+                self.task_environment.model.set_data("openvino.bin", file.read())
+
+    def _serialize_list(self, arr: Union[Tuple, List]) -> str:
+        """Converts a list to space separated string."""
+        return " ".join(map(str, arr))
 
     @staticmethod
     def __save_weights(path: str, data: bytes) -> None:
