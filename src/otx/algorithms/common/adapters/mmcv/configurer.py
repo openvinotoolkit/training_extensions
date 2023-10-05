@@ -421,9 +421,9 @@ class BaseConfigurer:
                 bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
                 bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
                 custom_hook["train_batch_size"] = bs
+                
                 train_data_cfg = self.get_subset_data_cfg(cfg, "train") 
                 otx_dataset = train_data_cfg.get("otx_dataset", [])
-                # YOLOX model used 'dataset' instead of 'otx_dataset'
                 custom_hook["train_data_size"] = len(otx_dataset)
                 break
 

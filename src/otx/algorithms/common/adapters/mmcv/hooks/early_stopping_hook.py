@@ -307,7 +307,6 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
     def _is_check_timing(self, runner: BaseRunner) -> bool:
         """Check whether current epoch or iter is multiple of self.interval, skip during warmup interations."""
         check_time = self.after_each_n_epochs if self.by_epoch else self.after_each_n_iters
-        # check_time = self.after_each_n_iters
         return check_time(runner, self.interval) and (self.warmup_iters <= runner.iter)
 
     def after_each_n_epochs(self, runner: BaseRunner, interval: int) -> bool:

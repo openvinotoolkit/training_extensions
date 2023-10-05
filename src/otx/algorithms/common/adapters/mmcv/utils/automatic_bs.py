@@ -78,7 +78,6 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         if idx_hooks_to_remove:
             idx_hooks_to_remove.sort()
             for i in reversed(idx_hooks_to_remove):
-                print(f"{copied_cfg.custom_hooks[i]} to be deleted.")
                 del copied_cfg.custom_hooks[i]
 
         new_datasets = [SubDataset(datasets[0], batch_size)]
