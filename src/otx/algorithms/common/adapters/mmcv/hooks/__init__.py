@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 from .adaptive_repeat_data_hook import AdaptiveRepeatDataHook
-from .eval_before_run_hook import EvalBeforeRunHook
 from .cancel_hook import CancelInterfaceHook, CancelTrainingHook
 from .checkpoint_hook import (
     CheckpointHookWithValResults,
@@ -31,6 +30,7 @@ from .early_stopping_hook import (
     ReduceLROnPlateauLrUpdaterHook,
     StopLossNanTrainingHook,
 )
+from .eval_before_run_hook import EvalBeforeRunHook
 from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook

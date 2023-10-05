@@ -37,12 +37,7 @@ custom_hooks = [
         priority=75,
         start=1,
     ),
-    dict(
-        type="EvalBeforeRunHook"
-    ),
+    dict(type="EvalBeforeRunHook"),
     dict(type="LoggerReplaceHook"),
-    dict(
-        type="AdaptiveRepeatDataHook",
-        priority="ABOVE_NORMAL"
-    )
+    dict(type="AdaptiveRepeatDataHook", priority="ABOVE_NORMAL"),
 ]

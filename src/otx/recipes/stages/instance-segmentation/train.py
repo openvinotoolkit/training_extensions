@@ -37,17 +37,12 @@ custom_hooks = [
         interval=1,
         priority=75,
     ),
-    dict(
-        type="EvalBeforeRunHook"
-    ),
+    dict(type="EvalBeforeRunHook"),
     dict(type="LoggerReplaceHook"),
     dict(
         type="CustomModelEMAHook",
         priority="ABOVE_NORMAL",
         epoch_momentum=0.4,
     ),
-    dict(
-        type="AdaptiveRepeatDataHook",
-        priority="ABOVE_NORMAL"
-    )
+    dict(type="AdaptiveRepeatDataHook", priority="ABOVE_NORMAL"),
 ]

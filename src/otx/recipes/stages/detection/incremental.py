@@ -26,13 +26,8 @@ custom_hooks = [
         priority="ABOVE_NORMAL",
         momentum=0.1,
     ),
-    dict(
-        type="EvalBeforeRunHook"
-    ),
-    dict(
-        type="AdaptiveRepeatDataHook",
-        priority="ABOVE_NORMAL"
-    )
+    dict(type="EvalBeforeRunHook"),
+    dict(type="AdaptiveRepeatDataHook", priority="ABOVE_NORMAL"),
 ]
 
 lr_config = dict(
