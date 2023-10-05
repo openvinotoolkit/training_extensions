@@ -16,9 +16,9 @@ class IncrConfigurerMixin:
     org_model_classes: List = []
     model_classes: List = []
 
-    def configure_task(self, cfg):
+    def configure_task(self, cfg, **kwargs):
         """Patch config to support incremental learning."""
-        super().configure_task(cfg)
+        super().configure_task(cfg, **kwargs)
         if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
             self.configure_task_adapt_hook(cfg)
 
@@ -36,7 +36,6 @@ class IncrConfigurerMixin:
                 sampler_flag=sampler_flag,
                 sampler_type=self.get_sampler_type(cfg),
                 efficient_mode=cfg["task_adapt"].get("efficient_mode", False),
-                use_adaptive_repeat=self.use_adaptive_repeat(cfg),
                 priority="NORMAL",
             ),
         )
@@ -50,10 +49,3 @@ class IncrConfigurerMixin:
     def get_sampler_type(self, cfg) -> str:
         """Return sampler type."""
         return "cls_incr"
-
-    def use_adaptive_repeat(self, cfg) -> bool:
-        """Return whether using adaptive repeat.
-
-        Currently, only multi class classification supports adaptive repeat.
-        """
-        return False

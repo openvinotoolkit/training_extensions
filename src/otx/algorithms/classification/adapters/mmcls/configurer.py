@@ -19,7 +19,6 @@ from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    get_configured_input_size,
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
@@ -33,41 +32,19 @@ logger = get_logger()
 class ClassificationConfigurer(BaseConfigurer):
     """Patch config to support otx train."""
 
-    # pylint: disable=too-many-arguments
-    def configure(
-        self,
-        cfg,
-        model_ckpt,
-        data_cfg,
-        ir_options=None,
-        data_classes=None,
-        model_classes=None,
-        input_size: InputSizePreset = InputSizePreset.DEFAULT,
-        **kwargs,
-    ):
-        """Create MMCV-consumable config from given inputs."""
-        logger.info(f"configure!: training={self.training}")
-
-        self.configure_base(cfg, data_cfg, data_classes, model_classes, **kwargs)
-        self.configure_device(cfg)
-        self.configure_ckpt(cfg, model_ckpt)
-        self.configure_model(cfg, ir_options)
-        self.configure_data(cfg, data_cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt)
-        self.configure_task(cfg)
-        self.configure_samples_per_gpu(cfg)
-        self.configure_fp16(cfg)
-        self.configure_compat_cfg(cfg)
-        return cfg
-
-    def configure_compatibility(self, cfg, **kwargs):
-        """Configure for OTX compatibility with mmcls."""
+    def configure_data_pipeline(self, cfg, input_size, model_ckpt_path, **kwargs):
+        """Configuration for data pipeline."""
+        super().configure_data_pipeline(cfg, input_size, model_ckpt_path)
         options_for_patch_datasets = kwargs.get("options_for_patch_datasets", {"type": "OTXClsDataset"})
-        options_for_patch_evaluation = kwargs.get("options_for_patch_evaluation", {"task": "normal"})
         patch_datasets(cfg, **options_for_patch_datasets)
-        patch_evaluation(cfg, **options_for_patch_evaluation)
 
-    def configure_model(self, cfg, ir_options):  # noqa: C901
+    def configure_recipe(self, cfg, **kwargs):
+        """Configuration for training recipe."""
+        options_for_patch_evaluation = kwargs.get("options_for_patch_evaluation", {"task": "normal"})
+        patch_evaluation(cfg, **options_for_patch_evaluation)
+        super().configure_recipe(cfg)
+
+    def configure_backbone(self, cfg, ir_options):  # noqa: C901
         """Patch config's model.
 
         Change model type to super type
@@ -185,23 +162,29 @@ class ClassificationConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
+        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt)
-        if input_size is None:
+        manager = InputSizeManager(cfg)
+        input_size = manager.get_configured_input_size(input_size_config, model_ckpt_path)
+        if input_size is None:  # InputSizePreset.DEFAULT
             return
 
-        InputSizeManager(cfg.data).set_input_size(input_size)
+        if input_size == (0, 0):  # InputSizePreset.AUTO
+            input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager)
+            if input_size is None:
+                return
+
+        manager.set_input_size(input_size)
         logger.info("Input size is changed to {}".format(input_size))
 
 
 class IncrClassificationConfigurer(IncrConfigurerMixin, ClassificationConfigurer):
     """Patch config to support incremental learning for classification."""
 
-    def configure_task(self, cfg):
+    def configure_task(self, cfg, **kwargs):
         """Patch config to support incremental learning."""
-        super().configure_task(cfg)
+        super().configure_task(cfg, **kwargs)
         if "task_adapt" in cfg and self.task_adapt_type == "default_task_adapt":
             self.configure_task_adapt_hook(cfg)
             if self._is_multiclass(cfg):
@@ -229,13 +212,6 @@ class IncrClassificationConfigurer(IncrConfigurerMixin, ClassificationConfigurer
         else:
             sampler_type = "cls_incr"
         return sampler_type
-
-    def use_adaptive_repeat(self, cfg) -> bool:
-        """Return whether using adaptive repeat.
-
-        Currently, only multi class classification supports adaptive repeat.
-        """
-        return self._is_multiclass(cfg)
 
     @staticmethod
     def _is_multiclass(cfg) -> bool:

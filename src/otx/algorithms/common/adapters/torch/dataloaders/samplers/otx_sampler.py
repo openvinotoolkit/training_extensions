@@ -4,10 +4,14 @@
 #
 
 import math
+from typing import Optional, Union
 
+import numpy as np
+import torch
 from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import get_proper_repeat_times
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import unwrap_dataset
 
@@ -29,7 +33,6 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     Args:
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
-        use_adaptive_repeats (bool): Flag about using adaptive repeats
         num_replicas (int, optional): Number of processes participating in
             distributed training. By default, :attr:`world_size` is retrieved from the
             current distributed group.
@@ -39,18 +42,23 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         shuffle (bool, optional): Flag about shuffling
         coef (int, optional): controls the repeat value
         min_repeat (float, optional): minimum value of the repeat dataset
+        n_repeats (Union[float, int str], optional) : number of iterations for manual setting
+        seed (int, optional): Random seed used to shuffle the sampler if
+            :attr:`shuffle=True`. This number should be identical across all
+            processes in the distributed group. Defaults to None.
     """
 
     def __init__(
         self,
         dataset: Dataset,
         samples_per_gpu: int,
-        use_adaptive_repeats: bool,
         num_replicas: int = 1,
         rank: int = 0,
         shuffle: bool = True,
         coef: float = -0.7,
         min_repeat: float = 1.0,
+        n_repeats: Union[float, int, str] = "auto",
+        seed: Optional[int] = None,
     ):
 
         self.dataset, _ = unwrap_dataset(dataset)
@@ -58,27 +66,32 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         self.num_replicas = num_replicas
         self.rank = rank
         self.shuffle = shuffle
-        self.repeat = self._get_proper_repeats(use_adaptive_repeats, coef, min_repeat)
-
+        if n_repeats == "auto":
+            repeat = get_proper_repeat_times(len(self.dataset), self.samples_per_gpu, coef, min_repeat)
+        elif isinstance(n_repeats, (int, float)):
+            repeat = float(n_repeats)
+        else:
+            raise ValueError(f"n_repeats: {n_repeats} should be auto or float or int value")
+        # TODO: Currently, only supporting the int variable.
+        # Will be removed.
+        self.repeat = int(repeat)
         self.num_samples = math.ceil(len(self.dataset) * self.repeat / self.num_replicas)
         self.total_size = self.num_samples * self.num_replicas
 
-    def _get_proper_repeats(self, use_adaptive_repeats: bool, coef: float, min_repeat: float):
-        """Calculate the proper repeats with considering the number of iterations."""
-        n_repeats = 1
-        if use_adaptive_repeats:
-            # NOTE
-            # Currently, only support the integer type repeats.
-            # Will support the floating point repeats and large dataset cases.
-            n_iters_per_epoch = math.ceil(len(self.dataset) / self.samples_per_gpu)
-            n_repeats = math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))
-            logger.info("OTX Sampler: adaptive repeats enabled")
-            logger.info(f"OTX will use {n_repeats} times larger dataset made by repeated sampling")
-        return n_repeats
+        if seed is None:
+            seed = np.random.randint(2**31)
+
+        self.seed = seed
+        self.epoch = 0
 
     def __iter__(self):
         """Iter."""
-        indices = list(range(len(self.dataset)))
+        if self.shuffle:
+            g = torch.Generator()
+            g.manual_seed(self.seed + self.epoch)
+            indices = torch.randperm(len(self.dataset), generator=g).tolist()
+        else:
+            indices = list(range(len(self.dataset)))
 
         # produce repeats e.g. [0, 0, 0, 1, 1, 1, 2, 2, 2....]
         indices = [x for x in indices for _ in range(self.repeat)]
@@ -97,3 +110,15 @@ class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     def __len__(self):
         """Return length of selected samples."""
         return self.total_size
+
+    def set_epoch(self, epoch: int) -> None:
+        """Sets the epoch for this sampler.
+
+        When :attr:`shuffle=True`, this ensures all replicas use a different
+        random ordering for each epoch. Otherwise, the next iteration of this
+        sampler will yield the same ordering.
+
+        Args:
+            epoch (int): Epoch number.
+        """
+        self.epoch = epoch

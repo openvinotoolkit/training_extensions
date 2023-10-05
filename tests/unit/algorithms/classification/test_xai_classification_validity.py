@@ -15,7 +15,7 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     ReciproCAMHook,
     ViTReciproCAMHook,
 )
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.cli.registry import Registry
 from otx.algorithms.classification.adapters.mmcls.models.classifiers.custom_image_classifier import _extract_vit_feat
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -38,7 +38,7 @@ class TestExplainMethods:
         torch.manual_seed(0)
         base_dir = os.path.abspath(os.path.dirname(template.model_template_path))
         cfg_path = os.path.join(base_dir, "model.py")
-        cfg = MPAConfig.fromfile(cfg_path)
+        cfg = OTXConfig.fromfile(cfg_path)
 
         cfg.model.pop("task")
         ClassificationConfigurer.configure_in_channel(cfg)
@@ -63,8 +63,9 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == saliency_map_ref_shape
-        actual_sal_vals = saliency_maps[0][0][0].astype(np.int8)
-        ref_sal_vals = self.ref_saliency_vals_cls[template.name].astype(np.int8)
+        # convert to int16 in case of negative value difference
+        actual_sal_vals = saliency_maps[0][0][0].astype(np.int16)
+        ref_sal_vals = self.ref_saliency_vals_cls[template.name].astype(np.uint8)
         assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
 
 
@@ -75,7 +76,7 @@ class TestViTExplain:
         torch.manual_seed(0)
         base_dir = os.path.abspath(self.DEIT_TEMPLATE_DIR)
         cfg_path = os.path.join(base_dir, "model.py")
-        cfg = MPAConfig.fromfile(cfg_path)
+        cfg = OTXConfig.fromfile(cfg_path)
 
         cfg.model.pop("task")
         ClassificationConfigurer.configure_in_channel(cfg)

@@ -236,7 +236,8 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             to_tensor=True,
         )
         metadata = {
-            "transform": transform.to_dict(),
+            # TODO: Replace with transform.to_dict() when OTX supports albumentations 1.3.0
+            "transform": {"transform": transform._to_dict()},
             "image_threshold": image_threshold,
             "pixel_threshold": pixel_threshold,
             "min": min_value,

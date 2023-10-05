@@ -74,11 +74,19 @@ We support the following ready-to-use model templates:
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                               | Name                | Complexity (GFLOPs) | Model size (MB) |
 +===========================================================================================================================================================================================+=====================+=====================+=================+
-| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml>`_      |        YOLOX        | 6.5                 | 20.4            |
+| `Custom_Object_Detection_YOLOX <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_tiny/template.yaml>`_ |      YOLOX-TINY     | 6.5                 | 20.4            |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Object_Detection_YOLOX_S <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template.yaml>`_         |       YOLOX_S       | 33.51               | 46.0            |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Object_Detection_YOLOX_L <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template.yaml>`_         |       YOLOX_L       | 194.57              | 207.0           |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Object_Detection_YOLOX_X <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template.yaml>`_         |       YOLOX_X       | 352.42              | 378.0           |
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 | `Custom_Object_Detection_Gen3_SSD <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml>`_    |         SSD         | 9.4                 | 7.6             |
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 | `Custom_Object_Detection_Gen3_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml>`_  |  MobileNetV2-ATSS   | 20.6                | 9.1             |
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+| `Object_Detection_ResNeXt101_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnext101_atss/template.yaml>`_    |   ResNeXt101-ATSS   | 434.75              | 344.0           |
 +-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 
 Above table can be found using the following command
@@ -90,32 +98,24 @@ Above table can be found using the following command
 `SSD <https://arxiv.org/abs/1512.02325>`_ and `YOLOX <https://arxiv.org/abs/2107.08430>`_ are light models, that a perfect for the fastest inference on low-power hardware.
 YOLOX achieved the same accuracy as SSD, and even outperforms its inference on CPU 1.5 times, but requires 3 times more time for training due to `Mosaic augmentation <https://arxiv.org/pdf/2004.10934.pdf>`_, which is even more than for ATSS.
 So if you have resources for a long training, you can pick the YOLOX model.
+ATSS still shows good performance among `RetinaNet <https://arxiv.org/abs/1708.02002>`_ based models. Therfore, We added ATSS with large scale backbone, ResNeXt101-ATSS. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.
+In addition, we added a YOLOX variants to support users' diverse situations.
 
 In addition to these models, we supports experimental models for object detection. These experimental models will be changed to official models within a few releases.
 
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                                                               | Name                | Complexity (GFLOPs) | Model size (MB) |
 +===========================================================================================================================================================================================================================+=====================+=====================+=================+
-| `Custom_Object_Detection_Gen3_Deformable_DETR <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml>`_  |   Deformable_DETR   | 165                 | 157.0           |
+| `Object_Detection_Deformable_DETR <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_deformable_detr/template_experimental.yaml>`_              |   Deformable_DETR   | 165                 | 157.0           |
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_DINO <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml>`_                        |        DINO         | 235                 | 182.0           |
+| `Object_Detection_DINO <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_dino/template_experimental.yaml>`_                                    |        DINO         | 235                 | 182.0           |
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_Lite_DINO <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_litedino/template_experimental.yaml>`_               |      Lite-DINO      | 140                 | 190.0           |
+| `Object_Detection_Lite_DINO <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnet50_litedino/template_experimental.yaml>`_                           |      Lite-DINO      | 140                 | 190.0           |
 +---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| `Custom_Object_Detection_Gen3_ResNeXt101_ATSS <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/resnext101_atss/template_experimental.yaml>`_           |   ResNeXt101-ATSS   | 434.75              | 344.0           |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| `Object_Detection_YOLOX_S <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_s/template_experimental.yaml>`_                            |       YOLOX_S       | 33.51               | 46.0            |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| `Object_Detection_YOLOX_L <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_l/template_experimental.yaml>`_                            |       YOLOX_L       | 194.57              | 207.0           |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
-| `Object_Detection_YOLOX_X <https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/detection/configs/detection/cspdarknet_yolox_x/template_experimental.yaml>`_                            |       YOLOX_X       | 352.42              | 378.0           |
-+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------+-----------------+
+
 
 `Deformable_DETR <https://arxiv.org/abs/2010.04159>`_ is `DETR <https://arxiv.org/abs/2005.12872>`_ based model, and it solves slow convergence problem of DETR. `DINO <https://arxiv.org/abs/2203.03605>`_ improves Deformable DETR based methods via denoising anchor boxes. Current SOTA models for object detection are based on DINO.
 `Lite-DINO <https://arxiv.org/abs/2303.07335>`_ is efficient structure for DINO. It reduces FLOPS of transformer's encoder which takes the highest computational costs.
-Although transformer based models show notable performance on various object detection benchmark, CNN based model still show good performance with proper latency.
-Therefore, we added a new experimental CNN based method, ResNeXt101-ATSS. ATSS still shows good performance among `RetinaNet <https://arxiv.org/abs/1708.02002>`_ based models. We integrated large ResNeXt101 backbone to our Custom ATSS head, and it shows good transfer learning performance.
-In addition, we added a YOLOX variants to support users' diverse situations.
 
 .. note::
 
@@ -145,7 +145,7 @@ We trained each model with a single Nvidia GeForce RTX3090.
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
 | Model name                 | COCO(AP50)       | BDD100K   | Brackish  | Plantdoc  | BCCD      | Chess pieces |
 +============================+==================+===========+===========+===========+===========+==============+
-| YOLOX                      | 31.0 (48.2)      | 24.8      | 96.3      | 51.5      | 88.5      | 99.2         |
+| YOLOX-TINY                 | 31.0 (48.2)      | 24.8      | 96.3      | 51.5      | 88.5      | 99.2         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
 | SSD                        | 13.5             | 28.2      | 96.5      | 52.9      | 91.1      | 99.1         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
@@ -159,11 +159,11 @@ We trained each model with a single Nvidia GeForce RTX3090.
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
 | ResNet50-Lite-DINO         | 48.1 (64.4)      | 47.0      | 99.0      | 62.5      | 93.6      | 99.4         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
-| YOLOX_S                    | 40.3 (59.1)      | 37.1      | 93.6      | 54.8      | 92.7      | 98.8         |
+| YOLOX-S                    | 40.3 (59.1)      | 37.1      | 93.6      | 54.8      | 92.7      | 98.8         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
-| YOLOX_L                    | 49.4 (67.1)      | 44.5      | 94.6      | 55.8      | 91.8      | 99.0         |
+| YOLOX-L                    | 49.4 (67.1)      | 44.5      | 94.6      | 55.8      | 91.8      | 99.0         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
-| YOLOX_X                    | 50.9 (68.4)      | 44.2      | 96.3      | 56.2      | 91.5      | 98.9         |
+| YOLOX-X                    | 50.9 (68.4)      | 44.2      | 96.3      | 56.2      | 91.5      | 98.9         |
 +----------------------------+------------------+-----------+-----------+-----------+-----------+--------------+
 
 ************************

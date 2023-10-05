@@ -29,7 +29,7 @@ from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
 from otx.algorithms import TRANSFORMER_BACKBONES
-from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.api.entities.model_template import TaskType
 from otx.cli.utils.importing import (
     get_backbone_list,
@@ -100,7 +100,7 @@ def update_backbone_args(backbone_config: dict, registry: Registry, backend: str
     return updated_missing_args
 
 
-def update_channels(model_config: MPAConfig, out_channels: Any):
+def update_channels(model_config: OTXConfig, out_channels: Any):
     """Update in_channel of head or neck."""
     if hasattr(model_config.model, "neck") and model_config.model.neck:
         if model_config.model.neck.get("type", None) == "GlobalAveragePooling":
@@ -175,7 +175,7 @@ class Builder:
 
         # Get Model config from model config file
         if model_config_path.exists():
-            model_config = MPAConfig.fromfile(str(model_config_path))
+            model_config = OTXConfig.fromfile(str(model_config_path))
             print(f"\tTarget Model: {model_config.model.type}")
         else:
             raise ValueError(f"[*] The model is not properly defined or not found: {model_config_path}")

@@ -13,12 +13,19 @@ All notable changes to this project will be documented in this file.
 - Add a new feature to configure input size(<https://github.com/openvinotoolkit/training_extensions/pull/2420>)
 - Introduce the OTXSampler and AdaptiveRepeatDataHook to achieve faster training at the small data regime (<https://github.com/openvinotoolkit/training_extensions/pull/2428>)
 - Add a new object detector Lite-DINO(<https://github.com/openvinotoolkit/training_extensions/pull/2457>)
+- Add Semi-SL Mean Teacher algorithm for Instance Segmentation task(<https://github.com/openvinotoolkit/training_extensions/pull/2444>)
+- Official supports for YOLOX-X, YOLOX-L, YOLOX-S, ResNeXt101-ATSS (<https://github.com/openvinotoolkit/training_extensions/pull/2485>)
+- Add new argument to track resource usage in train command (<https://github.com/openvinotoolkit/training_extensions/pull/2500>)
+- Add Self-SL for semantic segmentation of SegNext families (<https://github.com/openvinotoolkit/training_extensions/pull/2215>)
+- Adapt input size automatically based on dataset statistics (<https://github.com/openvinotoolkit/training_extensions/pull/2499>)
 
 ### Enhancements
 
 - Refine input data in-memory caching (<https://github.com/openvinotoolkit/training_extensions/pull/2416>)
 - Adapt timeout value of initialization for distributed training (<https://github.com/openvinotoolkit/training_extensions/pull/2422>)
 - Optimize data loading by merging load & resize operations w/ caching support for cls/det/iseg/sseg (<https://github.com/openvinotoolkit/training_extensions/pull/2438>, <https://github.com/openvinotoolkit/training_extensions/pull/2453>, <https://github.com/openvinotoolkit/training_extensions/pull/2460>)
+- Support torch==2.0.1 (<https://github.com/openvinotoolkit/training_extensions/pull/2465>)
+- Set "Auto" as default input size mode (<https://github.com/openvinotoolkit/training_extensions/pull/2515>)
 
 ### Bug fixes
 
@@ -26,7 +33,23 @@ All notable changes to this project will be documented in this file.
 
 ### Known issues
 
-- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch==1.13.1
+- OpenVINO(==2023.0) IR inference is not working well on 2-stage models (e.g. Mask-RCNN) exported from torch>=1.13.1
+- NNCF QAT optimization is disabled for MaskRCNN models due to CUDA runtime error in ROIAlign kernel on torch==2.0.1
+
+## \[v1.4.2\]
+
+### Enhancements
+
+- Bump datumaro version to 1.5.0rc0 (<https://github.com/openvinotoolkit/training_extensions/pull/2470>)
+- Set tox version constraint (<https://github.com/openvinotoolkit/training_extensions/pull/2472>)
+- Add model category attributes to model template (<https://github.com/openvinotoolkit/training_extensions/pull/2439>)
+
+### Bug fixes
+
+- Bug fix for albumentations (<https://github.com/openvinotoolkit/training_extensions/pull/2467>)
+- Add workaround for the incorrect meta info M-RCNN (used for XAI) (<https://github.com/openvinotoolkit/training_extensions/pull/2437>)
+- Fix label list order for h-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2440>)
+- Modified fq numbers for lite HRNET e2e tests (<https://github.com/openvinotoolkit/training_extensions/pull/2445>)
 
 ## \[v1.4.1\]
 

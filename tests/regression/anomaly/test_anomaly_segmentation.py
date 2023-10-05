@@ -53,14 +53,20 @@ class TestRegressionAnomalySegmentation:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
         cls.reg_cfg = RegressionTestConfig(
-            cls.TASK_TYPE, cls.TRAIN_TYPE, cls.LABEL_TYPE, os.getcwd(), enable_auto_num_worker=False
+            cls.TASK_TYPE,
+            cls.TRAIN_TYPE,
+            cls.LABEL_TYPE,
+            os.getcwd(),
+            enable_auto_num_worker=False,
+            tmp_results_root=tmp_dir_path,
         )
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):

@@ -47,9 +47,17 @@ class DetectionNNCFTask(NNCFBaseTask, MMDetectionTask):
         super(NNCFBaseTask, self).__init__(task_environment, output_path)
         self._set_attributes_by_hyperparams()
 
-    def _init_task(self, dataset: Optional[DatasetEntity] = None, export: bool = False):
-        super(NNCFBaseTask, self)._init_task(dataset, export)
+    def configure(
+        self,
+        training=True,
+        ir_options=None,
+        train_dataset=None,
+        export=False,
+    ):
+        """Configure configs for nncf task."""
+        super(NNCFBaseTask, self).configure(training, ir_options, train_dataset, export)
         self._prepare_optimize(export)
+        return self._config
 
     def _prepare_optimize(self, export=False):
         super()._prepare_optimize()

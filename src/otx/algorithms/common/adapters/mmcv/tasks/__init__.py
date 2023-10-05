@@ -9,8 +9,8 @@ import os
 from .version import __version__, get_version
 
 
-class MPAConstants:
-    """Various path for MPA."""
+class OTXConstants:
+    """Various path for OTX."""
 
     PACKAGE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     # PACKAGE_ROOT = os.path.dirname(Path(__file__).)
@@ -19,10 +19,10 @@ class MPAConstants:
     MODELS_PATH = os.path.join(PACKAGE_ROOT, "models")
 
 
-# print(f'pkg root ======> {MPAConstants.PACKAGE_ROOT}')
+# print(f'pkg root ======> {OTXConstants.PACKAGE_ROOT}')
 
 __all__ = [
     "get_version",
     "__version__",
-    "MPAConstants",
+    "OTXConstants",
 ]

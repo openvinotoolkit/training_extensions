@@ -52,14 +52,12 @@ class TestRegressionTilingInstanceSegmentation:
 
     templates = Registry(f"src/otx/algorithms/{REG_CATEGORY}").filter(task_type=TASK_TYPE.upper()).templates
     templates_ids = [template.model_template_id for template in templates]
-    if len(templates_ids) > 2:
-        templates_ids = templates_ids[:1]
 
     reg_cfg: RegressionTestConfig
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
@@ -67,11 +65,13 @@ class TestRegressionTilingInstanceSegmentation:
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
             result_dir="tiling",
+            tmp_results_root=tmp_dir_path,
         )
 
         yield cls.reg_cfg
 
-        with open(f"{cls.reg_cfg.result_dir}/result.json", "w") as result_file:
+        print(f"writting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
+        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
     def setup_method(self):

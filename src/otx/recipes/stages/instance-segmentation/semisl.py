@@ -3,7 +3,7 @@ _base_ = ["./train.py", "../_base_/models/detectors/detector.py"]
 task = "instance-segmentation"
 
 task_adapt = dict(
-    type="mpa",
+    type="default_task_adapt",
     op="REPLACE",
     efficient_mode=False,
 )

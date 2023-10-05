@@ -577,13 +577,40 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
 def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
     if task_type == "visual_prompting":
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
+        xml_paths = [
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
+        ]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_image_encoder.yml",
+            ),
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_decoder.yml",
+            ),
+        ]
     else:
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
-    path_to_ref_data = os.path.join(
-        otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
-    )
-    _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
+        xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
+            )
+        ]
+
+    for xml_path, path_to_ref_data in zip(xml_paths, paths_to_ref_data):
+        _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
 
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
@@ -1034,9 +1061,9 @@ def otx_build_backbone_testing(root, backbone_args):
         task_workspace,
     ]
     check_run(command_line)
-    from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+    from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 
-    model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
+    model_config = OTXConfig.fromfile(os.path.join(task_workspace, "model.py"))
     assert os.path.exists(os.path.join(task_workspace, "model.py"))
     assert "backbone" in model_config["model"], "'backbone' is not in model configs"
     assert (
@@ -1050,9 +1077,9 @@ def otx_build_testing(root, args: Dict[str, str], expected: Dict[str, str]):
     for option, value in args.items():
         command_line.extend([option, value])
     check_run(command_line)
-    from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+    from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 
-    template_config = MPAConfig.fromfile(os.path.join(workspace_root, "template.yaml"))
+    template_config = OTXConfig.fromfile(os.path.join(workspace_root, "template.yaml"))
     assert template_config.name == expected["model"]
     assert (
         template_config.hyper_parameters.parameter_overrides.algo_backend.train_type.default_value
