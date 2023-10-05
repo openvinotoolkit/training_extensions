@@ -1,18 +1,7 @@
 """Task of OTX Detection."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import io
 import os
@@ -24,6 +13,7 @@ import psutil
 import torch
 from mmcv.utils import ConfigDict
 
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
@@ -102,6 +92,12 @@ class OTXDetectionTask(OTXTask, ABC):
             self.data_pipeline_path = os.path.join(self._model_dir, "tile_pipeline.py")
         else:
             self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
+
+        if hasattr(self._hyperparams.learning_parameters, "input_size"):
+            input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
+        else:
+            input_size_cfg = InputSizePreset.DEFAULT
+        self._input_size = input_size_cfg.tuple
 
     def _load_postprocessing(self, model_data):
         """Load postprocessing configs form PyTorch model.
@@ -588,6 +584,7 @@ class OTXDetectionTask(OTXTask, ABC):
             "config": hyperparams_str,
             "labels": labels,
             "confidence_threshold": self.confidence_threshold,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
         torch.save(modelinfo, buffer)

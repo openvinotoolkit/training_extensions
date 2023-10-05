@@ -25,7 +25,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import OnHookInitialized
 from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
 from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
@@ -73,7 +72,7 @@ class BaseConfigurer:
         ir_options: Optional[Config] = None,
         data_classes: Optional[List[str]] = None,
         model_classes: Optional[List[str]] = None,
-        input_size: InputSizePreset = InputSizePreset.DEFAULT,
+        input_size: Optional[Tuple[int, int]] = None,
         **kwargs: Dict[Any, Any],
     ) -> Config:
         """Create MMCV-consumable config from given inputs."""
@@ -228,7 +227,7 @@ class BaseConfigurer:
         """Configuration data pipeline settings."""
 
         patch_color_conversion(cfg)
-        self.configure_input_size(cfg, input_size, model_ckpt_path)
+        self.configure_input_size(cfg, input_size, model_ckpt_path, self.training)
 
     def configure_recipe(self, cfg, **kwargs):
         """Configuration training recipe settings."""
