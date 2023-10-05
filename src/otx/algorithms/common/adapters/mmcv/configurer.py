@@ -519,7 +519,13 @@ class BaseConfigurer:
         stat = compute_robust_dataset_statistics(dataset, use_annotations)
         if not stat:
             return None
-        logger.info(f"Dataset stat: {json.dumps(stat, indent=4)}")
+
+        def format_float(obj):
+            if isinstance(obj, float):
+                return f"{obj:.2f}"
+            if isinstance(obj, dict):
+                return {k: format_float(v) for k, v in obj.items()}
+        logger.info(f"Dataset stat: {json.dumps(format_float(stat), indent=4)}")
 
         # Fit to typical large image size (conservative)
         # -> "avg" size might be preferrable for efficiency
