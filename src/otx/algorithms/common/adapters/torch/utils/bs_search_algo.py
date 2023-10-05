@@ -36,8 +36,8 @@ class BsSearchAlgo:
         self._max_bs = max_bs
         self._bs_try_history: Dict[int, int] = {}
         _, self._total_mem = torch.cuda.mem_get_info()
-        self._mem_lower_bound = 0.8 * self._total_mem
-        self._mem_upper_bound = 0.85 * self._total_mem
+        self._mem_lower_bound = 0.85 * self._total_mem
+        self._mem_upper_bound = 0.9 * self._total_mem
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
         cuda_oom = False
@@ -66,8 +66,8 @@ class BsSearchAlgo:
 
             if rank == 0:
                 try_result_arr = torch.stack(try_result_arr)
-                cuda_oom = torch.any(try_result_arr[:, 0])
-                max_memory_allocated = torch.max(try_result_arr[:, 1])
+                cuda_oom = torch.any(try_result_arr[:, 0])  # type: ignore
+                max_memory_allocated = torch.max(try_result_arr[:, 1])  # type: ignore
                 total_try_result = torch.tensor([cuda_oom, max_memory_allocated], dtype=torch.int64).cuda()
             else:
                 total_try_result = torch.empty(2, dtype=torch.int64).cuda()
@@ -163,7 +163,7 @@ class BsSearchAlgo:
             return self._default_bs
 
         # estimate batch size using equation
-        estimation_pct = 0.90
+        estimation_pct = 0.87
         while True:
             estimated_bs = self._estimate_batch_size(estimation_pct)
             if estimated_bs in self._bs_try_history:
@@ -178,7 +178,7 @@ class BsSearchAlgo:
             elif self._mem_lower_bound <= mem_usage <= self._mem_upper_bound:
                 break
             else:
-                estimation_pct = 0.90
+                estimation_pct = 0.87
 
         if drop_last and (self._max_bs // 2 < estimated_bs < self._max_bs):
             estimated_bs = self._max_bs // 2

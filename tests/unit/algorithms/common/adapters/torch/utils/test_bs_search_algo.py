@@ -31,11 +31,11 @@ class TestBsSearchAlgo:
                 mem_usage = 10000
                 raise RuntimeError("CUDA out of memory.")
             elif batch_size > max_runnable_bs:
-                mem_usage = 8500 + 1500 * batch_size / (cuda_oom_bound - max_runnable_bs)
+                mem_usage = 9000 + 1000 * batch_size / (cuda_oom_bound - max_runnable_bs)
             else:
-                mem_usage = 8500 * batch_size / max_runnable_bs
+                mem_usage = 9000 * batch_size / max_runnable_bs
 
-            self.mock_torch.cuda.max_memory_allocated.return_value = mem_usage
+            self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
 
         return mock_train_func
@@ -71,7 +71,7 @@ class TestBsSearchAlgo:
         adapted_bs = bs_search_algo.find_big_enough_batch_size()
 
         if expected_bs is None:
-            assert 7500 <= mock_train_func(adapted_bs) <= 8500
+            assert 8000 <= mock_train_func(adapted_bs) <= 9000
         else:
             assert adapted_bs == expected_bs
 
@@ -88,10 +88,10 @@ class TestBsSearchAlgo:
                 mem_usage = 10000
                 raise RuntimeError("CUDA out of memory.")
             elif batch_size > 100:
-                mem_usage = 9000
+                mem_usage = 9500
             else:
                 mem_usage = 1000
-            self.mock_torch.cuda.max_memory_allocated.return_value = mem_usage
+            self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
 
         bs_search_algo = BsSearchAlgo(mock_train_func, 64, 1000)
@@ -105,16 +105,16 @@ class TestBsSearchAlgo:
                 mem_usage = 10000
                 raise RuntimeError("CUDA out of memory.")
             elif batch_size > 100:
-                mem_usage = 9000
+                mem_usage = 9500
             else:
                 mem_usage = 1000 + batch_size / 1000
-            self.mock_torch.cuda.max_memory_allocated.return_value = mem_usage
+            self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
 
         bs_search_algo = BsSearchAlgo(mock_train_func, 64, 1000)
         adapted_bs = bs_search_algo.find_big_enough_batch_size()
 
-        assert mock_train_func(adapted_bs) <= 8500
+        assert mock_train_func(adapted_bs) <= 9000
 
     def test_find_big_enough_batch_size_drop_last(self):
         mock_train_func = self.get_mock_train_func(cuda_oom_bound=10000, max_runnable_bs=180)
