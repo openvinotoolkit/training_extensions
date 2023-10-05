@@ -40,8 +40,8 @@ class OTXCLIv2:
         parser_kwargs: Optional[dict] = None,
     ) -> None:
         self.console = Console()
-        self.error = None
-        self.model_name = None
+        self.error: Optional[Exception] = None
+        self.model_name: Optional[str] = None
         self.pre_args = {}
         self.auto_runner_class = AutoRunner
 
@@ -65,10 +65,10 @@ class OTXCLIv2:
             self.data_class = BaseDataset
 
         main_kwargs, subcommand_kwargs = self._setup_parser_kwargs(parser_kwargs)
-        self.setup_parser(main_kwargs, subcommand_kwargs)
+        self.parser = self.setup_parser(main_kwargs, subcommand_kwargs)
 
         # Main Parse Arguments
-        self.parse_arguments(self.parser, args)
+        self.config = self.parse_arguments(self.parser, args)
 
         self.subcommand = self.config["subcommand"]
 
@@ -130,15 +130,16 @@ class OTXCLIv2:
         self,
         main_kwargs: dict,
         subparser_kwargs: dict,
-    ) -> None:
+    ) -> OTXArgumentParser:
         """Initialize and setup the parser, subcommands, and arguments."""
-        self.parser = self.init_parser(**main_kwargs)
+        parser = self.init_parser(**main_kwargs)
         # Check -hh or --verbose
-        self._check_verbose_help_format()
+        self._check_verbose_help_format(parser)
         self._subcommand_method_arguments: Dict[str, List[str]] = {}
-        self.parser_subcommands = self.parser.add_subcommands()
+        self.parser_subcommands = parser.add_subcommands()
         self._set_extension_subcommands_parser()
         self._set_engine_subcommands_parser(**subparser_kwargs)
+        return parser
 
     @staticmethod
     def engine_subcommands() -> Dict[str, Set[str]]:
@@ -249,7 +250,7 @@ class OTXCLIv2:
         if self.auto_runner is not None:
             self.auto_runner.build_framework_engine()
             framework_engine = self.auto_runner.engine
-            default_configs = [self.auto_runner.config_path]
+            default_configs = []
             # Find Model
             model_name = None
             if "model.name" in self.pre_args:
@@ -262,22 +263,23 @@ class OTXCLIv2:
                 raise ValueError(msg)
             model = self.auto_runner.get_model(model=model_name)
             if model is None:
-                raise ValueError
+                msg = f"The model was not built: {model_name}"
+                raise ValueError(msg)
             if model_name in self.auto_runner.config_list:
                 default_configs.append(self.auto_runner.config_list[model_name])
             self.model_name = model_name
             # TODO: Need more flexible way for Model API
+            default_configs.append(self.auto_runner.config_path)
             model_class = model.__class__
         return model_class, default_configs
 
-    def parse_arguments(self, parser: OTXArgumentParser, args: ArgsType) -> None:
+    def parse_arguments(self, parser: OTXArgumentParser, args: ArgsType) -> Namespace:
         """Parses command line arguments and stores it in ``self.config``."""
         if isinstance(args, (dict, Namespace)):
-            self.config = parser.parse_object(args)
-        else:
-            self.config = parser.parse_args(args)
+            return parser.parse_object(args)
+        return parser.parse_args(args)
 
-    def instantiate_classes(self) -> None:
+    def instantiate_classes(self, subcommand: str) -> None:
         """Instantiates the classes and sets their attributes."""
         if self.auto_runner is None:
             if self.error is not None:
@@ -288,21 +290,26 @@ class OTXCLIv2:
                 msg,
             )
         self.config_init = self.parser.instantiate_classes(self.config)
-        data_cfg = self._pop(self.config_init, "data")
-        if not isinstance(data_cfg, (dict, Namespace)):
-            msg = "There is a problem with data configuration. Please check it again."
-            raise TypeError(msg)
+        num_classes = None
+        workspace_config = {}
+        if subcommand not in ["predict", "export"]:
+            data_cfg = self._pop(self.config_init, "data")
+            if not isinstance(data_cfg, (dict, Namespace)):
+                msg = "There is a problem with data configuration. Please check it again."
+                raise TypeError(msg)
+            self.data = self.data_class(**data_cfg)
+            num_classes = self.data.num_classes
+            workspace_config["data"] = {**data_cfg}
+
         model_cfg = self._pop(self.config_init, "model")
         if not isinstance(model_cfg, (dict, Namespace)):
             msg = "There is a problem with model configuration. Please check it again."
             raise TypeError(msg)
-
-        # Build Dataset
-        self.data = self.data_class(**data_cfg)
-        self.model = self.auto_runner.get_model(model={**model_cfg}, num_classes=self.data.num_classes)
+        self.model = self.auto_runner.get_model(model={**model_cfg}, num_classes=num_classes)
         # For prediction class
-        if hasattr(model_cfg.get("head", None), "num_classes"):
-            model_cfg["head"]["num_classes"] = self.data.num_classes
+        if num_classes is not None and "num_classes" in model_cfg.get("head", {}):
+            model_cfg["head"]["num_classes"] = num_classes
+        workspace_config["model"] = {**model_cfg}
 
         config = self._pop(self.config_init, "config")
         if config is not None and len(config) > 0:
@@ -318,7 +325,7 @@ class OTXCLIv2:
             work_dir=str(self.workspace.work_dir),
             config=config,
         )
-        self.workspace.add_config({"data": {**data_cfg}, "model": {**model_cfg}})
+        self.workspace.add_config(workspace_config)
 
     def _pop(
         self,
@@ -340,7 +347,7 @@ class OTXCLIv2:
                 raise NotImplementedError(msg)
             extension_function(**config)
         elif subcommand == "train":
-            self.instantiate_classes()
+            self.instantiate_classes(subcommand)
             # Prepare Dataloader kwargs
             train_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "train")
             val_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "val")
@@ -371,7 +378,7 @@ class OTXCLIv2:
             self.workspace.update_latest(model_base_dir)
 
         elif subcommand == "test":
-            self.instantiate_classes()
+            self.instantiate_classes(subcommand)
             test_dl_kwargs = self._prepare_dataloader_kwargs(subcommand, "test")
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.test(
@@ -382,20 +389,20 @@ class OTXCLIv2:
             # TODO: Cleanup for output
             self.console.print(results)
         elif subcommand == "predict":
-            self.instantiate_classes()
+            self.instantiate_classes(subcommand)
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.predict(model=self.model, **subcommand_kwargs)
             # TODO: Cleanup for output
             self.console.print(results)
         elif subcommand == "export":
-            self.instantiate_classes()
+            self.instantiate_classes(subcommand)
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.export(model=self.model, **subcommand_kwargs)
             # TODO: Cleanup for output
             self.console.print("[*] Model exporting ended successfully.")
         else:
-            for key, val in self.config[subcommand].items():
-                self.console.print(f"{key}: {val}")
+            msg = f"{subcommand} is not implemented."
+            raise NotImplementedError(msg)
         end_time = time.time()
         total_time = str(datetime.timedelta(seconds=end_time - start_time))
         if subcommand in self.engine_subcommands():
@@ -421,24 +428,24 @@ class OTXCLIv2:
         dl_kwargs.pop("dataset", None)
         return dl_kwargs
 
-    def _check_verbose_help_format(self) -> None:
+    def _check_verbose_help_format(self, parser: OTXArgumentParser) -> None:
         subcommand = self.pre_args.get("subcommand", None)
-        if issubclass(self.parser.formatter_class, OTXHelpFormatter):
+        if issubclass(parser.formatter_class, OTXHelpFormatter):
             # TODO: how to use verbose count value
             if subcommand not in self.engine_subcommands():
                 pass
             elif "v" in self.pre_args:
                 sys.argv.append("--help")
-                self.parser.formatter_class.verbose_level = 1
-                self.parser.formatter_class.subcommand = subcommand
+                parser.formatter_class.verbose_level = 1
+                parser.formatter_class.subcommand = subcommand
             elif "vv" in self.pre_args:
                 sys.argv.append("--help")
-                self.parser.formatter_class.verbose_level = 2
-                self.parser.formatter_class.subcommand = subcommand
+                parser.formatter_class.verbose_level = 2
+                parser.formatter_class.subcommand = subcommand
             elif subcommand is not None:
                 # -v Applies only to subcommands provided by Engine.
-                self.parser.formatter_class.verbose_level = 0
-                self.parser.formatter_class.subcommand = subcommand
+                parser.formatter_class.verbose_level = 0
+                parser.formatter_class.subcommand = subcommand
         else:
             self.console.print("The current Help Formatter does not support the verbose help format.")
 
