@@ -178,7 +178,7 @@ class BsSearchAlgo:
             elif self._mem_lower_bound <= mem_usage <= self._mem_upper_bound:
                 break
             else:
-                estimation_pct = 0.87
+                estimation_pct = 0.82
 
         if drop_last and (self._max_bs // 2 < estimated_bs < self._max_bs):
             estimated_bs = self._max_bs // 2
