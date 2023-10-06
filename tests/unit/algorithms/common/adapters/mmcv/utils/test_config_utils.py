@@ -7,13 +7,14 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     patch_persistent_workers,
     get_adaptive_num_workers,
     InputSizeManager,
+    get_proper_repeat_times,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-def get_data_cfg(workers_per_gpu: int = 2) -> dict:
+def get_subset_data_cfg(workers_per_gpu: int = 2) -> dict:
     data_cfg = {}
     for subset in ["train", "val", "test", "unlabeled"]:
         data_cfg[subset] = "fake"
@@ -25,7 +26,7 @@ def get_data_cfg(workers_per_gpu: int = 2) -> dict:
 @e2e_pytest_unit
 @pytest.mark.parametrize("workers_per_gpu", [0, 2])
 def test_patch_persistent_workers(mocker, workers_per_gpu):
-    data_cfg = get_data_cfg(workers_per_gpu)
+    data_cfg = get_subset_data_cfg(workers_per_gpu)
     config = mocker.MagicMock()
     config.data = data_cfg
 
@@ -43,7 +44,7 @@ def test_patch_persistent_workers(mocker, workers_per_gpu):
 
 @e2e_pytest_unit
 def test_patch_persistent_workers_dist_semisl(mocker):
-    data_cfg = get_data_cfg()
+    data_cfg = get_subset_data_cfg()
     config = mocker.MagicMock()
     config.data = data_cfg
 
@@ -455,7 +456,7 @@ class TestInputSizeManager:
         assert manager.select_closest_size(input_size, preset_sizes) == (128, 128)
 
     def test_adapt_input_size_to_dataset(self):
-        base_input_size = (128, 128)
+        base_input_size = (512, 512)
         manager = InputSizeManager({}, base_input_size)
         input_size = manager.adapt_input_size_to_dataset(
             max_image_size=-1,
@@ -463,31 +464,46 @@ class TestInputSizeManager:
         assert input_size == base_input_size
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
-        )  # 200 -> 128
+            max_image_size=1024,
+        )  # 1024 -> 512
         assert input_size == base_input_size
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             downscale_only=False,
-        )  # 200 -> 224
-        assert input_size == (224, 224)
+        )  # 512 -> 1024
+        assert input_size == (1024, 1024)
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             min_object_size=128,
-        )  # 50 -> 64
-        assert input_size == (64, 64)
+        )  # 1024 -> 256
+        assert input_size == (256, 256)
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             min_object_size=16,
-        )  # 400 -> 128
+        )  # 1024 -> 2048 -> 512
         assert input_size == base_input_size
 
         input_size = manager.adapt_input_size_to_dataset(
-            max_image_size=200,
+            max_image_size=1024,
             min_object_size=16,
             downscale_only=False,
-        )  # 400 -> 384
-        assert input_size == (384, 384)
+        )  # 1024 -> 2048 -> 1024
+        assert input_size == (1024, 1024)
+
+
+@e2e_pytest_unit
+def test_get_proper_repeat_times():
+    batch_size = 2
+    coef = 1.0
+    min_repeat = 1.0
+
+    data_size = 0
+    repeats = get_proper_repeat_times(data_size=data_size, batch_size=batch_size, coef=coef, min_repeat=min_repeat)
+    assert repeats == 1
+
+    batch_size = 0
+    repeats = get_proper_repeat_times(data_size=data_size, batch_size=batch_size, coef=coef, min_repeat=min_repeat)
+    assert repeats == 1

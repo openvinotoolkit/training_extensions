@@ -4,6 +4,7 @@
 
 import copy
 import glob
+import math
 import multiprocessing
 import os
 import os.path as osp
@@ -517,15 +518,11 @@ def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     algo_backend = hyperparams.algo_backend
     warmup_iters = int(params.learning_rate_warmup_iters)
 
-    model_label_type = config.filename.split("/")[-1]
-    if "multilabel" in model_label_type:
-        lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-    else:
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
+    lr_config = (
+        ConfigDict(warmup_iters=warmup_iters)
+        if warmup_iters > 0
+        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+    )
 
     if params.enable_early_stopping and config.get("evaluation", None):
         early_stop = ConfigDict(
@@ -599,14 +596,6 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     return train_round_checkpoint_dir
 
 
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
-
-
 class InputSizeManager:
     """Class for changing input size and getting input size value by checking data pipeline.
 
@@ -641,6 +630,7 @@ class InputSizeManager:
 
     MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
     # meaning NxN input pixels being downscaled to 1x1 on feature map
+    MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
 
     def __init__(
         self,
@@ -898,7 +888,6 @@ class InputSizeManager:
 
             if input_size == InputSizePreset.DEFAULT.value:
                 return None
-
             logger.info("Given model weight was trained with {} input size.".format(input_size))
 
         else:
@@ -960,6 +949,12 @@ class InputSizeManager:
         if min_object_size is not None and min_object_size > 0:
             image_size = round(image_size * self.MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
             logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
+            if image_size > max_image_size:
+                image_size = max_image_size
+                logger.info(f"-> Restrict to max image size: {image_size}")
+            if image_size < self.MIN_DETECTION_INPUT_SIZE:
+                image_size = self.MIN_DETECTION_INPUT_SIZE
+                logger.info(f"-> Based on minimum object detection input size: {image_size}")
 
         input_size = (round(image_size), round(image_size))
 
@@ -977,3 +972,25 @@ class InputSizeManager:
         input_size = self.select_closest_size(input_size, input_size_preset)
         logger.info(f"-> Closest preset: {input_size}")
         return input_size
+
+
+def get_proper_repeat_times(
+    data_size: int,
+    batch_size: int,
+    coef: float,
+    min_repeat: float,
+) -> float:
+    """Get proper repeat times for adaptive training.
+
+    Args:
+        data_size (int): The total number of the training dataset
+        batch_size (int): The batch size for the training data loader
+        coef (float) : coefficient that effects to number of repeats
+                       (coef * math.sqrt(num_iters-1)) +5
+        min_repeat (float) : minimum repeats
+    """
+    if data_size == 0 or batch_size == 0:
+        logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
+        return 1
+    n_iters_per_epoch = math.ceil(data_size / batch_size)
+    return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))
