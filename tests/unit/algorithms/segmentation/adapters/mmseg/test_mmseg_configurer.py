@@ -296,8 +296,10 @@ class TestIncrSegmentationConfigurer:
         mocker.patch.object(SegmentationConfigurer, "configure_task")
         self.configurer.task_adapt_type = "default_task_adapt"
         self.configurer.configure_task(self.model_cfg)
-        assert self.model_cfg.custom_hooks[3].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[3].sampler_flag is False
+        for c_hook in self.model_cfg.custom_hooks:
+            print(c_hook)
+        assert self.model_cfg.custom_hooks[4].type == "TaskAdaptHook"
+        assert self.model_cfg.custom_hooks[4].sampler_flag is False
 
 
 class TestSemiSLSegmentationConfigurer:

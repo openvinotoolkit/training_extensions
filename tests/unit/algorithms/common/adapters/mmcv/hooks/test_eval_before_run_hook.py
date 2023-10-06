@@ -28,7 +28,7 @@ class TestEvalBeforeRunHook:
 
         eval_hook = MockEvalHook()
         mock_runner = Config({"hooks": [None, eval_hook]})
-        hook = EvalBeforeRunHook(enable_eval_before_run=True)
+        hook = EvalBeforeRunHook()
         hook.before_run(mock_runner)
         assert eval_hook.interval == 1
         assert eval_hook.start == 0
@@ -38,8 +38,8 @@ class TestEvalBeforeRunHook:
     def test_before_train_iter(self) -> None:
         """Test before_train_iter function."""
 
-        hook = EvalBeforeRunHook(enable_eval_before_run=True)
-        hook._original_interval = 5
+        hook = EvalBeforeRunHook()
+        hook._original_interval = 4
 
         eval_hook = MockEvalHook()
 
@@ -50,6 +50,5 @@ class TestEvalBeforeRunHook:
         )
 
         hook.before_train_iter(mock_runner)
-        assert hook._initialized is True
         assert hook._original_interval is None
         assert eval_hook.interval == 4

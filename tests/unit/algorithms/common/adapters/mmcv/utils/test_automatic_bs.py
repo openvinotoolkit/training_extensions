@@ -37,7 +37,7 @@ def common_cfg(mocker):
     mock_cfg = mocker.MagicMock()
     mock_cfg.runner = {"type": "EpochRunnerWithCancel", "max_epochs": 100}
     mock_cfg.custom_hooks = [
-        {"type": "AdaptiveTrainSchedulingHook", "enable_eval_before_run": True},
+        {"type": "EvalBeforeRun"},
         {"type": "OTXProgressHook"},
     ]
     mock_cfg.optimizer.lr = DEFAULT_LR
@@ -102,11 +102,10 @@ def test_adapt_batch_size(
     # check max epoch is set as 1 to reduce time
     assert mock_train_func.call_args_list[0].kwargs["cfg"].runner[max_eph_name] == 1
     assert mock_train_func.call_args_list[1].kwargs["cfg"].runner[max_eph_name] == 1
-    # check eval before run is disabled to reduce time
-    assert not mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
-    assert not mock_train_func.call_args_list[1].kwargs["cfg"].custom_hooks[0]["enable_eval_before_run"]
-    # check OTXProgressHook is removed
-    assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 1
+    # check OTXProgressHook and EvalBeforeRun are removed
+    assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 0
+    assert len(mock_train_func.call_args_list[1].kwargs["cfg"].custom_hooks) == 0
+    assert len(mock_train_func.call_args_list[0].kwargs["cfg"].custom_hooks) == 0
 
 
 def test_adapt_batch_size_no_gpu(mocker, common_cfg, mock_dataset):

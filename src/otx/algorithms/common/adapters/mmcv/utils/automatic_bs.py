@@ -68,7 +68,7 @@ def adapt_batch_size(train_func: Callable, cfg, datasets: List, validate: bool =
         # earlystoppinghook => if eval hook is excluded, this hook makes an error due to absence of score history
         # CustomEvalHook => exclude validation in classification task
         idx_hooks_to_remove = []
-        hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook"]
+        hooks_to_remove = ["OTXProgressHook", "earlystoppinghook", "CustomEvalHook", "EvalBeforeRun"]
         for i, hook in enumerate(copied_cfg.custom_hooks):
             for hook_to_remove in hooks_to_remove:
                 if hook_to_remove.lower() in hook["type"].lower():

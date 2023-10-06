@@ -352,8 +352,8 @@ class TestIncrDetectionConfigurer:
         self.model_cfg.task_adapt = {}
         self.configurer.task_adapt_type = "default_task_adapt"
         self.configurer.configure_task(self.model_cfg, train_dataset=self.det_dataset)
-        assert self.model_cfg.custom_hooks[2].type == "TaskAdaptHook"
-        assert self.model_cfg.custom_hooks[2].sampler_flag is False
+        assert self.model_cfg.custom_hooks[4].type == "TaskAdaptHook"
+        assert self.model_cfg.custom_hooks[4].sampler_flag is False
 
 
 class TestSemiSLDetectionConfigurer:
