@@ -20,10 +20,7 @@ def add_doctor_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for doctor command.
 
     Args:
-        parser (OTXArgumentParser): Main ArgumentParser in CLI.
-
-    Returns:
-        OTXArgumentParser: Main parser with subparsers merged.
+        subcommands_action (_ActionSubCommands): Sub-command Parser in CLI.
     """
     sub_parser = prepare_parser()
     subcommands_action.add_subcommand(
@@ -65,7 +62,7 @@ def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
     warning_mark = ":warning:"
 
     # Print Adapters available table
-    env_table = get_environment_table(verbose=verbose)
+    env_table = get_environment_table(task=task, verbose=verbose)
     print(env_table)
 
     # 1. OTX Version

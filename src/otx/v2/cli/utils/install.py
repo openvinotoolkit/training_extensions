@@ -26,6 +26,11 @@ AVAILABLE_TORCH_VERSIONS = {
 }
 
 MM_REQUIREMENTS = [
+    "mmcv",
+    "mmcv-full",
+    "mmengine",
+    "mmdetection",
+    "mmsegmentation",
     "mmpretrain",
     "mmdeploy",
 ]
@@ -157,23 +162,6 @@ def parse_requirements(
     other_requirements = list(set(other_requirements))
 
     return torch_requirement, mm_requirements, other_requirements
-
-
-def check_torch_version(requirement: Requirement) -> Requirement:
-    """Get torch version from torch requirement.
-
-    Args:
-        requirement (Requirement): Torch requirement.
-
-    Examples:
-        >>> requirement = Requirement.parse("torch==1.13.0")
-        >>> check_torch_version(requirement)
-        Requirement.parse("torch==1.13.0")
-
-    Returns:
-        Requirement: Torch version.
-    """
-    return requirement
 
 
 def get_cuda_version() -> str | None:
@@ -317,7 +305,7 @@ def get_hardware_suffix(with_available_torch_build: bool = False, torch_version:
     Examples:
         >>> # Assume that CUDA version is 11.2
         >>> get_hardware_suffix()
-        "cu112
+        "cu112"
 
         >>> # Assume that CUDA is not installed on the system
         >>> get_hardware_suffix()
@@ -451,6 +439,8 @@ def get_torch_install_args(requirement: str | Requirement) -> list[str]:
 
     # NOTE: This does not take into account if the requirement has multiple versions
     #   such as torch<2.0.1,>=1.13.0
+    if len(requirement.specs) < 1:
+        return [str(requirement)]
     operator, version = requirement.specs[0]
     install_args: list[str] = []
 

@@ -21,7 +21,7 @@ from otx.v2.cli.utils.install import (
     parse_requirements,
 )
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from jsonargparse._actions import _ActionSubCommands
 
 
@@ -72,7 +72,7 @@ def install(task: str) -> int:
     elif task in requirements_dict:
         requirements.extend(requirements_dict[task])
     else:
-        msg = f"Invalid subcommand: {task}. Supported tasks: {SUPPORTED_TASKS}"
+        msg = f"Invalid task type: {task}. Supported tasks: {SUPPORTED_TASKS}"
         raise ValueError(msg)
 
     # Parse requirements into torch, mmcv and other requirements.

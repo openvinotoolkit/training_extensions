@@ -43,7 +43,7 @@ def get_adapters_status() -> Dict[str, Dict]:
     return adapters_status
 
 
-def get_environment_table(verbose: Optional[bool] = None) -> str:
+def get_environment_table(task: Optional[str] = None, verbose: Optional[bool] = None) -> str:
     """A table provides the availability of each tasks.
 
     Args:
@@ -57,10 +57,11 @@ def get_environment_table(verbose: Optional[bool] = None) -> str:
     table.add_column("Required", justify="left", style="cyan")
     table.add_column("Available", justify="center", style="green")
 
-    if verbose:
-        task_lst = ["api", "base", "openvino", "anomaly", "classification"]
+    task_lst = ["api", "base", "openvino"] if verbose else []
+    if task is not None and task.lower() in REQUIRED_ADAPTERS_PER_TASK:
+        task_lst.append(task)
     else:
-        task_lst = list(REQUIRED_ADAPTERS_PER_TASK.keys())
+        task_lst.extend(list(REQUIRED_ADAPTERS_PER_TASK.keys()))
 
     requirements_per_task = get_requirements()
     adapters_status = get_adapters_status()
