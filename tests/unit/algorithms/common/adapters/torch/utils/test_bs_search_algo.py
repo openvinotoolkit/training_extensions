@@ -31,9 +31,9 @@ class TestBsSearchAlgo:
                 mem_usage = 10000
                 raise RuntimeError("CUDA out of memory.")
             elif batch_size > max_runnable_bs:
-                mem_usage = 9000 + 1000 * batch_size / (cuda_oom_bound - max_runnable_bs)
+                mem_usage = 8500 + 1500 * batch_size / (cuda_oom_bound - max_runnable_bs)
             else:
-                mem_usage = 9000 * batch_size / max_runnable_bs
+                mem_usage = 8500 * batch_size / max_runnable_bs
 
             self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
             return mem_usage
@@ -71,7 +71,7 @@ class TestBsSearchAlgo:
         adapted_bs = bs_search_algo.find_big_enough_batch_size()
 
         if expected_bs is None:
-            assert 8000 <= mock_train_func(adapted_bs) <= 9000
+            assert 7500 <= mock_train_func(adapted_bs) <= 8500
         else:
             assert adapted_bs == expected_bs
 
@@ -88,7 +88,7 @@ class TestBsSearchAlgo:
                 mem_usage = 10000
                 raise RuntimeError("CUDA out of memory.")
             elif batch_size > 100:
-                mem_usage = 9500
+                mem_usage = 9000
             else:
                 mem_usage = 1000
             self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
@@ -105,7 +105,7 @@ class TestBsSearchAlgo:
                 mem_usage = 10000
                 raise RuntimeError("CUDA out of memory.")
             elif batch_size > 100:
-                mem_usage = 9500
+                mem_usage = 9000
             else:
                 mem_usage = 1000 + batch_size / 1000
             self.mock_torch.cuda.max_memory_reserved.return_value = mem_usage
@@ -114,7 +114,7 @@ class TestBsSearchAlgo:
         bs_search_algo = BsSearchAlgo(mock_train_func, 64, 1000)
         adapted_bs = bs_search_algo.find_big_enough_batch_size()
 
-        assert mock_train_func(adapted_bs) <= 9000
+        assert mock_train_func(adapted_bs) <= 8500
 
     def test_find_big_enough_batch_size_drop_last(self):
         mock_train_func = self.get_mock_train_func(cuda_oom_bound=10000, max_runnable_bs=180)

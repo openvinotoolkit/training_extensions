@@ -36,8 +36,8 @@ class BsSearchAlgo:
         self._max_bs = max_bs
         self._bs_try_history: Dict[int, int] = {}
         _, self._total_mem = torch.cuda.mem_get_info()
-        self._mem_lower_bound = 0.85 * self._total_mem
-        self._mem_upper_bound = 0.9 * self._total_mem
+        self._mem_lower_bound = 0.8 * self._total_mem
+        self._mem_upper_bound = 0.85 * self._total_mem
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
         cuda_oom = False
@@ -75,7 +75,7 @@ class BsSearchAlgo:
             dist.broadcast(total_try_result, src=0)
 
             cuda_oom = total_try_result[0].bool().item()
-            max_memory_allocated = total_try_result[1].to(torch.int64).item()
+            max_memory_allocated = total_try_result[1].item()
 
         if not cuda_oom:
             # Because heapq only supports min heap, use negatized batch size
@@ -163,7 +163,7 @@ class BsSearchAlgo:
             return self._default_bs
 
         # estimate batch size using equation
-        estimation_pct = 0.87
+        estimation_pct = 0.82
         while True:
             estimated_bs = self._estimate_batch_size(estimation_pct)
             if estimated_bs in self._bs_try_history:
