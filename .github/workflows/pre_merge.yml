@@ -13,25 +13,25 @@ on:
   workflow_dispatch: # run on request (no need for PR)
 
 jobs:
-  # Code-Quality-Checks:
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
-  #     cancel-in-progress: true
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.10"
-  #     - name: Install dependencies
-  #       run: python -m pip install -r requirements/dev.txt
-  #     - name: Code quality checks
-  #       run: tox -vv -e pre-commit-all-py310
+  Code-Quality-Checks:
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Code quality checks
+        run: tox -vv -e pre-commit-all-py310
   Unit-Test:
-    # needs: Code-Quality-Checks
+    needs: Code-Quality-Checks
     strategy:
       fail-fast: false
       matrix:
@@ -50,7 +50,7 @@ jobs:
       python-version: ${{ matrix.python-version }}
       toxenv-pyver: ${{ matrix.tox-env }}
       toxenv-task: all
-      tests-dir: tests/unit
+      test-args: tests/unit
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "unit-test-results"
@@ -61,7 +61,7 @@ jobs:
     container:
       image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f019b59612a36a1e264ccbbc46fabb96f1e33114
       options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=10g"
-    # needs: Code-Quality-Checks
+    needs: Code-Quality-Checks
     timeout-minutes: 120
     name: Coverage-with-Python3.10
     # This is what will cancel the job concurrency
@@ -102,40 +102,48 @@ jobs:
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
           ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
-  # Integration-Test:
-  #   needs: [Unit-Test, Coverage]
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - task: "all"
-  #           test_dir: "tests/integration/cli/test_cli.py"
-  #         - task: "cls"
-  #           test_dir: "tests/integration/cli/classification"
-  #         - task: "det"
-  #           test_dir: "tests/integration/cli/detection"
-  #         - task: "iseg"
-  #           test_dir: "tests/integration/cli/instance_segmentation"
-  #         - task: "seg"
-  #           test_dir: "tests/integration/cli/semantic_segmentation"
-  #         - task: "act"
-  #           test_dir: "tests/integration/cli/action"
-  #         - task: "ano"
-  #           test_dir: "tests/integration/cli/anomaly"
-  #         - task: "visprompt"
-  #           test_dir: "tests/integration/cli/visual_prompting"
-  #   name: Integration-Test-py310-${{ matrix.task }}
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
-  #     cancel-in-progress: true
-  #   uses: ./.github/workflows/run_tests_in_tox.yml
-  #   with:
-  #     python-version: "3.10"
-  #     toxenv-pyver: "py310"
-  #     toxenv-task: ${{ matrix.task }}
-  #     tests-dir: ${{ matrix.test_dir }}
-  #     timeout-minutes: 120
-  #     upload-artifact: true
-  #     artifact-prefix: "intg-test-results"
-  #     runs-on: "['otx-gpu-t4-2']"
+  Integration-Test:
+    needs: [Unit-Test, Coverage]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: "all"
+            test_args: "tests/integration/cli/test_cli.py"
+            runs_on: "['otx-gpu-t4-2']"
+          - task: "cls"
+            test_args: "tests/integration/cli/classification"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
+          - task: "det"
+            test_args: "tests/integration/cli/detection"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
+          - task: "iseg"
+            test_args: "tests/integration/cli/instance_segmentation"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
+          - task: "seg"
+            test_args: "tests/integration/cli/semantic_segmentation"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
+          - task: "act"
+            test_args: "tests/integration/cli/action"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
+          - task: "ano"
+            test_args: "tests/integration/cli/anomaly"
+            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
+          - task: "visprompt"
+            test_args: "tests/integration/cli/visual_prompting"
+            runs_on: "['otx-gpu-t4-2']"
+    name: Integration-Test-py310-${{ matrix.task }}
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Integration-${{ github.event.pull_request.number || github.ref }}-${{ matrix.task }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/run_tests_in_tox.yml
+    with:
+      python-version: "3.10"
+      toxenv-pyver: "py310"
+      toxenv-task: ${{ matrix.task }}
+      test-args: ${{ matrix.test_args }}
+      timeout-minutes: 120
+      upload-artifact: true
+      artifact-prefix: "intg-test-results"
+      runs-on: ${{ matrix.runs_on }}

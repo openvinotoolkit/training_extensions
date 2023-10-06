@@ -13,26 +13,26 @@ jobs:
       matrix:
         include:
           - task: "act"
-            test_dir: "tests/e2e/cli/action"
+            test_args: "tests/e2e/cli/action"
           - task: "ano"
-            test_dir: "tests/e2e/cli/anomaly"
+            test_args: "tests/e2e/cli/anomaly"
           - task: "cls"
-            test_dir: "tests/e2e/cli/classification"
+            test_args: "tests/e2e/cli/classification"
           - task: "det"
-            test_dir: "tests/e2e/cli/detection"
+            test_args: "tests/e2e/cli/detection"
           - task: "iseg"
-            test_dir: "tests/e2e/cli/instance_segmentation"
+            test_args: "tests/e2e/cli/instance_segmentation"
           - task: "seg"
-            test_dir: "tests/e2e/cli/semantic_segmentation"
+            test_args: "tests/e2e/cli/semantic_segmentation"
           - task: "visprompt"
-            test_dir: "tests/e2e/cli/visual_prompting"
+            test_args: "tests/e2e/cli/visual_prompting"
     name: E2E-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
       python-version: "3.10"
       toxenv-pyver: "py310"
       toxenv-task: ${{ matrix.task }}
-      tests-dir: ${{ matrix.test_dir }}
+      test-args: ${{ matrix.test_args }}
       timeout-minutes: 360
       upload-artifact: true
       artifact-prefix: "daily-test-results"
