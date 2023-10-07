@@ -17,6 +17,7 @@ from .custom_yolox_detector import CustomYOLOX
 from .l2sp_detector_mixin import L2SPDetectorMixin
 from .mean_teacher import MeanTeacher
 from .sam_detector_mixin import SAMDetectorMixin
+from .unbiased_teacher import UnbiasedTeacher
 
 __all__ = [
     "CustomATSS",
@@ -32,5 +33,6 @@ __all__ = [
     "SAMDetectorMixin",
     "CustomMaskRCNNTileOptimized",
     "MeanTeacher",
-    "CustomFasterRCNN"
+    "CustomFasterRCNN",
+    "UnbiasedTeacher"
 ]

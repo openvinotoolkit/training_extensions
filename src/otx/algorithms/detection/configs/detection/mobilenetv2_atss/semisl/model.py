@@ -23,7 +23,7 @@ _base_ = [
 ]
 
 model = dict(
-    super_type="MeanTeacher",
+    super_type="UnbiasedTeacher",
     pseudo_conf_thresh=0.25,
     unlabeled_loss_weights={"cls": 1.0, "bbox": 1.0, "obj": 1.0, "centerness": 1.0},
     type="CustomATSS",
@@ -57,13 +57,7 @@ model = dict(
         loss_cls=dict(type="FocalLoss", use_sigmoid=True, gamma=2.0, alpha=0.25, loss_weight=1.0),
         loss_bbox=dict(type="GIoULoss", loss_weight=2.0),
         loss_centerness=dict(type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0),
-        use_qfl=False,
-        qfl_cfg=dict(
-            type="QualityFocalLoss",
-            use_sigmoid=True,
-            beta=2.0,
-            loss_weight=1.0,
-        ),
+        use_qfl=False
     ),
     train_cfg=dict(
         assigner=dict(type="ATSSAssigner", topk=9),

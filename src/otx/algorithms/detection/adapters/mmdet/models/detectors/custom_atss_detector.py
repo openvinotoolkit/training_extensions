@@ -53,13 +53,13 @@ class CustomATSS(SAMDetectorMixin, DetLossDynamicsTrackingMixin, L2SPDetectorMix
     @staticmethod
     def load_state_dict_pre_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):
         """Modify input state_dict according to class name matching before weight loading."""
-        logger.info(f"----------------- CustomATSS.load_state_dict_pre_hook() called w/ prefix: {prefix}")
+        # logger.info(f"----------------- CustomATSS.load_state_dict_pre_hook() called w/ prefix: {prefix}")
 
         # Dst to src mapping index
         model_classes = list(model_classes)
         chkpt_classes = list(chkpt_classes)
         model2chkpt = map_class_names(model_classes, chkpt_classes)
-        logger.info(f"{chkpt_classes} -> {model_classes} ({model2chkpt})")
+        # logger.info(f"{chkpt_classes} -> {model_classes} ({model2chkpt})")
 
         model_dict = model.state_dict()
         param_names = [
