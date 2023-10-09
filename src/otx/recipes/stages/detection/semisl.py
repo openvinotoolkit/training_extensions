@@ -11,7 +11,7 @@ custom_hooks = [
     dict(
         type="MeanTeacherHook",
         epoch_momentum=0.1,
-        start_epoch=100,
+        start_epoch=12,
     ),
     dict(
         type="LazyEarlyStoppingHook",
@@ -23,5 +23,17 @@ custom_hooks = [
         priority=75,
     ),
 ]
+
+lr_config = dict(
+    policy="ReduceLROnPlateau",
+    metric="mAP",
+    patience=6,
+    iteration_patience=0,
+    interval=1,
+    min_lr=1e-06,
+    warmup="linear",
+    warmup_iters=200,
+    warmup_ratio=0.3333333333333333,
+)
 
 find_unused_parameters = True

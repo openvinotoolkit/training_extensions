@@ -12,6 +12,8 @@ from mmdet.core import bbox2result, bbox2roi
 from mmdet.core.mask.structures import BitmapMasks
 from mmdet.models import DETECTORS, build_detector
 from mmdet.models.detectors import BaseDetector
+import mmcv
+import cv2
 
 from otx.algorithms.common.utils.logger import get_logger
 
@@ -54,19 +56,19 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
 
     def extract_feat(self, imgs):
         """Extract features for UnbiasedTeacher."""
-        return self.model_s.extract_feat(imgs)
+        return self.model_t.extract_feat(imgs)
 
     def simple_test(self, img, img_metas, **kwargs):
         """Test from img with UnbiasedTeacher."""
-        return self.model_s.simple_test(img, img_metas, **kwargs)
+        return self.model_t.simple_test(img, img_metas, **kwargs)
 
     def aug_test(self, imgs, img_metas, **kwargs):
         """Aug Test from img with UnbiasedTeacher."""
-        return self.model_s.aug_test(imgs, img_metas, **kwargs)
+        return self.model_t.aug_test(imgs, img_metas, **kwargs)
 
     def forward_dummy(self, img, **kwargs):
         """Dummy forward function for UnbiasedTeacher."""
-        return self.model_s.forward_dummy(img, **kwargs)
+        return self.model_t.forward_dummy(img, **kwargs)
 
     def enable_unlabeled_loss(self, mode=True):
         """Enable function for UnbiasedTeacher unlabeled loss."""
@@ -125,19 +127,19 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
 
         return list(zip(bbox_results, segm_results))
 
-    def forward_train(self, img, img_metas, gt_bboxes, gt_labels, gt_masks=None, gt_bboxes_ignore=None, **kwargs):
+    def forward_train(self, img, img_metas, img0, gt_bboxes, gt_labels, gt_masks=None, gt_bboxes_ignore=None, **kwargs):
         """Forward function for UnbiasedTeacher."""
         losses = {}
         # Supervised loss
         # TODO: check img0 only option (which is common for mean teacher method)
         forward_train = functools.partial(
             self.model_s.forward_train,
-            img,
-            img_metas,
-            gt_bboxes,
-            gt_labels,
-            gt_bboxes_ignore=(gt_bboxes_ignore if gt_bboxes_ignore else None),
-        )
+            torch.cat((img0, img)),  # weak + hard augmented images
+            img_metas + img_metas,
+            gt_bboxes + gt_bboxes,
+            gt_labels + gt_labels,
+            gt_bboxes_ignore + gt_bboxes_ignore if gt_bboxes_ignore else None,
+            )
         if self.model_s.with_mask:
             sl_losses = forward_train(gt_masks=gt_masks)
         else:
@@ -163,11 +165,17 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
         )
+        notempty = [bool(len(i)) for i in pseudo_labels]
+        pseudo_bboxes = [pd for i, pd in enumerate(pseudo_bboxes) if notempty[i]]
+        pseudo_labels = [pd for i, pd in enumerate(pseudo_labels) if notempty[i]]
+        ul_img_metas = [pd for i, pd in enumerate(ul_img_metas) if notempty[i]]
+        ul_img = ul_img[notempty]
+        self.visual_online(ul_img, pseudo_bboxes, pseudo_labels)
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         # Unsupervised loss
         # Compute only if min_pseudo_label_ratio is reached
-        if pseudo_ratio >= self.min_pseudo_label_ratio:
+        if pseudo_ratio >= self.min_pseudo_label_ratio and any(notempty):
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
             if self.model_t.with_mask:
@@ -176,6 +184,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 )
             else:
                 ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels)
+                # ul_losses = self.model_s.forward_train(torch.cat((ul_img, ul_img0)), ul_img_metas + ul_img_metas, pseudo_bboxes + pseudo_bboxes, pseudo_labels + pseudo_labels)
 
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = -1.0
@@ -188,6 +197,40 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                         continue
                     self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_loss_weights[target_loss])
         return losses
+
+    def visual_online(self, img, boxes_list, labels_list, img_id=0,
+                      boxes_ignore_list=None, proposal_list=None):
+        img_norm_cfg = dict(mean=np.array([0, 0, 0]), std=np.array([255, 255, 255]))
+        img_np = img[img_id].permute(1, 2, 0).cpu().numpy()
+        img_np = mmcv.imdenormalize(img_np, **img_norm_cfg)
+        img_np = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
+        boxes, labels = boxes_list[img_id], labels_list[img_id]
+        # proposal
+        if proposal_list:
+            proposal = proposal_list[img_id]
+            for idx, box in enumerate(proposal[:, :4]):
+                x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
+                img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (214, 39, 40), 2)
+                cv2.putText(img_np, f'{idx}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
+                            (214, 39, 40), 2)
+        # ignore
+        if boxes_ignore_list:
+            boxes_ignore = boxes_ignore_list[img_id]
+            for idx, box in enumerate(boxes_ignore):
+                x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
+                img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (44, 160, 44), 2)
+                cv2.putText(img_np, f'{idx}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
+                            (44, 160, 44), 2)
+        # pseudo gt
+        for idx, (box, label) in enumerate(zip(boxes, labels)):
+            x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
+            img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (157, 80, 136), 2)
+            cv2.putText(img_np, f'{idx}, {self.CLASSES[label]}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
+                        (157, 80, 136), 2)
+
+        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(f"image_{img_id}.png", img_np)
+
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
         """Generate pseudo label for UnbiasedTeacher."""
@@ -249,9 +292,9 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             value = state_dict.pop(key)
             if not prefix or key.startswith(prefix):
                 key = key.replace(prefix, "", 1)
-                if key.startswith("model_s."):
-                    key = key.replace("model_s.", "", 1)
-                elif key.startswith("model_t."):
+                if key.startswith("model_t."):
+                    key = key.replace("model_t.", "", 1)
+                elif key.startswith("model_s."):
                     continue
                 key = prefix + key
             state_dict[key] = value

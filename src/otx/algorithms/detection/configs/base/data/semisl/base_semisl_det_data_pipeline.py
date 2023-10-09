@@ -38,7 +38,7 @@ common_pipeline = [
                 hue=0.1,
             )
         ],
-        p=0.8,
+        p=0.5,
     ),
     dict(type="RandomGrayscale", p=0.2),
     dict(

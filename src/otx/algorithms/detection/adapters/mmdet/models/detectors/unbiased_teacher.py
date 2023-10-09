@@ -119,7 +119,7 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
         return gt_bboxes_pred, gt_labels_pred
 
     def forward_train(self, img, img_metas, img0, gt_bboxes, gt_labels, gt_bboxes_ignore=None, **kwargs):
-        if self.iter < 10000:
+        if self.iter < 1000:
             record_dict = self.model_s.forward_train(
                 torch.cat((img0, img)),  # weak + hard augmented images
                 img_metas + img_metas,
@@ -132,7 +132,7 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
             return record_dict
 
         else:
-            if self.iter == 10000:
+            if self.iter == 1000:
                 print("!!!!!!!!!!!!!ACHTUNG!!!!!!!!!!!!!!")
                 self._update_teacher_model(keep_rate=0.00)
 
@@ -159,7 +159,7 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
 
         # use the above raw teacher prediction and perform another NMS (NMS_CRITERIA_REG_TRAIN)
         # FIGURE OUT - we need one more NMS
-        losses_unlabeled = self.model_s.forward_train(ul_img, ul_img_metas,
+        ul_losses = self.model_s.forward_train(ul_img, ul_img_metas,
                                             gt_bboxes_pred, gt_labels_pred)
         # process loss
         # ADD IT
@@ -173,18 +173,26 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
         )
 
         # breakpoint()
-        for key, val in losses_unlabeled.items():
-            if key.find('loss') == -1:
-                continue
-            if key.find('bbox') != -1:
-                # record_dict[key + "_ul"] = self.unlabeled_loss_weights["bbox"] * val
-                record_dict[key + "_ul"] = val
-            elif key.find('cls') != -1:
-                # record_dict[key+ "_ul"] = self.unlabeled_loss_weights["cls"] * val
-                record_dict[key+ "_ul"] =  val
-            else:
-                # record_dict[key+ "_ul"] = self.unlabeled_loss_weights["centerness"] * val
-                record_dict[key+ "_ul"] = val
+        # for key, val in losses_unlabeled.items():
+        #     if key.find('loss') == -1:
+        #         continue
+        #     if key.find('bbox') != -1:
+        #         record_dict[key + "_ul"] = self.unlabeled_loss_weights["bbox"] * val
+        #         # record_dict[key + "_ul"] = 0 * val
+        #     elif key.find('cls') != -1:
+        #         record_dict[key+ "_ul"] = self.unlabeled_loss_weights["cls"] * val
+        #         # record_dict[key+ "_ul"] =  val
+        #     else:
+        #         record_dict[key+ "_ul"] = self.unlabeled_loss_weights["centerness"] * val
+                # record_dict[key+ "_ul"] = 0 * val
+
+        for ul_loss_name in ul_losses.keys():
+            if ul_loss_name.startswith("loss_"):
+                ul_loss = ul_losses[ul_loss_name]
+                target_loss = ul_loss_name.split("_")[-1]
+                if self.unlabeled_loss_weights[target_loss] == 0:
+                    continue
+                self._update_unlabeled_loss(record_dict, ul_loss, ul_loss_name, self.unlabeled_loss_weights[target_loss])
 
         # breakpoint()
         self._update_teacher_model()
@@ -240,7 +248,6 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
                         (157, 80, 136), 2)
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
         cv2.imwrite(f"image_{img_id}.png", img_np)
-        plt.show()
 
     @staticmethod
     def state_dict_hook(module, state_dict, prefix, *args, **kwargs):  # pylint: disable=unused-argument
@@ -250,9 +257,9 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
             value = state_dict.pop(key)
             if not prefix or key.startswith(prefix):
                 key = key.replace(prefix, "", 1)
-                if key.startswith("model_s."):
-                    key = key.replace("model_s.", "", 1)
-                elif key.startswith("model_t."):
+                if key.startswith("model_t."):
+                    key = key.replace("model_t.", "", 1)
+                elif key.startswith("model_s."):
                     continue
                 key = prefix + key
             state_dict[key] = value
@@ -266,3 +273,10 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
             value = state_dict.pop(key)
             state_dict["model_s." + key] = value
             state_dict["model_t." + key] = value
+
+    @staticmethod
+    def _update_unlabeled_loss(sum_loss, loss, loss_name, weight):
+        if isinstance(loss, list):
+            sum_loss[loss_name + "_ul"] = [cur_loss * weight for cur_loss in loss]
+        else:
+            sum_loss[loss_name + "_ul"] = loss * weight
