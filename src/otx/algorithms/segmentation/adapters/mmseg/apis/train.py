@@ -65,7 +65,10 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
             assert digit_version(mmcv.__version__) >= digit_version(
                 "1.4.4"
             ), "Please use MMCV >= 1.4.4 for CPU training!"
+
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
+        if cfg.device == "xpu":
+            model.to(f"xpu:{cfg.gpu_ids[0]}")
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
@@ -77,7 +80,6 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
         else:
             dtype = torch.float32
         model.train()
-        model.to("xpu")
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
     if cfg.get("runner") is None:

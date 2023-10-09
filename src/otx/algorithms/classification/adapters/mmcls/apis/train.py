@@ -74,7 +74,8 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
         )
     elif cfg.device == "xpu":
         assert len(cfg.gpu_ids) == 1
-        model = XPUDataParallel(model.xpu(), dim=0, device_ids=cfg.gpu_ids)
+        model.to(f"xpu:{cfg.gpu_ids[0]}")
+        model = XPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids)
     else:
         model = wrap_non_distributed_model(model, cfg.device, device_ids=cfg.gpu_ids)
 
@@ -87,7 +88,6 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
         else:
             dtype = torch.float32
         model.train()
-        model.to("xpu")
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
     if cfg.get("runner") is None:

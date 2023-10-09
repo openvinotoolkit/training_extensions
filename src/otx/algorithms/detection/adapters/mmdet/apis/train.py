@@ -119,6 +119,8 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
         )
     else:
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
+        if cfg.device == "xpu":
+            model.to(f"xpu:{cfg.gpu_ids[0]}")
 
     # build optimizer
     auto_scale_lr(cfg, distributed, logger)
@@ -134,7 +136,6 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
         else:
             dtype = torch.float32
         model.train()
-        model.to("xpu")
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
 
     runner = build_runner(
