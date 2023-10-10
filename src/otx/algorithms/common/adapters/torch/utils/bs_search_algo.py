@@ -41,7 +41,7 @@ class BsSearchAlgo:
 
     def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
         cuda_oom = False
-        torch.cuda.reset_max_memory_allocated(device=None)
+        torch.cuda.reset_max_memory_cached(device=None)
         torch.cuda.empty_cache()
 
         try:
@@ -52,11 +52,11 @@ class BsSearchAlgo:
             else:
                 raise e
 
-        max_memory_allocated = torch.cuda.max_memory_reserved(device=None)
+        max_memory_reserved = torch.cuda.max_memory_reserved(device=None)
 
         if dist.is_initialized():  # Aggregate all results and broadcast to all processes
             rank = dist.get_rank()
-            try_result = torch.tensor([int(cuda_oom), max_memory_allocated], dtype=torch.int64).cuda()
+            try_result = torch.tensor([int(cuda_oom), max_memory_reserved], dtype=torch.int64).cuda()
 
             if rank == 0:
                 try_result_arr = [torch.empty(2, dtype=torch.int64).cuda() for _ in range(dist.get_world_size())]
@@ -67,27 +67,27 @@ class BsSearchAlgo:
             if rank == 0:
                 try_result_arr = torch.stack(try_result_arr)
                 cuda_oom = torch.any(try_result_arr[:, 0])  # type: ignore
-                max_memory_allocated = torch.max(try_result_arr[:, 1])  # type: ignore
-                total_try_result = torch.tensor([cuda_oom, max_memory_allocated], dtype=torch.int64).cuda()
+                max_memory_reserved = torch.max(try_result_arr[:, 1])  # type: ignore
+                total_try_result = torch.tensor([cuda_oom, max_memory_reserved], dtype=torch.int64).cuda()
             else:
                 total_try_result = torch.empty(2, dtype=torch.int64).cuda()
 
             dist.broadcast(total_try_result, src=0)
 
             cuda_oom = total_try_result[0].bool().item()
-            max_memory_allocated = total_try_result[1].item()
+            max_memory_reserved = total_try_result[1].item()
 
         if not cuda_oom:
             # Because heapq only supports min heap, use negatized batch size
-            self._bs_try_history[bs] = max_memory_allocated
+            self._bs_try_history[bs] = max_memory_reserved
 
         logger.debug(
             f"Adapting Batch size => bs : {bs}, CUDA_OOM : {cuda_oom}, "
-            f"GPU memory usage : {max_memory_allocated / self._total_mem}%"
+            f"GPU memory usage : {max_memory_reserved / self._total_mem}%"
         )
         torch.cuda.empty_cache()
 
-        return cuda_oom, max_memory_allocated
+        return cuda_oom, max_memory_reserved
 
     @staticmethod
     def _get_even_center_val(val1: int, val2: int) -> int:
@@ -107,10 +107,10 @@ class BsSearchAlgo:
         lowest_unavailable_bs = self._default_bs + 2
 
         while True:
-            cuda_oom, max_memory_allocated = self._try_batch_size(current_bs)
+            cuda_oom, max_memory_reserved = self._try_batch_size(current_bs)
 
             # If GPU memory usage is too close to limit, CUDA OOM can be raised during training
-            if cuda_oom or max_memory_allocated > self._mem_upper_bound:
+            if cuda_oom or max_memory_reserved > self._mem_upper_bound:
                 if current_bs < lowest_unavailable_bs:
                     lowest_unavailable_bs = current_bs
                 current_bs = self._get_even_center_val(current_bs, available_bs)
