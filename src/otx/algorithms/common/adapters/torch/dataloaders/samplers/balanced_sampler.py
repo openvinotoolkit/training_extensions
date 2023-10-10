@@ -76,10 +76,8 @@ class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attribut
         self.num_samples = self._calculate_num_samples()
 
         logger.info(
-            "Balanced sampler will select balanced samples " 
-            f"{math.ceil(self.num_samples/samples_per_gpu)} times"
+            "Balanced sampler will select balanced samples " f"{math.ceil(self.num_samples/samples_per_gpu)} times"
         )
-        
 
     def _calculate_num_samples(self):
         num_samples = self.num_trials * self.num_cls * self.repeat
