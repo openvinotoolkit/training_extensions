@@ -75,20 +75,23 @@ from otx.api.utils.segmentation_utils import create_annotation_from_segmentation
 logger = get_logger(__name__)
 
 
-class OTXOpenVINOAnomalyDataloader:
-    """Dataloader for loading OTX dataset into OTX OpenVINO Inferencer.
+class OTXNNCFAnomalyDataloader:
+    """Dataloader for loading OTX dataset for NNCF optimization.
 
     Args:
         dataset (DatasetEntity): OTX dataset entity
+        model: (AnomalyDetection) The modelAPI model used for fetching the transforms.
         shuffle (bool, optional): Shuffle dataset. Defaults to True.
     """
 
     def __init__(
         self,
         dataset: DatasetEntity,
+        model: AnomalyDetection,
         shuffle: bool = True,
     ):
         self.dataset = dataset
+        self.model = model
         self.shuffler = None
         if shuffle:
             self.shuffler = list(range(len(dataset)))
@@ -109,7 +112,11 @@ class OTXOpenVINOAnomalyDataloader:
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
 
-        return (index, annotation), image
+        resized_image = self.model.resize(image, (self.model.w, self.model.h))
+        resized_image = self.model.input_transform(resized_image)
+        resized_image = self.model._change_layout(resized_image)
+
+        return (index, annotation), resized_image
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -315,7 +322,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         )
 
         logger.info("Starting PTQ optimization.")
-        data_loader = OTXOpenVINOAnomalyDataloader(dataset=dataset)
+        data_loader = OTXNNCFAnomalyDataloader(dataset=dataset, model=self.inference_model)
         quantization_dataset = nncf.Dataset(data_loader, lambda data: data[1])
 
         with tempfile.TemporaryDirectory() as tempdir:
