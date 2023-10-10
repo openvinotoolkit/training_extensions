@@ -66,8 +66,7 @@ def get_visual_promtping_config(
 
     if mode == "train":
         # update model_checkpoint
-        if model_checkpoint:
-            config.model.checkpoint = model_checkpoint
+        config.model.checkpoint = model_checkpoint
 
         # update resume_from_checkpoint
         config.trainer.resume_from_checkpoint = resume_from_checkpoint
