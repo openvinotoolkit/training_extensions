@@ -55,6 +55,14 @@ REGISTRY_LIST = [
 
 
 class MMPretrainRegistry(MMEngineRegistry):
+    """Registry for MMPretrain models and related components."""
+
     def __init__(self, name: str = "mmpretrain") -> None:
+        """Initialize a new instance of the `Registry` class.
+
+        Args:
+        ----
+            name (str): The name of the registry. Defaults to "mmpretrain".
+        """
         super().__init__(name)
         self._registry_dict = {registry.name: registry for registry in REGISTRY_LIST}

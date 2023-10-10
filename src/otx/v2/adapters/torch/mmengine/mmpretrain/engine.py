@@ -19,11 +19,19 @@ logger = get_logger()
 
 
 class MMPTEngine(MMXEngine):
+    """The MMPretrainEngine class is responsible for running inference on pre-trained models."""
+
     def __init__(
         self,
         work_dir: Optional[Union[str, Path]] = None,
         config: Optional[Union[Dict, Config, str]] = None,
     ) -> None:
+        """Initialize a new instance of the MMPretrainEngine class.
+
+        Args:
+            work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
+            config (Optional[Union[Dict, Config, str]], optional): The configuration for the engine. Defaults to None.
+        """
         super().__init__(work_dir=work_dir, config=config)
         self.registry = MMPretrainRegistry()
 
@@ -38,6 +46,30 @@ class MMPTEngine(MMXEngine):
         batch_size: int = 1,
         **kwargs,
     ) -> List[Dict]:
+        """Runs inference on the given input image(s) using the specified model and checkpoint.
+
+        Args:
+            model (Optional[Union[torch.nn.Module, Dict, str]], optional): The model to use for inference. Can be a
+                PyTorch module, a dictionary containing the model configuration, or a string representing the path to
+                the model checkpoint file. Defaults to None.
+            img (Optional[Union[str, np.ndarray, list]], optional): The input image(s) to run inference on. Can be a
+                string representing the path to the image file, a NumPy array containing the image data, or a list of
+                NumPy arrays containing multiple images. Defaults to None.
+            checkpoint (Optional[Union[str, Path]], optional): The path to the checkpoint file to use for inference.
+                Defaults to None.
+            pipeline (Optional[Union[Dict, List]], optional): The data pipeline to use for inference. Can be a
+                dictionary containing the pipeline configuration, or a list of dictionaries containing multiple
+                pipeline configurations. Defaults to None.
+            device (Union[str, torch.device, None], optional): The device to use for inference. Can be a string
+                representing the device name (e.g. 'cpu' or 'cuda'), a PyTorch device object, or None to use the
+                default device. Defaults to None.
+            task (Optional[str], optional): The type of task to perform. Defaults to None.
+            batch_size (int, optional): The batch size to use for inference. Defaults to 1.
+            **kwargs: Additional keyword arguments to pass to the inference function.
+
+        Returns:
+            List[Dict]: A list of dictionaries containing the inference results.
+        """
         from mmengine.model import BaseModel
         from mmpretrain import ImageClassificationInferencer, inference_model
 
@@ -97,6 +129,25 @@ class MMPTEngine(MMXEngine):
         input_shape: Optional[Tuple[int, int]] = None,
         **kwargs,
     ) -> dict:
+        """Export a PyTorch model to a specified format for deployment.
+
+        Args:
+            model (Optional[Union[torch.nn.Module, str, Config]]): The PyTorch model to export.
+            checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for exporting.
+            precision (Optional[str]): The precision to use for exporting.
+                Can be one of ["float16", "fp16", "float32", "fp32"].
+            task (Optional[str]): The task for which the model is being exported. Defaults to "Classification".
+            codebase (Optional[str]): The codebase for the model being exported. Defaults to "mmpretrain".
+            export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
+            deploy_config (Optional[str]): The path to the deployment configuration file to use for exporting.
+                File path only.
+            device (str): The device to use for exporting. Defaults to "cpu".
+            input_shape (Optional[Tuple[int, int]]): The input shape of the model being exported.
+            **kwargs: Additional keyword arguments to pass to the export function.
+
+        Returns:
+            dict: A dictionary containing information about the exported model.
+        """
         return super().export(
             model=model,
             checkpoint=checkpoint,

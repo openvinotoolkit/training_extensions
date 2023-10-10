@@ -20,6 +20,7 @@ def add_doctor_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for doctor command.
 
     Args:
+    ----
         subcommands_action (_ActionSubCommands): Sub-command Parser in CLI.
     """
     sub_parser = prepare_parser()
@@ -31,12 +32,12 @@ def add_doctor_parser(subcommands_action: _ActionSubCommands) -> None:
 
 
 def prepare_parser() -> OTXArgumentParser:
-    """Parses command line arguments.
+    """Parse command line arguments.
 
     Returns:
+    -------
         OTXArgumentParser: Sub-parser for doctor command.
     """
-
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default=None, type=str)
     parser.add_argument(
@@ -53,7 +54,13 @@ def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
     """Print diagnostic information about the current environment.
 
     Args:
+    ----
         task (Optional[str], optional): Task available in OTX. Defaults to None.
+        verbose (bool): verbose value for whether to print more details.
+
+    Returns:
+    -------
+        None
     """
     issue_count = 0
     console = Console()
@@ -110,7 +117,6 @@ def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
 
 def main() -> None:
     """Entry point for OTX CLI doctor."""
-
     parser = prepare_parser()
     args = parser.parse_args()
     doctor(task=args.task)

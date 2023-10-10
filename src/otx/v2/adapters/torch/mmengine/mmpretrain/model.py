@@ -25,7 +25,17 @@ MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
 def configure_in_channels(config: Config, input_shape: Optional[List[int]] = None) -> Config:
-    # COPY from otx.algorithms.classification.adapters.mmpretrain.configurer.ClassificationConfigurer::configure_in_channel
+    """Configure the 'in_channels' parameter for the model's neck and head based on the output shape of the backbone.
+
+    Args:
+    ----
+        config (Config): The configuration object for the model.
+        input_shape (Optional[List[int]], optional): The input shape of the model. Defaults to None.
+
+    Returns:
+    -------
+        Config: The updated configuration object.
+    """
     configure_required = False
     wrap_model = hasattr(config, "model")
     model_config = config.get("model") if wrap_model else config
@@ -94,6 +104,21 @@ def get_model(
     channel_last: bool = False,
     **kwargs,
 ) -> torch.nn.Module:
+    """Return a PyTorch model for training.
+
+    Args:
+    ----
+        model (Union[str, Config, Dict]): The model to use for pretraining. Can be a string representing the model name,
+            a Config object, or a dictionary.
+        pretrained (Union[str, bool], optional): Whether to use a pretrained model. Defaults to False.
+        num_classes (Optional[int], optional): The number of classes in the dataset. Defaults to None.
+        channel_last (bool, optional): Whether to use channel last memory format. Defaults to False.
+        **kwargs: Additional keyword arguments to pass to the model.
+
+    Returns:
+    -------
+        torch.nn.Module: The PyTorch model for pretraining.
+    """
     model_name = None
     if isinstance(model, dict):
         model = Config(cfg_dict=model)
@@ -134,6 +159,15 @@ def get_model(
 
 
 def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
+    """Returns a list of available models for training.
+
+    Args:
+        pattern (Optional[str]): A string pattern to filter the list of available models. Defaults to None.
+        **kwargs: Additional keyword arguments to pass to the underlying model listing functions.
+
+    Returns:
+        List[str]: A sorted list of available models for pretraining.
+    """
     # First, make sure it's a model from mmpretrain.
     model_list = list_mmpretrain_model(pattern=pattern, **kwargs)
     # Add OTX Custom models

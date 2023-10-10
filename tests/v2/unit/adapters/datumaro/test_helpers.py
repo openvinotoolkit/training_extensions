@@ -110,6 +110,7 @@ def generate_datumaro_dataset_item(
     """Generate Datumaro DatasetItem.
 
     Args:
+    ----
         item_id (str): The ID of dataset item
         subset (str): subset of item, e.g. "train" or "val"
         task (str): task type, e.g. "classification"
@@ -118,6 +119,7 @@ def generate_datumaro_dataset_item(
         temp_dir (str): directory to save image data
 
     Returns:
+    -------
         dm.DatasetItem: Datumaro DatasetItem
     """
     if image_shape is None:
@@ -148,6 +150,7 @@ def generate_datumaro_dataset(
     """Generate Datumaro Dataset.
 
     Args:
+    ----
         subsets (List): the list of subset, e.g. ["train", "val"]
         task (str): task name, e.g. "classification", "segmentation", ..
         num_data (int): the number of dataset to make.
@@ -155,6 +158,7 @@ def generate_datumaro_dataset(
         mask_shape (np.array): the shape of mask.
 
     Returns:
+    -------
         dm.Dataset: Datumaro Dataset
     """
     if image_shape is None:

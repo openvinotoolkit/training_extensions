@@ -20,6 +20,7 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     that all samples in the tail class are selected more than once with probability 0.999
 
     Args:
+    ----
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
@@ -34,6 +35,17 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         rank: int = 0,
         drop_last: bool = False,
     ) -> None:
+        """Initialize a BalancedSampler object.
+
+        Args:
+        ----
+            dataset (Dataset): The dataset to sample from.
+            batch_size (int): The batch size.
+            efficient_mode (bool, optional): Whether to use efficient mode. Defaults to True.
+            num_replicas (int, optional): The number of replicas. Defaults to 1.
+            rank (int, optional): The rank. Defaults to 0.
+            drop_last (bool, optional): Whether to drop the last batch if it's incomplete. Defaults to False.
+        """
         self.batch_size = batch_size
         self.repeat = 1
         if hasattr(dataset, "times"):

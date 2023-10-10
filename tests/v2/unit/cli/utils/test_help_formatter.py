@@ -16,8 +16,7 @@ def test_get_verbose_usage() -> None:
 def test_get_cli_usage_docstring() -> None:
     assert get_cli_usage_docstring(None) is None
     class Component:
-        """
-        <Prev Section>
+        """<Prev Section>.
 
         CLI Usage:
             1. First Step.
@@ -27,10 +26,9 @@ def test_get_cli_usage_docstring() -> None:
         """
 
     assert get_cli_usage_docstring(Component) == "1. First Step.\n2. Second Step."
-    
+
     class Component2:
-        """
-        <Prev Section>
+        """<Prev Section>.
 
         CLI Usage-Test:
             test: test.

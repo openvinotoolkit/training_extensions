@@ -37,6 +37,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     the ratio of old and new data is used as 1:1
 
     Args:
+    ----
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
@@ -51,6 +52,16 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         rank: int = 0,
         drop_last: bool = False,
     ) -> None:
+        """Incremental sampler for classification datasets.
+
+        Args:
+            dataset (Dataset): The dataset to sample from.
+            samples_per_gpu (int): Number of samples per GPU.
+            efficient_mode (bool, optional): Whether to use efficient mode. Defaults to False.
+            num_replicas (int, optional): Number of processes. Defaults to 1.
+            rank (int, optional): Rank of the current process. Defaults to 0.
+            drop_last (bool, optional): Whether to drop the last incomplete batch. Defaults to False.
+        """
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank

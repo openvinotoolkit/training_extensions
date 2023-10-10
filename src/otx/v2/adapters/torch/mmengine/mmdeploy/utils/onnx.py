@@ -14,10 +14,12 @@ def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:
     """Remove nodes from ONNX model.
 
     Args:
+    ----
         model (onnx.ModelProto): Input onnx model.
         predicate (Callable): A function to predicate a node.
 
     Returns:
+    -------
         onnx.ModelProto: Modified onnx model.
     """
     # ! this doesn't handle inputs/outputs
@@ -47,6 +49,7 @@ def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
     """Remove identity node from an ONNX model.
 
     Args:
+    ----
         model (onnx.ModelProto): Input onnx model.
         op_name (str): Operation name.
     """

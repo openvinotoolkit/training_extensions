@@ -1,3 +1,8 @@
+"""Implementation of the BaseRegistry class for registry pattern."""
+
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import inspect
 from typing import Callable, Optional, Type, Union
 
@@ -6,12 +11,30 @@ from rich.table import Table
 
 
 class BaseRegistry:
+    """Base class for registry pattern implementation."""
+
     def __init__(self, name: str) -> None:
+        """Initialize a new instance of the Registry class.
+
+        Args:
+        ----
+            name (str): The name of the registry.
+        """
         self._name = name
         self._module_dict: dict = {}
         self._registry_dict: dict = {}
 
     def get(self, module_type: str) -> Optional[Callable]:
+        """Retrieve a module from the registry by its type.
+
+        Args:
+        ----
+            module_type (str): The type of the module to retrieve.
+
+        Returns:
+        -------
+            Optional[Callable]: The module if found, otherwise None.
+        """
         # Return Registry
         if module_type in self._registry_dict:
             return self._registry_dict[module_type]
@@ -25,14 +48,42 @@ class BaseRegistry:
         return None
 
     def __len__(self) -> int:
-        # Copy from mmcv.utils.registry.Registry
+        """Get the number of registered modules in the registry.
+
+        Returns:
+        -------
+            int: The number of registered modules in the registry.
+        """
         return len(self.module_dict)
 
     def __contains__(self, key: str) -> bool:
-        # Copy from mmcv.utils.registry.Registry
+        """Check if the given key is in the registry.
+
+        Args:
+        ----
+            key (str): The key to check.
+
+        Returns:
+        -------
+            bool: True if the key is in the registry, False otherwise.
+        """
         return self.get(key) is not None
 
     def __repr__(self) -> str:
+        """Return a string representation of the Registry object.
+
+        The string representation includes a table with the following columns:
+        - Type: The type of the object (always "Custom" for this registry).
+        - Names: The names of the objects in the registry.
+        - Objects: The string representation of the objects in the registry.
+
+        If the registry has any sub-registries, they are also included in the table,
+        with their type being the name of the sub-registry.
+
+        Returns:
+        -------
+            A string representation of the Registry object.
+        """
         # Evolved from mmengine
         table = Table(title=f"Registry of {self._name}")
         table.add_column("Type", justify="left", style="yellow")
@@ -56,6 +107,7 @@ class BaseRegistry:
 
     @property
     def name(self) -> str:
+        """Returns the name of the registry."""
         return self._name
 
     @property
@@ -75,6 +127,22 @@ class BaseRegistry:
         module: Optional[Union[Type, Callable]] = None,
         force: bool = False,
     ) -> None:
+        """Register a module to the registry.
+
+        Args:
+        ----
+            type_name (str, optional): The name of the type to register the module under.
+                If None, the module will be registered under its own name.
+            name (str, optional): The name to register the module under. If None, the
+                module's __name__ attribute will be used.
+            module (type or callable, optional): The module to register.
+            force (bool, optional): Whether to overwrite an existing module with the same name.
+
+        Raises:
+        ------
+            TypeError: If the module is not a class or function.
+            KeyError: If force is False and a module with the same name already exists.
+        """
         # Copy from mmcv.utils.registry.Registry
         if not inspect.isclass(module) and not inspect.isfunction(module):
             msg = f"module must be a class or a function, but got {module!s}"

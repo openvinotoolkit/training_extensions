@@ -52,7 +52,6 @@ def sync_batchnorm_2_batchnorm(module: torch.nn.Module, dim: int = 2) -> torch.n
 
 def numpy_2_list(data: Union[np.ndarray, MutableMapping, list, tuple]) -> Union[MutableMapping, list, tuple]:
     """Converts NumPy arrays to Python lists."""
-
     if isinstance(data, np.ndarray):
         return data.tolist()
 

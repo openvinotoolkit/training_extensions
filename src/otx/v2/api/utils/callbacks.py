@@ -1,10 +1,3 @@
-"""Callback module."""
-
-# Copyright (C) 2021-2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
-
-
 """Time monitor callback module."""
 
 # Copyright (C) 2021-2022 Intel Corporation
@@ -57,56 +50,57 @@ class Callback:
     """
 
     def set_params(self, params: dict) -> None:
-        """Sets callback parameters."""
+        """Set callback parameters."""
         # pylint: disable=W0201
         self.params = params
 
     def set_model(self, model: TypeVar) -> None:
-        """Sets callback model."""
+        """Set callback model."""
         # pylint: disable=W0201
         self.model = model
 
     def on_epoch_begin(self, epoch: int, **kwargs) -> None:
-        """It is called on epoch begin event."""
+        """Call on epoch begin event."""
 
     def on_epoch_end(self, epoch: int, logs: str, **kwargs) -> None:
-        """It is called on epoch end event."""
+        """Call on epoch end event."""
 
     def on_batch_begin(self, batch: int, **kwargs) -> None:
-        """It is called on batch begin event."""
+        """Call on batch begin event."""
 
     def on_batch_end(self, batch: int, **kwargs) -> None:
-        """It is called on batch end event."""
+        """Call on batch end event."""
 
     def on_train_begin(self, **kwargs) -> None:
-        """It is called on train begin event."""
+        """Call on train begin event."""
 
     def on_train_end(self, batch: int, **kwargs) -> None:
-        """It is called on train end event."""
+        """Call on train end event."""
 
     def on_train_batch_begin(self, batch: int, **kwargs) -> None:
-        """It is called on train batch begin event."""
+        """Call on train batch begin event."""
 
     def on_train_batch_end(self, batch: int, **kwargs) -> None:
-        """It is called on train batch end event."""
+        """Call on train batch end event."""
 
     def on_test_begin(self, **kwargs) -> None:
-        """It is called on test begin event."""
+        """Call on test begin event."""
 
     def on_test_end(self, **kwargs) -> None:
-        """It is called on test end event."""
+        """Call on test end event."""
 
     def on_test_batch_begin(self, batch: int, logger: logging.Logger, **kwargs) -> None:
-        """It is called on test batch begin event."""
+        """Call on test batch begin event."""
 
     def on_test_batch_end(self, batch: int, logger: logging.Logger, **kwargs) -> None:
-        """It is called on test batch end event."""
+        """Call on test batch end event."""
 
 
 class TimeMonitorCallback(Callback):
     """A callback to monitor the progress of training.
 
     Args:
+    ----
         num_epoch (int): Amount of epochs
         num_train_steps (int): amount of training steps per epoch
         num_val_steps (int): amount of validation steps per epoch
@@ -126,6 +120,22 @@ class TimeMonitorCallback(Callback):
         step_history: int = 50,
         update_progress_callback: UpdateProgressCallback = default_progress_callback,
     ) -> None:
+        """Initialize a Callbacks object with the given parameters.
+
+        Args:
+        ----
+            num_epoch (int): The number of epochs to train the model for.
+            num_train_steps (int): The number of steps to train the model for.
+            num_val_steps (int): The number of steps to validate the model for.
+            num_test_steps (int): The number of steps to test the model for.
+            epoch_history (int): The number of past epochs to keep track of for calculating average epoch duration.
+            step_history (int): The number of past steps to keep track of for calculating average step duration.
+            update_progress_callback (UpdateProgressCallback): The callback function to update the progress of training.
+
+        Returns:
+        -------
+            None
+        """
         self.total_epochs = num_epoch
         self.train_steps = num_train_steps
         self.val_steps = num_val_steps
@@ -163,7 +173,6 @@ class TimeMonitorCallback(Callback):
 
     def __deepcopy__(self, memo: dict) -> "TimeMonitorCallback":
         """Return deepcopy object."""
-
         update_progress_callback = self.update_progress_callback
         self.update_progress_callback = None
         self.__dict__["__deepcopy__"] = None
@@ -190,7 +199,7 @@ class TimeMonitorCallback(Callback):
         self.__calculate_average_step()
 
     def is_stalling(self) -> bool:
-        """Returns True if the training is stalling.
+        """Return True if the training is stalling.
 
         Returns True if the current step has taken more than 30 seconds and
         at least 20x more than the average step duration
@@ -227,12 +236,12 @@ class TimeMonitorCallback(Callback):
         self.__calculate_average_step()
 
     def on_train_begin(self, **kwargs) -> None:
-        """Sets training to true."""
+        """Set training to true."""
         super().on_train_begin(**kwargs)
         self.is_training = True
 
     def on_train_end(self, batch: int, **kwargs) -> None:
-        """Handles early stopping when the total_steps is greater than the current_step."""
+        """Handle early stopping when the total_steps is greater than the current_step."""
         # To handle cases where early stopping stops the task the progress will still be accurate
         super().on_train_end(batch=batch, **kwargs)
         self.current_step = self.total_steps - self.test_steps
@@ -246,7 +255,7 @@ class TimeMonitorCallback(Callback):
         self.start_epoch_time = time.time()
 
     def on_epoch_end(self, epoch: int, logs: str, **kwargs) -> None:
-        """Computes the average time taken to complete an epoch based on a running average of `epoch_history` epochs."""
+        """Compute the average time taken to complete an epoch based on a running average of `epoch_history` epochs."""
         super().on_epoch_end(epoch=epoch, logs=logs, **kwargs)
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
@@ -258,5 +267,5 @@ class TimeMonitorCallback(Callback):
         self.average_epoch = sum(self.past_epoch_duration) / len(self.past_epoch_duration)
 
     def get_progress(self) -> float:
-        """Returns current progress as a percentage."""
+        """Return current progress as a percentage."""
         return (self.current_step / self.total_steps) * 100

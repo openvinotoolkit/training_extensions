@@ -40,6 +40,13 @@ class AnomalyInferenceCallback(Callback):
     """Callback that updates the OTX dataset during inference."""
 
     def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType) -> None:
+        """Initializes an instance of the InferenceCallback class.
+
+        Args:
+            otx_dataset (DatasetEntity): The OTX dataset to use for inference.
+            labels (List[LabelEntity]): A list of LabelEntity objects representing the labels in the dataset.
+            task_type (TaskType): The type of task being performed (e.g. classification, regression).
+        """
         self.otx_dataset = otx_dataset
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
@@ -90,6 +97,7 @@ class AnomalyInferenceCallback(Callback):
         """Add classification predictions to the dataset items.
 
         Args:
+        ----
             pred_labels (Tensor): Predicted image labels.
             pred_scores (Tensor): Predicted image-level anomaly scores.
         """
@@ -111,6 +119,7 @@ class AnomalyInferenceCallback(Callback):
         """Add detection predictions to the dataset items.
 
         Args:
+        ----
             pred_boxes (List[Tensor]): Predicted bounding box locations.
             box_scores (List[Tensor]): Predicted anomaly scores for the bounding boxes.
             box_labels (List[Tensor]): Predicted labels for the bounding boxes.
@@ -152,6 +161,7 @@ class AnomalyInferenceCallback(Callback):
         """Add segmentation predictions to the dataset items.
 
         Args:
+        ----
             pred_masks (Tensor): Predicted anomaly masks.
             anomaly_maps (Tensor): Predicted pixel-level anomaly scores.
             pred_scores (Tensor): Predicted image-level anomaly scores.

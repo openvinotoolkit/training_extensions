@@ -58,6 +58,19 @@ REGISTRY_LIST = [
 
 
 class MMEngineRegistry(BaseRegistry):
+    """A registry for registering and retrieving MMEngine modules.
+
+    Attributes:
+    ----------
+        name (str): The name of the registry.
+    """
+
     def __init__(self, name: str = "mmengine") -> None:
+        """Initialize a new instance of the MMEngineRegistry class.
+
+        Args:
+        ----
+            name (str): The name of the registry. Defaults to "mmengine".
+        """
         super().__init__(name)
         self._registry_dict = {registry.name: registry for registry in REGISTRY_LIST}

@@ -3,10 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from otx.v2.api.utils.logger import get_logger
-
-logger = get_logger()
-
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
@@ -17,6 +13,10 @@ from mmdeploy.apis.onnx import export
 from mmdeploy.backend.openvino.onnx2openvino import from_onnx
 from mmdeploy.backend.openvino.utils import ModelOptimizerOptions
 from mmengine.config import Config
+
+from otx.v2.api.utils.logger import get_logger
+
+logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes
@@ -36,6 +36,7 @@ class Exporter:
         """Initialize Exporter.
 
         Args:
+        ----
             config (Config): recipe config which contains model config
             checkpoint (str): model weights
             deploy_config (Config): deploy config which contains deploy info
@@ -44,7 +45,6 @@ class Exporter:
             onnx_only (bool): whether to export only onnx model
             device (bool): whether to export only onnx model
         """
-
         self.task_processor = build_task_processor(config, deploy_config, device)
         self.checkpoint = checkpoint
         self.deploy_cfg = deploy_config
@@ -83,7 +83,6 @@ class Exporter:
 
     def _get_inputs(self) -> Tuple[torch.Tensor, Optional[Dict[str, Any]]]:
         """Prepare torch model's input and input_metas."""
-
         input_shape = self.deploy_cfg.backend_config.model_inputs[0]["opt_shapes"]["input"]
         input_tensor = torch.randn(input_shape)
         input_metas = None

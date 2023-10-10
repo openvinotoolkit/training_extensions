@@ -16,21 +16,32 @@ def set_workspace(root: Optional[str] = None, name: str = "otx-workspace") -> st
     """Set workspace path according to arguments.
 
     Args:
+    ----
         root (str, optional): Target root path. Defaults to None.
         name (str, optional): Name of workspace folder. Defaults to "otx-workspace".
 
     Returns:
+    -------
         str: Workspace folder path.
     """
     return f"{root}/{name}" if root else f"./{name}"
 
 
 class Workspace:
+    """A class representing an OTX workspace."""
+
     def __init__(self, work_dir: Optional[str] = None, task: Optional[str] = None) -> None:
-        """The workspace responsible for the input and output of the OTX.
+        """Initialize a Workspace object.
 
         Args:
-            work_dir (Optional[str], optional): The path the workspace will use. Defaults to None.
+        ----
+            work_dir (Optional[str]): The path to the workspace directory.
+                If None, a new workspace directory will be created.
+            task (Optional[str]): The name of the task associated with this workspace.
+
+        Returns:
+        -------
+            None
         """
         self.otx_root = get_otx_root_path()
         self.work_dir = Path(work_dir) if work_dir is not None else Path(set_workspace()).resolve()
@@ -42,17 +53,14 @@ class Workspace:
 
     @property
     def config_path(self) -> Path:
-        """_summary_.
-
-        Returns:
-            Path: _description_
-        """
+        """Returns the path to the configuration file for the workspace."""
         return self._config_path
 
     def check_workspace(self) -> bool:
         """Check that the class's work_dir is an actual workspace folder.
 
         Returns:
+        -------
             bool: true for workspace else false
         """
         return (self.work_dir / "configs.yaml").exists()
@@ -72,10 +80,12 @@ class Workspace:
         """Dump output configuration.
 
         Args:
+        ----
             config (Optional[Union[str, Path, Dict]], optional): Config contents to be save. Defaults to None.
             filename (Optional[Union[str, Path]], optional): Output config file path. Defaults to None.
 
         Raises:
+        ------
             FileNotFoundError: If config is a string or Path and it doesn't exist, raise an error.
         """
         if config is None:
@@ -89,16 +99,29 @@ class Workspace:
         else:
             Path(filename).write_text(OmegaConf.to_yaml(config))
 
-    def add_config(self, config: Dict) -> None:
+    def add_config(self, config: dict) -> None:
         """Update workspace's configuration.
 
         Args:
-            config (Dict): Config contents.
+        ----
+            config: Config contents.
         """
         self._config.update(config)
 
     def update_latest(self, target_dir: Path) -> None:
-        # Latest folder symbolic link to models
+        """Update the latest folder symbolic link to models.
+
+        If the latest directory already exists, it is unlinked. If the parent directory of the latest directory does not
+        exist, it is created. Finally, the latest directory is symlinked to the target directory.
+
+        Args:
+        ----
+            target_dir (Path): The target directory to symlink to.
+
+        Returns:
+        -------
+            None
+        """
         if self.latest_dir.exists():
             self.latest_dir.unlink()
         elif not self.latest_dir.parent.exists():

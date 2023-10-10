@@ -31,7 +31,20 @@ model_list = [
 
 
 class AnomalibRegistry(BaseRegistry):
+    """A registry for registering and retrieving anomaly modules.
+
+    Attributes:
+    ----------
+        name (str): The name of the registry.
+    """
+
     def __init__(self, name: str = "anomalib") -> None:
+        """Initialize a new instance of the AnomalibRegistry class.
+
+        Args:
+        ----
+            name (str): The name of the registry. Defaults to "anomalib".
+        """
         super().__init__(name)
         self._initialize()
 
@@ -43,6 +56,16 @@ class AnomalibRegistry(BaseRegistry):
                 self.register_module(name=model_name, module=model)
 
     def get(self, module_type: str) -> Optional[Callable]:
+        """Retrieve a registered module by its type.
+
+        Args:
+        ----
+            module_type (str): The type of the module to retrieve.
+
+        Returns:
+        -------
+            Optional[Callable]: The registered module, or None if not found.
+        """
         # The module_dict is the highest priority.
         if module_type in self.module_dict:
             return self.module_dict[module_type]

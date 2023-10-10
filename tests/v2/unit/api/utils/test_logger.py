@@ -15,13 +15,14 @@ from pytest_mock.plugin import MockerFixture
 class TestLogger:
     @pytest.fixture()
     def log_file(self, tmp_dir_path: Path) -> Path:
-        """
-        Fixture that creates a temporary log file for testing purposes.
+        """Fixture that creates a temporary log file for testing purposes.
 
         Args:
+        ----
             tmp_dir_path (Path): Path to the temporary directory.
 
         Returns:
+        -------
             Path: Path to the temporary log file.
         """
         path = tmp_dir_path / "test_log.log"
@@ -34,10 +35,10 @@ class TestLogger:
         remove_file()
 
     def test_config_logger(self, log_file: Path) -> None:
-        """
-        Test function that checks if the logger is properly configured.
+        """Test function that checks if the logger is properly configured.
 
         Args:
+        ----
             log_file (Path): Path to the temporary log file.
         """
         logger.config_logger(log_file, level="DEBUG")
@@ -52,19 +53,17 @@ class TestLogger:
             logger.config_logger(log_file, level="11")
 
     def test_get_log_dir(self, log_file: Path) -> None:
-        """
-        Test function that checks if the log directory is properly retrieved.
+        """Test function that checks if the log directory is properly retrieved.
 
         Args:
+        ----
             log_file (Path): Path to the temporary log file.
         """
         logger.config_logger(log_file, level="DEBUG")
         assert logger.get_log_dir() == str(Path(log_file).parent)
 
     def test_local_master_only(self) -> None:
-        """
-        Test function that checks if the local_master_only decorator works properly.
-        """
+        """Test function that checks if the local_master_only decorator works properly."""
         @logger.local_master_only
         def test_func() -> str:
             return "test"
@@ -72,10 +71,10 @@ class TestLogger:
         assert test_func() == "test"
 
     def test_local_master_only_with_distributed(self, monkeypatch: MonkeyPatch, mocker: MockerFixture) -> None:
-        """
-        Test function that checks if the local_master_only decorator works properly with distributed training.
+        """Test function that checks if the local_master_only decorator works properly with distributed training.
 
         Args:
+        ----
             monkeypatch (MonkeyPatch): Pytest monkeypatch fixture.
             mocker (MockerFixture): Pytest mocker fixture.
         """

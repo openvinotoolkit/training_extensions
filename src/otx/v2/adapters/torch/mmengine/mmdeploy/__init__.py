@@ -9,6 +9,14 @@ DEBUG = None
 
 
 def raise_import_error(msg: str) -> ImportError:
+    """Raises an ImportError with the specified message.
+
+    Args:
+        msg (str): The error message to include in the raised exception.
+
+    Returns:
+        ImportError: The raised exception with the specified error message.
+    """
     raise ImportError(msg)
 
 

@@ -16,7 +16,7 @@ class TestInstall:
             "openvino": [Requirement.parse('openvino')],
             "classification": [Requirement.parse('mmpretrain')],
             "anomaly": [Requirement.parse('anomalib')],
-            "api": [Requirement.parse('test1')], 
+            "api": [Requirement.parse('test1')],
         }
         mocker.patch("otx.v2.cli.extensions.install.get_requirements", return_value=requirements_dict)
 

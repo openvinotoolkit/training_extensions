@@ -52,7 +52,7 @@ _logger = _get_logger()
 
 
 def config_logger(log_file: str, level: str = "WARNING") -> None:
-    """A function that configures the logging system.
+    """Configure the logging system.
 
     :param log_file: str, a string representing the path to the log file.
     :param level: str, a string representing the log level. Default is "WARNING".
@@ -87,7 +87,7 @@ def _get_log_level(level: str) -> str:
 
 
 def get_log_dir() -> Optional[str]:
-    """A function that retrieves the directory path of the log file.
+    """Retrieve the directory path of the log file.
 
     :return: str, a string representing the directory path of the log file.
     """
@@ -95,12 +95,14 @@ def get_log_dir() -> Optional[str]:
 
 
 def local_master_only(func: Callable) -> Callable:
-    """A decorator that allows a function to be executed only by the local master process in distributed training setup.
+    """Allow a function to be executed only by the local master process in distributed training setup.
 
     Args:
+    ----
         func: the function to be decorated.
 
     Returns:
+    -------
         A wrapped function that can only be executed by the local master process.
     """
 

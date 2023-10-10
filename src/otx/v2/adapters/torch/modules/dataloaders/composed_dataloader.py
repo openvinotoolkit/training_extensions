@@ -16,6 +16,12 @@ class CDLIterator:
     """Iterator for aligning the number of batches as many as samples in the first iterator."""
 
     def __init__(self, cdl: "ComposedDL") -> None:
+        """Initialize a ComposedDataLoader object.
+
+        Args:
+        ----
+            cdl (ComposedDL): A ComposedDL object containing a list of PyTorch DataLoader objects.
+        """
         self._cdl = cdl
         self._index = 0
         self._cdl_iter = [iter(dl) for dl in self._cdl.loaders]
@@ -45,6 +51,12 @@ class ComposedDL:
         """Dummy sampler class to relay set_epoch() call to the list of data loaders in the CDL."""
 
         def __init__(self, cdl: "ComposedDL") -> None:
+            """Sampler class that composes multiple data loaders.
+
+            Args:
+            ----
+                cdl (ComposedDL): The composed data loader.
+            """
             self.cdl = cdl
 
         def set_epoch(self, epoch: int) -> None:
@@ -54,6 +66,12 @@ class ComposedDL:
                 loader.sampler.set_epoch(epoch)
 
     def __init__(self, loaders: Optional[List[DataLoader]] = None) -> None:
+        """Composed data loader that combines multiple data loaders.
+
+        Args:
+        ----
+            loaders (Optional[List[DataLoader]]): List of data loaders to combine. Defaults to None.
+        """
         if loaders is None:
             loaders = []
         self.loaders = loaders
@@ -66,7 +84,12 @@ class ComposedDL:
         return self.max_iter
 
     def __iter__(self) -> CDLIterator:
-        """Iter."""
+        """Return an iterator over the dataset.
+
+        Returns:
+        -------
+            CDLIterator: An iterator over the dataset.
+        """
         return CDLIterator(self)
 
     @property
@@ -76,5 +99,11 @@ class ComposedDL:
 
     @property
     def dataset(self) -> Dataset:
+        """Returns the dataset used by the first loader in the composed dataloader.
+
+        Returns:
+        -------
+            Dataset: The dataset used by the first loader in the composed dataloader.
+        """
         # FIXME: Workarounds
         return self.loaders[0].dataset

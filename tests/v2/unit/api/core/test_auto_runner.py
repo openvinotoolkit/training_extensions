@@ -262,8 +262,7 @@ class TestAutoRunner:
 
 
 def test_set_dataset_paths() -> None:
-    """
-    Test function for set_dataset_paths().
+    """Test function for set_dataset_paths().
 
     Steps:
     1. Test with All arguments are None.
@@ -287,8 +286,7 @@ def test_set_dataset_paths() -> None:
 
 
 def test_set_adapters_from_string() -> None:
-    """
-    Test function for set_adapters_from_string().
+    """Test function for set_adapters_from_string().
 
     Steps:
     1. Test with engine=False, dataset=False, get_model=False, list_models=False, model_configs=False.
@@ -300,7 +298,7 @@ def test_set_adapters_from_string() -> None:
     framework = "mmpretrain"
     result = set_adapters_from_string(framework=framework, engine=False, dataset=False, get_model=False, list_models=False, model_configs=False)
     assert len(result) == 0
-    
+
     result = set_adapters_from_string(framework=framework, engine=True, dataset=False, get_model=False, list_models=False, model_configs=False)
     assert "engine" in result
     assert result["engine"].__name__ == "MMPTEngine"

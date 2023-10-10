@@ -40,12 +40,22 @@ PREDICT_FORMAT = Union[str, Path, np.ndarray]
 
 
 class AnomalibEngine(Engine):
+    """Anomalib engine using PyTorch and PyTorch Lightning."""
+
     def __init__(
         self,
         work_dir: Optional[Union[str, Path]] = None,
         config: Optional[Union[str, dict]] = None,
         task: str = "classification",
     ) -> None:
+        """Initialize the Anomalib engine.
+
+        Args:
+        ----
+            work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
+            config (Optional[Union[str, dict]], optional): The configuration for the engine. Defaults to None.
+            task (str, optional): The task to perform. Defaults to "classification".
+        """
         super().__init__(work_dir=work_dir)
         self.trainer: Trainer
         self.trainer_config: dict = {}
@@ -101,6 +111,16 @@ class AnomalibEngine(Engine):
         return update_check
 
     def get_callbacks(self, metrics: Optional[dict] = None) -> list:
+        """Return a list of callbacks to be used during training.
+
+        Args:
+        ----
+            metrics (Optional[dict]): A dictionary containing the metrics to be used during training.
+
+        Returns:
+        -------
+            list: A list of callbacks to be used during training.
+        """
         # TODO: Need to check callbacks
         if metrics is None:
             metrics = self.config.get("metrics", {})
@@ -136,6 +156,29 @@ class AnomalibEngine(Engine):
         val_interval: Optional[int] = None,
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
+        """Train the given model using the provided data loaders and optimizer.
+
+        Args:
+        ----
+            model (Union[torch.nn.Module, pl.LightningModule]): The model to train.
+            train_dataloader (Union[DataLoader, LightningDataModule]): The data loader for training data.
+            val_dataloader (Optional[DataLoader], optional): The data loader for validation data. Defaults to None.
+            optimizer (Optional[Union[dict, Optimizer]], optional): The optimizer to use for training. Defaults to None.
+            checkpoint (Optional[Union[str, Path]], optional): The path to a checkpoint to load before training.
+                Defaults to None.
+            max_iters (Optional[int], optional): The maximum number of iterations to train for. Defaults to None.
+            max_epochs (Optional[int], optional): The maximum number of epochs to train for. Defaults to None.
+            distributed (Optional[bool], optional): Whether to use distributed training. Defaults to None.
+            seed (Optional[int], optional): The random seed to use for training. Defaults to None.
+            deterministic (Optional[bool], optional): Whether to use deterministic training. Defaults to None.
+            precision (Optional[_PRECISION_INPUT], optional): The precision to use for training. Defaults to None.
+            val_interval (Optional[int], optional): The interval at which to run validation. Defaults to None.
+            **kwargs: Additional arguments to pass to the Trainer constructor.
+
+        Returns:
+        -------
+            dict: A dictionary containing the trained model and the path to the saved checkpoint.
+        """
         # TODO: distributed
         _ = distributed
         train_args = {
@@ -190,7 +233,23 @@ class AnomalibEngine(Engine):
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[_PRECISION_INPUT] = None,
         **kwargs,
-    ) -> dict:  # Metric (data_class or dict)
+    ) -> dict:
+        """Run validation on the given model using the provided validation dataloader and checkpoint.
+
+        Args:
+        ----
+            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to validate.
+                If not provided, the latest model will be used.
+            val_dataloader (Optional[Union[DataLoader, dict]]): The validation dataloader.
+            checkpoint (Optional[Union[str, Path]]): The checkpoint to use for validation.
+                If not provided, the latest checkpoint will be used.
+            precision (Optional[_PRECISION_INPUT]): The precision to use for validation.
+            **kwargs: Additional keyword arguments to pass to the method.
+
+        Returns:
+        -------
+            dict: The validation metric (data_class or dict).
+        """
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
 
         datamodule = self.trainer_config.pop("datamodule", None)
@@ -223,7 +282,23 @@ class AnomalibEngine(Engine):
         checkpoint: Optional[Union[str, Path]] = None,
         precision: Optional[_PRECISION_INPUT] = None,
         **kwargs,
-    ) -> dict:  # Metric (data_class or dict)
+    ) -> dict:
+        """Test the given model on the provided test dataloader.
+
+        Args:
+        ----
+            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to test.
+                If not provided, the latest model will be used.
+            test_dataloader (Optional[DataLoader]): The dataloader to use for testing.
+            checkpoint (Optional[Union[str, Path]]): The checkpoint to use for testing.
+                If not provided, the latest checkpoint will be used.
+            precision (Optional[_PRECISION_INPUT]): The precision to use for testing.
+            **kwargs: Additional keyword arguments to pass to the method.
+
+        Returns:
+        -------
+            dict: The test results as a dictionary.
+        """
         _ = self._update_config(func_args={"precision": precision}, **kwargs)
         if model is None:
             model = self.latest_model.get("model", None)
@@ -255,6 +330,19 @@ class AnomalibEngine(Engine):
         checkpoint: Optional[Union[str, Path]] = None,
         device: Optional[list] = None,  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
+        """Run inference on the given model and input data.
+
+        Args:
+        ----
+            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to use for inference.
+            img (Optional[Union[PREDICT_FORMAT, LightningDataModule]]): The input data to run inference on.
+            checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
+            device (Optional[list]): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
+
+        Returns:
+        -------
+            list: The output of the inference.
+        """
         # TODO: Set parameters
         if model is None:
             model = self.latest_model.get("model", None)
@@ -315,7 +403,22 @@ class AnomalibEngine(Engine):
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         device: Optional[str] = None,
         input_shape: Optional[Tuple[int, int]] = None,
-    ) -> dict:  # Output: IR Models
+    ) -> dict:
+        """Export the model to a specified format.
+
+        Args:
+        ----
+            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to export.
+            checkpoint (Optional[Union[str, Path]]): The checkpoint to use for exporting the model.
+            precision (Optional[_PRECISION_INPUT]): The precision to use for exporting the model.
+            export_type (str): The type of export to perform. Can be "ONNX" or "OPENVINO".
+            device (Optional[str]): The device to use for exporting the model.
+            input_shape (Optional[Tuple[int, int]]): The input shape to use for exporting the model.
+
+        Returns:
+        -------
+            dict: A dictionary containing the exported model(s).
+        """
         # Set input_shape (input_size)
         _model = self.latest_model.get("model", None) if model is None else model
         model_config = self.config.get("model", {})

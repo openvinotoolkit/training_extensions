@@ -25,6 +25,7 @@ def get_logger(
     will also be added.
 
     Args:
+    ----
         name (str): Logger name.
         log_file (str | None): The log filename. If specified, a FileHandler
             will be added to the logger.
@@ -35,6 +36,7 @@ def get_logger(
             Defaults to 'w'.
 
     Returns:
+    -------
         logging.Logger: The expected logger.
     """
     logger = logging.getLogger(name)

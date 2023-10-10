@@ -23,10 +23,12 @@ def patch_input_preprocessing(
     The function then sets default values for the backend configuration in `deploy_cfg`.
 
     Args:
+    ----
         cfg (mmcv.ConfigDict): Config object containing test pipeline and other configurations.
         deploy_cfg (mmcv.ConfigDict): DeployConfig object containing backend configuration.
 
     Returns:
+    -------
         None: This function updates the input `deploy_cfg` object directly.
     """
     # Set options based on Normalize config
@@ -52,6 +54,15 @@ def patch_input_preprocessing(
 
 
 def patch_input_shape(deploy_cfg: Config, input_shape: Optional[tuple]) -> None:
+    """Patch the input shape of the model in the deployment configuration.
+
+    Args:
+        deploy_cfg (DictConfig): The deployment configuration.
+        input_shape (Optional[Tuple[int, int]]): The input shape of the model.
+
+    Returns:
+        None
+    """
     # default is static shape to prevent an unexpected error
     # when converting to OpenVINO IR
     _input_shape = [1, 3, *input_shape] if input_shape is not None else [1, 3, 256, 256]

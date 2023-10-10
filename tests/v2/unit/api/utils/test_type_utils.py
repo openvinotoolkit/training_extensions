@@ -11,8 +11,7 @@ from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type, st
 
 class TestTypeUtils:
     def test_str_to_task_type(self) -> None:
-        """
-        Test the str_to_task_type function.
+        """Test the str_to_task_type function.
 
         This function tests whether the str_to_task_type function returns the correct TaskType
         enum value for a given string input. It also tests whether the function raises a ValueError
@@ -27,8 +26,7 @@ class TestTypeUtils:
 
 
     def test_str_to_train_type(self) -> None:
-        """
-        Test the str_to_train_type function.
+        """Test the str_to_train_type function.
 
         This function tests whether the str_to_train_type function returns the correct TrainType
         enum value for a given string input. It also tests whether the function raises a ValueError
@@ -43,8 +41,7 @@ class TestTypeUtils:
 
 
     def test_str_to_subset_type(self) -> None:
-        """
-        Test the str_to_subset_type function.
+        """Test the str_to_subset_type function.
 
         This function tests whether the str_to_subset_type function returns the correct Subset
         enum value for a given string input. It also tests whether the function raises a ValueError

@@ -29,18 +29,22 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for install command.
 
     Args:
-        parser (OTXArgumentParser): Main ArgumentParser in CLI.
+    ----
+        subcommands_action (_ActionSubCommands): Sub-Command in CLI.
 
     Returns:
-        OTXArgumentParser: Main parser with subparsers merged.
+    -------
+        None
     """
     sub_parser = prepare_parser()
     subcommands_action.add_subcommand("install", sub_parser, help="Install OTX requirements.")
 
 
 def prepare_parser() -> OTXArgumentParser:
-    """Parses command line arguments."""
+    """Return an instance of OTXArgumentParser with the required arguments for the install command.
 
+    :return: An instance of OTXArgumentParser.
+    """
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default="full", type=str)
 
@@ -51,12 +55,15 @@ def install(task: str) -> int:
     """Install OTX requirements.
 
     Args:
+    ----
         task (str): Task to install requirements for.
 
     Raises:
+    ------
         ValueError: When the task is not supported.
 
     Returns:
+    -------
         int: Status code of the pip install command.
     """
     requirements_dict = get_requirements("otx")
@@ -108,7 +115,6 @@ def install(task: str) -> int:
 
 def main() -> None:
     """Entry point for OTX CLI Install."""
-
     parser = prepare_parser()
     args = parser.parse_args()
     install(task=args.task)

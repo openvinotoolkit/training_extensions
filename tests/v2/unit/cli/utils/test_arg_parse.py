@@ -33,8 +33,8 @@ def test_get_short_docstring() -> None:
             self.arg2 = arg2
 
     class TestClass2:
-        """Test Summary.
-        """
+        """Test Summary."""
+
         def __init__(self, arg1: str, arg2: int) -> None:
             self.arg1 = arg1
             self.arg2 = arg2

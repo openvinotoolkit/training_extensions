@@ -61,6 +61,7 @@ class OtxMvtecDataset:
     """Generate OTX MVTec Dataset from the anomaly detection datasets that follows the MVTec format.
 
     Args:
+    ----
         path (Union[str, Path], optional): Path to the MVTec dataset category.
             Defaults to "./datasets/MVTec/bottle".
         split_ratio (float, optional): Ratio to split normal training images and add to the
@@ -71,6 +72,7 @@ class OtxMvtecDataset:
             it to half. Default to True.
 
     Examples:
+    --------
         >>> dataset_generator = OtxMvtecDataset()
         >>> dataset = dataset_generator.generate()
         >>> dataset[0].media.numpy.shape
@@ -83,6 +85,13 @@ class OtxMvtecDataset:
         path: Union[str, Path],
         task_type: TaskType = TaskType.ANOMALY_CLASSIFICATION,
     ) -> None:
+        """Initializes a new instance of the MVTec dataset adapter.
+
+        Args:
+            path (Union[str, Path]): The path to the root directory of the dataset.
+            task_type (TaskType, optional): The type of task to perform on the dataset.
+                Defaults to TaskType.ANOMALY_CLASSIFICATION.
+        """
         self.path = path if isinstance(path, Path) else Path(path)
         self.task_type = task_type
 
@@ -110,6 +119,7 @@ class OtxMvtecDataset:
         corresponding OTX LabelEntities
 
         Returns:
+        -------
             DataFrame: Final list of samples comprising all the required
                 information to create the OTX Dataset.
         """
@@ -125,14 +135,13 @@ class OtxMvtecDataset:
         samples.loc[samples.label != "good", "label"] = self.abnormal_label
         samples.loc[samples.label == "good", "label"] = self.normal_label
 
-        samples = samples.reset_index(drop=True)
-
-        return samples
+        return samples.reset_index(drop=True)
 
     def generate(self) -> DatasetEntity:
         """Generate OTX Anomaly Dataset.
 
         Returns:
+        -------
             DatasetEntity: Output OTX Anomaly Dataset from an MVTec
         """
         samples = self.get_samples()

@@ -25,6 +25,22 @@ def configure_task_type(
     data_roots: Optional[str] = None,
     data_format: Optional[str] = None,
 ) -> tuple:
+    """Configure the task type based on the given data roots and format.
+
+    Args:
+    ----
+        data_roots (Optional[str]): The data roots to configure the task type for.
+        data_format (Optional[str]): The data format to configure the task type for.
+
+    Returns:
+    -------
+        Tuple[str, str]: A tuple containing the task key and data format.
+
+    Raises:
+    ------
+        ImportError: If datumaro is not installed and data_format is None.
+        ValueError: If the data format is not supported by any task.
+    """
     if data_format is None and data_roots is not None:
         try:
             from otx.v2.adapters.datumaro.manager.dataset_manager import DatasetManager
@@ -60,7 +76,8 @@ def check_semisl_requirements(unlabeled_dir: Optional[Union[str, Path]]) -> Unio
         return False
 
     if not Path(unlabeled_dir).is_dir() or not Path(unlabeled_dir).iterdir():
-        msg = "unlabeled-data-roots isn't a directory, it doesn't exist or it is empty. Please, check command line and directory path."
+        msg = "unlabeled-data-roots isn't a directory, \
+            it doesn't exist or it is empty. Please, check command line and directory path."
         raise ValueError(
             msg,
         )
@@ -86,7 +103,6 @@ def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: 
     If unlabeled_images presented in dataset structure and it is sufficient to start Semi-SL -> Semi-SL
     Overwise set Incremental training type.
     """
-
     if train_data_roots is None or not Path(train_data_roots).is_dir() or not Path(train_data_roots).iterdir():
         return None
 

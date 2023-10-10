@@ -33,6 +33,12 @@ class ProgressCallback(TQDMProgressBar):
     """
 
     def __init__(self, parameters: Optional[TrainParameters] = None) -> None:
+        """Initializes a new instance of the ProgressCallback class.
+
+        Args:
+            parameters (Optional[TrainParameters]): The training parameters to use for the callback.
+                If None, the default progress callback will be used.
+        """
         super().__init__()
         self.current_epoch: int = 0
         self.max_epochs: int = 0
@@ -122,6 +128,7 @@ class ProgressCallback(TQDMProgressBar):
         """Get progress for train and test stages.
 
         Args:
+        ----
             stage (str, optional): Train or Test stages. Defaults to "train".
         """
         if stage == "train":

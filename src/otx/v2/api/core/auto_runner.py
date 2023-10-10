@@ -66,6 +66,17 @@ ADAPTER_QUICK_LINK = {
 
 
 def set_dataset_paths(config: dict, args: dict) -> dict:
+    """Set the dataset paths in the given configuration dictionary based on the provided arguments.
+
+    Args:
+    ----
+        config (dict): The configuration dictionary to update.
+        args (dict): The arguments containing the dataset paths.
+
+    Returns:
+    -------
+        dict: The updated configuration dictionary.
+    """
     for key, value in args.items():
         if value is None:
             continue
@@ -81,6 +92,26 @@ def set_adapters_from_string(
     list_models: bool = True,
     model_configs: bool = True,
 ) -> dict:
+    """Prepare Adapters API class & functions from string.
+
+    Given a framework name, returns a dictionary containing the corresponding engine, dataset builder,
+    get_model module, list_models module, and model_configs list. If the framework name is a quick link,
+    the corresponding adapter is used. Otherwise, the framework name is used as the adapter.
+
+    Args:
+    ----
+        framework (str): The name of the framework.
+        engine (bool): Whether to include the engine in the result. Defaults to True.
+        dataset (bool): Whether to include the dataset builder in the result. Defaults to True.
+        get_model (bool): Whether to include the get_model module in the result. Defaults to True.
+        list_models (bool): Whether to include the list_models module in the result. Defaults to True.
+        model_configs (bool): Whether to include the model_configs list in the result. Defaults to True.
+
+    Returns:
+    -------
+        dict: A dictionary containing the corresponding engine, dataset builder, get_model module,
+        list_models module, and model_configs list.
+    """
     result = {}
     if framework.lower() in ADAPTER_QUICK_LINK:
         adapter = f"{ADAPTERS_ROOT}.{ADAPTER_QUICK_LINK[framework.lower()]}"
@@ -108,6 +139,18 @@ def set_adapters_from_string(
 
 @add_subset_dataloader(["train", "val", "test", "unlabeled"])
 class AutoRunner:
+    """A class for running automated machine learning tasks.
+
+    Example:
+    -------
+        >>> runner = AutoRunner(
+            work_dir="output/folder/path",
+            train_data_roots="train/data/path",
+        )
+        >>> runner.train(max_epochs=2)
+        {model: Model(), checkpoint: "output/latest/weights.pth"}
+    """
+
     def __init__(
         self,
         *,
@@ -126,28 +169,42 @@ class AutoRunner:
         data_format: Optional[str] = None,
         config: Optional[Union[dict, str]] = None,
     ) -> None:
-        r"""AutoRunner, which is responsible for OTX's automated training APIs.
+        """AutoRunner, which is responsible for OTX's automated training APIs.
 
-        This helps to select the most appropriate type of configuration through auto-detection based on framework, task, train_type, and data_roots.
+        This helps to select the most appropriate type of configuration through auto-detection
+            based on framework, task, train_type, and data_roots.
 
         Args:
+        ----
             framework (Optional[str], optional): Training frameworks. Refer to otx.v2.adapters. Defaults to None.
-            task (Optional[Union[str, TaskType]]): Task of training. Refer to otx.v2.api.entities.task_type.TaskType. Defaults to None.
-            train_type (Optional[Union[str, TrainType]], optional): Training Type. Refer to otx.v2.api.entities.task_type.TrainType. Defaults to None.
-            work_dir (Optional[str], optional): Path to the workspace. This is where logs and outputs are stored. Defaults to None.
-            train_data_roots (Optional[str], optional): The root path of the dataset to be used in the Train subset. Defaults to None.
-            train_ann_files (Optional[str], optional): The annotation file path of the dataset to be used in the Train subset. Defaults to None.
-            val_data_roots (Optional[str], optional): The root path of the dataset to be used in the Val subset. Defaults to None.
-            val_ann_files (Optional[str], optional): The annotation file path of the dataset to be used in the Val subset. Defaults to None.
-            test_data_roots (Optional[str], optional): The root path of the dataset to be used in the Test subset. Defaults to None.
-            test_ann_files (Optional[str], optional): The annotation file path of the dataset to be used in the Test subset. Defaults to None.
+            task (Optional[Union[str, TaskType]]): Task of training. Refer to otx.v2.api.entities.task_type.TaskType.
+                Defaults to None.
+            train_type (Optional[Union[str, TrainType]], optional): Training Type.
+                Refer to otx.v2.api.entities.task_type.TrainType. Defaults to None.
+            work_dir (Optional[str], optional): Path to the workspace.
+                This is where logs and outputs are stored. Defaults to None.
+            train_data_roots (Optional[str], optional): The root path of the dataset to be used in the Train subset.
+                Defaults to None.
+            train_ann_files (Optional[str], optional): The annotation file path of the dataset
+                to be used in the Train subset. Defaults to None.
+            val_data_roots (Optional[str], optional): The root path of the dataset to be used in the Val subset.
+                Defaults to None.
+            val_ann_files (Optional[str], optional): The annotation file path of the dataset
+                to be used in the validation subset.Defaults to None.
+            test_data_roots (Optional[str], optional): The root path of the dataset to be used in the Test subset.
+                Defaults to None.
+            test_ann_files (Optional[str], optional): The annotation file path of the dataset
+                to be used in the test subset. Defaults to None.
             unlabeled_data_roots (Optional[str], optional): The root path of the unlabeled dataset. Defaults to None.
-            unlabeled_file_list (Optional[str], optional): The file path containing the list of images in the unlabeled dataset. Defaults to None.
+            unlabeled_file_list (Optional[str], optional): The file path containing
+                the list of images in the unlabeled dataset. Defaults to None.
             data_format (Optional[str], optional): The format of the dataset want to use. Defaults to None.
-            config (Optional[Union[Dict, str]], optional): Path to a configuration file in yaml format. Defaults to None.
+            config (Optional[Union[Dict, str]], optional): Path to a configuration file in yaml format.
+                Defaults to None.
 
-        Raises:
-            TypeError: _description_
+        Returns:
+        -------
+            None
         """
         self.config_path: Optional[str] = None
         self.config = self._initial_config(config)
@@ -218,6 +275,17 @@ class AutoRunner:
         return config
 
     def configure_model(self, model: Optional[Union[str, dict, list, object]]) -> object:
+        """Configure the model to be used for the auto runner.
+
+        Args:
+        ----
+            model (Optional[Union[str, dict, list, object]]): The model to be used for the auto runner.
+                Can be a string, dictionary, list, or object.
+
+        Returns:
+        -------
+            object: The configured model object.
+        """
         # Configure Model if model is None
         if model is None:
             if self.cache.get("model") is not None:
@@ -234,14 +302,25 @@ class AutoRunner:
         task: Union[str, TaskType, None],
         train_type: Union[str, TrainType, None],
     ) -> None:
-        """A function to automatically detect when framework, task, and train_type are None. This uses data_roots.
+        """Auto-Configuration function for AutoRunner.
+
+        Automatically configures the task type, train type, and framework based on the provided arguments and the
+        configuration file. If any of the arguments are None, the method will attempt to retrieve the values from
+        the configuration file. If the framework argument is provided, it will be used to set the framework.
+        Otherwise, the method will attempt to retrieve the framework from the configuration file.
+        If the framework is not found in the configuration file,
+        the default framework for the task type will be used.
 
         Args:
-            framework (Optional[str]): Training frameworks. Refer to otx.v2.adapters.
-            task (Optional[Union[str, TaskType]]): Task of training. Refer to otx.v2.api.entities.task_type.TaskType.
-            train_type (Optional[Union[str, TrainType]]): Training Type. Refer to otx.v2.api.entities.task_type.TrainType.
-        """
+        ----
+            framework (Optional[str]): The name of the framework to use.
+            task (Union[str, TaskType, None]): The task type to use.
+            train_type (Union[str, TrainType, None]): The train type to use.
 
+        Returns:
+        -------
+            None
+        """
         if task is None and "task" in self.config:
             task = self.config["task"]
         if train_type is None and "train_type" in self.config:
@@ -278,6 +357,22 @@ class AutoRunner:
         num_workers: Optional[int] = None,
         **kwargs,
     ):
+        """Return a DataLoader for a specific subset of the dataset.
+
+        Args:
+        ----
+            subset (str): The name of the subset to load.
+            pipeline (Optional[Union[dict, list]], optional): A pipeline of transforms to apply to the data.
+                Defaults to None.
+            batch_size (Optional[int], optional): The batch size to use. Defaults to None.
+            num_workers (Optional[int], optional): The number of worker threads to use for loading the data.
+                Defaults to None.
+            **kwargs: Additional keyword arguments to pass to the DataLoader constructor.
+
+        Returns:
+        -------
+            DataLoader: A DataLoader for the specified subset of the dataset.
+        """
         subset_dl = self.dataset.subset_dataloader(
             subset=subset,
             pipeline=pipeline,
@@ -304,23 +399,29 @@ class AutoRunner:
         val_interval: Optional[int] = None,
         **kwargs,
     ) -> dict:
-        """The Train function in AutoRunner.
-
-        Each model and dataloader is automatically created based on the configuration if None.
+        """Train the model using the data loaders and optimizer.
 
         Args:
-            model (optional): The models available in each framework's Engine. Defaults to None.
-            train_data_pipeline (optional): Training Dataset's pipeline. Defaults to None.
-            val_data_pipeline (optional):  Validation Dataset's pipeline. Defaults to None.
-            max_epochs (Optional[int], optional): Specifies the maximum epoch of training. Defaults to None.
-            max_iters (Optional[int], optional): Specifies the maximum iters of training. Defaults to None.
-            seed (Optional[int], optional): The seed to use for training. Defaults to None.
-            deterministic (Optional[bool], optional): The deterministic to use for training. Defaults to None.
-            precision (Optional[str], optional): The precision to use for training. Defaults to None.
-            kwargs: This allows to add arguments that can be accepted by the train function of each framework engine.
+        ----
+            model (Optional[Union[str, dict, list, object]]):  The models available in each framework's Engine.
+                Defaults to None.
+            train_dataloader (Optional[TypeVar]): The data loader for training data.
+            val_dataloader (Optional[TypeVar]): The data loader for validation data.
+            optimizer (Optional[Union[dict, TypeVar]]): The optimizer to use for training.
+            checkpoint (Optional[Union[str, Path]]): The path to save the model checkpoint.
+            max_iters (Optional[int]): The maximum number of iterations to train for.
+            max_epochs (Optional[int]): The maximum number of epochs to train for.
+            distributed (Optional[bool]): Whether to use distributed training.
+            seed (Optional[int]): The random seed to use for training.
+            deterministic (Optional[bool]): Whether to use deterministic training.
+            precision (Optional[str]): The precision to use for training.
+            val_interval (Optional[int]): The interval at which to perform validation.
+            **kwargs (Any): This allows to add arguments that can be accepted by the train function
+                of each framework engine.
 
         Returns:
-            _type_: Outputs of training.
+        -------
+            dict: A dictionary containing the results of the training.
         """
         # TODO: self.config update with new input
         dataloader_cfg = {
@@ -374,6 +475,25 @@ class AutoRunner:
         precision: Optional[str] = None,
         **kwargs,
     ) -> dict:
+        """Validate the given model on the validation dataset using the specified dataloader and checkpoint.
+
+        If no val dataloader is provided, the val dataloader is obtained from the subset dataloaders
+        using the "val" subset. If no such subset exists, a new dataloader is created using the
+        "val" subset configuration from the current instance's configuration.
+
+        Args:
+        ----
+            model (Optional[Union[str, dict, list, object]], optional): The model to validate. Defaults to None.
+            val_dataloader (Optional[Union[dict, object]], optional): The dataloader to use for validation.
+                Defaults to None.
+            checkpoint (Optional[Union[str, Path]], optional): The checkpoint to use for validation. Defaults to None.
+            precision (Optional[str], optional): The precision to use for validation. Defaults to None.
+            **kwargs: Additional keyword arguments to pass to the validation engine.
+
+        Returns:
+        -------
+            dict: A dictionary containing the validation results.
+        """
         if val_dataloader is None:
             if self.subset_dls.get("val", None) is not None:
                 val_dataloader = self.subset_dls["val"]
@@ -404,6 +524,28 @@ class AutoRunner:
         precision: Optional[str] = None,
         **kwargs,
     ) -> dict:
+        """Test the given model on the test dataset using the provided test dataloader.
+
+        If no test dataloader is provided, the test dataloader is obtained from the subset dataloaders
+        using the "test" subset. If no such subset exists, a new dataloader is created using the
+        "test" subset configuration from the current instance's configuration.
+
+        Args:
+        ----
+            model (Optional[Union[str, dict, list, object]]): The model to test. If None, the model
+                is obtained from the current instance's configuration.
+            test_dataloader (Optional[Union[dict, object]]): The dataloader to use for testing.
+                If None, the dataloader is obtained from the subset dataloaders using the "test" subset.
+            checkpoint (Optional[Union[str, Path]]): The path to the checkpoint to use for testing.
+                If None, the checkpoint is obtained from the current instance's cache.
+            precision (Optional[str]): The precision to use for testing. If None, the default precision
+                is used.
+            **kwargs: Additional keyword arguments to pass to the engine's test method.
+
+        Returns:
+        -------
+            dict: A dictionary containing the test results.
+        """
         if test_dataloader is None:
             if self.subset_dls.get("test", None) is not None:
                 test_dataloader = self.subset_dls["test"]
@@ -432,6 +574,19 @@ class AutoRunner:
         checkpoint: Optional[Union[str, Path]] = None,
         **kwargs,
     ) -> list:
+        """Predict the output of the given image using the specified model and checkpoint.
+
+        Args:
+        ----
+            img (Optional[Union[str, Path, object]]): The image to predict the output for.
+            model (Optional[Union[str, dict, list, object]]): The model to use for prediction.
+            checkpoint (Optional[Union[str, Path]]): The checkpoint to use for prediction.
+            **kwargs: Additional keyword arguments to pass to the prediction engine.
+
+        Returns:
+        -------
+            list: A list of predicted outputs for the given image.
+        """
         model = self.configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")
@@ -454,6 +609,20 @@ class AutoRunner:
         precision: str = "float32",
         **kwargs,
     ) -> dict:
+        """Export the model to a specified checkpoint.
+
+        Args:
+        ----
+            model (Optional[Union[str, dict, list, object]], optional): The model to export. Defaults to None.
+            checkpoint (Optional[Union[str, Path]], optional): The checkpoint to export the model to.
+                Defaults to None.
+            precision (str, optional): The precision of the exported model. Defaults to "float32".
+            **kwargs: Additional keyword arguments to pass to the engine's export method.
+
+        Returns:
+        -------
+            dict: A dictionary containing information about the exported model.
+        """
         model = self.configure_model(model)
         if checkpoint is None and self.cache.get("checkpoint") is not None:
             checkpoint = self.cache.get("checkpoint")

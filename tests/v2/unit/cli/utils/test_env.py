@@ -122,7 +122,7 @@ class TestEnvironmentUtils:
         monkeypatch.setattr("otx.v2.cli.utils.env.REQUIRED_ADAPTERS_PER_TASK", adapters_per_task)
         result = get_task_status(task="anomaly")
         assert "anomaly" in result
-        assert result["anomaly"]["AVAILABLE"] == False
+        assert result["anomaly"]["AVAILABLE"] is False
         assert len(result["anomaly"]["EXCEPTIONS"]) >= 1
 
 

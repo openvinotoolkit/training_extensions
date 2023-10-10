@@ -11,8 +11,7 @@ from pytest_mock.plugin import MockerFixture
 
 class TestEngine:
     def test_init(self, tmp_dir_path: Path) -> None:
-        """
-        Test the initialization of the Engine class.
+        """Test the initialization of the Engine class.
 
         Steps:
         1. Create an instance of the Engine class with the given temporary directory path.
@@ -21,9 +20,11 @@ class TestEngine:
         4. Verify that the timestamp attribute of the engine instance is not None.
 
         Args:
+        ----
             tmp_dir_path (Path): A temporary directory path.
 
         Returns:
+        -------
             None
         """
         engine = Engine(work_dir=tmp_dir_path)
@@ -33,8 +34,7 @@ class TestEngine:
         assert engine.timestamp is not None
 
     def test_train(self, mocker: MockerFixture) -> None:
-        """
-        Test the train method of the Engine class.
+        """Test the train method of the Engine class.
 
         Steps:
         1. Create an instance of the Engine class with a None work_dir attribute.
@@ -43,9 +43,11 @@ class TestEngine:
         4. Verify that the mock train method was called once.
 
         Args:
+        ----
             mocker (MockerFixture): A pytest fixture for mocking.
 
         Returns:
+        -------
             None
         """
         engine = Engine(work_dir=None)
@@ -56,8 +58,7 @@ class TestEngine:
         assert mock_train.call_count == 1
 
     def test_validate(self, mocker: MockerFixture) -> None:
-        """
-        Test the validate method of the Engine class.
+        """Test the validate method of the Engine class.
 
         Steps:
         1. Create an instance of the Engine class with a None work_dir attribute.
@@ -66,9 +67,11 @@ class TestEngine:
         4. Verify that the mock validate method was called once.
 
         Args:
+        ----
             mocker (MockerFixture): A pytest fixture for mocking.
 
         Returns:
+        -------
             None
         """
         engine = Engine(work_dir=None)
@@ -79,8 +82,7 @@ class TestEngine:
         assert mock_validate.call_count == 1
 
     def test_test(self, mocker: MockerFixture) -> None:
-        """
-        Test the test method of the Engine class.
+        """Test the test method of the Engine class.
 
         Steps:
         1. Create an instance of the Engine class with a None work_dir attribute.
@@ -89,9 +91,11 @@ class TestEngine:
         4. Verify that the mock test method was called once.
 
         Args:
+        ----
             mocker (MockerFixture): A pytest fixture for mocking.
 
         Returns:
+        -------
             None
         """
         engine = Engine(work_dir=None)
@@ -102,8 +106,7 @@ class TestEngine:
         assert mock_test.call_count == 1
 
     def test_predict(self, mocker: MockerFixture) -> None:
-        """
-        Test the predict method of the Engine class.
+        """Test the predict method of the Engine class.
 
         Steps:
         1. Create an instance of the Engine class with a None work_dir attribute.
@@ -112,9 +115,11 @@ class TestEngine:
         4. Verify that the mock predict method was called once.
 
         Args:
+        ----
             mocker (MockerFixture): A pytest fixture for mocking.
 
         Returns:
+        -------
             None
         """
         engine = Engine(work_dir=None)
@@ -125,8 +130,7 @@ class TestEngine:
         assert mock_predict.call_count == 1
 
     def test_export(self, mocker: MockerFixture) -> None:
-        """
-        Test the export method of the Engine class.
+        """Test the export method of the Engine class.
 
         Steps:
         1. Create an instance of the Engine class with a None work_dir attribute.
@@ -135,9 +139,11 @@ class TestEngine:
         4. Verify that the mock export method was called once.
 
         Args:
+        ----
             mocker (MockerFixture): A pytest fixture for mocking.
 
         Returns:
+        -------
             None
         """
         engine = Engine(work_dir=None)

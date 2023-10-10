@@ -11,16 +11,17 @@ from pytest_mock.plugin import MockerFixture
 
 
 def test_get_dataset_adapter(mocker: MockerFixture) -> None:
-    """
-    Test function for the get_dataset_adapter function in the otx.v2.api.core.dataset module.
+    """Test function for the get_dataset_adapter function in the otx.v2.api.core.dataset module.
 
     This function tests the get_dataset_adapter function with two different task types and train types.
     It asserts that the correct dataset adapter is returned for each test case.
 
     Args:
+    ----
         mocker (pytest_mock.MockerFixture): A pytest-mock fixture for mocking objects.
 
     Returns:
+    -------
         None
     """
     mock_getattr = mocker.patch("otx.v2.api.core.dataset.getattr")
@@ -54,35 +55,26 @@ def test_get_dataset_adapter(mocker: MockerFixture) -> None:
 
 
 class TestBaseDatasetAdapter:
-    """
-    This class contains unit tests for the BaseDatasetAdapter class.
-    """
+    """This class contains unit tests for the BaseDatasetAdapter class."""
 
     def test_get_otx_dataset_not_implemented(self) -> None:
-        """
-        Test that the get_otx_dataset method raises a NotImplementedError.
-        """
+        """Test that the get_otx_dataset method raises a NotImplementedError."""
         adapter = BaseDatasetAdapter(TaskType.CLASSIFICATION)
         with pytest.raises(NotImplementedError):
             adapter.get_otx_dataset()
 
     def test_get_label_schema_not_implemented(self) -> None:
-        """
-        Test that the get_label_schema method raises a NotImplementedError.
-        """
+        """Test that the get_label_schema method raises a NotImplementedError."""
         adapter = BaseDatasetAdapter(TaskType.CLASSIFICATION)
         with pytest.raises(NotImplementedError):
             adapter.get_label_schema()
 
 
 class TestBaseDataset:
-    """
-    A test suite for the BaseDataset class.
-    """
+    """A test suite for the BaseDataset class."""
 
     def test_init(self) -> None:
-        """
-        Test the initialization of the BaseDataset class.
+        """Test the initialization of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object with specified parameters.
@@ -114,8 +106,7 @@ class TestBaseDataset:
         assert base_dataset.data_format == "custom"
 
     def test_set_datumaro_adapters(self, mocker: MockerFixture) -> None:
-        """
-        Test the set_datumaro_adapters method of the BaseDataset class.
+        """Test the set_datumaro_adapters method of the BaseDataset class.
 
         Steps:
         1. Mock the configure_task_type, configure_train_type, and get_dataset_adapter functions.
@@ -135,8 +126,7 @@ class TestBaseDataset:
         assert base_dataset.label_schema is not None
 
     def test_subset_dataloader(self, mocker: MockerFixture) -> None:
-        """
-        Test the subset_dataloader method of the BaseDataset class.
+        """Test the subset_dataloader method of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -152,8 +142,7 @@ class TestBaseDataset:
         assert mock_subset_dataloader.call_count == 1
 
     def test_num_classes(self) -> None:
-        """
-        Test the num_classes method of the BaseDataset class.
+        """Test the num_classes method of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -165,8 +154,7 @@ class TestBaseDataset:
             _ = dataset.num_classes
 
     def test_train_data_roots(self) -> None:
-        """
-        Test the train_data_roots attribute of the BaseDataset class.
+        """Test the train_data_roots attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -178,8 +166,7 @@ class TestBaseDataset:
         assert dataset.train_data_roots == "/path/to/train/data"
 
     def test_train_ann_files(self) -> None:
-        """
-        Test the train_ann_files attribute of the BaseDataset class.
+        """Test the train_ann_files attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -191,8 +178,7 @@ class TestBaseDataset:
         assert dataset.train_ann_files == "/path/to/train/annotations"
 
     def test_val_data_roots(self) -> None:
-        """
-        Test the val_data_roots attribute of the BaseDataset class.
+        """Test the val_data_roots attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -204,8 +190,7 @@ class TestBaseDataset:
         assert dataset.val_data_roots == "/path/to/val/data"
 
     def test_val_ann_files(self) -> None:
-        """
-        Test the val_ann_files attribute of the BaseDataset class.
+        """Test the val_ann_files attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -217,8 +202,7 @@ class TestBaseDataset:
         assert dataset.val_ann_files == "/path/to/val/annotations"
 
     def test_test_data_roots(self) -> None:
-        """
-        Test the test_data_roots attribute of the BaseDataset class.
+        """Test the test_data_roots attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -230,8 +214,7 @@ class TestBaseDataset:
         assert dataset.test_data_roots == "/path/to/test/data"
 
     def test_test_ann_files(self) -> None:
-        """
-        Test the test_ann_files attribute of the BaseDataset class.
+        """Test the test_ann_files attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -243,8 +226,7 @@ class TestBaseDataset:
         assert dataset.test_ann_files == "/path/to/test/annotations"
 
     def test_unlabeled_data_roots(self) -> None:
-        """
-        Test the unlabeled_data_roots attribute of the BaseDataset class.
+        """Test the unlabeled_data_roots attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.
@@ -256,8 +238,7 @@ class TestBaseDataset:
         assert dataset.unlabeled_data_roots == "/path/to/unlabeled/data"
 
     def test_unlabeled_file_list(self) -> None:
-        """
-        Test the unlabeled_file_list attribute of the BaseDataset class.
+        """Test the unlabeled_file_list attribute of the BaseDataset class.
 
         Steps:
         1. Create a BaseDataset object.

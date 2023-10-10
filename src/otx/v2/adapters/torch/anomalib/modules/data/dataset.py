@@ -49,6 +49,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
         """Base Anomaly Dataset.
 
         Args:
+        ----
             train_subset (Optional[Dict[str, str]], optional): Path to annotation
                 and dataset used for training. Defaults to None.
             val_subset (Optional[Dict[str, str]], optional): Path to annotation
@@ -110,6 +111,7 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
     """Dataloader for Anomaly Classification Task.
 
     Example:
+    -------
     >>> train_subset = {
             "ann_file": "tests/assets/anomaly/classification/train.json",
             "data_root": "tests/assets/anomaly/hazelnut",
@@ -132,12 +134,14 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
         """Loads dataset based on the image path in annotation file.
 
         Args:
+        ----
             ann_file_path (Path): Path to json containing the annotations.
                 For example of annotation look at `tests/assets/anomaly/[train, test,val].json.
             data_root_dir (Path): Path to folder containing images.
             subset (Subset): Subset of the dataset.
 
         Returns:
+        -------
             List[DatasetItemEntity]: List containing subset dataset.
         """
         # read annotation file
@@ -167,6 +171,7 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
     """Dataloader for Anomaly Segmentation Task.
 
     Example:
+    -------
         >>> train_subset = {
                 "ann_file": "tests/assets/anomaly/segmentation/train.json",
                 "data_root": "tests/assets/anomaly/hazelnut",
@@ -190,12 +195,14 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
         """Loads dataset based on the image path in annotation file.
 
         Args:
+        ----
             ann_file_path (Path): Path to json containing the annotations.
                 For example of annotation look at `tests/assets/anomaly/[train, test,val].json.
             data_root_dir (Path): Path to folder containing images.
             subset (Subset): Subset of the dataset.
 
         Returns:
+        -------
             List[DatasetItemEntity]: List containing subset dataset.
         """
         # read annotation file
@@ -248,6 +255,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
     """Dataloader for Anomaly Segmentation Task.
 
     Example:
+    -------
         >>> train_subset = {
                 "ann_file": "tests/assets/anomaly/detection/train.json",
                 "data_root": "tests/assets/anomaly/hazelnut",
@@ -271,12 +279,14 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
         """Loads dataset based on the image path in annotation file.
 
         Args:
+        ----
             ann_file_path (Path): Path to json containing the annotations.
                 For example of annotation look at `tests/assets/anomaly/[train, test,val].json.
             data_root_dir (Path): Path to folder containing images.
             subset (Subset): Subset of the dataset.
 
         Returns:
+        -------
             List[DatasetItemEntity]: List containing subset dataset.
         """
         # read annotation file

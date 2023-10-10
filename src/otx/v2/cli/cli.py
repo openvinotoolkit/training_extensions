@@ -39,6 +39,13 @@ class OTXCLIv2:
         args: ArgsType = None,
         parser_kwargs: Optional[dict] = None,
     ) -> None:
+        """Initialize a new instance of the CLI class.
+
+        Args:
+        ----
+            args (ArgsType, optional): Command-line arguments to parse. Defaults to None.
+            parser_kwargs (dict, optional): Additional keyword arguments to pass to the parser. Defaults to None.
+        """
         self.console = Console()
         self.error: Optional[Exception] = None
         self.model_name: Optional[str] = None
@@ -92,7 +99,17 @@ class OTXCLIv2:
         return main_kwargs, subparser_kwargs
 
     def init_parser(self, default_config_files: Optional[List[Optional[str]]] = None, **kwargs) -> OTXArgumentParser:
-        """Method that instantiates the argument parser."""
+        """Initialize the argument parser for the OTX CLI.
+
+        Args:
+        ----
+            default_config_files (Optional[List[Optional[str]]]): List of default configuration files.
+            **kwargs: Additional keyword arguments to pass to the OTXArgumentParser constructor.
+
+        Returns:
+        -------
+            OTXArgumentParser: The initialized argument parser.
+        """
         parser = OTXArgumentParser(default_config_files=default_config_files, **kwargs)
         parser.add_argument(
             "-V",
@@ -105,7 +122,8 @@ class OTXCLIv2:
             "-v",
             "--verbose",
             action="count",
-            help="Verbose mode. This shows a configuration argument that allows for more specific overrides. Multiple -v options increase the verbosity. The maximum is 2.",
+            help="Verbose mode. This shows a configuration argument that allows for more specific overrides. \
+                Multiple -v options increase the verbosity. The maximum is 2.",
         )
         parser.add_argument(
             "-c",
@@ -143,7 +161,12 @@ class OTXCLIv2:
 
     @staticmethod
     def engine_subcommands() -> Dict[str, Set[str]]:
-        """Defines the list of available subcommands and the arguments to skip."""
+        """Return a dictionary of subcommands and their required arguments for the engine command.
+
+        Returns:
+        -------
+            A dictionary where the keys are the subcommands and the values are sets of required arguments.
+        """
         return {
             "train": {"model", "train_dataloader", "val_dataloader"},
             "validate": {"model", "val_dataloader"},
@@ -153,7 +176,6 @@ class OTXCLIv2:
         }
 
     def _set_engine_subcommands_parser(self, **kwargs) -> None:
-        """Adds subcommands to the input parser."""
         # the user might have passed a builder function
         self._engine_class = (
             self.framework_engine
@@ -207,8 +229,11 @@ class OTXCLIv2:
             add_parser_function(self.parser_subcommands)
 
     def get_auto_runner(self) -> Optional[AutoRunner]:
-        # If the user puts --checkpoint in the command and doesn't put --config,
-        # will use those configs as the default if they exist in the checkpoint folder location.
+        """Return an instance of AutoRunner class with the specified configuration parameters.
+
+        If the user puts --checkpoint in the command and doesn't put --config,
+        will use those configs as the default if they exist in the checkpoint folder location.
+        """
         auto_runner = None
         if "checkpoint" in self.pre_args and self.pre_args.get("config", None) is None:
             checkpoint_path = self.pre_args.get("checkpoint", None)
@@ -245,6 +270,12 @@ class OTXCLIv2:
         return auto_runner
 
     def get_model_class(self) -> tuple:
+        """Return the model class and default configurations for the CLI.
+
+        Returns:
+        -------
+            tuple: A tuple containing the model class and default configurations.
+        """
         model_class = None
         default_configs = None
         if self.auto_runner is not None:
@@ -274,13 +305,37 @@ class OTXCLIv2:
         return model_class, default_configs
 
     def parse_arguments(self, parser: OTXArgumentParser, args: ArgsType) -> Namespace:
-        """Parses command line arguments and stores it in ``self.config``."""
+        """Parse command line arguments using the provided parser.
+
+        Args:
+        ----
+            parser (OTXArgumentParser): The argument parser to use.
+            args (ArgsType): The command line arguments to parse.
+
+        Returns:
+        -------
+            Namespace: The parsed arguments as a namespace object.
+        """
         if isinstance(args, (dict, Namespace)):
             return parser.parse_object(args)
         return parser.parse_args(args)
 
     def instantiate_classes(self, subcommand: str) -> None:
-        """Instantiates the classes and sets their attributes."""
+        """Instantiate the necessary classes for running the command.
+
+        Args:
+        ----
+            subcommand (str): The subcommand to be executed.
+
+        Raises:
+        ------
+            ValueError: If the auto_runner is None or if the data configuration is not a dictionary or Namespace.
+            TypeError: If the model configuration is not a dictionary or Namespace.
+
+        Returns:
+        -------
+            None
+        """
         if self.auto_runner is None:
             if self.error is not None:
                 # Raise an existing raised exception only when the actual command is executed.
@@ -333,11 +388,19 @@ class OTXCLIv2:
         key: str,
         default: Optional[Union[dict, str, Namespace]] = None,
     ) -> Optional[Union[dict, str, Namespace]]:
-        """Utility to get a config value which might be inside a subcommand."""
         return config.get(str(self.subcommand), config).pop(key, default)
 
     def run(self, subcommand: str) -> None:
-        """Runs the subcommand."""
+        """Run the specified subcommand.
+
+        Args:
+        ----
+            subcommand (str): The subcommand to run.
+
+        Raises:
+        ------
+            NotImplementedError: If the specified subcommand is not implemented.
+        """
         start_time = time.time()
         if subcommand in CLI_EXTENSIONS:
             config = namespace_to_dict(self.config[subcommand])
@@ -409,7 +472,6 @@ class OTXCLIv2:
             self.console.print(f"[*] otx {subcommand} time elapsed: {total_time}")
 
     def _prepare_subcommand_kwargs(self, subcommand: str) -> Tuple[Dict, Dict]:
-        """Prepares the keyword arguments to pass to the subcommand to run."""
         config = namespace_to_dict(self.config_init[subcommand])
         subcommand_kwargs = {}
         left_kwargs = {}
@@ -455,7 +517,6 @@ def main() -> None:
 
     This function is a single entry point for all OTX CLI related operations:
     """
-
     OTXCLIv2()
 
 

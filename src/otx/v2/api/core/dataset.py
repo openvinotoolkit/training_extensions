@@ -104,6 +104,8 @@ if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
 
 
 class BaseDatasetAdapter:
+    """Base class for dataset adapters."""
+
     def __init__(
         self,
         task_type: TaskType,
@@ -119,7 +121,30 @@ class BaseDatasetAdapter:
         encryption_key: Optional[str] = None,
         **kwargs,
     ) -> None:
-        """"""
+        """Initialize a new instance of the DatasetAdapter class.
+
+        Args:
+        ----
+            task_type (TaskType): The type of task that the dataset is intended for.
+            train_data_roots (Optional[str], optional): The root directory or directories containing the training data.
+                Defaults to None.
+            train_ann_files (Optional[str], optional): The annotation file or files for the training data.
+                Defaults to None.
+            val_data_roots (Optional[str], optional): The root directory or directories containing the validation data.
+                Defaults to None.
+            val_ann_files (Optional[str], optional): The annotation file or files for the validation data.
+                Defaults to None.
+            test_data_roots (Optional[str], optional): The root directory or directories containing the test data.
+                Defaults to None.
+            test_ann_files (Optional[str], optional): The annotation file or files for the test data. Defaults to None.
+            unlabeled_data_roots (Optional[str], optional): The root directory
+                or directories containing the unlabeled data. Defaults to None.
+            unlabeled_file_list (Optional[str], optional): The file containing a list of unlabeled data files.
+                Defaults to None.
+            cache_config (Optional[dict], optional): The configuration for the dataset cache. Defaults to None.
+            encryption_key (Optional[str], optional): The encryption key to use for the dataset. Defaults to None.
+            **kwargs: Additional keyword arguments.
+        """
 
     @abstractmethod
     def get_otx_dataset(self) -> DatasetEntity:
@@ -144,9 +169,10 @@ def get_dataset_adapter(
     unlabeled_file_list: Optional[str] = None,
     **kwargs,
 ) -> BaseDatasetAdapter:
-    """Returns a dataset class by task type.
+    """Return a dataset class by task type.
 
     Args:
+    ----
         task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
             CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
         train_type: train type such as Incremental and Selfsupervised.
@@ -159,9 +185,8 @@ def get_dataset_adapter(
         test_ann_files: the path of annotation file for test data
         unlabeled_data_roots: the path of data root for unlabeled data
         unlabeled_file_list: the path of unlabeled file list
-        kwargs: optional kwargs
+        **kwargs: optional kwargs
     """
-
     train_type_to_be_called = str(
         train_type if train_type == TrainType.Selfsupervised.value else TrainType.Incremental.value,
     )
@@ -182,6 +207,17 @@ def get_dataset_adapter(
 
 
 class BaseDataset:
+    """Base class for providing the underlying Dataset API for each framework.
+
+    Example:
+    -------
+    >>> dataset = Dataset(
+        train_data_roots="train/data/roots/",
+        val_data_roots="val/data/roots/",
+        test_data_roots="test/data/roots/",
+    )
+    """
+
     def __init__(
         self,
         task: Optional[Union[TaskType, str]] = None,
@@ -199,16 +235,27 @@ class BaseDataset:
         """BaseDataset, Classes that provide the underlying Dataset API for each framework.
 
         Args:
-            task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load. Defaults to None.
-            train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load. Defaults to None.
-            train_data_roots (Optional[str], optional): The root address of the dataset to be used for training. Defaults to None.
-            train_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for training. Defaults to None.
-            val_data_roots (Optional[str], optional): The root address of the dataset to be used for validation. Defaults to None.
-            val_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for validation. Defaults to None.
-            test_data_roots (Optional[str], optional): The root address of the dataset to be used for testing. Defaults to None.
-            test_ann_files (Optional[str], optional): Location of the annotation file for the dataset to be used for testing. Defaults to None.
-            unlabeled_data_roots (Optional[str], optional): The root address of the unlabeled dataset to be used for training. Defaults to None.
-            unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared. Defaults to None.
+        ----
+            task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load.
+                Defaults to None.
+            train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load.
+                Defaults to None.
+            train_data_roots (Optional[str], optional): The root address of the dataset to be used for training.
+                Defaults to None.
+            train_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+                to be used for training. Defaults to None.
+            val_data_roots (Optional[str], optional): The root address of the dataset to be used for validation.
+                Defaults to None.
+            val_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+                to be used for validation. Defaults to None.
+            test_data_roots (Optional[str], optional): The root address of the dataset to be used for testing.
+                Defaults to None.
+            test_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+                to be used for testing. Defaults to None.
+            unlabeled_data_roots (Optional[str], optional): The root address of the unlabeled dataset
+                to be used for training. Defaults to None.
+            unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared.
+                Defaults to None.
             data_format (Optional[str], optional): The format of the dataset. Defaults to None.
         """
         self._train_data_roots = train_data_roots
@@ -233,7 +280,9 @@ class BaseDataset:
         This can also be detected automatically by using Task-Type, Train-Type with data_roots.
 
         Args:
-            data_roots (Optional[str], optional): The root address of the dataset to be used for Task or Train-Type auto detection.
+        ----
+            data_roots (Optional[str], optional): The root address of the dataset to be used for Task
+                or Train-Type auto detection.
 
         How to use:
             1) Create a BaseDataset
@@ -286,11 +335,27 @@ class BaseDataset:
         It needs to be implemented to use a decorator called @add_subset_dataloader.
 
         Args:
+        ----
             subset (str): Subset of dataloader.
             pipeline (Optional[Union[List, Dict]], optional): The data pipe to apply to that dataset. Defaults to None.
             batch_size (Optional[int], optional): Batch size of this dataloader. Defaults to None.
             num_workers (Optional[int], optional): Number of workers for this dataloader. Defaults to None.
-            distributed (bool, optional): Distributed value for sampler. Defaults to False.
+            **kwargs (optional): Additional keyword arguments to be passed to the dataloader.
+
+        Returns:
+        -------
+            DataLoader: The dataloader for the specified subset.
+
+        Example:
+        -------
+        >>> train_dataloader = dataset.train_dataloader()
+        Dataloader()
+        >>> train_dataloader = dataset.train_dataloader(batch_size=4, num_workers=2)
+        Dataloader()
+        >>> val_dataloader = dataset.val_dataloader()
+        Dataloader()
+        >>> test_dataloader = dataset.test_dataloader()
+        Dataloader()
 
         How to use:
             1) Implement this function to return the dataloader of each subset.
@@ -301,10 +366,18 @@ class BaseDataset:
 
     @property
     def num_classes(self) -> int:
+        """Returns the number of classes in the dataset.
+
+        :return: An integer representing the number of classes in the dataset.
+        """
         raise NotImplementedError
 
     @property
     def train_data_roots(self) -> Optional[str]:
+        """Returns the root directory for training data, if set.
+
+        :return: The root directory for training data, or None if not set.
+        """
         return self._train_data_roots
 
     @train_data_roots.setter
@@ -314,6 +387,12 @@ class BaseDataset:
 
     @property
     def train_ann_files(self) -> Optional[str]:
+        """Returns the path to the training annotation files for this dataset.
+
+        Returns:
+        -------
+            Optional[str]: The path to the training annotation files, or None if not set.
+        """
         return self._train_ann_files
 
     @train_ann_files.setter
@@ -323,6 +402,10 @@ class BaseDataset:
 
     @property
     def val_data_roots(self) -> Optional[str]:
+        """Returns the root directory for validation data, if set.
+
+        :return: The root directory for validation data, or None if not set.
+        """
         return self._val_data_roots
 
     @val_data_roots.setter
@@ -332,6 +415,12 @@ class BaseDataset:
 
     @property
     def val_ann_files(self) -> Optional[str]:
+        """Returns the path to the validation annotation files for this dataset.
+
+        Returns:
+        -------
+            Optional[str]: The path to the validation annotation files, or None if not set.
+        """
         return self._val_ann_files
 
     @val_ann_files.setter
@@ -341,6 +430,10 @@ class BaseDataset:
 
     @property
     def test_data_roots(self) -> Optional[str]:
+        """Returns the root directory for testing data, if set.
+
+        :return: The root directory for testing data, or None if not set.
+        """
         return self._test_data_roots
 
     @test_data_roots.setter
@@ -350,6 +443,12 @@ class BaseDataset:
 
     @property
     def test_ann_files(self) -> Optional[str]:
+        """Returns the path to the test annotation files for this dataset.
+
+        Returns:
+        -------
+            Optional[str]: The path to the test annotation files, or None if not set.
+        """
         return self._test_ann_files
 
     @test_ann_files.setter
@@ -359,6 +458,10 @@ class BaseDataset:
 
     @property
     def unlabeled_data_roots(self) -> Optional[str]:
+        """Returns the root directory for unlabeled data, if set.
+
+        :return: The root directory for unlabeled data, or None if not set.
+        """
         return self._unlabeled_data_roots
 
     @unlabeled_data_roots.setter
@@ -368,6 +471,12 @@ class BaseDataset:
 
     @property
     def unlabeled_file_list(self) -> Optional[str]:
+        """Returns the path to the unlabeled image list for this dataset.
+
+        Returns:
+        -------
+            Optional[str]: The path to the unlabeled image list, or None if not set.
+        """
         return self._unlabeled_file_list
 
     @unlabeled_file_list.setter

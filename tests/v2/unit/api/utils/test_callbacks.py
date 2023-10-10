@@ -14,9 +14,8 @@ from pytest_mock.plugin import MockerFixture
 
 class TestCallback:
     def test_callback_abstract_methods(self) -> None:
-        """
-        <b>Description:</b>
-        Check "Callback" class object abstract methods
+        """<b>Description:</b>
+        Check "Callback" class object abstract methods.
 
         <b>Input data:</b>
         "Callback" class object
@@ -70,9 +69,8 @@ class TestTimeMonitorCallback:
         assert callback.start_step_time > expected_step_time_before
 
     def test_time_monitor_callback_initialization(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object initialization
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object initialization.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -149,9 +147,8 @@ class TestTimeMonitorCallback:
         )
 
     def test_time_monitor_callback_on_train_batch_begin(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_train_batch_begin" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_train_batch_begin" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -160,7 +157,6 @@ class TestTimeMonitorCallback:
         Test passes if "current_step" and "start_step_time" attributes of "TimeMonitorCallback" class object after
         "on_train_batch_begin" method are equal to expected
         """
-
         time_monitor_callback = self.time_monitor_callback()
         start_step_time_before = time() - 1
         time_monitor_callback.start_step_time = start_step_time_before
@@ -179,9 +175,8 @@ class TestTimeMonitorCallback:
         )
 
     def test_time_monitor_callback_on_train_batch_end(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_train_batch_end" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_train_batch_end" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -216,9 +211,8 @@ class TestTimeMonitorCallback:
         assert round(time_monitor_callback.average_step, 4) == 8.0
 
     def test_time_monitor_callback_is_stalling(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "is_stalling" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "is_stalling" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -252,9 +246,8 @@ class TestTimeMonitorCallback:
         assert not time_monitor_callback.is_stalling()
 
     def test_time_monitor_callback_on_test_batch_begin(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_test_batch_begin" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_test_batch_begin" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -273,9 +266,8 @@ class TestTimeMonitorCallback:
         self.check_current_step_start_step_time_attributes(time_monitor_callback, 2, start_step_time_before)
 
     def test_time_monitor_callback_on_test_batch_end(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_test_batch_end" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_test_batch_end" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -310,9 +302,8 @@ class TestTimeMonitorCallback:
         assert round(time_monitor_callback.average_step, 4) == 10.0
 
     def test_time_monitor_callback_on_train_begin(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_train_begin" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_train_begin" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -336,9 +327,8 @@ class TestTimeMonitorCallback:
         assert time_monitor_callback.is_training
 
     def test_time_monitor_callback_on_train_end(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_train_end" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_train_end" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -371,9 +361,8 @@ class TestTimeMonitorCallback:
         check_attributes_after_on_train_end(time_monitor_callback)
 
     def test_time_monitor_callback_on_epoch_begin(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_epoch_begin" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_epoch_begin" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -394,9 +383,8 @@ class TestTimeMonitorCallback:
         assert time_monitor_callback.start_epoch_time > start_epoch_time
 
     def test_time_monitor_callback_on_epoch_end(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "on_epoch_end" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "on_epoch_end" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -431,9 +419,8 @@ class TestTimeMonitorCallback:
         assert round(time_monitor_callback.average_epoch, 4) == 3.0
 
     def test_time_monitor_callback_get_progress(self) -> None:
-        """
-        <b>Description:</b>
-        Check "TimeMonitorCallback" class object "get_progress" method
+        """<b>Description:</b>
+        Check "TimeMonitorCallback" class object "get_progress" method.
 
         <b>Input data:</b>
         "TimeMonitorCallback" class object with specified initialization parameters
@@ -450,16 +437,17 @@ class TestTimeMonitorCallback:
         assert time_monitor_callback.get_progress() == 25.0  # (current_step / total_steps)*100
 
     def test_getstate(self, mocker: MockerFixture) -> None:
-        """
-        Test the getstate method of the TimeMonitorCallback class.
+        """Test the getstate method of the TimeMonitorCallback class.
 
         This method tests whether the getstate method of the TimeMonitorCallback class returns the expected state of the
         object. It does this by pickling the object and checking whether the pickled data is of type bytes.
 
         Args:
+        ----
             mocker (pytest_mock.plugin.MockerFixture): A pytest-mock mocker fixture.
 
         Returns:
+        -------
             None
         """
         import pickle
@@ -469,9 +457,7 @@ class TestTimeMonitorCallback:
             assert isinstance(callback_data, bytes)
 
     def test_deepcopy(self) -> None:
-        """
-        Test the deepcopy functionality of the time_monitor_callback object.
-        """
+        """Test the deepcopy functionality of the time_monitor_callback object."""
         import copy
         time_monitor_callback = self.time_monitor_callback()
         callback_copy = copy.deepcopy(time_monitor_callback)

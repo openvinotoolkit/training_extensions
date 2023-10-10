@@ -20,9 +20,7 @@ from pytest_mock import MockerFixture
 
 class TestImportingUtils:
     def test_get_impl_class(self, mocker: MockerFixture) -> None:
-        """
-        Test the get_impl_class function in the otx.v2.api.utils.importing module.
-        """
+        """Test the get_impl_class function in the otx.v2.api.utils.importing module."""
         # Test that get_impl_class returns the correct class
         class_path = "otx.v2.api.core.auto_runner.AutoRunner"
         task_impl_class = get_impl_class(class_path)
@@ -40,9 +38,7 @@ class TestImportingUtils:
             get_impl_class("test.module.invalid_function")
 
     def test_get_non_default_args(self) -> None:
-        """
-        Test the get_non_default_args function in the otx.v2.api.utils.importing module.
-        """
+        """Test the get_non_default_args function in the otx.v2.api.utils.importing module."""
         # Test that get_non_default_args returns the correct non-default arguments
         def test_func(a: int, b: int, c: int=1, d: int=2) -> tuple:
             return a, b, c, d
@@ -59,9 +55,7 @@ class TestImportingUtils:
         assert get_default_args(test_func2) == expected_args
 
     def test_get_all_args(self) -> None:
-        """
-        Test the get_all_args function in the otx.v2.api.utils.importing module.
-        """
+        """Test the get_all_args function in the otx.v2.api.utils.importing module."""
         # Test that get_all_args returns the correct arguments
         def test_func(a: int, b: int, c: int=1, d:int=2) -> tuple:
             return a, b, c, d
@@ -70,9 +64,7 @@ class TestImportingUtils:
         assert get_all_args(test_func) == expected_args
 
     def test_get_otx_root_path(self, mocker: MockerFixture) -> None:
-        """
-        Test the get_otx_root_path function in the otx.v2.api.utils.importing module.
-        """
+        """Test the get_otx_root_path function in the otx.v2.api.utils.importing module."""
         # Test that get_otx_root_path returns the correct path
         otx = importlib.import_module("otx")
         expected_path = str(Path(otx.__file__).parent)
@@ -83,9 +75,7 @@ class TestImportingUtils:
             get_otx_root_path()
 
     def test_get_files_dict(self, mocker: MockerFixture) -> None:
-        """
-        Test the get_files_dict function in the otx.v2.api.utils.importing module.
-        """
+        """Test the get_files_dict function in the otx.v2.api.utils.importing module."""
         # Test that get_files_dict returns the correct dictionary
         folder_path = "/path/to/folder"
         mocker.patch("pathlib.Path.exists", return_value=True)
