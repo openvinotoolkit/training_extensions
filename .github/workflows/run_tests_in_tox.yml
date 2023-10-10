@@ -24,12 +24,15 @@ on:
       runs-on:
         type: string
         default: "['self-hosted', 'Linux', 'X64', 'dev']"
+      custom-container:
+        type: boolean
+        default: false
       container-image:
         type: string
-        default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f019b59612a36a1e264ccbbc46fabb96f1e33114"
+        default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f3b5e4e2bc93875045a54a7f3ea29ca6a6089b33"
       container-options:
         type: string
-        default: ""
+        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=5g"
       task:
         type: string
         default: "undefined"
@@ -41,7 +44,7 @@ on:
         default: "pt1"
 jobs:
   run_tests:
-    if: ${{ inputs.container-options == '' }}
+    if: ${{ inputs.custom-container == false }}
     # tricky workaround to pass list from the string input type
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
@@ -68,7 +71,7 @@ jobs:
         # Use always() to always run this step to publish test results when there are test failures
         if: ${{ inputs.upload-artifact && always() }}
   run_tests_with_container:
-    if: ${{ inputs.container-options != '' }}
+    if: ${{ inputs.custom-container == true }}
     # tricky workaround to pass list from the string input type
     # https://github.com/orgs/community/discussions/11692
     runs-on: ${{ fromJson(inputs.runs-on) }}
