@@ -305,6 +305,22 @@ learning_parameters:
     value: Default
     visible_in_ui: false
     warning: Modifying input size may decrease model performance.
+  simple_learning:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: 
+      Limits the number of total iterations for fast training.
+      It changes the iterations per epoch and max epochs.
+    editable: true
+    header: Enable simple learning
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: false
+    warning: It could bring much faster training, however, it also make lower accuracy.
   type: PARAMETER_GROUP
   visible_in_ui: true
 pot_parameters:

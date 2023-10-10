@@ -25,6 +25,7 @@ from .config_utils import (
     remove_from_configs_by_type,
     update_config,
 )
+from .simple_incr_learning import enable_simple_incr_learning
 
 __all__ = [
     "build_dataset",
@@ -48,4 +49,5 @@ __all__ = [
     "adapt_batch_size",
     "InputSizeManager",
     "patch_from_hyperparams",
+    "enable_simple_incr_learning",
 ]

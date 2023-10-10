@@ -48,6 +48,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
     get_configs_by_pairs,
+    enable_simple_incr_learning
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
@@ -366,6 +367,7 @@ class MMClassificationTask(OTXClassificationTask):
         logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
 
         # Data
+        enable_simple_incr_learning(cfg, "classification")
         datasets = [build_dataset(cfg.data.train)]
 
         # Metadata
