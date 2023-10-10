@@ -55,6 +55,7 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
 
 logger = get_logger()
 
@@ -226,6 +227,8 @@ class OTXDetectionTask(OTXTask, ABC):
         val_dataset = dataset.get_subset(Subset.VALIDATION)
         val_dataset.purpose = DatasetPurpose.INFERENCE
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
+
+        MemCacheHandlerSingleton.delete()
 
         preds_val_dataset = val_dataset.with_empty_annotations()
         if self._hyperparams.postprocessing.result_based_confidence_threshold:

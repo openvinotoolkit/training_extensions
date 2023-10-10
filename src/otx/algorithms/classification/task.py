@@ -70,6 +70,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {
@@ -210,6 +211,8 @@ class OTXClassificationTask(OTXTask, ABC):
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
 
         results = self._train_model(dataset)
+
+        MemCacheHandlerSingleton.delete()
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
