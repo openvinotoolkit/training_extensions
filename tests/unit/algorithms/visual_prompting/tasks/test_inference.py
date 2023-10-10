@@ -5,7 +5,7 @@
 #
 
 from collections import OrderedDict
-from typing import Optional
+from typing import Optional, Dict, Any
 
 import pytest
 from omegaconf import DictConfig
@@ -59,17 +59,10 @@ class TestInferenceTask:
         assert isinstance(inference_task.config, DictConfig)
         assert inference_task.config.dataset.task == "visual_prompting"
         if path:
-            if path.endswith(".pth"):
-                # TODO (sungchul): when applying resume
-                # pytorch weights
-                assert inference_task.config.model.checkpoint == path
-                assert inference_task.config.trainer.resume_from_checkpoint is None
-            elif path.endswith(".ckpt") and resume:
-                # resume with pytorch lightning weights
-                assert inference_task.config.model.checkpoint != path  # use default checkpoint
+            if resume:
+                assert inference_task.config.model.checkpoint is None
                 assert inference_task.config.trainer.resume_from_checkpoint == path
             else:
-                # just train with pytorch lightning weights
                 assert inference_task.config.model.checkpoint == path
                 assert inference_task.config.trainer.resume_from_checkpoint is None
 
@@ -84,40 +77,34 @@ class TestInferenceTask:
         assert inference_task.config.dataset.task == "visual_prompting"
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("path", [None, "checkpoint.ckpt"])
+    @pytest.mark.parametrize("path", [None, "checkpoint.ckpt", "checkpoint.pth"])
     @pytest.mark.parametrize("resume", [True, False])
-    def test_load_model_without_otx_model_or_with_lightning_ckpt(
-        self, mocker, load_inference_task, path: str, resume: bool
-    ):
-        """Test load_model to resume."""
-        mocker_segment_anything = mocker.patch(
-            "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.SegmentAnything"
-        )
-
-        inference_task = load_inference_task(path=path, resume=resume)
-        inference_task.load_model(otx_model=inference_task.task_environment.model)
-
-        mocker_segment_anything.assert_called_once()
-
-    @e2e_pytest_unit
-    @pytest.mark.parametrize("resume", [True, False])
-    def test_load_model_with_pytorch_pth(self, mocker, load_inference_task, resume: bool):
-        """Test load_model with otx_model."""
+    @pytest.mark.parametrize("load_return_value", [
+            {"state_dict": {"layer": "weights"}, "pytorch-lightning_version": "version"},
+            {"model": {"layer": "weights"}, "config": {"model": {"backbone": "sam_vit_b"}}},
+            {}
+    ])
+    def test_load_model(self, mocker, load_inference_task, path: str, resume: bool, load_return_value: Dict[str, Any]):
+        """Test load_model."""
         mocker_segment_anything = mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.SegmentAnything"
         )
         mocker_io_bytes_io = mocker.patch("io.BytesIO")
         mocker_torch_load = mocker.patch(
             "torch.load",
-            return_value=dict(config=dict(model=dict(backbone="sam_vit_b")), model={}),
+            return_value=load_return_value,
         )
 
-        inference_task = load_inference_task(path="checkpoint.pth", resume=resume)
+        inference_task = load_inference_task(path=path, resume=resume)
         inference_task.load_model(otx_model=inference_task.task_environment.model)
 
         mocker_segment_anything.assert_called_once()
-        mocker_io_bytes_io.assert_called_once()
-        mocker_torch_load.assert_called_once()
+        if resume or path is None:
+            mocker_io_bytes_io.assert_not_called()
+            mocker_torch_load.assert_not_called()
+        else:
+            mocker_io_bytes_io.assert_called_once()
+            mocker_torch_load.assert_called_once()
 
     @e2e_pytest_unit
     def test_infer(self, mocker, load_inference_task):
@@ -162,19 +149,17 @@ class TestInferenceTask:
         mocker.patch(
             "otx.algorithms.visual_prompting.adapters.pytorch_lightning.models.visual_prompters.segment_anything.SegmentAnything.load_checkpoint"
         )
+        mocker.patch("torch.load", return_value={"state_dict": {"layer": "weights"}, "epoch": 0})
 
         inference_task = load_inference_task(output_path=None)
-        inference_task.model = inference_task.load_model(otx_model=inference_task.task_environment.model)
-        setattr(inference_task, "trainer", None)
-        mocker.patch.object(inference_task, "trainer")
+        inference_task._model_ckpt = "checkpoint"
 
         model_info = inference_task.model_info()
 
-        assert "model" in model_info
-        assert isinstance(model_info["model"], OrderedDict)
-        assert "config" in model_info
-        assert isinstance(model_info["config"], DictConfig)
-        assert "version" in model_info
+        assert isinstance(model_info.get("state_dict", None), dict)
+        assert model_info.get("state_dict", None)["layer"] == "weights"
+        assert isinstance(model_info.get("epoch", None), int)
+        assert model_info.get("epoch", None) == 0
 
     @e2e_pytest_unit
     def test_save_model(self, mocker, load_inference_task):
