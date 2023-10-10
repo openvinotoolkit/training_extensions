@@ -3,10 +3,10 @@
 #
 
 import string
-from unittest.mock import patch
 
 import numpy as np
 import pytest
+import psutil
 
 from otx.core.data.caching import MemCacheHandlerSingleton
 
@@ -40,6 +40,14 @@ def get_data_list_size(data_list):
 
 
 class TestMemCacheHandler:
+    @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
+    def test_cpu_limits(self, mode):
+        memory_info = psutil.virtual_memory()
+        total_mem_size_GiB = int(memory_info.total / (1024**3))
+        mem_size = total_mem_size_GiB - (MemCacheHandlerSingleton.CPU_MEM_LIMITS_GIB - 5)
+        MemCacheHandlerSingleton.create(mode, mem_size * (1024**3))
+        assert MemCacheHandlerSingleton.instance.mem_size == 0
+
     @pytest.mark.parametrize("mode", ["singleprocessing", "multiprocessing"])
     def test_fully_caching(self, mode, fxt_data_list):
         mem_size = get_data_list_size(fxt_data_list)

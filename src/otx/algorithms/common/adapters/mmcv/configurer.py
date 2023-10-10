@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -16,8 +17,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_adaptive_interval_training,
     patch_early_stopping,
     patch_persistent_workers,
+    remove_from_configs_by_type,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
+    InputSizeManager,
     patch_color_conversion,
     patch_from_hyperparams,
     recursively_update_cfg,
@@ -26,6 +29,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import OnHookInitialized
 from otx.algorithms.common.utils import UncopiableDefaultDict, append_dist_rank_suffix
+from otx.algorithms.common.utils.data import compute_robust_dataset_statistics
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.core.data import caching
@@ -108,8 +112,8 @@ class BaseConfigurer:
         if data_cfg:
             for subset in data_cfg.data:
                 if subset in cfg.data:
-                    src_data_cfg = self.get_data_cfg(cfg, subset)
-                    new_data_cfg = self.get_data_cfg(data_cfg, subset)
+                    src_data_cfg = self.get_subset_data_cfg(cfg, subset)
+                    new_data_cfg = self.get_subset_data_cfg(data_cfg, subset)
                     for key in new_data_cfg:
                         src_data_cfg[key] = new_data_cfg[key]
                 else:
@@ -195,13 +199,12 @@ class BaseConfigurer:
 
         samples_per_gpu can be changed if it is larger than length of datset
         """
-
         for subset in subsets:
             if cfg.data.get(subset, None):
                 dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
                 samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
 
-                data_cfg = self.get_data_cfg(cfg, subset)
+                data_cfg = self.get_subset_data_cfg(cfg, subset)
                 if data_cfg.get("otx_dataset") is not None:
                     dataset_len = len(data_cfg.otx_dataset)
 
@@ -266,7 +269,7 @@ class BaseConfigurer:
         self.model_classes = model_classes
         self.data_classes = data_classes
         if data_classes is not None:
-            train_data_cfg = self.get_data_cfg(cfg, "train")
+            train_data_cfg = self.get_subset_data_cfg(cfg, "train")
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
@@ -410,6 +413,19 @@ class BaseConfigurer:
         if hasattr(cfg, "algo_backend"):
             self._update_caching_modules(cfg)
 
+        # Update adaptive repeat
+        if not self.training:
+            remove_from_configs_by_type(cfg.custom_hooks, "AdaptiveRepeatDataHook")
+            return
+        for custom_hook in cfg.custom_hooks:
+            if custom_hook["type"] == "AdaptiveRepeatDataHook":
+                data_cfg = cfg.get("data", {})
+                bs = data_cfg.get("train_dataloader", {}).get("samples_per_gpu", None)
+                bs = bs if bs is not None else data_cfg.get("samples_per_gpu", 0)
+                custom_hook["train_batch_size"] = bs
+                custom_hook["train_data_size"] = len(data_cfg.get("train", {}).get("otx_dataset", []))
+                break
+
     @staticmethod
     def _update_caching_modules(cfg: Config) -> None:
         def _find_max_num_workers(cfg: dict):
@@ -475,7 +491,7 @@ class BaseConfigurer:
     def get_data_classes(self, cfg):
         """Get data classes from train cfg."""
         data_classes = []
-        train_cfg = self.get_data_cfg(cfg, "train")
+        train_cfg = self.get_subset_data_cfg(cfg, "train")
         if "data_classes" in train_cfg:
             data_classes = list(train_cfg.pop("data_classes", []))
         elif "classes" in train_cfg:
@@ -483,7 +499,7 @@ class BaseConfigurer:
         return data_classes
 
     @staticmethod
-    def get_data_cfg(cfg, subset):
+    def get_subset_data_cfg(cfg, subset):
         """Get subset's data cfg."""
         assert subset in ["train", "val", "test", "unlabeled"], f"Unknown subset:{subset}"
         if "dataset" in cfg.data[subset]:  # Concat|RepeatDataset
@@ -492,3 +508,41 @@ class BaseConfigurer:
                 dataset = dataset.dataset
             return dataset
         return cfg.data[subset]
+
+    @staticmethod
+    def adapt_input_size_to_dataset(
+        cfg, input_size_manager: InputSizeManager, downscale_only: bool = True, use_annotations: bool = False
+    ) -> Optional[Tuple[int, int]]:
+        """Compute appropriate model input size w.r.t. dataset statistics.
+
+        Args:
+            cfg (Dict): Global configuration.
+            input_size_manager: (InputSizeManager): Pre-configured input size manager
+            downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
+            use_annotations (bool): Whether to consider annotation shapes to compute input size. Defaults to False.
+
+        Returns:
+            Tuple[int, int]: (width, height) or None
+        """
+
+        data_cfg = BaseConfigurer.get_subset_data_cfg(cfg, "train")
+        dataset = data_cfg.get("otx_dataset", None)
+        if dataset is None:
+            return None
+
+        stat = compute_robust_dataset_statistics(dataset, use_annotations)
+        if not stat:
+            return None
+        logger.info(f"Dataset stat: {json.dumps(stat, indent=4)}")
+
+        # Fit to typical large image size (conservative)
+        # -> "avg" size might be preferrable for efficiency
+        image_size = stat["image"]["robust_max"]
+        object_size = None
+        if use_annotations and stat["annotation"]:
+            # Refine using annotation shape size stat
+            # Fit to typical small object size (conservative)
+            # -> "avg" size might be preferrable for efficiency
+            object_size = stat["annotation"].get("size_of_shape", {}).get("robust_min", None)
+
+        return input_size_manager.adapt_input_size_to_dataset(image_size, object_size, downscale_only)

@@ -31,6 +31,7 @@ from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar
 
+from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
     InferenceCallback,
@@ -104,11 +105,21 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.precision = [ModelPrecision.FP32]
         self.optimization_type = ModelOptimizationType.MO
 
-        self.model = self.load_model(otx_model=task_environment.model)
-
         self.trainer: Trainer
 
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
+    def set_seed(self):
+        """Set seed and deterministic."""
+        if self.seed is None:
+            # If the seed is not present via task.train, it will be found in the recipe.
+            self.seed = self.config.get("seed", 5)
+        if not self.deterministic:
+            # deterministic is the same.
+            self.deterministic = self.config.get("deterministic", False)
+        self.config["seed"] = self.seed
+        self.config["deterministic"] = self.deterministic
+        set_random_seed(self.seed, logger, self.deterministic)
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """Get Visual Prompting Config from task environment.
@@ -226,6 +237,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             DatasetEntity: Output dataset with predictions.
         """
         logger.info("Performing inference on the validation set using the base torch model.")
+        self.model = self.load_model(otx_model=self.task_environment.model)
         datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
 
         logger.info("Inference Configs '%s'", self.config)
@@ -295,7 +307,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                         f,
                         export_params=True,
                         verbose=False,
-                        opset_version=12,
+                        opset_version=13,
                         do_constant_folding=True,
                         input_names=list(dummy_inputs.keys()),
                         output_names=output_names,
@@ -330,6 +342,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
+        self.model = self.load_model(otx_model=self.task_environment.model)
         if export_type == ExportType.ONNX:
             output_model.model_format = ModelFormat.ONNX
             output_model.optimization_type = ModelOptimizationType.ONNX
