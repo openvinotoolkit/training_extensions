@@ -28,16 +28,13 @@ def configure_task_type(
     """Configure the task type based on the given data roots and format.
 
     Args:
-    ----
         data_roots (Optional[str]): The data roots to configure the task type for.
         data_format (Optional[str]): The data format to configure the task type for.
 
     Returns:
-    -------
         Tuple[str, str]: A tuple containing the task key and data format.
 
     Raises:
-    ------
         ImportError: If datumaro is not installed and data_format is None.
         ValueError: If the data format is not supported by any task.
     """

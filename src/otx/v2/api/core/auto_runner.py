@@ -69,12 +69,10 @@ def set_dataset_paths(config: dict, args: dict) -> dict:
     """Set the dataset paths in the given configuration dictionary based on the provided arguments.
 
     Args:
-    ----
         config (dict): The configuration dictionary to update.
         args (dict): The arguments containing the dataset paths.
 
     Returns:
-    -------
         dict: The updated configuration dictionary.
     """
     for key, value in args.items():
@@ -99,7 +97,6 @@ def set_adapters_from_string(
     the corresponding adapter is used. Otherwise, the framework name is used as the adapter.
 
     Args:
-    ----
         framework (str): The name of the framework.
         engine (bool): Whether to include the engine in the result. Defaults to True.
         dataset (bool): Whether to include the dataset builder in the result. Defaults to True.
@@ -108,7 +105,6 @@ def set_adapters_from_string(
         model_configs (bool): Whether to include the model_configs list in the result. Defaults to True.
 
     Returns:
-    -------
         dict: A dictionary containing the corresponding engine, dataset builder, get_model module,
         list_models module, and model_configs list.
     """
@@ -142,7 +138,6 @@ class AutoRunner:
     """A class for running automated machine learning tasks.
 
     Example:
-    -------
         >>> runner = AutoRunner(
             work_dir="output/folder/path",
             train_data_roots="train/data/path",
@@ -175,7 +170,6 @@ class AutoRunner:
             based on framework, task, train_type, and data_roots.
 
         Args:
-        ----
             framework (Optional[str], optional): Training frameworks. Refer to otx.v2.adapters. Defaults to None.
             task (Optional[Union[str, TaskType]]): Task of training. Refer to otx.v2.api.entities.task_type.TaskType.
                 Defaults to None.
@@ -203,7 +197,6 @@ class AutoRunner:
                 Defaults to None.
 
         Returns:
-        -------
             None
         """
         self.config_path: Optional[str] = None
@@ -278,12 +271,10 @@ class AutoRunner:
         """Configure the model to be used for the auto runner.
 
         Args:
-        ----
             model (Optional[Union[str, dict, list, object]]): The model to be used for the auto runner.
                 Can be a string, dictionary, list, or object.
 
         Returns:
-        -------
             object: The configured model object.
         """
         # Configure Model if model is None
@@ -312,13 +303,11 @@ class AutoRunner:
         the default framework for the task type will be used.
 
         Args:
-        ----
             framework (Optional[str]): The name of the framework to use.
             task (Union[str, TaskType, None]): The task type to use.
             train_type (Union[str, TrainType, None]): The train type to use.
 
         Returns:
-        -------
             None
         """
         if task is None and "task" in self.config:
@@ -360,7 +349,6 @@ class AutoRunner:
         """Return a DataLoader for a specific subset of the dataset.
 
         Args:
-        ----
             subset (str): The name of the subset to load.
             pipeline (Optional[Union[dict, list]], optional): A pipeline of transforms to apply to the data.
                 Defaults to None.
@@ -370,7 +358,6 @@ class AutoRunner:
             **kwargs: Additional keyword arguments to pass to the DataLoader constructor.
 
         Returns:
-        -------
             DataLoader: A DataLoader for the specified subset of the dataset.
         """
         subset_dl = self.dataset.subset_dataloader(
@@ -402,7 +389,6 @@ class AutoRunner:
         """Train the model using the data loaders and optimizer.
 
         Args:
-        ----
             model (Optional[Union[str, dict, list, object]]):  The models available in each framework's Engine.
                 Defaults to None.
             train_dataloader (Optional[TypeVar]): The data loader for training data.
@@ -420,7 +406,6 @@ class AutoRunner:
                 of each framework engine.
 
         Returns:
-        -------
             dict: A dictionary containing the results of the training.
         """
         # TODO: self.config update with new input
@@ -482,7 +467,6 @@ class AutoRunner:
         "val" subset configuration from the current instance's configuration.
 
         Args:
-        ----
             model (Optional[Union[str, dict, list, object]], optional): The model to validate. Defaults to None.
             val_dataloader (Optional[Union[dict, object]], optional): The dataloader to use for validation.
                 Defaults to None.
@@ -491,7 +475,6 @@ class AutoRunner:
             **kwargs: Additional keyword arguments to pass to the validation engine.
 
         Returns:
-        -------
             dict: A dictionary containing the validation results.
         """
         if val_dataloader is None:
@@ -531,7 +514,6 @@ class AutoRunner:
         "test" subset configuration from the current instance's configuration.
 
         Args:
-        ----
             model (Optional[Union[str, dict, list, object]]): The model to test. If None, the model
                 is obtained from the current instance's configuration.
             test_dataloader (Optional[Union[dict, object]]): The dataloader to use for testing.
@@ -543,7 +525,6 @@ class AutoRunner:
             **kwargs: Additional keyword arguments to pass to the engine's test method.
 
         Returns:
-        -------
             dict: A dictionary containing the test results.
         """
         if test_dataloader is None:
@@ -577,14 +558,12 @@ class AutoRunner:
         """Predict the output of the given image using the specified model and checkpoint.
 
         Args:
-        ----
             img (Optional[Union[str, Path, object]]): The image to predict the output for.
             model (Optional[Union[str, dict, list, object]]): The model to use for prediction.
             checkpoint (Optional[Union[str, Path]]): The checkpoint to use for prediction.
             **kwargs: Additional keyword arguments to pass to the prediction engine.
 
         Returns:
-        -------
             list: A list of predicted outputs for the given image.
         """
         model = self.configure_model(model)
@@ -612,7 +591,6 @@ class AutoRunner:
         """Export the model to a specified checkpoint.
 
         Args:
-        ----
             model (Optional[Union[str, dict, list, object]], optional): The model to export. Defaults to None.
             checkpoint (Optional[Union[str, Path]], optional): The checkpoint to export the model to.
                 Defaults to None.
@@ -620,7 +598,6 @@ class AutoRunner:
             **kwargs: Additional keyword arguments to pass to the engine's export method.
 
         Returns:
-        -------
             dict: A dictionary containing information about the exported model.
         """
         model = self.configure_model(model)

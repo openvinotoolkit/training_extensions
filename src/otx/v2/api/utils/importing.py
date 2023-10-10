@@ -24,15 +24,12 @@ def get_impl_class(impl_path: str) -> TypeVar:
     """Given a fully qualified path to a class, returns the class object.
 
     Args:
-    ----
         impl_path (str): The fully qualified path to the class.
 
     Returns:
-    -------
         The class object.
 
     Raises:
-    ------
         Exception: If the class cannot be imported.
     """
     task_impl_module = None
@@ -55,11 +52,9 @@ def get_default_args(func: Callable) -> list:
     """Return a list of tuples containing the names and default values of the non-keyword arguments of a function.
 
     Args:
-    ----
         func (Callable): The function to inspect.
 
     Returns:
-    -------
         list: A list of tuples containing the names and default values of the non-keyword arguments of the function.
     """
     signature = inspect.signature(func)
@@ -76,11 +71,9 @@ def get_all_args(func: Callable) -> List[str]:
     """Return a list of all argument names for a given function.
 
     Args:
-    ----
         func (Callable): The function to inspect.
 
     Returns:
-    -------
         List[str]: A list of argument names.
     """
     signature = inspect.signature(func)
@@ -91,11 +84,9 @@ def get_otx_root_path() -> str:
     """Return the root path of the otx module.
 
     Returns:
-    -------
         str: The root path of the otx module.
 
     Raises:
-    ------
         ModuleNotFoundError: If the otx module is not found.
     """
     otx_module = importlib.import_module("otx")
@@ -110,11 +101,9 @@ def get_files_dict(folder_path: Union[str, Path]) -> Dict[str, str]:
     """Return a dictionary containing the names and paths of all files in the specified folder.
 
     Args:
-    ----
         folder_path (Union[str, Path]): The path to the folder containing the files.
 
     Returns:
-    -------
         Dict[str, str]: A dictionary containing the names and paths of all files in the specified folder.
     """
     file_path_dict = {}

@@ -16,7 +16,6 @@ class BsSearchAlgo:
     """Algorithm class to find optimal batch size.
 
     Args:
-    ----
         train_func (Callable[[int], None]): Training function with single arugment to set batch size.
         default_bs (int): Default batch size. It should be bigger than 0.
         max_bs (int): Maximum batch size. It should be bigger than 0.
@@ -26,14 +25,12 @@ class BsSearchAlgo:
         """Initialize an instance of the Batch Size Search Algorithm class.
 
         Args:
-        ----
             train_func (Callable[[int], None]): A callable function that takes an integer batch size
                 as input and trains the model.
             default_bs (int): The default batch size to start the search with.
             max_bs (int): The maximum batch size to search for.
 
         Raises:
-        ------
             ValueError: If the default batch size or the maximum batch size is less than or equal to 0.
         """
         if default_bs <= 0:
@@ -91,7 +88,6 @@ class BsSearchAlgo:
         """Decrease batch size if default batch size isn't fit to current GPU device.
 
         Returns:
-        -------
             int: Proper batch size possibly decreased as default value isn't fit
         """
         available_bs = 0
@@ -128,15 +124,12 @@ class BsSearchAlgo:
         GPU memory between lower and upper bound.
 
         Args:
-        ----
             drop_last (bool): Whether to drop the last incomplete batch.
 
         Raises:
-        ------
             RuntimeError: If training with batch size 2 can't be run, raise an error.
 
         Returns:
-        -------
             int: Big enough batch size.
         """
         estimated_bs = self._default_bs

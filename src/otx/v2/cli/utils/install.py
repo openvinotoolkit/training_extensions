@@ -46,17 +46,14 @@ def get_requirements_from_file(filenames: str | list[str]) -> list[Requirement]:
     This function returns list of required packages from requirement files.
 
     Args:
-    ----
         filenames (str | list[str]): txt files that contains list of required
             packages.
 
     Example:
-    -------
         >>> get_requirements_from_file(filename="requirements.txt")
         [<Requirement: "mmcv-full==1.7.0", <Requirement: "onnx>=1.8.1", ...]
 
     Returns:
-    -------
         List[Requirement]: List of required packages.
     """
     if isinstance(filenames, str):
@@ -77,7 +74,6 @@ def get_requirements(module: str = "otx") -> dict[str, list[Requirement]]:
     This function returns list of required packages from importlib_metadata.
 
     Example:
-    -------
         >>> get_requirements("otx")
         {
             "api": ["attrs>=21.2.0", ...],
@@ -86,7 +82,6 @@ def get_requirements(module: str = "otx") -> dict[str, list[Requirement]]:
         }
 
     Returns:
-    -------
         Dict[str, List[Requirement]]: List of required packages for each optional-extras.
     """
     requirement_list: list[str] | None = requires(module)
@@ -113,15 +108,12 @@ def parse_requirements(
     """Parse requirements and returns torch, mmcv and task requirements.
 
     Args:
-    ----
         requirements (list[Requirement]): List of requirements.
 
     Raises:
-    ------
         ValueError: If torch requirement is not found.
 
     Examples:
-    --------
         >>> requirements = [
         ...     Requirement.parse("torch==1.13.0"),
         ...     Requirement.parse("mmcv-full==1.7.0"),
@@ -134,7 +126,6 @@ def parse_requirements(
         Requirement.parse("onnx>=1.8.1"))
 
     Returns:
-    -------
         tuple[Requirement, list[Requirement], list[Requirement]]: Tuple of torch, mmcv and other requirements.
     """
     torch_requirement: str | None = None
@@ -177,7 +168,6 @@ def get_cuda_version() -> str | None:
     """Get CUDA version installed on the system.
 
     Examples:
-    --------
         >>> # Assume that CUDA version is 11.2
         >>> get_cuda_version()
         "11.2"
@@ -187,7 +177,6 @@ def get_cuda_version() -> str | None:
         None
 
     Returns:
-    -------
         str | None: CUDA version installed on the system.
     """
     # 1. Check CUDA_HOME Environment variable
@@ -224,16 +213,13 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
     """Update the installed CUDA version with the highest supported CUDA version by PyTorch.
 
     Args:
-    ----
         cuda_version (str): The installed CUDA version.
         torch_version (str): The PyTorch version.
 
     Raises:
-    ------
         Warning: If the installed CUDA version is not supported by PyTorch.
 
     Examples:
-    --------
         >>> update_cuda_version_with_available_torch_cuda_builds("11.1", "1.13.0")
         "11.6"
 
@@ -247,7 +233,6 @@ def update_cuda_version_with_available_torch_cuda_build(cuda_version: str, torch
         "11.8"
 
     Returns:
-    -------
         str: The updated CUDA version.
     """
     max_supported_cuda = max(AVAILABLE_TORCH_VERSIONS[torch_version]["cuda"])
@@ -282,11 +267,9 @@ def get_cuda_suffix(cuda_version: str) -> str:
     """Get CUDA suffix for PyTorch or mmX versions.
 
     Args:
-    ----
         cuda_version (str): CUDA version installed on the system.
 
     Note:
-    ----
         The CUDA version of PyTorch is not always the same as the CUDA version
             that is installed on the system. For example, the latest PyTorch
             version (1.10.0) supports CUDA 11.3, but the latest CUDA version
@@ -296,7 +279,6 @@ def get_cuda_suffix(cuda_version: str) -> str:
             shoudl be regularly updated to reflect the latest available CUDA.
 
     Examples:
-    --------
         >>> get_cuda_suffix(cuda_version="11.2")
         "cu112"
 
@@ -304,7 +286,6 @@ def get_cuda_suffix(cuda_version: str) -> str:
         "cu118"
 
     Returns:
-    -------
         str: CUDA suffix for PyTorch or mmX version.
     """
     return f"cu{cuda_version.replace('.', '')}"
@@ -314,7 +295,6 @@ def get_hardware_suffix(with_available_torch_build: bool = False, torch_version:
     """Get hardware suffix for PyTorch or mmX versions.
 
     Args:
-    ----
         with_available_torch_build (bool): Whether to use the latest available
             PyTorch build or not. If True, the latest available PyTorch build
             will be used. If False, the installed PyTorch build will be used.
@@ -323,7 +303,6 @@ def get_hardware_suffix(with_available_torch_build: bool = False, torch_version:
             ``with_available_torch_build`` is True.
 
     Examples:
-    --------
         >>> # Assume that CUDA version is 11.2
         >>> get_hardware_suffix()
         "cu112"
@@ -344,7 +323,6 @@ def get_hardware_suffix(with_available_torch_build: bool = False, torch_version:
         "cu118"
 
     Returns:
-    -------
         str: Hardware suffix for PyTorch or mmX version.
     """
     cuda_version = get_cuda_version()
@@ -369,7 +347,6 @@ def add_hardware_suffix_to_torch(
     """Add hardware suffix to the torch requirement.
 
     Args:
-    ----
         requirement (Requirement): Requirement object comprising requirement
             details.
         hardware_suffix (str | None): Hardware suffix. If None, it will be set
@@ -379,7 +356,6 @@ def add_hardware_suffix_to_torch(
             Defaults to False.
 
     Examples:
-    --------
         >>> from pkg_resources import Requirement
         >>> req = "torch>=1.13.0, <=2.0.1"
         >>> requirement = Requirement.parse(req)
@@ -402,11 +378,9 @@ def add_hardware_suffix_to_torch(
         'torch==2.0.1+cu111'
 
     Raises:
-    ------
         ValueError: When the requirement has more than two version criterion.
 
     Returns:
-    -------
         str: Updated torch package with the right cuda suffix.
     """
     name = requirement.unsafe_name
@@ -451,15 +425,12 @@ def get_torch_install_args(requirement: str | Requirement) -> list[str]:
     and its corresponding torchvision requirement.
 
     Args:
-    ----
         requirement (str | Requirement): The torch requirement.
 
     Raises:
-    ------
         RuntimeError: If the OS is not supported.
 
     Example:
-    -------
         >>> from pkg_resources import Requirement
         >>> requriment = "torch>=1.13.0"
         >>> get_torch_install_args(requirement)
@@ -467,7 +438,6 @@ def get_torch_install_args(requirement: str | Requirement) -> list[str]:
         'torch==1.13.0+cpu', 'torchvision==0.14.0+cpu']
 
     Returns:
-    -------
         list[str]: The install arguments.
     """
     if isinstance(requirement, str):
@@ -518,17 +488,14 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
     """Get the install arguments for MMCV.
 
     Args:
-    ----
         torch_requirement (str | Requirement): Torch requirement.
         mmcv_requirements (list[str]): MMCV requirements.
 
     Raises:
-    ------
         NotImplementedError: Not implemented for MacOS.
         RuntimeError: If the OS is not supported.
 
     Returns:
-    -------
         list[str]: List of mmcv install arguments.
     """
     if isinstance(torch_requirement, str):
@@ -561,11 +528,9 @@ def mim_installation(requirements: list[str]) -> None:
     """Installing libraries with mim api.
 
     Args:
-    ----
         requirements (list[str]): List of MMCV-related libraries.
 
     Raises:
-    ------
         ModuleNotFoundError: Raise an error if mim import is not possible.
     """
     if not find_spec("mim"):
@@ -580,11 +545,9 @@ def get_module_version(module_name: str) -> str | None:
     """Return the version of the specified Python module.
 
     Args:
-    ----
         module_name (str): The name of the module to get the version of.
 
     Returns:
-    -------
         str | None: The version of the module, or None if the module is not installed.
     """
     try:

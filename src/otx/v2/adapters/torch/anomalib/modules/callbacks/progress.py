@@ -128,7 +128,6 @@ class ProgressCallback(TQDMProgressBar):
         """Get progress for train and test stages.
 
         Args:
-        ----
             stage (str, optional): Train or Test stages. Defaults to "train".
         """
         if stage == "train":

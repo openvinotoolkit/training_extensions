@@ -21,12 +21,10 @@ class AnomalyDetection(AnomalyBase):
         """Resize the outputs of the model to original image size.
 
         Args:
-        ----
             outputs (Dict[str, np.ndarray]): Raw outputs of the model after ``infer_sync`` is called.
             meta (Dict[str, Any]): Metadata which contains values such as threshold, original image size.
 
         Returns:
-        -------
             np.ndarray: Detection Mask
         """
         anomaly_map: np.ndarray = outputs[self.output_blob_name].squeeze()

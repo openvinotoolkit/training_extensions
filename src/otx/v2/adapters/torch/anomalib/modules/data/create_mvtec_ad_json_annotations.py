@@ -25,7 +25,6 @@ Reference:
       9584-9592, 2019, DOI: 10.1109/CVPR.2019.00982.
 
 Example:
--------
     Assume that MVTec AD dataset is located in "./data/anomaly/MVTec/" from the root
     directory in training_extensions. JSON annotations could be created by running the
     following:
@@ -57,11 +56,9 @@ def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
     """Create bounding box from binary mask.
 
     Args:
-    ----
         mask_path (str): Path to binary mask.
 
     Returns:
-    -------
         List[List[float]]: Bounding box coordinates.
     """
     # pylint: disable-msg=too-many-locals
@@ -94,11 +91,9 @@ def create_polygons_from_mask(mask_path: str) -> List[List[List[float]]]:
     """Create polygons from binary mask.
 
     Args:
-    ----
         mask_path (str): Path to binary mask.
 
     Returns:
-    -------
         List[List[float]]: Polygon coordinates.
     """
     mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
@@ -112,11 +107,9 @@ def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     """Create JSON items for the classification task.
 
     Args:
-    ----
         pd_items (pd.DataFrame): MVTec AD samples in pandas DataFrame object.
 
     Returns:
-    -------
         Dict[str, Any]: MVTec AD classification JSON items
     """
     json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
@@ -133,11 +126,9 @@ def create_detection_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     """Create JSON items for the detection task.
 
     Args:
-    ----
         pd_items (pd.DataFrame): MVTec AD samples in pandas DataFrame object.
 
     Returns:
-    -------
         Dict[str, Any]: MVTec AD detection JSON items
     """
     json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "bboxes": {}}
@@ -154,11 +145,9 @@ def create_segmentation_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     """Create JSON items for the segmentation task.
 
     Args:
-    ----
         pd_items (pd.DataFrame): MVTec AD samples in pandas DataFrame object.
 
     Returns:
-    -------
         Dict[str, Any]: MVTec AD segmentation JSON items
     """
     json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
@@ -175,7 +164,6 @@ def save_json_items(json_items: Dict[str, Any], file: str) -> None:
     """Save JSON items to file.
 
     Args:
-    ----
         json_items (Dict[str, Any]): MVTec AD JSON items
         file (str): Path to save as a JSON file.
     """
@@ -187,13 +175,11 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
     """Create MVTec AD categories for a given task.
 
     Args:
-    ----
         task (str): Task type to save annotations.
         data_path (str): Path to MVTec AD category.
         annotation_path (str): Path to save MVTec AD category JSON annotation items.
 
     Raises:
-    ------
         ValueError: When task is not classification, detection or segmentation.
     """
     _annotation_path = Path(annotation_path) / task
@@ -222,7 +208,6 @@ def create_mvtec_ad_category_annotations(data_path: str, annotation_path: str) -
     """Create MVTec AD category annotations for classification, detection and segmentation tasks.
 
     Args:
-    ----
         data_path (str): Path to MVTec AD category.
         annotation_path (str): Path to save MVTec AD category JSON annotation items.
     """
@@ -234,7 +219,6 @@ def create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: Opt
     """Create JSON annotations for MVTec AD dataset.
 
     Args:
-    ----
         mvtec_data_path (str): Path to MVTec AD dataset.
         mvtec_annotation_path (Optional[str], optional): Path to save JSON annotations. Defaults to None.
     """
@@ -270,7 +254,6 @@ def get_args() -> Namespace:
     """Get command line arguments.
 
     Returns:
-    -------
         Namespace: List of arguments.
     """
     parser = ArgumentParser()

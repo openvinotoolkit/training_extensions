@@ -61,7 +61,6 @@ class OtxMvtecDataset:
     """Generate OTX MVTec Dataset from the anomaly detection datasets that follows the MVTec format.
 
     Args:
-    ----
         path (Union[str, Path], optional): Path to the MVTec dataset category.
             Defaults to "./datasets/MVTec/bottle".
         split_ratio (float, optional): Ratio to split normal training images and add to the
@@ -72,7 +71,6 @@ class OtxMvtecDataset:
             it to half. Default to True.
 
     Examples:
-    --------
         >>> dataset_generator = OtxMvtecDataset()
         >>> dataset = dataset_generator.generate()
         >>> dataset[0].media.numpy.shape
@@ -119,7 +117,6 @@ class OtxMvtecDataset:
         corresponding OTX LabelEntities
 
         Returns:
-        -------
             DataFrame: Final list of samples comprising all the required
                 information to create the OTX Dataset.
         """
@@ -141,7 +138,6 @@ class OtxMvtecDataset:
         """Generate OTX Anomaly Dataset.
 
         Returns:
-        -------
             DatasetEntity: Output OTX Anomaly Dataset from an MVTec
         """
         samples = self.get_samples()

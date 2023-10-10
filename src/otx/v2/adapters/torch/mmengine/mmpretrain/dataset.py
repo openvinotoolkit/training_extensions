@@ -88,7 +88,6 @@ class Dataset(BaseDataset):
         r"""MMPretrain's Dataset class.
 
         Args:
-        ----
             task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load.
                 Defaults to None.
             train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load.
@@ -296,7 +295,6 @@ class Dataset(BaseDataset):
         r"""MMPretrain's Dataset.subset_dataloader.
 
         Args:
-        ----
             subset (str): Enter an available subset of that dataset.
             pipeline (Optional[Union[List[Union[Dict, Any]], Dict[str, List[Union[Dict, Any]]]]], optional):
                 Dataset Pipeline. Defaults to None.
@@ -321,7 +319,6 @@ class Dataset(BaseDataset):
             **kwargs (Any): Additional arguments to pass to the DataLoader constructor.
 
         Returns:
-        -------
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
         """
         super().subset_dataloader(

@@ -16,12 +16,10 @@ def set_workspace(root: Optional[str] = None, name: str = "otx-workspace") -> st
     """Set workspace path according to arguments.
 
     Args:
-    ----
         root (str, optional): Target root path. Defaults to None.
         name (str, optional): Name of workspace folder. Defaults to "otx-workspace".
 
     Returns:
-    -------
         str: Workspace folder path.
     """
     return f"{root}/{name}" if root else f"./{name}"
@@ -34,13 +32,11 @@ class Workspace:
         """Initialize a Workspace object.
 
         Args:
-        ----
             work_dir (Optional[str]): The path to the workspace directory.
                 If None, a new workspace directory will be created.
             task (Optional[str]): The name of the task associated with this workspace.
 
         Returns:
-        -------
             None
         """
         self.otx_root = get_otx_root_path()
@@ -60,7 +56,6 @@ class Workspace:
         """Check that the class's work_dir is an actual workspace folder.
 
         Returns:
-        -------
             bool: true for workspace else false
         """
         return (self.work_dir / "configs.yaml").exists()
@@ -80,12 +75,10 @@ class Workspace:
         """Dump output configuration.
 
         Args:
-        ----
             config (Optional[Union[str, Path, Dict]], optional): Config contents to be save. Defaults to None.
             filename (Optional[Union[str, Path]], optional): Output config file path. Defaults to None.
 
         Raises:
-        ------
             FileNotFoundError: If config is a string or Path and it doesn't exist, raise an error.
         """
         if config is None:
@@ -103,7 +96,6 @@ class Workspace:
         """Update workspace's configuration.
 
         Args:
-        ----
             config: Config contents.
         """
         self._config.update(config)
@@ -115,11 +107,9 @@ class Workspace:
         exist, it is created. Finally, the latest directory is symlinked to the target directory.
 
         Args:
-        ----
             target_dir (Path): The target directory to symlink to.
 
         Returns:
-        -------
             None
         """
         if self.latest_dir.exists():

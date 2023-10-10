@@ -18,7 +18,6 @@ class Engine:
     This class defines the common interface for all OTX engines, including methods for training and validation.
 
     Example:
-    -------
     >>> runner = Engine(
         work_dir="output/folder/path",
     )
@@ -28,11 +27,9 @@ class Engine:
         """Initialize a new instance of the Engine class.
 
         Args:
-        ----
             work_dir (Optional[Union[str, Path]]): The working directory for the engine.
 
         Returns:
-        -------
             None
         """
         if work_dir is not None:
@@ -61,7 +58,6 @@ class Engine:
         """Train the given model using the given data loaders and optimizer.
 
         Args:
-        ----
             model : Models to be used in training.
             train_dataloader : Dataloader to be used for training.
             val_dataloader (optional): Dataloader to use for validation step in training,
@@ -80,11 +76,9 @@ class Engine:
             **kwargs: This allows to add arguments that can be accepted by the train function of each framework engine.
 
         Returns:
-        -------
             dict: A dictionary containing the results of the training.
 
         Example:
-        -------
         >>> runner.train(
             model=Model(),
             train_dataloader=Dataloader(),
@@ -120,7 +114,6 @@ class Engine:
         """Validate the given model using the given data loader.
 
         Args:
-        ----
             model : Models to be used in validation.
             val_dataloader :  Dataloader to use for validation.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
@@ -128,11 +121,9 @@ class Engine:
             **kwargs: This allows to add arguments that can be accepted by the validate function of framework engine.
 
         Returns:
-        -------
             dict: A dictionary containing the results of the validation.
 
         Example:
-        -------
         >>> runner.validate(
             model=Model(),
             val_dataloader=Dataloader(),
@@ -158,7 +149,6 @@ class Engine:
         """Test the given model using the given data loader.
 
         Args:
-        ----
             model : Models to be used in testing.
             test_dataloader : Dataloader to use for testing.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
@@ -166,11 +156,9 @@ class Engine:
             **kwargs: This allows to add arguments that can be accepted by the test function of framework engine.
 
         Returns:
-        -------
             dict: A dictionary containing the results of the testing.
 
         Example:
-        -------
         >>> runner.test(
             model=Model(),
             test_dataloader=Dataloader(),
@@ -194,17 +182,14 @@ class Engine:
         """Predict the given model using the given image or data.
 
         Args:
-        ----
             model : Models to be used in prediction.
             img (optional): Image or Dataloader to use for prediction.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
 
         Returns:
-        -------
             list: List of prediction results.
 
         Example:
-        -------
         >>> runner.predict(
             model=Model(),
             img="single/image/path.img",
@@ -229,17 +214,14 @@ class Engine:
         """Export the given model as IR Model or onnx Model.
 
         Args:
-        ----
             model (optional): Models to be used in exporting. Defaults to None.
             checkpoint (Optional[Union[str, Path]], optional): Model checkpoint path. Defaults to None.
             precision (Optional[str], optional):Precision for exporting. Defaults to None.
 
         Returns:
-        -------
             dict: A dictionary containing the results of the exporting.
 
         Example:
-        -------
         >>> runner.export(
             model=Model(),
             checkpoint="checkpoint/weights.pth",

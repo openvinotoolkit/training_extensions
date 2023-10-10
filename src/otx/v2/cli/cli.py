@@ -42,7 +42,6 @@ class OTXCLIv2:
         """Initialize a new instance of the CLI class.
 
         Args:
-        ----
             args (ArgsType, optional): Command-line arguments to parse. Defaults to None.
             parser_kwargs (dict, optional): Additional keyword arguments to pass to the parser. Defaults to None.
         """
@@ -102,12 +101,10 @@ class OTXCLIv2:
         """Initialize the argument parser for the OTX CLI.
 
         Args:
-        ----
             default_config_files (Optional[List[Optional[str]]]): List of default configuration files.
             **kwargs: Additional keyword arguments to pass to the OTXArgumentParser constructor.
 
         Returns:
-        -------
             OTXArgumentParser: The initialized argument parser.
         """
         parser = OTXArgumentParser(default_config_files=default_config_files, **kwargs)
@@ -164,7 +161,6 @@ class OTXCLIv2:
         """Return a dictionary of subcommands and their required arguments for the engine command.
 
         Returns:
-        -------
             A dictionary where the keys are the subcommands and the values are sets of required arguments.
         """
         return {
@@ -273,7 +269,6 @@ class OTXCLIv2:
         """Return the model class and default configurations for the CLI.
 
         Returns:
-        -------
             tuple: A tuple containing the model class and default configurations.
         """
         model_class = None
@@ -308,12 +303,10 @@ class OTXCLIv2:
         """Parse command line arguments using the provided parser.
 
         Args:
-        ----
             parser (OTXArgumentParser): The argument parser to use.
             args (ArgsType): The command line arguments to parse.
 
         Returns:
-        -------
             Namespace: The parsed arguments as a namespace object.
         """
         if isinstance(args, (dict, Namespace)):
@@ -324,16 +317,13 @@ class OTXCLIv2:
         """Instantiate the necessary classes for running the command.
 
         Args:
-        ----
             subcommand (str): The subcommand to be executed.
 
         Raises:
-        ------
             ValueError: If the auto_runner is None or if the data configuration is not a dictionary or Namespace.
             TypeError: If the model configuration is not a dictionary or Namespace.
 
         Returns:
-        -------
             None
         """
         if self.auto_runner is None:
@@ -394,11 +384,9 @@ class OTXCLIv2:
         """Run the specified subcommand.
 
         Args:
-        ----
             subcommand (str): The subcommand to run.
 
         Raises:
-        ------
             NotImplementedError: If the specified subcommand is not implemented.
         """
         start_time = time.time()

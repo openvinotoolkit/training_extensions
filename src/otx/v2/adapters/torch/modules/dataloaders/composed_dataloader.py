@@ -19,7 +19,6 @@ class CDLIterator:
         """Initialize a ComposedDataLoader object.
 
         Args:
-        ----
             cdl (ComposedDL): A ComposedDL object containing a list of PyTorch DataLoader objects.
         """
         self._cdl = cdl
@@ -54,7 +53,6 @@ class ComposedDL:
             """Sampler class that composes multiple data loaders.
 
             Args:
-            ----
                 cdl (ComposedDL): The composed data loader.
             """
             self.cdl = cdl
@@ -69,7 +67,6 @@ class ComposedDL:
         """Composed data loader that combines multiple data loaders.
 
         Args:
-        ----
             loaders (Optional[List[DataLoader]]): List of data loaders to combine. Defaults to None.
         """
         if loaders is None:
@@ -87,7 +84,6 @@ class ComposedDL:
         """Return an iterator over the dataset.
 
         Returns:
-        -------
             CDLIterator: An iterator over the dataset.
         """
         return CDLIterator(self)
@@ -102,7 +98,6 @@ class ComposedDL:
         """Returns the dataset used by the first loader in the composed dataloader.
 
         Returns:
-        -------
             Dataset: The dataset used by the first loader in the composed dataloader.
         """
         # FIXME: Workarounds

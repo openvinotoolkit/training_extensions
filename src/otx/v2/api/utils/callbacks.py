@@ -100,7 +100,6 @@ class TimeMonitorCallback(Callback):
     """A callback to monitor the progress of training.
 
     Args:
-    ----
         num_epoch (int): Amount of epochs
         num_train_steps (int): amount of training steps per epoch
         num_val_steps (int): amount of validation steps per epoch
@@ -123,7 +122,6 @@ class TimeMonitorCallback(Callback):
         """Initialize a Callbacks object with the given parameters.
 
         Args:
-        ----
             num_epoch (int): The number of epochs to train the model for.
             num_train_steps (int): The number of steps to train the model for.
             num_val_steps (int): The number of steps to validate the model for.
@@ -133,7 +131,6 @@ class TimeMonitorCallback(Callback):
             update_progress_callback (UpdateProgressCallback): The callback function to update the progress of training.
 
         Returns:
-        -------
             None
         """
         self.total_epochs = num_epoch

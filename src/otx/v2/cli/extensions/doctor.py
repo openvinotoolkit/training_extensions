@@ -20,7 +20,6 @@ def add_doctor_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for doctor command.
 
     Args:
-    ----
         subcommands_action (_ActionSubCommands): Sub-command Parser in CLI.
     """
     sub_parser = prepare_parser()
@@ -35,7 +34,6 @@ def prepare_parser() -> OTXArgumentParser:
     """Parse command line arguments.
 
     Returns:
-    -------
         OTXArgumentParser: Sub-parser for doctor command.
     """
     parser = OTXArgumentParser()
@@ -54,12 +52,10 @@ def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
     """Print diagnostic information about the current environment.
 
     Args:
-    ----
         task (Optional[str], optional): Task available in OTX. Defaults to None.
         verbose (bool): verbose value for whether to print more details.
 
     Returns:
-    -------
         None
     """
     issue_count = 0

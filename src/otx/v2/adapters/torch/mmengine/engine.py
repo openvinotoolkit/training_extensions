@@ -46,7 +46,6 @@ class MMXEngine(Engine):
         """Initialize a new instance of the MMEngine class.
 
         Args:
-        ----
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
             config (Optional[Union[dict, Config, str]], optional): The configuration for the engine. Defaults to None.
         """
@@ -195,7 +194,6 @@ class MMXEngine(Engine):
         """Train the given model using the provided data and configuration.
 
         Args:
-        ----
             model (Optional[Union[torch.nn.Module, Dict]], optional): The models available in Engine. Defaults to None.
             train_dataloader (Optional[Union[DataLoader, Dict]], optional): Training Dataset's pipeline.
                 Defaults to None.
@@ -230,7 +228,6 @@ class MMXEngine(Engine):
             **kwargs (Any): This is used as an additional parameter to mmengine.Engine.
 
         Returns:
-        -------
             dict: A dictionary containing the trained model and the path to the checkpoint file.
         """
         train_args = {
@@ -307,7 +304,6 @@ class MMXEngine(Engine):
         """Run validation on the given model using the provided validation dataloader and evaluator.
 
         Args:
-        ----
             model (Optional[Union[torch.nn.Module, dict]]): The model to be validated.
             val_dataloader (Optional[Union[DataLoader, dict]]): The validation dataloader.
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint to be loaded.
@@ -316,7 +312,6 @@ class MMXEngine(Engine):
             **kwargs: Additional keyword arguments.
 
         Returns:
-        -------
             dict: The validation results.
         """
         val_args = {
@@ -364,7 +359,6 @@ class MMXEngine(Engine):
         """Test the given model on the test dataset.
 
         Args:
-        ----
             model (torch.nn.Module or dict, optional): The model to test. If None, the model
                 passed to the latest will be used. Defaults to None.
             test_dataloader (DataLoader, optional): The dataloader to use for testing. Defaults to None.
@@ -376,7 +370,6 @@ class MMXEngine(Engine):
             **kwargs: Additional keyword arguments to update the configuration.
 
         Returns:
-        -------
             dict: A dictionary containing the test results.
         """
         test_args = {
@@ -429,7 +422,6 @@ class MMXEngine(Engine):
         """Export the model to an intermediate representation (IR) format.
 
         Args:
-        ----
             model (Optional[Union[torch.nn.Module, str, Config]]): The model to export.
                 Can be a PyTorch module with a `_config` attribute, a model config, or a path to a config file.
                 Defaults to None.
@@ -445,7 +437,6 @@ class MMXEngine(Engine):
             input_shape (Optional[Tuple[int, int]]): The input shape to use for exporting. Defaults to None.
 
         Returns:
-        -------
             dict: The intermediate representation (IR or onnx) models.
         """
         if not AVAILABLE:

@@ -37,7 +37,6 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     the ratio of old and new data is used as 1:1
 
     Args:
-    ----
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode

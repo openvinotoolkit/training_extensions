@@ -17,7 +17,6 @@ class BaseRegistry:
         """Initialize a new instance of the Registry class.
 
         Args:
-        ----
             name (str): The name of the registry.
         """
         self._name = name
@@ -28,11 +27,9 @@ class BaseRegistry:
         """Retrieve a module from the registry by its type.
 
         Args:
-        ----
             module_type (str): The type of the module to retrieve.
 
         Returns:
-        -------
             Optional[Callable]: The module if found, otherwise None.
         """
         # Return Registry
@@ -51,7 +48,6 @@ class BaseRegistry:
         """Get the number of registered modules in the registry.
 
         Returns:
-        -------
             int: The number of registered modules in the registry.
         """
         return len(self.module_dict)
@@ -60,11 +56,9 @@ class BaseRegistry:
         """Check if the given key is in the registry.
 
         Args:
-        ----
             key (str): The key to check.
 
         Returns:
-        -------
             bool: True if the key is in the registry, False otherwise.
         """
         return self.get(key) is not None
@@ -81,7 +75,6 @@ class BaseRegistry:
         with their type being the name of the sub-registry.
 
         Returns:
-        -------
             A string representation of the Registry object.
         """
         # Evolved from mmengine
@@ -130,7 +123,6 @@ class BaseRegistry:
         """Register a module to the registry.
 
         Args:
-        ----
             type_name (str, optional): The name of the type to register the module under.
                 If None, the module will be registered under its own name.
             name (str, optional): The name to register the module under. If None, the
@@ -139,7 +131,6 @@ class BaseRegistry:
             force (bool, optional): Whether to overwrite an existing module with the same name.
 
         Raises:
-        ------
             TypeError: If the module is not a class or function.
             KeyError: If force is False and a module with the same name already exists.
         """

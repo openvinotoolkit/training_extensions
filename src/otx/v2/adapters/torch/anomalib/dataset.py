@@ -50,7 +50,6 @@ class Dataset(BaseDataset):
         """Initialize a Dataset object for anomaly tasks.
 
         Args:
-        ----
             task (Optional[Union[TaskType, str]]): The type of anomaly task to perform.
                 Defaults to None.
             train_type (Optional[Union[TrainType, str]]): The type of training to perform.
@@ -74,7 +73,6 @@ class Dataset(BaseDataset):
             data_format (Optional[str]): The format of the data. Defaults to "mvtec".
 
         Returns:
-        -------
             None
         """
         if isinstance(task, str) and not task.startswith("anomaly"):
@@ -106,13 +104,11 @@ class Dataset(BaseDataset):
         """Build a TorchDataset for the given subset using the specified pipeline and configuration.
 
         Args:
-        ----
             subset (str): The subset to build the dataset for.
             pipeline (Optional[Union[str, al.Compose]]): The pipeline to use for data transformation.
             config (Optional[Union[str, DictConfig, dict]]): The configuration to use for the dataset.
 
         Returns:
-        -------
             Optional[TorchDataset]: The built TorchDataset, or None if the dataset is empty.
         """
         if not self.initialize:
@@ -146,7 +142,6 @@ class Dataset(BaseDataset):
         """Build a PyTorch DataLoader object from an OTXAnomalyDataset object.
 
         Args:
-        ----
             dataset (Optional[OTXAnomalyDataset]): The dataset to load.
             batch_size (Optional[int], optional): The batch size. Defaults to 1.
             num_workers (Optional[int], optional): The number of worker threads to use. Defaults to 0.
@@ -160,7 +155,6 @@ class Dataset(BaseDataset):
             **kwargs (Any): Takes additional parameters for the torch Dataloader.
 
         Returns:
-        -------
             Optional[TorchDataLoader]: The PyTorch DataLoader object.
         """
         if dataset is None:
@@ -200,7 +194,6 @@ class Dataset(BaseDataset):
         """Return a PyTorch DataLoader for the specified subset of the dataset.
 
         Args:
-        ----
             subset (str): The subset of the dataset to load. Must be one of "train", "val", "test", or "predict".
             pipeline (Optional[Union[dict, list]]): A pipeline of transformations to apply to the data.
             batch_size (Optional[int]): The batch size to use for the DataLoader. If not provided, will be
@@ -219,7 +212,6 @@ class Dataset(BaseDataset):
             **kwargs: Additional keyword arguments to pass to the DataLoader constructor.
 
         Returns:
-        -------
             A PyTorch DataLoader for the specified subset of the dataset.
         """
         super().subset_dataloader(
@@ -264,7 +256,6 @@ class Dataset(BaseDataset):
         If the dataset has not been initialized, this method will call the _initialize method to initialize it.
 
         Returns:
-        -------
             int: The number of classes in the dataset.
         """
         if not self.initialize:

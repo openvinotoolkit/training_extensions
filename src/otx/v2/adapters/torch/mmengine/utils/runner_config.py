@@ -40,7 +40,6 @@ def configure_evaluator(
     """Get the value of a key from the given config object, or from the positional arguments if it exists.
 
     Args:
-    ----
         arg_key (str): The key to look for in the config object and positional arguments.
         positional_args (dict): A dictionary of positional arguments.
         config (Config): A dictionary-like object containing configuration values.
@@ -48,7 +47,6 @@ def configure_evaluator(
             Defaults to None.
 
     Returns:
-    -------
         Optional[Union[dict, list]]: The value of the key, or the default value if the key is not found.
     """
     if isinstance(evaluator, list):
@@ -70,18 +68,15 @@ def update_train_config(func_args: dict, config: Config, precision: Optional[str
     """Update the training configuration for a PyTorch model training process and mmengine.
 
     Args:
-    ----
         func_args (dict): A dictionary of function arguments.
         config (Config): A configuration object.
         precision (Optional[str]): The precision of the model weights (e.g. "float16", "float32").
         **kwargs: Additional keyword arguments.
 
     Returns:
-    -------
         tuple: A tuple containing the updated configuration object and keyword arguments.
 
     Raises:
-    ------
         ValueError: If both `max_epochs` and `max_iters` are set in the configuration.
 
     """
@@ -129,7 +124,6 @@ def update_val_test_config(
     """Update validation and test configurations with the given arguments.
 
     Args:
-    ----
         func_args (dict): Dictionary of function arguments.
         config (Config): Configuration object.
         precision (str, optional): Precision type. Defaults to None.
@@ -138,7 +132,6 @@ def update_val_test_config(
         **kwargs: Additional keyword arguments.
 
     Returns:
-    -------
         tuple: Tuple containing updated configuration and keyword arguments.
     """
     if kwargs.get("val_dataloader", None) is not None:
@@ -188,7 +181,6 @@ def update_runner_config(
     """Update the runner configuration with the given arguments.
 
     Args:
-    ----
         func_args (dict): The function arguments.
         config (Config): The configuration object.
         precision (Optional[str]): The precision.
@@ -197,7 +189,6 @@ def update_runner_config(
         **kwargs: Additional keyword arguments.
 
     Returns:
-    -------
         tuple: The updated configuration and keyword arguments.
     """
     config, kwargs = update_train_config(func_args=func_args, config=config, precision=precision, **kwargs)

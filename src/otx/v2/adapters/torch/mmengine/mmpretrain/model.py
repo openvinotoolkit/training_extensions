@@ -28,12 +28,10 @@ def configure_in_channels(config: Config, input_shape: Optional[List[int]] = Non
     """Configure the 'in_channels' parameter for the model's neck and head based on the output shape of the backbone.
 
     Args:
-    ----
         config (Config): The configuration object for the model.
         input_shape (Optional[List[int]], optional): The input shape of the model. Defaults to None.
 
     Returns:
-    -------
         Config: The updated configuration object.
     """
     configure_required = False
@@ -107,7 +105,6 @@ def get_model(
     """Return a PyTorch model for training.
 
     Args:
-    ----
         model (Union[str, Config, Dict]): The model to use for pretraining. Can be a string representing the model name,
             a Config object, or a dictionary.
         pretrained (Union[str, bool], optional): Whether to use a pretrained model. Defaults to False.
@@ -116,7 +113,6 @@ def get_model(
         **kwargs: Additional keyword arguments to pass to the model.
 
     Returns:
-    -------
         torch.nn.Module: The PyTorch model for pretraining.
     """
     model_name = None

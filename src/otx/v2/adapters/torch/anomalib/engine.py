@@ -51,7 +51,6 @@ class AnomalibEngine(Engine):
         """Initialize the Anomalib engine.
 
         Args:
-        ----
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
             config (Optional[Union[str, dict]], optional): The configuration for the engine. Defaults to None.
             task (str, optional): The task to perform. Defaults to "classification".
@@ -114,11 +113,9 @@ class AnomalibEngine(Engine):
         """Return a list of callbacks to be used during training.
 
         Args:
-        ----
             metrics (Optional[dict]): A dictionary containing the metrics to be used during training.
 
         Returns:
-        -------
             list: A list of callbacks to be used during training.
         """
         # TODO: Need to check callbacks
@@ -159,7 +156,6 @@ class AnomalibEngine(Engine):
         """Train the given model using the provided data loaders and optimizer.
 
         Args:
-        ----
             model (Union[torch.nn.Module, pl.LightningModule]): The model to train.
             train_dataloader (Union[DataLoader, LightningDataModule]): The data loader for training data.
             val_dataloader (Optional[DataLoader], optional): The data loader for validation data. Defaults to None.
@@ -176,7 +172,6 @@ class AnomalibEngine(Engine):
             **kwargs: Additional arguments to pass to the Trainer constructor.
 
         Returns:
-        -------
             dict: A dictionary containing the trained model and the path to the saved checkpoint.
         """
         # TODO: distributed
@@ -237,7 +232,6 @@ class AnomalibEngine(Engine):
         """Run validation on the given model using the provided validation dataloader and checkpoint.
 
         Args:
-        ----
             model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to validate.
                 If not provided, the latest model will be used.
             val_dataloader (Optional[Union[DataLoader, dict]]): The validation dataloader.
@@ -247,7 +241,6 @@ class AnomalibEngine(Engine):
             **kwargs: Additional keyword arguments to pass to the method.
 
         Returns:
-        -------
             dict: The validation metric (data_class or dict).
         """
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
@@ -286,7 +279,6 @@ class AnomalibEngine(Engine):
         """Test the given model on the provided test dataloader.
 
         Args:
-        ----
             model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to test.
                 If not provided, the latest model will be used.
             test_dataloader (Optional[DataLoader]): The dataloader to use for testing.
@@ -296,7 +288,6 @@ class AnomalibEngine(Engine):
             **kwargs: Additional keyword arguments to pass to the method.
 
         Returns:
-        -------
             dict: The test results as a dictionary.
         """
         _ = self._update_config(func_args={"precision": precision}, **kwargs)
@@ -333,14 +324,12 @@ class AnomalibEngine(Engine):
         """Run inference on the given model and input data.
 
         Args:
-        ----
             model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to use for inference.
             img (Optional[Union[PREDICT_FORMAT, LightningDataModule]]): The input data to run inference on.
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
             device (Optional[list]): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
 
         Returns:
-        -------
             list: The output of the inference.
         """
         # TODO: Set parameters
@@ -407,7 +396,6 @@ class AnomalibEngine(Engine):
         """Export the model to a specified format.
 
         Args:
-        ----
             model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to export.
             checkpoint (Optional[Union[str, Path]]): The checkpoint to use for exporting the model.
             precision (Optional[_PRECISION_INPUT]): The precision to use for exporting the model.
@@ -416,7 +404,6 @@ class AnomalibEngine(Engine):
             input_shape (Optional[Tuple[int, int]]): The input shape to use for exporting the model.
 
         Returns:
-        -------
             dict: A dictionary containing the exported model(s).
         """
         # Set input_shape (input_size)

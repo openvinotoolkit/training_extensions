@@ -23,12 +23,10 @@ def tuple_constructor(loader: DefaultLoader, node: yaml.SequenceNode) -> Optiona
     """Construct a tuple from a YAML sequence node.
 
     Args:
-    ----
         loader (DefaultLoader): The YAML loader.
         node (yaml.SequenceNode): The YAML sequence node.
 
     Returns:
-    -------
         Optional[tuple]: The constructed tuple, or None if the node is not a sequence.
     """
     if isinstance(node, yaml.SequenceNode):
@@ -46,7 +44,6 @@ def pre_parse_arguments() -> Dict[str, Optional[str]]:
     """Pre-parse arguments for Auto-Runner.
 
     Returns:
-    -------
         dict[str, str]: Pased arguments.
     """
     arguments: Dict[str, Optional[str]] = {"subcommand": None}
@@ -76,11 +73,9 @@ def get_short_docstring(component: TypeVar) -> Optional[str]:
     """Get the short description from the docstring.
 
     Args:
-    ----
         component (object): The component to get the docstring from
 
     Returns:
-    -------
         Optional[str]: The short description
     """
     if component.__doc__ is None:
@@ -104,7 +99,6 @@ class OTXArgumentParser(ArgumentParser):
         """Initialize the ArgumentParser object for the OpenVINO Training-Extension command line tool.
 
         Args:
-        ----
             *args: Variable length argument list.
             description (str): Description of the command line tool.
             env_prefix (str): Prefix for environment variables.
@@ -113,7 +107,6 @@ class OTXArgumentParser(ArgumentParser):
             **kwargs: Arbitrary keyword arguments.
 
         Returns:
-        -------
             None
         """
         super().__init__(
@@ -138,7 +131,6 @@ class OTXArgumentParser(ArgumentParser):
         """Add arguments from a class to a nested key of the parser.
 
         Args:
-        ----
             api_class: A callable or any subclass.
             nested_key (str): Name of the nested namespace to store arguments.
             subclass_mode (bool): Whether allow any subclass of the given class. Default to False.
@@ -147,7 +139,6 @@ class OTXArgumentParser(ArgumentParser):
             dataclass_mode (bool):  Whether api_class is dataclass_mode. Default to False.
 
         Returns:
-        -------
             List[str]: A list with the names of the class arguments added.
         """
         if callable(api_class) and not isinstance(api_class, type):
@@ -181,14 +172,12 @@ class OTXArgumentParser(ArgumentParser):
         """Check the configuration for required and optional arguments.
 
         Args:
-        ----
             cfg (Namespace): The configuration object to check.
             skip_none (bool, optional): Whether to skip arguments with a value of None. Defaults to True.
             skip_required (bool, optional): Whether to skip required arguments. Defaults to True.
             branch (Optional[str], optional): The branch to check against. Defaults to None.
 
         Returns:
-        -------
             None
         """
         # Skip This one for Flexible Configuration

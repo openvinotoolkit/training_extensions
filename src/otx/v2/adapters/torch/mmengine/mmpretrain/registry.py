@@ -61,7 +61,6 @@ class MMPretrainRegistry(MMEngineRegistry):
         """Initialize a new instance of the `Registry` class.
 
         Args:
-        ----
             name (str): The name of the registry. Defaults to "mmpretrain".
         """
         super().__init__(name)

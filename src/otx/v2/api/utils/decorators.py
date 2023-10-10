@@ -15,15 +15,12 @@ def add_subset_dataloader(subsets: List[str]) -> Callable:
     """Decorate that adds dataloader methods for each subset in the given list of subsets.
 
     Args:
-    ----
         subsets (List[str]): A list of subset names for which dataloader methods will be added.
 
     Returns:
-    -------
         Callable: A decorator function that adds dataloader methods to a class.
 
     Example:
-    -------
         >>> @add_subset_dataloader(["train", "val"])
             class MyDataset(BaseDataset):
         >>> MyDataset().train_dataloader()

@@ -29,11 +29,9 @@ def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
     """Add subparser for install command.
 
     Args:
-    ----
         subcommands_action (_ActionSubCommands): Sub-Command in CLI.
 
     Returns:
-    -------
         None
     """
     sub_parser = prepare_parser()
@@ -55,15 +53,12 @@ def install(task: str) -> int:
     """Install OTX requirements.
 
     Args:
-    ----
         task (str): Task to install requirements for.
 
     Raises:
-    ------
         ValueError: When the task is not supported.
 
     Returns:
-    -------
         int: Status code of the pip install command.
     """
     requirements_dict = get_requirements("otx")

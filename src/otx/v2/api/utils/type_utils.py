@@ -17,15 +17,12 @@ def str_to_task_type(task_type: str) -> TaskType:
     """Convert a string to a TaskType enum.
 
     Args:
-    ----
         task_type (str): The string representation of the task type.
 
     Returns:
-    -------
         TaskType: The corresponding TaskType enum.
 
     Raises:
-    ------
         ValueError: If the task type is not supported.
     """
     if task_type.upper() in map_task_type:
@@ -38,15 +35,12 @@ def str_to_train_type(train_type: str) -> TrainType:
     """Convert a string train type to a TrainType enum.
 
     Args:
-    ----
         train_type (str): The string representation of the train type.
 
     Returns:
-    -------
         TrainType: The corresponding TrainType enum.
 
     Raises:
-    ------
         ValueError: If the train type is not supported.
     """
     if train_type.upper() in map_train_type:
@@ -59,15 +53,12 @@ def str_to_subset_type(subset: str) -> Subset:
     """Convert a string representation of a subset type to a Subset enum.
 
     Args:
-    ----
         subset (str): The string representation of the subset type.
 
     Returns:
-    -------
         Subset: The corresponding Subset enum.
 
     Raises:
-    ------
         ValueError: If the subset type is not supported.
     """
     map_short_str = {"train": "training", "val": "validation", "test": "testing", "unlabel": "unlabeled"}

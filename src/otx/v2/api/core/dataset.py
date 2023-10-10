@@ -124,7 +124,6 @@ class BaseDatasetAdapter:
         """Initialize a new instance of the DatasetAdapter class.
 
         Args:
-        ----
             task_type (TaskType): The type of task that the dataset is intended for.
             train_data_roots (Optional[str], optional): The root directory or directories containing the training data.
                 Defaults to None.
@@ -172,7 +171,6 @@ def get_dataset_adapter(
     """Return a dataset class by task type.
 
     Args:
-    ----
         task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
             CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
         train_type: train type such as Incremental and Selfsupervised.
@@ -210,7 +208,6 @@ class BaseDataset:
     """Base class for providing the underlying Dataset API for each framework.
 
     Example:
-    -------
     >>> dataset = Dataset(
         train_data_roots="train/data/roots/",
         val_data_roots="val/data/roots/",
@@ -235,7 +232,6 @@ class BaseDataset:
         """BaseDataset, Classes that provide the underlying Dataset API for each framework.
 
         Args:
-        ----
             task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load.
                 Defaults to None.
             train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load.
@@ -280,7 +276,6 @@ class BaseDataset:
         This can also be detected automatically by using Task-Type, Train-Type with data_roots.
 
         Args:
-        ----
             data_roots (Optional[str], optional): The root address of the dataset to be used for Task
                 or Train-Type auto detection.
 
@@ -335,7 +330,6 @@ class BaseDataset:
         It needs to be implemented to use a decorator called @add_subset_dataloader.
 
         Args:
-        ----
             subset (str): Subset of dataloader.
             pipeline (Optional[Union[List, Dict]], optional): The data pipe to apply to that dataset. Defaults to None.
             batch_size (Optional[int], optional): Batch size of this dataloader. Defaults to None.
@@ -343,11 +337,9 @@ class BaseDataset:
             **kwargs (optional): Additional keyword arguments to be passed to the dataloader.
 
         Returns:
-        -------
             DataLoader: The dataloader for the specified subset.
 
         Example:
-        -------
         >>> train_dataloader = dataset.train_dataloader()
         Dataloader()
         >>> train_dataloader = dataset.train_dataloader(batch_size=4, num_workers=2)
@@ -390,7 +382,6 @@ class BaseDataset:
         """Returns the path to the training annotation files for this dataset.
 
         Returns:
-        -------
             Optional[str]: The path to the training annotation files, or None if not set.
         """
         return self._train_ann_files
@@ -418,7 +409,6 @@ class BaseDataset:
         """Returns the path to the validation annotation files for this dataset.
 
         Returns:
-        -------
             Optional[str]: The path to the validation annotation files, or None if not set.
         """
         return self._val_ann_files
@@ -446,7 +436,6 @@ class BaseDataset:
         """Returns the path to the test annotation files for this dataset.
 
         Returns:
-        -------
             Optional[str]: The path to the test annotation files, or None if not set.
         """
         return self._test_ann_files
@@ -474,7 +463,6 @@ class BaseDataset:
         """Returns the path to the unlabeled image list for this dataset.
 
         Returns:
-        -------
             Optional[str]: The path to the unlabeled image list, or None if not set.
         """
         return self._unlabeled_file_list

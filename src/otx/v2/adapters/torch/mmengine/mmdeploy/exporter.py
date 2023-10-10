@@ -36,7 +36,6 @@ class Exporter:
         """Initialize Exporter.
 
         Args:
-        ----
             config (Config): recipe config which contains model config
             checkpoint (str): model weights
             deploy_config (Config): deploy config which contains deploy info

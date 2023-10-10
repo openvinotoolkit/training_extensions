@@ -34,11 +34,9 @@ def get_verbose_usage(subcommand: str = "train") -> str:
     """Return a string containing verbose usage information for the specified subcommand.
 
     Args:
-    ----
         subcommand (str): The name of the subcommand to get verbose usage information for. Defaults to "train".
 
     Returns:
-    -------
         str: A string containing verbose usage information for the specified subcommand.
     """
     return f"""
@@ -56,15 +54,12 @@ def get_cli_usage_docstring(component: Optional[object]) -> Optional[str]:
     r"""Get the cli usage from the docstring.
 
     Args:
-    ----
         component (Optional[object]): The component to get the docstring from
 
     Returns:
-    -------
         Optional[str]: The quick-start guide as Markdown format.
 
     Example:
-    -------
         component.__doc__ = '''
             <Prev Section>
 
@@ -95,7 +90,6 @@ def get_intro() -> Markdown:
     The introduction text includes a brief description of the guide and links to the Github repository and documentation
 
     Returns:
-    -------
         A Markdown object containing the introduction text for the OpenVINO™ Training Extensions CLI Guide.
     """
     intro_markdown = """
@@ -113,11 +107,9 @@ def render_guide(subcommand: Optional[str] = None) -> list:
     """Render a guide for the specified subcommand.
 
     Args:
-    ----
         subcommand (Optional[str]): The subcommand to render the guide for.
 
     Returns:
-    -------
         list: A list of contents to be displayed in the guide.
     """
     if subcommand is None:
@@ -139,7 +131,6 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
     a more detailed and customizable help output for the OpenVINO™ Training Extensions CLI.
 
     Attributes:
-    ----------
     verbose_level : int
         The level of verbosity for the help output.
     non_skip_list : set
@@ -148,7 +139,6 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         The subcommand to render the guide for.
 
     Methods:
-    -------
     add_usage(usage, actions, *args, **kwargs)
         Add usage information to the help output.
     add_argument(action)
@@ -166,14 +156,12 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         """Add usage information to the formatter.
 
         Args:
-        ----
             usage (Optional[str], optional): A string describing the usage of the program.
             actions (Iterable): An iterable of argparse.Action objects.
             *args (Any): Additional positional arguments to pass to the superclass method.
             **kwargs (Any): Additional keyword arguments to pass to the superclass method.
 
         Returns:
-        -------
             None
         """
         if self.verbose_level == 0:
@@ -190,7 +178,6 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         If the verbose level is set to 1 and the argument is not in the non-skip list, the argument is not added.
 
         Args:
-        ----
             action (argparse.Action): The action to add to the help formatter.
         """
         if self.verbose_level == 0:
@@ -206,7 +193,6 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         as well as any additional information provided by the command's help guide.
 
         Returns:
-        -------
             str: A string containing the formatted help message.
         """
         with self.console.capture() as capture:

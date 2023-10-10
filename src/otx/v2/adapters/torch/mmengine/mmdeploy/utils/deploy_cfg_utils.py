@@ -23,12 +23,10 @@ def patch_input_preprocessing(
     The function then sets default values for the backend configuration in `deploy_cfg`.
 
     Args:
-    ----
         cfg (mmcv.ConfigDict): Config object containing test pipeline and other configurations.
         deploy_cfg (mmcv.ConfigDict): DeployConfig object containing backend configuration.
 
     Returns:
-    -------
         None: This function updates the input `deploy_cfg` object directly.
     """
     # Set options based on Normalize config

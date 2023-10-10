@@ -98,11 +98,9 @@ def local_master_only(func: Callable) -> Callable:
     """Allow a function to be executed only by the local master process in distributed training setup.
 
     Args:
-    ----
         func: the function to be decorated.
 
     Returns:
-    -------
         A wrapped function that can only be executed by the local master process.
     """
 

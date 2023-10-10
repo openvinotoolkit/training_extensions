@@ -26,14 +26,12 @@ def get_model(
     """Return a torch.nn.Module object based on the provided model configuration or anomalib model api.
 
     Args:
-    ----
         model (Optional[Union[Dict[str, Any], DictConfig, str]]): The model configuration. Can be a dictionary,
             a DictConfig object, or a path to a YAML file containing the configuration.
         checkpoint (Optional[str]): The path to a checkpoint file to load weights from.
         **kwargs: Additional keyword arguments to pass to the `anomalib_get_model` function.
 
     Returns:
-    -------
         torch.nn.Module: The model object.
 
     """
@@ -55,11 +53,9 @@ def list_models(pattern: Optional[str] = None) -> List[str]:
     """Return a list of available model names.
 
     Args:
-    ----
         pattern (Optional[str]): A pattern to filter the model names. Defaults to None.
 
     Returns:
-    -------
         List[str]: A sorted list of available model names.
     """
     model_list = list(MODEL_CONFIGS.keys())

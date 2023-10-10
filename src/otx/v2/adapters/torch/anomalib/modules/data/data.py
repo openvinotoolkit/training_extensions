@@ -47,12 +47,10 @@ class OTXAnomalyDataset(Dataset):
     is a sub-class of Vision Dataset.
 
     Args:
-    ----
         config (Union[DictConfig, ListConfig]): Anomalib config
         dataset (DatasetEntity): [description]: OTX SDK Dataset
 
     Example:
-    -------
         >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
         >>> from otx.utils.data import AnomalyDataset
 
@@ -86,7 +84,6 @@ class OTXAnomalyDataset(Dataset):
         """Get size of the dataset.
 
         Returns:
-        -------
             int: Size of the dataset.
         """
         return len(self.dataset)
@@ -95,15 +92,12 @@ class OTXAnomalyDataset(Dataset):
         """Get dataset item.
 
         Args:
-        ----
             index (int): Index of the dataset sample.
 
         Raises:
-        ------
             ValueError: When the task type is not supported.
 
         Returns:
-        -------
             Dict[str, Union[int, Tensor]]: Dataset item.
         """
         dataset_item = self.dataset[index]
@@ -158,12 +152,10 @@ class OTXAnomalyDataModule(LightningDataModule):
     train/val/test dataloaders.
 
     Args:
-    ----
         config (Union[DictConfig, ListConfig]): Anomalib config
         dataset (DatasetEntity): OTX SDK Dataset
 
     Example:
-    -------
         >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
         >>> from otx.utils.data import AnomalyDataModule
 
@@ -197,7 +189,6 @@ class OTXAnomalyDataModule(LightningDataModule):
         """Setup Anomaly Data Module.
 
         Args:
-        ----
             stage (Optional[str], optional): train/val/test stages.
                 Defaults to None.
         """
@@ -238,7 +229,6 @@ class OTXAnomalyDataModule(LightningDataModule):
         """Train Dataloader.
 
         Returns:
-        -------
             Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
         """
         dataset = OTXAnomalyDataset(self.config, self.train_otx_dataset, self.task_type)
@@ -254,7 +244,6 @@ class OTXAnomalyDataModule(LightningDataModule):
         """Validation Dataloader.
 
         Returns:
-        -------
             Union[DataLoader, List[DataLoader]]: Validation Dataloader.
         """
         global_dataset, local_dataset = split_local_global_dataset(self.val_otx_dataset)
@@ -278,7 +267,6 @@ class OTXAnomalyDataModule(LightningDataModule):
         """Test Dataloader.
 
         Returns:
-        -------
             Union[DataLoader, List[DataLoader]]: Test Dataloader.
         """
         dataset = OTXAnomalyDataset(self.config, self.test_otx_dataset, self.task_type)
@@ -294,7 +282,6 @@ class OTXAnomalyDataModule(LightningDataModule):
         """Predict Dataloader.
 
         Returns:
-        -------
             Union[DataLoader, List[DataLoader]]: Predict Dataloader.
         """
         dataset = OTXAnomalyDataset(self.config, self.predict_otx_dataset, self.task_type)

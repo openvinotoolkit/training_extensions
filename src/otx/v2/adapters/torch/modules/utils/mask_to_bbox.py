@@ -26,11 +26,9 @@ def mask_to_border(mask: np.ndarray) -> np.ndarray:
     """Make a border by using a binary mask.
 
     Args:
-    ----
         mask (np.ndarray): Input binary mask
 
     Returns:
-    -------
         np.ndarray: Border image.
     """
     h, w = mask.shape
@@ -50,11 +48,9 @@ def mask2bbox(mask: np.ndarray) -> List[List[int]]:
     """Mask to bounding boxes.
 
     Args:
-    ----
         mask (np.ndarray): Input binary mask
 
     Returns:
-    -------
         List[List[int]]: Bounding box coordinates
     """
     bboxes: List[List[int]] = []

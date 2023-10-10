@@ -30,7 +30,6 @@ def get_adapters_status() -> Dict[str, Dict]:
     """Return the available and version information for each adapter.
 
     Returns:
-    -------
         dict[str, dict[str, Union[bool, float]]]: the available and version information.
     """
     adapters_status: Dict[str, Dict] = {}
@@ -48,11 +47,9 @@ def get_environment_table(task: Optional[str] = None, verbose: Optional[bool] = 
     """Get table provides the availability of each tasks.
 
     Args:
-    ----
         verbose (bool, optional): Show more detail dependencies. Defaults to False.
 
     Returns:
-    -------
         str: String of rich.table.Table.
     """
     table = Table(title="Current Evironment Status of OTX")
@@ -103,11 +100,9 @@ def get_task_status(task: Optional[str] = None) -> Dict[str, Dict]:
     """Check if the requirement for each task is currently available.
 
     Args:
-    ----
         task (Optional[str], optional): Task available in OTX. Defaults to None.
 
     Returns:
-    -------
         Dict[str, Dict[str, Optional[Union[bool, str, List]]]]: Information about availability by task.
     """
     adapter_status = get_adapters_status()
@@ -140,7 +135,6 @@ def check_torch_cuda() -> Tuple[Optional[float], bool]:
     """Information about whether or not TORCH is available.
 
     Returns:
-    -------
         tuple[Optional[float], bool]: The version of torch and the value of cuda.is_available().
     """
     has_torch = importlib.util.find_spec("torch")

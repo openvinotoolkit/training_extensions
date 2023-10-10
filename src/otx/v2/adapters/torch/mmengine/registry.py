@@ -61,7 +61,6 @@ class MMEngineRegistry(BaseRegistry):
     """A registry for registering and retrieving MMEngine modules.
 
     Attributes:
-    ----------
         name (str): The name of the registry.
     """
 
@@ -69,7 +68,6 @@ class MMEngineRegistry(BaseRegistry):
         """Initialize a new instance of the MMEngineRegistry class.
 
         Args:
-        ----
             name (str): The name of the registry. Defaults to "mmengine".
         """
         super().__init__(name)

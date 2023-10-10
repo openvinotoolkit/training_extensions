@@ -34,7 +34,6 @@ class AnomalibRegistry(BaseRegistry):
     """A registry for registering and retrieving anomaly modules.
 
     Attributes:
-    ----------
         name (str): The name of the registry.
     """
 
@@ -42,7 +41,6 @@ class AnomalibRegistry(BaseRegistry):
         """Initialize a new instance of the AnomalibRegistry class.
 
         Args:
-        ----
             name (str): The name of the registry. Defaults to "anomalib".
         """
         super().__init__(name)
@@ -59,11 +57,9 @@ class AnomalibRegistry(BaseRegistry):
         """Retrieve a registered module by its type.
 
         Args:
-        ----
             module_type (str): The type of the module to retrieve.
 
         Returns:
-        -------
             Optional[Callable]: The registered module, or None if not found.
         """
         # The module_dict is the highest priority.
