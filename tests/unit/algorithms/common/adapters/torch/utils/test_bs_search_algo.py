@@ -74,18 +74,21 @@ class TestBsSearchAlgo:
         # mocking torch.distributed.broadcast
         def mock_broadcast(tensor: torch.Tensor, src: int):
             tensor.copy_(broadcast_val)
+
         self.mock_dist.broadcast.side_effect = mock_broadcast
 
         # mocking torch.distributed.gather if gather_val is given
         def mock_gather(tensor: torch.Tensor, gather_list: Optional[List[torch.Tensor]] = None, dst: int = 0):
             for i in range(len(gather_list)):
                 gather_list[i].copy_(gather_val[i])
+
         if gather_val is not None:
             self.mock_dist.gather.side_effect = mock_gather
 
         # revert some of torch function
         def mock_tensor_cuda(self, *args, **kwargs):
             return self
+
         torch.Tensor.cuda = mock_tensor_cuda
         self.mock_torch.tensor = torch.tensor
         self.mock_torch.int64 = torch.int64
@@ -128,7 +131,7 @@ class TestBsSearchAlgo:
             gather_val=[
                 torch.tensor([False, 3000], dtype=torch.int64),
                 torch.tensor([True, 4000], dtype=torch.int64),
-            ]
+            ],
         )
         mock_train_func = self.get_mock_train_func(cuda_oom_bound=10000, max_runnable_bs=80)
         batch_size = 40
