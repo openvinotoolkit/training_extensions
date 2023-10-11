@@ -11,8 +11,8 @@ from typing import Any, Dict, Union
 import torch
 
 import otx
+from otx.algorithms.common.utils import is_xpu_available
 from otx.api.entities.model_template import ModelTemplate
-
 
 def get_otx_report(
     model_template: ModelTemplate,
@@ -88,6 +88,14 @@ def env_info_to_str():
             for name, device_ids in devices.items():
                 env_info["GPU " + ",".join(device_ids)] = name
         env_info["PyTorch"] = torch.__version__
+
+    if is_xpu_available():
+        devices = defaultdict(list)
+        for k in range(torch.xpu.device_count()):
+            devices[torch.xpu.get_device_name(k)].append(str(k))
+        for name, device_ids in devices.items():
+            env_info["GPU " + ",".join(device_ids)] = name
+
     for key, value in env_info.items():
         report_str += f"\t{key}: {value}\n"
     return report_str
