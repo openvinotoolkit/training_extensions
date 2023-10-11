@@ -1,7 +1,8 @@
 """TinyViT for MobileSAM."""
 
 # Copyright (c) 2022 Microsoft
-
+# https://github.com/ChaoningZhang/MobileSAM
+#
 
 import itertools
 from typing import Tuple
