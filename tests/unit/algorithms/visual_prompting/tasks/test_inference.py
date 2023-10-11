@@ -79,11 +79,14 @@ class TestInferenceTask:
     @e2e_pytest_unit
     @pytest.mark.parametrize("path", [None, "checkpoint.ckpt", "checkpoint.pth"])
     @pytest.mark.parametrize("resume", [True, False])
-    @pytest.mark.parametrize("load_return_value", [
+    @pytest.mark.parametrize(
+        "load_return_value",
+        [
             {"state_dict": {"layer": "weights"}, "pytorch-lightning_version": "version"},
             {"model": {"layer": "weights"}, "config": {"model": {"backbone": "sam_vit_b"}}},
-            {}
-    ])
+            {},
+        ],
+    )
     def test_load_model(self, mocker, load_inference_task, path: str, resume: bool, load_return_value: Dict[str, Any]):
         """Test load_model."""
         mocker_segment_anything = mocker.patch(

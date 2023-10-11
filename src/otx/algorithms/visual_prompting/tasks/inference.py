@@ -106,6 +106,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.optimization_type = ModelOptimizationType.MO
 
         self.trainer: Trainer
+        self._model_ckpt: str
 
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
@@ -134,10 +135,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         resume_from_checkpoint: Optional[str] = None
         if self.mode == "train" and self.task_environment.model is not None:
             # when args.load_weights or args.resume_from is set
+            checkpoint_path = str(self.task_environment.model.model_adapters.get("path", None))
             if self.task_environment.model.model_adapters.get("resume", False):
-                resume_from_checkpoint = self.task_environment.model.model_adapters.get("path", None)
+                resume_from_checkpoint = checkpoint_path
             else:
-                model_checkpoint = self.task_environment.model.model_adapters.get("path", None)
+                model_checkpoint = checkpoint_path
 
         config = get_visual_promtping_config(
             task_name=self.model_name,
@@ -187,7 +189,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         elif otx_model.model_adapters.get("resume", False):
             # If resuming, pass this part to load checkpoint in Trainer
             logger.info(f"To resume {otx_model.model_adapters.get('path')}, the checkpoint will be loaded in Trainer.")
-            
+
         else:
             # Load state_dict
             buffer = io.BytesIO(otx_model.get_data("weights.pth"))
@@ -205,7 +207,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     )
                     self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
                 state_dict = model_data["model"]
-                
+
             else:
                 # Load state_dict from naive pytorch checkpoint
                 state_dict = model_data
