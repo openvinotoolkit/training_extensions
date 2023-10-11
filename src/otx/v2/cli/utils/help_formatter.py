@@ -6,6 +6,7 @@
 
 import argparse
 import re
+import sys
 from typing import Iterable, Optional
 
 from jsonargparse import DefaultHelpFormatter
@@ -16,18 +17,68 @@ from rich_argparse import RichHelpFormatter
 from otx.v2.api.core import Engine
 
 # TODO: Let's think about how to manage it more efficiently.
-NONSKIP_LIST = {
-    "config",
-    "print_config",
-    "data.train_data_roots",
-    "data.val_data_roots",
-    "data.test_data_roots",
-    "model.name",
-    "checkpoint",
-    "data.task",
-    "img",
-    "work_dir",
+BASE_ARGUMENTS = {"work_dir", "config", "print_config", "help"}
+REQUIRED_ARGUMENTS = {
+    "train": {"model.name", "data.task", "data.train_data_roots", "data.val_data_roots", "checkpoint"}.union(
+        BASE_ARGUMENTS,
+    ),
+    "validate": {"model.name", "data.val_data_roots", "checkpoint"}.union(BASE_ARGUMENTS),
+    "test": {"model.name", "data.test_data_roots", "checkpoint"}.union(BASE_ARGUMENTS),
+    "predict": {"model.name", "img", "checkpoint"}.union(BASE_ARGUMENTS),
+    "export": {"model.name", "checkpoint"}.union(BASE_ARGUMENTS),
 }
+
+
+def pre_parse_arguments() -> dict:
+    """Pre-parse arguments for Auto-Runner.
+
+    Returns:
+        dict[str, str]: Pased arguments.
+    """
+    arguments: dict = {"subcommand": None}
+    i = 1
+    while i < len(sys.argv):
+        if sys.argv[i].startswith("--"):
+            key = sys.argv[i][2:]
+            value = None
+            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--"):
+                value = sys.argv[i + 1]
+                i += 1
+            arguments[key] = value
+        elif sys.argv[i].startswith("-"):
+            key = sys.argv[i][1:]
+            value = None
+            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-"):
+                value = sys.argv[i + 1]
+                i += 1
+            arguments[key] = value
+        elif i == 1:
+            arguments["subcommand"] = sys.argv[i]
+        i += 1
+    return arguments
+
+
+def get_verbosity_subcommand() -> tuple:
+    """Returns a tuple containing the verbosity level and the subcommand name.
+
+    The verbosity level is determined by the command line arguments passed to the script.
+    If the subcommand requires additional arguments, the verbosity level is only set if the
+    help option is specified. The verbosity level can be set to 0 (no output), 1 (normal output),
+    or 2 (verbose output).
+
+    Returns:
+        A tuple containing the verbosity level (int) and the subcommand name (str).
+    """
+    arguments = pre_parse_arguments()
+    verbosity = 2
+    if arguments["subcommand"] in REQUIRED_ARGUMENTS and ("h" in arguments or "help" in arguments):
+        if "v" in arguments:
+            verbosity = 1
+        elif "vv" in arguments:
+            verbosity = 2
+        else:
+            verbosity = 0
+    return verbosity, arguments["subcommand"]
 
 
 def get_verbose_usage(subcommand: str = "train") -> str:
@@ -133,8 +184,6 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
     Attributes:
     verbose_level : int
         The level of verbosity for the help output.
-    non_skip_list : set
-        A set of argument destinations that should not be skipped in the help output.
     subcommand : str, optional
         The subcommand to render the guide for.
 
@@ -145,12 +194,9 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         Add an argument to the help output.
     format_help()
         Format the help output.
-
     """
 
-    verbose_level: int = 2
-    non_skip_list = NONSKIP_LIST
-    subcommand: Optional[str] = None
+    verbose_level, subcommand = get_verbosity_subcommand()
 
     def add_usage(self, usage: Optional[str], actions: Iterable[argparse.Action], *args, **kwargs) -> None:
         """Add usage information to the formatter.
@@ -164,10 +210,11 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         Returns:
             None
         """
-        if self.verbose_level == 0:
-            actions = []
-        elif self.verbose_level == 1:
-            actions = [action for action in actions if action.dest in self.non_skip_list]
+        if self.subcommand in REQUIRED_ARGUMENTS:
+            if self.verbose_level == 0:
+                actions = []
+            elif self.verbose_level == 1:
+                actions = [action for action in actions if action.dest in REQUIRED_ARGUMENTS[self.subcommand]]
 
         super().add_usage(usage, actions, *args, **kwargs)
 
@@ -180,10 +227,11 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         Args:
             action (argparse.Action): The action to add to the help formatter.
         """
-        if self.verbose_level == 0:
-            return
-        if self.verbose_level == 1 and action.dest not in self.non_skip_list:
-            return
+        if self.subcommand in REQUIRED_ARGUMENTS:
+            if self.verbose_level == 0:
+                return
+            if self.verbose_level == 1 and action.dest not in REQUIRED_ARGUMENTS[self.subcommand]:
+                return
         super().add_argument(action)
 
     def format_help(self) -> str:
@@ -197,7 +245,7 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
         """
         with self.console.capture() as capture:
             section = self._root_section
-            if self.verbose_level in (0, 1) and len(section.rich_items) > 1:
+            if self.subcommand in REQUIRED_ARGUMENTS and self.verbose_level in (0, 1) and len(section.rich_items) > 1:
                 contents = render_guide(self.subcommand)
                 for content in contents:
                     self.console.print(content)

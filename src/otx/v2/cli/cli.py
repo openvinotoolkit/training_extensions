@@ -5,7 +5,6 @@
 
 
 import datetime
-import sys
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Type, Union
@@ -24,8 +23,8 @@ from otx.v2 import OTX_LOGO, __version__
 from otx.v2.api.core import AutoRunner, BaseDataset, Engine
 from otx.v2.api.utils.logger import get_logger
 from otx.v2.cli.extensions import CLI_EXTENSIONS
-from otx.v2.cli.utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments
-from otx.v2.cli.utils.help_formatter import OTXHelpFormatter, render_guide
+from otx.v2.cli.utils.arg_parser import OTXArgumentParser, get_short_docstring
+from otx.v2.cli.utils.help_formatter import pre_parse_arguments, render_guide
 from otx.v2.cli.utils.workspace import Workspace
 
 ArgsType = Optional[Union[list, dict, Namespace]]
@@ -148,8 +147,6 @@ class OTXCLIv2:
     ) -> OTXArgumentParser:
         """Initialize and setup the parser, subcommands, and arguments."""
         parser = self.init_parser(**main_kwargs)
-        # Check -hh or --verbose
-        self._check_verbose_help_format(parser)
         self._subcommand_method_arguments: Dict[str, List[str]] = {}
         self.parser_subcommands = parser.add_subcommands()
         self._set_extension_subcommands_parser()
@@ -477,27 +474,6 @@ class OTXCLIv2:
         dl_kwargs.pop("subset", None)
         dl_kwargs.pop("dataset", None)
         return dl_kwargs
-
-    def _check_verbose_help_format(self, parser: OTXArgumentParser) -> None:
-        subcommand = self.pre_args.get("subcommand", None)
-        if issubclass(parser.formatter_class, OTXHelpFormatter):
-            # TODO: how to use verbose count value
-            if subcommand not in self.engine_subcommands():
-                pass
-            elif "v" in self.pre_args:
-                sys.argv.append("--help")
-                parser.formatter_class.verbose_level = 1
-                parser.formatter_class.subcommand = subcommand
-            elif "vv" in self.pre_args:
-                sys.argv.append("--help")
-                parser.formatter_class.verbose_level = 2
-                parser.formatter_class.subcommand = subcommand
-            elif subcommand is not None:
-                # -v Applies only to subcommands provided by Engine.
-                parser.formatter_class.verbose_level = 0
-                parser.formatter_class.subcommand = subcommand
-        else:
-            self.console.print("The current Help Formatter does not support the verbose help format.")
 
 
 def main() -> None:

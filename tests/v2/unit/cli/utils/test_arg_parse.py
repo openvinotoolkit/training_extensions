@@ -1,22 +1,9 @@
-import sys
-from typing import Dict, Optional
-
 import pytest
 import yaml
 from jsonargparse import Namespace
-from otx.v2.cli.utils.arg_parser import OTXArgumentParser, get_short_docstring, pre_parse_arguments, tuple_constructor
+from otx.v2.cli.utils.arg_parser import OTXArgumentParser, get_short_docstring, tuple_constructor
 from pytest_mock.plugin import MockerFixture
 
-
-def test_pre_parse_arguments(mocker: MockerFixture) -> None:
-    argv = ["otx", "subcommand", "--arg1", "value1", "-a2", "value2"]
-    mocker.patch.object(sys, "argv", argv)
-    expected_output: Dict[str, Optional[str]] = {
-        "subcommand": "subcommand",
-        "arg1": "value1",
-        "a2": "value2",
-    }
-    assert pre_parse_arguments() == expected_output
 
 def test_tuple_constructor() -> None:
     loader = yaml.Loader("")

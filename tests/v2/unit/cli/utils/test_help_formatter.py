@@ -1,13 +1,47 @@
+import sys
+
 import pytest
 from _pytest.capture import CaptureFixture
+from _pytest.monkeypatch import MonkeyPatch
 from otx.v2.cli.utils.arg_parser import OTXArgumentParser
 from otx.v2.cli.utils.help_formatter import (
     OTXHelpFormatter,
     get_cli_usage_docstring,
     get_verbose_usage,
+    get_verbosity_subcommand,
+    pre_parse_arguments,
     render_guide,
 )
+from pytest_mock.plugin import MockerFixture
 
+
+def test_pre_parse_arguments(mocker: MockerFixture) -> None:
+    argv = ["otx", "subcommand", "--arg1", "value1", "-a2", "value2"]
+    mocker.patch.object(sys, "argv", argv)
+    expected_output: dict = {
+        "subcommand": "subcommand",
+        "arg1": "value1",
+        "a2": "value2",
+    }
+    assert pre_parse_arguments() == expected_output
+
+
+def test_get_verbosity_subcommand(mocker: MockerFixture) -> None:
+    argv = ["otx", "train", "-h"]
+    mocker.patch.object(sys, "argv", argv)
+    assert get_verbosity_subcommand() == (0, "train")
+
+    argv = ["otx", "train", "-h", "-v"]
+    mocker.patch.object(sys, "argv", argv)
+    assert get_verbosity_subcommand() == (1, "train")
+
+    argv = ["otx", "train", "-h", "-vv"]
+    mocker.patch.object(sys, "argv", argv)
+    assert get_verbosity_subcommand() == (2, "train")
+
+    argv = ["otx", "-h"]
+    mocker.patch.object(sys, "argv", argv)
+    assert get_verbosity_subcommand() == (2, None)
 
 def test_get_verbose_usage() -> None:
     subcommand = "test111"
@@ -51,8 +85,12 @@ def test_render_guide() -> None:
 
 class TestOTXHelpFormatter:
     @pytest.fixture()
-    def mock_parser(self) -> OTXArgumentParser:
+    def mock_parser(self, monkeypatch: MonkeyPatch) -> OTXArgumentParser:
         parser = OTXArgumentParser()
+        mock_arguments = {
+            "train": {"never_skip"},
+        }
+        monkeypatch.setattr("otx.v2.cli.utils.help_formatter.REQUIRED_ARGUMENTS", mock_arguments)
         parser.formatter_class.non_skip_list = {"never_skip"}
         parser.formatter_class.subcommand = "train"
         parser.add_argument(

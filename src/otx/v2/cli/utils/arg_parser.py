@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import sys
-from typing import Callable, Dict, List, Optional, TypeVar
+from typing import Callable, List, Optional, TypeVar
 
 import docstring_parser
 import yaml
@@ -38,35 +37,6 @@ def tuple_constructor(loader: DefaultLoader, node: yaml.SequenceNode) -> Optiona
 
 
 DefaultLoader.add_constructor("tag:yaml.org,2002:python/tuple", tuple_constructor)
-
-
-def pre_parse_arguments() -> Dict[str, Optional[str]]:
-    """Pre-parse arguments for Auto-Runner.
-
-    Returns:
-        dict[str, str]: Pased arguments.
-    """
-    arguments: Dict[str, Optional[str]] = {"subcommand": None}
-    i = 1
-    while i < len(sys.argv):
-        if sys.argv[i].startswith("--"):
-            key = sys.argv[i][2:]
-            value = None
-            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--"):
-                value = sys.argv[i + 1]
-                i += 1
-            arguments[key] = value
-        elif sys.argv[i].startswith("-"):
-            key = sys.argv[i][1:]
-            value = None
-            if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("-"):
-                value = sys.argv[i + 1]
-                i += 1
-            arguments[key] = value
-        elif i == 1:
-            arguments["subcommand"] = sys.argv[i]
-        i += 1
-    return arguments
 
 
 def get_short_docstring(component: TypeVar) -> Optional[str]:

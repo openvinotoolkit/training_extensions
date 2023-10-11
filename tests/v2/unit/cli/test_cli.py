@@ -326,37 +326,6 @@ class TestCLIv2:
         with pytest.raises(NotImplementedError, match="trein is not implemented."):
             cli.run(subcommand="trein")
 
-    def test_check_verbose_help_format(self, mocker: MockerFixture) -> None:
-        mocker.patch("otx.v2.cli.cli.OTXCLIv2.__init__", return_value=None)
-        cli = OTXCLIv2()
-        cli.console = mocker.MagicMock()
-        cli.console.print = mocker.MagicMock()
-        cli.parser = cli.init_parser()
-
-        # 1) subcommand is None -> Nothing happen.
-        cli.pre_args = {"subcommand": None}
-        cli._check_verbose_help_format(cli.parser)
-
-        # 2) subcommand is 'train' & without verbose
-        cli.pre_args = {"subcommand": "train"}
-        cli._check_verbose_help_format(cli.parser)
-        assert cli.parser.formatter_class.verbose_level == 0
-
-        # 3) subcommand is 'train' & verbose is 1
-        cli.pre_args = {"subcommand": "train", "v": None}
-        cli._check_verbose_help_format(cli.parser)
-        assert cli.parser.formatter_class.verbose_level == 1
-
-        # 4) subcommand is 'train' & verbose is 2
-        cli.pre_args = {"subcommand": "train", "vv": None}
-        cli._check_verbose_help_format(cli.parser)
-        assert cli.parser.formatter_class.verbose_level == 2
-
-        # 5) formatter_class is not OTXHelpFormatter -> just printout
-        cli.parser.formatter_class = mocker.Mock
-        cli._check_verbose_help_format(cli.parser)
-        cli.console.print.assert_called_once()
-
     def test_version_output(self) -> None:
         result = subprocess.run(args=["otx", "-V"], capture_output=True, text=True, check=False)
         assert result.returncode == 0
