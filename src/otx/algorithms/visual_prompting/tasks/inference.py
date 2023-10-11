@@ -106,7 +106,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.optimization_type = ModelOptimizationType.MO
 
         self.trainer: Trainer
-        self._model_ckpt: str
+        self._model_ckpt: Optional[str] = None
 
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
@@ -403,6 +403,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
            Dict: Model info.
         """
+        if not self._model_ckpt:
+            logger.warn(f"model checkpoint is not set, return empty dictionary.")
+            return {}
         return torch.load(self._model_ckpt, map_location="cpu")
 
     def save_model(self, output_model: ModelEntity) -> None:
