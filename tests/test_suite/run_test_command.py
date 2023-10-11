@@ -671,7 +671,9 @@ def nncf_export_testing(template, root):
     ckpt = torch.load(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
     input_size = ckpt.get("input_size", None)
     if input_size:
-        with open(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml", encoding="utf-8") as xml_stream:
+        with open(
+            f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml", encoding="utf-8"
+        ) as xml_stream:
             xml_model = xml_stream.read()
             assert f"{input_size[1]},{input_size[0]}" in xml_model
 
