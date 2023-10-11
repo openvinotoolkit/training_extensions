@@ -579,7 +579,9 @@ class TestTrainer:
     def test_delete_unused_model_weight(self, mocker, cls_template_path):
         # prepare
         trial0_weight_dir = self.hpo_workdir / "weight" / "0"
-        mocker.patch("otx.cli.utils.hpo.TaskManager.get_latest_weight", return_value=str(trial0_weight_dir / "latest.pth"))
+        mocker.patch(
+            "otx.cli.utils.hpo.TaskManager.get_latest_weight", return_value=str(trial0_weight_dir / "latest.pth")
+        )
         mocker.patch("otx.cli.utils.hpo.get_best_hpo_weight", return_value=str(trial0_weight_dir / "best.pth"))
 
         self.hpo_workdir.mkdir()
@@ -604,9 +606,12 @@ class TestTrainer:
         )
         trainer._delete_unused_model_weight()
 
-
-        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "0").iterdir()]) == sorted(["latest.pth", "best.pth"])
-        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "1").iterdir()]) == sorted(["latest.pth", "best.pth", "unused.pth"])
+        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "0").iterdir()]) == sorted(
+            ["latest.pth", "best.pth"]
+        )
+        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "1").iterdir()]) == sorted(
+            ["latest.pth", "best.pth", "unused.pth"]
+        )
 
 
 class TestHpoCallback:
