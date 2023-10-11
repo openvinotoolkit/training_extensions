@@ -4,14 +4,15 @@ from typing import Iterator
 
 import numpy as np
 from torch.utils.data import Dataset
-from torch.utils.data.sampler import Sampler
 
 from otx.v2.api.utils.logger import get_logger
+
+from .otx_sampler import OTXSampler
 
 logger = get_logger()
 
 
-class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
+class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attributes
     """Balanced sampler for imbalanced data for class-incremental task.
 
     This sampler is a sampler that creates an effective batch
@@ -33,6 +34,7 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         num_replicas: int = 1,
         rank: int = 0,
         drop_last: bool = False,
+        use_adaptive_repeats: bool = False,
     ) -> None:
         """Initialize a BalancedSampler object.
 
@@ -43,21 +45,15 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             num_replicas (int, optional): The number of replicas. Defaults to 1.
             rank (int, optional): The rank. Defaults to 0.
             drop_last (bool, optional): Whether to drop the last batch if it's incomplete. Defaults to False.
+            use_adaptive_repeats (bool): Whether to use adaptive repeats.
         """
-        self.batch_size = batch_size
-        self.repeat = 1
-        if hasattr(dataset, "times"):
-            self.repeat = dataset.times
-        if hasattr(dataset, "dataset"):
-            self.dataset = dataset.dataset
-        else:
-            self.dataset = dataset
-        self.img_indices = self.dataset.img_indices
-        self.num_cls = len(self.img_indices.keys())
-        self.data_length = len(self.dataset)
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
+        super().__init__(dataset, batch_size, use_adaptive_repeats)
+        self.img_indices = self.dataset.img_indices
+        self.num_cls = len(self.img_indices.keys())
+        self.data_length = len(self.dataset)
 
         if efficient_mode:
             # Reduce the # of sampling (sampling data for a single epoch)

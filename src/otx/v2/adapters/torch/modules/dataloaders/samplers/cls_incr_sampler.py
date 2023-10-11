@@ -9,25 +9,11 @@ from typing import Iterator
 
 import numpy as np
 from torch.utils.data import Dataset
-from torch.utils.data.sampler import Sampler
+
+from .otx_sampler import OTXSampler
 
 
-def unwrap_dataset(dataset: Dataset) -> tuple:
-    """A function that unwraps a dataset object to its base dataset.
-
-    :param dataset: dataset object, an instance of a dataset.
-    :return: tuple of dataset object and int, the base dataset and the number of times to repeat the dataset.
-    """
-    times = 1
-    target_dataset = dataset
-    while hasattr(target_dataset, "dataset"):
-        if hasattr(target_dataset, "times"):
-            times = target_dataset.times
-        target_dataset = target_dataset.dataset
-    return target_dataset, times
-
-
-class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
+class ClsIncrSampler(OTXSampler):  # pylint: disable=too-many-instance-attributes
     """Sampler for Class-Incremental Task.
 
     This sampler is a sampler that creates an effective batch
@@ -50,6 +36,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         num_replicas: int = 1,
         rank: int = 0,
         drop_last: bool = False,
+        use_adaptive_repeats: bool = False,
     ) -> None:
         """Incremental sampler for classification datasets.
 
@@ -60,6 +47,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             num_replicas (int, optional): Number of processes. Defaults to 1.
             rank (int, optional): Rank of the current process. Defaults to 0.
             drop_last (bool, optional): Whether to drop the last incomplete batch. Defaults to False.
+            use_adaptive_repeats (bool): Whether to use adaptive repeats.
         """
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
@@ -67,7 +55,7 @@ class ClsIncrSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         self.drop_last = drop_last
 
         # Dataset Wrapping remove & repeat for RepeatDataset
-        self.dataset, self.repeat = unwrap_dataset(dataset)
+        super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
 
         if hasattr(self.dataset, "img_indices"):
             self.new_indices = self.dataset.img_indices["new"]

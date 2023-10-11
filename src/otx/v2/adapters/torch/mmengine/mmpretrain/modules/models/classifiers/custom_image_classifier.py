@@ -10,7 +10,7 @@ from mmpretrain.models.classifiers.image import ImageClassifier
 from mmpretrain.registry import MODELS
 
 from otx.v2.adapters.torch.mmengine.mmdeploy.utils import is_mmdeploy_enabled
-from otx.v2.adapters.torch.mmengine.modules.utils.task_adapt import map_class_names
+from otx.v2.adapters.torch.modules.utils.task_adapt import map_class_names
 from otx.v2.api.utils.logger import get_logger
 
 from .mixin import ClsLossDynamicsTrackingMixin
