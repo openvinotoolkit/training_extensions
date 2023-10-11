@@ -404,7 +404,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
            Dict: Model info.
         """
         if not self._model_ckpt:
-            logger.warn(f"model checkpoint is not set, return empty dictionary.")
+            logger.warn("model checkpoint is not set, return empty dictionary.")
             return {}
         return torch.load(self._model_ckpt, map_location="cpu")
 
