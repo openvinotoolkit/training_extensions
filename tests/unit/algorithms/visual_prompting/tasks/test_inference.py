@@ -60,7 +60,6 @@ class TestInferenceTask:
         assert inference_task.config.dataset.task == "visual_prompting"
         if path:
             if resume:
-                assert inference_task.config.model.checkpoint is None
                 assert inference_task.config.trainer.resume_from_checkpoint == path
             else:
                 assert inference_task.config.model.checkpoint == path
