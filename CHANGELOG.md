@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.4.3\]
+
+### Enhancements
+
+- Re-introduce adaptive scheduling for training (<https://github.com/openvinotoolkit/training_extensions/pull/2541>)
+
 ## \[v1.4.2\]
 
 ### Enhancements
