@@ -98,6 +98,9 @@ class OTXDetectionTask(OTXTask, ABC):
             input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
         else:
             input_size_cfg = InputSizePreset.DEFAULT
+        if self._hyperparams.tiling_parameters.enable_tiling:
+            # Disable auto input size if tiling is enabled
+            input_size_cfg = InputSizePreset.DEFAULT
         self._input_size = input_size_cfg.tuple
 
     def _load_postprocessing(self, model_data):
