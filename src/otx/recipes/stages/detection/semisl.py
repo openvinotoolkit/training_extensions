@@ -9,9 +9,10 @@ task_adapt = dict(
 
 custom_hooks = [
     dict(
-        type="MeanTeacherHook",
+        type="UnbiasedTeacherHook",
         epoch_momentum=0.1,
-        start_epoch=12,
+        start_epoch=2,
+        min_pseudo_label_ratio=0.0
     ),
     dict(
         type="LazyEarlyStoppingHook",
@@ -27,7 +28,7 @@ custom_hooks = [
 lr_config = dict(
     policy="ReduceLROnPlateau",
     metric="mAP",
-    patience=6,
+    patience=5,
     iteration_patience=0,
     interval=1,
     min_lr=1e-06,

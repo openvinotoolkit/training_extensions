@@ -36,6 +36,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         pseudo_conf_thresh=0.7,
         bg_loss_weight=-1.0,
         min_pseudo_label_ratio=0.0,
+        visualize = False,
+        filter_empty_annotations = False,
         **kwargs
     ):
         super().__init__()
@@ -43,12 +45,16 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         self.pseudo_conf_thresh = pseudo_conf_thresh
         self.bg_loss_weight = bg_loss_weight
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
+        self.filter_empty_annotations = filter_empty_annotations
+        self.visualize = visualize
         cfg = kwargs.copy()
         cfg["type"] = arch_type
         self.model_s = build_detector(cfg)
         self.model_t = copy.deepcopy(self.model_s)
+        self.model_t.eval()
         # warmup for first epochs
         self.enable_unlabeled_loss(False)
+        self.image_id = 0
 
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
@@ -165,12 +171,16 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         pseudo_bboxes, pseudo_labels, pseudo_masks, pseudo_ratio = self.generate_pseudo_labels(
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
         )
-        notempty = [bool(len(i)) for i in pseudo_labels]
-        pseudo_bboxes = [pd for i, pd in enumerate(pseudo_bboxes) if notempty[i]]
-        pseudo_labels = [pd for i, pd in enumerate(pseudo_labels) if notempty[i]]
-        ul_img_metas = [pd for i, pd in enumerate(ul_img_metas) if notempty[i]]
-        ul_img = ul_img[notempty]
-        self.visual_online(ul_img, pseudo_bboxes, pseudo_labels)
+        if self.filter_empty_annotations:
+            notempty = [bool(len(i)) for i in pseudo_labels]
+            pseudo_bboxes = [pd for i, pd in enumerate(pseudo_bboxes) if notempty[i]]
+            pseudo_labels = [pd for i, pd in enumerate(pseudo_labels) if notempty[i]]
+            ul_img_metas = [pd for i, pd in enumerate(ul_img_metas) if notempty[i]]
+            ul_img = ul_img[notempty]
+        else:
+            notempty = [True]
+        if self.visualize:
+            self.visual_online(ul_img, pseudo_bboxes, pseudo_labels)
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         # Unsupervised loss
@@ -200,6 +210,8 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
 
     def visual_online(self, img, boxes_list, labels_list, img_id=0,
                       boxes_ignore_list=None, proposal_list=None):
+        if not img.size(0):
+            return
         img_norm_cfg = dict(mean=np.array([0, 0, 0]), std=np.array([255, 255, 255]))
         img_np = img[img_id].permute(1, 2, 0).cpu().numpy()
         img_np = mmcv.imdenormalize(img_np, **img_norm_cfg)
@@ -222,14 +234,17 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 cv2.putText(img_np, f'{idx}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
                             (44, 160, 44), 2)
         # pseudo gt
+        count = 0
         for idx, (box, label) in enumerate(zip(boxes, labels)):
+            count += 1
             x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
             img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (157, 80, 136), 2)
             cv2.putText(img_np, f'{idx}, {self.CLASSES[label]}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
                         (157, 80, 136), 2)
 
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-        cv2.imwrite(f"image_{img_id}.png", img_np)
+        cv2.imwrite(f"test_images/image_{self.image_id}_{count}.png", img_np)
+        self.image_id += 1
 
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):

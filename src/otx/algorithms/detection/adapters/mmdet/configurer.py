@@ -117,7 +117,7 @@ class DetectionConfigurer(BaseConfigurer):
         # patch pre-trained checkpoint for model
         for name in ckpt:
             # we should add backbone prefix to backbone parameters names to load it for our models
-            if not name.startswith("backbone") and "head" not in name:
+            if not name.startswith("backbone") and not any([True for prefix in ["head", "neck"] if prefix in name]):
                 new_name = "backbone." + name
                 modified = True
             else:

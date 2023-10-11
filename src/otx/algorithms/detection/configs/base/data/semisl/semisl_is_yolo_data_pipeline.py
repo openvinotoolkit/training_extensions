@@ -13,7 +13,13 @@ __img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], to_rgb=False)
 common_pipeline = [
     dict(
         type="Resize",
-        img_scale=__img_scale_test,
+        img_scale=[
+            (692, 640),
+            (596, 640),
+            (896, 640),
+            (692, 672),
+            (692, 800),
+        ],
         multiscale_mode="value",
         keep_ratio=False,
     ),
@@ -72,21 +78,78 @@ common_pipeline = [
     ),
 ]
 
+# train_pipeline = [
+#     dict(type="Mosaic", img_scale=__img_size, pad_val=114.0),
+#     dict(
+#         type="RandomAffine",
+#         scaling_ratio_range=(0.1, 2),
+#         border=(-__img_size[0] // 2, -__img_size[1] // 2),
+#     ),
+#     dict(type="MixUp", img_scale=__img_size, ratio_range=(0.8, 1.6), pad_val=114.0),
+#     dict(type="YOLOXHSVRandomAug"),
+#     dict(type="RandomFlip", flip_ratio=0.5),
+#     dict(type="Resize", img_scale=__img_size, keep_ratio=True),
+#     dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
+#     dict(type="Normalize", **__img_norm_cfg),
+#     dict(type="DefaultFormatBundle"),
+#     dict(
+#         type="Collect",
+#         keys=["img", "gt_bboxes", "gt_labels"],
+#         meta_keys=[
+#             "ori_filename",
+#             "flip_direction",
+#             "scale_factor",
+#             "img_norm_cfg",
+#             "gt_ann_ids",
+#             "flip",
+#             "ignored_labels",
+#             "ori_shape",
+#             "filename",
+#             "img_shape",
+#             "pad_shape",
+#         ],
+#     ),
+# ]
+
+# train_pipeline = [
+#     dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+#     dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
+#     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
+#     *common_pipeline,
+#     dict(
+#         type="Resize",
+#         img_scale=__img_scale_test,
+#         multiscale_mode="value",
+#         keep_ratio=False,
+#     ),
+#     dict(type="RandomFlip", flip_ratio=0.5),
+#     dict(type="Normalize", **__img_norm_cfg),
+#     dict(type="DefaultFormatBundle"),
+#     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+# ]
+
+
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(type="LoadImageFromOTXDataset"),
     dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
+    *common_pipeline,
+    dict(type="ToTensor", keys=["gt_bboxes", "gt_labels"]),
     dict(
-        type="Resize",
-        img_scale=__img_scale_test,
-        multiscale_mode="value",
-        keep_ratio=False,
+        type="ToDataContainer",
+        fields=[
+            dict(key="img", stack=True),
+            dict(key="img0", stack=True),
+            dict(key="gt_bboxes"),
+            dict(key="gt_labels"),
+        ],
     ),
-    dict(type="RandomFlip", flip_ratio=0.5),
-    dict(type="Normalize", **__img_norm_cfg),
-    dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(
+        type="Collect",
+        keys=["img", "img0", "gt_bboxes", "gt_labels"],
+    ),
 ]
+
 
 unlabeled_pipeline = [
     dict(type="LoadImageFromOTXDataset", enable_memcache=True),

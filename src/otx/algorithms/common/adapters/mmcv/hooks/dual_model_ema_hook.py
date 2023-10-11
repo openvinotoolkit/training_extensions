@@ -71,16 +71,21 @@ class DualModelEMAHook(Hook):
         self.src_model = getattr(model, self.src_model_name, None)
         self.dst_model = getattr(model, self.dst_model_name, None)
         if self.src_model and self.dst_model:
+            self.enabled = True
             self.src_params = self.src_model.state_dict(keep_vars=True)
             self.dst_params = self.dst_model.state_dict(keep_vars=True)
+            if runner.epoch == 0 and runner.iter == 0:
+                # If it's not resuming from a checkpoint
+                # initialize student model by teacher model
+                # (teacher model is main target of load/save)
+                # (if it's resuming there will be student weights in checkpoint. No need to copy)
+                self._sync_model()
+                logger.info("Initialized student model by teacher model")
+                logger.info(f"model_s model_t diff: {self._diff_model()}")
 
     def before_train_epoch(self, runner):
         """Momentum update."""
-        if runner.epoch + 1 == self.start_epoch:
-            self._copy_model()
-            self.enabled = True
-
-        if self.epoch_momentum > 0.0 and self.enabled:
+        if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum
             iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
@@ -90,7 +95,16 @@ class DualModelEMAHook(Hook):
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
-        if not self.enabled or (runner.iter % self.interval != 0):
+        if not self.enabled:
+            return
+
+        if runner.iter % self.interval != 0:
+            # Skip update
+            return
+
+        if runner.epoch + 1 < self.start_epoch:
+            # Just copy parameters before start epoch
+            self._copy_model()
             return
 
         # EMA
@@ -107,27 +121,31 @@ class DualModelEMAHook(Hook):
             model = model.module
         return model
 
+    def _sync_model(self):
+        with torch.no_grad():
+            for name, src_param in self.src_params.items():
+                dst_param = self.dst_params[name]
+                src_param.data.copy_(dst_param.data)
+
     def _copy_model(self):
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                if not name.startswith("ema_"):
-                    dst_param = self.dst_params[name]
-                    dst_param.data.copy_(src_param.data)
+                dst_param = self.dst_params[name]
+                dst_param.data.copy_(src_param.data)
 
     def _ema_model(self):
         momentum = min(self.momentum, 1.0)
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                if not name.startswith("ema_"):
-                    dst_param = self.dst_params[name]
-                    dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
+                dst_param = self.dst_params[name]
+                # dst_param.data.mul_(1 - momentum).add_(src_param.data, alpha=momentum)
+                dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
 
     def _diff_model(self):
         diff_sum = 0.0
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                if not name.startswith("ema_"):
-                    dst_param = self.dst_params[name]
-                    diff = ((src_param - dst_param) ** 2).sum()
-                    diff_sum += diff
+                dst_param = self.dst_params[name]
+                diff = ((src_param - dst_param) ** 2).sum()
+                diff_sum += diff
         return diff_sum

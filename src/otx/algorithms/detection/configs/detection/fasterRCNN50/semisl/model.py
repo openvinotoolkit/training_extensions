@@ -23,9 +23,9 @@ _base_ = [
 ]
 
 model = dict(
-    super_type="MeanTeacher",
+    super_type="UnbiasedTeacher",
     pseudo_conf_thresh=0.7,
-    unlabeled_loss_weights={"cls": 2.0, "bbox": 0.0, "obj": 0.0, "centerness": 0.0},
+    # unlabeled_loss_weights={"cls": 2.0, "bbox": 0.0, "obj": 0.0, "centerness": 0.0},
     type='CustomFasterRCNN',
     backbone=dict(
         type='ResNet',

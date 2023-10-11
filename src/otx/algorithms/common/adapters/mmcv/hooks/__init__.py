@@ -31,6 +31,7 @@ from .early_stopping_hook import (
     ReduceLROnPlateauLrUpdaterHook,
     StopLossNanTrainingHook,
 )
+from .unbiased_teacher_hook import UnbiasedTeacherHook
 from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
@@ -88,6 +89,7 @@ __all__ = [
     "TaskAdaptHook",
     "TwoCropTransformHook",
     "MeanTeacherHook",
+    "UnbiasedTeacherHook",
     "MemCacheHook",
     "LossDynamicsTrackingHook",
 ]
