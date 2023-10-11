@@ -5,7 +5,7 @@
 
 
 from functools import partial
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 import torch
 from mmengine.dataset import default_collate, worker_init_fn
@@ -143,16 +143,16 @@ class Dataset(BaseDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: Optional[Union[List[Union[Dict, Any]], Dict]] = None,
-        config: Optional[Union[str, Dict[str, Any], Config]] = None,
+        pipeline: Optional[Union[list, dict]] = None,
+        config: Optional[Union[str, dict, Config]] = None,
     ) -> Optional[TorchDataset]:
         """Builds a TorchDataset object for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[List[Union[Dict, Any]], Dict]]): The pipeline to use for the dataset.
+            pipeline (Optional[Union[list, dict]]): The pipeline to use for the dataset.
                 Defaults to None.
-            config (Optional[Union[str, Dict[str, Any], Config]]): The configuration to use for the dataset.
+            config (Optional[Union[str, dict, Config]]): The configuration to use for the dataset.
                 Defaults to None.
 
         Returns:
@@ -217,7 +217,7 @@ class Dataset(BaseDataset):
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
-        sampler: Optional[Union[Sampler, Iterable, Dict]] = None,
+        sampler: Optional[Union[Sampler, Iterable, dict]] = None,
         persistent_workers: bool = False,
         **kwargs,
     ) -> Optional[TorchDataLoader]:
@@ -284,7 +284,7 @@ class Dataset(BaseDataset):
         pipeline: Optional[Union[dict, list]] = None,
         batch_size: Optional[int] = None,
         num_workers: Optional[int] = None,
-        config: Optional[Union[str, Dict[str, Any]]] = None,
+        config: Optional[Union[str, dict]] = None,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
@@ -296,12 +296,12 @@ class Dataset(BaseDataset):
 
         Args:
             subset (str): Enter an available subset of that dataset.
-            pipeline (Optional[Union[List[Union[Dict, Any]], Dict[str, List[Union[Dict, Any]]]]], optional):
+            pipeline (Optional[Union[list, dict]], optional):
                 Dataset Pipeline. Defaults to None.
             batch_size (Optional[int], optional): How many samples per batch to load. Defaults to None.
             num_workers (Optional[int], optional): How many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process. Defaults to None.
-            config (Optional[Union[str, Dict[str, Any]]], optional): Path to configuration file or Config.
+            config (Optional[Union[str, dict]], optional): Path to configuration file or Config.
                 Defaults to None.
             shuffle (bool, optional): Set to ``True`` to have the data reshuffled at every epoch. Defaults to True.
             pin_memory (bool, optional): If ``True``, the data loader will copy Tensors

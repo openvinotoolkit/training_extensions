@@ -37,7 +37,8 @@ def test_update_train_config_with_max_epochs(func_args: dict, config: dict, kwar
     assert updated_kwargs["optim_wrapper"]["dtype"] == precision
 
 
-def test_update_train_config_with_max_iters(func_args: dict, config: dict, kwargs: dict) -> None:
+def test_update_train_config_with_max_iters(func_args: dict, config: dict, kwargs: dict, mocker: MockerFixture) -> None:
+    mocker.patch("otx.v2.adapters.torch.mmengine.utils.runner_config.get_device", return_value="cuda")
     func_args["max_iters"] = 100
     precision = "float16"
     with pytest.raises(ValueError, match="Only one of `max_epochs` or `max_iters`"):

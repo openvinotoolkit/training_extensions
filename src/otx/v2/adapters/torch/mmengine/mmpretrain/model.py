@@ -174,8 +174,3 @@ def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
         model_list = set(fnmatch.filter(model_list, pattern + "*"))
 
     return sorted(model_list)
-
-
-if __name__ == "__main__":
-    model_list = list_models("otx*")
-    model = get_model(model_list[0])
