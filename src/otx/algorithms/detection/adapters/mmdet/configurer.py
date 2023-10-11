@@ -111,7 +111,7 @@ class DetectionConfigurer(BaseConfigurer):
 
     def configure_task_data_pipeline(self, cfg):
         """Trying to alter class indices of training data according to model class order."""
-        tr_data_cfg = self.get_data_cfg(cfg, "train")
+        tr_data_cfg = self.get_subset_data_cfg(cfg, "train")
         class_adapt_cfg = dict(type="AdaptClassLabels", src_classes=self.data_classes, dst_classes=self.model_classes)
         pipeline_cfg = tr_data_cfg.pipeline
         for i, operation in enumerate(pipeline_cfg):

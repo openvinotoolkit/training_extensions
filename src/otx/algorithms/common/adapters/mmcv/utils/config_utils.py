@@ -4,6 +4,7 @@
 
 import copy
 import glob
+import math
 import multiprocessing
 import os
 import os.path as osp
@@ -517,15 +518,11 @@ def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     algo_backend = hyperparams.algo_backend
     warmup_iters = int(params.learning_rate_warmup_iters)
 
-    model_label_type = config.filename.split("/")[-1]
-    if "multilabel" in model_label_type:
-        lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-    else:
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
+    lr_config = (
+        ConfigDict(warmup_iters=warmup_iters)
+        if warmup_iters > 0
+        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+    )
 
     if params.enable_early_stopping and config.get("evaluation", None):
         early_stop = ConfigDict(
@@ -597,14 +594,6 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
         config.runner.meta = ConfigDict()
     config.runner.meta.exp_name = f"train_round_{len(checkpoint_dirs)}"
     return train_round_checkpoint_dir
-
-
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
 
 
 class InputSizeManager:
@@ -973,3 +962,25 @@ class InputSizeManager:
         input_size = self.select_closest_size(input_size, input_size_preset)
         logger.info(f"-> Closest preset: {input_size}")
         return input_size
+
+
+def get_proper_repeat_times(
+    data_size: int,
+    batch_size: int,
+    coef: float,
+    min_repeat: float,
+) -> float:
+    """Get proper repeat times for adaptive training.
+
+    Args:
+        data_size (int): The total number of the training dataset
+        batch_size (int): The batch size for the training data loader
+        coef (float) : coefficient that effects to number of repeats
+                       (coef * math.sqrt(num_iters-1)) +5
+        min_repeat (float) : minimum repeats
+    """
+    if data_size == 0 or batch_size == 0:
+        logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
+        return 1
+    n_iters_per_epoch = math.ceil(data_size / batch_size)
+    return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))

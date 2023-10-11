@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from otx.algorithms.common.adapters.torch.dataloaders.samplers import (
     BalancedSampler,
     ClsIncrSampler,
+    OTXSampler,
 )
 from otx.algorithms.common.utils.logger import get_logger
 
@@ -36,7 +37,6 @@ class TaskAdaptHook(Hook):
         sampler_flag=False,
         sampler_type="cls_incr",
         efficient_mode=False,
-        use_adaptive_repeat=False,
     ):
         self.src_classes = src_classes
         self.dst_classes = dst_classes
@@ -44,13 +44,11 @@ class TaskAdaptHook(Hook):
         self.sampler_flag = sampler_flag
         self.sampler_type = sampler_type
         self.efficient_mode = efficient_mode
-        self.use_adaptive_repeat = use_adaptive_repeat
 
         logger.info(f"Task Adaptation: {self.src_classes} => {self.dst_classes}")
         logger.info(f"- Efficient Mode: {self.efficient_mode}")
         logger.info(f"- Sampler type: {self.sampler_type}")
         logger.info(f"- Sampler flag: {self.sampler_flag}")
-        logger.info(f"- Adaptive repeat: {self.use_adaptive_repeat}")
 
     def before_epoch(self, runner):
         """Produce a proper sampler for task-adaptation."""
@@ -61,6 +59,11 @@ class TaskAdaptHook(Hook):
             collate_fn = runner.data_loader.collate_fn
             worker_init_fn = runner.data_loader.worker_init_fn
             rank, world_size = get_dist_info()
+
+            if isinstance(runner.data_loader.sampler, OTXSampler):
+                repeat = runner.data_loader.sampler.repeat
+            else:
+                repeat = 1
             if self.sampler_type == "balanced":
                 sampler = BalancedSampler(
                     dataset,
@@ -68,7 +71,7 @@ class TaskAdaptHook(Hook):
                     efficient_mode=self.efficient_mode,
                     num_replicas=world_size,
                     rank=rank,
-                    use_adaptive_repeats=self.use_adaptive_repeat,
+                    n_repeats=repeat,
                 )
             else:
                 sampler = ClsIncrSampler(
@@ -77,7 +80,7 @@ class TaskAdaptHook(Hook):
                     efficient_mode=self.efficient_mode,
                     num_replicas=world_size,
                     rank=rank,
-                    use_adaptive_repeats=self.use_adaptive_repeat,
+                    n_repeats=repeat,
                 )
             runner.data_loader = DataLoader(
                 dataset,

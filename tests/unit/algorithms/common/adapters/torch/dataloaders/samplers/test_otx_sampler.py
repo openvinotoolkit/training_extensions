@@ -1,5 +1,4 @@
 import pytest
-import math
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.adapters.torch.dataloaders.samplers import OTXSampler
@@ -20,9 +19,8 @@ class TestOTXSampler:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("batch", [1, 2, 4, 8, 16])
-    @pytest.mark.parametrize("use_adaptive_repeat", [True, False])
-    def test_sampler_iter(self, batch, use_adaptive_repeat):
-        sampler = OTXSampler(self.mock_dataset, batch, use_adaptive_repeats=use_adaptive_repeat)
+    def test_sampler_iter(self, batch):
+        sampler = OTXSampler(self.mock_dataset, batch)
         sampler_iter = iter(sampler)
         count = 0
 
