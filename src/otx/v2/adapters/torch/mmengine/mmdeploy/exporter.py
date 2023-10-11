@@ -4,7 +4,7 @@
 #
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import torch
 from mmdeploy.apis import build_task_processor
@@ -80,7 +80,7 @@ class Exporter:
             i.requires_grad = False
         return model
 
-    def _get_inputs(self) -> Tuple[torch.Tensor, Optional[Dict[str, Any]]]:
+    def _get_inputs(self) -> Tuple[torch.Tensor, Optional[dict]]:
         """Prepare torch model's input and input_metas."""
         input_shape = self.deploy_cfg.backend_config.model_inputs[0]["opt_shapes"]["input"]
         input_tensor = torch.randn(input_shape)

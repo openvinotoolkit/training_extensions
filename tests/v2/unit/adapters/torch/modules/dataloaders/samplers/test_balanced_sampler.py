@@ -1,3 +1,6 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 from otx.v2.adapters.torch.modules.dataloaders.samplers import BalancedSampler
 from torch.utils.data import Dataset

@@ -1,3 +1,6 @@
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from otx.v2.cli.utils.env import (
