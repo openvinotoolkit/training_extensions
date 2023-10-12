@@ -22,11 +22,10 @@ from mmdet.core import DistEvalHook, EvalHook, build_optimizer
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
 from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_logger
 from mmdet.utils.util_distribution import build_dp, dp_factory
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
-
-from torchvision.ops import roi_align as tv_roi_align
 from torchvision.ops import nms as tv_nms
+from torchvision.ops import roi_align as tv_roi_align
 
+from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
 dp_factory["xpu"] = XPUDataParallel

@@ -14,6 +14,7 @@ import otx
 from otx.algorithms.common.utils import is_xpu_available
 from otx.api.entities.model_template import ModelTemplate
 
+
 def get_otx_report(
     model_template: ModelTemplate,
     task_config: Dict[str, Any],

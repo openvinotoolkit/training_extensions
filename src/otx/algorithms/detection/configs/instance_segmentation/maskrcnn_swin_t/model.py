@@ -153,7 +153,7 @@ lr_config = dict(min_lr=1e-08)
 
 optimizer_config = dict(_delete_=True, grad_clip=None)
 
-#fp16 = dict(loss_scale=dict(init_scale=512))
+# fp16 = dict(loss_scale=dict(init_scale=512))
 
 load_from = (
     "https://download.openmmlab.com/mmdetection/v2.0/swin/"

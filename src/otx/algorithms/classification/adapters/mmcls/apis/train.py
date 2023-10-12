@@ -11,6 +11,7 @@ from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger, wrap_distributed_model, wrap_non_distributed_model
 from mmcv.runner import DistSamplerSeedHook, Fp16OptimizerHook, build_optimizer, build_runner
+
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
 
