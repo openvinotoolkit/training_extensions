@@ -30,10 +30,10 @@ class Conv2d_BN(nn.Sequential):
         bn_weight_init: float = 1.0,
     ) -> None:
         super().__init__()
-        self.add_module("c", torch.nn.Conv2d(a, b, ks, stride, pad, dilation, groups, bias=False))
-        bn = torch.nn.BatchNorm2d(b)
-        torch.nn.init.constant_(bn.weight, bn_weight_init)
-        torch.nn.init.constant_(bn.bias, 0)
+        self.add_module("c", nn.Conv2d(a, b, ks, stride, pad, dilation, groups, bias=False))
+        bn = nn.BatchNorm2d(b)
+        nn.init.constant_(bn.weight, bn_weight_init)
+        nn.init.constant_(bn.bias, 0)
         self.add_module("bn", bn)
 
     @torch.no_grad()
@@ -43,7 +43,7 @@ class Conv2d_BN(nn.Sequential):
         w = bn.weight / (bn.running_var + bn.eps) ** 0.5
         w = c.weight * w[:, None, None, None]
         b = bn.bias - bn.running_mean * bn.weight / (bn.running_var + bn.eps) ** 0.5
-        m = torch.nn.Conv2d(
+        m = nn.Conv2d(
             w.size(1) * self.c.groups,
             w.size(0),
             w.shape[2:],
@@ -298,7 +298,7 @@ class Attention(nn.Module):
                 if offset not in attention_offsets:
                     attention_offsets[offset] = len(attention_offsets)  # type: ignore
                 idxs.append(attention_offsets[offset])  # type: ignore
-        self.attention_biases = torch.nn.Parameter(torch.zeros(num_heads, len(attention_offsets)))
+        self.attention_biases = nn.Parameter(torch.zeros(num_heads, len(attention_offsets)))
         self.register_buffer("attention_bias_idxs", torch.LongTensor(idxs).view(N, N), persistent=False)
 
     @torch.no_grad()
@@ -612,7 +612,7 @@ class TinyViT(nn.Module):
         # Classifier head
         # self.norm_head = nn.LayerNorm(embed_dims[-1])
         # self.head = nn.Linear(
-        #     embed_dims[-1], num_classes) if num_classes > 0 else torch.nn.Identity()
+        #     embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
 
         # init weights
         self.apply(self._init_weights)
