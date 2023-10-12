@@ -1,6 +1,6 @@
 dataset:
   task: visual_prompting
-  train_batch_size: 4
+  train_batch_size: 2
   val_batch_size: 1
   test_batch_size: 1
   num_workers: 4
@@ -35,7 +35,7 @@ model:
 
 optimizer:
   name: Adam
-  lr: 0.000001
+  lr: 0.00001
 
 callback:
   checkpoint: # arguments for ModelCheckpoint
