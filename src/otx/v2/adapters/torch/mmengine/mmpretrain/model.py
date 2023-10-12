@@ -123,7 +123,7 @@ def get_model(
             model = Config.fromfile(filename=model)
         else:
             model_name = model
-    if isinstance(model, (dict, Config)):
+    if isinstance(model, Config):
         if hasattr(model, "model"):
             model = Config(model.get("model"))
         if hasattr(model, "name"):

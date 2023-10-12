@@ -90,15 +90,15 @@ def get_verbose_usage(subcommand: str = "train") -> str:
     Returns:
         str: A string containing verbose usage information for the specified subcommand.
     """
-    return f"""
-To get more overridable argument information, run the command below.\n
-```python
-# Verbosity Level 1
-otx {subcommand} [optional_arguments] -h -v
-# Verbosity Level 2
-otx {subcommand} [optional_arguments] -h -vv
-```
-"""
+    return (
+        "To get more overridable argument information, run the command below.\n"
+        "```python\n"
+        "# Verbosity Level 1\n"
+        f"otx {subcommand} [optional_arguments] -h -v\n"
+        "# Verbosity Level 2\n"
+        f"otx {subcommand} [optional_arguments] -h -vv\n"
+        "```"
+    )
 
 
 def get_cli_usage_docstring(component: Optional[object]) -> Optional[str]:
@@ -143,14 +143,11 @@ def get_intro() -> Markdown:
     Returns:
         A Markdown object containing the introduction text for the OpenVINO™ Training Extensions CLI Guide.
     """
-    intro_markdown = """
-
-# OpenVINO™ Training Extensions CLI Guide
-
-Github Repository: [https://github.com/openvinotoolkit/training_extensions](https://github.com/openvinotoolkit/training_extensions). \n
-A better guide is provided by the [documentation](https://openvinotoolkit.github.io/training_extensions/latest/index.html).
-
-"""  # noqa: E501
+    intro_markdown = (
+        "# OpenVINO™ Training Extensions CLI Guide\n"
+        "Link: [Github Repository](https://github.com/openvinotoolkit/training_extensions)\n"
+        "/ [documentation](https://openvinotoolkit.github.io/training_extensions/latest/index.html)."
+    )
     return Markdown(intro_markdown)
 
 
