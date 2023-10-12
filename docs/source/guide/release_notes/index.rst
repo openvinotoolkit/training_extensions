@@ -4,6 +4,11 @@ Releases
 .. toctree::
    :maxdepth: 1
 
+v1.4.3 (4Q23)
+-------------
+
+- Re introduce adaptive scheduling for training
+
 v1.4.2 (4Q23)
 -------------
 
