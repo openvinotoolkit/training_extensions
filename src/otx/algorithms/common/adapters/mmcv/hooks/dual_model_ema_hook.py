@@ -75,30 +75,20 @@ class DualModelEMAHook(Hook):
             self.src_params = self.src_model.state_dict(keep_vars=True)
             self.dst_params = self.dst_model.state_dict(keep_vars=True)
             if runner.epoch == 0 and runner.iter == 0:
-                # If it's not resuming from a checkpoint
-                # initialize student model by teacher model
-                # (teacher model is main target of load/save)
-                # (if it's resuming there will be student weights in checkpoint. No need to copy)
-                self._sync_model()
+                self._copy_model(sync_model=True)
                 logger.info("Initialized student model by teacher model")
                 logger.info(f"model_s model_t diff: {self._diff_model()}")
-
-    def before_train_epoch(self, runner):
-        """Momentum update."""
+        # compute adaptive EMA momentum
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum
             iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
             self.momentum = 1 - iter_decay
             logger.info(f"EMA: epoch_decay={epoch_decay} / iter_decay={iter_decay}")
-            self.epoch_momentum = 0.0  # disable re-compute
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
-        if not self.enabled:
-            return
-
-        if runner.iter % self.interval != 0:
+        if not self.enabled or (runner.iter % self.interval != 0):
             # Skip update
             return
 
@@ -121,17 +111,14 @@ class DualModelEMAHook(Hook):
             model = model.module
         return model
 
-    def _sync_model(self):
+    def _copy_model(self, sync_model=False):
         with torch.no_grad():
             for name, src_param in self.src_params.items():
                 dst_param = self.dst_params[name]
-                src_param.data.copy_(dst_param.data)
-
-    def _copy_model(self):
-        with torch.no_grad():
-            for name, src_param in self.src_params.items():
-                dst_param = self.dst_params[name]
-                dst_param.data.copy_(src_param.data)
+                if sync_model:
+                    src_param.data.copy_(dst_param.data)
+                else:
+                    dst_param.data.copy_(src_param.data)
 
     def _ema_model(self):
         momentum = min(self.momentum, 1.0)

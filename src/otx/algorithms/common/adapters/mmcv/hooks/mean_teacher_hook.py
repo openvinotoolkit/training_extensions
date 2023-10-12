@@ -34,7 +34,7 @@ class MeanTeacherHook(DualModelEMAHook):
         logger.info(f"avr_ps_ratio: {average_pseudo_label_ratio}")
         self._get_model(runner).enable_unlabeled_loss(True)
         self.unlabeled_loss_enabled = True
-        logger.info("---------- Enabled unlabeled loss and EMA smoothing")
+        logger.info("---------- Enabled unlabeled loss and EMA smoothing ----------")
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
