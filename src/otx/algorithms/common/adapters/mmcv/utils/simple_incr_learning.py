@@ -1,3 +1,5 @@
+import random
+
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.algorithms.common.adapters.mmcv.utils import (
@@ -7,70 +9,62 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 
 logger = get_logger()
 
-#NOTE,
-# For the current models, each task showed below characteristics (roughly)
-#   *Batch size
-#       Classification: 64, Detection: 8, Instance seg: 4, Semantic seg 8
-#   *Iter time
-#       Classification: 0.15s, Detection: 0.35s, Instance seg: 0.45s, Semantic seg 0.25s
-# So, TASK_TO_SIMPLE_CONFIG is set to end the training within 5 min.
-
-TASK_TO_RUNNER_CONFIG={
+TASK_MODEL_CONFIG={
     "classification":{
-        "iters_per_epoch": 75,
-        "max_epochs": 25
-    },
-    "detection":{
-        "iters_per_epoch": 30,
-        "max_epochs": 28
-    },
-    "instance_segmentation":{
-        "iters_per_epoch": 60,
-        "max_epochs": 11
-    },
-    "semantic_segmentation":{
-        "iters_per_epoch": 30,
-        "max_epochs": 40
+        "deit-tiny":{
+            "iter_time": 0.08,
+        },
+        "efficientnet-b0":{
+            "iter_time": 0.1,
+        },
+        "efficientnet-v2-s":{
+            "iter_time": 0.15,
+        },
+        "mobilenet-v3-large-1x":{
+            "iter_time": 0.08,
+        },
     },
 }
 
-def sample_dataset(dataset, iters_per_epoch, batch_size):
-    sampled_number = iters_per_epoch * batch_size
-    sampled_dataset = dataset[:sampled_number]
-    return DatasetEntity(
-        items=sampled_dataset
-    )
+def sample_dataset(dataset, num_samples):
+    sampling_indices = random.sample(range(0, len(dataset)), num_samples)
+    sampled_dataset_candidates = DatasetEntity(items=dataset[sampling_indices])
+    
+    return sampled_dataset_candidates
 
-def enable_simple_incr_learning(cfg, task):
+def get_task_from_template(template):
+    return str(template.task_type).lower()
+
+def get_model_name_from_template(template):
+    return str(template.name).lower()
+
+def enable_simple_incr_learning(cfg, template):
     logger.info("Simple incremental model is enabled.")
     logger.info("- If there is AdaptiveRepeatDataHook, it will be disabled.")
     remove_from_configs_by_type(cfg.custom_hooks, "AdaptiveRepeatDataHook")
     batch_size = cfg.data.train_dataloader.samples_per_gpu
     
-    dataset = cfg.data.train.otx_dataset 
-    dataset_len = len(dataset)
-    current_iters_per_epoch = dataset_len // batch_size
+    train_dataset = cfg.data.train.otx_dataset 
+    len_train_dataset = len(train_dataset)
+    current_iters_per_epoch = len_train_dataset // batch_size
+    
+    task = get_task_from_template(template)
+    model_name = get_model_name_from_template(template)
+    
+    model_preset =  TASK_MODEL_CONFIG[task][model_name]
+    preset_iter_time = model_preset["iter_time"]
+    
+    epoch_time = current_iters_per_epoch * preset_iter_time
+    max_epochs = int(300 / epoch_time)
      
-    task_config = TASK_TO_RUNNER_CONFIG[task]
-    preset_iters_per_epoch = task_config["iters_per_epoch"]
-    preset_max_epochs = task_config["max_epochs"]
-    
-    if current_iters_per_epoch > preset_iters_per_epoch: 
-        logger.info(
-            "- Iterations per epoch will be changed, "
-            f"{current_iters_per_epoch} -> {preset_iters_per_epoch}"
-        )
-        sampled_dataset = sample_dataset(dataset, preset_iters_per_epoch, batch_size)
-        cfg.data.train.otx_dataset = sampled_dataset
-    else:
-        logger.info(
-            "- Iterations per epoch will not be changed, " 
-            f"current: {current_iters_per_epoch}"
-        )
-    
     logger.info(
         "- Max epochs will be changed, "
-        f"{cfg.runner.max_epochs} -> {preset_max_epochs}"
+        f"{cfg.runner.max_epochs} -> {max_epochs}"
     )
-    cfg.runner.max_epochs = preset_max_epochs
+    cfg.runner.max_epochs = max_epochs
     
+    # Sampling the validation dataset to reduce the validation time
+    val_dataset = cfg.data.val.otx_dataset
+    sampled_val_dataset = sample_dataset(val_dataset, batch_size*2)
+    cfg.data.val.otx_dataset = sampled_val_dataset
+    logger.info(f"- sampled {len(sampled_val_dataset)} validation dataset to reduce val. time")  

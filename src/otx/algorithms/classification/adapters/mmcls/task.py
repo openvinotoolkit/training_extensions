@@ -367,7 +367,7 @@ class MMClassificationTask(OTXClassificationTask):
         logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
 
         # Data
-        enable_simple_incr_learning(cfg, "classification")
+        enable_simple_incr_learning(cfg, self._task_environment.model_template)
         datasets = [build_dataset(cfg.data.train)]
 
         # Metadata
