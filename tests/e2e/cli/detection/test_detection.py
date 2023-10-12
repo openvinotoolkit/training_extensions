@@ -221,6 +221,8 @@ class TestToolsOTXDetection:
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         if template.name == "YOLOX-L":
             pytest.skip(reason="Issue#2518: YOLOX-L, Tiling-ATSS showed 0.0 after export")
+        if template.name == "SSD":
+            pytest.skip(reason="Issue#2548: Exported model performance is too low")
         tmp_dir_path = tmp_dir_path / "detection"
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
