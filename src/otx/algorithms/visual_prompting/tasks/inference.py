@@ -196,6 +196,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
             if model_data.get("state_dict", None) and model_data.get("pytorch-lightning_version", None):
                 # Load state_dict from pytorch lightning checkpoint or weights.pth saved by visual prompting task
+                # In pytorch lightning checkpoint, there are metas: epoch, global_step, pytorch-lightning_version,
+                # state_dict, loops, callbacks, optimizer_states, lr_schedulers, hparams_name, hyper_parameters.
+                # To confirm if it is from pytorch lightning, check if one or two of them is in model_data.
                 state_dict = model_data["state_dict"]
 
             elif model_data.get("model", None) and model_data.get("config", None):
