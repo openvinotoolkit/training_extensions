@@ -1,18 +1,7 @@
 """Task of OTX Detection using mmdetection training backend."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import glob
 import io
@@ -186,7 +175,7 @@ class MMDetectionTask(OTXDetectionTask):
             ir_options,
             data_classes,
             model_classes,
-            self._hyperparams.learning_parameters.input_size,
+            self._input_size,
             train_dataset=train_dataset,
         )
         if should_cluster_anchors(self._recipe_cfg):
@@ -195,6 +184,7 @@ class MMDetectionTask(OTXDetectionTask):
             elif self._anchors is not None:
                 self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
+        self._input_size = cfg.model.pop("input_size", None)
 
         return cfg
 
@@ -697,6 +687,7 @@ class MMDetectionTask(OTXDetectionTask):
             "config": hyperparams_str,
             "labels": labels,
             "confidence_threshold": self.confidence_threshold,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
         if self.config is not None and should_cluster_anchors(self.config):
