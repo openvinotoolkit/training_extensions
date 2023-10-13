@@ -78,6 +78,8 @@ class DualModelEMAHook(Hook):
                 self._copy_model(sync_model=True)
                 logger.info("Initialized student model by teacher model")
                 logger.info(f"model_s model_t diff: {self._diff_model()}")
+
+    def before_epoch(self, runner):
         # compute adaptive EMA momentum
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
@@ -124,15 +126,16 @@ class DualModelEMAHook(Hook):
         momentum = min(self.momentum, 1.0)
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                dst_param = self.dst_params[name]
-                # dst_param.data.mul_(1 - momentum).add_(src_param.data, alpha=momentum)
-                dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
+                if not name.startswith("ema_"):
+                    dst_param = self.dst_params[name]
+                    dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
 
     def _diff_model(self):
         diff_sum = 0.0
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                dst_param = self.dst_params[name]
-                diff = ((src_param - dst_param) ** 2).sum()
-                diff_sum += diff
+                if not name.startswith("ema_"):
+                    dst_param = self.dst_params[name]
+                    diff = ((src_param - dst_param) ** 2).sum()
+                    diff_sum += diff
         return diff_sum

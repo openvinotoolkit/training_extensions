@@ -24,7 +24,7 @@ _base_ = [
 
 model = dict(
     super_type="MeanTeacher",
-    pseudo_conf_thresh=0.25,
+    pseudo_conf_thresh=0.7,
     unlabeled_loss_weights={"cls": 0.1, "bbox": 0.0, "obj": 0.0, "centerness": 0.0},
     filter_empty_annotations=True,
     visualize=False,

@@ -54,7 +54,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         self.model_t.eval()
         # warmup for first epochs
         self.enable_unlabeled_loss(False)
-        self.image_id = 0
+        self.cur_iter = 0
 
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
@@ -136,6 +136,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
     def forward_train(self, img, img_metas, img0, gt_bboxes, gt_labels, gt_masks=None, gt_bboxes_ignore=None, **kwargs):
         """Forward function for UnbiasedTeacher."""
         losses = {}
+        self.cur_iter += 1
         # Supervised loss
         # TODO: check img0 only option (which is common for mean teacher method)
         forward_train = functools.partial(
@@ -172,20 +173,23 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             teacher_outputs, device=current_device, img_meta=ul_img_metas, **kwargs
         )
         if self.filter_empty_annotations:
-            notempty = [bool(len(i)) for i in pseudo_labels]
-            pseudo_bboxes = [pd for i, pd in enumerate(pseudo_bboxes) if notempty[i]]
-            pseudo_labels = [pd for i, pd in enumerate(pseudo_labels) if notempty[i]]
-            ul_img_metas = [pd for i, pd in enumerate(ul_img_metas) if notempty[i]]
-            ul_img = ul_img[notempty]
+            non_empty = [bool(len(i)) for i in pseudo_labels]
+            non_empty_check = lambda var: bool(len(var))
+            pseudo_bboxes = list(filter(non_empty_check, pseudo_bboxes))
+            pseudo_labels = list(filter(non_empty_check, pseudo_labels))
+            pseudo_masks = list(filter(non_empty_check, pseudo_masks))
+            ul_img_metas = list(filter(non_empty_check, ul_img_metas))
+            ul_img = ul_img[non_empty]
         else:
-            notempty = [True]
+            non_empty = [True]
         if self.visualize:
             self.visual_online(ul_img, pseudo_bboxes, pseudo_labels)
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         # Unsupervised loss
         # Compute only if min_pseudo_label_ratio is reached
-        if pseudo_ratio >= self.min_pseudo_label_ratio and any(notempty):
+        if pseudo_ratio >= self.min_pseudo_label_ratio and any(non_empty):
+            breakpoint()
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
             if self.model_t.with_mask:
@@ -234,18 +238,14 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 cv2.putText(img_np, f'{idx}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
                             (44, 160, 44), 2)
         # pseudo gt
-        count = 0
         for idx, (box, label) in enumerate(zip(boxes, labels)):
-            count += 1
             x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
             img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (157, 80, 136), 2)
             cv2.putText(img_np, f'{idx}, {self.CLASSES[label]}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
                         (157, 80, 136), 2)
 
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-        cv2.imwrite(f"test_images/image_{self.image_id}_{count}.png", img_np)
-        self.image_id += 1
-
+        cv2.imwrite(f"test_debug_images/image_{self.cur_iter}.png", img_np)
 
     def generate_pseudo_labels(self, teacher_outputs, img_meta, **kwargs):
         """Generate pseudo label for UnbiasedTeacher."""

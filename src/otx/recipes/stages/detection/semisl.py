@@ -9,10 +9,9 @@ task_adapt = dict(
 
 custom_hooks = [
     dict(
-        type="UnbiasedTeacherHook",
+        type="MeanTeacherHook",
         epoch_momentum=0.1,
-        start_epoch=2,
-        min_pseudo_label_ratio=0.0
+        start_epoch=2
     ),
     dict(
         type="LazyEarlyStoppingHook",
