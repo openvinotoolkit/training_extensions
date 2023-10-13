@@ -48,6 +48,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -a|--attach-cache)
+      ATTACH_CACHE="$2"
+      shift # past argument
+      shift # past value
+      ;;
     -d|--debug)
       DEBUG_CONTAINER=true
       shift # past argument
@@ -81,6 +86,7 @@ cat << EndofMessage
         -m|--mount          Dataset root path to be mounted to the started container (absolute path)
         -r|--reg            Specify docker registry URL <default: local>
         -d|--debug          Flag to start debugging CI container
+        -a|--attach-cache   Attach host path to the .cache on the container
         -f|--fix-cpus       Specify the number of CPUs to set for the CI container
         -h|--help           Print this message
 EndofMessage
@@ -93,12 +99,14 @@ INSTANCE_NAME=$3
 LABELS="self-hosted,Linux,X64"
 ENV_FLAGS=""
 MOUNT_FLAGS=""
+CACHE_MOUNT_FLAGS=""
 
 if [ "$ADDITIONAL_LABELS" != "" ]; then
     LABELS="$LABELS,$ADDITIONAL_LABELS"
 fi
 
 echo "mount path option = $MOUNT_PATH"
+echo "attached mount path option = $ATTACH_CACHE"
 
 if [ "$MOUNT_PATH" != "" ]; then
     ENV_FLAGS="-e CI_DATA_ROOT=/home/validation/data"
@@ -106,7 +114,11 @@ if [ "$MOUNT_PATH" != "" ]; then
     LABELS="$LABELS,dmount"
 fi
 
-echo "env flags = $ENV_FLAGS, mount flags = $MOUNT_FLAGS"
+if [ "$ATTACH_CACHE" != "" ]; then
+  CACHE_MOUNT_FLAGS="-v $ATTACH_CACHE:/home/validation/.cache:rw"
+fi
+
+echo "env flags = $ENV_FLAGS, mount flags = $MOUNT_FLAGS, cache mount flag = $CACHE_MOUNT_FLAGS"
 
 if [ "$DEBUG_CONTAINER" = true ]; then
     CONTAINER_NAME="otx-ci-container-debug"
@@ -142,6 +154,7 @@ if [ "$DEBUG_CONTAINER" = true ]; then
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         ${ENV_FLAGS} \
         ${MOUNT_FLAGS} \
+        ${CACHE_MOUNT_FLAGS} \
         "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
 
     if [ $RET -ne 0 ]; then
@@ -162,6 +175,7 @@ else
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         ${ENV_FLAGS} \
         ${MOUNT_FLAGS} \
+        ${CACHE_MOUNT_FLAGS} \
         "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
 
     if [ $RET -ne 0 ]; then
