@@ -255,6 +255,9 @@ class BaseConfigurer:
                     distributed=getattr(cfg, "distributed", False),
                     **fp16_config,
                 )
+                if is_xpu_available():
+                    torch.cuda.amp = torch.xpu.amp
+
                 if optim_type == "SAMOptimizerHook":
                     opts["type"] = "Fp16SAMOptimizerHook"
                 elif optim_type == "OptimizerHook":
