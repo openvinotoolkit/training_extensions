@@ -34,7 +34,7 @@ TASK_TYPES = [
 TRAIN_TYPES = ["supervised", "semi_supervised", "self_supervised", "class_incr", "tiling"]
 LABEL_TYPES = ["multi_class", "multi_label", "h_label", "supcon"]
 
-REGRESSION_TEST_EPOCHS = "1"
+REGRESSION_TEST_EPOCHS = "10"
 
 ANOMALY_DATASET_CATEGORIES = [
     "bottle",
