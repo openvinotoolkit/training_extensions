@@ -54,8 +54,6 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "unit-test-results"
-      runs-on: "['otx-gpu-t4-2']"
-      container-options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=5g"
       custom-container: true
   Coverage:
     runs-on: [otx-gpu-t4-2]
@@ -111,36 +109,20 @@ jobs:
         include:
           - task: "all"
             test_args: "tests/integration/cli/test_cli.py"
-            runs_on: "['otx-gpu-t4-2']"
-            custom_container: true
           - task: "cls"
             test_args: "tests/integration/cli/classification"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
-            custom_container: false
           - task: "det"
             test_args: "tests/integration/cli/detection"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
-            custom_container: false
           - task: "iseg"
             test_args: "tests/integration/cli/instance_segmentation"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
-            custom_container: false
           - task: "seg"
             test_args: "tests/integration/cli/semantic_segmentation"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
-            custom_container: false
           - task: "act"
             test_args: "tests/integration/cli/action"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
-            custom_container: false
           - task: "ano"
             test_args: "tests/integration/cli/anomaly"
-            runs_on: "['self-hosted', 'Linux', 'X64', 'dev']"
-            custom_container: false
           - task: "visprompt"
             test_args: "tests/integration/cli/visual_prompting"
-            runs_on: "['otx-gpu-t4-2']"
-            custom_container: true
     name: Integration-Test-py310-${{ matrix.task }}
     # This is what will cancel the job concurrency
     concurrency:
@@ -155,5 +137,5 @@ jobs:
       timeout-minutes: 120
       upload-artifact: true
       artifact-prefix: "intg-test-results"
-      runs-on: ${{ matrix.runs_on }}
-      custom-container: ${{ matrix.custom_container }}
+      runs-on: "['otx-gpu-t4-2']"
+      custom-container: true
