@@ -220,8 +220,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE,
             visible_in_ui=False,
         )
-     
-        # TODO: Currently, visible_in_ui is False. will be True
+
         simple_learning = configurable_boolean(
             default_value=False,
             header="Enable simple learning",
@@ -229,7 +228,7 @@ class BaseConfig(ConfigurableParameters):
             "It changes the iterations per epoch and max epochs",
             warning="It could bring much faster training, however, it also make lower accuracy",
             affects_outcome_of=ModelLifecycle.TRAINING,
-            visible_in_ui=False,         
+            visible_in_ui=False,
         )
 
     @attrs

@@ -47,8 +47,8 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
+    enable_simple_incr_learning,
     get_configs_by_pairs,
-    enable_simple_incr_learning
 )
 from otx.algorithms.common.adapters.mmcv.utils import (
     build_dataloader as otx_build_dataloader,
@@ -367,7 +367,8 @@ class MMClassificationTask(OTXClassificationTask):
         logger.info(f"Environment info:\n{dash_line}{env_info}\n{dash_line}")
 
         # Data
-        enable_simple_incr_learning(cfg, self._task_environment.model_template)
+        if self._hyperparams.learning_parameters.simple_learning:
+            enable_simple_incr_learning(cfg, self._task_environment.model_template)
         datasets = [build_dataset(cfg.data.train)]
 
         # Metadata

@@ -308,8 +308,7 @@ learning_parameters:
   simple_learning:
     affects_outcome_of: TRAINING
     default_value: false
-    description: 
-      Limits the number of total iterations for fast training.
+    description: Limits the number of total iterations for fast training.
       It changes the iterations per epoch and max epochs.
     editable: true
     header: Enable simple learning
