@@ -134,8 +134,14 @@ def fill_model_performance(items: Union[list, str], test_type: str, result_data:
 
 def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result_data: dict) -> dict:
     """Make DataFrame by gathering all results."""
+    if task_key not in json_data.keys():
+        raise ValueError(f"cannot find '{task_key}' from {json_data}")
     for label_type in LABEL_TYPES:
+        if label_type not in json_data[task_key].keys():
+            continue
         for train_type in TRAIN_TYPES:
+            if train_type not in json_data[task_key][label_type].keys():
+                continue
             task_data = json_data[task_key][label_type][train_type]
 
             train_data = task_data.get("train")
@@ -168,6 +174,9 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
 
 def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_data: dict) -> dict:
     """Make DataFrame by gathering all results."""
+    if task_key not in json_data.keys():
+        raise ValueError(f"cannot find '{task_key}' from {json_data}")
+
     task_data = json_data[task_key]
 
     train_data = task_data.get("train")
@@ -180,6 +189,8 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
 
     for anomaly_category in ANOMALY_DATASET_CATEGORIES:
         train_cat_data = train_data.get(anomaly_category)
+        if train_cat_data is None:
+            continue
         export_cat_data = export_data.get(anomaly_category)
         deploy_cat_data = deploy_data.get(anomaly_category)
         nncf_cat_data = nncf_data.get(anomaly_category)
@@ -249,6 +260,8 @@ def summarize_results_data(input_path: str, output_path: str):
                     with open(result_json_path, "r") as f:
                         results_list.append(json.load(f))
             json_data = merge_results_list(results_list)
+
+            assert len(json_data) != 0, "no json results to summary"
 
             if is_anomaly_task(task) is True:
                 summarize_anomaly_data(task, task_key, json_data, ANOMALY_DATA)

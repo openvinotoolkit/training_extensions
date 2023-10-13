@@ -6,6 +6,7 @@ import copy
 import os
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -64,6 +65,7 @@ resume_params = [
 
 otx_dir = os.getcwd()
 
+MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(

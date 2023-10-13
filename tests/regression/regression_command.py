@@ -44,20 +44,22 @@ def regression_eval_testing(
     with open(performance_json_path) as read_file:
         trained_performance = json.load(read_file)
 
-    model_criteria = criteria[template.name] if template.name in criteria.keys() else 0.0
-    modified_criteria = model_criteria - (model_criteria * threshold)
     for k in trained_performance.keys():
         result_dict[k] = round(trained_performance[k], 3)
-        if trained_performance[k] < modified_criteria:
+        model_criteria = 0.0
+        if template.name not in criteria.keys():
             regression_result["passed"] = False
-            regression_result["log"] = f"Performance: ({trained_performance[k]}) < Criteria: ({modified_criteria})."
-            regression_result["raw"] = {
-                "metric": k,
-                "performance": trained_performance[k],
-                "template": template.name,
-                "criteria": model_criteria,
-                "threshold": threshold,
-            }
+            regression_result["log"] = (
+                f"Cannot find regression criteria for the template '{template.name}'. "
+                + f"train_performance = {trained_performance}"
+            )
+        else:
+            model_criteria = criteria[template.name] * (1.0 - threshold)
+            if trained_performance[k] < model_criteria:
+                regression_result["passed"] = False
+                regression_result[
+                    "log"
+                ] = f"Performance: ({trained_performance[k]}) < Criteria: ({model_criteria}), threshold: {threshold}."
 
     result_dict["Model size (MB)"] = round(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth") / 1e6, 2
@@ -111,25 +113,14 @@ def regression_openvino_testing(
     with open(perf_path) as read_file:
         exported_performance = json.load(read_file)
 
-    if isinstance(criteria, dict) and template.name in criteria.keys():
-        model_criteria = criteria[template.name]
-        modified_criteria = model_criteria - (model_criteria * reg_threshold)
-
     for k in trained_performance.keys():
-        if isinstance(criteria, dict) and template.name in criteria.keys():
-            result_dict[k] = round(exported_performance[k], 3)
-            if exported_performance[k] < modified_criteria:
-                regression_result["passed"] = False
-                regression_result[
-                    "log"
-                ] = f"Export performance: ({exported_performance[k]}) < Criteria: ({modified_criteria})."
-
+        result_dict[k] = round(exported_performance[k], 3)
         if (
             exported_performance[k] < trained_performance[k]
             and abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) > threshold
         ):
             regression_result["passed"] = False
-            regression_result["log"] = f"{trained_performance[k]=}, {exported_performance[k]=}"
+            regression_result["log"] = f"{trained_performance[k]=}, {exported_performance[k]=}, {threshold=}"
 
     return regression_result
 
@@ -162,24 +153,14 @@ def regression_deployment_testing(
     with open(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json") as read_file:
         deployed_performance = json.load(read_file)
 
-    if isinstance(criteria, dict) and template.name in criteria.keys():
-        model_criteria = criteria[template.name]
-        modified_criteria = model_criteria - (model_criteria * reg_threshold)
-
     for k in exported_performance.keys():
-        if isinstance(criteria, dict) and template.name in criteria.keys():
-            result_dict[k] = round(deployed_performance[k], 3)
-            if deployed_performance[k] < modified_criteria:
-                regression_result["passed"] = False
-                regression_result[
-                    "log"
-                ] = f"Deploy performance: ({deployed_performance[k]}) < Criteria: ({modified_criteria})."
+        result_dict[k] = round(deployed_performance[k], 3)
         if (
             deployed_performance[k] < exported_performance[k]
             and abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) > threshold
         ):
             regression_result["passed"] = False
-            regression_result["log"] = f"{exported_performance[k]=}, {deployed_performance[k]=}"
+            regression_result["log"] = f"{exported_performance[k]=}, {deployed_performance[k]=}, {threshold=}"
 
     return regression_result
 
@@ -212,24 +193,30 @@ def regression_nncf_eval_testing(
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json") as read_file:
         evaluated_performance = json.load(read_file)
 
-    if isinstance(criteria, dict) and template.name in criteria.keys():
-        model_criteria = criteria[template.name]
-        modified_criteria = model_criteria - (model_criteria * reg_threshold)
-
     for k in trained_performance.keys():
-        if isinstance(criteria, dict) and template.name in criteria.keys():
-            result_dict[k] = round(evaluated_performance[k], 3)
-            if evaluated_performance[k] < modified_criteria:
+        result_dict[k] = round(evaluated_performance[k], 3)
+        model_criteria = 0.0
+        if template.name not in criteria.keys():
+            regression_result["passed"] = False
+            regression_result["log"] = (
+                f"Cannot find regression criteria for the template '{template.name}'. "
+                + f"{trained_performance=}, {evaluated_performance=}"
+            )
+        else:
+            model_criteria = criteria[template.name] * (1.0 - threshold)
+            if evaluated_performance[k] < model_criteria:
                 regression_result["passed"] = False
                 regression_result[
                     "log"
-                ] = f"NNCF performance: ({evaluated_performance[k]}) < Criteria: ({modified_criteria})."
-        if (
-            evaluated_performance[k] < trained_performance[k]
-            and abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) > threshold
-        ):
-            regression_result["passed"] = False
-            regression_result["log"] = f"{trained_performance[k]=}, {evaluated_performance[k]=}"
+                ] = f"NNCF performance: {evaluated_performance[k]=}, {model_criteria=}, {threshold=}"
+
+            if (
+                evaluated_performance[k] < trained_performance[k]
+                and abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10)
+                > threshold
+            ):
+                regression_result["passed"] = False
+                regression_result["log"] = f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
     return regression_result
 
@@ -259,16 +246,21 @@ def regression_ptq_eval_testing(template, root, otx_dir, args, criteria=None, re
     with open(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json") as read_file:
         ptq_performance = json.load(read_file)
 
-    if isinstance(criteria, dict) and template.name in criteria.keys():
-        model_criteria = criteria[template.name]
-        modified_criteria = model_criteria - (model_criteria * reg_threshold)
-
     for k in ptq_performance.keys():
-        if isinstance(criteria, dict) and template.name in criteria.keys():
-            result_dict[k] = round(ptq_performance[k], 3)
-            if ptq_performance[k] < modified_criteria:
+        result_dict[k] = round(ptq_performance[k], 3)
+        model_criteria = 0.0
+        if template.name not in criteria.keys():
+            regression_result["passed"] = False
+            regression_result["log"] = (
+                f"Cannot find regression criteria for the template '{template.name}'. " + f"{ptq_performance=}"
+            )
+        else:
+            model_criteria = criteria[template.name] * (1.0 * reg_threshold)
+            if ptq_performance[k] < model_criteria:
                 regression_result["passed"] = False
-                regression_result["log"] = f"POT performance: ({ptq_performance[k]}) < Criteria: ({modified_criteria})."
+                regression_result[
+                    "log"
+                ] = f"ptq performance: {ptq_performance[k]=}, {model_criteria=}, {reg_threshold=}"
 
     return regression_result
 
