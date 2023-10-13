@@ -87,6 +87,7 @@ class DualModelEMAHook(Hook):
             iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
             self.momentum = 1 - iter_decay
             logger.info(f"EMA: epoch_decay={epoch_decay} / iter_decay={iter_decay}")
+            self.epoch_momentum = 0.0  # disable re-compute
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
@@ -116,11 +117,12 @@ class DualModelEMAHook(Hook):
     def _copy_model(self, sync_model=False):
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                dst_param = self.dst_params[name]
-                if sync_model:
-                    src_param.data.copy_(dst_param.data)
-                else:
-                    dst_param.data.copy_(src_param.data)
+                if not name.startswith("ema_"):
+                    dst_param = self.dst_params[name]
+                    if sync_model:
+                        src_param.data.copy_(dst_param.data)
+                    else:
+                        dst_param.data.copy_(src_param.data)
 
     def _ema_model(self):
         momentum = min(self.momentum, 1.0)

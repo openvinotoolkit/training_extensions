@@ -196,7 +196,6 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                 )
             else:
                 ul_losses = self.model_s.forward_train(ul_img, ul_img_metas, pseudo_bboxes, pseudo_labels)
-                # ul_losses = self.model_s.forward_train(torch.cat((ul_img, ul_img0)), ul_img_metas + ul_img_metas, pseudo_bboxes + pseudo_bboxes, pseudo_labels + pseudo_labels)
 
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = -1.0
