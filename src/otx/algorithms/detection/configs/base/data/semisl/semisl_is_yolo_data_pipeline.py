@@ -1,24 +1,35 @@
-"""Data Pipeline for Semi-Supervised Learning Detection Task."""
+"""Data Pipeline of YOLOX model for Semi-Supervised Learning Detection Task."""
 
-# Copyright (C) 2023 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 
 # pylint: disable=invalid-name
 
-# This is from otx/recipes/stages/_base_/data/pipelines/ubt.py
+# This is from otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
-__img_scale_test = (640, 640)
-__img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], to_rgb=False)
+__img_scale = (992, 736)
+__img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 
 common_pipeline = [
     dict(
         type="Resize",
         img_scale=[
-            (692, 640),
-            (596, 640),
-            (896, 640),
-            (692, 672),
-            (692, 800),
+            (992, 736),
+            (896, 736),
+            (1088, 736),
+            (992, 672),
+            (992, 800),
         ],
         multiscale_mode="value",
         keep_ratio=False,
@@ -78,59 +89,8 @@ common_pipeline = [
     ),
 ]
 
-# train_pipeline = [
-#     dict(type="Mosaic", img_scale=__img_size, pad_val=114.0),
-#     dict(
-#         type="RandomAffine",
-#         scaling_ratio_range=(0.1, 2),
-#         border=(-__img_size[0] // 2, -__img_size[1] // 2),
-#     ),
-#     dict(type="MixUp", img_scale=__img_size, ratio_range=(0.8, 1.6), pad_val=114.0),
-#     dict(type="YOLOXHSVRandomAug"),
-#     dict(type="RandomFlip", flip_ratio=0.5),
-#     dict(type="Resize", img_scale=__img_size, keep_ratio=True),
-#     dict(type="Pad", pad_to_square=True, pad_val=dict(img=(114.0, 114.0, 114.0))),
-#     dict(type="Normalize", **__img_norm_cfg),
-#     dict(type="DefaultFormatBundle"),
-#     dict(
-#         type="Collect",
-#         keys=["img", "gt_bboxes", "gt_labels"],
-#         meta_keys=[
-#             "ori_filename",
-#             "flip_direction",
-#             "scale_factor",
-#             "img_norm_cfg",
-#             "gt_ann_ids",
-#             "flip",
-#             "ignored_labels",
-#             "ori_shape",
-#             "filename",
-#             "img_shape",
-#             "pad_shape",
-#         ],
-#     ),
-# ]
-
-# train_pipeline = [
-#     dict(type="LoadImageFromOTXDataset", enable_memcache=True),
-#     dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
-#     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
-#     *common_pipeline,
-#     dict(
-#         type="Resize",
-#         img_scale=__img_scale_test,
-#         multiscale_mode="value",
-#         keep_ratio=False,
-#     ),
-#     dict(type="RandomFlip", flip_ratio=0.5),
-#     dict(type="Normalize", **__img_norm_cfg),
-#     dict(type="DefaultFormatBundle"),
-#     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
-# ]
-
-
 train_pipeline = [
-    dict(type="LoadImageFromOTXDataset"),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
     dict(type="LoadAnnotationFromOTXDataset", with_bbox=True),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
     *common_pipeline,
@@ -149,7 +109,6 @@ train_pipeline = [
         keys=["img", "img0", "gt_bboxes", "gt_labels"],
     ),
 ]
-
 
 unlabeled_pipeline = [
     dict(type="LoadImageFromOTXDataset", enable_memcache=True),
@@ -174,7 +133,7 @@ test_pipeline = [
     dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
-        img_scale=__img_scale_test,
+        img_scale=__img_scale,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),

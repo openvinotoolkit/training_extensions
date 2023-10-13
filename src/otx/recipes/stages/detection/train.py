@@ -37,7 +37,7 @@ custom_hooks = [
     dict(
         type="AdaptiveTrainSchedulingHook",
         enable_adaptive_interval_hook=False,
-        enable_eval_before_run=False,
+        enable_eval_before_run=True,
     ),
     dict(type="LoggerReplaceHook"),
 ]

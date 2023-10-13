@@ -174,11 +174,10 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         )
         if self.filter_empty_annotations:
             non_empty = [bool(len(i)) for i in pseudo_labels]
-            non_empty_check = lambda var: bool(len(var))
-            pseudo_bboxes = list(filter(non_empty_check, pseudo_bboxes))
-            pseudo_labels = list(filter(non_empty_check, pseudo_labels))
-            pseudo_masks = list(filter(non_empty_check, pseudo_masks))
-            ul_img_metas = list(filter(non_empty_check, ul_img_metas))
+            pseudo_bboxes = [pb for i, pb in enumerate(pseudo_bboxes) if non_empty[i]]
+            pseudo_labels = [pl for i, pl in enumerate(pseudo_labels) if non_empty[i]]
+            pseudo_masks = [pm for i, pm in enumerate(pseudo_masks) if non_empty[i]]
+            ul_img_metas = [im for i, im in enumerate(ul_img_metas) if non_empty[i]]
             ul_img = ul_img[non_empty]
         else:
             non_empty = [True]
@@ -189,7 +188,6 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         # Unsupervised loss
         # Compute only if min_pseudo_label_ratio is reached
         if pseudo_ratio >= self.min_pseudo_label_ratio and any(non_empty):
-            breakpoint()
             if self.bg_loss_weight >= 0.0:
                 self.model_s.bbox_head.bg_loss_weight = self.bg_loss_weight
             if self.model_t.with_mask:

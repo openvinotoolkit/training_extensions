@@ -44,6 +44,7 @@ class MeanTeacherHook(DualModelEMAHook):
 
         if runner.epoch + 1 < self.start_epoch or self.unlabeled_loss_enabled is False:
             # Just copy parameters before enabled
+            self._copy_model()
             return
 
         # EMA
@@ -57,3 +58,4 @@ class MeanTeacherHook(DualModelEMAHook):
         runner.log_buffer.output = output_backup
         runner.ready = was_ready
         return average_pseudo_label_ratio
+
