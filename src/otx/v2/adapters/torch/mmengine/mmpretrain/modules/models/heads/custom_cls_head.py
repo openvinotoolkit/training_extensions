@@ -48,18 +48,6 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         losses["loss"] = loss
         return losses
 
-    def loss(
-        self,
-        feats: torch.Tensor,
-        data_samples: List[DataSample],
-        feature: Optional[torch.Tensor] = None,
-        **kwargs,
-    ) -> dict:
-        """Calculate loss for given cls_score/gt_label."""
-        cls_score = self.classifier(feats)
-        losses = self._get_loss(cls_score, data_samples, feature, **kwargs)
-        return losses
-
     def forward(self, feats: torch.Tensor) -> torch.Tensor:
         """Forward fuction of CustomNonLinearClsHead class."""
         return self.predict(feats)
@@ -115,7 +103,7 @@ class CustomLinearClsHead(LinearClsHead):
 
         return losses
 
-    def predict(self, feats: torch.Tensor, data_samples: Optional[List[DataSample]] = None) -> torch.Tensor:
+    def predict(self, feats: torch.Tensor, data_samples: Optional[List[DataSample]] = None, **kwargs) -> torch.Tensor:
         """Test without augmentation."""
         cls_score = self.fc(feats)
         if isinstance(cls_score, list):

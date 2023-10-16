@@ -61,10 +61,7 @@ def get_default_pipeline(semisl: bool = False) -> Union[Dict, List]:
             ],
         }
 
-    return [
-        {"type": "Resize", "scale": [224, 224]},
-        {"type": "mmpretrain.PackInputs"},
-    ]
+    return default_pipeline
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -212,11 +209,11 @@ class Dataset(BaseDataset):
     def build_dataloader(
         self,
         dataset: Optional[TorchDataset],
-        batch_size: int = 1,
+        batch_size: int = 2,
         num_workers: int = 0,
         shuffle: bool = True,
         pin_memory: bool = False,
-        drop_last: bool = False,
+        drop_last: bool = True,
         sampler: Optional[Union[Sampler, Iterable, dict]] = None,
         persistent_workers: bool = False,
         **kwargs,
@@ -239,8 +236,7 @@ class Dataset(BaseDataset):
         """
         if dataset is None:
             return None
-        rank, world_size = get_dist_info()
-        # TODO: Setting for Semi-SL (training + unlabeled: List[TorchDataset])
+        rank, _ = get_dist_info()
 
         # Sampler
         seed = kwargs.get("seed", None)
@@ -287,7 +283,7 @@ class Dataset(BaseDataset):
         config: Optional[Union[str, dict]] = None,
         shuffle: bool = True,
         pin_memory: bool = False,
-        drop_last: bool = False,
+        drop_last: bool = True,
         sampler: Optional[Union[Sampler, Iterable, Dict]] = None,
         persistent_workers: bool = False,
         **kwargs,
@@ -343,7 +339,7 @@ class Dataset(BaseDataset):
         subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
         # TODO: argument update with configuration (config is not None case)
         if batch_size is None:
-            batch_size = _config.get("batch_size", 1)
+            batch_size = _config.get("batch_size", 2)
         if num_workers is None:
             num_workers = _config.get("num_workers", 0)
 

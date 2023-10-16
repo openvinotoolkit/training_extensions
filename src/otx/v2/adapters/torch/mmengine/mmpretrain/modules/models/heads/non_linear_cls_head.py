@@ -3,13 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Optional
+from typing import Optional, Tuple, List
 
 import torch
 from mmcv.cnn import build_activation_layer
 from mmengine.model import constant_init, normal_init
 from mmpretrain.models.builder import HEADS
 from mmpretrain.models.heads.cls_head import ClsHead
+from mmpretrain.structures import DataSample
 from torch import nn
 from torch.nn import functional
 
@@ -79,9 +80,11 @@ class NonLinearClsHead(ClsHead):
             elif isinstance(module, nn.BatchNorm1d):
                 constant_init(module, 1)
 
-    def simple_test(self, img: torch.Tensor) -> torch.Tensor:
+    def predict(
+        self, feats: Tuple[torch.Tensor], data_samples: Optional[List[Optional[DataSample]]] = None, **kwargs
+    ) -> torch.Tensor:
         """Test without augmentation."""
-        cls_score = self.classifier(img)
+        cls_score = self.classifier(feats)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         if torch.onnx.is_in_onnx_export():
@@ -90,12 +93,8 @@ class NonLinearClsHead(ClsHead):
         pred = list(pred.detach().cpu().numpy())
         return pred
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward fuction of NonLinearClsHead class."""
-        return self.simple_test(x)
-
-    def forward_train(self, cls_score: torch.Tensor, gt_label: torch.Tensor) -> dict:
+    def loss(self, feats: Tuple[torch.Tensor], data_samples: List[DataSample], **kwargs) -> dict:
         """Forward_train fuction of NonLinearClsHead class."""
-        logit = self.classifier(cls_score)
-        losses = self.loss(logit, gt_label)
+        logit = self.classifier(feats)
+        losses = self._get_loss(logit, data_samples, **kwargs)
         return losses

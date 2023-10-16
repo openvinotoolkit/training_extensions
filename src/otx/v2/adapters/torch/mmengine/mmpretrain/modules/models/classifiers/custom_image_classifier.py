@@ -224,7 +224,7 @@ if is_mmdeploy_enabled():
     ) -> Union[tuple, torch.Tensor]:  # pylint: disable=unused-argument
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
         feat, backbone_feat = self.extract_feat(img, dump_features=True)
-        logit = self.head.simple_test(feat)
+        logit = self.head.predict(feat)
 
         if kwargs.get("dump_features", False):
             saliency_map = ReciproCAMHook(self).func(backbone_feat)

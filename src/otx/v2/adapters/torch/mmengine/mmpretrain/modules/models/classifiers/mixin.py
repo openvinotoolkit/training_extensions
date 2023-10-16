@@ -4,13 +4,14 @@
 #
 
 from collections import defaultdict
-from typing import Optional
+from typing import Optional, List
 
 import datumaro as dm
 import numpy as np
 import pandas as pd
 import torch
 from mmpretrain.models.classifiers.image import ImageClassifier
+from mmpretrain.structures import DataSample
 
 from otx.v2.adapters.datumaro.noisy_label_detection import (
     LossDynamicsTracker,
@@ -87,15 +88,21 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
         # since LossDynamicsTrackingMixin.__init__() creates self._loss_dyns_tracker
         self._loss_dyns_tracker = MultiClassClsLossDynamicsTracker()
 
-    def predict(self, data: torch.Tensor, optim_wrapper: Optional[list] = None, **kwargs) -> dict:
+    def predict(
+        self,
+        feats: torch.Tensor,
+        data_samples: Optional[List[DataSample]] = None,
+        optim_wrapper: Optional[list] = None,
+        **kwargs,
+    ) -> dict:
         """The iteration step for training.
 
         If self._track_loss_dynamics = False, just follow BaseClassifier.train_step().
         Otherwise, it steps with tracking loss dynamics.
         """
         if self.loss_dyns_tracker.initialized:
-            return self._train_step_with_tracking(data, optim_wrapper, **kwargs)
-        return super().predict(data, optim_wrapper, **kwargs)  # type: ignore
+            return self._train_step_with_tracking(feats, optim_wrapper, **kwargs)
+        return super().predict(feats, data_samples, optim_wrapper=optim_wrapper, **kwargs)  # type: ignore
 
     def _train_step_with_tracking(
         self: ImageClassifier,

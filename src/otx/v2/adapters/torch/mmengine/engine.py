@@ -230,6 +230,8 @@ class MMXEngine(Engine):
         Returns:
             dict: A dictionary containing the trained model and the path to the checkpoint file.
         """
+        if isinstance(model, torch.nn.Module):
+            model.train()
         train_args = {
             "model": model,
             "train_dataloader": train_dataloader,
@@ -314,6 +316,8 @@ class MMXEngine(Engine):
         Returns:
             dict: The validation results.
         """
+        if isinstance(model, torch.nn.Module):
+            model.eval()
         val_args = {
             "model": model,
             "val_dataloader": val_dataloader,
@@ -372,6 +376,8 @@ class MMXEngine(Engine):
         Returns:
             dict: A dictionary containing the test results.
         """
+        if isinstance(model, torch.nn.Module):
+            model.eval()
         test_args = {
             "model": model,
             "test_dataloader": test_dataloader,

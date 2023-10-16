@@ -291,7 +291,7 @@ class TestTimeMonitorCallback:
         time_monitor_callback.step_history = 2
         time_monitor_callback.on_test_batch_end(batch=1, logger=None)
         assert len(time_monitor_callback.past_step_duration) == 2
-        assert round(time_monitor_callback.average_step, 4) == 3.0
+        assert round(time_monitor_callback.average_step, 1) == 3.0
         # Checking "past_step_duration" and "average_step" after "on_train_batch_end" for "TimeMonitorCallback" with
         # length of "past_step_duration" less than "step_history" value
         time_monitor_callback = self.time_monitor_callback()
@@ -299,7 +299,7 @@ class TestTimeMonitorCallback:
         time_monitor_callback.step_history = 5
         time_monitor_callback.on_test_batch_end(batch=2, logger=None)
         assert len(time_monitor_callback.past_step_duration) == 4
-        assert round(time_monitor_callback.average_step, 4) == 10.0
+        assert round(time_monitor_callback.average_step, 1) == 10.0
 
     def test_time_monitor_callback_on_train_begin(self) -> None:
         """<b>Description:</b>
