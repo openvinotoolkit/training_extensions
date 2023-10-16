@@ -48,7 +48,7 @@ class CustomConfig(Config):
     def _file2dict(
         filename: str,
         use_predefined_variables: bool = True,
-    ) -> Tuple[Config, str]:  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    ) -> Tuple[Config, str]:
         """Static method that loads the configuration file and returns a dictionary of its contents.
 
         :param filename: str, the path of the configuration file to be loaded.
@@ -355,7 +355,7 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str) -> None:
     """Update & Remove configs."""
     if key in config:
         if isinstance(config, Config):
-            del config._cfg_dict[key]  # pylint: disable=protected-access
+            del config._cfg_dict[key]
         elif isinstance(config, ConfigDict):
             del config[key]
         else:

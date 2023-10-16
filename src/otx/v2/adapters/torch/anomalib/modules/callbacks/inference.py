@@ -56,7 +56,6 @@ class AnomalyInferenceCallback(Callback):
     def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: list) -> None:
         """Call when the predict epoch ends."""
         # TODO; refactor Ignore too many locals
-        # pylint: disable=too-many-locals
         outputs = outputs[0]
         # collect generic predictions
         pred_scores = torch.hstack([output["pred_scores"].cpu() for output in outputs])
@@ -124,8 +123,6 @@ class AnomalyInferenceCallback(Callback):
             pred_scores (Tensor): Predicted image-level anomaly scores.
             image_size: (torch.Size): Image size of the original images.
         """
-        # TODO; refactor Ignore too many locals
-        # pylint: disable=too-many-locals
         height, width = image_size
         for dataset_item, im_boxes, im_box_scores, im_box_labels, pred_score in zip(
             self.otx_dataset,

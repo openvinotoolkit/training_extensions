@@ -30,7 +30,6 @@ class TaskType(Enum):
         task_info (TaskInfo): NamedTuple containing information about the task's capabilities
     """
 
-    # pylint: disable=unused-argument
     def __init__(
         self,
         value: int,

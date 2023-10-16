@@ -40,7 +40,6 @@ class ID(str):
         return super().__new__(cls, representation)
 
     # See comment block above
-    # pylint: disable=W0231
     def __init__(self, representation: Optional[Union[str, ObjectId]] = None):
         pass
 

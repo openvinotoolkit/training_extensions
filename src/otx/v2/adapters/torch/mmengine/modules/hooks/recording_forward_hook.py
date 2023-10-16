@@ -88,7 +88,7 @@ class BaseRecordingForwardHook(ABC):
         _: torch.nn.Module,
         x: torch.Tensor,
         output: torch.Tensor,
-    ) -> None:  # pylint: disable=unused-argument
+    ) -> None:
         tensors = self.func(output)
         if isinstance(tensors, torch.Tensor):
             tensors_np = tensors.detach().cpu().numpy()
@@ -131,7 +131,7 @@ class EigenCamHook(BaseRecordingForwardHook):
         batch_size, channel, h, w = x.size()
         reshaped_fmap = x.reshape((batch_size, channel, h * w)).transpose(1, 2)
         reshaped_fmap = reshaped_fmap - reshaped_fmap.mean(1)[:, None, :]
-        _, _, vh = torch.linalg.svd(reshaped_fmap, full_matrices=True)  # pylint: disable=invalid-name
+        _, _, vh = torch.linalg.svd(reshaped_fmap, full_matrices=True)
 
         if self._norm_saliency_maps:
             saliency_map = (reshaped_fmap @ vh[:, 0][:, :, None]).squeeze(-1)

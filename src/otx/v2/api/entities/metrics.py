@@ -313,7 +313,6 @@ class MatrixMetric(MetricEntity):
     __row_labels: Optional[List[str]] = None
     __column_labels: Optional[List[str]] = None
 
-    # pylint: disable=too-many-arguments; Requires refactor
     def __init__(
         self,
         name: str,
@@ -526,7 +525,6 @@ class MatrixChartInfo(VisualizationInfo):
     row_header: str
     column_header: str
 
-    # pylint: disable=too-many-arguments; Requires refactor
     def __init__(
         self,
         name: str,

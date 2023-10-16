@@ -22,7 +22,7 @@ def asymmetric_angular_loss_with_ignore(
     k: float = 0.8,
     reduction: str = "mean",
     avg_factor: Optional[int] = None,
-) -> torch.Tensor:  # pylint: disable=too-many-arguments, too-many-locals
+) -> torch.Tensor:
     """Asymmetric angular loss.
 
     Args:

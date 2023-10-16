@@ -29,7 +29,6 @@ class UpdateProgressCallback(Protocol):
         """
 
 
-# pylint: disable=unused-argument
 def default_progress_callback(progress: float, score: Optional[float] = None):
     """Default progress callback. It is a placeholder (does nothing) and is used in empty TrainParameters."""
 

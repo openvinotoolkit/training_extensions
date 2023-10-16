@@ -4,7 +4,6 @@
 #
 
 # Conflict with Isort
-# pylint: disable=wrong-import-order, cyclic-import
 
 import datetime
 import math
@@ -16,8 +15,6 @@ from shapely.geometry import Polygon as shapely_polygon
 
 from otx.v2.api.entities.shapes.shape import Shape, ShapeEntity, ShapeType
 from otx.v2.api.entities.utils.time_utils import now
-
-# pylint: disable=invalid-name
 
 
 class Rectangle(Shape):
@@ -38,7 +35,6 @@ class Rectangle(Shape):
         modification_date (datetime.datetime): Date of the last modification of the rectangle
     """
 
-    # pylint: disable=too-many-arguments; Requires refactor
     def __init__(
         self,
         x1: float,

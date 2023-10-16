@@ -47,7 +47,6 @@ class TwoCropTransformHook(Hook):
 
         return dataset
 
-    # pylint: disable=inconsistent-return-statements
     def _find_two_crop_transform(self, transforms: list) -> Optional[TwoCropTransform]:
         """Find TwoCropTransform among transforms."""
         for transform in transforms:

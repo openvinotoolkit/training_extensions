@@ -26,7 +26,6 @@ class Annotation(metaclass=abc.ABCMeta):
         id (Optional[ID]): the id of the annotation
     """
 
-    # pylint: disable=redefined-builtin;
     def __init__(self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None):
         self.__id_ = ID(ObjectId()) if id is None else id
         self.__shape = shape
@@ -169,7 +168,6 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         id (Optional[ID]): ID of AnnotationSceneEntity. If None a new `ID` is created. Defaults to None.
     """
 
-    # pylint: disable=too-many-arguments, redefined-builtin
     def __init__(
         self,
         annotations: List[Annotation],

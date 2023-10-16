@@ -30,7 +30,6 @@ class CustomMultiLabelNonLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
         normalized (bool): Normalize input features and weights in the last linar layer.
     """
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         num_classes: int,

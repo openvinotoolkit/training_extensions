@@ -109,7 +109,7 @@ class ProgressCallback(TQDMProgressBar):
         self,
         trainer: Trainer,
         pl_module: LightningModule,
-    ) -> None:  # pylint: disable=unused-argument
+    ) -> None:
         """If score exists in trainer.logged_metrics, report the score."""
         super().on_validation_epoch_end(trainer, pl_module)
         if self.progress_and_hpo_callback is not None:
@@ -119,7 +119,7 @@ class ProgressCallback(TQDMProgressBar):
                 score = float(trainer.logged_metrics[metric])
 
             # Always assumes that hpo validation step is called during training.
-            self.progress_and_hpo_callback(int(self._get_progress("train")), score)  # pylint: disable=not-callable
+            self.progress_and_hpo_callback(int(self._get_progress("train")), score)
 
     def _reset_progress(self) -> None:
         self._progress = 0.0

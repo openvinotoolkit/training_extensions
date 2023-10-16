@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=invalid-name
 
 import logging
 from pathlib import Path
@@ -186,7 +185,7 @@ def get_image(results: dict, cache_dir: str, to_float32: bool = False) -> np.nda
             cached_img = cv2.imread(filename)
             if to_float32:
                 cached_img = cached_img.astype(np.float32)
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
             return None
         return cached_img
@@ -197,14 +196,14 @@ def get_image(results: dict, cache_dir: str, to_float32: bool = False) -> np.nda
             return
         try:
             cv2.imwrite(tmp_filename, img=img)
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             logger.warning(f"Skip caching for {filename} \nError msg: {e}")
             return
 
         if Path(tmp_filename).exists() and not Path(filename).exists():
             try:
                 Path(tmp_filename).replace(filename)
-            except Exception as e:  # pylint: disable=broad-except
+            except Exception as e:
                 Path(tmp_filename).unlink()
                 logger.warning(f"Failed to rename {tmp_filename} -> {filename} \nError msg: {e}")
 

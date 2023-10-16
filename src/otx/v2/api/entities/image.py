@@ -27,7 +27,6 @@ class Image(IMedia2DEntity):
         file_path (Optional[str]): Path to image file.
     """
 
-    # pylint: disable=too-many-arguments, redefined-builtin
     def __init__(
         self,
         data: Optional[Union[np.ndarray, Callable[[], np.ndarray]]] = None,

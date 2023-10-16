@@ -14,8 +14,6 @@ from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 
-# pylint: disable=too-many-instance-attributes
-
 
 @HOOKS.register_module()
 class DualModelEMAHook(Hook):

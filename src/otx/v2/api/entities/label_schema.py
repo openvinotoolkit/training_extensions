@@ -77,7 +77,6 @@ class LabelGroup:
             will be assigned
     """
 
-    # pylint: disable=redefined-builtin
     def __init__(
         self,
         name: str,
@@ -224,7 +223,7 @@ class LabelTree(MultiDiGraph):
         """Returns children of `parent`."""
         if parent not in self._graph.nodes:
             return []
-        return list(self._graph.predecessors(parent))  # pylint: disable=no-member
+        return list(self._graph.predecessors(parent))
 
     def get_descendants(self, parent: LabelEntity) -> List[LabelEntity]:
         """Returns descendants (children and children of children, etc.) of `parent`."""
@@ -236,7 +235,7 @@ class LabelTree(MultiDiGraph):
         if parent is None:
             siblings = []
         else:
-            siblings = [u for u, v in self._graph.in_edges(parent) if u != label]  # pylint: disable=no-member
+            siblings = [u for u, v in self._graph.in_edges(parent) if u != label]
         return siblings
 
     def get_ancestors(self, label: LabelEntity) -> List[LabelEntity]:
@@ -275,7 +274,6 @@ class LabelSchemaEntity:
             E.g. a group of mutually exclusive labels.
     """
 
-    # pylint: disable=too-many-public-methods, too-many-arguments
     def __init__(
         self,
         label_tree: Optional[LabelTree] = None,

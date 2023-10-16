@@ -226,7 +226,7 @@ class AugMixAugment:
             if not Image.isImageType(img):
                 img = Image.fromarray(img)
             mixing_weights = np.float32(np.random.dirichlet([self.alpha] * self.width))
-            m = np.float32(np.random.beta(self.alpha, self.alpha))  # pylint: disable=invalid-name
+            m = np.float32(np.random.beta(self.alpha, self.alpha))
             mixed = self._apply_basic(img, mixing_weights, m)
             results["augmix"] = True
             results[key] = mixed

@@ -17,7 +17,7 @@ from otx.v2.api.utils.logger import get_logger
 logger = get_logger()
 
 
-class OTXSampler(Sampler):  # pylint: disable=too-many-instance-attributes
+class OTXSampler(Sampler):
     """Sampler that easily adapts to the dataset statistics.
 
     In the exterme small dataset, the iteration per epoch could be set to 1 and then it could make slow training

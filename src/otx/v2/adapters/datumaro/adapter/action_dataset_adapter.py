@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-arguments
+
 import os
 import os.path as osp
 from typing import Dict, List, Optional
@@ -154,7 +154,6 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and DatumaroDatasetAdapter."""
 
-    # pylint: disable=too-many-nested-blocks
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Detection."""
         label_information = self._prepare_label_information(self.dataset)

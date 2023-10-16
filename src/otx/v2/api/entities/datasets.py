@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=redefined-builtin, invalid-name
 
 import collections.abc
 import copy

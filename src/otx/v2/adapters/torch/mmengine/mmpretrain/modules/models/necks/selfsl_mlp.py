@@ -6,7 +6,6 @@ This MLP consists of fc (conv) - norm - relu - fc (conv).
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=missing-module-docstring
 from typing import Any, Dict, Optional, Union
 
 import torch
@@ -72,7 +71,7 @@ class SelfSLMLP(nn.Module):
         """
         if init_linear not in ["normal", "kaiming"]:
             raise ValueError(f"Undefined init_linear: {init_linear}")
-        for m in self.modules():  # pylint: disable=invalid-name
+        for m in self.modules():
             if isinstance(m, nn.Linear):
                 if init_linear == "normal":
                     normal_init(m, std=std, bias=bias)
@@ -101,7 +100,6 @@ class SelfSLMLP(nn.Module):
             raise TypeError("neck inputs should be tuple or torch.tensor")
         if self.with_avg_pool:
             x = self.avgpool(x)
-        if self.use_conv:  # pylint: disable=no-else-return
+        if self.use_conv:
             return self.mlp(x)
-        else:
-            return self.mlp(x.view(x.size(0), -1))
+        return self.mlp(x.view(x.size(0), -1))

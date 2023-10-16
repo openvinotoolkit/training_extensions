@@ -61,8 +61,6 @@ def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
     Returns:
         List[List[float]]: Bounding box coordinates.
     """
-    # pylint: disable-msg=too-many-locals
-
     mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
     height, width = mask.shape
 

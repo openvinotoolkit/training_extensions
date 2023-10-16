@@ -85,7 +85,7 @@ class SemiClsHead(OTXHeadMixin, ClsHead):
         x: Union[dict, torch.Tensor],
         gt_label: torch.Tensor,
         final_layer: Union[torch.nn.Linear, torch.nn.Sequential],
-    ) -> dict:  # pylint: disable=too-many-locals
+    ) -> dict:
         """Forward_train head using pseudo-label selected through threshold.
 
         Args:
@@ -169,7 +169,7 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         unlabeled_coef: float = 1.0,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -226,7 +226,7 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         unlabeled_coef: float = 1.0,
         use_dynamic_threshold: bool = True,
         min_threshold: float = 0.5,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:

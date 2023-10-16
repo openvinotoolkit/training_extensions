@@ -21,7 +21,7 @@ def asymmetric_loss_with_ignore(
     clip: float = 0.05,
     reduction: str = "none",
     avg_factor: Optional[int] = None,
-) -> torch.Tensor:  # pylint: disable=too-many-arguments
+) -> torch.Tensor:
     """Asymmetric loss, please refer to the `paper <https://arxiv.org/abs/2009.14119>`_ for details.
 
     Args:

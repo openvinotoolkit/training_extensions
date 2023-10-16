@@ -19,7 +19,7 @@ from .mixin import OTXHeadMixin
 class CustomHierarchicalNonLinearClsHead(
     OTXHeadMixin,
     MultiLabelClsHead,
-):  # pylint: disable=too-many-instance-attributes
+):
     """Custom NonLinear classification head for hierarchical classification task.
 
     Args:
@@ -42,7 +42,7 @@ class CustomHierarchicalNonLinearClsHead(
         multilabel_loss: Optional[dict] = None,
         dropout: bool = False,
         **kwargs,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         act_cfg = act_cfg if act_cfg else {"type": "ReLU"}
         loss = (
             loss if loss else {"type": "CrossEntropyLoss", "use_sigmoid": True, "reduction": "mean", "loss_weight": 1.0}

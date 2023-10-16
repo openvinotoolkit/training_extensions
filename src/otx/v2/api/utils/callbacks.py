@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=too-many-instance-attributes,too-many-arguments
 
 import logging
 import math
@@ -51,12 +50,10 @@ class Callback:
 
     def set_params(self, params: dict) -> None:
         """Set callback parameters."""
-        # pylint: disable=W0201
         self.params = params
 
     def set_model(self, model: TypeVar) -> None:
         """Set callback model."""
-        # pylint: disable=W0201
         self.model = model
 
     def on_epoch_begin(self, epoch: int, **kwargs) -> None:

@@ -3,7 +3,6 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=cyclic-import
 
 import abc
 import copy
@@ -93,7 +92,6 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             following a label schema change.
     """
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         media: IMedia2DEntity,

@@ -8,7 +8,6 @@ from typing import Callable
 from mmengine.config import Config
 from torch.utils.data import DataLoader, Dataset
 
-# pylint: disable-next=unused-import
 from ._builder_build_data_parallel import build_data_parallel  # noqa: F401
 
 
@@ -46,7 +45,7 @@ def build_dataloader(
         "num_gpus": len(config.gpu_ids),
         "dist": distributed,
         "seed": config.get("seed", None),
-        "shuffle": not subset in ["test", "val"],  # pylint: disable=simplifiable-if-expression
+        "shuffle": not subset in ["test", "val"],
     }
 
     # The overall dataloader settings

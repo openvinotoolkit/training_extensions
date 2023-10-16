@@ -77,13 +77,12 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
 
     @staticmethod
     def state_dict_hook(module: torch.nn.Module, state_dict: dict, prefix: str, *args, **kwargs) -> Optional[dict]:
-        # pylint: disable=unused-argument, too-many-branches
         """Redirect model as output state_dict for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return None
 
-        if backbone_type == "OTXMobileNetV3":  # pylint: disable=too-many-nested-blocks
+        if backbone_type == "OTXMobileNetV3":
             from otx.v2.adapters.torch.mmengine.modules.models.backbones.mobilenetv3 import get_state_dict_hook
         elif backbone_type == "OTXEfficientNet":
             from otx.v2.adapters.torch.mmengine.modules.models.backbones.efficientnet import get_state_dict_hook
@@ -101,13 +100,12 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
         *args,
         **kwargs,
     ) -> None:
-        # pylint: disable=unused-argument, too-many-branches
         """Redirect input state_dict to model for OTX model compatibility."""
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
 
-        if backbone_type == "OTXMobileNetV3":  # pylint: disable=too-many-nested-blocks
+        if backbone_type == "OTXMobileNetV3":
             from otx.v2.adapters.torch.mmengine.modules.models.backbones.mobilenetv3 import load_state_dict_pre_hook
         elif backbone_type == "OTXEfficientNet":
             from otx.v2.adapters.torch.mmengine.modules.models.backbones.efficientnet import load_state_dict_pre_hook
@@ -124,7 +122,7 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
         prefix: str,
         *args,
         **kwargs,
-    ) -> None:  # pylint: disable=unused-argument, too-many-branches, too-many-locals
+    ) -> None:
         """Modify input state_dict according to class name matching before weight loading."""
         backbone_type = type(model.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
@@ -187,7 +185,7 @@ class CustomImageClassifier(ClsLossDynamicsTrackingMixin, ImageClassifier):
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
 
-    from otx.v2.adapters.torch.mmengine.modules.hooks.recording_forward_hook import (  # pylint: disable=ungrouped-imports
+    from otx.v2.adapters.torch.mmengine.modules.hooks.recording_forward_hook import (
         FeatureVectorHook,
         ReciproCAMHook,
     )
@@ -199,7 +197,7 @@ if is_mmdeploy_enabled():
         self: CustomImageClassifier,
         img: torch.Tensor,
         **kwargs,
-    ) -> Union[tuple, torch.Tensor]:  # pylint: disable=unused-argument
+    ) -> Union[tuple, torch.Tensor]:
         """Feature extraction function for SAMClassifier with mmdeploy."""
         dump_features = kwargs.get("dump_features", False)
         feat = self.backbone(img)
@@ -221,7 +219,7 @@ if is_mmdeploy_enabled():
         self: CustomImageClassifier,
         img: torch.Tensor,
         **kwargs,
-    ) -> Union[tuple, torch.Tensor]:  # pylint: disable=unused-argument
+    ) -> Union[tuple, torch.Tensor]:
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
         feat, backbone_feat = self.extract_feat(img, dump_features=True)
         logit = self.head.predict(feat)

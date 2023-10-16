@@ -25,7 +25,7 @@ class RandomAppliedTrans:
     """
 
     def __init__(self, transforms: List, p: float = 0.5) -> None:
-        t = [build_from_cfg(t, TRANSFORMS) for t in transforms]  # pylint: disable=invalid-name
+        t = [build_from_cfg(t, TRANSFORMS) for t in transforms]
         self.trans = tv_transforms.RandomApply(t, p=p)
 
     def __call__(self, results: dict) -> dict:

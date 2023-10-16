@@ -7,7 +7,7 @@ from functools import partial
 from typing import Callable
 
 import onnx
-from onnx import ModelProto, NodeProto  # pylint: disable = no-name-in-module
+from onnx import ModelProto, NodeProto
 
 
 def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:

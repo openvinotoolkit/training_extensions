@@ -87,7 +87,6 @@ class LabelEntity:
             projects.
     """
 
-    # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
     def __init__(
         self,
         name: str,

@@ -4,7 +4,6 @@
 #
 
 # Conflict with Isort
-# pylint: disable=wrong-import-order
 
 import datetime
 import math
@@ -17,8 +16,6 @@ from shapely.geometry import Polygon as shapely_polygon
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.shapes.shape import Shape, ShapeType
 from otx.v2.api.entities.utils.time_utils import now
-
-# pylint: disable=invalid-name
 
 
 class Ellipse(Shape):
@@ -35,7 +32,6 @@ class Ellipse(Shape):
             modification_date: last modified date
     """
 
-    # pylint: disable=too-many-arguments; Requires refactor
     def __init__(
         self,
         x1: float,
@@ -228,7 +224,6 @@ class Ellipse(Shape):
 
         return Ellipse(x1=x1, y1=y1, x2=x2, y2=y2)
 
-    # pylint: disable=no-member; PyLint cannot find scipy.special.ellipeinc()
     def get_evenly_distributed_ellipse_coordinates(self, number_of_coordinates: int = 50) -> List[Tuple[float, float]]:
         """Returns evenly distributed coordinates along the ellipse.
 

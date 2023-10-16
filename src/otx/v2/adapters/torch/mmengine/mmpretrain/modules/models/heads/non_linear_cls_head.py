@@ -39,7 +39,7 @@ class NonLinearClsHead(ClsHead):
         topk: tuple = (1,),
         dropout: bool = False,
         **kwargs,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         topk = (1,) if num_classes < 5 else (1, 5)
         act_cfg = act_cfg if act_cfg else {"type": "ReLU"}
         loss = loss if loss else {"type": "CrossEntropyLoss", "loss_weight": 1.0}

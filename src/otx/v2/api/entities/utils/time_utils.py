@@ -67,7 +67,6 @@ class TimeEstimator:
             estimation starts time estimation
     """
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         smoothing_factor: float = 0.02,

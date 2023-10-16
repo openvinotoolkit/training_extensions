@@ -34,7 +34,7 @@ class MMOVBackbone(MMOVModel):
             raise ValueError("Parser can not determine input and output of model. Please provide them explicitly")
         return output
 
-    def init_weights(self, pretrained: Optional[Union[bool, str]] = None) -> None:  # pylint: disable=unused-argument
+    def init_weights(self, pretrained: Optional[Union[bool, str]] = None) -> None:
         """Initializes the weights of the model.
 
         Args:

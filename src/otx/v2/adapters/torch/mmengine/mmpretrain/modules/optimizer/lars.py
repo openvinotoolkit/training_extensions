@@ -48,7 +48,7 @@ class LARS(Optimizer):
         nesterov: bool = False,
         mode: Optional[str] = None,
         exclude_bn_from_weight_decay: bool = False,
-    ) -> None:  # pylint: disable=too-many-arguments, too-many-locals
+    ) -> None:
         if lr < 0.0:
             raise ValueError(f"Invalid learning rate: {lr}")
         if momentum < 0.0:

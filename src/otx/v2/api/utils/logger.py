@@ -58,7 +58,7 @@ def config_logger(log_file: str, level: str = "WARNING") -> None:
     :param level: str, a string representing the log level. Default is "WARNING".
     :return: None
     """
-    global _LOG_DIR, _FILE_HANDLER  # pylint: disable=global-statement
+    global _LOG_DIR, _FILE_HANDLER
     if _FILE_HANDLER is not None:
         _logger.removeHandler(_FILE_HANDLER)
         del _FILE_HANDLER
@@ -105,7 +105,7 @@ def local_master_only(func: Callable) -> Callable:
     """
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> Optional[Callable]:  # pylint: disable=inconsistent-return-statements
+    def wrapper(*args, **kwargs) -> Optional[Callable]:
         local_rank = 0
         from torch import distributed as dist
 

@@ -71,7 +71,6 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
     datetime.now(datetime.timezone.utc)
     """
 
-    # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
     def __init__(
         self,
         model: Any,

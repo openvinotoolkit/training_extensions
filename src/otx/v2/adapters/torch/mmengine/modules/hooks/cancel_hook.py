@@ -16,7 +16,6 @@ from otx.v2.api.utils.logger import get_logger
 logger = get_logger()
 
 
-# pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments, unused-argument
 @HOOKS.register_module()
 class CancelTrainingHook(Hook):
     """CancelTrainingHook for Training Stopping."""

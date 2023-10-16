@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member
 
 import logging
 from typing import Optional, Union
@@ -27,7 +26,6 @@ from otx.v2.api.utils.logger import get_logger
 logger = get_logger()
 
 
-# pylint: disable=too-many-instance-attributes
 @DATASETS.register_module()
 class OTXClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
@@ -38,7 +36,7 @@ class OTXClsDataset(BaseDataset):
         labels: list,
         empty_label: Optional[list] = None,
         **kwargs,
-    ) -> None:  # pylint: disable=super-init-not-called
+    ) -> None:
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.label_names = [label.name for label in self.labels]
@@ -67,7 +65,7 @@ class OTXClsDataset(BaseDataset):
         self.pipeline = Compose(pipeline_modules)
         self.load_annotations()
 
-    def get_indices(self, num_classes: list, *args) -> dict:  # pylint: disable=unused-argument
+    def get_indices(self, num_classes: list, *args) -> dict:
         """Get indices."""
         return get_cls_img_indices(self.labels, self.otx_dataset)
 
@@ -136,7 +134,7 @@ class OTXClsDataset(BaseDataset):
         metric_options: Optional[dict] = None,
         indices: Optional[list] = None,
         logger: Optional[logging.Logger] = None,
-    ) -> dict:  # pylint: disable=redefined-outer-name
+    ) -> dict:
         """Evaluate the dataset with new metric class_accuracy.
 
         Args:
@@ -228,7 +226,7 @@ class OTXMultilabelClsDataset(OTXClsDataset):
         metric_options: Optional[dict] = None,
         indices: Optional[list] = None,
         logger: Optional[logging.Logger] = None,
-    ) -> dict:  # pylint: disable=unused-argument, redefined-outer-name, arguments-renamed
+    ) -> dict:
         """Evaluate the dataset.
 
         Args:
@@ -367,7 +365,7 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         metric_options: Optional[dict] = None,
         indices: Optional[list] = None,
         logger: Optional[logging.Logger] = None,
-    ) -> dict:  # pylint: disable=unused-argument, redefined-outer-name
+    ) -> dict:
         """Evaluate the dataset.
 
         Args:
@@ -439,7 +437,7 @@ class SelfSLDataset(Dataset):
 
     CLASSES = None
 
-    def __init__(self, otx_dataset: DatasetEntity, pipeline: dict, **kwargs) -> None:  # pylint: disable=unused-argument
+    def __init__(self, otx_dataset: DatasetEntity, pipeline: dict, **kwargs) -> None:
         super().__init__()
         self.otx_dataset = otx_dataset
 

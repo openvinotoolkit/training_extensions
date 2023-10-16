@@ -77,7 +77,6 @@ class OtxMvtecDataset:
         (900, 900, 3)
     """
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         path: Union[str, Path],

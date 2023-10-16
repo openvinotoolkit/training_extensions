@@ -20,7 +20,7 @@ except Exception as e:
 ImgTypes = Union[PILImage, ndarray]
 
 
-class Augments:  # pylint: disable=unused-argument
+class Augments:
     """Augments class that implements various augmentations via plain PIL."""
 
     @staticmethod

@@ -9,7 +9,6 @@ import copy
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass, invalid-name
 from collections import OrderedDict
 from typing import Any, Dict, Optional
 
@@ -49,7 +48,7 @@ class OTXBYOL(nn.Module):
         head: Optional[Dict[str, Any]] = None,
         pretrained: Optional[str] = None,
         base_momentum: float = 0.996,
-        **kwargs,  # pylint: disable=unused-argument
+        **kwargs,
     ) -> None:
         super().__init__()
 

@@ -221,7 +221,7 @@ class SemiLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelLinearC
         unlabeled_coef: float = 0.1,
         aux_loss: Optional[dict] = None,
         use_dynamic_loss_weighting: bool = True,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
@@ -293,7 +293,7 @@ class SemiNonLinearMultilabelClsHead(SemiMultilabelClsHead, CustomMultiLabelNonL
         dropout: bool = False,
         unlabeled_coef: float = 0.1,
         use_dynamic_loss_weighting: bool = True,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:

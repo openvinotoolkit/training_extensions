@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member
 from typing import Any, Dict, List, Union
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType

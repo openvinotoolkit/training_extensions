@@ -5,7 +5,6 @@
 #
 
 # Conflict with Isort
-# pylint: disable=wrong-import-order
 
 import datetime
 import warnings
@@ -88,7 +87,6 @@ class Polygon(Shape):
         modification_date: last modified date
     """
 
-    # pylint: disable=too-many-arguments; Requires refactor
     def __init__(
         self,
         points: List[Point],

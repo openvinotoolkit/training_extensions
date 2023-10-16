@@ -14,7 +14,7 @@ from mmengine.runner import Runner
 
 
 @HOOKS.register_module()
-class CheckpointHookWithValResults(Hook):  # pylint: disable=too-many-instance-attributes
+class CheckpointHookWithValResults(Hook):
     """Save checkpoints periodically.
 
     Args:

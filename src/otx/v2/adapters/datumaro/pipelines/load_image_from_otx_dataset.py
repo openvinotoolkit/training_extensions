@@ -9,7 +9,7 @@ import numpy as np
 from otx.v2.adapters.datumaro.caching import MemCacheHandlerError, MemCacheHandlerSingleton
 from otx.v2.api.entities.utils.data_utils import get_image
 
-_CACHE_DIR = TemporaryDirectory(prefix="img-cache-")  # pylint: disable=consider-using-with
+_CACHE_DIR = TemporaryDirectory(prefix="img-cache-")
 
 # TODO: refactoring to common modules
 # TODO: refactoring to Sphinx style.

@@ -12,7 +12,7 @@ from .otx_sampler import OTXSampler
 logger = get_logger()
 
 
-class BalancedSampler(OTXSampler):  # pylint: disable=too-many-instance-attributes
+class BalancedSampler(OTXSampler):
     """Balanced sampler for imbalanced data for class-incremental task.
 
     This sampler is a sampler that creates an effective batch

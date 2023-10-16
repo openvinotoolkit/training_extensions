@@ -35,7 +35,6 @@ class ShapeEntity(metaclass=abc.ABCMeta):
     The shapes is a 2D geometric shape living in a normalized coordinate system (the values range from 0 to 1).
     """
 
-    # pylint: disable=redefined-builtin
     def __init__(self, shape_type: ShapeType):
         self._type = shape_type
 
@@ -123,7 +122,6 @@ class ShapeEntity(metaclass=abc.ABCMeta):
 class Shape(ShapeEntity):
     """Base class for Shape entities."""
 
-    # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
     def __init__(self, shape_type: ShapeType, modification_date: datetime.datetime):
         super().__init__(shape_type=shape_type)
         self.modification_date = modification_date
@@ -136,7 +134,6 @@ class Shape(ShapeEntity):
         """Get the area of the shape."""
         raise NotImplementedError
 
-    # pylint: disable=protected-access
     def intersects(self, other: "Shape") -> bool:
         """Returns True, if other intersects with shape, otherwise returns False."""
         polygon_roi = self._as_shapely_polygon()
@@ -148,7 +145,6 @@ class Shape(ShapeEntity):
                 f"The intersection between the shapes {self} and {other} could not be computed: " f"{exception}."
             ) from exception
 
-    # pylint: disable=protected-access
     def contains_center(self, other: "ShapeEntity") -> bool:
         """Checks whether the center of the 'other' shape is located in the shape.
 

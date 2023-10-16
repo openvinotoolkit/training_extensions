@@ -9,7 +9,6 @@ Original papers:
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=unused-argument, invalid-name
 
 import os
 

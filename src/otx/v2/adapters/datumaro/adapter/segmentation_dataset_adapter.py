@@ -32,9 +32,6 @@ from otx.v2.api.utils.logger import get_logger
 
 from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks, too-many-branches,
-# pylint: too-many-arguments
-
 
 class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
     """Segmentation adapter inherited from DatumaroDatasetAdapter.
@@ -129,7 +126,6 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
 class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
     """Self-SL for segmentation adapter inherited from SegmentationDatasetAdapter."""
 
-    # pylint: disable=protected-access
     def _import_datasets(
         self,
         train_data_roots: Optional[str] = None,

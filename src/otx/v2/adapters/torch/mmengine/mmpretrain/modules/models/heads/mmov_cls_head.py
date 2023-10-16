@@ -43,7 +43,7 @@ class MMOVClsHead(ClsHead):
         verify_shape: bool = True,
         softmax_at_test: bool = True,
         **kwargs,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         kwargs.pop("in_channels", None)
         kwargs.pop("num_classes", None)
         super().__init__(**kwargs)

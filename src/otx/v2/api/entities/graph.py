@@ -94,7 +94,6 @@ class Graph(IGraph):
 
     def add_edge(self, node1, node2, edge_value=None):
         """Adds edge between node1 and node2."""
-        # pylint: disable=arguments-differ
         self._graph.add_edge(node1, node2, value=edge_value)
 
     def num_nodes(self) -> int:
@@ -123,7 +122,6 @@ class Graph(IGraph):
 
     def find_out_edges(self, node):
         """Returns the edges that have `node` as a destination."""
-        # pylint: disable=no-member
         if node not in self._graph.nodes:
             raise KeyError(f"The node `{node}` is not part of the graph")
 
@@ -133,7 +131,6 @@ class Graph(IGraph):
 
     def find_in_edges(self, node):
         """Returns the edges that have `node` as a source."""
-        # pylint: disable=no-member
         if node not in self._graph.nodes:
             raise KeyError(f"The node `{node}` is not part of the graph")
 

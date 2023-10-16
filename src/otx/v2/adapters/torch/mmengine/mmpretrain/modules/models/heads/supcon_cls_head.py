@@ -35,7 +35,7 @@ class SupConClsHead(ClsHead):
         aux_loss: dict,
         topk: tuple = (1,),
         init_cfg: Optional[dict] = None,
-    ) -> None:  # pylint: disable=too-many-arguments
+    ) -> None:
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:

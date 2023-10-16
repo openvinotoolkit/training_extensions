@@ -32,8 +32,6 @@ from torchvision import models
 
 from ..builder import TORCHVISION_BACKBONES
 
-# pylint: disable=protected-access, assignment-from-no-return, no-value-for-parameter, too-many-statements
-
 
 def get_torchvision_models() -> Tuple[Dict, Dict]:
     """Get torchvision backbones of current version."""
@@ -173,7 +171,7 @@ def generate_torchvision_backbones() -> None:
         def closure(model_name: str, model_builder: Callable):
             """Get Model builder for mmcv (copy from mmdet)."""
 
-            class TorchvisionModelWrapper(nn.Module):  # pylint: disable=abstract-method
+            class TorchvisionModelWrapper(nn.Module):
                 """Torchvision Model to MMX.model Wrapper (copy from mmdet)."""
 
                 def __init__(

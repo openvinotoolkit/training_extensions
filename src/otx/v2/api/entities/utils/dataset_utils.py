@@ -191,7 +191,6 @@ def contains_anomalous_images(dataset: DatasetEntity) -> bool:
     return False
 
 
-# pylint: disable-msg=too-many-locals
 def add_saliency_maps_to_dataset_item(
     dataset_item: DatasetItemEntity,
     saliency_map: Union[List[Optional[np.ndarray]], np.ndarray],

@@ -1,7 +1,6 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=unused-argument
 """Code in this file is adapted from.
 
 https://github.com/ildoonet/pytorch-randaugment/blob/master/RandAugment/augmentations.py

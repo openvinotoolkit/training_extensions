@@ -13,7 +13,7 @@ from torch.utils.data import Dataset
 from .otx_sampler import OTXSampler
 
 
-class ClsIncrSampler(OTXSampler):  # pylint: disable=too-many-instance-attributes
+class ClsIncrSampler(OTXSampler):
     """Sampler for Class-Incremental Task.
 
     This sampler is a sampler that creates an effective batch

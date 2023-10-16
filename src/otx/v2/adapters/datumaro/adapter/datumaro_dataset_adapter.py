@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, unused-argument, too-many-arguments
 
 import os
 from abc import abstractmethod
@@ -411,13 +410,13 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         """Convert Datumaro media to OTX media."""
         if isinstance(datumaro_media, DatumImage):
             path = getattr(datumaro_media, "path", None)
-            size = datumaro_media._size  # pylint: disable=protected-access
+            size = datumaro_media._size
 
             if path and os.path.exists(path) and not datumaro_media.is_encrypted:
                 return Image(file_path=path, size=size)
 
             def helper() -> cv2.typing.MatLike:
-                data = datumaro_media.data  # pylint: disable=protected-access
+                data = datumaro_media.data
                 # OTX expects unint8 data type
                 data = data.astype(np.uint8)
                 # OTX expects RGB format
