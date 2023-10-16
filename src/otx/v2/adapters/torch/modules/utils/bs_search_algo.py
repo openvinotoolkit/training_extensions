@@ -189,7 +189,7 @@ class BsSearchAlgo:
                 return val[1] - self._mem_upper_bound + val[0] / 10000
             return 0
 
-        bs_arr = sorted([(bs, mem_usage) for bs, mem_usage in self._bs_try_history.items()], key=distance_from_bound)
+        bs_arr = sorted(self._bs_try_history.items(), key=distance_from_bound)
         bs1 = bs_arr[0][0]
         bs1_mem_usage = bs_arr[0][1]
 

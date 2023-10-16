@@ -48,8 +48,8 @@ class AnomalyInferenceCallback(Callback):
             task_type (TaskType): The type of task being performed (e.g. classification, regression).
         """
         self.otx_dataset = otx_dataset
-        self.normal_label = [label for label in labels if not label.is_anomalous][0]
-        self.anomalous_label = [label for label in labels if label.is_anomalous][0]
+        self.normal_label = next(label for label in labels if not label.is_anomalous)
+        self.anomalous_label = next(label for label in labels if label.is_anomalous)
         self.task_type = task_type
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 

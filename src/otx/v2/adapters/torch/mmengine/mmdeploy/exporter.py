@@ -102,7 +102,7 @@ class Exporter:
                 self.deploy_cfg.ir_config.input_names,
                 self.deploy_cfg.ir_config.output_names,
             )
-            onnx_file = [f for f in onnx_dir.iterdir() if str(f).endswith(".onnx")][0]
+            onnx_file = next(f for f in onnx_dir.iterdir() if str(f).endswith(".onnx"))
             results["outputs"]["onnx"] = str(onnx_dir / onnx_file)
 
             if self.onnx_only:
@@ -117,8 +117,8 @@ class Exporter:
                 self.deploy_cfg.ir_config.output_names,
                 ModelOptimizerOptions(self.deploy_cfg.backend_config.mo_options),
             )
-            bin_file = [f for f in openvino_dir.iterdir() if str(f).endswith(".bin")][0]
-            xml_file = [f for f in openvino_dir.iterdir() if str(f).endswith(".xml")][0]
+            bin_file = next(f for f in openvino_dir.iterdir() if str(f).endswith(".bin"))
+            xml_file = next(f for f in openvino_dir.iterdir() if str(f).endswith(".xml"))
             results["outputs"]["bin"] = str(openvino_dir / bin_file)
             results["outputs"]["xml"] = str(openvino_dir / xml_file)
             return results
