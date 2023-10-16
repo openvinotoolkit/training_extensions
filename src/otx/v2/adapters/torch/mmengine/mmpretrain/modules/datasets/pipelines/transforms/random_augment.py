@@ -168,7 +168,6 @@ rand_augment_pool: List[Tuple[Callable, Optional[Union[int, float]], Optional[Un
 ]
 
 
-# TODO: [Jihwan]: Can be removed by mmpretrain.datasets.pipeline.auto_augment Line 95 RandAugment class
 @TRANSFORMS.register_module()
 class OTXRandAugment:
     """RandAugment class for OTX classification."""

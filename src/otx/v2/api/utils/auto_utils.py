@@ -2,10 +2,10 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional, Union
 
 TASK_TYPE_TO_SUPPORTED_FORMAT = {
     "CLASSIFICATION": ["imagenet", "datumaro"],
@@ -22,8 +22,8 @@ TASK_TYPE_TO_SUPPORTED_FORMAT = {
 
 
 def configure_task_type(
-    data_roots: Optional[str] = None,
-    data_format: Optional[str] = None,
+    data_roots: str | None = None,
+    data_format: str | None = None,
 ) -> tuple:
     """Configure the task type based on the given data roots and format.
 
@@ -52,7 +52,7 @@ def configure_task_type(
     raise ValueError(msg)
 
 
-def count_imgs_in_dir(dir_path: Union[str, Path], recursive: bool = False) -> int:
+def count_imgs_in_dir(dir_path: str | Path, recursive: bool = False) -> int:
     """Count number of images in directory recursively."""
     valid_suff = [".jpg", ".png", ".jpeg", ".gif"]
     num_valid_imgs = 0
@@ -67,7 +67,7 @@ def count_imgs_in_dir(dir_path: Union[str, Path], recursive: bool = False) -> in
     return num_valid_imgs
 
 
-def check_semisl_requirements(unlabeled_dir: Optional[Union[str, Path]]) -> Union[bool, str, Path]:
+def check_semisl_requirements(unlabeled_dir: str | Path | None) -> bool | (str | Path):
     """Check if quantity of unlabeled images is sufficient for Semi-SL learning."""
     if unlabeled_dir is None:
         return False
@@ -92,7 +92,7 @@ def check_semisl_requirements(unlabeled_dir: Optional[Union[str, Path]]) -> Unio
     return False
 
 
-def configure_train_type(train_data_roots: Optional[str], unlabeled_data_roots: Optional[str]) -> Optional[str]:
+def configure_train_type(train_data_roots: str | None, unlabeled_data_roots: str | None) -> str | None:
     """Auto train type detection.
 
     If train_data_roots contains only set of images -> Self-SL

@@ -3,10 +3,10 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
-from jsonargparse._actions import _ActionSubCommands
 from rich.console import Console
 from rich.traceback import Traceback
 
@@ -14,6 +14,9 @@ from otx.v2 import __version__ as otx_version
 from otx.v2.cli.utils.arg_parser import OTXArgumentParser
 from otx.v2.cli.utils.env import check_torch_cuda, get_environment_table, get_task_status
 from otx.v2.cli.utils.install import SUPPORTED_TASKS, get_cuda_version
+
+if TYPE_CHECKING:
+    from jsonargparse._actions import _ActionSubCommands
 
 
 def add_doctor_parser(subcommands_action: _ActionSubCommands) -> None:
@@ -48,7 +51,7 @@ def prepare_parser() -> OTXArgumentParser:
     return parser
 
 
-def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
+def doctor(task: str | None = None, verbose: bool = False) -> None:
     """Print diagnostic information about the current environment.
 
     Args:
@@ -87,7 +90,7 @@ def doctor(task: Optional[str] = None, verbose: bool = False) -> None:
     task_status = get_task_status(task=task)
     for target, status in task_status.items():
         available = status.get("AVAILABLE", None)
-        exception_lst: List = status.get("EXCEPTIONS", [])
+        exception_lst: list = status.get("EXCEPTIONS", [])
         if available:
             console.log(f"{green_mark} {target}: [bold green]Ready![/bold green]")
         else:

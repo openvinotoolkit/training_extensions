@@ -3,11 +3,11 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
-import argparse
 import re
 import sys
-from typing import Iterable, Optional
+from typing import TYPE_CHECKING, Iterable
 
 from jsonargparse import DefaultHelpFormatter
 from rich.markdown import Markdown
@@ -16,7 +16,9 @@ from rich_argparse import RichHelpFormatter
 
 from otx.v2.api.core import Engine
 
-# TODO: Let's think about how to manage it more efficiently.
+if TYPE_CHECKING:
+    import argparse
+
 BASE_ARGUMENTS = {"work_dir", "config", "print_config", "help"}
 REQUIRED_ARGUMENTS = {
     "train": {"model.name", "data.task", "data.train_data_roots", "data.val_data_roots", "checkpoint"}.union(
@@ -101,7 +103,7 @@ def get_verbose_usage(subcommand: str = "train") -> str:
     )
 
 
-def get_cli_usage_docstring(component: Optional[object]) -> Optional[str]:
+def get_cli_usage_docstring(component: object | None) -> str | None:
     r"""Get the cli usage from the docstring.
 
     Args:
@@ -151,7 +153,7 @@ def get_intro() -> Markdown:
     return Markdown(intro_markdown)
 
 
-def render_guide(subcommand: Optional[str] = None) -> list:
+def render_guide(subcommand: str | None = None) -> list:
     """Render a guide for the specified subcommand.
 
     Args:
@@ -195,7 +197,7 @@ class OTXHelpFormatter(RichHelpFormatter, DefaultHelpFormatter):
 
     verbose_level, subcommand = get_verbosity_subcommand()
 
-    def add_usage(self, usage: Optional[str], actions: Iterable[argparse.Action], *args, **kwargs) -> None:
+    def add_usage(self, usage: str | None, actions: Iterable[argparse.Action], *args, **kwargs) -> None:
         """Add usage information to the formatter.
 
         Args:

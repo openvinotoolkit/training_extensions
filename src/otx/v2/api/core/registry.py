@@ -2,9 +2,10 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 import inspect
-from typing import Callable, Optional, Type, Union
+from typing import Callable
 
 from rich.console import Console
 from rich.table import Table
@@ -23,7 +24,7 @@ class BaseRegistry:
         self._module_dict: dict = {}
         self._registry_dict: dict = {}
 
-    def get(self, module_type: str) -> Optional[Callable]:
+    def get(self, module_type: str) -> Callable | None:
         """Retrieve a module from the registry by its type.
 
         Args:
@@ -115,9 +116,9 @@ class BaseRegistry:
 
     def register_module(
         self,
-        type_name: Optional[str] = None,
-        name: Optional[str] = None,
-        module: Optional[Union[Type, Callable]] = None,
+        type_name: str | None = None,
+        name: str | None = None,
+        module: type | Callable | None = None,
         force: bool = False,
     ) -> None:
         """Register a module to the registry.

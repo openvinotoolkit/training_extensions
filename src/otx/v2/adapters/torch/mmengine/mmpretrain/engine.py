@@ -3,17 +3,20 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
-import numpy as np
 import torch
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    import numpy as np
 
 logger = get_logger()
 
@@ -23,8 +26,8 @@ class MMPTEngine(MMXEngine):
 
     def __init__(
         self,
-        work_dir: Optional[Union[str, Path]] = None,
-        config: Optional[Union[Dict, Config, str]] = None,
+        work_dir: str | Path | None = None,
+        config: dict | (Config | str) | None = None,
     ) -> None:
         """Initialize a new instance of the MMPretrainEngine class.
 
@@ -37,15 +40,15 @@ class MMPTEngine(MMXEngine):
 
     def predict(
         self,
-        model: Optional[Union[torch.nn.Module, Dict, str]] = None,
-        img: Optional[Union[str, np.ndarray, list]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        pipeline: Optional[Union[Dict, List]] = None,
-        device: Union[str, torch.device, None] = None,
-        task: Optional[str] = None,
+        model: torch.nn.Module | (dict | str) | None = None,
+        img: str | (np.ndarray | list) | None = None,
+        checkpoint: str | Path | None = None,
+        pipeline: dict | list | None = None,
+        device: str | (torch.device | None) = None,
+        task: str | None = None,
         batch_size: int = 1,
         **kwargs,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Runs inference on the given input image(s) using the specified model and checkpoint.
 
         Args:
@@ -118,15 +121,15 @@ class MMPTEngine(MMXEngine):
 
     def export(
         self,
-        model: Optional[Union[torch.nn.Module, str, Config]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: Optional[str] = "Classification",
-        codebase: Optional[str] = "mmpretrain",
+        model: torch.nn.Module | (str | Config) | None = None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = "float32",  # ["float16", "fp16", "float32", "fp32"]
+        task: str | None = "Classification",
+        codebase: str | None = "mmpretrain",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: Optional[str] = None,  # File path only?
+        deploy_config: str | None = None,  # File path only?
         device: str = "cpu",
-        input_shape: Optional[Tuple[int, int]] = None,
+        input_shape: tuple[int, int] | None = None,
         **kwargs,
     ) -> dict:
         """Export a PyTorch model to a specified format for deployment.

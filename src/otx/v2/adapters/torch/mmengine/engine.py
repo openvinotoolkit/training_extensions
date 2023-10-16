@@ -3,20 +3,15 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 import copy
 import shutil
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 import torch
-from mmengine.evaluator import Evaluator
-from mmengine.hooks import Hook
-from mmengine.optim import _ParamScheduler
 from mmengine.runner import Runner
-from mmengine.visualization import Visualizer
-from torch.optim import Optimizer
-from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
@@ -26,6 +21,14 @@ from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_co
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils.importing import get_all_args, get_default_args
 from otx.v2.api.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from mmengine.evaluator import Evaluator
+    from mmengine.hooks import Hook
+    from mmengine.optim import _ParamScheduler
+    from mmengine.visualization import Visualizer
+    from torch.optim import Optimizer
+    from torch.utils.data import DataLoader
 
 logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
@@ -40,8 +43,8 @@ class MMXEngine(Engine):
 
     def __init__(
         self,
-        work_dir: Optional[Union[str, Path]] = None,
-        config: Optional[Union[dict, Config, str]] = None,
+        work_dir: str | Path | None = None,
+        config: dict | (Config | str) | None = None,
     ) -> None:
         """Initialize a new instance of the MMEngine class.
 
@@ -56,7 +59,7 @@ class MMXEngine(Engine):
         self._initial_config(config)
         self.dumped_config = Config({})
 
-    def _initial_config(self, config: Optional[Union[dict, Config, str]]) -> None:
+    def _initial_config(self, config: dict | (Config | str) | None) -> None:
         if config is not None:
             if isinstance(config, str):
                 self.config = Config.fromfile(config)
@@ -72,7 +75,6 @@ class MMXEngine(Engine):
         func_args: dict,
         **kwargs,
     ) -> bool:
-        # TODO: Need to clean up.
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
@@ -99,7 +101,7 @@ class MMXEngine(Engine):
             if arg_config is not None:
                 kwargs[arg_key] = arg_config
 
-        precision: Optional[str] = func_args.get("precision", None)
+        precision: str | None = func_args.get("precision", None)
         precision = self.config.get(arg_key, None) if precision is None else precision
 
         # Update train_cfg & val_cfg (ValLoop) & test_cfg (TestLoop)
@@ -121,14 +123,12 @@ class MMXEngine(Engine):
         distributed = get_value_from_config("distributed", func_args, config=self.config, default=False)
         default_hooks = get_value_from_config("default_hooks", func_args, config=self.config)
         if default_hooks is None:
-            # FIXME: Default hooks need to align
             default_hooks = {
                 # record the time of every iterations.
                 "timer": {"type": "IterTimerHook"},
                 # print log every 100 iterations.
                 "logger": {"type": "LoggerHook", "interval": 100},
                 # enable the parameter scheduler.
-                # TODO: lr_config -> param_scheduler
                 "param_scheduler": {"type": "ParamSchedulerHook"},
                 # save checkpoint per epoch, and automatically save the best checkpoint.
                 "checkpoint": {
@@ -159,10 +159,7 @@ class MMXEngine(Engine):
                 self.config[not_none_arg] = default_value
         # Last Check for Runner.__init__
         runner_arg_list = get_all_args(Runner.__init__)
-        removed_key = []
-        for config_key in self.config:
-            if config_key not in runner_arg_list:
-                removed_key.append(config_key)
+        removed_key = [config_key for config_key in self.config if config_key not in runner_arg_list]
         if removed_key:
             msg = f"In Engine.config, remove {removed_key} that are unavailable to the Runner."
             logger.warning(msg, stacklevel=2)
@@ -172,23 +169,23 @@ class MMXEngine(Engine):
 
     def train(
         self,
-        model: Optional[Union[torch.nn.Module, dict]] = None,
-        train_dataloader: Optional[Union[DataLoader, dict]] = None,
-        val_dataloader: Optional[Union[DataLoader, dict]] = None,
-        optimizer: Optional[Union[dict, Optimizer]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        max_iters: Optional[int] = None,
-        max_epochs: Optional[int] = None,
-        distributed: Optional[bool] = None,
-        seed: Optional[int] = None,
-        deterministic: Optional[bool] = None,
-        precision: Optional[str] = None,
-        val_interval: Optional[int] = None,
-        val_evaluator: Optional[Union[Evaluator, dict, list]] = None,
-        param_scheduler: Optional[Union[_ParamScheduler, dict, list]] = None,
-        default_hooks: Optional[dict] = None,
-        custom_hooks: Optional[Union[list, dict, Hook]] = None,
-        visualizer: Optional[Union[Visualizer, dict]] = None,
+        model: torch.nn.Module | dict | None = None,
+        train_dataloader: DataLoader | dict | None = None,
+        val_dataloader: DataLoader | dict | None = None,
+        optimizer: dict | Optimizer | None = None,
+        checkpoint: str | Path | None = None,
+        max_iters: int | None = None,
+        max_epochs: int | None = None,
+        distributed: bool | None = None,
+        seed: int | None = None,
+        deterministic: bool | None = None,
+        precision: str | None = None,
+        val_interval: int | None = None,
+        val_evaluator: Evaluator | (dict | list) | None = None,
+        param_scheduler: _ParamScheduler | (dict | list) | None = None,
+        default_hooks: dict | None = None,
+        custom_hooks: list | (dict | Hook) | None = None,
+        visualizer: Visualizer | dict | None = None,
         **kwargs,
     ) -> dict:
         """Train the given model using the provided data and configuration.
@@ -266,7 +263,6 @@ class MMXEngine(Engine):
                 cfg=Config({}),  # To prevent unnecessary dumps.
                 **self.config,
             )
-        # TODO: Need to align outputs
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
         self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
@@ -281,7 +277,6 @@ class MMXEngine(Engine):
         if len(best_ckpt_path) >= 1:
             ckpt_path = best_ckpt_path[0]
         last_ckpt = list(Path(target_folder).glob("last_checkpoint"))[-1]
-        # TODO: Clean up output
         # Copy & Remove weights file
         output_model_dir = target_folder / "models"
         output_model_dir.mkdir(exist_ok=True, parents=True)
@@ -296,11 +291,11 @@ class MMXEngine(Engine):
 
     def validate(
         self,
-        model: Optional[Union[torch.nn.Module, dict]] = None,
-        val_dataloader: Optional[Union[DataLoader, dict]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = None,
-        val_evaluator: Optional[Union[Evaluator, dict, list]] = None,
+        model: torch.nn.Module | dict | None = None,
+        val_dataloader: DataLoader | dict | None = None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
+        val_evaluator: Evaluator | (dict | list) | None = None,
         **kwargs,
     ) -> dict:
         """Run validation on the given model using the provided validation dataloader and evaluator.
@@ -339,7 +334,6 @@ class MMXEngine(Engine):
                 **self.config,
             )
         elif update_check:
-            # FIXME: SLF001
             self.runner._val_dataloader = self.config["val_dataloader"]  # noqa: SLF001
             self.runner._val_loop = self.config["val_cfg"]  # noqa: SLF001
             self.runner._val_evaluator = self.config["val_evaluator"]  # noqa: SLF001
@@ -353,11 +347,11 @@ class MMXEngine(Engine):
 
     def test(
         self,
-        model: Optional[Union[torch.nn.Module, dict]] = None,
-        test_dataloader: Optional[DataLoader] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = None,
-        test_evaluator: Optional[Union[Evaluator, dict, list]] = None,
+        model: torch.nn.Module | dict | None = None,
+        test_dataloader: DataLoader | None = None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
+        test_evaluator: Evaluator | (dict | list) | None = None,
         **kwargs,
     ) -> dict:
         """Test the given model on the test dataset.
@@ -399,7 +393,6 @@ class MMXEngine(Engine):
                 **self.config,
             )
         elif update_check:
-            # FIXME: SLF001
             self.runner._test_dataloader = self.config["test_dataloader"]  # noqa: SLF001
             self.runner._test_loop = self.config["test_cfg"]  # noqa: SLF001
             self.runner._test_evaluator = self.config["test_evaluator"]  # noqa: SLF001
@@ -413,17 +406,15 @@ class MMXEngine(Engine):
 
     def export(
         self,
-        model: Optional[
-            Union[torch.nn.Module, str, Config]
-        ] = None,  # Module with _config OR Model Config OR config-file
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: Optional[str] = None,
-        codebase: Optional[str] = None,
+        model: torch.nn.Module | (str | Config) | None = None,  # Module with _config OR Model Config OR config-file
+        checkpoint: str | Path | None = None,
+        precision: str | None = "float32",  # ["float16", "fp16", "float32", "fp32"]
+        task: str | None = None,
+        codebase: str | None = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: Optional[str] = None,  # File path only?
+        deploy_config: str | None = None,  # File path only?
         device: str = "cpu",
-        input_shape: Optional[Tuple[int, int]] = None,
+        input_shape: tuple[int, int] | None = None,
     ) -> dict:
         """Export the model to an intermediate representation (IR) format.
 
@@ -528,7 +519,6 @@ class MMXEngine(Engine):
         patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
         if not deploy_config_dict.backend_config.get("model_inputs", []):
             if input_shape is None:
-                # TODO: Patch From self.config's test pipeline
                 pass
             patch_input_shape(deploy_config_dict, input_shape=input_shape)
 

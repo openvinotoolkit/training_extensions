@@ -40,5 +40,4 @@ class MMOVBackbone(MMOVModel):
         Args:
             pretrained: pretrained weights. Default: None.
         """
-        # TODO
         return

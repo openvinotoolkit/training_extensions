@@ -3,15 +3,16 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, TypeVar, Union
+from typing import TYPE_CHECKING, Callable, TypeVar
 
 if TYPE_CHECKING:  # pragma: no cover
     from otx.v2.api.core.auto_runner import AutoRunner
     from otx.v2.api.core.dataset import BaseDataset
 
 
-def add_subset_dataloader(subsets: List[str]) -> Callable:
+def add_subset_dataloader(subsets: list[str]) -> Callable:
     """Decorate that adds dataloader methods for each subset in the given list of subsets.
 
     Args:
@@ -27,7 +28,7 @@ def add_subset_dataloader(subsets: List[str]) -> Callable:
         Dataloader()
     """
 
-    def decorator(cls: Union["BaseDataset", "AutoRunner"]) -> Union["BaseDataset", "AutoRunner"]:
+    def decorator(cls: BaseDataset | AutoRunner) -> BaseDataset | AutoRunner:
         def dataloader_method(subset: str) -> Callable:
             def wrapper(self: str, *args, **kwargs) -> TypeVar:
                 kwargs["subset"] = subset

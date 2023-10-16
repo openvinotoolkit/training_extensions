@@ -11,9 +11,6 @@ from otx.v2.api.entities.utils.data_utils import get_image
 
 _CACHE_DIR = TemporaryDirectory(prefix="img-cache-")
 
-# TODO: refactoring to common modules
-# TODO: refactoring to Sphinx style.
-
 
 class LoadImageFromOTXDataset:
     """Pipeline element that loads an image from a OTX Dataset on the fly.
@@ -38,7 +35,6 @@ class LoadImageFromOTXDataset:
 
     @staticmethod
     def _get_unique_key(results: dict) -> tuple:
-        # TODO: We should improve it by assigning an unique id to DatasetItemEntity.
         # This is because there is a case which
         # d_item.media.path is None, but d_item.media.data is not None
         d_item = results["dataset_item"]

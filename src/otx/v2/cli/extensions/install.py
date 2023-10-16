@@ -79,7 +79,6 @@ def install(task: str) -> int:
 
     # Parse requirements into torch, mmcv and other requirements.
     # This is done to parse the correct version of torch (cpu/cuda) and mmcv (mmcv/mmcv-full).
-    # TODO: Check pre-installed torch with Intel-Device (eg. torch with IPEX).
     torch_requirement, mmcv_requirements, other_requirements = parse_requirements(requirements)
 
     # Get install args for torch to install it from a specific index-url
@@ -98,7 +97,7 @@ def install(task: str) -> int:
     # Install requirements.
     status_code = create_command("install").main(install_args)
 
-    # FIXME: Issue with setuptools - https://github.com/Madoshakalaka/pipenv-setup/issues/101
+    # https://github.com/Madoshakalaka/pipenv-setup/issues/101
     os.environ["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
 
     # Install mmX requirements if the task requires mmX packages using mim.

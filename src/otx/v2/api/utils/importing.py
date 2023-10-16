@@ -13,11 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+from __future__ import annotations
 
 import importlib
 import inspect
 from pathlib import Path
-from typing import Callable, Dict, List, TypeVar, Union
+from typing import Callable, TypeVar
 
 
 def get_impl_class(impl_path: str) -> TypeVar:
@@ -67,7 +68,7 @@ def get_default_args(func: Callable) -> list:
     return non_default_args
 
 
-def get_all_args(func: Callable) -> List[str]:
+def get_all_args(func: Callable) -> list[str]:
     """Return a list of all argument names for a given function.
 
     Args:
@@ -97,7 +98,7 @@ def get_otx_root_path() -> str:
     raise ModuleNotFoundError(msg)
 
 
-def get_files_dict(folder_path: Union[str, Path]) -> Dict[str, str]:
+def get_files_dict(folder_path: str | Path) -> dict[str, str]:
     """Return a dictionary containing the names and paths of all files in the specified folder.
 
     Args:

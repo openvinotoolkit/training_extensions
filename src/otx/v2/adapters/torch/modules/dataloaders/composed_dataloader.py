@@ -2,12 +2,14 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
 
-from typing import List, Optional
-
-from torch.utils.data import DataLoader, Dataset
+from typing import TYPE_CHECKING
 
 from otx.v2.api.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from torch.utils.data import DataLoader, Dataset
 
 logger = get_logger()
 
@@ -15,7 +17,7 @@ logger = get_logger()
 class CDLIterator:
     """Iterator for aligning the number of batches as many as samples in the first iterator."""
 
-    def __init__(self, cdl: "ComposedDL") -> None:
+    def __init__(self, cdl: ComposedDL) -> None:
         """Initialize a ComposedDataLoader object.
 
         Args:
@@ -49,7 +51,7 @@ class ComposedDL:
     class DummySampler:
         """Dummy sampler class to relay set_epoch() call to the list of data loaders in the CDL."""
 
-        def __init__(self, cdl: "ComposedDL") -> None:
+        def __init__(self, cdl: ComposedDL) -> None:
             """Sampler class that composes multiple data loaders.
 
             Args:
@@ -63,7 +65,7 @@ class ComposedDL:
             for loader in loaders:
                 loader.sampler.set_epoch(epoch)
 
-    def __init__(self, loaders: Optional[List[DataLoader]] = None) -> None:
+    def __init__(self, loaders: list[DataLoader] | None = None) -> None:
         """Composed data loader that combines multiple data loaders.
 
         Args:
@@ -100,5 +102,4 @@ class ComposedDL:
         Returns:
             Dataset: The dataset used by the first loader in the composed dataloader.
         """
-        # FIXME: Workarounds
         return self.loaders[0].dataset

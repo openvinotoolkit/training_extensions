@@ -164,7 +164,7 @@ select = [
     "I",    # isort (`I`)
     "PL",   # pylint (`PL`)
 
-    "C90",  # mccabe (`C90`)  - 1 issue
+    "C90",  # mccabe (`C90`)
     "N",    # pep8-naming (`N`)
     "UP",   # pyupgrade (`UP`)
 
@@ -172,16 +172,15 @@ select = [
     "ANN",  # flake8-annotations (`ANN`)
     "S",    # flake8-bandit (`S`)
     # "BLE",  # flake8-blind-except (`BLE`)  -> Need to discuss new exception structure
-    # "FBT",  # flake8-boolean-trap (`FBT`)
     "B",    # flake8-bugbear (`B`)
     "A",    # flake8-builtins (`A`)
     "COM",  # flake8-commas (`COM`)
-    # "CPY",  # flake8-copyright (`CPY`) - Not found.
+    # "CPY",  # flake8-copyright (`CPY`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
     "C4",   # flake8-comprehensions (`C4`)
     "DTZ",  # flake8-datatimez (`DTZ`)
     "T10",  # flake8-debugger (`T10`)
     "EM",   # flake8-errmsg (`EM`)
-    # "FA",   # flake8-future-annotations (`FA`) - Not found.
+    "FA",   # flake8-future-annotations (`FA`)
     "ISC",  # flake8-implicit-str-concat (`ISC`)
     "ICN",  # flake8-import-conventions (`ICN`)
     "PIE",  # flake8-pie (`PIE`)
@@ -192,21 +191,21 @@ select = [
     "SIM",  # flake8-simplify (`SIM`)
     "TID",  # flake8-tidy-imports (`TID`)
     "TCH",  # flake8-type-checking (`TCH`)
-    # "INT",  # flake8-gettext (`INT`) - Not found.
+    "INT",  # flake8-gettext (`INT`)
     "ARG",  # flake8-unsused-arguments (`ARG`)
     "PTH",  # flake8-use-pathlib (`PTH`)
-    # "TD",   # flake8-todos (`TD`) - Not found.
-    # "FIX",  # flake8-fixme (`FIX`) - Not found.
-    # "LOG",  # flake8-logging (`LOG`) - Not found.
+    "TD",   # flake8-todos (`TD`)
+    "FIX",  # flake8-fixme (`FIX`)
+    # "LOG",  # flake8-logging (`LOG`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
 
     "ERA",  # eradicate (`ERA`)
     "PD",   # pandas-vet (`PD`)
     "PGH",  # pygrep-hooks (`PGH`)
     "TRY",  # tryceratos (`TRY`)
-    # "FLY",  # flynt (`FLY`) - Not found.
+    "FLY",  # flynt (`FLY`)
     "NPY",  # NumPy-specific rules (`NPY`)
-    # "PERF", # Perflint (`PERF`) - Not found.
-    # "FURB", # refurb (`FURB`) - Not found.
+    "PERF", # Perflint (`PERF`)
+    # "FURB", # refurb (`FURB`) -> Rules included in the preview version of RUFF. It may be added in the future, but for now, disable it.
     "RUF",  # Ruff-specific rules (`RUF`)
 ]
 
@@ -227,9 +226,9 @@ ignore = [
 # Allow autofix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
 # fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
-unfixable = [
-    "F401",     # disable autofix for unused imports
-]
+# unfixable = [
+#     "F401",     # disable autofix for unused imports
+# ]
 
 # Exclude a variety of commonly ignored directories.
 exclude = [

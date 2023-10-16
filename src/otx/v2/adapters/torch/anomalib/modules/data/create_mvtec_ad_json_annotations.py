@@ -40,19 +40,22 @@ Example:
     >>> python external/anomaly/adapters.anomalib/data/create_mvtec_ad_json_annotations.py \
     ...     --data_path ./data/anomaly/MVTec/
 """
+from __future__ import annotations
 
 import json
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 import cv2
-import pandas as pd
 from anomalib.data.mvtec import make_mvtec_dataset
 from anomalib.data.utils import Split
 
+if TYPE_CHECKING:
+    import pandas as pd
 
-def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
+
+def create_bboxes_from_mask(mask_path: str) -> list[list[float]]:
     """Create bounding box from binary mask.
 
     Args:
@@ -64,7 +67,7 @@ def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
     mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
     height, width = mask.shape
 
-    bboxes: List[List[float]] = []
+    bboxes: list[list[float]] = []
     _, _, coordinates, _ = cv2.connectedComponentsWithStats(mask)
     for i, coordinate in enumerate(coordinates):
         # First row of the coordinates is always backround,
@@ -85,7 +88,7 @@ def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
     return bboxes
 
 
-def create_polygons_from_mask(mask_path: str) -> List[List[List[float]]]:
+def create_polygons_from_mask(mask_path: str) -> list[list[list[float]]]:
     """Create polygons from binary mask.
 
     Args:
@@ -101,7 +104,7 @@ def create_polygons_from_mask(mask_path: str) -> List[List[List[float]]]:
     return [[[point[0][0] / width, point[0][1] / height] for point in polygon] for polygon in polygons]
 
 
-def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
+def create_classification_json_items(pd_items: pd.DataFrame) -> dict[str, Any]:
     """Create JSON items for the classification task.
 
     Args:
@@ -110,7 +113,7 @@ def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: MVTec AD classification JSON items
     """
-    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
+    json_items: dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
     for index, pd_item in pd_items.iterrows():
         json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
         json_items["label"][str(index)] = pd_item.label
@@ -120,7 +123,7 @@ def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     return json_items
 
 
-def create_detection_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
+def create_detection_json_items(pd_items: pd.DataFrame) -> dict[str, Any]:
     """Create JSON items for the detection task.
 
     Args:
@@ -129,7 +132,7 @@ def create_detection_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: MVTec AD detection JSON items
     """
-    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "bboxes": {}}
+    json_items: dict[str, Any] = {"image_path": {}, "label": {}, "bboxes": {}}
     for index, pd_item in pd_items.iterrows():
         json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
         json_items["label"][str(index)] = pd_item.label
@@ -139,7 +142,7 @@ def create_detection_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     return json_items
 
 
-def create_segmentation_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
+def create_segmentation_json_items(pd_items: pd.DataFrame) -> dict[str, Any]:
     """Create JSON items for the segmentation task.
 
     Args:
@@ -148,7 +151,7 @@ def create_segmentation_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: MVTec AD segmentation JSON items
     """
-    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
+    json_items: dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
     for index, pd_item in pd_items.iterrows():
         json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
         json_items["label"][str(index)] = pd_item.label
@@ -158,7 +161,7 @@ def create_segmentation_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     return json_items
 
 
-def save_json_items(json_items: Dict[str, Any], file: str) -> None:
+def save_json_items(json_items: dict[str, Any], file: str) -> None:
     """Save JSON items to file.
 
     Args:
@@ -213,7 +216,7 @@ def create_mvtec_ad_category_annotations(data_path: str, annotation_path: str) -
         create_task_annotations(task, data_path, annotation_path)
 
 
-def create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: Optional[str] = None) -> None:
+def create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: str | None = None) -> None:
     """Create JSON annotations for MVTec AD dataset.
 
     Args:

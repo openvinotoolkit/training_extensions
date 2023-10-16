@@ -2,9 +2,9 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
 
 from collections.abc import MutableMapping
-from typing import Union
 
 import numpy as np
 import torch
@@ -50,7 +50,7 @@ def sync_batchnorm_2_batchnorm(module: torch.nn.Module, dim: int = 2) -> torch.n
     return module_output
 
 
-def numpy_2_list(data: Union[np.ndarray, MutableMapping, list, tuple]) -> Union[MutableMapping, list, tuple]:
+def numpy_2_list(data: np.ndarray | (MutableMapping | (list | tuple))) -> MutableMapping | (list | tuple):
     """Converts NumPy arrays to Python lists."""
     if isinstance(data, np.ndarray):
         return data.tolist()
@@ -59,8 +59,6 @@ def numpy_2_list(data: Union[np.ndarray, MutableMapping, list, tuple]) -> Union[
         for key, value in data.items():
             data[key] = numpy_2_list(value)
     elif isinstance(data, (list, tuple)):
-        data_ = []
-        for value in data:
-            data_.append(numpy_2_list(value))
+        data_ = [numpy_2_list(value) for value in data]
         data = tuple(data_) if isinstance(data, tuple) else data_
     return data

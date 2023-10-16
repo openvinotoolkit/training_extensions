@@ -165,7 +165,6 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         if test_data_roots is not None:
             test_dataset = self._import_dataset(test_data_roots, test_ann_files, encryption_key, Subset.TESTING)
             dataset[Subset.TESTING] = self._get_subset_data("test", test_dataset)
-            # FIXME: The flow for is_train_phase needs to be modified.
 
         if unlabeled_data_roots is not None:
             dataset[Subset.UNLABELED] = DatumDataset.import_from(unlabeled_data_roots, format="image_dir")
@@ -263,7 +262,6 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         datumaro_dataset: Dict[Subset, DatumDataset],
     ) -> Dict[str, Any]:
         # Get datumaro category information
-        # FIXME
         if Subset.TRAINING in datumaro_dataset:
             label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumAnnotationType.label, None)
         elif Subset.VALIDATION in datumaro_dataset:

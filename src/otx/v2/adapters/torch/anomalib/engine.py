@@ -3,10 +3,11 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from pathlib import Path
 from subprocess import run
-from typing import Optional, Tuple, Union
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 import pytorch_lightning as pl
@@ -24,17 +25,19 @@ from anomalib.utils.loggers import AnomalibTensorBoardLogger
 from omegaconf import DictConfig
 from pytorch_lightning import Trainer
 from pytorch_lightning.core.datamodule import LightningDataModule
-from pytorch_lightning.trainer.connectors.accelerator_connector import (
-    _PRECISION_INPUT,
-)
-from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils import set_tuple_constructor
 
 from .registry import AnomalibRegistry
+
+if TYPE_CHECKING:
+    from pytorch_lightning.trainer.connectors.accelerator_connector import (
+        _PRECISION_INPUT,
+    )
+    from pytorch_lightning.utilities.types import EVAL_DATALOADERS
+    from torch.optim import Optimizer
 
 PREDICT_FORMAT = Union[str, Path, np.ndarray]
 
@@ -44,8 +47,8 @@ class AnomalibEngine(Engine):
 
     def __init__(
         self,
-        work_dir: Optional[Union[str, Path]] = None,
-        config: Optional[Union[str, dict]] = None,
+        work_dir: str | Path | None = None,
+        config: str | dict | None = None,
         task: str = "classification",
     ) -> None:
         """Initialize the Anomalib engine.
@@ -65,7 +68,7 @@ class AnomalibEngine(Engine):
             self.config.default_root_dir = self.work_dir
         self.registry = AnomalibRegistry()
 
-    def _initial_config(self, config: Optional[Union[str, dict]] = None) -> DictConfig:
+    def _initial_config(self, config: str | dict | None = None) -> DictConfig:
         if isinstance(config, str) and config.endswith(".yaml"):
             set_tuple_constructor()
             with Path(config).open() as f:
@@ -82,7 +85,6 @@ class AnomalibEngine(Engine):
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
-        # FIXME: Modify to work with the config file fill + kwargs
         if not self.trainer_config:
             self.trainer_config = self.config.get("trainer", {})
         for key, value in kwargs.items():
@@ -109,7 +111,7 @@ class AnomalibEngine(Engine):
 
         return update_check
 
-    def get_callbacks(self, metrics: Optional[dict] = None) -> list:
+    def get_callbacks(self, metrics: dict | None = None) -> list:
         """Return a list of callbacks to be used during training.
 
         Args:
@@ -118,7 +120,6 @@ class AnomalibEngine(Engine):
         Returns:
             list: A list of callbacks to be used during training.
         """
-        # TODO: Need to check callbacks
         if metrics is None:
             metrics = self.config.get("metrics", {})
         metric_threshold = metrics.get("threshold", {})
@@ -139,18 +140,18 @@ class AnomalibEngine(Engine):
 
     def train(
         self,
-        model: Union[torch.nn.Module, pl.LightningModule],
-        train_dataloader: Union[DataLoader, LightningDataModule],
-        val_dataloader: Optional[DataLoader] = None,
-        optimizer: Optional[Union[dict, Optimizer]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        max_iters: Optional[int] = None,
-        max_epochs: Optional[int] = None,
-        distributed: Optional[bool] = None,
-        seed: Optional[int] = None,
-        deterministic: Optional[bool] = None,
-        precision: Optional[_PRECISION_INPUT] = None,
-        val_interval: Optional[int] = None,
+        model: torch.nn.Module | pl.LightningModule,
+        train_dataloader: DataLoader | LightningDataModule,
+        val_dataloader: DataLoader | None = None,
+        optimizer: dict | Optimizer | None = None,
+        checkpoint: str | Path | None = None,
+        max_iters: int | None = None,
+        max_epochs: int | None = None,
+        distributed: bool | None = None,
+        seed: int | None = None,
+        deterministic: bool | None = None,
+        precision: _PRECISION_INPUT | None = None,
+        val_interval: int | None = None,
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
         """Train the given model using the provided data loaders and optimizer.
@@ -174,7 +175,6 @@ class AnomalibEngine(Engine):
         Returns:
             dict: A dictionary containing the trained model and the path to the saved checkpoint.
         """
-        # TODO: distributed
         _ = distributed
         train_args = {
             "max_iters": max_iters,
@@ -196,7 +196,6 @@ class AnomalibEngine(Engine):
         if logger is True or not logger:
             logger = [AnomalibTensorBoardLogger(save_dir=self.work_dir, name=target_folder)]
         else:
-            # TODO: How to change custom folder output?
             pass
 
         if not hasattr(self, "trainer") or update_check:
@@ -227,10 +226,10 @@ class AnomalibEngine(Engine):
 
     def validate(
         self,
-        model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
-        val_dataloader: Optional[Union[DataLoader, dict]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[_PRECISION_INPUT] = None,
+        model: torch.nn.Module | pl.LightningModule | None = None,
+        val_dataloader: DataLoader | dict | None = None,
+        checkpoint: str | Path | None = None,
+        precision: _PRECISION_INPUT | None = None,
         **kwargs,
     ) -> dict:
         """Run validation on the given model using the provided validation dataloader and checkpoint.
@@ -274,10 +273,10 @@ class AnomalibEngine(Engine):
 
     def test(
         self,
-        model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
-        test_dataloader: Optional[DataLoader] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[_PRECISION_INPUT] = None,
+        model: torch.nn.Module | pl.LightningModule | None = None,
+        test_dataloader: DataLoader | None = None,
+        checkpoint: str | Path | None = None,
+        precision: _PRECISION_INPUT | None = None,
         **kwargs,
     ) -> dict:
         """Test the given model on the provided test dataloader.
@@ -300,8 +299,6 @@ class AnomalibEngine(Engine):
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
 
-        # TODO: Need to check re-utilize existing Trainer
-
         logger = self.trainer_config.pop("logger", True)
         target_folder = f"{self.timestamp}_test"
         if logger is True or not logger:
@@ -320,10 +317,10 @@ class AnomalibEngine(Engine):
 
     def predict(
         self,
-        model: Optional[Union[torch.nn.Module, pl.LightningModule]] = None,
-        img: Optional[Union[PREDICT_FORMAT, EVAL_DATALOADERS, LightningDataModule]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        device: Optional[list] = None,  # ["auto", "cpu", "gpu", "cuda"]
+        model: torch.nn.Module | pl.LightningModule | None = None,
+        img: PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None = None,
+        checkpoint: str | Path | None = None,
+        device: list | None = None,  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
         """Run inference on the given model and input data.
 
@@ -336,7 +333,6 @@ class AnomalibEngine(Engine):
         Returns:
             list: The output of the inference.
         """
-        # TODO: Set parameters
         if model is None:
             model = self.latest_model.get("model", None)
         if checkpoint is None:
@@ -350,7 +346,6 @@ class AnomalibEngine(Engine):
             logger = [AnomalibTensorBoardLogger(save_dir=self.work_dir, name=target_folder)]
 
         callbacks = self.get_callbacks()
-        # TODO: Need to check re-utilize existing Trainer
         trainer = Trainer(
             logger=logger,
             callbacks=callbacks,
@@ -377,9 +372,6 @@ class AnomalibEngine(Engine):
             dataloader = DataLoader(dataset)
         elif isinstance(img, (DataLoader, LightningDataModule)):
             dataloader = [img]
-        else:
-            # TODO: img -> np.ndarray?
-            pass
         # Lightning Inferencer
         return trainer.predict(
             model=model,
@@ -388,14 +380,12 @@ class AnomalibEngine(Engine):
 
     def export(
         self,
-        model: Optional[
-            Union[torch.nn.Module, pl.LightningModule]
-        ] = None,  # Module with _config OR Model Config OR config-file
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[_PRECISION_INPUT] = None,
+        model: torch.nn.Module | pl.LightningModule | None = None,  # Module with _config OR Model Config OR config-file
+        checkpoint: str | Path | None = None,
+        precision: _PRECISION_INPUT | None = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        device: Optional[str] = None,
-        input_shape: Optional[Tuple[int, int]] = None,
+        device: str | None = None,
+        input_shape: tuple[int, int] | None = None,
     ) -> dict:
         """Export the model to a specified format.
 
@@ -426,7 +416,6 @@ class AnomalibEngine(Engine):
 
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
-        # FIXME: load_checkpoint is not working
         # if "model" in state_dict:
         # if "state_dict" in state_dict:
 

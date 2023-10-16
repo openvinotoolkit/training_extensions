@@ -40,7 +40,6 @@ from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
 logger = get_logger()
 
 
-# TODO: refactor Config
 class CustomConfig(Config):
     """A class that extends the base `Config` class, adds additional functionality for loading configuration files."""
 
@@ -263,7 +262,6 @@ class CustomConfig(Config):
         Returns:
             str or None: Config text.
         """
-        # FIXME: OTX yaml
         # if file is None:
         #     if self.filename is None or self.filename.endswith('.py'):
         #     with open(file, 'w', encoding='utf-8') as f:

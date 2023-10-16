@@ -2,8 +2,7 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
-from typing import Optional, Union
+from __future__ import annotations
 
 from mmengine.device import get_device
 
@@ -14,8 +13,8 @@ def get_value_from_config(
     arg_key: str,
     positional_args: dict,
     config: Config,
-    default: Optional[Union[int, str]] = None,
-) -> Optional[Union[dict, list]]:
+    default: int | str | None = None,
+) -> dict | list | None:
     """Get the value of a given argument key from either the positional arguments or the config.
 
     Args:
@@ -33,10 +32,10 @@ def get_value_from_config(
 
 
 def configure_evaluator(
-    evaluator: Union[list, dict],
+    evaluator: list | dict,
     num_classes: int,
-    scope: Optional[str] = None,
-) -> Union[list, dict]:
+    scope: str | None = None,
+) -> list | dict:
     """Get the value of a key from the given config object, or from the positional arguments if it exists.
 
     Args:
@@ -64,7 +63,7 @@ def configure_evaluator(
     return evaluator
 
 
-def update_train_config(func_args: dict, config: Config, precision: Optional[str], **kwargs) -> tuple:
+def update_train_config(func_args: dict, config: Config, precision: str | None, **kwargs) -> tuple:
     """Update the training configuration for a PyTorch model training process and mmengine.
 
     Args:
@@ -99,14 +98,12 @@ def update_train_config(func_args: dict, config: Config, precision: Optional[str
         if "optim_wrapper" not in kwargs or kwargs["optim_wrapper"] is None:
             optimizer = get_value_from_config("optimizer", func_args, config=config)
             if optimizer is None:
-                # FIXME: Remove default setting here
                 optimizer = {"type": "SGD", "lr": 0.01, "momentum": 0.9, "weight_decay": 0.0005}
             if get_device() not in ("cuda", "gpu", "npu", "mlu"):
                 kwargs["optim_wrapper"] = {"type": "OptimWrapper", "optimizer": optimizer}
             else:
                 kwargs["optim_wrapper"] = {"type": "AmpOptimWrapper", "dtype": precision, "optimizer": optimizer}
     elif isinstance(config.get("train_dataloader", None), dict):
-        # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
         config["train_dataloader"] = None
         config["train_cfg"] = None
         config["optim_wrapper"] = None
@@ -116,9 +113,9 @@ def update_train_config(func_args: dict, config: Config, precision: Optional[str
 def update_val_test_config(
     func_args: dict,
     config: Config,
-    precision: Optional[str],
+    precision: str | None,
     num_classes: int,
-    scope: Optional[str],
+    scope: str | None,
     **kwargs,
 ) -> tuple:
     """Update validation and test configurations with the given arguments.
@@ -142,11 +139,9 @@ def update_val_test_config(
         # Update val_evaluator
         val_evaluator = get_value_from_config("val_evaluator", func_args, config=config)
         if val_evaluator is None:
-            # FIXME: Need to set val_evaluator as task-agnostic way
             val_evaluator = [{"type": "Accuracy"}]
         kwargs["val_evaluator"] = configure_evaluator(val_evaluator, num_classes=num_classes, scope=scope)
     elif isinstance(config.get("val_dataloader", None), dict):
-        # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
         config["val_dataloader"] = None
         config["val_cfg"] = None
         config["val_evaluator"] = None
@@ -159,11 +154,9 @@ def update_val_test_config(
         # Update test_evaluator
         test_evaluator = get_value_from_config("test_evaluator", func_args, config=config)
         if test_evaluator is None:
-            # FIXME: Need to set test_evaluator as task-agnostic way
             test_evaluator = config.get("val_evaluator", [{"type": "Accuracy"}])
         kwargs["test_evaluator"] = configure_evaluator(test_evaluator, num_classes=num_classes, scope=scope)
     elif isinstance(config.get("test_dataloader", None), dict):
-        # FIXME: This is currently not possible because it requires the use of a DatasetEntity.
         config["test_dataloader"] = None
         config["test_cfg"] = None
         config["test_evaluator"] = None
@@ -173,9 +166,9 @@ def update_val_test_config(
 def update_runner_config(
     func_args: dict,
     config: Config,
-    precision: Optional[str],
+    precision: str | None,
     num_classes: int,
-    scope: Optional[str] = None,
+    scope: str | None = None,
     **kwargs,
 ) -> tuple:
     """Update the runner configuration with the given arguments.

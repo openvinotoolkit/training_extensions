@@ -12,9 +12,6 @@ from mmpretrain.datasets.transforms import TRANSFORMS
 from PIL import Image
 from torchvision import transforms as tv_transforms
 
-# TODO: refactoring to common modules
-# TODO: refactoring to Sphinx style.
-
 
 @TRANSFORMS.register_module()
 class RandomAppliedTrans:

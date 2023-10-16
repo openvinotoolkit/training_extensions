@@ -24,7 +24,6 @@ def is_mmdeploy_enabled() -> bool:
 
 if is_mmdeploy_enabled():
     # fmt: off
-    # FIXME: openvino pot library adds stream handlers to root logger
     # which makes annoying duplicated logging
     from mmdeploy.utils import get_root_logger
     get_root_logger().propagate = False

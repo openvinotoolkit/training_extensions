@@ -4,13 +4,14 @@
 #
 
 # ruff: noqa: PLW0603
+from __future__ import annotations
 
 import functools
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 __all__ = ["config_logger", "get_log_dir"]
 
@@ -86,7 +87,7 @@ def _get_log_level(level: str) -> str:
     return level_number
 
 
-def get_log_dir() -> Optional[str]:
+def get_log_dir() -> str | None:
     """Retrieve the directory path of the log file.
 
     :return: str, a string representing the directory path of the log file.
@@ -105,7 +106,7 @@ def local_master_only(func: Callable) -> Callable:
     """
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> Optional[Callable]:
+    def wrapper(*args, **kwargs) -> Callable | None:
         local_rank = 0
         from torch import distributed as dist
 

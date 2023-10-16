@@ -3,8 +3,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
-from typing import Callable, List, Optional, TypeVar
+from typing import Callable, TypeVar
 
 import docstring_parser
 import yaml
@@ -18,7 +19,7 @@ from jsonargparse._loaders_dumpers import DefaultLoader
 from .help_formatter import OTXHelpFormatter
 
 
-def tuple_constructor(loader: DefaultLoader, node: yaml.SequenceNode) -> Optional[tuple]:
+def tuple_constructor(loader: DefaultLoader, node: yaml.SequenceNode) -> tuple | None:
     """Construct a tuple from a YAML sequence node.
 
     Args:
@@ -39,7 +40,7 @@ def tuple_constructor(loader: DefaultLoader, node: yaml.SequenceNode) -> Optiona
 DefaultLoader.add_constructor("tag:yaml.org,2002:python/tuple", tuple_constructor)
 
 
-def get_short_docstring(component: TypeVar) -> Optional[str]:
+def get_short_docstring(component: TypeVar) -> str | None:
     """Get the short description from the docstring.
 
     Args:
@@ -63,7 +64,7 @@ class OTXArgumentParser(ArgumentParser):
         description: str = "OpenVINO Training-Extension command line tool",
         env_prefix: str = "otx",
         default_env: bool = False,
-        default_config_files: Optional[List[Optional[str]]] = None,
+        default_config_files: list[str | None] | None = None,
         **kwargs,
     ) -> None:
         """Initialize the ArgumentParser object for the OpenVINO Training-Extension command line tool.
@@ -97,7 +98,7 @@ class OTXArgumentParser(ArgumentParser):
         required: bool = True,
         instantiate: bool = False,
         dataclass_mode: bool = False,
-    ) -> List[str]:
+    ) -> list[str]:
         """Add arguments from a class to a nested key of the parser.
 
         Args:
@@ -137,7 +138,7 @@ class OTXArgumentParser(ArgumentParser):
         cfg: Namespace,
         skip_none: bool = True,
         skip_required: bool = True,
-        branch: Optional[str] = None,
+        branch: str | None = None,
     ) -> None:
         """Check the configuration for required and optional arguments.
 

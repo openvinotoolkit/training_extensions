@@ -2,9 +2,10 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, TypeVar, Union
+from typing import TypeVar
 
 import yaml
 
@@ -16,7 +17,6 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.importing import get_impl_class, get_otx_root_path
 from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
 
-# TODO: Need to organize variables and functions here.
 ADAPTERS_ROOT = "otx.v2.adapters"
 CONFIG_ROOT = f"{get_otx_root_path()}/v2/configs"
 DEFAULT_FRAMEWORK_PER_TASK_TYPE = {
@@ -149,20 +149,20 @@ class AutoRunner:
     def __init__(
         self,
         *,
-        framework: Optional[str] = None,  # ADAPTER_QUICK_LINK.keys()
-        task: Optional[Union[str, TaskType]] = None,
-        train_type: Optional[Union[str, TrainType]] = None,
-        work_dir: Optional[str] = None,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        data_format: Optional[str] = None,
-        config: Optional[Union[dict, str]] = None,
+        framework: str | None = None,  # ADAPTER_QUICK_LINK.keys()
+        task: str | TaskType | None = None,
+        train_type: str | TrainType | None = None,
+        work_dir: str | None = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        data_format: str | None = None,
+        config: dict | str | None = None,
     ) -> None:
         """AutoRunner, which is responsible for OTX's automated training APIs.
 
@@ -199,7 +199,7 @@ class AutoRunner:
         Returns:
             None
         """
-        self.config_path: Optional[str] = None
+        self.config_path: str | None = None
         self.config = self._initial_config(config)
         self.engine: Engine
         self.framework: str
@@ -249,7 +249,7 @@ class AutoRunner:
         dataset_kwargs["data_format"] = self.data_format
         self.dataset = self.dataset_class(**dataset_kwargs)
 
-    def _initial_config(self, config: Optional[Union[dict, str]]) -> dict:
+    def _initial_config(self, config: dict | str | None) -> dict:
         if config is not None:
             if isinstance(config, str):
                 self.config_path = config
@@ -267,7 +267,7 @@ class AutoRunner:
             config["model"] = {}
         return config
 
-    def configure_model(self, model: Optional[Union[str, dict, list, object]]) -> object:
+    def configure_model(self, model: str | (dict | (list | object)) | None) -> object:
         """Configure the model to be used for the auto runner.
 
         Args:
@@ -289,9 +289,9 @@ class AutoRunner:
 
     def auto_configuration(
         self,
-        framework: Optional[str],
-        task: Union[str, TaskType, None],
-        train_type: Union[str, TrainType, None],
+        framework: str | None,
+        task: str | (TaskType | None),
+        train_type: str | (TrainType | None),
     ) -> None:
         """Auto-Configuration function for AutoRunner.
 
@@ -341,9 +341,9 @@ class AutoRunner:
     def subset_dataloader(  # noqa: ANN201
         self,
         subset: str,
-        pipeline: Optional[Union[dict, list]] = None,
-        batch_size: Optional[int] = None,
-        num_workers: Optional[int] = None,
+        pipeline: dict | list | None = None,
+        batch_size: int | None = None,
+        num_workers: int | None = None,
         **kwargs,
     ):
         """Return a DataLoader for a specific subset of the dataset.
@@ -372,18 +372,18 @@ class AutoRunner:
 
     def train(
         self,
-        model: Optional[Union[str, dict, list, object]] = None,
-        train_dataloader: Optional[TypeVar] = None,
-        val_dataloader: Optional[TypeVar] = None,
-        optimizer: Optional[Union[dict, TypeVar]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        max_iters: Optional[int] = None,
-        max_epochs: Optional[int] = None,
-        distributed: Optional[bool] = None,
-        seed: Optional[int] = None,
-        deterministic: Optional[bool] = None,
-        precision: Optional[str] = None,
-        val_interval: Optional[int] = None,
+        model: str | (dict | (list | object)) | None = None,
+        train_dataloader: TypeVar | None = None,
+        val_dataloader: TypeVar | None = None,
+        optimizer: dict | TypeVar | None = None,
+        checkpoint: str | Path | None = None,
+        max_iters: int | None = None,
+        max_epochs: int | None = None,
+        distributed: bool | None = None,
+        seed: int | None = None,
+        deterministic: bool | None = None,
+        precision: str | None = None,
+        val_interval: int | None = None,
         **kwargs,
     ) -> dict:
         """Train the model using the data loaders and optimizer.
@@ -408,14 +408,12 @@ class AutoRunner:
         Returns:
             dict: A dictionary containing the results of the training.
         """
-        # TODO: self.config update with new input
         dataloader_cfg = {
             "batch_size": kwargs.pop("batch_size", None),
             "num_workers": kwargs.pop("num_workers", None),
         }
 
         # Configure if dataloader is None
-        # TODO: Need to add more arguments
         if train_dataloader is None:
             if "train" in self.subset_dls:
                 train_dataloader = self.subset_dls["train"]
@@ -432,7 +430,6 @@ class AutoRunner:
         # Configure Engine
         if not hasattr(self, "engine"):
             self.build_framework_engine()
-        # TODO: config + args merge for sub-engine
         results = self.engine.train(
             model=model,
             train_dataloader=train_dataloader,
@@ -454,10 +451,10 @@ class AutoRunner:
 
     def validate(
         self,
-        model: Optional[Union[str, dict, list, object]] = None,
-        val_dataloader: Optional[Union[dict, object]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = None,
+        model: str | (dict | (list | object)) | None = None,
+        val_dataloader: dict | object | None = None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
         **kwargs,
     ) -> dict:
         """Validate the given model on the validation dataset using the specified dataloader and checkpoint.
@@ -501,10 +498,10 @@ class AutoRunner:
 
     def test(
         self,
-        model: Optional[Union[str, dict, list, object]] = None,
-        test_dataloader: Optional[Union[dict, object]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = None,
+        model: str | (dict | (list | object)) | None = None,
+        test_dataloader: dict | object | None = None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
         **kwargs,
     ) -> dict:
         """Test the given model on the test dataset using the provided test dataloader.
@@ -550,9 +547,9 @@ class AutoRunner:
 
     def predict(
         self,
-        img: Optional[Union[str, Path, object]],
-        model: Optional[Union[str, dict, list, object]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
+        img: str | (Path | object) | None,
+        model: str | (dict | (list | object)) | None = None,
+        checkpoint: str | Path | None = None,
         **kwargs,
     ) -> list:
         """Predict the output of the given image using the specified model and checkpoint.
@@ -583,8 +580,8 @@ class AutoRunner:
 
     def export(
         self,
-        model: Optional[Union[str, dict, list, object]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
+        model: str | (dict | (list | object)) | None = None,
+        checkpoint: str | Path | None = None,
         precision: str = "float32",
         **kwargs,
     ) -> dict:

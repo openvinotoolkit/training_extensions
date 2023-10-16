@@ -1,7 +1,4 @@
-"""Progressbar  and Score Reporting callback Callback for OTX task.
-
-TODO Since only one progressbar callback is supported HPO is combined into one callback. Remove this after the refactor
-"""
+"""Progressbar and Score Reporting callback Callback for OTX task."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -16,14 +13,17 @@ TODO Since only one progressbar callback is supported HPO is combined into one c
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+from __future__ import annotations
 
-from typing import Optional
+from typing import TYPE_CHECKING
 
-import torch
-from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 from otx.v2.api.entities.train_parameters import TrainParameters, default_progress_callback
+
+if TYPE_CHECKING:
+    import torch
+    from pytorch_lightning import LightningModule, Trainer
 
 
 class ProgressCallback(TQDMProgressBar):
@@ -32,7 +32,7 @@ class ProgressCallback(TQDMProgressBar):
     Modify progress callback to show completion of the entire training step.
     """
 
-    def __init__(self, parameters: Optional[TrainParameters] = None) -> None:
+    def __init__(self, parameters: TrainParameters | None = None) -> None:
         """Initializes a new instance of the ProgressCallback class.
 
         Args:

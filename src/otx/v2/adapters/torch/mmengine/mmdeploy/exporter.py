@@ -2,9 +2,10 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import torch
 from mmdeploy.apis import build_task_processor
@@ -12,9 +13,11 @@ from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.apis.onnx import export
 from mmdeploy.backend.openvino.onnx2openvino import from_onnx
 from mmdeploy.backend.openvino.utils import ModelOptimizerOptions
-from mmengine.config import Config
 
 from otx.v2.api.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from mmengine.config import Config
 
 logger = get_logger()
 
@@ -25,10 +28,10 @@ class Exporter:
     def __init__(
         self,
         config: Config,
-        checkpoint: Optional[str],
+        checkpoint: str | None,
         deploy_config: Config,
         work_dir: str,
-        precision: Optional[str] = None,
+        precision: str | None = None,
         export_type: str = "OPENVINO",
         device: str = "cpu",
     ) -> None:
@@ -71,7 +74,6 @@ class Exporter:
             model.load_state_dict(state_dict)
         model = sync_batchnorm_2_batchnorm(model)
 
-        # TODO: Need to investigate it why
         # NNCF compressed model lost trace context from time to time with no reason
         # even with 'torch.no_grad()'. Explicitly setting 'requires_grad' to'False'
         # makes things easier.
@@ -79,16 +81,16 @@ class Exporter:
             i.requires_grad = False
         return model
 
-    def _get_inputs(self) -> Tuple[torch.Tensor, Optional[dict]]:
+    def _get_inputs(self) -> tuple[torch.Tensor, dict | None]:
         """Prepare torch model's input and input_metas."""
         input_shape = self.deploy_cfg.backend_config.model_inputs[0]["opt_shapes"]["input"]
         input_tensor = torch.randn(input_shape)
         input_metas = None
         return input_tensor, input_metas
 
-    def export(self) -> Dict[str, Dict[str, str]]:
+    def export(self) -> dict[str, dict[str, str]]:
         """Export model using mmdeploy apis."""
-        results: Dict[str, Dict[str, str]] = {"outputs": {}}
+        results: dict[str, dict[str, str]] = {"outputs": {}}
         onnx_dir = Path(self.work_dir) / "onnx"
         onnx_dir.mkdir(exist_ok=True, parents=True)
         with no_mp():

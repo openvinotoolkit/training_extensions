@@ -3,24 +3,27 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 import fnmatch
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any
 
-import torch
 from anomalib.models import get_model as anomalib_get_model
 from omegaconf import DictConfig, OmegaConf
 
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
+
+if TYPE_CHECKING:
+    import torch
 
 MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/anomaly_classification/models"
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
 def get_model(
-    model: Optional[Union[Dict[str, Any], DictConfig, str]] = None,
-    checkpoint: Optional[str] = None,
+    model: dict[str, Any] | (DictConfig | str) | None = None,
+    checkpoint: str | None = None,
     **kwargs,
 ) -> torch.nn.Module:
     """Return a torch.nn.Module object based on the provided model configuration or anomalib model api.
@@ -49,7 +52,7 @@ def get_model(
     return anomalib_get_model(config=model)
 
 
-def list_models(pattern: Optional[str] = None) -> List[str]:
+def list_models(pattern: str | None = None) -> list[str]:
     """Return a list of available model names.
 
     Args:

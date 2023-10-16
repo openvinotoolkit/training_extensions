@@ -103,7 +103,6 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
                     shapes: List[Annotation] = []
                     for ann in datumaro_item.annotations:
                         if ann.type == DatumAnnotationType.mask:
-                            # TODO: consider case -> didn't include the background information
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
                                 new_label = self.updated_label_id.get(d_polygon.label, None)
@@ -239,7 +238,6 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         if not os.path.isfile(os.path.join(pseudo_mask_dir, "dataset_meta.json")):
             # Save dataset_meta.json for newly created pseudo masks
-            # FIXME: Because background class is ignored when generating polygons, meta is set with len(labels)-1.
             # It must be considered to set the whole labels later.
             # (-> {i: f"target{i+1}" for i in range(max(total_labels)+1)})
             meta = {"label_map": {i + 1: f"target{i+1}" for i in range(max(total_labels))}}

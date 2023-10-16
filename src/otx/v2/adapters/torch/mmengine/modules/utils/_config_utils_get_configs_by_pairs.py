@@ -48,7 +48,6 @@ def get_configs_by_pairs(
     return_path: bool = False,
 ) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:
     """Get a list of configs by key, value pairs."""
-    # TODO: multiple instance
 
     if not isinstance(pairs, list):
         pairs = [pairs]

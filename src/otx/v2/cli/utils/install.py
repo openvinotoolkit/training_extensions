@@ -510,7 +510,7 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
 
         # MMCV builds are only available for major.minor.0 torch versions.
         major, minor, _patch = version.split(".")
-        mmcv_torch_version = ".".join([major, minor, "0"])
+        mmcv_torch_version = f"{major}.{minor}.0"
         mmcv_index_url = (
             f"https://download.openmmlab.com/mmcv/dist/{hardware_suffix}/torch{mmcv_torch_version}/index.html"
         )

@@ -2,11 +2,11 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 import importlib
 import os
 from abc import abstractmethod
-from typing import Optional, Union
 
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
@@ -89,7 +89,6 @@ if os.getenv("FEATURE_FLAGS_OTX_ACTION_TASKS", "0") == "1":
             },
         },
     )
-# TODO: update to real template
 if os.getenv("FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS", "0") == "1":
     ADAPTERS.update(
         {
@@ -109,16 +108,16 @@ class BaseDatasetAdapter:
     def __init__(
         self,
         task_type: TaskType,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        cache_config: Optional[dict] = None,
-        encryption_key: Optional[str] = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        cache_config: dict | None = None,
+        encryption_key: str | None = None,
         **kwargs,
     ) -> None:
         """Initialize a new instance of the DatasetAdapter class.
@@ -158,14 +157,14 @@ class BaseDatasetAdapter:
 def get_dataset_adapter(
     task_type: TaskType,
     train_type: TrainType,
-    train_data_roots: Optional[str] = None,
-    train_ann_files: Optional[str] = None,
-    val_data_roots: Optional[str] = None,
-    val_ann_files: Optional[str] = None,
-    test_data_roots: Optional[str] = None,
-    test_ann_files: Optional[str] = None,
-    unlabeled_data_roots: Optional[str] = None,
-    unlabeled_file_list: Optional[str] = None,
+    train_data_roots: str | None = None,
+    train_ann_files: str | None = None,
+    val_data_roots: str | None = None,
+    val_ann_files: str | None = None,
+    test_data_roots: str | None = None,
+    test_ann_files: str | None = None,
+    unlabeled_data_roots: str | None = None,
+    unlabeled_file_list: str | None = None,
     **kwargs,
 ) -> BaseDatasetAdapter:
     """Return a dataset class by task type.
@@ -217,17 +216,17 @@ class BaseDataset:
 
     def __init__(
         self,
-        task: Optional[Union[TaskType, str]] = None,
-        train_type: Optional[Union[TrainType, str]] = None,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        data_format: Optional[str] = None,
+        task: TaskType | str | None = None,
+        train_type: TrainType | str | None = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        data_format: str | None = None,
     ) -> None:
         """BaseDataset, Classes that provide the underlying Dataset API for each framework.
 
@@ -268,7 +267,7 @@ class BaseDataset:
         self.data_format = data_format
         self.initialize = False
 
-    def set_datumaro_adapters(self, data_roots: Optional[str] = None) -> None:
+    def set_datumaro_adapters(self, data_roots: str | None = None) -> None:
         """Functions that provide the ability to load datasets from datumaro.
 
         If the train-type dataset for a particular task is supported by the datumaro adapter,
@@ -319,9 +318,9 @@ class BaseDataset:
     def subset_dataloader(  # noqa: ANN201
         self,
         subset: str,
-        pipeline: Optional[Union[dict, list]] = None,
-        batch_size: Optional[int] = None,
-        num_workers: Optional[int] = None,
+        pipeline: dict | list | None = None,
+        batch_size: int | None = None,
+        num_workers: int | None = None,
         **kwargs,
     ):
         """BaseDataset's subset_dataloader function.
@@ -365,7 +364,7 @@ class BaseDataset:
         raise NotImplementedError
 
     @property
-    def train_data_roots(self) -> Optional[str]:
+    def train_data_roots(self) -> str | None:
         """Returns the root directory for training data, if set.
 
         :return: The root directory for training data, or None if not set.
@@ -378,7 +377,7 @@ class BaseDataset:
         self.initialize = False
 
     @property
-    def train_ann_files(self) -> Optional[str]:
+    def train_ann_files(self) -> str | None:
         """Returns the path to the training annotation files for this dataset.
 
         Returns:
@@ -392,7 +391,7 @@ class BaseDataset:
         self.initialize = False
 
     @property
-    def val_data_roots(self) -> Optional[str]:
+    def val_data_roots(self) -> str | None:
         """Returns the root directory for validation data, if set.
 
         :return: The root directory for validation data, or None if not set.
@@ -405,7 +404,7 @@ class BaseDataset:
         self.initialize = False
 
     @property
-    def val_ann_files(self) -> Optional[str]:
+    def val_ann_files(self) -> str | None:
         """Returns the path to the validation annotation files for this dataset.
 
         Returns:
@@ -419,7 +418,7 @@ class BaseDataset:
         self.initialize = False
 
     @property
-    def test_data_roots(self) -> Optional[str]:
+    def test_data_roots(self) -> str | None:
         """Returns the root directory for testing data, if set.
 
         :return: The root directory for testing data, or None if not set.
@@ -432,7 +431,7 @@ class BaseDataset:
         self.initialize = False
 
     @property
-    def test_ann_files(self) -> Optional[str]:
+    def test_ann_files(self) -> str | None:
         """Returns the path to the test annotation files for this dataset.
 
         Returns:
@@ -446,7 +445,7 @@ class BaseDataset:
         self.initialize = False
 
     @property
-    def unlabeled_data_roots(self) -> Optional[str]:
+    def unlabeled_data_roots(self) -> str | None:
         """Returns the root directory for unlabeled data, if set.
 
         :return: The root directory for unlabeled data, or None if not set.
@@ -459,7 +458,7 @@ class BaseDataset:
         self.initialize = False
 
     @property
-    def unlabeled_file_list(self) -> Optional[str]:
+    def unlabeled_file_list(self) -> str | None:
         """Returns the path to the unlabeled image list for this dataset.
 
         Returns:

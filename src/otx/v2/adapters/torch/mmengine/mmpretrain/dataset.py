@@ -3,9 +3,10 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from functools import partial
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Iterable
 
 import torch
 from mmengine.dataset import default_collate, worker_init_fn
@@ -34,7 +35,7 @@ from otx.v2.api.utils.type_utils import str_to_subset_type
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_default_pipeline(semisl: bool = False) -> Union[Dict, List]:
+def get_default_pipeline(semisl: bool = False) -> dict | list:
     """Returns the default pipeline for pretraining a model.
 
     Args:
@@ -43,7 +44,6 @@ def get_default_pipeline(semisl: bool = False) -> Union[Dict, List]:
     Returns:
         Union[Dict, List]: The default pipeline as a dictionary or list, depending on whether `semisl` is True or False.
     """
-    # TODO: This is function for experiment // Need to remove this function
     default_pipeline = [
         {"type": "Resize", "scale": [224, 224]},
         {"type": "mmpretrain.PackInputs"},
@@ -70,17 +70,17 @@ class Dataset(BaseDataset):
 
     def __init__(
         self,
-        task: Optional[Union[TaskType, str]] = None,
-        train_type: Optional[Union[TrainType, str]] = None,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        data_format: Optional[str] = None,
+        task: TaskType | str | None = None,
+        train_type: TrainType | str | None = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        data_format: str | None = None,
     ) -> None:
         r"""MMPretrain's Dataset class.
 
@@ -140,9 +140,9 @@ class Dataset(BaseDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: Optional[Union[list, dict]] = None,
-        config: Optional[Union[str, dict, Config]] = None,
-    ) -> Optional[TorchDataset]:
+        pipeline: list | dict | None = None,
+        config: str | (dict | Config) | None = None,
+    ) -> TorchDataset | None:
         """Builds a TorchDataset object for the given subset using the specified pipeline and configuration.
 
         Args:
@@ -208,16 +208,16 @@ class Dataset(BaseDataset):
 
     def build_dataloader(
         self,
-        dataset: Optional[TorchDataset],
+        dataset: TorchDataset | None,
         batch_size: int = 2,
         num_workers: int = 0,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = True,
-        sampler: Optional[Union[Sampler, Iterable, dict]] = None,
+        sampler: Sampler | (Iterable | dict) | None = None,
         persistent_workers: bool = False,
         **kwargs,
-    ) -> Optional[TorchDataLoader]:
+    ) -> TorchDataLoader | None:
         """Builds a PyTorch DataLoader for the given dataset.
 
         Args:
@@ -277,14 +277,14 @@ class Dataset(BaseDataset):
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: Optional[Union[dict, list]] = None,
-        batch_size: Optional[int] = None,
-        num_workers: Optional[int] = None,
-        config: Optional[Union[str, dict]] = None,
+        pipeline: dict | list | None = None,
+        batch_size: int | None = None,
+        num_workers: int | None = None,
+        config: str | dict | None = None,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = True,
-        sampler: Optional[Union[Sampler, Iterable, Dict]] = None,
+        sampler: Sampler | (Iterable | dict) | None = None,
         persistent_workers: bool = False,
         **kwargs,
     ) -> TorchDataLoader:
@@ -331,7 +331,6 @@ class Dataset(BaseDataset):
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
         subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
-        # TODO: argument update with configuration (config is not None case)
         if batch_size is None:
             batch_size = _config.get("batch_size", 2)
         if num_workers is None:

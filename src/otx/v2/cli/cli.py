@@ -3,11 +3,12 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 import datetime
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Optional, Union
 
 from jsonargparse import (
     ActionConfigFile,
@@ -36,7 +37,7 @@ class OTXCLIv2:
     def __init__(
         self,
         args: ArgsType = None,
-        parser_kwargs: Optional[dict] = None,
+        parser_kwargs: dict | None = None,
     ) -> None:
         """Initialize a new instance of the CLI class.
 
@@ -45,8 +46,8 @@ class OTXCLIv2:
             parser_kwargs (dict, optional): Additional keyword arguments to pass to the parser. Defaults to None.
         """
         self.console = Console()
-        self.error: Optional[Exception] = None
-        self.model_name: Optional[str] = None
+        self.error: Exception | None = None
+        self.model_name: str | None = None
         self.pre_args = {}
         self.auto_runner_class = AutoRunner
 
@@ -88,7 +89,7 @@ class OTXCLIv2:
                 # Print TraceBack
                 self.console.print_exception(width=self.console.width)
 
-    def _setup_parser_kwargs(self, parser_kwargs: Optional[dict] = None) -> tuple:
+    def _setup_parser_kwargs(self, parser_kwargs: dict | None = None) -> tuple:
         if parser_kwargs is None:
             parser_kwargs = {}
         subcommand_names = self.engine_subcommands().keys()
@@ -96,7 +97,7 @@ class OTXCLIv2:
         subparser_kwargs = {k: v for k, v in parser_kwargs.items() if k in subcommand_names}
         return main_kwargs, subparser_kwargs
 
-    def init_parser(self, default_config_files: Optional[List[Optional[str]]] = None, **kwargs) -> OTXArgumentParser:
+    def init_parser(self, default_config_files: list[str | None] | None = None, **kwargs) -> OTXArgumentParser:
         """Initialize the argument parser for the OTX CLI.
 
         Args:
@@ -147,14 +148,14 @@ class OTXCLIv2:
     ) -> OTXArgumentParser:
         """Initialize and setup the parser, subcommands, and arguments."""
         parser = self.init_parser(**main_kwargs)
-        self._subcommand_method_arguments: Dict[str, List[str]] = {}
+        self._subcommand_method_arguments: dict[str, list[str]] = {}
         self.parser_subcommands = parser.add_subcommands()
         self._set_extension_subcommands_parser()
         self._set_engine_subcommands_parser(**subparser_kwargs)
         return parser
 
     @staticmethod
-    def engine_subcommands() -> Dict[str, Set[str]]:
+    def engine_subcommands() -> dict[str, set[str]]:
         """Return a dictionary of subcommands and their required arguments for the engine command.
 
         Returns:
@@ -186,7 +187,7 @@ class OTXCLIv2:
             subcommand_parser = self._prepare_subcommand_parser(self._engine_class, subcommand, **subparser_kwargs)
             self.parser_subcommands.add_subcommand(subcommand, subcommand_parser, help=description)
 
-    def _prepare_subcommand_parser(self, klass: Type, subcommand: str, **kwargs) -> OTXArgumentParser:
+    def _prepare_subcommand_parser(self, klass: type, subcommand: str, **kwargs) -> OTXArgumentParser:
         parser = self.init_parser(default_config_files=self.default_config_files, **kwargs)
         if self.model_class is not None:
             parser.add_core_class_args(self.model_class, "model", subclass_mode=False)
@@ -207,7 +208,7 @@ class OTXCLIv2:
                 parser.set_defaults({f"{sub_command_arg}.subset": subset})
 
         # subcommand arguments
-        skip: Set[Union[str, int]] = set(self.engine_subcommands()[subcommand])
+        skip: set[str | int] = set(self.engine_subcommands()[subcommand])
         added = parser.add_method_arguments(klass, subcommand, skip=skip, fail_untyped=False)
         # need to save which arguments were added to pass them to the method later
         self._subcommand_method_arguments[subcommand] = added
@@ -221,7 +222,7 @@ class OTXCLIv2:
                 raise NotImplementedError(msg)
             add_parser_function(self.parser_subcommands)
 
-    def get_auto_runner(self) -> Optional[AutoRunner]:
+    def get_auto_runner(self) -> AutoRunner | None:
         """Return an instance of AutoRunner class with the specified configuration parameters.
 
         If the user puts --checkpoint in the command and doesn't put --config,
@@ -246,7 +247,7 @@ class OTXCLIv2:
                 framework=self.pre_args.get("framework", None),
                 task=self.pre_args.get("task", None) if data_task is None else data_task,
                 train_type=self.pre_args.get("data.train_type", None),
-                work_dir=self.pre_args.get("work_dir", None),  # FIXME
+                work_dir=self.pre_args.get("work_dir", None),
                 train_data_roots=self.pre_args.get("data.train_data_roots", None),
                 train_ann_files=self.pre_args.get("data.train_ann_files", None),
                 val_data_roots=self.pre_args.get("data.val_data_roots", None),
@@ -291,7 +292,6 @@ class OTXCLIv2:
             if model_name in self.auto_runner.config_list:
                 default_configs.append(self.auto_runner.config_list[model_name])
             self.model_name = model_name
-            # TODO: Need more flexible way for Model API
             default_configs.append(self.auto_runner.config_path)
             model_class = model.__class__
         return model_class, default_configs
@@ -358,7 +358,6 @@ class OTXCLIv2:
             config = str(config[0])
         work_dir = self._pop(self.config_init, "work_dir")
         if not isinstance(work_dir, str):
-            # TODO: Need to fix properly.
             work_dir = None
 
         # Workspace
@@ -373,8 +372,8 @@ class OTXCLIv2:
         self,
         config: Namespace,
         key: str,
-        default: Optional[Union[dict, str, Namespace]] = None,
-    ) -> Optional[Union[dict, str, Namespace]]:
+        default: dict | (str | Namespace) | None = None,
+    ) -> dict | (str | Namespace) | None:
         return config.get(str(self.subcommand), config).pop(key, default)
 
     def run(self, subcommand: str) -> None:
@@ -415,7 +414,6 @@ class OTXCLIv2:
                     **left_kwargs,
                 },
             )
-            # TODO: Cleanup for output
             # The configuration dump is saved next to the checkpoint file.
             model_base_dir = Path(results["checkpoint"]).parent
             self.workspace.dump_config(filename=str(model_base_dir / "configs.yaml"))
@@ -434,19 +432,16 @@ class OTXCLIv2:
                 test_dataloader=self.data.test_dataloader(**test_dl_kwargs),
                 **subcommand_kwargs,
             )
-            # TODO: Cleanup for output
             self.console.print(results)
         elif subcommand == "predict":
             self.instantiate_classes(subcommand)
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.predict(model=self.model, **subcommand_kwargs)
-            # TODO: Cleanup for output
             self.console.print(results)
         elif subcommand == "export":
             self.instantiate_classes(subcommand)
             subcommand_kwargs, left_kwargs = self._prepare_subcommand_kwargs(subcommand)
             results = self.engine.export(model=self.model, **subcommand_kwargs)
-            # TODO: Cleanup for output
             self.console.print("[*] Model exporting ended successfully.")
         else:
             msg = f"{subcommand} is not implemented."
@@ -456,7 +451,7 @@ class OTXCLIv2:
         if subcommand in self.engine_subcommands():
             self.console.print(f"[*] otx {subcommand} time elapsed: {total_time}")
 
-    def _prepare_subcommand_kwargs(self, subcommand: str) -> Tuple[Dict, Dict]:
+    def _prepare_subcommand_kwargs(self, subcommand: str) -> tuple[dict, dict]:
         config = namespace_to_dict(self.config_init[subcommand])
         subcommand_kwargs = {}
         left_kwargs = {}

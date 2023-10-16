@@ -13,13 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+from __future__ import annotations
 
-from typing import List
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pytorch_lightning as pl
 import torch
-from anomalib.models import AnomalyModule
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
@@ -33,13 +32,17 @@ from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
 
+if TYPE_CHECKING:
+    import pytorch_lightning as pl
+    from anomalib.models import AnomalyModule
+
 logger = get_logger(__name__)
 
 
 class AnomalyInferenceCallback(Callback):
     """Callback that updates the OTX dataset during inference."""
 
-    def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType) -> None:
+    def __init__(self, otx_dataset: DatasetEntity, labels: list[LabelEntity], task_type: TaskType) -> None:
         """Initializes an instance of the InferenceCallback class.
 
         Args:
@@ -55,7 +58,6 @@ class AnomalyInferenceCallback(Callback):
 
     def on_predict_epoch_end(self, _trainer: pl.Trainer, _pl_module: AnomalyModule, outputs: list) -> None:
         """Call when the predict epoch ends."""
-        # TODO; refactor Ignore too many locals
         outputs = outputs[0]
         # collect generic predictions
         pred_scores = torch.hstack([output["pred_scores"].cpu() for output in outputs])
@@ -108,9 +110,9 @@ class AnomalyInferenceCallback(Callback):
 
     def _process_detection_predictions(
         self,
-        pred_boxes: List[Tensor],
-        box_scores: List[Tensor],
-        box_labels: List[Tensor],
+        pred_boxes: list[Tensor],
+        box_scores: list[Tensor],
+        box_labels: list[Tensor],
         pred_scores: Tensor,
         image_size: torch.Size,
     ) -> None:
@@ -132,7 +134,7 @@ class AnomalyInferenceCallback(Callback):
             pred_scores,
         ):
             # generate annotations
-            annotations: List[Annotation] = []
+            annotations: list[Annotation] = []
             for box, score, label in zip(im_boxes, im_box_scores, im_box_labels):
                 if box[0] >= box[2] or box[1] >= box[3]:  # discard 1-pixel boxes
                     continue

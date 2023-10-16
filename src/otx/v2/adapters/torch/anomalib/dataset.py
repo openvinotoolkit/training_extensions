@@ -3,11 +3,11 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, Optional, Union
+from typing import TYPE_CHECKING, Iterable
 
-import albumentations as al
 import yaml
 from anomalib.data.base.datamodule import collate_fn
 from omegaconf import DictConfig, OmegaConf
@@ -26,6 +26,9 @@ from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type
 
+if TYPE_CHECKING:
+    import albumentations as al
+
 SUBSET_LIST = ["train", "val", "test", "predict"]
 
 
@@ -35,17 +38,17 @@ class Dataset(BaseDataset):
 
     def __init__(
         self,
-        task: Optional[Union[TaskType, str]] = None,
-        train_type: Optional[Union[TrainType, str]] = None,
-        train_data_roots: Optional[str] = None,
-        train_ann_files: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        val_ann_files: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        test_ann_files: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
-        unlabeled_file_list: Optional[str] = None,
-        data_format: Optional[str] = "mvtec",
+        task: TaskType | str | None = None,
+        train_type: TrainType | str | None = None,
+        train_data_roots: str | None = None,
+        train_ann_files: str | None = None,
+        val_data_roots: str | None = None,
+        val_ann_files: str | None = None,
+        test_data_roots: str | None = None,
+        test_ann_files: str | None = None,
+        unlabeled_data_roots: str | None = None,
+        unlabeled_file_list: str | None = None,
+        data_format: str | None = "mvtec",
     ) -> None:
         """Initialize a Dataset object for anomaly tasks.
 
@@ -88,7 +91,7 @@ class Dataset(BaseDataset):
             test_ann_files,
             unlabeled_data_roots,
             unlabeled_file_list,
-            data_format=data_format,  # TODO: Is there a way to make it more flexible?
+            data_format=data_format,
         )
 
     def _initialize(self) -> None:
@@ -98,9 +101,9 @@ class Dataset(BaseDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: Optional[Union[str, al.Compose]] = None,  # transform_config
-        config: Optional[Union[str, DictConfig, dict]] = None,
-    ) -> Optional[TorchDataset]:
+        pipeline: str | al.Compose | None = None,  # transform_config
+        config: str | (DictConfig | dict) | None = None,
+    ) -> TorchDataset | None:
         """Build a TorchDataset for the given subset using the specified pipeline and configuration.
 
         Args:
@@ -129,16 +132,16 @@ class Dataset(BaseDataset):
 
     def build_dataloader(
         self,
-        dataset: Optional[OTXAnomalyDataset],
-        batch_size: Optional[int] = 1,
-        num_workers: Optional[int] = 0,
+        dataset: OTXAnomalyDataset | None,
+        batch_size: int | None = 1,
+        num_workers: int | None = 0,
         shuffle: bool = False,
         pin_memory: bool = False,
         drop_last: bool = False,
-        sampler: Optional[Union[Sampler, Iterable]] = None,
+        sampler: Sampler | Iterable | None = None,
         persistent_workers: bool = False,
         **kwargs,
-    ) -> Optional[TorchDataLoader]:
+    ) -> TorchDataLoader | None:
         """Build a PyTorch DataLoader object from an OTXAnomalyDataset object.
 
         Args:
@@ -162,7 +165,6 @@ class Dataset(BaseDataset):
         if sampler is not None:
             shuffle = False
 
-        # TODO: Need to check for anomalib dataloader
         # Currently, copy from mm's
         return TorchDataLoader(
             dataset,
@@ -180,14 +182,14 @@ class Dataset(BaseDataset):
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: Optional[Union[dict, list]] = None,
-        batch_size: Optional[int] = 1,
-        num_workers: Optional[int] = 0,
-        config: Optional[Union[str, dict]] = None,
+        pipeline: dict | list | None = None,
+        batch_size: int | None = 1,
+        num_workers: int | None = 0,
+        config: str | dict | None = None,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = False,
-        sampler: Optional[Union[Sampler, Iterable]] = None,
+        sampler: Sampler | Iterable | None = None,
         persistent_workers: bool = False,
         **kwargs,
     ) -> TorchDataLoader:
@@ -225,7 +227,6 @@ class Dataset(BaseDataset):
             _config = config
 
         dataset = self.build_dataset(subset=subset, pipeline=pipeline, config=_config)
-        # TODO: argument update with configuration (config is not None case) + Semi-SL Setting flow
         if batch_size is None:
             batch_size = _config.get("batch_size", 1)
         if num_workers is None:

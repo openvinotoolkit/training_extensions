@@ -3,10 +3,10 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 import fnmatch
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import torch
 from mmpretrain import get_model as get_mmpretrain_model
@@ -24,7 +24,7 @@ MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/classification/model
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
-def configure_in_channels(config: Config, input_shape: Optional[List[int]] = None) -> Config:
+def configure_in_channels(config: Config, input_shape: list[int] | None = None) -> Config:
     """Configure the 'in_channels' parameter for the model's neck and head based on the output shape of the backbone.
 
     Args:
@@ -96,9 +96,9 @@ def configure_in_channels(config: Config, input_shape: Optional[List[int]] = Non
 
 
 def get_model(
-    model: Union[str, Config, Dict],
-    pretrained: Union[str, bool] = False,
-    num_classes: Optional[int] = None,
+    model: str | (Config | dict),
+    pretrained: str | bool = False,
+    num_classes: int | None = None,
     channel_last: bool = False,
     **kwargs,
 ) -> torch.nn.Module:
@@ -136,7 +136,7 @@ def get_model(
         model = Config(cfg_dict=Config.merge_cfg_dict(base_model, model))
 
     if isinstance(model, Config):
-        model = configure_in_channels(model)  # TODO: more clearly
+        model = configure_in_channels(model)
         if not hasattr(model, "model"):
             model["_scope_"] = "mmpretrain"
             model = Config(cfg_dict={"model": model})
@@ -154,7 +154,7 @@ def get_model(
     return model
 
 
-def list_models(pattern: Optional[str] = None, **kwargs) -> List[str]:
+def list_models(pattern: str | None = None, **kwargs) -> list[str]:
     """Returns a list of available models for training.
 
     Args:

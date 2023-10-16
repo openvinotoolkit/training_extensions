@@ -3,9 +3,10 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from importlib import import_module
-from typing import Callable, Optional
+from typing import Callable
 
 from anomalib.models import _snake_to_pascal_case
 
@@ -53,7 +54,7 @@ class AnomalibRegistry(BaseRegistry):
             if module is not None:
                 self.register_module(name=model_name, module=model)
 
-    def get(self, module_type: str) -> Optional[Callable]:
+    def get(self, module_type: str) -> Callable | None:
         """Retrieve a registered module by its type.
 
         Args:

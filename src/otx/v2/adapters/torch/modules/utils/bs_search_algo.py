@@ -2,8 +2,9 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
-from typing import Callable, Dict, Tuple
+from typing import Callable
 
 import torch
 
@@ -46,12 +47,12 @@ class BsSearchAlgo:
         self._train_func = train_func
         self._default_bs = default_bs
         self._max_bs = max_bs
-        self._bs_try_history: Dict[int, int] = {}
+        self._bs_try_history: dict[int, int] = {}
         _, self._total_mem = torch.cuda.mem_get_info()
         self._mem_lower_bound = 0.8 * self._total_mem
         self._mem_upper_bound = 0.85 * self._total_mem
 
-    def _try_batch_size(self, bs: int) -> Tuple[bool, int]:
+    def _try_batch_size(self, bs: int) -> tuple[bool, int]:
         cuda_oom = False
         torch.cuda.reset_max_memory_allocated(device=None)
         torch.cuda.empty_cache()

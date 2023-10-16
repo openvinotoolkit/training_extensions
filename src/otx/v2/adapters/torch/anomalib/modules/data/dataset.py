@@ -12,11 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+from __future__ import annotations
 
 import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import pandas as pd
 from bson import ObjectId
@@ -42,9 +42,9 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
 
     def __init__(
         self,
-        train_subset: Optional[Dict[str, str]] = None,
-        val_subset: Optional[Dict[str, str]] = None,
-        test_subset: Optional[Dict[str, str]] = None,
+        train_subset: dict[str, str] | None = None,
+        val_subset: dict[str, str] | None = None,
+        test_subset: dict[str, str] | None = None,
     ) -> None:
         """Base Anomaly Dataset.
 
@@ -56,7 +56,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
             test_subset (Optional[Dict[str, str]], optional): Path to annotation
                 and dataset used for testing. Defaults to None.
         """
-        items: List[DatasetItemEntity] = []
+        items: list[DatasetItemEntity] = []
         self.normal_label = LabelEntity(id=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION)
         self.abnormal_label = LabelEntity(
             id=ID(1),
@@ -101,7 +101,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
         super().__init__(items=items)
 
     @abstractmethod
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
         """To be implemented ib subclasses."""
         raise NotImplementedError
 
@@ -128,7 +128,7 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
     >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
     """
 
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -186,7 +186,7 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
 
     """
 
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -267,7 +267,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
 
     """
 
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
         """Loads dataset based on the image path in annotation file.
 
         Args:

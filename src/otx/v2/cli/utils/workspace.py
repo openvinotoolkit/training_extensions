@@ -3,16 +3,16 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
 
 from omegaconf import OmegaConf
 
 from otx.v2.api.utils.importing import get_otx_root_path
 
 
-def set_workspace(root: Optional[str] = None, name: str = "otx-workspace") -> str:
+def set_workspace(root: str | None = None, name: str = "otx-workspace") -> str:
     """Set workspace path according to arguments.
 
     Args:
@@ -28,7 +28,7 @@ def set_workspace(root: Optional[str] = None, name: str = "otx-workspace") -> st
 class Workspace:
     """A class representing an OTX workspace."""
 
-    def __init__(self, work_dir: Optional[str] = None, task: Optional[str] = None) -> None:
+    def __init__(self, work_dir: str | None = None, task: str | None = None) -> None:
         """Initialize a Workspace object.
 
         Args:
@@ -44,7 +44,7 @@ class Workspace:
         self.task = task
         self.mkdir_or_exist()
         self.latest_dir = self.work_dir / "latest"
-        self._config: Dict[str, Any] = {}
+        self._config: dict = {}
         self._config_path = self.work_dir / "configs.yaml"
 
     @property
@@ -69,8 +69,8 @@ class Workspace:
 
     def dump_config(
         self,
-        config: Optional[Union[str, Path, Dict]] = None,
-        filename: Optional[Union[str, Path]] = None,
+        config: str | (Path | dict) | None = None,
+        filename: str | Path | None = None,
     ) -> None:
         """Dump output configuration.
 

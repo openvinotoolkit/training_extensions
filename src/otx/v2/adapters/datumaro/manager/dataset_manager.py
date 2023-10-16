@@ -56,7 +56,6 @@ class DatasetManager:
 
         data_format: str = ""
 
-        # TODO #
         # Currently, below `if/else` statements is mandatory
         # because Datumaro can't detect the multi-cvat and mvtec.
         # After, the upgrade of Datumaro, below codes will be changed.
@@ -66,7 +65,6 @@ class DatasetManager:
             data_format = "mvtec"
         else:
             data_formats = datumaro.Environment().detect_dataset(data_root)
-            # TODO: how to avoid hard-coded part
             data_format = data_formats[0] if "imagenet" not in data_formats else "imagenet"
         return data_format
 

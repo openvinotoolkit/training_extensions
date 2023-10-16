@@ -46,7 +46,6 @@ class TensorNormalize:
         return results
 
 
-# TODO [Jihwan]: Can be removed by mmpretrain.dataset.pipelines.auto_augment L398, Roate class
 @TRANSFORMS.register_module()
 class RandomRotate:
     """Random rotate, from torchreid.data.transforms."""

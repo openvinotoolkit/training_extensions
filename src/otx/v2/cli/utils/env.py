@@ -2,9 +2,9 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 import importlib
-from typing import Dict, List, Optional, Tuple, Union
 
 from pkg_resources import Requirement
 from rich.console import Console
@@ -27,13 +27,13 @@ REQUIRED_ADAPTERS_PER_TASK = {
 }
 
 
-def get_adapters_status() -> Dict[str, Dict]:
+def get_adapters_status() -> dict[str, dict]:
     """Return the available and version information for each adapter.
 
     Returns:
         dict[str, dict[str, Union[bool, float]]]: the available and version information.
     """
-    adapters_status: Dict[str, Dict] = {}
+    adapters_status: dict[str, dict] = {}
     for adapter in ADAPTERS:
         name = f"otx.v2.adapters.{adapter}"
         module = importlib.import_module(name)
@@ -44,7 +44,7 @@ def get_adapters_status() -> Dict[str, Dict]:
     return adapters_status
 
 
-def get_environment_table(task: Optional[str] = None, verbose: Optional[bool] = None) -> str:
+def get_environment_table(task: str | None = None, verbose: bool | None = None) -> str:
     """Get table provides the availability of each tasks.
 
     Args:
@@ -66,7 +66,7 @@ def get_environment_table(task: Optional[str] = None, verbose: Optional[bool] = 
 
     requirements_per_task = get_requirements()
     adapters_status = get_adapters_status()
-    requirements: Union[List[str], List[Requirement]]
+    requirements: list[str] | list[Requirement]
     for task in task_lst:
         task_name = task
         if verbose:
@@ -99,7 +99,7 @@ def get_environment_table(task: Optional[str] = None, verbose: Optional[bool] = 
     return capture.get()
 
 
-def get_task_status(task: Optional[str] = None) -> Dict[str, Dict]:
+def get_task_status(task: str | None = None) -> dict[str, dict]:
     """Check if the requirement for each task is currently available.
 
     Args:
@@ -110,15 +110,15 @@ def get_task_status(task: Optional[str] = None) -> Dict[str, Dict]:
     """
     adapter_status = get_adapters_status()
 
-    task_status: Dict[str, Dict[str, Union[List, bool]]] = {}
-    target_req: Dict[str, List[str]] = {}
+    task_status: dict[str, dict[str, list | bool]] = {}
+    target_req: dict[str, list[str]] = {}
     if task is not None:
         target_req[task] = REQUIRED_ADAPTERS_PER_TASK[task]
     else:
         target_req = REQUIRED_ADAPTERS_PER_TASK
     for req, adapters in target_req.items():
         available = True
-        exception_lst: List = []
+        exception_lst: list = []
         for adapter in adapters:
             name = f"otx.v2.adapters.{adapter}"
             if name in adapter_status:
@@ -134,7 +134,7 @@ def get_task_status(task: Optional[str] = None) -> Dict[str, Dict]:
     return task_status
 
 
-def check_torch_cuda() -> Tuple[Optional[float], bool]:
+def check_torch_cuda() -> tuple[float | None, bool]:
     """Information about whether or not TORCH is available.
 
     Returns:

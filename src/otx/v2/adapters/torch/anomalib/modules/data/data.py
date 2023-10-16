@@ -13,14 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+from __future__ import annotations
 
-from typing import Dict, List, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
 from anomalib.data.base.datamodule import collate_fn
 from anomalib.data.utils.transform import get_transforms
-from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
@@ -36,6 +36,9 @@ from otx.v2.api.entities.utils.dataset_utils import (
     split_local_global_dataset,
 )
 from otx.v2.api.entities.utils.segmentation_utils import mask_from_dataset_item
+
+if TYPE_CHECKING:
+    from omegaconf import DictConfig, ListConfig
 
 logger = get_logger(__name__)
 
@@ -61,7 +64,7 @@ class OTXAnomalyDataset(Dataset):
         torch.Size([3, 256, 256])
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType) -> None:
+    def __init__(self, config: DictConfig | ListConfig, dataset: DatasetEntity, task_type: TaskType) -> None:
         """Initializes a new instance of the Data class.
 
         Args:
@@ -73,7 +76,6 @@ class OTXAnomalyDataset(Dataset):
         self.dataset = dataset
         self.task_type = task_type
 
-        # TODO: distinguish between train and val config here
         self.transform = get_transforms(
             config=config.dataset.transform_config.train,
             image_size=tuple(config.dataset.image_size),
@@ -88,7 +90,7 @@ class OTXAnomalyDataset(Dataset):
         """
         return len(self.dataset)
 
-    def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
+    def __getitem__(self, index: int) -> dict[str, int | Tensor]:
         """Get dataset item.
 
         Args:
@@ -101,7 +103,7 @@ class OTXAnomalyDataset(Dataset):
             Dict[str, Union[int, Tensor]]: Dataset item.
         """
         dataset_item = self.dataset[index]
-        item: Dict[str, Union[int, Tensor]] = {}
+        item: dict[str, int | Tensor] = {}
         item = {"index": index}
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             # Detection currently relies on image labels only, meaning it'll use image
@@ -167,7 +169,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         torch.Size([32, 3, 256, 256])
     """
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, task_type: TaskType) -> None:
+    def __init__(self, config: DictConfig | ListConfig, dataset: DatasetEntity, task_type: TaskType) -> None:
         """Initializes a DataModule instance.
 
         Args:
@@ -185,7 +187,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         self.test_otx_dataset: DatasetEntity
         self.predict_otx_dataset: DatasetEntity
 
-    def setup(self, stage: Optional[str] = None) -> None:
+    def setup(self, stage: str | None = None) -> None:
         """Setup Anomaly Data Module.
 
         Args:
@@ -225,7 +227,7 @@ class OTXAnomalyDataModule(LightningDataModule):
 
     def train_dataloader(
         self,
-    ) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
+    ) -> DataLoader | (list[DataLoader] | dict[str, DataLoader]):
         """Train Dataloader.
 
         Returns:
@@ -240,7 +242,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             collate_fn=collate_fn,
         )
 
-    def val_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def val_dataloader(self) -> DataLoader | list[DataLoader]:
         """Validation Dataloader.
 
         Returns:
@@ -263,7 +265,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             collate_fn=collate_fn,
         )
 
-    def test_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def test_dataloader(self) -> DataLoader | list[DataLoader]:
         """Test Dataloader.
 
         Returns:
@@ -278,7 +280,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             collate_fn=collate_fn,
         )
 
-    def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+    def predict_dataloader(self) -> DataLoader | list[DataLoader]:
         """Predict Dataloader.
 
         Returns:

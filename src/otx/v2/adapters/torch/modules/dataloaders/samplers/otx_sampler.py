@@ -2,17 +2,20 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
 
 import math
-from typing import Iterator, Optional
+from typing import TYPE_CHECKING, Iterator
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
 from torch.utils.data.sampler import Sampler
 
 from otx.v2.adapters.torch.modules.utils.task_adapt import unwrap_dataset
 from otx.v2.api.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from torch.utils.data import Dataset
 
 logger = get_logger()
 
@@ -54,7 +57,7 @@ class OTXSampler(Sampler):
         shuffle: bool = True,
         coef: float = -0.7,
         min_repeat: float = 1.0,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         """Initializes an OTXSampler object.
 

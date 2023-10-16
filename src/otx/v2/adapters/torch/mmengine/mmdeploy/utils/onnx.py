@@ -127,7 +127,6 @@ def remove_node(model: ModelProto, op_name: str) -> ModelProto:
 
 def remove_nodes_by_op_type(onnx_model: ModelProto, op_type: str) -> ModelProto:
     """Remove all nodes of a specified op type from the ONNX model."""
-    # TODO: support more nodes
     remove_node(onnx_model, op_type)
     onnx.checker.check_model(onnx_model)
     return onnx_model

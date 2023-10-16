@@ -30,14 +30,14 @@ Reference:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Union
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy as np
 from anomalib.data.mvtec import make_mvtec_dataset
-from pandas.core.frame import DataFrame
 
 from otx.v2.api.entities.annotation import (
     Annotation,
@@ -55,6 +55,9 @@ from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
+
+if TYPE_CHECKING:
+    from pandas.core.frame import DataFrame
 
 
 class OtxMvtecDataset:
@@ -79,7 +82,7 @@ class OtxMvtecDataset:
 
     def __init__(
         self,
-        path: Union[str, Path],
+        path: str | Path,
         task_type: TaskType = TaskType.ANOMALY_CLASSIFICATION,
     ) -> None:
         """Initializes a new instance of the MVTec dataset adapter.
@@ -140,7 +143,7 @@ class OtxMvtecDataset:
             DatasetEntity: Output OTX Anomaly Dataset from an MVTec
         """
         samples = self.get_samples()
-        dataset_items: List[DatasetItemEntity] = []
+        dataset_items: list[DatasetItemEntity] = []
         for _, sample in samples.iterrows():
             # Create image
             image = Image(file_path=sample.image_path)

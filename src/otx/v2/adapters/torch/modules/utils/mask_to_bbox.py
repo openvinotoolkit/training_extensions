@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-
-from typing import List
+from __future__ import annotations
 
 import numpy as np
 from skimage.measure import find_contours, label, regionprops
@@ -43,7 +42,7 @@ def mask_to_border(mask: np.ndarray) -> np.ndarray:
     return border
 
 
-def mask2bbox(mask: np.ndarray) -> List[List[int]]:
+def mask2bbox(mask: np.ndarray) -> list[list[int]]:
     """Mask to bounding boxes.
 
     Args:
@@ -52,7 +51,7 @@ def mask2bbox(mask: np.ndarray) -> List[List[int]]:
     Returns:
         List[List[int]]: Bounding box coordinates
     """
-    bboxes: List[List[int]] = []
+    bboxes: list[list[int]] = []
 
     mask = mask_to_border(mask)
     print(np.unique(mask))

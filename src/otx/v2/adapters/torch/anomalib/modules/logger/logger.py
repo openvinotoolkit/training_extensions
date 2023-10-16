@@ -1,18 +1,19 @@
 """Logging."""
 
 # Copyright (c) OpenMMLab. All rights reserved.
+from __future__ import annotations
+
 import logging
 from logging import FileHandler, Handler, Logger, StreamHandler
-from typing import Dict, List, Optional
 
 import torch.distributed as dist
 
-logger_initialized: Dict[str, bool] = {}
+logger_initialized: dict[str, bool] = {}
 
 
 def get_logger(
     name: str,
-    log_file: Optional[str] = None,
+    log_file: str | None = None,
     log_level: int = logging.INFO,
     file_mode: str = "w",
 ) -> Logger:
@@ -58,7 +59,7 @@ def get_logger(
         if isinstance(handler, StreamHandler):
             handler.setLevel(logging.ERROR)
 
-    handlers: List[Handler] = [StreamHandler()]
+    handlers: list[Handler] = [StreamHandler()]
 
     rank = dist.get_rank() if dist.is_available() and dist.is_initialized() else 0
 

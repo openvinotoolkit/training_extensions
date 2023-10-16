@@ -2,8 +2,7 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
-from typing import Optional
+from __future__ import annotations
 
 from mmengine.config import ConfigDict
 
@@ -12,8 +11,8 @@ from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConf
 
 def patch_input_preprocessing(
     deploy_cfg: ConfigDict,
-    mean: Optional[list] = None,
-    std: Optional[list] = None,
+    mean: list | None = None,
+    std: list | None = None,
     to_rgb: bool = False,
 ) -> None:
     """Update backend configuration with input preprocessing options.
@@ -51,7 +50,7 @@ def patch_input_preprocessing(
     deploy_cfg.backend_config.mo_options = mo_options
 
 
-def patch_input_shape(deploy_cfg: Config, input_shape: Optional[tuple]) -> None:
+def patch_input_shape(deploy_cfg: Config, input_shape: tuple | None) -> None:
     """Patch the input shape of the model in the deployment configuration.
 
     Args:

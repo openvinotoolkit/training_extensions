@@ -88,7 +88,7 @@ def map_cat_and_cls_as_order(classes: list, cats: dict) -> tuple:
     cat2label = {}
     cat_ids = []
     for i, cls in enumerate(classes):
-        for _, cat in cats.items():
+        for cat in cats.values():
             if cls == cat["name"]:
                 cat_id = cat["id"]
                 cat_ids.append(cat_id)

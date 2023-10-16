@@ -64,7 +64,6 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
             DatumaroDataset: Datumaro Dataset
         """
         # Construct dataset for training, validation, unlabeled
-        # TODO: currently, only MVTec dataset format can be used
         dataset = {}
         if train_data_roots is None and test_data_roots is None:
             raise ValueError("At least 1 data_root is needed to train/test.")
@@ -150,7 +149,6 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         ),
                     ]
-                    # TODO: avoid hard coding, plan to enable MVTec to Datumaro
                     mask_file_path = os.path.join(
                         "/".join(datumaro_item.media.path.split("/")[:-3]),
                         "ground_truth",
@@ -208,7 +206,6 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         ),
                     ]
-                    # TODO: avoid hard coding, plan to enable MVTec to Datumaro
                     mask_file_path = os.path.join(
                         "/".join(datumaro_item.media.path.split("/")[:-3]),
                         "ground_truth",

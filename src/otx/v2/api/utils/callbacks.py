@@ -4,12 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
 
 import logging
 import math
 import time
 from copy import deepcopy
-from typing import List, TypeVar, Union
+from typing import TypeVar
 
 import dill
 
@@ -141,14 +142,14 @@ class TimeMonitorCallback(Callback):
 
         # Step time calculation
         self.start_step_time = time.time()
-        self.past_step_duration: List[float] = []
-        self.average_step: Union[int, float] = 0
+        self.past_step_duration: list[float] = []
+        self.average_step: int | float = 0
         self.step_history = step_history
 
         # epoch time calculation
         self.start_epoch_time = time.time()
-        self.past_epoch_duration: List[float] = []
-        self.average_epoch: Union[int, float] = 0
+        self.past_epoch_duration: list[float] = []
+        self.average_epoch: int | float = 0
         self.epoch_history = epoch_history
 
         # whether model is training flag
@@ -165,7 +166,7 @@ class TimeMonitorCallback(Callback):
             state["update_progress_callback"] = default_progress_callback
         return state
 
-    def __deepcopy__(self, memo: dict) -> "TimeMonitorCallback":
+    def __deepcopy__(self, memo: dict) -> TimeMonitorCallback:
         """Return deepcopy object."""
         update_progress_callback = self.update_progress_callback
         self.update_progress_callback = None

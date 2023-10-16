@@ -3,11 +3,11 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
 
 from abc import abstractmethod
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, Union
 
 from otx.v2.api.core.registry import BaseRegistry
 
@@ -23,7 +23,7 @@ class Engine:
     )
     """
 
-    def __init__(self, work_dir: Optional[Union[str, Path]]) -> None:
+    def __init__(self, work_dir: str | Path | None) -> None:
         """Initialize a new instance of the Engine class.
 
         Args:
@@ -41,18 +41,18 @@ class Engine:
     @abstractmethod
     def train(
         self,
-        model: Optional[Union[str, dict, list, object]],
-        train_dataloader: Optional[Union[dict, object]],
-        val_dataloader: Optional[Union[dict, object]] = None,
-        optimizer: Optional[Union[dict, object]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        max_iters: Optional[int] = None,
-        max_epochs: Optional[int] = None,
-        distributed: Optional[bool] = None,
-        seed: Optional[int] = None,
-        deterministic: Optional[bool] = None,
-        precision: Optional[str] = None,
-        val_interval: Optional[int] = None,
+        model: str | (dict | (list | object)) | None,
+        train_dataloader: dict | object | None,
+        val_dataloader: dict | object | None = None,
+        optimizer: dict | object | None = None,
+        checkpoint: str | Path | None = None,
+        max_iters: int | None = None,
+        max_epochs: int | None = None,
+        distributed: bool | None = None,
+        seed: int | None = None,
+        deterministic: bool | None = None,
+        precision: str | None = None,
+        val_interval: int | None = None,
         **kwargs,
     ) -> dict:
         """Train the given model using the given data loaders and optimizer.
@@ -105,10 +105,10 @@ class Engine:
     @abstractmethod
     def validate(
         self,
-        model: Optional[Union[str, dict, list, object]],
-        val_dataloader: Optional[Union[dict, object]],
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = None,
+        model: str | (dict | (list | object)) | None,
+        val_dataloader: dict | object | None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
         **kwargs,
     ) -> dict:
         """Validate the given model using the given data loader.
@@ -140,10 +140,10 @@ class Engine:
     @abstractmethod
     def test(
         self,
-        model: Optional[Union[str, dict, list, object]],
-        test_dataloader: Optional[Union[dict, object]],
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = None,
+        model: str | (dict | (list | object)) | None,
+        test_dataloader: dict | object | None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
         **kwargs,
     ) -> dict:
         """Test the given model using the given data loader.
@@ -175,9 +175,9 @@ class Engine:
     @abstractmethod
     def predict(
         self,
-        model: Optional[Union[str, dict, list, object]],
-        img: Optional[Union[str, Path, object]],
-        checkpoint: Optional[Union[str, Path]] = None,
+        model: str | (dict | (list | object)) | None,
+        img: str | (Path | object) | None,
+        checkpoint: str | Path | None = None,
     ) -> list:
         """Predict the given model using the given image or data.
 
@@ -207,9 +207,9 @@ class Engine:
     @abstractmethod
     def export(
         self,
-        model: Optional[Union[str, dict, list, object]] = None,
-        checkpoint: Optional[Union[str, Path]] = None,
-        precision: Optional[str] = None,
+        model: str | (dict | (list | object)) | None = None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
     ) -> dict:
         """Export the given model as IR Model or onnx Model.
 
