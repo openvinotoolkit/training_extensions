@@ -1,0 +1,10 @@
+TestToolsOTXInstanceSegmentation:
+  nncf:
+    number_of_fakequantizers: 107
+  ptq:
+    number_of_fakequantizers: 122
+TestToolsTilingInstanceSegmentation:
+  nncf:
+    number_of_fakequantizers: 107
+  ptq:
+    number_of_fakequantizers: 122
