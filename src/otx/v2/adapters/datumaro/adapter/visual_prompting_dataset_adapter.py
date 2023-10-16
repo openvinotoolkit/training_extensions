@@ -4,13 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.plugins.transforms import MasksToPolygons
 
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
+from otx.v2.api.entities.task_type import TaskType
 
 from .segmentation_dataset_adapter import SegmentationDatasetAdapter
 
@@ -22,9 +23,37 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
     To handle masks, this adapter is inherited from SegmentationDatasetAdapter.
     """
 
-    def __init__(self, use_mask: bool = False, *args, **kwargs) -> None:
-        self.use_mask = use_mask
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
+        cache_config: Optional[dict] = None,
+        encryption_key: Optional[str] = None,
+        use_mask: bool = False,
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            task_type,
+            train_data_roots,
+            train_ann_files,
+            val_data_roots,
+            val_ann_files,
+            test_data_roots,
+            test_ann_files,
+            unlabeled_data_roots,
+            unlabeled_file_list,
+            cache_config,
+            encryption_key,
+            use_mask,
+            **kwargs,
+        )
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""

@@ -84,12 +84,14 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         unlabeled_file_list: Optional[str] = None,
         cache_config: Optional[dict] = None,
         encryption_key: Optional[str] = None,
+        use_mask: bool = False,
         **kwargs,
     ) -> None:
         self.task_type = task_type
         self.domain = task_type.domain
         self.data_type: str
         self.is_train_phase: bool
+        self.use_mask = use_mask
 
         self.dataset = self._import_datasets(
             train_data_roots=train_data_roots,
@@ -114,7 +116,6 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         self.label_groups: List[str]
         self.label_entities: List[LabelEntity]
         self.label_schema: LabelSchemaEntity
-        self.use_mask: bool = False
 
     def _import_datasets(
         self,

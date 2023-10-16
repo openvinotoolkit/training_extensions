@@ -28,6 +28,7 @@ from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.subset import Subset
+from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils.logger import get_logger
 
 from .datumaro_dataset_adapter import DatumaroDatasetAdapter
@@ -38,6 +39,38 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
 
     It converts DatumaroDataset --> DatasetEntity for semantic segmentation task
     """
+
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: Optional[str] = None,
+        train_ann_files: Optional[str] = None,
+        val_data_roots: Optional[str] = None,
+        val_ann_files: Optional[str] = None,
+        test_data_roots: Optional[str] = None,
+        test_ann_files: Optional[str] = None,
+        unlabeled_data_roots: Optional[str] = None,
+        unlabeled_file_list: Optional[str] = None,
+        cache_config: Optional[dict] = None,
+        encryption_key: Optional[str] = None,
+        use_mask: bool = True,
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            task_type,
+            train_data_roots,
+            train_ann_files,
+            val_data_roots,
+            val_ann_files,
+            test_data_roots,
+            test_ann_files,
+            unlabeled_data_roots,
+            unlabeled_file_list,
+            cache_config,
+            encryption_key,
+            use_mask,
+            **kwargs,
+        )
 
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Segmentation."""
