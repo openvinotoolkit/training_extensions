@@ -455,7 +455,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             if self.config.tiling_parameters.enable_tiling:
                 args.append({"resize_type": "standard"})
             else:
-                args.append({"resize_type": "fit_to_window_letterbox", "pad_value": 0})
+                pad_value = 114 if "RTMDet" in self.task_environment.model_template.model_template_id else 0
+                args.append({"resize_type": "fit_to_window_letterbox", "pad_value": pad_value})
             inferencer = OpenVINOMaskInferencer(*args)
         if self.task_type == TaskType.ROTATED_DETECTION:
             inferencer = OpenVINORotatedRectInferencer(*args)
@@ -552,12 +553,13 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
             update_progress_callback(int(i / dataset_size * 100), None)
             end_time = time.perf_counter() - start_time
-            logger.info(f"{end_time} secs")
+            # logger.info(f"{end_time} secs")
             total_time += end_time
 
         self.inferencer.await_all()
 
         logger.info(f"Avg time per image: {total_time/len(dataset)} secs")
+        logger.info(f"FPS: {len(dataset)/total_time} FPS")
         logger.info(f"Total time: {total_time} secs")
         logger.info("OpenVINO inference completed")
         return dataset
