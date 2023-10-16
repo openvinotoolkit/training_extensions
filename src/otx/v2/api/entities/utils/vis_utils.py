@@ -33,7 +33,7 @@ def get_actmap(
     return cv2.applyColorMap(saliency_map, cv2.COLORMAP_JET)
 
 
-def get_input_names_list(input_path: Union[str, int], capture) -> list:  # noqa: ANN001
+def get_input_names_list(input_path: Union[str, int], capture) -> list:
     """Lists the filenames of all inputs for demo."""
 
     # Web camera input
@@ -44,7 +44,7 @@ def get_input_names_list(input_path: Union[str, int], capture) -> list:  # noqa:
     return [Path(input_path).name]
 
 
-def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], capture) -> None:  # noqa: ANN001
+def dump_frames(saved_frames: list, output: str, input_path: Union[str, int], capture) -> None:
     """Saves images/videos with predictions from saved_frames to output folder with proper names."""
 
     if not saved_frames:

@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from . import torchvision_backbones  # noqa: F401
+from . import torchvision_backbones
 from .efficientnet import OTXEfficientNet
 from .efficientnetv2 import OTXEfficientNetV2
 from .mobilenetv3 import OTXMobileNetV3
 
-__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]
+__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3", "torchvision_backbones"]

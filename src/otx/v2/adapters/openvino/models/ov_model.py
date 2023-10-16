@@ -31,7 +31,7 @@ logger = get_logger()
 class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
     """OVModel class."""
 
-    def __init__(  # noqa: C901
+    def __init__(
         self,
         model_path_or_model: Union[str, ov.Model] = None,
         weight_path: Optional[str] = None,
@@ -274,7 +274,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         return outputs
 
     @staticmethod
-    def build_custom_inputs(graph: Graph, inputs: Union[str, list]) -> list:  # noqa: C901
+    def build_custom_inputs(graph: Graph, inputs: Union[str, list]) -> list:
         """Function build_custom_inputs."""
         cls_param = OPS.get_by_type_version("Parameter", "opset1")
         node_dict = OrderedDict((i.name, i) for i in graph.topological_sort())

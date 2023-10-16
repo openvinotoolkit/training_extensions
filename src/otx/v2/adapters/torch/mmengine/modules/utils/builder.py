@@ -8,7 +8,9 @@ from typing import Callable
 from mmengine.config import Config
 from torch.utils.data import DataLoader, Dataset
 
-from ._builder_build_data_parallel import build_data_parallel  # noqa: F401
+from ._builder_build_data_parallel import build_data_parallel
+
+__all__ = ["build_data_parallel"]
 
 
 def build_dataset(

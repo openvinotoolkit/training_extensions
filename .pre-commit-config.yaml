@@ -31,6 +31,7 @@ repos:
             types-Deprecated,
             types-docutils,
             types_futures,
+            types-setuptools,
             types-python-dateutil,
             tokenize-rt==3.2.0,
           ]

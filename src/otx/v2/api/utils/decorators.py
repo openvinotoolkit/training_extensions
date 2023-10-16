@@ -29,7 +29,7 @@ def add_subset_dataloader(subsets: List[str]) -> Callable:
 
     def decorator(cls: Union["BaseDataset", "AutoRunner"]) -> Union["BaseDataset", "AutoRunner"]:
         def dataloader_method(subset: str) -> Callable:
-            def wrapper(self, *args, **kwargs) -> TypeVar:  # noqa: ANN001
+            def wrapper(self: str, *args, **kwargs) -> TypeVar:
                 kwargs["subset"] = subset
                 return cls.subset_dataloader(self, *args, **kwargs)
 

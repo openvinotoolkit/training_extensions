@@ -7,7 +7,7 @@ from functools import partial
 from typing import Callable
 
 import onnx
-from onnx import ModelProto, NodeProto
+from onnx import GraphProto, ModelProto, NodeProto
 
 
 def remove_nodes(model: ModelProto, predicate: Callable) -> ModelProto:
@@ -43,7 +43,70 @@ def is_op(node: NodeProto, op_name: str) -> bool:
     return node.op_type == op_name
 
 
-def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
+def simplify_inputs(graph: GraphProto, op_name: str) -> bool:
+    """Simplifies the inputs of a given ONNX graph by removing nodes of a specified type and connecting.
+
+    Args:
+        graph (GraphProto): The ONNX graph to simplify.
+        op_name (str): The name of the node type to remove.
+
+    Returns:
+        bool: True if the inputs were successfully simplified, False otherwise.
+    """
+    connect = None
+    for _input in graph.input:
+        for i, node in enumerate(graph.node):
+            if node.op_type == op_name and node.input[0] == _input.name:
+                connect = (node.input[0], node.output[0])
+                del graph.node[i]
+                break
+        if connect:
+            break
+    if not connect:
+        return False
+    src, dst = connect
+    for node in graph.node:
+        for i, input_name in enumerate(node.input):
+            if input_name == dst:
+                node.input[i] = src
+    # the input just changed won't be an output
+    return True
+
+
+def simplify_outputs(graph: GraphProto, op_name: str) -> bool:
+    """Simplifies the outputs of a given ONNX graph by removing nodes of a specified type and connecting.
+
+    Args:
+        graph (GraphProto): The ONNX graph to simplify.
+        op_name (str): The name of the node type to remove.
+
+    Returns:
+        bool: True if the graph was successfully simplified, False otherwise.
+    """
+    connect = None
+    for output in graph.output:
+        for i, node in enumerate(graph.node):
+            if node.op_type == op_name and node.output[0] == output.name:
+                connect = (node.input[0], node.output[0])
+                del graph.node[i]
+                break
+        if connect:
+            break
+    if not connect:
+        return False
+    src, dst = connect
+    for node in graph.node:
+        for i, output_name in enumerate(node.output):
+            if output_name == src:
+                node.output[i] = dst
+        # the output just renamed may be someone's input
+        for i, input_name in enumerate(node.input):
+            if input_name == src:
+                node.input[i] = dst
+    return True
+
+
+def remove_node(model: ModelProto, op_name: str) -> ModelProto:
     """Remove identity node from an ONNX model.
 
     Args:
@@ -52,53 +115,10 @@ def remove_node(model: ModelProto, op_name: str) -> ModelProto:  # noqa: C901
     """
     graph = model.graph
 
-    def simplify_inputs() -> bool:
-        connect = None
-        for _input in graph.input:
-            for i, node in enumerate(graph.node):
-                if node.op_type == op_name and node.input[0] == _input.name:
-                    connect = (node.input[0], node.output[0])
-                    del graph.node[i]
-                    break
-            if connect:
-                break
-        if not connect:
-            return False
-        src, dst = connect
-        for node in graph.node:
-            for i, input_name in enumerate(node.input):
-                if input_name == dst:
-                    node.input[i] = src
-        # the input just changed won't be an output
-        return True
-
-    def simplify_outputs() -> bool:
-        connect = None
-        for output in graph.output:
-            for i, node in enumerate(graph.node):
-                if node.op_type == op_name and node.output[0] == output.name:
-                    connect = (node.input[0], node.output[0])
-                    del graph.node[i]
-                    break
-            if connect:
-                break
-        if not connect:
-            return False
-        src, dst = connect
-        for node in graph.node:
-            for i, output_name in enumerate(node.output):
-                if output_name == src:
-                    node.output[i] = dst
-            # the output just renamed may be someone's input
-            for i, input_name in enumerate(node.input):
-                if input_name == src:
-                    node.input[i] = dst
-        return True
-
-    while simplify_inputs():
+    while simplify_inputs(graph, op_name):
         pass
 
-    while simplify_outputs():
+    while simplify_outputs(graph, op_name):
         pass
 
     new_op = partial(is_op, op_name=op_name)

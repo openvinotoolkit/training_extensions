@@ -20,7 +20,7 @@ class OperationRegistry(Registry):
     def register(self, name: Optional[str] = None) -> Callable:
         """Register function from name."""
 
-        def wrap(obj) -> TypeVar:  # noqa: ANN001
+        def wrap(obj) -> TypeVar:
             layer_name = name
             if layer_name is None:
                 layer_name = obj.__name__

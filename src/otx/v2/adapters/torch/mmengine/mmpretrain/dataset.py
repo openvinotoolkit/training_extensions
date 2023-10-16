@@ -317,12 +317,6 @@ class Dataset(BaseDataset):
         Returns:
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
         """
-        super().subset_dataloader(
-            subset,
-            pipeline,
-            batch_size,
-            num_workers,
-        )
         # Config Setting
         if isinstance(config, str):
             _config = Config.fromfile(filename=config)

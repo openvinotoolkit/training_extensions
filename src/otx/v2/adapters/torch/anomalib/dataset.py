@@ -214,12 +214,6 @@ class Dataset(BaseDataset):
         Returns:
             A PyTorch DataLoader for the specified subset of the dataset.
         """
-        super().subset_dataloader(
-            subset,
-            pipeline,
-            batch_size,
-            num_workers,
-        )
         if subset == "predict":
             pass
         _config: dict = {}

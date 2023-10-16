@@ -30,7 +30,7 @@ class Registry:
     def register(self, name: Optional[str] = None) -> Callable:
         """Register from name."""
 
-        def wrap(obj, **kwargs) -> TypeVar:  # noqa: ANN001
+        def wrap(obj, **kwargs) -> TypeVar:
             cls_name = name
             if cls_name is None:
                 cls_name = obj.__name__

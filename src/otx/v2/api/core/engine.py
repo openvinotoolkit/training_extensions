@@ -87,7 +87,7 @@ class Engine:
         {model: Model(), checkpoint: "output/latest/weights.pth"}
 
         CLI Usage:
-            1. You must first prepare the dataset by referring to [dataset-preparation-document](https://openvinotoolkit.github.io/training_extensions/stable/guide/tutorials/base/how_to_train/classification.html#dataset-preparation).
+            1. You must first prepare the dataset by referring to documentation.
             2. By default, OTX understands the task through the structure of the dataset and provides model selection.
                 ```python
                 otx train --data.train_data_roots <path_to_data_root>
@@ -100,7 +100,7 @@ class Engine:
                 ```python
                 otx train --config <config_file_path>
                 ```
-        """  # noqa: E501, RUF100
+        """
 
     @abstractmethod
     def validate(
