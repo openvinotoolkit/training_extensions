@@ -188,6 +188,9 @@ class AnomalibEngine(Engine):
         datamodule = self.trainer_config.pop("datamodule", None)
         metrics = self.trainer_config.pop("metrics", None)
         logger = self.trainer_config.pop("logger", True)
+        num_sanity_val_steps = 0
+        if val_dataloader is not None:
+            num_sanity_val_steps = self.trainer_config.pop("num_sanity_val_steps", num_sanity_val_steps)
 
         target_folder = f"{self.timestamp}_train"
         if logger is True or not logger:
@@ -201,6 +204,7 @@ class AnomalibEngine(Engine):
             self.trainer = Trainer(
                 logger=logger,
                 callbacks=callbacks,
+                num_sanity_val_steps=num_sanity_val_steps,
                 **self.trainer_config,
             )
         self.config["trainer"] = self.trainer_config
@@ -358,7 +362,7 @@ class AnomalibEngine(Engine):
         if isinstance(img, (str, Path)):
             dataset_config = self.config.get("dataset", {})
             transform_config = dataset_config.transform_config.eval if "transform_config" in dataset_config else None
-            image_size = dataset_config.get("image_size", (256, 256))
+            image_size = tuple(dataset_config.get("image_size", (256, 256)))
             center_crop = dataset_config.get("center_crop")
             if center_crop is not None:
                 center_crop = tuple(center_crop)

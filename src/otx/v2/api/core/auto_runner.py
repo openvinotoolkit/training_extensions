@@ -44,7 +44,7 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE = {
     # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     TaskType.ANOMALY_CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
-        "default_config": f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_padim.yaml",
+        "default_config": f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_cli.yaml",
     },
     TaskType.ANOMALY_DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",

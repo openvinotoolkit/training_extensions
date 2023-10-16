@@ -1,42 +1,24 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+
 from pathlib import Path
 
 import pytest
 import torch
-from otx.v2.adapters.torch.mmengine.mmpretrain import Dataset, Engine, get_model, list_models
+from otx.v2.adapters.torch.anomalib import Dataset, Engine, get_model, list_models
 
-from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working, TASK_CONFIGURATION
+from tests.v2.integration.api.test_helper import TASK_CONFIGURATION
 
 
-def test_model_api() -> None:
-    """
-    Test the Model API by listing and getting models.
-
-    This function tests the Model API by performing the following steps:
-    1. List all available models and assert that the list is not empty.
-    2. List all available models with the prefix "otx" and assert that the list is not empty.
-    3. Get the first model from the list of all available models and assert that it is an instance of torch.nn.Module.
-    4. Get the first model from the list of models with the prefix "otx" and assert that it is an instance of torch.nn.Module.
-    """
-    models = list_models()
-    assert len(models) > 0
-    otx_models = list_models("otx*")
-    assert len(otx_models) > 0
-
-    build_model = get_model(models[0])
-    assert isinstance(build_model, torch.nn.Module)
-    otx_model = get_model(otx_models[0])
-    assert isinstance(otx_model, torch.nn.Module)
-
+# Test-related datasets are managed by tests.v2.integration.api.test_helper.
+PREDICTION_SAMPLE = TASK_CONFIGURATION["anomaly_classification"]["sample"]
 
 MODELS: list = list_models("otx*")
 
-
-class TestMMPretrainAPI:
+class TestAnomalibClassificationAPI:
     """
-    This class contains integration tests for the training API of the MMPretrain library.
+    This class contains integration tests for the training API of the Anomalib library.
     It tests the dataset API, model API, and engine API for pretraining a model on a given dataset.
     """
     @pytest.fixture()
@@ -48,22 +30,10 @@ class TestMMPretrainAPI:
                 Dataset: A Dataset object containing the paths to the training, validation, and test data.
             """
             return Dataset(
-                train_data_roots=TASK_CONFIGURATION["classification"]["train_data_roots"],
-                val_data_roots=TASK_CONFIGURATION["classification"]["val_data_roots"],
-                test_data_roots=TASK_CONFIGURATION["classification"]["test_data_roots"],
+                train_data_roots=TASK_CONFIGURATION["anomaly_classification"]["train_data_roots"],
+                val_data_roots=TASK_CONFIGURATION["anomaly_classification"]["val_data_roots"],
+                test_data_roots=TASK_CONFIGURATION["anomaly_classification"]["test_data_roots"],
             )
-
-    def test_dataset_api(self, dataset: Dataset) -> None:
-            """
-            Test the Torch dataset & dataloader API for the given dataset.
-
-            Args:
-                dataset (Dataset): The dataset to test.
-
-            Returns:
-                None
-            """
-            assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=25, val_data_size=25, test_data_size=25)
 
     @pytest.mark.parametrize("model", MODELS)
     def test_engine_api(self, dataset: Dataset, model: str, tmp_dir_path: Path) -> None:
@@ -88,12 +58,12 @@ class TestMMPretrainAPI:
         """
         # Setup Engine
         engine = Engine(work_dir=tmp_dir_path)
-        built_model = get_model(model=model, num_classes=dataset.num_classes)
+        built_model = get_model(model=model)
 
         # Train (1 epochs)
         results = engine.train(
             model=built_model,
-            train_dataloader=dataset.train_dataloader(),
+            train_dataloader=dataset.train_dataloader(batch_size=2),
             val_dataloader=dataset.val_dataloader(),
             max_epochs=1,
         )
@@ -104,25 +74,23 @@ class TestMMPretrainAPI:
         assert Path(results["checkpoint"]).exists()
 
         # Validation
-        val_score = engine.validate()
-        assert "accuracy/top1" in val_score
-        assert val_score["accuracy/top1"] > 0.0
+        val_score = engine.validate(val_dataloader=dataset.val_dataloader())
+        # TODO: Check Validation results
 
         # Test
         test_score = engine.test(test_dataloader=dataset.test_dataloader())
-        assert "accuracy/top1" in test_score
-        assert test_score["accuracy/top1"] > 0.0
+        # TODO: Check Test results
 
         # Prediction with single image
         pred_result = engine.predict(
             model=results["model"],
             checkpoint=results["checkpoint"],
-            img=TASK_CONFIGURATION["classification"]["sample"],
+            img=PREDICTION_SAMPLE,
         )
         assert isinstance(pred_result, list)
         assert len(pred_result) == 1
-        assert "num_classes" in pred_result[0]
-        assert pred_result[0].num_classes == dataset.num_classes
+        assert "pred_boxes" in pred_result[0]
+        assert len(pred_result[0]["pred_boxes"]) > 0
 
         # Export Openvino IR Model
         export_output = engine.export(
