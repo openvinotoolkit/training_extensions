@@ -13,7 +13,6 @@ from otx.v2.adapters.openvino.ops.infrastructures import ConstantV0
 from otx.v2.adapters.openvino.ops.op import Operation
 from otx.v2.api.utils.logger import get_logger
 
-# pylint: disable=too-many-locals, protected-access, too-many-branches, too-many-statements, too-many-nested-blocks
 logger = get_logger()
 
 
@@ -287,5 +286,5 @@ def handle_reshape(graph: Graph) -> None:
                     for shape_ in input_node.shape[0][::-1]:
                         if shape_ != 1:
                             break
-                    logger.info(f"Change reshape to [-1, {shape_}]")  # pylint: disable=undefined-loop-variable
-                    shape.data = torch.tensor([-1, shape_])  # pylint: disable=undefined-loop-variable
+                    logger.info(f"Change reshape to [-1, {shape_}]")
+                    shape.data = torch.tensor([-1, shape_])

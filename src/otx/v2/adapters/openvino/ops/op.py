@@ -30,7 +30,7 @@ class Attribute:
 _T = TypeVar("_T", bound=Attribute)
 
 
-class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-method, invalid-overridden-method
+class Operation(torch.nn.Module, Generic[_T]):
     """Operation class."""
 
     TYPE = ""
@@ -57,7 +57,7 @@ class Operation(torch.nn.Module, Generic[_T]):  # pylint: disable=abstract-metho
         return cls(name=op_name, **attrs)
 
     @property
-    def type(self) -> str:  # pylint: disable=invalid-overridden-method
+    def type(self) -> str:
         """Operation's type property."""
         return self.TYPE
 

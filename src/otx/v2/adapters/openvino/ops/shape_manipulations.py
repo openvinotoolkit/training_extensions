@@ -17,8 +17,6 @@ from .type_conversions import ConvertV0
 class SqueezeV0Attribute(Attribute):
     """SqueezeV0Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class SqueezeV0(Operation[SqueezeV0Attribute]):
@@ -52,8 +50,6 @@ class SqueezeV0(Operation[SqueezeV0Attribute]):
 @dataclass
 class UnsqueezeV0Attribute(Attribute):
     """UnsqueezeV0Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -119,8 +115,6 @@ class ReshapeV1(Operation[ReshapeV1Attribute]):
 @dataclass
 class ShapeOfV0Attribute(Attribute):
     """ShapeOfV0Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()

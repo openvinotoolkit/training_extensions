@@ -14,8 +14,6 @@ from .builder import OPS
 from .movements import PadV1
 from .op import Attribute, Operation
 
-# pylint: disable=too-many-instance-attributes, too-many-branches
-
 
 @dataclass
 class InterpolateV4Attribute(Attribute):
@@ -116,7 +114,7 @@ class InterpolateV4(Operation[InterpolateV4Attribute]):
                 raise NotImplementedError
         elif mode == "nearest":
             align_corners = None
-            pass  # pylint: disable=unnecessary-pass
+            pass
         else:
             raise NotImplementedError
 

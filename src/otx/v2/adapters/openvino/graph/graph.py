@@ -13,14 +13,13 @@ from typing import Dict, Generator, Iterable, List, Optional, Tuple, TypeVar, Un
 
 import _collections_abc
 import networkx as nx
-from openvino.runtime import Model, Node  # pylint: disable=no-name-in-module
+from openvino.runtime import Model, Node
 
 from otx.v2.adapters.openvino.ops import Operation
 from otx.v2.adapters.openvino.ops.utils import convert_op_to_torch
 from otx.v2.adapters.openvino.utils import get_op_name
 from otx.v2.api.utils.logger import get_logger
 
-# pylint: disable=too-many-locals, too-many-nested-blocks, arguments-renamed, too-many-branches, too-many-statements
 
 logger = get_logger()
 
@@ -66,8 +65,6 @@ class SortedDictItemsView(_collections_abc.ItemsView):
 class NOOP:
     """NOOP class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 class SortedDict(dict):
     """SortedDict class."""
@@ -94,7 +91,7 @@ class SortedDict(dict):
         for i, (_, key_in, _) in enumerate(self._sorted_keys):
             if key_in == key:
                 break
-        self._sorted_keys.pop(i)  # pylint: disable=undefined-loop-variable
+        self._sorted_keys.pop(i)
 
     def __iter__(self) -> str:
         """Sorteddict's iter function."""
@@ -108,7 +105,7 @@ class SortedDict(dict):
 
     def __repr__(self) -> str:
         """Sorteddict's repr function."""
-        if not len(self):  # pylint: disable=use-implicit-booleaness-not-len
+        if not len(self):
             return "{}"
         repr_ = "{"
         for _, key, _ in self._sorted_keys:
@@ -138,7 +135,7 @@ class SortedDict(dict):
         for i, (_, key_in, _) in enumerate(self._sorted_keys):
             if key_in == key:
                 break
-        self._sorted_keys.pop(i)  # pylint: disable=undefined-loop-variable
+        self._sorted_keys.pop(i)
 
         return value
 
@@ -167,7 +164,7 @@ class SortedDict(dict):
 class SortedDictHelper(dict):
     """SortedDictHelper class."""
 
-    def __init__(self, sort_key: str = None, *args, **kwargs) -> None:  # pylint: disable=keyword-arg-before-vararg
+    def __init__(self, sort_key: str = None, *args, **kwargs) -> None:
         self._sort_key = sort_key
         super().__init__(*args, **kwargs)
 
@@ -240,7 +237,7 @@ class Graph(nx.MultiDiGraph):
                 )
 
         # freeze normalization nodes
-        graph._freeze_normalize_nodes()  # pylint: disable=protected-access
+        graph._freeze_normalize_nodes()
 
         return graph
 
@@ -595,7 +592,7 @@ class Graph(nx.MultiDiGraph):
             try:
                 self.remove_node(second_node, keep_connect=True)
                 logger.info(f"Remove normalize node {second_node.name}")
-            except Exception as e:  # pylint: disable=broad-exception-caught
+            except Exception as e:
                 logger.warning(e)
         self._normalize_nodes = []
 

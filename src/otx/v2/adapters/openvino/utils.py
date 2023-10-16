@@ -13,8 +13,6 @@ from openvino.runtime import Core, Model, Node
 
 from .omz_wrapper import get_omz_model
 
-# pylint: disable=too-many-locals
-
 
 def to_dynamic_model(ov_model: Model) -> Model:
     """Convert ov_model to dynamic Model."""
@@ -57,7 +55,7 @@ def to_dynamic_model(ov_model: Model) -> Model:
         try:
             ov_model.reshape(shapes)
             return True
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             return False
 
     pop_targets = [["height", "width"], ["batch"]]

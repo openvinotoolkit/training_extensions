@@ -14,8 +14,6 @@ from torch.nn import functional
 from .builder import OPS
 from .op import Attribute, Operation
 
-# pylint: disable=too-many-branches
-
 
 @dataclass
 class PadV1Attribute(Attribute):
@@ -101,8 +99,6 @@ class ConcatV0(Operation[ConcatV0Attribute]):
 class TransposeV1Attribute(Attribute):
     """TransposeV1Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class TransposeV1(Operation[TransposeV1Attribute]):
@@ -177,8 +173,6 @@ class GatherV0(Operation[GatherV0Attribute]):
 @dataclass
 class GatherV1Attribute(Attribute):
     """GatherV1Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -297,8 +291,6 @@ class SplitV1(Operation[SplitV1Attribute]):
 @dataclass
 class VariadicSplitV1Attribute(Attribute):
     """VariadicSplitV1Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -421,8 +413,6 @@ class BroadcastV3(Operation[BroadcastV3Attribute]):
 class ScatterNDUpdateV3Attribute(Attribute):
     """ScatterNDUpdateV3Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
@@ -441,7 +431,7 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
 
         # FIXME: hard-coded
         indicies.shape[-1]
-        inputs.shape[indicies.shape[-1] :]  # pylint: disable=pointless-statement
+        inputs.shape[indicies.shape[-1] :]
         index = indicies[..., -1]
         for i in inputs.shape[indicies.shape[-1] :]:
             index = index.unsqueeze(-1).tile((i,))
@@ -453,8 +443,6 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
 @dataclass
 class ScatterUpdateV3Attribute(Attribute):
     """ScatterUpdateV3Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -485,8 +473,6 @@ class ScatterUpdateV3(Operation[ScatterUpdateV3Attribute]):
 @dataclass
 class TileV0Attribute(Attribute):
     """TileV0Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()

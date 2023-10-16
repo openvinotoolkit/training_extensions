@@ -11,7 +11,6 @@ from otx.v2.adapters.openvino.graph.parsers.builder import PARSERS
 from otx.v2.adapters.openvino.graph.parsers.parser import parameter_parser
 from otx.v2.api.utils.logger import get_logger
 
-# pylint: disable=too-many-return-statements, too-many-branches
 
 logger = get_logger()
 

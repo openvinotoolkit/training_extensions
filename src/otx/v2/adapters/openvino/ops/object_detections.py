@@ -11,8 +11,6 @@ import torch
 from .builder import OPS
 from .op import Attribute, Operation
 
-# pylint: disable=too-many-instance-attributes
-
 
 @dataclass
 class ProposalV4Attribute(Attribute):

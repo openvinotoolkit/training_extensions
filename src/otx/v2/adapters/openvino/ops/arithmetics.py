@@ -131,8 +131,6 @@ class SubtractV1(Operation[SubtractV1Attribute]):
 class TanV0Attribute(Attribute):
     """TanV0Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class TanV0(Operation[TanV0Attribute]):

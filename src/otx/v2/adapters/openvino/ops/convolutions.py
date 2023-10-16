@@ -79,8 +79,6 @@ class ConvolutionV1(Operation[ConvolutionV1Attribute]):
 class GroupConvolutionV1Attribute(ConvolutionV1Attribute):
     """GroupConvolutionV1Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class GroupConvolutionV1(Operation[GroupConvolutionV1Attribute]):

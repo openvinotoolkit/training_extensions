@@ -6,7 +6,7 @@
 from typing import List, Union
 
 import torch
-from openvino.runtime import Node  # pylint: disable=no-name-in-module
+from openvino.runtime import Node
 
 # TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 

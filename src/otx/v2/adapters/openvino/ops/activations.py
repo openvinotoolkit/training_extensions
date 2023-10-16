@@ -60,8 +60,6 @@ class SoftMaxV1(Operation[SoftMaxV1Attribute]):
 class ReluV0Attribute(Attribute):
     """ReluV0Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class ReluV0(Operation[ReluV0Attribute]):
@@ -81,8 +79,6 @@ class ReluV0(Operation[ReluV0Attribute]):
 class SwishV4Attribute(Attribute):
     """SwishV4Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class SwishV4(Operation[SwishV4Attribute]):
@@ -101,8 +97,6 @@ class SwishV4(Operation[SwishV4Attribute]):
 @dataclass
 class SigmoidV0Attribute(Attribute):
     """SigmoidV0Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -145,8 +139,6 @@ class ClampV0(Operation[ClampV0Attribute]):
 class PReluV0Attribute(Attribute):
     """PReluV0Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class PReluV0(Operation[PReluV0Attribute]):
@@ -165,8 +157,6 @@ class PReluV0(Operation[PReluV0Attribute]):
 @dataclass
 class TanhV0Attribute(Attribute):
     """TanhV0Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -208,8 +198,6 @@ class EluV0(Operation[EluV0Attribute]):
 class SeluV0Attribute(Attribute):
     """SeluV0Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class SeluV0(Operation[SeluV0Attribute]):
@@ -228,8 +216,6 @@ class SeluV0(Operation[SeluV0Attribute]):
 @dataclass
 class MishV4Attribute(Attribute):
     """MishV4Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -251,8 +237,6 @@ class MishV4(Operation[MishV4Attribute]):
 class HSwishV4Attribute(Attribute):
     """HSwishV4Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class HSwishV4(Operation[HSwishV4Attribute]):
@@ -271,8 +255,6 @@ class HSwishV4(Operation[HSwishV4Attribute]):
 @dataclass
 class HSigmoidV5Attribute(Attribute):
     """HSigmoidV5Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()
@@ -293,8 +275,6 @@ class HSigmoidV5(Operation[HSigmoidV5Attribute]):
 class ExpV0Attribute(Attribute):
     """ExpV0Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class ExpV0(Operation[ExpV0Attribute]):
@@ -313,8 +293,6 @@ class ExpV0(Operation[ExpV0Attribute]):
 @dataclass
 class HardSigmoidV0Attribute(Attribute):
     """HardSigmoidV0Attribute class."""
-
-    # pylint: disable=unnecessary-pass
 
 
 @OPS.register()

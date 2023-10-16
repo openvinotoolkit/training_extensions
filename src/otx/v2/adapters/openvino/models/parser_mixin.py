@@ -61,6 +61,6 @@ class ParserMixin:
     def parser(
         graph: Graph,
         **kwargs,
-    ) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:  # pylint: disable=unused-argument
+    ) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
         """Function parser."""
         return {"inputs": [], "outputs": []}

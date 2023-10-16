@@ -22,7 +22,6 @@ from requests.exceptions import HTTPError
 
 from otx.v2.api.utils.cache import OTX_CACHE
 
-# pylint: disable=too-many-locals, too-many-branches
 OMZ_CACHE = os.path.join(OTX_CACHE, "omz")
 os.makedirs(OMZ_CACHE, exist_ok=True)
 
@@ -338,7 +337,7 @@ def convert_model(
     precisions: Optional[Union[dict, set]] = None,
     force: bool = False,
     *args,
-) -> Model:  # pylint: disable=keyword-arg-before-vararg
+) -> Model:
     """Converting model for OMZ wrapping."""
     download_dir = Path("") if download_dir is None else Path(download_dir)
     output_dir = Path("") if output_dir is None else Path(output_dir)

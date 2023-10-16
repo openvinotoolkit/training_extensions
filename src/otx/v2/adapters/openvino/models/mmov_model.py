@@ -12,9 +12,6 @@ import torch
 from .ov_model import OVModel  # type: ignore[attr-defined]
 from .parser_mixin import ParserMixin  # type: ignore[attr-defined]
 
-# TODO: Need to fix pylint issues
-# pylint: disable=keyword-arg-before-vararg
-
 
 class MMOVModel(OVModel, ParserMixin):
     """MMOVModel for OMZ model type."""

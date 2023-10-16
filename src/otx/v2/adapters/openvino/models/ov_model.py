@@ -24,11 +24,10 @@ from otx.v2.api.utils.logger import get_logger
 
 CONNECTION_SEPARATOR = "||"
 
-# pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
 logger = get_logger()
 
 
-class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
+class OVModel(torch.nn.Module):
     """OVModel class."""
 
     def __init__(
@@ -98,7 +97,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
         if init_weight:
             if not isinstance(init_weight, Callable):
                 # internal init weight
-                def init_weight(module: torch.nn.Module, graph: Graph) -> None:  # pylint: disable=function-redefined
+                def init_weight(module: torch.nn.Module, graph: Graph) -> None:
                     from otx.v2.adapters.openvino.ops.op import Operation
 
                     if not isinstance(module, Operation):
@@ -128,7 +127,7 @@ class OVModel(torch.nn.Module):  # pylint: disable=too-many-instance-attributes
                     ]:
                         for weight in graph.predecessors(module):
                             if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
-                                fan_in, _ = init._calculate_fan_in_and_fan_out(  # pylint: disable=protected-access
+                                fan_in, _ = init._calculate_fan_in_and_fan_out(
                                     weight.data,
                                 )
                                 bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0

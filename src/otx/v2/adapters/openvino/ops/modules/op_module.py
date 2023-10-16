@@ -58,7 +58,7 @@ class OperationModule(torch.nn.Module):
         return self.op_v(**inputs)
 
     @property
-    def type(self) -> str:  # pylint: disable=invalid-overridden-method
+    def type(self) -> str:
         """Operationmodule's type property."""
         return self.op_v.type
 

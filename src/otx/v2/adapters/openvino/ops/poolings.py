@@ -13,8 +13,6 @@ from .builder import OPS
 from .movements import get_torch_padding
 from .op import Attribute, Operation
 
-# pylint: disable=too-many-instance-attributes
-
 
 @dataclass
 class MaxPoolV0Attribute(Attribute):

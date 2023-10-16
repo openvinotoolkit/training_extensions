@@ -141,8 +141,6 @@ class ParameterV0(Operation[ParameterV0Attribute]):
 class ResultV0Attribute(Attribute):
     """ResultV0Attribute class."""
 
-    # pylint: disable=unnecessary-pass
-
 
 @OPS.register()
 class ResultV0(Operation[ResultV0Attribute]):
@@ -232,7 +230,6 @@ class ConstantV0(Operation[ConstantV0Attribute]):
 
         # FIXME: need a better way to distinghish if it is parameter or no
         is_parameter = False
-        # pylint: disable=too-many-boolean-expressions
         if (
             set(op_node_types).intersection(NODE_TYPES_WITH_WEIGHT)
             and len(in_port_indices) == 1
