@@ -553,7 +553,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
             update_progress_callback(int(i / dataset_size * 100), None)
             end_time = time.perf_counter() - start_time
-            # logger.info(f"{end_time} secs")
+            logger.info(f"{end_time} secs")
             total_time += end_time
 
         self.inferencer.await_all()
