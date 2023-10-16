@@ -183,10 +183,10 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
             Union[DatasetItemEntity, List[DatasetItemEntity]]: The entity/entities requested.
         """
         if isinstance(key, list):
-            return [self._fetch(ii) for ii in key]  # type: ignore
+            return [self._fetch(ii) for ii in key]
         if isinstance(key, slice):
             # Get the start, stop, and step from the slice
-            return [self._fetch(ii) for ii in range(*key.indices(len(self._items)))]  # type: ignore
+            return [self._fetch(ii) for ii in range(*key.indices(len(self._items)))]
         if isinstance(key, int):
             return self._items[key]
         raise TypeError(

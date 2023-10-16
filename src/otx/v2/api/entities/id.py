@@ -37,7 +37,7 @@ class ID(str):
             representation = str(representation).strip().lower()
 
         # Ignore typing error because Mypy does not support calling super().__new__ with a parameter.
-        return super().__new__(cls, representation)  # type: ignore
+        return super().__new__(cls, representation)
 
     # See comment block above
     # pylint: disable=W0231

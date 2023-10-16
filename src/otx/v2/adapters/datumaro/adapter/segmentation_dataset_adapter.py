@@ -188,7 +188,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
             if not os.path.isfile(pseudo_mask_path):
                 # Create pseudo mask
-                pseudo_mask = self.create_pseudo_masks(item.media.data, str(pseudo_mask_path))  # type: ignore
+                pseudo_mask = self.create_pseudo_masks(item.media.data, str(pseudo_mask_path))
             else:
                 # Load created pseudo mask
                 pseudo_mask = cv2.imread(str(pseudo_mask_path), cv2.IMREAD_GRAYSCALE)
@@ -223,7 +223,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
 
         return dataset
 
-    def create_pseudo_masks(self, img: np.ndarray, pseudo_mask_path: str, mode: str = "FH") -> None:
+    def create_pseudo_masks(self, img: np.ndarray, pseudo_mask_path: str, mode: str = "FH") -> np.ndarray:
         """Create pseudo masks for self-sl for semantic segmentation using DetCon.
 
         Args:

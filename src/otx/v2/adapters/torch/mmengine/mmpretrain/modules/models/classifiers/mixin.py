@@ -10,6 +10,7 @@ import datumaro as dm
 import numpy as np
 import pandas as pd
 import torch
+from mmengine.model import BaseModule
 from mmpretrain.models.classifiers.image import ImageClassifier
 from mmpretrain.structures import DataSample
 
@@ -69,7 +70,7 @@ class MultiClassClsLossDynamicsTracker(LossDynamicsTracker):
         self._export_dataset.export(output_path, format="datumaro")
 
 
-class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
+class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin, BaseModule):
     """Mix-in to track loss dynamics during training for classification tasks."""
 
     def __init__(self, track_loss_dynamics: bool = False, **kwargs) -> None:
@@ -102,7 +103,7 @@ class ClsLossDynamicsTrackingMixin(LossDynamicsTrackingMixin):
         """
         if self.loss_dyns_tracker.initialized:
             return self._train_step_with_tracking(feats, optim_wrapper, **kwargs)
-        return super().predict(feats, data_samples, optim_wrapper=optim_wrapper, **kwargs)  # type: ignore
+        return super().predict(feats, data_samples, optim_wrapper=optim_wrapper, **kwargs)
 
     def _train_step_with_tracking(
         self: ImageClassifier,

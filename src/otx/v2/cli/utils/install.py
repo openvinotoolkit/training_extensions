@@ -15,7 +15,7 @@ from importlib.util import find_spec
 from pathlib import Path
 from warnings import warn
 
-import pkg_resources  # type: ignore[import]
+import pkg_resources
 from pkg_resources import Requirement
 
 AVAILABLE_TORCH_VERSIONS = {
@@ -93,8 +93,8 @@ def get_requirements(module: str = "otx") -> dict[str, list[Requirement]]:
         requirement_extra: list[str] = requirement.replace(" ", "").split(";")
         if isinstance(requirement_extra, list) and len(requirement_extra) > 1:
             extra = requirement_extra[-1].split("==")[-1].strip("'\"")
-        _requirement = requirement_extra[0]
-        _requirement = Requirement.parse(_requirement)
+        _requirement_name = requirement_extra[0]
+        _requirement = Requirement.parse(_requirement_name)
         if extra in extra_requirement:
             extra_requirement[extra].append(_requirement)
         else:

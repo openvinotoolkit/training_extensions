@@ -531,7 +531,7 @@ class LabelSchemaEntity:
             returned_label = label
         else:
             raise ValueError("Input of __get_label is not of type Label or ScoredLabel")
-        return returned_label  # type: ignore
+        return returned_label
 
     def __repr__(self) -> str:
         """String representation of LabelSchemaEntity."""

@@ -23,13 +23,13 @@ class IMediaEntity(metaclass=abc.ABCMeta):
 class IMedia2DEntity(IMediaEntity, metaclass=abc.ABCMeta):
     """This interface is used to represent IMedia which is 2-dimensional media, i.e., containing height and width."""
 
-    @property  # type:ignore
+    @property
     @abc.abstractmethod
     def numpy(self) -> np.ndarray:
         """Returns the numpy representation of the 2D Media object."""
         raise NotImplementedError
 
-    @numpy.setter  # type:ignore
+    @numpy.setter
     @abc.abstractmethod
     def numpy(self, value: np.ndarray):
         raise NotImplementedError

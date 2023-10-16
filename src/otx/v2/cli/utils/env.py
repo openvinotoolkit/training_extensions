@@ -6,6 +6,7 @@
 import importlib
 from typing import Dict, List, Optional, Tuple, Union
 
+from pkg_resources import Requirement
 from rich.console import Console
 from rich.table import Table
 
@@ -65,6 +66,7 @@ def get_environment_table(task: Optional[str] = None, verbose: Optional[bool] = 
 
     requirements_per_task = get_requirements()
     adapters_status = get_adapters_status()
+    requirements: Union[List[str], List[Requirement]]
     for task in task_lst:
         task_name = task
         if verbose:
@@ -76,12 +78,13 @@ def get_environment_table(task: Optional[str] = None, verbose: Optional[bool] = 
         i = 0
         for req in requirements:
             end_section = i == len(requirements) - 1
-            if verbose:
-                required = str(req)
+            _req = str(req) if isinstance(req, Requirement) else req
+            if verbose and isinstance(req, Requirement):
+                required = _req
                 current_version = get_module_version(req.project_name)
             else:
-                required = req.split(".")[-1]
-                adapter = adapters_status[f"otx.v2.adapters.{req}"]
+                required = _req.split(".")[-1]
+                adapter = adapters_status[f"otx.v2.adapters.{_req}"]
                 current_version = adapter["VERSION"] if adapter["AVAILABLE"] else None
             if current_version is not None:
                 table.add_row(task_name, required, current_version, end_section=end_section)

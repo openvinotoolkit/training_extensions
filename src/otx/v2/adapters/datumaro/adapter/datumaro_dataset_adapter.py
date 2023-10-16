@@ -115,6 +115,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         self.label_groups: List[str]
         self.label_entities: List[LabelEntity]
         self.label_schema: LabelSchemaEntity
+        self.use_mask: bool = False
 
     def _import_datasets(
         self,
@@ -186,7 +187,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         self.data_type_candidates = self._detect_dataset_format(path=data_roots)
         self.data_type = self._select_data_type(self.data_type_candidates)
 
-        dataset_kwargs = {"path": data_roots, "format": self.data_type}
+        dataset_kwargs: dict = {"path": data_roots, "format": self.data_type}
         if ann_files is not None:
             if self.data_type not in ("coco"):
                 raise NotImplementedError(
@@ -199,7 +200,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
             dataset_kwargs["encryption_key"] = encryption_key
 
         if self.task_type == TaskType.VISUAL_PROMPTING and self.data_type in ["coco"]:
-            dataset_kwargs["merge_instance_polygons"] = self.use_mask  # type: ignore[attr-defined]
+            dataset_kwargs["merge_instance_polygons"] = self.use_mask
 
         dataset = DatumDataset.import_from(**dataset_kwargs)
 
@@ -370,7 +371,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         mask = Image(data=annotation.image, size=annotation.image.shape)
         return Annotation(
             mask,
-            labels=[ScoredLabel(label=self.label_entities[annotation.label])],  # type: ignore[arg-type]
+            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
         )
 
     def remove_unused_label_entities(self, used_labels: list) -> None:
