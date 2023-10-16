@@ -7,7 +7,7 @@ import os
 import numpy as np
 import pytest
 import torch
-from mmdet.models import build_detector, MaskRCNN
+from mmdet.models import build_detector
 
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 from otx.algorithms.detection.adapters.mmdet.hooks import DetClassProbabilityMapHook
