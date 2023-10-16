@@ -507,9 +507,8 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
             else:
                 mask = obj.mask.astype(np.uint8)
                 contours, hierarchies = cv2.findContours(
-                    mask[obj.ymin:obj.ymax, obj.xmin:obj.xmax],
-                    cv2.RETR_CCOMP,
-                    cv2.CHAIN_APPROX_SIMPLE)
+                    mask[obj.ymin : obj.ymax, obj.xmin : obj.xmax], cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
+                )
                 if hierarchies is None:
                     continue
                 for contour, hierarchy in zip(contours, hierarchies[0]):
