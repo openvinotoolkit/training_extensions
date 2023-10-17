@@ -204,7 +204,7 @@ class OTXCLIv2:
         for sub_command_arg in self.engine_subcommands()[subcommand]:
             if "_dataloader" in sub_command_arg:
                 subset = sub_command_arg.split("_")[0]
-                parser.add_core_class_args(self.data_class.subset_dataloader, sub_command_arg, subclass_mode=False)
+                parser.add_function_arguments(self.data_class.subset_dataloader, sub_command_arg, skip={"self"})
                 parser.set_defaults({f"{sub_command_arg}.subset": subset})
 
         # subcommand arguments
