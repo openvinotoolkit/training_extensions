@@ -23,9 +23,15 @@ logger = get_logger()
 class AdaptiveTrainSchedulingHook(Hook):
     """Adaptive Training Scheduling Hook.
 
-    Depending on the size of iteration per epoch, adaptively update the validation interval.
+    Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
 
     Args:
+        base_lr_patience (int): The value of LR drop patience are expected in total epoch.
+            Patience used when interval is 1, Defaults to 5.
+        min_lr_patience (int): Minumum value of LR drop patience.
+            Defaults to 2.
+        base_es_patience (int): The value of Early-Stopping patience are expected in total epoch.
+            Patience used when interval is 1, Defaults to 10.
         max_interval (int): Maximum value of validation interval.
             Defaults to 5.
         decay (float): Parameter to control the interval. This value is set by manual manner.
@@ -39,6 +45,10 @@ class AdaptiveTrainSchedulingHook(Hook):
     def __init__(
         self,
         max_interval=5,
+        base_lr_patience=5,
+        min_lr_patience=2,
+        base_es_patience=10,
+        min_es_patience=3,
         decay=-0.025,
         enable_adaptive_interval_hook=False,
         enable_eval_before_run=False,
@@ -47,6 +57,10 @@ class AdaptiveTrainSchedulingHook(Hook):
         super().__init__(**kwargs)
 
         self.max_interval = max_interval
+        self.base_lr_patience = base_lr_patience
+        self.min_lr_patience = min_lr_patience
+        self.base_es_patience = base_es_patience
+        self.min_es_patience = min_es_patience
         self.decay = decay
         self.enable_adaptive_interval_hook = enable_adaptive_interval_hook
         self.enable_eval_before_run = enable_eval_before_run
@@ -84,13 +98,23 @@ class AdaptiveTrainSchedulingHook(Hook):
                     logger.info(f"Update EvalHook interval: {hook.interval} -> {adaptive_interval}")
                     hook.interval = adaptive_interval
                 elif isinstance(hook, LrUpdaterHook):
+                    patience = max(
+                        math.ceil((self.base_lr_patience / adaptive_interval)),
+                        self.min_lr_patience,
+                    )
                     if hasattr(hook, "interval") and hasattr(hook, "patience"):
                         hook.interval = adaptive_interval
-                        logger.info(f"Update LrUpdaterHook interval: {hook.interval} -> {adaptive_interval}")
+                        hook.patience = patience
+                        logger.info(f"Update LrUpdaterHook patience: {hook.patience} -> {patience}")
                 elif isinstance(hook, EarlyStoppingHook):
-                    logger.info(f"Update EarlyStoppingHook interval: {hook.interval} -> {adaptive_interval}")
+                    patience = max(
+                        math.ceil((self.base_es_patience / adaptive_interval)),
+                        self.min_es_patience,
+                    )
+                    logger.info(f"Update EarlyStoppingHook patience: {hook.patience} -> {patience}")
                     hook.start = adaptive_interval
                     hook.interval = adaptive_interval
+                    hook.patience = patience
                 elif isinstance(hook, CheckpointHook):
                     # make sure checkpoint is saved at last
                     limit = runner.max_epochs if hook.by_epoch else runner.max_iters

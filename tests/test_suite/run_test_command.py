@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import sys
+import torch
 from pathlib import Path
 from typing import Dict
 import onnx
@@ -244,6 +245,12 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         else:
             assert os.path.exists(path_to_xml)
             assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+            ckpt = torch.load(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth")
+            input_size = ckpt.get("input_size", None)
+            if input_size:
+                with open(path_to_xml, encoding="utf-8") as xml_stream:
+                    xml_model = xml_stream.read()
+                    assert f"{input_size[1]},{input_size[0]}" in xml_model
     else:
         if "Visual_Prompting" in template.model_template_id:
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
@@ -577,13 +584,40 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
 def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
     if task_type == "visual_prompting":
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
+        xml_paths = [
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml",
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
+        ]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_image_encoder.yml",
+            ),
+            os.path.join(
+                otx_dir,
+                "tests",
+                "e2e/cli",
+                task_type,
+                "reference",
+                template.model_template_id,
+                "compressed_decoder.yml",
+            ),
+        ]
     else:
-        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
-    path_to_ref_data = os.path.join(
-        otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
-    )
-    _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
+        xml_paths = [f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"]
+        paths_to_ref_data = [
+            os.path.join(
+                otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
+            )
+        ]
+
+    for xml_path, path_to_ref_data in zip(xml_paths, paths_to_ref_data):
+        _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
 
 
 def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
@@ -661,6 +695,14 @@ def nncf_export_testing(template, root):
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin"
     )
     assert compressed_bin_size < original_bin_size, f"{compressed_bin_size=}, {original_bin_size=}"
+    ckpt = torch.load(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
+    input_size = ckpt.get("input_size", None)
+    if input_size:
+        with open(
+            f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml", encoding="utf-8"
+        ) as xml_stream:
+            xml_model = xml_stream.read()
+            assert f"{input_size[1]},{input_size[0]}" in xml_model
 
 
 def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):

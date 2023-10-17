@@ -31,6 +31,7 @@ from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar
 
+from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
     InferenceCallback,
@@ -104,11 +105,22 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.precision = [ModelPrecision.FP32]
         self.optimization_type = ModelOptimizationType.MO
 
-        self.model = self.load_model(otx_model=task_environment.model)
-
         self.trainer: Trainer
+        self._model_ckpt: Optional[str] = None
 
         self.timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
+
+    def set_seed(self):
+        """Set seed and deterministic."""
+        if self.seed is None:
+            # If the seed is not present via task.train, it will be found in the recipe.
+            self.seed = self.config.get("seed", 5)
+        if not self.deterministic:
+            # deterministic is the same.
+            self.deterministic = self.config.get("deterministic", False)
+        self.config["seed"] = self.seed
+        self.config["deterministic"] = self.deterministic
+        set_random_seed(self.seed, logger, self.deterministic)
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """Get Visual Prompting Config from task environment.
@@ -123,17 +135,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         resume_from_checkpoint: Optional[str] = None
         if self.mode == "train" and self.task_environment.model is not None:
             # when args.load_weights or args.resume_from is set
-            resume_from_checkpoint = model_checkpoint = self.task_environment.model.model_adapters.get("path", None)  # type: ignore  # noqa: E501
+            checkpoint_path = str(self.task_environment.model.model_adapters.get("path", None))
             if self.task_environment.model.model_adapters.get("resume", False):
-                if resume_from_checkpoint.endswith(".pth"):  # type: ignore
-                    logger.info("[*] Pytorch checkpoint cannot be used for resuming. It will be supported.")
-                    resume_from_checkpoint = None
-                else:
-                    model_checkpoint = None
+                resume_from_checkpoint = checkpoint_path
             else:
-                # If not resuming, set resume_from_checkpoint to None to avoid training in resume environment
-                # and saving to configuration.
-                resume_from_checkpoint = None
+                model_checkpoint = checkpoint_path
 
         config = get_visual_promtping_config(
             task_name=self.model_name,
@@ -180,18 +186,23 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
             )
-        elif ("path" in otx_model.model_adapters) and (
-            otx_model.model_adapters.get("path").endswith(".ckpt")  # type: ignore[attr-defined]
-        ):
-            # pytorch lightning checkpoint
-            if not otx_model.model_adapters.get("resume"):
-                # If not resuming, just load weights in LightningModule
-                logger.info("Load pytorch lightning checkpoint.")
+        elif otx_model.model_adapters.get("resume", False):
+            # If resuming, pass this part to load checkpoint in Trainer
+            logger.info(f"To resume {otx_model.model_adapters.get('path')}, the checkpoint will be loaded in Trainer.")
+
         else:
-            # pytorch checkpoint saved by otx
+            # Load state_dict
             buffer = io.BytesIO(otx_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
-            if model_data.get("model", None) and model_data.get("config", None):
+            if model_data.get("state_dict", None) and model_data.get("pytorch-lightning_version", None):
+                # Load state_dict from pytorch lightning checkpoint or weights.pth saved by visual prompting task
+                # In pytorch lightning checkpoint, there are metas: epoch, global_step, pytorch-lightning_version,
+                # state_dict, loops, callbacks, optimizer_states, lr_schedulers, hparams_name, hyper_parameters.
+                # To confirm if it is from pytorch lightning, check if one or two of them is in model_data.
+                state_dict = model_data["state_dict"]
+
+            elif model_data.get("model", None) and model_data.get("config", None):
+                # Load state_dict from checkpoint saved by otx other tasks
                 if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
                     logger.warning(
                         "Backbone of the model in the Task Environment is different from the one in the template. "
@@ -199,10 +210,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                     )
                     self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
                 state_dict = model_data["model"]
-                logger.info("Load pytorch checkpoint from weights.pth.")
+
             else:
+                # Load state_dict from naive pytorch checkpoint
                 state_dict = model_data
-                logger.info("Load pytorch checkpoint.")
 
         try:
             model = get_model(config=self.config, state_dict=state_dict)
@@ -226,6 +237,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             DatasetEntity: Output dataset with predictions.
         """
         logger.info("Performing inference on the validation set using the base torch model.")
+        self.model = self.load_model(otx_model=self.task_environment.model)
         datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset)
 
         logger.info("Inference Configs '%s'", self.config)
@@ -295,7 +307,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                         f,
                         export_params=True,
                         verbose=False,
-                        opset_version=12,
+                        opset_version=13,
                         do_constant_folding=True,
                         input_names=list(dummy_inputs.keys()),
                         output_names=output_names,
@@ -330,6 +342,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 "The saliency maps and representation vector outputs will not be dumped in the exported model."
             )
 
+        self.model = self.load_model(otx_model=self.task_environment.model)
         if export_type == ExportType.ONNX:
             output_model.model_format = ModelFormat.ONNX
             output_model.optimization_type = ModelOptimizationType.ONNX
@@ -393,11 +406,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
            Dict: Model info.
         """
-        return {
-            "model": self.model.state_dict(),
-            "config": self.get_config(),
-            "version": self.trainer.logger.version,
-        }
+        if not self._model_ckpt:
+            logger.warn("model checkpoint is not set, return empty dictionary.")
+            return {}
+        return torch.load(self._model_ckpt, map_location="cpu")
 
     def save_model(self, output_model: ModelEntity) -> None:
         """Save the model after training is completed.

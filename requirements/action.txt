@@ -4,4 +4,4 @@ mmcv-full==1.7.0
 mmaction2==0.24.1
 mmdet==2.28.1
 mmdeploy==0.14.0
-yapf<0.40.0  # it should be removed after https://github.com/google/yapf/issues/1118 is solved 
+yapf<0.40.0  # it should be removed after https://github.com/google/yapf/issues/1118 is solved

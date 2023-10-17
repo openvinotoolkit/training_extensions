@@ -1,18 +1,7 @@
 """Task of OTX Segmentation using mmsegmentation training backend."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import glob
 import io
@@ -162,9 +151,10 @@ class MMSegmentationTask(OTXSegmentationTask):
             ir_options,
             data_classes,
             model_classes,
-            self._hyperparams.learning_parameters.input_size,
+            self._input_size,
         )
         self._config = cfg
+        self._input_size = cfg.model.pop("input_size", None)
 
         return cfg
 
@@ -523,7 +513,7 @@ class MMSegmentationTask(OTXSegmentationTask):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                input_size_manager = InputSizeManager(cfg.data)
+                input_size_manager = InputSizeManager(cfg)
                 size = input_size_manager.get_input_size_from_cfg("test")
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error
@@ -553,6 +543,7 @@ class MMSegmentationTask(OTXSegmentationTask):
             "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
 

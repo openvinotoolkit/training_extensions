@@ -67,7 +67,7 @@ class TestSegmentationConfigurer:
         mock_cfg_merge.assert_called_once_with(model_cfg, data_cfg, self.data_pipeline_path, None)
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_env.assert_called_once_with(model_cfg)
-        mock_cfg_data_pipeline.assert_called_once_with(model_cfg, InputSizePreset.DEFAULT, "")
+        mock_cfg_data_pipeline.assert_called_once_with(model_cfg, None, "")
         mock_cfg_recipe.assert_called_once_with(model_cfg)
         mock_cfg_model.assert_called_once_with(model_cfg, None, None, None)
         mock_cfg_hook.assert_called_once_with(model_cfg)
@@ -155,30 +155,31 @@ class TestSegmentationConfigurer:
         assert model_cfg.data.train_dataloader == {"samples_per_gpu": 1, "drop_last": True}
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize("input_size", [None, (256, 256)])
-    def test_configure_input_size(self, mocker, input_size):
+    @pytest.mark.parametrize("input_size", [None, (0, 0), (256, 256)])
+    @pytest.mark.parametrize("training", [True, False])
+    def test_configure_input_size(self, mocker, input_size, training):
         # prepare
         mock_cfg = mocker.MagicMock()
-        mocker.patch.object(configurer, "get_configured_input_size", return_value=input_size)
-        mock_input_manager = mocker.MagicMock()
         mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
+        mock_input_manager = mock_input_manager_cls.return_value
+        mock_input_manager.get_trained_input_size.return_value = (32, 32)
         mock_input_manager_cls.return_value = mock_input_manager
-        base_input_size = {
-            "train": 512,
-            "val": 544,
-            "test": 544,
-            "unlabeled": 512,
-        }
+        mock_base_configurer_cls = mocker.patch.object(configurer, "BaseConfigurer")
+        mock_base_configurer_cls.adapt_input_size_to_dataset.return_value = (64, 64)
 
-        # excute
-        self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
+        # execute
+        self.configurer.configure_input_size(mock_cfg, input_size, "ckpt/path", training=training)
 
         # check
-        if input_size is not None:
-            mock_input_manager_cls.assert_called_once_with(mock_cfg.data, base_input_size)
-            mock_input_manager.set_input_size.assert_called_once_with(input_size)
+        if input_size is None:
+            mock_input_manager.set_input_size.assert_not_called()
+        elif input_size == (0, 0):
+            if training:
+                mock_input_manager.set_input_size.assert_called_once_with((64, 64))
+            else:
+                mock_input_manager.set_input_size.assert_called_once_with((32, 32))
         else:
-            mock_input_manager_cls.assert_not_called()
+            mock_input_manager.set_input_size.assert_called_once_with(input_size)
 
     @e2e_pytest_unit
     def test_configure_fp16(self):

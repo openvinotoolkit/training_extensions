@@ -1,9 +1,9 @@
 """Base configurer for mmdet config."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from mmcv.utils import ConfigDict
 
@@ -12,9 +12,7 @@ from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
-    get_configured_input_size,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
@@ -113,7 +111,7 @@ class DetectionConfigurer(BaseConfigurer):
 
     def configure_task_data_pipeline(self, cfg):
         """Trying to alter class indices of training data according to model class order."""
-        tr_data_cfg = self.get_data_cfg(cfg, "train")
+        tr_data_cfg = self.get_subset_data_cfg(cfg, "train")
         class_adapt_cfg = dict(type="AdaptClassLabels", src_classes=self.data_classes, dst_classes=self.model_classes)
         pipeline_cfg = tr_data_cfg.pipeline
         for i, operation in enumerate(pipeline_cfg):
@@ -155,30 +153,34 @@ class DetectionConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
+        cfg, input_size=Optional[Tuple[int, int]], model_ckpt_path: Optional[str] = None, training=True
     ):
         """Change input size if necessary."""
-        input_size = get_configured_input_size(input_size_config, model_ckpt_path)
-        if input_size is None:
+        if input_size is None:  # InputSizePreset.DEFAULT
             return
 
+        # YOLOX tiny has a different input size in train and val data pipeline
         base_input_size = None
         model_cfg = cfg.get("model")
         if model_cfg is not None:
-            if cfg.model.type == "CustomYOLOX":
-                if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
-                    raise ValueError("YOLOX should have input size being multiple of 32.")
-                if cfg.model.backbone.widen_factor == 0.375:  # YOLOX tiny case
-                    # YOLOX tiny has a different input size in train and val data pipeline
-                    cfg.model.input_size = (input_size[0], input_size[1])
-                    base_input_size = {
-                        "train": (640, 640),
-                        "val": (416, 416),
-                        "test": (416, 416),
-                        "unlabeled": (992, 736),
-                    }
+            if cfg.model.type == "CustomYOLOX" and cfg.model.backbone.widen_factor == 0.375:  # YOLOX tiny case
+                base_input_size = {
+                    "train": (640, 640),
+                    "val": (416, 416),
+                    "test": (416, 416),
+                    "unlabeled": (992, 736),
+                }
+        manager = InputSizeManager(cfg, base_input_size)
 
-        InputSizeManager(cfg.data, base_input_size).set_input_size(input_size)
+        if input_size == (0, 0):  # InputSizePreset.AUTO
+            if training:
+                input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=True)
+            else:
+                input_size = manager.get_trained_input_size(model_ckpt_path)
+            if input_size is None:
+                return
+
+        manager.set_input_size(input_size)
         logger.info("Input size is changed to {}".format(input_size))
 
 
