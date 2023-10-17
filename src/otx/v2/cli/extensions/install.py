@@ -134,6 +134,8 @@ def install(task: str, verbose: bool = False) -> int:
             status_code = mim_installation(mmcv_install_args)
             if status_code == 0:
                 console.log(f"MMLab Installation Complete: {mmcv_install_args}")
+    if status_code == 0:
+        console.print(f"OTX Installation ({task}) [bold green]Complete.[/bold green]")
 
     return status_code
 
