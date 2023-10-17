@@ -116,6 +116,8 @@ class TestExplainMethods:
     @e2e_pytest_unit
     @pytest.mark.parametrize("template", templates_two_stage_det, ids=templates_two_stage_det_ids)
     def test_saliency_map_two_stage_det(self, template):
+        if "RTMDet" in template.name:
+            pytest.skip("RTMDet single-stage inst-seg is not supported yet")
         model = self._get_model(template)
         data = self._get_data()
 
