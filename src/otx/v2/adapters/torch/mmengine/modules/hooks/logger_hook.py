@@ -92,10 +92,10 @@ class OTXLoggerHook(LoggerHook):
 
 @HOOKS.register_module()
 class LoggerReplaceHook(Hook):
-    """replace logger in the runner to the MPA logger.
+    """replace logger in the runner to the OTX logger.
 
     DO NOT INCLUDE this hook to the recipe directly.
-    mpa will add this hook to all recipe internally.
+    otx will add this hook to all recipe internally.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -104,4 +104,4 @@ class LoggerReplaceHook(Hook):
     def before_run(self, runner: Runner) -> None:
         """Replace logger."""
         runner.logger = logger
-        logger.info("logger in the runner is replaced to the MPA logger")
+        logger.info("logger in the runner is replaced to the OTX logger")

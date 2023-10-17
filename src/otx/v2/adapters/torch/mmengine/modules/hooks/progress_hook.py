@@ -69,7 +69,7 @@ class OTXProgressHook(Hook):
         if self.verbose and self.progress is not None:
             progress = self.progress
             if progress >= self.print_threshold:
-                logger.warning(f"training progress {progress:.0f}%")
+                logger.info(f"training progress {progress:.0f}%")
                 self.print_threshold = (progress + 10) // 10 * 10
 
     def before_val_iter(self, runner: Runner) -> None:

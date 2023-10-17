@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from .adaptive_repeat_data_hook import AdaptiveRepeatDataHook
 from .adaptive_training_hook import AdaptiveTrainSchedulingHook
 from .cancel_hook import CancelInterfaceHook, CancelTrainingHook
 from .checkpoint_hook import (
@@ -45,9 +46,10 @@ from .recording_forward_hook import (
 )
 from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
-from .unbiased_teacher_hook import UnbiasedTeacherHook
+from .mean_teacher_hook import MeanTeacherHook
 
 __all__ = [
+    "AdaptiveRepeatDataHook",
     "AdaptiveTrainSchedulingHook",
     "CancelInterfaceHook",
     "CancelTrainingHook",
@@ -74,7 +76,7 @@ __all__ = [
     "SaveInitialWeightHook",
     "SemiSLClsHook",
     "TaskAdaptHook",
-    "UnbiasedTeacherHook",
+    "MeanTeacherHook",
     "MemCacheHook",
     "LossDynamicsTrackingHook",
 ]

@@ -75,7 +75,7 @@ class DualModelEMAHook(Hook):
 
     def before_train_epoch(self, runner: Runner) -> None:
         """Momentum update."""
-        if runner.epoch == self.start_epoch:
+        if runner.epoch + 1 == self.start_epoch:
             self._copy_model()
             self.enabled = True
 
@@ -109,21 +109,24 @@ class DualModelEMAHook(Hook):
     def _copy_model(self) -> None:
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                dst_param = self.dst_params[name]
-                dst_param.data.copy_(src_param.data)
+                if not name.startswith("ema_"):
+                    dst_param = self.dst_params[name]
+                    dst_param.data.copy_(src_param.data)
 
     def _ema_model(self) -> None:
         momentum = min(self.momentum, 1.0)
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                dst_param = self.dst_params[name]
-                dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
+                if not name.startswith("ema_"):
+                    dst_param = self.dst_params[name]
+                    dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
 
     def _diff_model(self) -> float:
         diff_sum = 0.0
         with torch.no_grad():
             for name, src_param in self.src_params.items():
-                dst_param = self.dst_params[name]
-                diff = ((src_param - dst_param) ** 2).sum()
-                diff_sum += diff
+                if not name.startswith("ema_"):
+                    dst_param = self.dst_params[name]
+                    diff = ((src_param - dst_param) ** 2).sum()
+                    diff_sum += diff
         return diff_sum

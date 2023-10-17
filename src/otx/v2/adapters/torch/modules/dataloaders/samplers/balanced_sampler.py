@@ -1,13 +1,20 @@
 """Balanced sampler for imbalanced data."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+from __future__ import annotations
+
 import math
-from typing import Iterator
+from typing import TYPE_CHECKING, Iterator
 
 import numpy as np
-from torch.utils.data import Dataset
 
 from otx.v2.api.utils.logger import get_logger
 
 from .otx_sampler import OTXSampler
+
+if TYPE_CHECKING:
+    from torch.utils.data import Dataset
 
 logger = get_logger()
 
@@ -24,6 +31,17 @@ class BalancedSampler(OTXSampler):
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
+        num_replicas (int, optional): Number of processes participating in
+            distributed training. By default, :attr:`world_size` is retrieved from the
+            current distributed group.
+        rank (int, optional): Rank of the current process within :attr:`num_replicas`.
+            By default, :attr:`rank` is retrieved from the current distributed
+            group.
+        drop_last (bool, optional): if ``True``, then the sampler will drop the
+            tail of the data to make it evenly divisible across the number of
+            replicas. If ``False``, the sampler will add extra indices to make
+            the data evenly divisible across the replicas. Default: ``False``.
+        use_adaptive_repeats (bool, optional): Flag about using adaptive repeats
     """
 
     def __init__(

@@ -28,6 +28,7 @@ class TaskAdaptHook(Hook):
         model_type (str): Types of models used for learning
         sampler_flag (bool): Flag about using ClsIncrSampler
         efficient_mode (bool): Flag about using efficient mode sampler
+        use_adaptive_repeat (bool): Flag about using adaptive repeat data
     """
 
     def __init__(
@@ -38,6 +39,7 @@ class TaskAdaptHook(Hook):
         sampler_flag: bool = False,
         sampler_type: str = "cls_incr",
         efficient_mode: bool = False,
+        use_adaptive_repeat=False,
     ) -> None:
         self.src_classes = src_classes
         self.dst_classes = dst_classes
@@ -45,11 +47,13 @@ class TaskAdaptHook(Hook):
         self.sampler_flag = sampler_flag
         self.sampler_type = sampler_type
         self.efficient_mode = efficient_mode
+        self.use_adaptive_repeat = use_adaptive_repeat
 
         logger.info(f"Task Adaptation: {self.src_classes} => {self.dst_classes}")
         logger.info(f"- Efficient Mode: {self.efficient_mode}")
         logger.info(f"- Sampler type: {self.sampler_type}")
         logger.info(f"- Sampler flag: {self.sampler_flag}")
+        logger.info(f"- Adaptive repeat: {self.use_adaptive_repeat}")
 
     def before_epoch(self, runner: Runner) -> None:
         """Produce a proper sampler for task-adaptation."""
@@ -67,6 +71,7 @@ class TaskAdaptHook(Hook):
                     efficient_mode=self.efficient_mode,
                     num_replicas=world_size,
                     rank=rank,
+                    use_adaptive_repeats=self.use_adaptive_repeat,
                 )
             else:
                 sampler = ClsIncrSampler(
@@ -75,6 +80,7 @@ class TaskAdaptHook(Hook):
                     efficient_mode=self.efficient_mode,
                     num_replicas=world_size,
                     rank=rank,
+                    use_adaptive_repeats=self.use_adaptive_repeat,
                 )
             runner.data_loader = DataLoader(
                 dataset,
