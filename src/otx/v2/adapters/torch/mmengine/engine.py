@@ -33,7 +33,6 @@ if TYPE_CHECKING:
 logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
 
-
 class MMXEngine(Engine):
     """OTX adapters.torch.mmengine.MMXEngine class.
 
@@ -75,6 +74,15 @@ class MMXEngine(Engine):
         func_args: dict,
         **kwargs,
     ) -> bool:
+        """Update the configuration of the runner with the provided arguments.
+
+        Args:
+            func_args (dict): The arguments passed to the engine.
+            **kwargs: Additional keyword arguments to update the configuration for mmengine.Runner.
+
+        Returns:
+            bool: True if the configuration was updated, False otherwise.
+        """
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )

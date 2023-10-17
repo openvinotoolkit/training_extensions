@@ -21,32 +21,30 @@ def get_value_from_config(
         arg_key (str): The key of the argument to retrieve.
         positional_args (dict): The positional arguments passed to the function.
         config (Config): The configuration object to retrieve the argument from.
-        default (Optional[Union[int, str]], optional): The default value to return if the argument is not found.
+        default (int | str | None): The default value to return if the argument is not found.
             Defaults to None.
 
     Returns:
-        Optional[Union[dict, list]]: The value of the argument, or the default value if not found.
+        dict | list | None: The value of the argument, or the default value if not found.
     """
     arg_config = positional_args.get(arg_key, None)
     return config.get(arg_key, default) if arg_config is None else arg_config
 
 
 def configure_evaluator(
-    evaluator: list | dict,
+    evaluator: list | dict | None,
     num_classes: int,
     scope: str | None = None,
-) -> list | dict:
-    """Get the value of a key from the given config object, or from the positional arguments if it exists.
+) -> list | dict | None:
+    """Configures the evaluator by adding the scope and topk metrics.
 
     Args:
-        arg_key (str): The key to look for in the config object and positional arguments.
-        positional_args (dict): A dictionary of positional arguments.
-        config (Config): A dictionary-like object containing configuration values.
-        default (Optional[Union[int, str]], optional): The default value to return if the key is not found.
-            Defaults to None.
+        evaluator (list | dict | None): The evaluator to configure.
+        num_classes (int): The number of classes.
+        scope (str | None, optional): The scope to add to the evaluator. Defaults to None.
 
     Returns:
-        Optional[Union[dict, list]]: The value of the key, or the default value if the key is not found.
+        list | dict | None: The configured evaluator.
     """
     if isinstance(evaluator, list):
         for metric in evaluator:
@@ -69,7 +67,7 @@ def update_train_config(func_args: dict, config: Config, precision: str | None, 
     Args:
         func_args (dict): A dictionary of function arguments.
         config (Config): A configuration object.
-        precision (Optional[str]): The precision of the model weights (e.g. "float16", "float32").
+        precision (str | None): The precision of the model weights (e.g. "float16", "float32").
         **kwargs: Additional keyword arguments.
 
     Returns:
@@ -123,9 +121,9 @@ def update_val_test_config(
     Args:
         func_args (dict): Dictionary of function arguments.
         config (Config): Configuration object.
-        precision (str, optional): Precision type. Defaults to None.
+        precision (str | None): Precision type. Defaults to None.
         num_classes (int): Number of classes.
-        scope (str, optional): Scope. Defaults to None.
+        scope (str | None): Scope. Defaults to None.
         **kwargs: Additional keyword arguments.
 
     Returns:
@@ -176,9 +174,9 @@ def update_runner_config(
     Args:
         func_args (dict): The function arguments.
         config (Config): The configuration object.
-        precision (Optional[str]): The precision.
+        precision (str | None): The precision.
         num_classes (int): The number of classes.
-        scope (Optional[str], optional): The scope. Defaults to None.
+        scope (str | None): The scope. Defaults to None.
         **kwargs: Additional keyword arguments.
 
     Returns:

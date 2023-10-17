@@ -22,7 +22,7 @@ CONFIG_ROOT = f"{get_otx_root_path()}/v2/configs"
 DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     TaskType.CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmpretrain",
-        "default_config": {TrainType.Incremental: f"{CONFIG_ROOT}/classification/otx_mmpretrain_cli.yaml"},
+        "default_config": {TrainType.Incremental: f"{CONFIG_ROOT}/classification/otx_mmpretrain_default.yaml"},
     },
     TaskType.DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
@@ -45,7 +45,7 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     TaskType.ANOMALY_CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
         "default_config": {
-            TrainType.Incremental: f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_cli.yaml",
+            TrainType.Incremental: f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_default.yaml",
         },
     },
     TaskType.ANOMALY_DETECTION: {
