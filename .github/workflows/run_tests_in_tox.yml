@@ -32,7 +32,7 @@ on:
         default: "219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f3b5e4e2bc93875045a54a7f3ea29ca6a6089b33"
       container-options:
         type: string
-        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=20g"
+        default: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=24g"
       task:
         type: string
         default: "undefined"
