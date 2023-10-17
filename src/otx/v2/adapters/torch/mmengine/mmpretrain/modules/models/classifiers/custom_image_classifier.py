@@ -6,9 +6,12 @@ from functools import partial
 from typing import Optional, Sequence, Union
 
 import torch
+from mmpretrain.models.backbones.vision_transformer import VisionTransformer
 from mmpretrain.models.classifiers.image import ImageClassifier
 from mmpretrain.registry import MODELS
+from mmpretrain.models.utils import resize_pos_embed
 
+from otx.v2.adapters.torch.mmengine.modules.hooks.recording_forward_hook import ViTReciproCAMHook
 from otx.v2.adapters.torch.mmengine.mmdeploy.utils import is_mmdeploy_enabled
 from otx.v2.adapters.torch.modules.utils.task_adapt import map_class_names
 from otx.v2.api.utils.logger import get_logger
@@ -190,10 +193,60 @@ if is_mmdeploy_enabled():
         ReciproCAMHook,
     )
 
+    def _extract_vit_feat(model: torch.nn.Module, x: torch.Tensor) -> tuple:
+        """Modified forward from mmcls.models.backbones.vision_transformer.VisionTransformer.forward()."""
+        B = x.shape[0]
+        x, patch_resolution = model.backbone.patch_embed(x)
+
+        # stole cls_tokens impl from Phil Wang, thanks
+        cls_tokens = model.backbone.cls_token.expand(B, -1, -1)
+        x = torch.cat((cls_tokens, x), dim=1)
+        x = x + resize_pos_embed(
+            model.backbone.pos_embed,
+            model.backbone.patch_resolution,
+            patch_resolution,
+            mode=model.backbone.interpolate_mode,
+            num_extra_tokens=model.backbone.num_extra_tokens,
+        )
+        x = model.backbone.drop_after_pos(x)
+
+        if not model.backbone.with_cls_token:
+            # Remove class token for transformer encoder input
+            x = x[:, 1:]
+
+        feat = None
+        layernorm_feat = None
+        for i, layer in enumerate(model.backbone.layers):
+            if i == len(model.backbone.layers) - 1:
+                layernorm_feat = layer.norm1(x)
+
+            x = layer(x)
+
+            if i == len(model.backbone.layers) - 1 and model.backbone.final_norm:
+                x = model.backbone.norm1(x)
+
+            if i in model.backbone.out_indices:
+                B, _, C = x.shape
+                if model.backbone.with_cls_token:
+                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+                    patch_token = patch_token.permute(0, 3, 1, 2)
+                    cls_token = x[:, 0]
+                else:
+                    patch_token = x.reshape(B, *patch_resolution, C)
+                    patch_token = patch_token.permute(0, 3, 1, 2)
+                    cls_token = None
+                if model.backbone.output_cls_token:
+                    feat = [patch_token, cls_token]
+                else:
+                    feat = patch_token
+        if model.with_neck:
+            feat = model.neck(feat)
+        return feat, layernorm_feat
+
     @FUNCTION_REWRITER.register_rewriter(
         "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.extract_feat",
     )
-    def sam_image_classifier__extract_feat(
+    def custom_image_classifier__extract_feat(
         self: CustomImageClassifier,
         img: torch.Tensor,
         **kwargs,
@@ -215,18 +268,28 @@ if is_mmdeploy_enabled():
     @FUNCTION_REWRITER.register_rewriter(
         "otx.v2.adapters.torch.mmengine.mmpretrain.modules.models.classifiers.CustomImageClassifier.predict",
     )
-    def sam_image_classifier__predict(
+    def custom_image_classifier__predict(
         self: CustomImageClassifier,
         img: torch.Tensor,
         **kwargs,
     ) -> Union[tuple, torch.Tensor]:
         """Simple test function used for inference for SAMClassifier with mmdeploy."""
-        feat, backbone_feat = self.extract_feat(img, dump_features=True)
+        vit_backbone = isinstance(self.backbone, VisionTransformer)
+        if vit_backbone:
+            feat, layernorm_feat = _extract_vit_feat(self, img)
+        else:
+            feat, backbone_feat = self.extract_feat(img)
         logit = self.head.predict(feat)
 
         if kwargs.get("dump_features", False):
-            saliency_map = ReciproCAMHook(self).func(backbone_feat)
-            feature_vector = FeatureVectorHook.func(backbone_feat)
+            if vit_backbone:
+                assert self.backbone.with_cls_token
+                _, cls_token = feat
+                feature_vector = cls_token
+                saliency_map = ViTReciproCAMHook(self).func(layernorm_feat)
+            else:
+                saliency_map = ReciproCAMHook(self).func(backbone_feat)
+                feature_vector = FeatureVectorHook.func(backbone_feat)
             return logit, feature_vector, saliency_map
 
         return logit

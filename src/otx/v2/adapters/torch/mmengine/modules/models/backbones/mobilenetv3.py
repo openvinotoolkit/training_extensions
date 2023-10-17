@@ -395,7 +395,7 @@ def get_state_dict_hook(module: nn.Module, state_dict: dict, prefix: str) -> dic
                 _key = _key.replace("backbone.", "", 1)
             elif _key.startswith("head"):
                 _key = _key.replace("head.", "", 1)
-                if "3" in _key:  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
+                if "3" in _key:  # pre-OTX uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
                     _key = _key.replace("3", "4")
                     if module.multilabel and not module.is_export:
                         val = val.t()

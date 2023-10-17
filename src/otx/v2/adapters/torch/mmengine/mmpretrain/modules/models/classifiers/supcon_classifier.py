@@ -24,6 +24,7 @@ class SupConClassifier(ImageClassifier):
     ) -> None:
         self.multilabel = kwargs.pop("multilabel", False)
         self.hierarchical = kwargs.pop("hierarchical", False)
+        self.task_adapt = kwargs.pop("task_adapt", None)
         super().__init__(backbone, neck=neck, head=head, pretrained=pretrained, **kwargs)
 
     def forward_train(self, img: torch.Tensor, gt_label: torch.Tensor, **kwargs) -> dict:

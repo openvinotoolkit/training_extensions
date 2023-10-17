@@ -35,6 +35,7 @@ class OTXClsDataset(BaseDataset):
         otx_dataset: DatasetEntity,
         labels: list,
         empty_label: Optional[list] = None,
+        pipeline: list = [],
         **kwargs,
     ) -> None:
         self.otx_dataset = otx_dataset
@@ -47,7 +48,6 @@ class OTXClsDataset(BaseDataset):
 
         self._metainfo = self._load_metainfo({"classes": [label.name for label in labels]})
         self.gt_labels: list = []
-        pipeline = kwargs.get("pipeline", [])
         self.num_classes = len(self.CLASSES)
 
         test_mode = kwargs.get("test_mode", False)
