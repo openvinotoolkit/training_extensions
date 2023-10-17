@@ -27,7 +27,7 @@ class TestInstall:
         parser = prepare_parser()
         assert parser is not None
         argument_list = [action.dest for action in parser._actions]
-        expected_argument = ["help", "task"]
+        expected_argument = ["help", "task", "verbose"]
         assert argument_list == expected_argument
 
     def test_add_install_parser(self) -> None:
@@ -42,6 +42,7 @@ class TestInstall:
 
     def test_install_without_mm(self, mocker: MockerFixture) -> None:
         mock_create_command = mocker.patch("otx.v2.cli.extensions.install.create_command")
+        mock_create_command.return_value.main.return_value = 0
         status_code = install("anomaly")
         assert status_code == mock_create_command.return_value.main.return_value
         mock_create_command.assert_called_once_with("install")
@@ -52,6 +53,7 @@ class TestInstall:
 
     def test_install_extra(self, mocker: MockerFixture) -> None:
         mock_create_command = mocker.patch("otx.v2.cli.extensions.install.create_command")
+        mock_create_command.return_value.main.return_value = 0
         status_code = install("api")
         assert status_code == mock_create_command.return_value.main.return_value
         argument_call_list = mock_create_command.return_value.main.call_args_list[-1][0][-1]
@@ -62,7 +64,9 @@ class TestInstall:
 
     def test_install_with_mm(self, mocker: MockerFixture) -> None:
         mock_create_command = mocker.patch("otx.v2.cli.extensions.install.create_command")
+        mock_create_command.return_value.main.return_value = 0
         mock_mim_installation = mocker.patch("otx.v2.cli.extensions.install.mim_installation")
+        mock_mim_installation.return_value = 0
 
         status_code = install("classification")
         assert status_code == mock_create_command.return_value.main.return_value
@@ -77,7 +81,9 @@ class TestInstall:
 
     def test_install_full(self, mocker: MockerFixture, monkeypatch: MonkeyPatch) -> None:
         mock_create_command = mocker.patch("otx.v2.cli.extensions.install.create_command")
+        mock_create_command.return_value.main.return_value = 0
         mock_mim_installation = mocker.patch("otx.v2.cli.extensions.install.mim_installation")
+        mock_mim_installation.return_value = 0
         monkeypatch.setattr("otx.v2.cli.extensions.install.SUPPORTED_TASKS", ["classification", "anomaly"])
 
         status_code = install("full")
@@ -93,7 +99,9 @@ class TestInstall:
 
     def test_install_main(self, mocker: MockerFixture, monkeypatch: MonkeyPatch) -> None:
         mock_create_command = mocker.patch("otx.v2.cli.extensions.install.create_command")
+        mock_create_command.return_value.main.return_value = 0
         mock_mim_installation = mocker.patch("otx.v2.cli.extensions.install.mim_installation")
+        mock_mim_installation.return_value = 0
         monkeypatch.setattr("otx.v2.cli.extensions.install.SUPPORTED_TASKS", ["classification", "anomaly"])
 
         mocker.patch.object(sys, "argv", ["full"])

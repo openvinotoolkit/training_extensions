@@ -6,10 +6,13 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import TYPE_CHECKING
 
 from pip._internal.commands import create_command
+from rich.console import Console
+from rich.logging import RichHandler
 
 from otx.v2.cli.utils.arg_parser import OTXArgumentParser
 from otx.v2.cli.utils.install import (
@@ -23,6 +26,17 @@ from otx.v2.cli.utils.install import (
 
 if TYPE_CHECKING:  # pragma: no cover
     from jsonargparse._actions import _ActionSubCommands
+
+
+logger = logging.getLogger("pip")
+logger.setLevel(logging.WARNING)  # setLevel: CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
+console = Console()
+handler = RichHandler(
+    console=console,
+    show_level=False,
+    show_path=False,
+)
+logger.addHandler(handler)
 
 
 def add_install_parser(subcommands_action: _ActionSubCommands) -> None:
@@ -45,15 +59,22 @@ def prepare_parser() -> OTXArgumentParser:
     """
     parser = OTXArgumentParser()
     parser.add_argument("task", help=f"Supported tasks are: {SUPPORTED_TASKS}.", default="full", type=str)
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Set Logger level to INFO",
+        action="store_true",
+    )
 
     return parser
 
 
-def install(task: str) -> int:
+def install(task: str, verbose: bool = False) -> int:
     """Install OTX requirements.
 
     Args:
         task (str): Task to install requirements for.
+        verbose (bool): Set pip logger level to INFO
 
     Raises:
         ValueError: When the task is not supported.
@@ -95,14 +116,24 @@ def install(task: str) -> int:
         install_args += ["openmim"]
 
     # Install requirements.
-    status_code = create_command("install").main(install_args)
+    with console.status("[bold green]Working on installation...\n") as status:
+        if verbose:
+            logger.setLevel(logging.INFO)
+            status.stop()
+        console.log(f"Installation list: [yellow]{install_args}[/yellow]")
+        status_code = create_command("install").main(install_args)
+        if status_code == 0:
+            console.log(f"Installation Complete: {install_args}")
 
-    # https://github.com/Madoshakalaka/pipenv-setup/issues/101
-    os.environ["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
+        # https://github.com/Madoshakalaka/pipenv-setup/issues/101
+        os.environ["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
 
-    # Install mmX requirements if the task requires mmX packages using mim.
-    if mmcv_install_args:
-        mim_installation(mmcv_install_args)
+        # Install mmX requirements if the task requires mmX packages using mim.
+        if mmcv_install_args and status_code == 0:
+            console.log(f"Installation list: [yellow]{mmcv_install_args}[/yellow]")
+            status_code = mim_installation(mmcv_install_args)
+            if status_code == 0:
+                console.log(f"MMLab Installation Complete: {mmcv_install_args}")
 
     return status_code
 
@@ -111,7 +142,7 @@ def main() -> None:
     """Entry point for OTX CLI Install."""
     parser = prepare_parser()
     args = parser.parse_args()
-    install(task=args.task)
+    install(task=args.task, verbose=args.verbose)
 
 
 if __name__ == "__main__":

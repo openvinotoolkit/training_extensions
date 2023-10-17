@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
 
+
 class MMXEngine(Engine):
     """OTX adapters.torch.mmengine.MMXEngine class.
 

@@ -524,7 +524,7 @@ def get_mmcv_install_args(torch_requirement: str | Requirement, mmcv_requirement
     return install_args
 
 
-def mim_installation(requirements: list[str]) -> None:
+def mim_installation(requirements: list[str]) -> int:
     """Installing libraries with mim api.
 
     Args:
@@ -538,7 +538,7 @@ def mim_installation(requirements: list[str]) -> None:
         raise ModuleNotFoundError(msg)
     from mim import install
 
-    install(requirements)
+    return install(requirements)
 
 
 def get_module_version(module_name: str) -> str | None:
