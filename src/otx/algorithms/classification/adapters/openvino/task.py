@@ -372,7 +372,11 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         if optimization_type is not OptimizationType.POT:
             raise ValueError("PTQ is the only supported optimization type for OpenVino models")
 
+        print(dataset)
+        print(len(dataset))
         dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.UNLABELED])
+        print(dataset)
+        print(len(dataset))
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         quantization_dataset = nncf.Dataset(data_loader, lambda data: data[0])
