@@ -19,40 +19,42 @@ from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
 
 ADAPTERS_ROOT = "otx.v2.adapters"
 CONFIG_ROOT = f"{get_otx_root_path()}/v2/configs"
-DEFAULT_FRAMEWORK_PER_TASK_TYPE = {
+DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     TaskType.CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmpretrain",
-        "default_config": f"{CONFIG_ROOT}/classification/otx_mmpretrain_cli.yaml",
+        "default_config": {TrainType.Incremental: f"{CONFIG_ROOT}/classification/otx_mmpretrain_cli.yaml"},
     },
     TaskType.DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
-        "default_config": f"{CONFIG_ROOT}/detection/",
+        "default_config": {},
     },
     TaskType.INSTANCE_SEGMENTATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
-        "default_config": f"{CONFIG_ROOT}/instance_segmentation/",
+        "default_config": {},
     },
     TaskType.ROTATED_DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmdet",
-        "default_config": f"{CONFIG_ROOT}/rotated_detection/",
+        "default_config": {},
     },
     TaskType.SEGMENTATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmseg",
-        "default_config": f"{CONFIG_ROOT}/semantic_segmentation/",
+        "default_config": {},
     },
     # TaskType.ACTION_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     TaskType.ANOMALY_CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
-        "default_config": f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_cli.yaml",
+        "default_config": {
+            TrainType.Incremental: f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_cli.yaml",
+        },
     },
     TaskType.ANOMALY_DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
-        "default_config": f"{CONFIG_ROOT}/anomaly_detection/",
+        "default_config": {},
     },
     TaskType.ANOMALY_SEGMENTATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
-        "default_config": f"{CONFIG_ROOT}/anomaly_segmentation/",
+        "default_config": {},
     },
 }
 
@@ -323,15 +325,16 @@ class AutoRunner:
             train_type = configure_train_type(data_roots, data_config.get("unlabeled_data_roots", None))
         self.task = str_to_task_type(task) if isinstance(task, str) else task
         self.train_type = str_to_train_type(train_type) if isinstance(train_type, str) else train_type
+        default_setting = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]
         if framework is not None:
             self.framework = framework
         elif not hasattr(self, "framework"):
             if "framework" in self.config:
                 self.framework = self.config["framework"]
-            else:
-                self.framework = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["adapter"]
+            elif isinstance(default_setting["adapter"], str):
+                self.framework = default_setting["adapter"]
         if self.config_path is None:
-            self.config_path = DEFAULT_FRAMEWORK_PER_TASK_TYPE[self.task]["default_config"]
+            self.config_path = default_setting["default_config"][self.train_type]
             self.config = self._initial_config(self.config_path)
 
     def build_framework_engine(self) -> None:
