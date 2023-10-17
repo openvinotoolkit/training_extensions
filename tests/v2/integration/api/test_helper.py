@@ -5,21 +5,6 @@ import math
 from otx.v2.api.core.dataset import BaseDataset
 from torch.utils.data.dataloader import DataLoader
 
-TASK_CONFIGURATION = {
-    "classification": {
-        "train_data_roots": "tests/assets/classification_dataset",
-        "val_data_roots": "tests/assets/classification_dataset",
-        "test_data_roots": "tests/assets/classification_dataset",
-        "sample": "tests/assets/classification_dataset/0/11.jpg",
-    },
-    "anomaly_classification": {
-        "train_data_roots": "tests/assets/anomaly/hazelnut/train",
-        "val_data_roots": "tests/assets/anomaly/hazelnut/test",
-        "test_data_roots": "tests/assets/anomaly/hazelnut/test",
-        "sample": "tests/assets/anomaly/hazelnut/test/colour/01.jpg",
-    },
-}
-
 
 def assert_torch_dataset_api_is_working(dataset: BaseDataset, train_data_size: int, val_data_size: int, test_data_size: int) -> None:
     """

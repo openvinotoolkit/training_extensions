@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from otx.v2.api.core import AutoRunner
 
-from tests.v2.integration.api.test_helper import TASK_CONFIGURATION
+from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
 
 class TestAutoRunnerAPI:
@@ -51,20 +51,17 @@ class TestAutoRunnerAPI:
         assert Path(results["checkpoint"]).exists()
 
         # Validation
-        val_score = auto_runner.validate()
-        # TODO: Check Validation Results
+        auto_runner.validate()
 
         # Test
-        test_score = auto_runner.test()
-        # TODO: Check Testing Results
+        auto_runner.test()
 
         # Prediction with single image
-        pred_result = auto_runner.predict(
+        auto_runner.predict(
             model=results["model"],
             checkpoint=results["checkpoint"],
             img=task_configuration["sample"],
         )
-        # TODO: Check Prediction Results
 
         # Export Openvino IR Model
         export_output = auto_runner.export(

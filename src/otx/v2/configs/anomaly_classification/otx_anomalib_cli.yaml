@@ -31,7 +31,7 @@ dataset:
     use_random_tiling: false
     random_tile_count: 16
 model:
-  name: padim
+  name: otx_padim
   backbone: resnet18
   pre_trained: true
   layers:

@@ -5,8 +5,8 @@
 import torch
 from otx.v2.adapters.torch.anomalib import Dataset, get_model, list_models
 
-from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working, TASK_CONFIGURATION
-
+from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
+from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
 # Test-related datasets are managed by tests.v2.integration.api.test_helper.
 DATASET_PATH = TASK_CONFIGURATION["anomaly_classification"]["train_data_roots"]

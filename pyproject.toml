@@ -315,6 +315,7 @@ max-returns = 10
     "TCH003",   # It doesn't seem necessary to use TYPE_CHECKING in tests.
     "PT004",    # fixture ignore type returning.
     "E501",     # Test skips lines that are too long.
+    "ANN001",   # Skip annotation type hint in test codes
     "D",     # Test skips missing docstring argument with magic (fixture) methods.
 ]
 

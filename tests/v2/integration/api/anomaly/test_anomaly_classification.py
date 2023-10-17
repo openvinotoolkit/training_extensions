@@ -8,8 +8,7 @@ import pytest
 import torch
 from otx.v2.adapters.torch.anomalib import Dataset, Engine, get_model, list_models
 
-from tests.v2.integration.api.test_helper import TASK_CONFIGURATION
-
+from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
 # Test-related datasets are managed by tests.v2.integration.api.test_helper.
 PREDICTION_SAMPLE = TASK_CONFIGURATION["anomaly_classification"]["sample"]

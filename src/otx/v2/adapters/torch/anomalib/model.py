@@ -42,13 +42,16 @@ def get_model(
     if isinstance(model, str):
         if model in MODEL_CONFIGS:
             model = MODEL_CONFIGS[model]
-        model = OmegaConf.load(model)
+        if Path(model).is_file():
+            model = OmegaConf.load(model)
     if not model.get("model", False):
         model = DictConfig(content={"model": model})
     if checkpoint is not None:
         model["init_weights"] = checkpoint
     if isinstance(model, dict):
         model = OmegaConf.create(model)
+    if model.model.name.startswith("otx"):
+        model.model.name = "_".join(model.model.name.split("_")[1:])
     return anomalib_get_model(config=model)
 
 
@@ -68,17 +71,3 @@ def list_models(pattern: str | None = None) -> list[str]:
         model_list = list(set(fnmatch.filter(model_list, pattern + "*")))
 
     return sorted(model_list)
-
-
-if __name__ == "__main__":
-    model_config = {
-        "model": {
-            "name": "padim",
-            "backbone": "resnet18",
-            "pre_trained": True,
-            "layers": ["layer1", "layer2", "layer3"],
-            "normalization_method": "min_max",
-            "input_size": [256, 256],
-        },
-    }
-    model = get_model(model_config)

@@ -188,9 +188,7 @@ class AnomalibEngine(Engine):
         datamodule = self.trainer_config.pop("datamodule", None)
         metrics = self.trainer_config.pop("metrics", None)
         logger = self.trainer_config.pop("logger", True)
-        num_sanity_val_steps = 0
-        if val_dataloader is not None:
-            num_sanity_val_steps = self.trainer_config.pop("num_sanity_val_steps", num_sanity_val_steps)
+        num_sanity_val_steps = self.trainer_config.pop("num_sanity_val_steps", 0)
 
         target_folder = f"{self.timestamp}_train"
         if logger is True or not logger:
