@@ -65,11 +65,11 @@ otx_dir = os.getcwd()
 default_template = parse_model_template(
     os.path.join("src/otx/algorithms/detection/configs", "instance_segmentation", "resnet50_maskrcnn", "template.yaml")
 )
-templates = [default_template] 
+templates = [default_template]
 
 for i, template in enumerate(templates):
     if template.name in ["MaskRCNN-ResNet50"]:
-        templates[i] = pytest.mark(template, marks=pytest.mark.req_large_memory)
+        templates[i] = pytest.param(template, marks=pytest.mark.req_large_memory)
 
 templates_ids = [default_template.model_template_id]
 
