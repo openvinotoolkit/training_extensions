@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 from mmengine.hooks import Hook
 from mmengine.registry import HOOKS
 from mmengine.runner import Runner
@@ -28,28 +30,30 @@ class AdaptiveRepeatDataHook(Hook):
         min_repeat (float, optional) : minimum repeats
     """
 
-    def __init__(
-        self, train_batch_size: int, train_data_size: int, coef: float = -0.7, min_repeat: float = 1.0
-    ) -> None:
+    def __init__(self, coef: float = -0.7, min_repeat: float = 1.0) -> None:
         self.coef = coef
         self.min_repeat = min_repeat
 
-        self.train_batch_size = train_batch_size
-        self.train_data_size = train_data_size
+        self._initialized = False
 
-        self.n_repeats = get_proper_repeat_times(
-            self.train_data_size, self.train_batch_size, self.coef, self.min_repeat
-        )
+    def initialize(self) -> None:
+        self.n_repeats = get_proper_repeat_times(self.data_size, self.batch_size, self.coef, self.min_repeat)
         self.rank, self.world_size = get_dist_info()
 
     def before_run(self, runner):
         """Change the runner's max_iter."""
+        if not self._initialized and hasattr(runner, "train_dataloader"):
+            self.data_size = len(runner.train_dataloader.dataset)
+            self.batch_size = runner.train_dataloader.batch_size
+            self.initialize()
+            self._initialized = True
+
         if self.n_repeats > 1:
-            iter_per_epoch = int(self.train_data_size / self.train_batch_size)
+            iter_per_epoch = int(self.data_size / self.batch_size)
 
             logger.info("Adaptive repeat is enabled")
             logger.info(f"- Repeat times: {self.n_repeats}")
-            logger.info(f"- Batch size: {self.train_batch_size}")
+            logger.info(f"- Batch size: {self.batch_size}")
             logger.info(f"- Num iters per epoch: {iter_per_epoch} -> {iter_per_epoch * self.n_repeats}")
             logger.info(f"- Total iters: {runner.max_iters} -> {runner.max_iters * self.n_repeats}")
 
@@ -64,7 +68,7 @@ class AdaptiveRepeatDataHook(Hook):
 
         sampler = OTXSampler(
             dataset=dataset,
-            samples_per_gpu=self.train_batch_size,
+            samples_per_gpu=self.batch_size,
             num_replicas=self.world_size,
             rank=self.rank,
             shuffle=True,
@@ -75,7 +79,7 @@ class AdaptiveRepeatDataHook(Hook):
 
         runner.data_loader = DataLoader(
             dataset,
-            batch_size=self.train_batch_size,
+            batch_size=self.batch_size,
             sampler=sampler,
             num_workers=num_workers,
             collate_fn=collate_fn,

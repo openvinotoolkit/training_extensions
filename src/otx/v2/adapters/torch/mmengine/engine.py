@@ -388,6 +388,8 @@ class MMXEngine(Engine):
             "precision": precision,
         }
         update_check = self._update_config(func_args=test_args, **kwargs)
+        # This will not build if there are training-related hooks.
+        self.config["custom_hooks"] = None
         target_folder = Path(self.work_dir) / f"{self.timestamp}_test"
         if not hasattr(self, "runner"):
             self.config.pop("work_dir")

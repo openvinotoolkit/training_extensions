@@ -62,7 +62,11 @@ default_hooks:
     max_keep_ckpts: 1
     save_best: auto
     type: CheckpointHook
-custom_hooks: null
+custom_hooks:
+  - type: EarlyStoppingHook
+    monitor: accuracy/top1
+    patience: 3
+  - type: AdaptiveRepeatDataHook
 
 param_scheduler:
   type: CosineAnnealingLR
