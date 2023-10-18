@@ -143,7 +143,7 @@ def get_det_model_api_configuration(
 
     for lbl in label_schema.get_labels(include_empty=False):
         all_labels += lbl.name.replace(" ", "_") + " "
-        all_label_ids += f"{lbl.id} "
+        all_label_ids += f"{lbl.id_} "
 
     omz_config[("model_info", "labels")] = all_labels.strip()
     omz_config[("model_info", "label_ids")] = all_label_ids.strip()
