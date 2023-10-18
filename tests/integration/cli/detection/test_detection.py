@@ -82,7 +82,11 @@ _templates = Registry("src/otx/algorithms/detection").filter(task_type="DETECTIO
 templates = []
 for template in _templates:
     if template.name not in ["YOLOX-S", "YOLOX-X"]:
-        templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
+        if template.name in ["YOLO-L"]:
+            templates.append(pytest.param(template, marks=pytest.mark.req_large_memory))
+        else:
+            templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
+    
 templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [
@@ -188,6 +192,7 @@ class TestDetectionCLI:
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.req_large_memory
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_all_classes(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
