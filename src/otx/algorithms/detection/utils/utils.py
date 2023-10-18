@@ -110,16 +110,22 @@ def get_det_model_api_configuration(
     """Get ModelAPI config."""
     omz_config = {}
     all_labels = ""
+    all_label_ids = ""
     if task_type == TaskType.DETECTION:
         omz_config[("model_info", "model_type")] = "ssd"
+        omz_config[("model_info", "task_type")] = "detection"
     if task_type == TaskType.INSTANCE_SEGMENTATION:
         omz_config[("model_info", "model_type")] = "MaskRCNN"
+        omz_config[("model_info", "task_type")] = "instance_segmentation"
         all_labels = "otx_empty_lbl "
+        all_label_ids = "None "
         if tiling_parameters.enable_tiling:
             omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
     if task_type == TaskType.ROTATED_DETECTION:
-        omz_config[("model_info", "model_type")] = "rotated_detection"
+        omz_config[("model_info", "model_type")] = "MaskRCNN"
+        omz_config[("model_info", "task_type")] = "rotated_detection"
         all_labels = "otx_empty_lbl "
+        all_label_ids = "None "
         if tiling_parameters.enable_tiling:
             omz_config[("model_info", "resize_type")] = "fit_to_window_letterbox"
 
@@ -137,9 +143,10 @@ def get_det_model_api_configuration(
 
     for lbl in label_schema.get_labels(include_empty=False):
         all_labels += lbl.name.replace(" ", "_") + " "
-    all_labels = all_labels.strip()
+        all_label_ids += f"{lbl.id} "
 
-    omz_config[("model_info", "labels")] = all_labels
+    omz_config[("model_info", "labels")] = all_labels.strip()
+    omz_config[("model_info", "label_ids")] = all_label_ids.strip()
 
     return omz_config
 
