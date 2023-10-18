@@ -10,6 +10,7 @@ from abc import abstractmethod
 from copy import deepcopy
 from difflib import get_close_matches
 from typing import Any, Dict, List, Optional, Union
+from pathlib import Path
 
 import cv2
 import datumaro
@@ -183,6 +184,11 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         mode_to_str = {Subset.TRAINING: "train", Subset.VALIDATION: "val", Subset.TESTING: "test"}
         str_mode = mode_to_str[mode]
 
+        if data_roots is not None:
+            data_path = Path(data_roots)
+            if not data_path.exists():
+                raise FileNotFoundError(f"Dataset path '{data_roots}' does not exist.")
+            data_roots = str(data_path)
         self.data_type_candidates = self._detect_dataset_format(path=data_roots)
         self.data_type = self._select_data_type(self.data_type_candidates)
 
