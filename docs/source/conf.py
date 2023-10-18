@@ -11,6 +11,13 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("../../src"))
+
+from otx import __version__
+
 # ruff: noqa
 
 # -- Project information ----------------------------------------------------- #
@@ -18,7 +25,7 @@
 project = 'OpenVINO™ Training Extensions'
 copyright = '2023, OpenVINO™ Training Extensions Contributors'
 author = 'OpenVINO™ Training Extensions Contributors'
-release = '1.4.2'
+release = __version__
 
 # -- General configuration --------------------------------------------------- #
 

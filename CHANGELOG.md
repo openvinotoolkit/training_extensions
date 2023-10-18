@@ -2,14 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.4.3\]
+
+### Enhancements
+
+- Re-introduce adaptive scheduling for training (<https://github.com/openvinotoolkit/training_extensions/pull/2541>)
+
 ## \[v1.4.2\]
 
 ### Enhancements
 
+- Upgrade nncf version to 2.6.0 (<https://github.com/openvinotoolkit/training_extensions/pull/2459>)
+- Bump datumaro version to 1.5.0 (<https://github.com/openvinotoolkit/training_extensions/pull/2470>, <https://github.com/openvinotoolkit/training_extensions/pull/2502>)
+- Set tox version constraint (<https://github.com/openvinotoolkit/training_extensions/pull/2472>)
 - Add model category attributes to model template (<https://github.com/openvinotoolkit/training_extensions/pull/2439>)
 
 ### Bug fixes
 
+- Bug fix for albumentations (<https://github.com/openvinotoolkit/training_extensions/pull/2467>)
 - Add workaround for the incorrect meta info M-RCNN (used for XAI) (<https://github.com/openvinotoolkit/training_extensions/pull/2437>)
 - Fix label list order for h-label classification (<https://github.com/openvinotoolkit/training_extensions/pull/2440>)
 - Modified fq numbers for lite HRNET e2e tests (<https://github.com/openvinotoolkit/training_extensions/pull/2445>)
