@@ -78,11 +78,12 @@ class RegressionTestConfig(object):
         self.label_type = label_type
         self.otx_dir = otx_dir
 
-        self.result_dict = self._init_result_dict()
-        result_dir_prefix = kwargs.get("result_dir", "")
-        if len(result_dir_prefix) > 0:
-            result_dir_prefix = result_dir_prefix + "_"
-        self.result_dir = f"/tmp/regression_test_results/{result_dir_prefix}{task_type}"
+        self._result_dict = {}
+        results_prefix = kwargs.get("results_prefix", "")
+        if len(results_prefix) > 0:
+            results_prefix = results_prefix + "_"
+        results_root = kwargs.get("results_root", "/tmp/reg_test_results")
+        self.result_dir = os.path.join(results_root, "reg_test_results", f"{results_prefix}{task_type}")
         Path(self.result_dir).mkdir(parents=True, exist_ok=True)
 
         self.config_dict = self.load_config()
@@ -94,6 +95,10 @@ class RegressionTestConfig(object):
 
         self.num_cuda_devices = torch.cuda.device_count()
         self.update_gpu_args(self.args, enable_auto_num_worker=kwargs.get("enable_auto_num_worker", True))
+
+    @property
+    def result_dict(self):
+        return self._result_dict
 
     def update_gpu_args(self, args, enable_auto_num_worker=True):
         if self.num_cuda_devices > 1:
@@ -166,22 +171,30 @@ class RegressionTestConfig(object):
 
         return result
 
-    def _init_result_dict(self) -> Dict[str, Any]:
-        result_dict = {self.task_type: {}}
-        if "anomaly" not in self.task_type:
-            for label_type in LABEL_TYPES:
-                result_dict[self.task_type][label_type] = {}
-                for train_type in TRAIN_TYPES:
-                    result_dict[self.task_type][label_type][train_type] = {}
-                    for test_type in TEST_TYPES:
-                        result_dict[self.task_type][label_type][train_type][test_type] = []
-        else:
-            for test_type in TEST_TYPES:
-                result_dict[self.task_type][test_type] = {}
-                for category in ANOMALY_DATASET_CATEGORIES:
-                    result_dict[self.task_type][test_type][category] = []
+    def update_result(self, test_type, result, is_anomaly=False, **kwargs):
+        print(f"update_result({test_type=}, {result=}, {is_anomaly=}, kwargs={kwargs}")
+        task_type = self.task_type
+        if task_type not in self._result_dict:
+            self._result_dict[task_type] = {}
 
-        return result_dict
+        if not is_anomaly:
+            label_type = self.label_type
+            train_type = self.train_type
+
+            if label_type not in self._result_dict[task_type]:
+                self._result_dict[task_type][label_type] = {}
+            if train_type not in self._result_dict[task_type][label_type]:
+                self._result_dict[task_type][label_type][train_type] = {}
+            if test_type not in self._result_dict[task_type][label_type][train_type]:
+                self._result_dict[task_type][label_type][train_type][test_type] = []
+            self._result_dict[task_type][label_type][train_type][test_type].append(result)
+        else:
+            category = kwargs.get("category", "unknown")
+            if test_type not in self._result_dict[task_type]:
+                self._result_dict[task_type][test_type] = {}
+            if category not in self._result_dict[task_type][test_type]:
+                self._result_dict[task_type][test_type][category] = []
+            self._result_dict[task_type][test_type][category].append(result)
 
     def get_template_performance(self, template: ModelTemplate, **kwargs):
         """Get proper template performance inside of performance list."""
@@ -195,15 +208,13 @@ class RegressionTestConfig(object):
             category = kwargs.get("category")
             if category is None:
                 raise RuntimeError("missing required keyword arg 'category'")
-            results = self.result_dict[task_type]["train"][category]
+            results = self._result_dict[task_type]["train"][category]
         else:
-            results = self.result_dict[task_type][label_type][train_type]["train"]
+            results = self._result_dict[task_type][label_type][train_type]["train"]
 
         for result in results:
             template_name = list(result.keys())[0]
             if template_name == template.name:
                 performance = result
                 break
-        if performance is None:
-            raise ValueError("Performance is None.")
         return performance

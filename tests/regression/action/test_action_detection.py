@@ -46,17 +46,20 @@ class TestRegressionActionDetection:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
 
+        print(f"\nwritting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
         with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
             json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
 
@@ -66,6 +69,7 @@ class TestRegressionActionDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        test_type = "train"
         self.performance[template.name] = {}
 
         tmp_dir_path = tmp_dir_path / reg_cfg.task_type
@@ -79,14 +83,14 @@ class TestRegressionActionDetection:
             tmp_dir_path,
             reg_cfg.otx_dir,
             reg_cfg.args,
-            reg_cfg.config_dict["regression_criteria"]["train"],
+            reg_cfg.config_dict["regression_criteria"][test_type],
             self.performance[template.name],
         )
         infer_elapsed_time = timer() - infer_start_time
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][reg_cfg.train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -94,6 +98,8 @@ class TestRegressionActionDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_kpi_test(self, reg_cfg, template):
         performance = reg_cfg.get_template_performance(template)
+        if performance is None:
+            pytest.skip(reason="Cannot find performance data from results.")
 
         kpi_train_result = regression_train_time_testing(
             train_time_criteria=reg_cfg.config_dict["kpi_e2e_train_time_criteria"]["train"],
