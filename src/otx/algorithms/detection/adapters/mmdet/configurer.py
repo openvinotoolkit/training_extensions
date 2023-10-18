@@ -1,9 +1,9 @@
 """Base configurer for mmdet config."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from mmcv.utils import ConfigDict
 
@@ -13,7 +13,6 @@ from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMix
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
@@ -154,9 +153,12 @@ class DetectionConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
+        cfg, input_size=Optional[Tuple[int, int]], model_ckpt_path: Optional[str] = None, training=True
     ):
         """Change input size if necessary."""
+        if input_size is None:  # InputSizePreset.DEFAULT
+            return
+
         # YOLOX tiny has a different input size in train and val data pipeline
         base_input_size = None
         model_cfg = cfg.get("model")
@@ -168,15 +170,13 @@ class DetectionConfigurer(BaseConfigurer):
                     "test": (416, 416),
                     "unlabeled": (992, 736),
                 }
-
         manager = InputSizeManager(cfg, base_input_size)
 
-        input_size = manager.get_configured_input_size(input_size_config, model_ckpt_path)
-        if input_size is None:  # InputSizePreset.DEFAULT
-            return
-
         if input_size == (0, 0):  # InputSizePreset.AUTO
-            input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=True)
+            if training:
+                input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=True)
+            else:
+                input_size = manager.get_trained_input_size(model_ckpt_path)
             if input_size is None:
                 return
 

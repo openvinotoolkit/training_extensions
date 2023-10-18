@@ -682,12 +682,12 @@ class InputSizeManager:
                     self._set_pipeline_size_value(pipelines, resize_ratio)
 
         # Set model size
-        # - needed only for YOLOX
         model_cfg = self._config.get("model", {})
+        model_cfg["input_size"] = input_size
         if model_cfg.get("type", "") == "CustomYOLOX":
+            # - needed only for YOLOX
             if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
                 raise ValueError("YOLOX should have input size being multiple of 32.")
-            model_cfg["input_size"] = input_size
 
     @property
     def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
@@ -862,38 +862,28 @@ class InputSizeManager:
             pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
 
     @staticmethod
-    def get_configured_input_size(
-        input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
-    ) -> Optional[Tuple[int, int]]:
-        """Get configurable input size configuration. If it doesn't exist, return None.
+    def get_trained_input_size(model_ckpt: Optional[str] = None) -> Optional[Tuple[int, int]]:
+        """Get trained input size from checkpoint. If it doesn't exist, return None.
 
         Args:
-            input_size_config (InputSizePreset, optional): Input size setting. Defaults to InputSizePreset.DEFAULT.
             model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
 
         Returns:
             Optional[Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
         """
-        input_size = None
-        if input_size_config == InputSizePreset.DEFAULT:
-            if model_ckpt is None:
-                return None
+        if model_ckpt is None:
+            return None
 
-            model_info = torch.load(model_ckpt, map_location="cpu")
-            for key in ["config", "learning_parameters", "input_size", "value"]:
-                if key not in model_info:
-                    return None
-                model_info = model_info[key]
-            input_size = model_info
+        model_info = torch.load(model_ckpt, map_location="cpu")
+        if model_info is None:
+            return None
 
-            if input_size == InputSizePreset.DEFAULT.value:
-                return None
-            logger.info("Given model weight was trained with {} input size.".format(input_size))
+        input_size = model_info.get("input_size", None)
+        if not input_size:
+            return None
 
-        else:
-            input_size = input_size_config.value
-
-        return InputSizePreset.parse(input_size)
+        logger.info("Given model weight was trained with {} input size.".format(input_size))
+        return input_size
 
     @staticmethod
     def select_closest_size(input_size: Tuple[int, int], preset_sizes: List[Tuple[int, int]]):
