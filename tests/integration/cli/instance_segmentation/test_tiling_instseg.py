@@ -67,7 +67,7 @@ default_template = parse_model_template(
 )
 templates = [default_template] 
 
-for i, template enumerate(templates):
+for i, template in enumerate(templates):
     if template.name in ["MaskRCNN-ResNet50"]:
         templates[i] = pytest.mark(template, marks=pytest.mark.req_large_memory)
 
