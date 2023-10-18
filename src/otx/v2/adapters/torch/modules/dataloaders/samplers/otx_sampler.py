@@ -11,6 +11,7 @@ import numpy as np
 import torch
 from torch.utils.data.sampler import Sampler
 
+from otx.v2.adapters.torch.modules.utils.repeat_times import get_proper_repeat_times
 from otx.v2.adapters.torch.modules.utils.task_adapt import unwrap_dataset
 from otx.v2.api.utils.logger import get_logger
 
@@ -35,7 +36,6 @@ class OTXSampler(Sampler):
     Args:
         dataset (Dataset): A built-up dataset
         samples_per_gpu (int): batch size of Sampling
-        use_adaptive_repeats (bool): Flag about using adaptive repeats
         num_replicas (int, optional): Number of processes participating in
             distributed training. By default, :attr:`world_size` is retrieved from the
             current distributed group.
@@ -45,18 +45,22 @@ class OTXSampler(Sampler):
         shuffle (bool, optional): Flag about shuffling
         coef (int, optional): controls the repeat value
         min_repeat (float, optional): minimum value of the repeat dataset
+        n_repeats (Union[float, int str], optional) : number of iterations for manual setting
+        seed (int, optional): Random seed used to shuffle the sampler if
+            :attr:`shuffle=True`. This number should be identical across all
+            processes in the distributed group. Defaults to None.
     """
 
     def __init__(
         self,
         dataset: Dataset,
         samples_per_gpu: int,
-        use_adaptive_repeats: bool,
         num_replicas: int = 1,
         rank: int = 0,
         shuffle: bool = True,
         coef: float = -0.7,
         min_repeat: float = 1.0,
+        n_repeats: float | int | str = "auto",
         seed: int | None = None,
     ) -> None:
         """Initializes an OTXSampler object.
@@ -70,14 +74,25 @@ class OTXSampler(Sampler):
             shuffle (bool, optional): Whether to shuffle the samples. Defaults to True.
             coef (float, optional): The coefficient. Defaults to -0.7.
             min_repeat (float, optional): The minimum repeat. Defaults to 1.0.
-            seed (int, optional): The random seed. Defaults to None.
+            n_repeats (Union[float, int str], optional) : number of iterations for manual setting
+            seed (int, optional): Random seed used to shuffle the sampler if
+                :attr:`shuffle=True`. This number should be identical across all
+                processes in the distributed group. Defaults to None.
         """
         self.dataset, _ = unwrap_dataset(dataset)
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.shuffle = shuffle
-        self.repeat = self._get_proper_repeats(use_adaptive_repeats, coef, min_repeat)
+        if n_repeats == "auto":
+            repeat = get_proper_repeat_times(len(self.dataset), self.samples_per_gpu, coef, min_repeat)
+        elif isinstance(n_repeats, (int, float)):
+            repeat = float(n_repeats)
+        else:
+            msg = f"n_repeats: {n_repeats} should be auto or float or int value"
+            raise ValueError(msg)
+        # Will be removed.
+        self.repeat = int(repeat)
 
         self.num_samples = math.ceil(len(self.dataset) * self.repeat / self.num_replicas)
         self.total_size = self.num_samples * self.num_replicas
@@ -87,19 +102,6 @@ class OTXSampler(Sampler):
 
         self.seed = seed
         self.epoch = 0
-
-    def _get_proper_repeats(self, use_adaptive_repeats: bool, coef: float, min_repeat: float) -> int:
-        """Calculate the proper repeats with considering the number of iterations."""
-        n_repeats = 1
-        if use_adaptive_repeats:
-            # NOTE
-            # Currently, only support the integer type repeats.
-            # Will support the floating point repeats and large dataset cases.
-            n_iters_per_epoch = math.ceil(len(self.dataset) / self.samples_per_gpu)
-            n_repeats = math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))
-            logger.info("OTX Sampler: adaptive repeats enabled")
-            logger.info(f"OTX will use {n_repeats} times larger dataset made by repeated sampling")
-        return n_repeats
 
     def __iter__(self) -> Iterator:
         """Iter."""

@@ -19,9 +19,8 @@ class TestOTXSampler:
         self.mock_dataset = MockDataset()
 
     @pytest.mark.parametrize("batch", [1, 2, 4, 8, 16])
-    @pytest.mark.parametrize("use_adaptive_repeat", [True, False])
-    def test_sampler_iter(self, batch: int, use_adaptive_repeat: bool) -> None:
-        sampler = OTXSampler(self.mock_dataset, batch, use_adaptive_repeats=use_adaptive_repeat)
+    def test_sampler_iter(self, batch: int) -> None:
+        sampler = OTXSampler(self.mock_dataset, batch)
         sampler_iter = iter(sampler)
         count = 0
 

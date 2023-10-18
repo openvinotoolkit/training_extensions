@@ -41,34 +41,36 @@ class BalancedSampler(OTXSampler):
             tail of the data to make it evenly divisible across the number of
             replicas. If ``False``, the sampler will add extra indices to make
             the data evenly divisible across the replicas. Default: ``False``.
-        use_adaptive_repeats (bool, optional): Flag about using adaptive repeats
+        n_repeats (Union[float, int, str], optional) : number of iterations for manual setting
     """
 
     def __init__(
         self,
         dataset: Dataset,
-        batch_size: int,
+        samples_per_gpu: int,
         efficient_mode: bool = True,
         num_replicas: int = 1,
         rank: int = 0,
         drop_last: bool = False,
-        use_adaptive_repeats: bool = False,
+        n_repeats: float | int | str = 1,
     ) -> None:
         """Initialize a BalancedSampler object.
 
         Args:
             dataset (Dataset): The dataset to sample from.
-            batch_size (int): The batch size.
+            samples_per_gpu (int): The batch size.
             efficient_mode (bool, optional): Whether to use efficient mode. Defaults to True.
             num_replicas (int, optional): The number of replicas. Defaults to 1.
             rank (int, optional): The rank. Defaults to 0.
             drop_last (bool, optional): Whether to drop the last batch if it's incomplete. Defaults to False.
             use_adaptive_repeats (bool): Whether to use adaptive repeats.
         """
+        self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
-        super().__init__(dataset, batch_size, use_adaptive_repeats)
+
+        super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
         self.img_indices = self.dataset.img_indices
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
@@ -87,7 +89,9 @@ class BalancedSampler(OTXSampler):
             self.num_trials = int(self.data_length / self.num_cls)
         self.num_samples = self._calculate_num_samples()
 
-        logger.info(f"This sampler will select balanced samples {self.num_trials} times")
+        logger.info(
+            f"Balanced sampler will select balanced samples {math.ceil(self.num_samples/samples_per_gpu)} times",
+        )
 
     def _calculate_num_samples(self) -> int:
         num_samples = self.num_trials * self.num_cls * self.repeat

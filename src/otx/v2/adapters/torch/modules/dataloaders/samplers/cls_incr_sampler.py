@@ -3,14 +3,18 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import math
 import random
-from typing import Iterator
+from typing import TYPE_CHECKING, Iterator
 
 import numpy as np
-from torch.utils.data import Dataset
 
 from .otx_sampler import OTXSampler
+
+if TYPE_CHECKING:
+    from torch.utils.data import Dataset
 
 
 class ClsIncrSampler(OTXSampler):
@@ -36,7 +40,7 @@ class ClsIncrSampler(OTXSampler):
             tail of the data to make it evenly divisible across the number of
             replicas. If ``False``, the sampler will add extra indices to make
             the data evenly divisible across the replicas. Default: ``False``.
-        use_adaptive_repeats (bool, optional): Flag about using adaptive repeats
+        n_repeats (Union[float, int, str], optional) : number of iterations for manual setting
     """
 
     def __init__(
@@ -47,7 +51,7 @@ class ClsIncrSampler(OTXSampler):
         num_replicas: int = 1,
         rank: int = 0,
         drop_last: bool = False,
-        use_adaptive_repeats: bool = False,
+        n_repeats: float | int | str = 1,
     ) -> None:
         """Incremental sampler for classification datasets.
 
@@ -58,7 +62,7 @@ class ClsIncrSampler(OTXSampler):
             num_replicas (int, optional): Number of processes. Defaults to 1.
             rank (int, optional): Rank of the current process. Defaults to 0.
             drop_last (bool, optional): Whether to drop the last incomplete batch. Defaults to False.
-            use_adaptive_repeats (bool): Whether to use adaptive repeats.
+            n_repeats (Union[float, int, str], optional) : number of iterations for manual setting
         """
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
@@ -66,7 +70,7 @@ class ClsIncrSampler(OTXSampler):
         self.drop_last = drop_last
 
         # Dataset Wrapping remove & repeat for RepeatDataset
-        super().__init__(dataset, samples_per_gpu, use_adaptive_repeats)
+        super().__init__(dataset, samples_per_gpu, n_repeats=n_repeats)
 
         if hasattr(self.dataset, "img_indices"):
             self.new_indices = self.dataset.img_indices["new"]

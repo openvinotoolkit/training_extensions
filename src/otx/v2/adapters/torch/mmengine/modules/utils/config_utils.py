@@ -1,19 +1,11 @@
 """Utils for common OTX algorithms."""
+# Copyright (C) 2022-2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+from __future__ import annotations
 
+import re
+import math
 import copy
 import multiprocessing
 import os.path as osp
@@ -25,14 +17,14 @@ import warnings
 from collections.abc import Mapping
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-
+from typing import Callable, Dict, List, Optional, Tuple, Union
+from enum import Enum
 import torch
 from mmengine.config import Config, ConfigDict
 from mmengine.config.config import BASE_KEY, DEPRECATION_KEY
 from mmengine.utils import check_file_exist, import_modules_from_strings
 from torch.utils.data import DataLoader
-
+import numpy as np
 from otx.v2.api.utils.logger import get_logger
 
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
@@ -267,23 +259,6 @@ class CustomConfig(Config):
         #     with open(file, 'w', encoding='utf-8') as f:
 
 
-def copy_config(cfg: Config) -> None:
-    """A function that creates a deep copy of the input configuration object.
-
-    :param cfg: Config object, an instance of `Config` class to be copied.
-    :return: Config object, a deep copy of the input configuration object.
-    :raises: ValueError if the input object is not an instance of `Config` class.
-    """
-    if not isinstance(cfg, Config):
-        raise ValueError(f"cannot copy this instance {type(cfg)}")
-
-    # disable [B301, B403] pickle, import-pickle - the library used for converting cfg object
-    import pickle  # nosec B403
-
-    data = pickle.dumps(cfg)
-    return pickle.loads(data)  # nosec B301
-
-
 def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict) -> None:
     """Update hook cfg if same type is in custom_hook or append it."""
     custom_hooks = cfg.get("custom_hooks", [])
@@ -296,276 +271,6 @@ def update_or_add_custom_hook(cfg: Config, hook_cfg: ConfigDict) -> None:
     if not custom_hooks_updated:
         custom_hooks.append(hook_cfg)
     cfg["custom_hooks"] = custom_hooks
-
-
-def remove_custom_hook(cfg: Config, hook_type: str) -> None:
-    """Remove hook cfg if hook_type is in custom_hook."""
-    custom_hooks = cfg.get("custom_hooks", [])
-    if len(custom_hooks) > 0:
-        idx_to_del = None
-        for i, custom_hook in enumerate(custom_hooks):
-            if custom_hook["type"] == hook_type:
-                idx_to_del = i
-                break
-        if idx_to_del is not None:
-            del custom_hooks[idx_to_del]
-
-
-def recursively_update_cfg(
-    cfg: Union[Config, dict],
-    criterion: Callable[[Any, Any], bool],
-    update_dict: Union[Config, dict, ConfigDict],
-) -> None:
-    """A function that recursively updates the input dictionary or `Config` object with a new dictionary.
-
-    :param cfg: Union[Config, dict], an input dictionary or `Config` object to be updated.
-    :param criterion: Callable[[Any, Any], bool], a function that determines whether to update a key-value pair based on
-                      a criterion. The function takes two arguments: key and value, and returns a boolean.
-    :param update_dict: Any, a dictionary to be used for updating the input dictionary.
-    :return: None
-    """
-    for key, val in list(cfg.items()):
-        if isinstance(val, dict):
-            recursively_update_cfg(val, criterion, update_dict)
-        if criterion(key, val):
-            cfg.update(update_dict)
-
-
-def add_custom_hook_if_not_exists(cfg: Config, hook_cfg: ConfigDict) -> None:
-    """A function that adds a custom hook to the input `Config` object if it doesn't already exist.
-
-    :param cfg: Config object, an instance of `Config` class to which the custom hook will be added.
-    :param hook_cfg: ConfigDict object, an instance of `ConfigDict` class representing the custom hook to be added.
-    :return: None
-    """
-    custom_hooks = cfg.get("custom_hooks", [])
-    found = False
-    for hook in custom_hooks:
-        if hook["type"] == hook_cfg["type"]:
-            found = True
-            break
-    if not found:
-        custom_hooks.append(hook_cfg)
-        cfg["custom_hooks"] = custom_hooks
-
-
-def remove_from_config(config: Union[Config, ConfigDict], key: str) -> None:
-    """Update & Remove configs."""
-    if key in config:
-        if isinstance(config, Config):
-            del config._cfg_dict[key]
-        elif isinstance(config, ConfigDict):
-            del config[key]
-        else:
-            raise ValueError(f"Unknown config type {type(config)}")
-
-
-def remove_from_configs_by_type(configs: List[ConfigDict], type_name: str) -> None:
-    """Update & remove by type."""
-    indices = []
-    for i, config in enumerate(configs):
-        type_name_ = config.get("type", None)
-        if type_name_ == type_name:
-            indices.append(i)
-    for i in reversed(indices):
-        configs.pop(i)
-
-
-def update_config(
-    config: Union[Config, ConfigDict],
-    pairs: dict,
-) -> None:
-    """Update configs by path as a key and value as a target."""
-    for path, value in pairs.items():
-        path_ = list(reversed(path))
-        ptr = config
-        key = None
-        while path_:
-            key = path_.pop()
-            if isinstance(ptr, (Config, Mapping)) and key not in ptr:
-                ptr[key] = ConfigDict()
-            if len(path_) == 0:
-                ptr[key] = value
-            ptr = ptr[key]
-
-
-def config_from_string(config_string: str) -> Config:
-    """Generate an mmengine config dict object from a string.
-
-    :param config_string: string to parse
-    :return config: configuration object
-    """
-    with tempfile.NamedTemporaryFile("w", suffix=".py") as temp_file:
-        temp_file.write(config_string)
-        temp_file.flush()
-        return Config.fromfile(temp_file.name)
-
-
-def patch_color_conversion(config: Config) -> None:
-    """Patch color conversion."""
-
-    for cfg in get_configs_by_pairs(config.data, {"type": "Normalize"}):
-        to_rgb = False
-        if "to_rgb" in cfg:
-            to_rgb = cfg.to_rgb
-        cfg.to_rgb = not bool(to_rgb)
-
-
-def patch_adaptive_interval_training(config: Config) -> None:
-    """Update adaptive interval settings for OTX training.
-
-    This function can be removed by adding custom hook cfg into recipe.py directly.
-    """
-    # default adaptive hook for evaluating before and after training
-    add_custom_hook_if_not_exists(
-        config,
-        ConfigDict(
-            type="AdaptiveTrainSchedulingHook",
-            enable_adaptive_interval_hook=False,
-            enable_eval_before_run=True,
-        ),
-    )
-    # Add/remove adaptive interval hook
-    if config.get("use_adaptive_interval", False):
-        update_or_add_custom_hook(
-            config,
-            ConfigDict(
-                {
-                    "type": "AdaptiveTrainSchedulingHook",
-                    "max_interval": 5,
-                    "enable_adaptive_interval_hook": True,
-                    "enable_eval_before_run": True,
-                    **config.pop("adaptive_validation_interval", {}),
-                },
-            ),
-        )
-    else:
-        config.pop("adaptive_validation_interval", None)
-
-
-def patch_early_stopping(config: Config) -> None:
-    """Update early stop settings for OTX training.
-
-    This function can be removed by adding custom hook cfg into recipe.py directly.
-    """
-    if "early_stop" in config:
-        remove_custom_hook(config, "EarlyStoppingHook")
-        early_stop = config.get("early_stop", False)
-        if early_stop:
-            early_stop_hook = ConfigDict(
-                type="LazyEarlyStoppingHook",
-                start=early_stop.start,
-                patience=early_stop.patience,
-                iteration_patience=early_stop.iteration_patience,
-                interval=1,
-                metric=config.early_stop_metric,
-                priority=75,
-            )
-            update_or_add_custom_hook(config, early_stop_hook)
-        else:
-            remove_custom_hook(config, "LazyEarlyStoppingHook")
-
-    # make sure model to be in a training mode even after model is evaluated (mmengine bug)
-    update_or_add_custom_hook(
-        config,
-        ConfigDict(type="ForceTrainModeHook", priority="LOWEST"),
-    )
-
-
-def patch_persistent_workers(config: Config) -> None:
-    """If num_workers is 0, persistent_workers must be False."""
-    data_cfg = config.data
-    for subset in ["train", "val", "test", "unlabeled"]:
-        if subset not in data_cfg:
-            continue
-        dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
-        workers_per_gpu = dataloader_cfg.get(
-            "workers_per_gpu",
-            data_cfg.get("workers_per_gpu", 0),
-        )
-        if workers_per_gpu == 0:
-            dataloader_cfg["persistent_workers"] = False
-        elif "persistent_workers" not in dataloader_cfg:
-            dataloader_cfg["persistent_workers"] = True
-
-        if "pin_memory" not in dataloader_cfg:
-            dataloader_cfg["pin_memory"] = True
-
-        data_cfg[f"{subset}_dataloader"] = dataloader_cfg
-
-
-def get_adaptive_num_workers() -> Union[int, None]:
-    """Measure appropriate num_workers value and return it."""
-    num_gpus = torch.cuda.device_count()
-    if num_gpus == 0:
-        logger.warning("There is no GPUs. Use existing num_worker value.")
-        return None
-    return min(multiprocessing.cpu_count() // num_gpus, 8)  # max available num_workers is 8
-
-
-def patch_from_hyperparams(config: Config, hyperparams: Union[Config, ConfigDict]) -> None:
-    """Patch config parameters from hyperparams."""
-    params = hyperparams.learning_parameters
-    warmup_iters = int(params.learning_rate_warmup_iters)
-    lr_config = (
-        ConfigDict(warmup_iters=warmup_iters)
-        if warmup_iters > 0
-        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-    )
-
-    if params.enable_early_stopping and config.get("evaluation", None):
-        early_stop = ConfigDict(
-            start=int(params.early_stop_start),
-            patience=int(params.early_stop_patience),
-            iteration_patience=int(params.early_stop_iteration_patience),
-        )
-    else:
-        early_stop = False
-
-    runner = ConfigDict(max_epochs=int(params.num_iters))
-    if config.get("runner", None) and config.runner.get("type").startswith("IterBasedRunner"):
-        runner = ConfigDict(max_iters=int(params.num_iters))
-
-    hparams = ConfigDict(
-        optimizer=ConfigDict(lr=params.learning_rate),
-        lr_config=lr_config,
-        early_stop=early_stop,
-        data=ConfigDict(
-            samples_per_gpu=int(params.batch_size),
-            workers_per_gpu=int(params.num_workers),
-        ),
-        runner=runner,
-    )
-
-    if hyperparams.learning_parameters.auto_num_workers:
-        adapted_num_worker = get_adaptive_num_workers()
-        if adapted_num_worker is not None:
-            hparams.data.workers_per_gpu = adapted_num_worker
-
-    hparams["use_adaptive_interval"] = hyperparams.learning_parameters.use_adaptive_interval
-    config.merge_from_dict(hparams)
-
-
-DEFAULT_META_KEYS = (
-    "filename",
-    "ori_filename",
-    "ori_shape",
-    "img_shape",
-    "pad_shape",
-    "scale_factor",
-    "flip",
-    "flip_direction",
-    "img_norm_cfg",
-)
-
-
-def get_meta_keys(pipeline_step: dict, add_meta_keys: List[str] = []) -> dict:
-    """Update meta_keys for ignore_labels."""
-    meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
-    meta_keys.append("ignored_labels")
-    meta_keys += add_meta_keys
-    pipeline_step["meta_keys"] = set(meta_keys)
-    return pipeline_step
 
 
 WARN_MSG = (
@@ -605,3 +310,407 @@ def dump_lazy_config(config: Config, file: Optional[Union[str, Path]] = None, sc
         output_config.dump(file=file)
 
     return output_config
+
+
+class InputSizePreset(Enum):
+    """Configurable input size preset."""
+
+    DEFAULT = "Default"
+    AUTO = "Auto"
+    _64x64 = "64x64"
+    _128x128 = "128x128"
+    _224x224 = "224x224"
+    _256x256 = "256x256"
+    _384x384 = "384x384"
+    _512x512 = "512x512"
+    _768x768 = "768x768"
+    _1024x1024 = "1024x1024"
+
+    @staticmethod
+    def parse(value: str) -> Optional[Tuple[int, int]]:
+        """Parse string value to tuple."""
+        if value == "Default":
+            return None
+        if value == "Auto":
+            return (0, 0)
+        parsed_tocken = re.match("(\\d+)x(\\d+)", value)
+        if parsed_tocken is None:
+            return None
+        return (int(parsed_tocken.group(1)), int(parsed_tocken.group(2)))
+
+    @property
+    def tuple(self) -> Optional[Tuple[int, int]]:
+        """Returns parsed tuple."""
+        return InputSizePreset.parse(self.value)
+
+    @classmethod
+    def input_sizes(cls) -> list:
+        """Returns list of actual size tuples."""
+        return [e.tuple for e in cls if e.value[0].isdigit()]
+
+
+class InputSizeManager:
+    """Class for changing input size and getting input size value by checking data pipeline.
+
+    NOTE: "resize", "pad", "crop", "mosaic", "randomaffine", "multiscaleflipaug" , "AutoAugment" and "TwoCropTransform"
+    are considered at now. If other data pipelines exist, it can work differently than expected.
+
+    Args:
+        config (Dict): Global configuration including data config w/ "train", "val" or "test" data pipeline.
+        base_input_size (Optional[Union[int, List[int], Dict[str, Union[int, List[int]]]]], optional):
+            Default input size. If it's a None, it's estimated based on data pipeline. If it's an integer,
+            it's expected that all data pipeline have (base_input_size x base_input_size) input size.
+            If it's an integer list, all data pipeline have same (base_input_size[0] x base_input_size[1]) input size.
+            If it's dictionary, each data pipeline has specified input size. It should have format as below:
+                {"train" : [w, h], "val" : [w, h], "test" : [w, h]}
+    """
+
+    PIPELINE_TO_CHANGE: Dict[str, List[str]] = {
+        "resize": ["size", "img_scale"],
+        "pad": ["size"],
+        "crop": ["crop_size"],
+        "mosaic": ["img_scale"],
+        "randomaffine": ["border"],
+        "multiscaleflipaug": ["img_scale"],
+    }
+    PIPELINE_WRAPPER: Dict[str, List[str]] = {
+        "MultiScaleFlipAug": ["transforms"],
+        "AutoAugment": ["policies"],
+        "TwoCropTransform": ["view0", "view1", "pipeline"],
+        "LoadResizeDataFromOTXDataset": ["resize_cfg"],
+    }
+    SUBSET_TYPES: Tuple[str, str, str, str] = ("train", "val", "test", "unlabeled")
+
+    MIN_RECOGNIZABLE_OBJECT_SIZE = 32  # Minimum object size recognizable by NNs: typically 16 ~ 32
+    # meaning NxN input pixels being downscaled to 1x1 on feature map
+    MIN_DETECTION_INPUT_SIZE = 256  # Minimum input size for object detection
+
+    def __init__(
+        self,
+        config: Dict,
+        base_input_size: Optional[Union[int, Tuple[int, int], Dict[str, int], Dict[str, Tuple[int, int]]]] = None,
+    ) -> None:
+        self._config = config
+        self._data_config = config.get("data", {})
+        if isinstance(base_input_size, int):
+            base_input_size = (base_input_size, base_input_size)
+        elif isinstance(base_input_size, dict):
+            for subset in base_input_size.keys():
+                if isinstance(base_input_size[subset], int):
+                    size = base_input_size[subset]
+                    base_input_size[subset] = (size, size)  # type: ignore[assignment]
+            for subset in self.SUBSET_TYPES:
+                if subset in self._data_config and subset not in base_input_size:
+                    raise ValueError(f"There is {subset} data configuration but base input size for it doesn't exists.")
+
+        self._base_input_size = base_input_size
+
+    def set_input_size(self, input_size: Union[int, List[int], Tuple[int, int]]) -> None:
+        """Set input size in data pipe line.
+
+        Args:
+            input_size (Union[int, List[int]]):
+                input size to set. If it's an integer, (input_size x input_size) will be set.
+                If input_size is an integer list, (input_size[0] x input_size[1]) will be set.
+        """
+        if isinstance(input_size, int):
+            input_size = (input_size, input_size)
+        if not isinstance(self.base_input_size, dict):
+            resize_ratio = (input_size[0] / self.base_input_size[0], input_size[1] / self.base_input_size[1])
+
+        # Scale size values in data pipelines
+        for subset in self.SUBSET_TYPES:
+            if subset in self._data_config:
+                if isinstance(self.base_input_size, dict):
+                    resize_ratio = (
+                        input_size[0] / self.base_input_size[subset][0],
+                        input_size[1] / self.base_input_size[subset][1],
+                    )
+                pipelines = self._get_pipelines(subset)
+                if isinstance(pipelines, dict):
+                    # Deals with {"view0": [...], "view1": [...]}
+                    for pipeline in pipelines.values():
+                        self._set_pipeline_size_value(pipeline, resize_ratio)
+                else:
+                    self._set_pipeline_size_value(pipelines, resize_ratio)
+
+        # Set model size
+        model_cfg = self._config.get("model", {})
+        model_cfg["input_size"] = input_size
+        if model_cfg.get("type", "") == "CustomYOLOX":
+            # - needed only for YOLOX
+            if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
+                raise ValueError("YOLOX should have input size being multiple of 32.")
+
+    @property
+    def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
+        """Getter function of `base_input_size` attirbute.
+
+        If it isn't set when intializing class, it's estimated by checking data pipeline.
+        Same value is returned after estimation.
+
+        Raises:
+            RuntimeError: If failed to estimate base input size from data pipeline, raise an error.
+
+        Returns:
+            Union[List[int], Dict[str, List[int]]]: Base input size.
+        """
+        if self._base_input_size is not None:
+            return self._base_input_size  # type: ignore[return-value]
+
+        input_size = self.get_input_size_from_cfg()
+        if input_size is None:
+            raise RuntimeError("There isn't any pipeline in the data configurations.")
+
+        self._base_input_size = input_size
+        return input_size
+
+    def get_input_size_from_cfg(
+        self, subset: Union[str, List[str]] = ["test", "val", "train"]
+    ) -> Optional[Tuple[int, int]]:
+        """Estimate image size using data pipeline.
+
+        Args:
+            subset (Union[str, List[str]], optional): Which pipelines to check. Defaults to ["test", "val", "train"].
+
+        Returns:
+            Union[None, List[int]]: Return estimiated input size. If failed to estimate, return None.
+        """
+        if isinstance(subset, str):
+            subset = [subset]
+
+        for target_subset in subset:
+            if target_subset in self._data_config:
+                input_size = self._estimate_post_img_size(self._data_config[target_subset]["pipeline"])
+                if input_size is not None:
+                    return tuple(input_size)  # type: ignore[return-value]
+
+        return None
+
+    def _estimate_post_img_size(
+        self, pipelines: Union[Dict, List[Dict]], default_size: Optional[List[int]] = None
+    ) -> Union[List[int], None]:
+        # NOTE: Mosaic isn't considered in this step because Mosaic and following RandomAffine don't change image size
+        post_img_size = default_size
+
+        if isinstance(pipelines, dict):
+            for pipeline in pipelines.values():
+                # Deals with {"view0": [...], "view1": [...]}
+                # Just using the first one to estimate
+                return self._estimate_post_img_size(pipeline, post_img_size)
+
+        for pipeline in pipelines:
+            if "resize" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "resize")
+                if img_size is not None:
+                    post_img_size = img_size
+            elif "pad" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "pad")
+                if img_size is not None:
+                    if post_img_size is None:
+                        post_img_size = img_size
+                    else:
+                        for i in range(2):
+                            if post_img_size[i] < img_size[i]:
+                                post_img_size[i] = img_size[i]
+            elif "crop" in pipeline["type"].lower():
+                img_size = self._get_size_value(pipeline, "crop")
+                if img_size is not None:
+                    if post_img_size is None:
+                        post_img_size = img_size
+                    else:
+                        for i in range(2):
+                            if post_img_size[i] > img_size[i]:
+                                post_img_size[i] = img_size[i]
+            elif pipeline["type"] == "MultiScaleFlipAug":
+                img_size = self._get_size_value(pipeline, "multiscaleflipaug")
+                if img_size is not None:
+                    post_img_size = img_size
+
+        for pipeline_name, sub_pipeline_names in self.PIPELINE_WRAPPER.items():
+            if pipeline_name == pipeline["type"]:
+                for sub_pipeline_name in sub_pipeline_names:
+                    if sub_pipeline_name in pipeline:
+                        sub_pipeline = pipeline[sub_pipeline_name]
+                        if isinstance(sub_pipeline, dict):
+                            sub_pipeline = [sub_pipeline]
+                        elif isinstance(sub_pipeline[0], list):
+                            sub_pipeline = sub_pipeline[0]
+                        post_img_size = self._estimate_post_img_size(sub_pipeline, post_img_size)
+                        break
+
+        return post_img_size
+
+    @classmethod
+    def _get_size_value(cls, pipeline: Dict, attr: str) -> Union[List[int], None]:
+        for pipeline_attr in cls.PIPELINE_TO_CHANGE[attr]:
+            if pipeline_attr not in pipeline:
+                continue
+            size_val = pipeline[pipeline_attr]
+            if isinstance(size_val, int):
+                return [size_val, size_val]
+            elif isinstance(size_val, tuple):
+                return list(size_val)
+            elif isinstance(size_val, list):
+                return list(size_val[0])
+
+        return None
+
+    def _get_pipelines(self, subset: str) -> list:
+        if "pipeline" in self._data_config[subset]:
+            return self._data_config[subset]["pipeline"]
+        if "dataset" in self._data_config[subset]:
+            return self._data_config[subset]["dataset"]["pipeline"]
+        raise RuntimeError("Failed to find pipeline.")
+
+    def _set_pipeline_size_value(
+        self, pipeline: Union[Dict, List[Dict]], scale: Tuple[Union[int, float], Union[int, float]]
+    ) -> None:
+        if isinstance(pipeline, list):
+            for sub_pipeline in pipeline:
+                self._set_pipeline_size_value(sub_pipeline, scale)
+            return
+
+        updated = False
+        for pipeline_name, pipeline_attrs in self.PIPELINE_TO_CHANGE.items():
+            if pipeline_name in pipeline["type"].lower():
+                for pipeline_attr in pipeline_attrs:
+                    if pipeline_attr in pipeline:
+                        self._set_size_value(pipeline, pipeline_attr, scale)
+                        updated = True
+                if updated:
+                    break
+
+        for pipeline_name, sub_pipeline_names in self.PIPELINE_WRAPPER.items():
+            if pipeline_name == pipeline["type"]:
+                for sub_pipeline_name in sub_pipeline_names:
+                    if sub_pipeline_name in pipeline:
+                        if isinstance(pipeline[sub_pipeline_name], dict):
+                            self._set_pipeline_size_value(pipeline[sub_pipeline_name], scale)
+                        elif isinstance(pipeline[sub_pipeline_name][0], dict):
+                            for sub_pipeline in pipeline[sub_pipeline_name]:
+                                self._set_pipeline_size_value(sub_pipeline, scale)
+                        elif isinstance(pipeline[sub_pipeline_name][0], list):
+                            for sub_pipelines in pipeline[sub_pipeline_name]:
+                                for sub_pipeline in sub_pipelines:
+                                    self._set_pipeline_size_value(sub_pipeline, scale)
+                        else:
+                            raise ValueError(
+                                "Dataset pipeline in pipeline wrapper type should be"
+                                "either dict, list[dict] or list[list[dict]]."
+                            )
+
+    @staticmethod
+    def _set_size_value(pipeline: Dict, attr: str, scale: Tuple[Union[int, float], Union[int, float]]) -> None:
+        if isinstance(pipeline[attr], int):
+            pipeline[attr] = round(pipeline[attr] * scale[0])
+        elif isinstance(pipeline[attr], list) and isinstance(pipeline[attr][0], tuple):
+            for idx in range(len(pipeline[attr])):
+                pipeline[attr][idx] = (
+                    round(pipeline[attr][idx][0] * scale[0]),
+                    round(pipeline[attr][idx][1] * scale[1]),
+                )
+        else:
+            pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
+
+    @staticmethod
+    def get_trained_input_size(model_ckpt: Optional[str] = None) -> Optional[Tuple[int, int]]:
+        """Get trained input size from checkpoint. If it doesn't exist, return None.
+
+        Args:
+            model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
+
+        Returns:
+            Optional[Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
+        """
+        if model_ckpt is None:
+            return None
+
+        model_info = torch.load(model_ckpt, map_location="cpu")
+        if model_info is None:
+            return None
+
+        input_size = model_info.get("input_size", None)
+        if not input_size:
+            return None
+
+        logger.info("Given model weight was trained with {} input size.".format(input_size))
+        return input_size
+
+    @staticmethod
+    def select_closest_size(input_size: Tuple[int, int], preset_sizes: List[Tuple[int, int]]) -> Tuple[int, int]:
+        """Select the most closest size from preset sizes in log scale.
+
+        Args:
+            input_size (Tuple[int, int]): Query input size
+            preset_sizes (List[Tuple[int, int]]): List of preset input sizes
+
+        Returns:
+            Tuple[int, int]: Best matching size out of preset. Returns input_size if preset is empty.
+        """
+        if len(preset_sizes) == 0:
+            return input_size
+
+        def to_log_scale(x: tuple) -> np.ndarray:
+            return np.log(np.sqrt(x[0] * x[1]))
+
+        input_scale = to_log_scale(input_size)
+        preset_scales = np.array(list(map(to_log_scale, preset_sizes)))
+        abs_diff = np.abs(preset_scales - input_scale)
+        return preset_sizes[np.argmin(abs_diff)]
+
+    def adapt_input_size_to_dataset(
+        self, max_image_size: int, min_object_size: Optional[int] = None, downscale_only: bool = True
+    ) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
+        """Compute appropriate model input size w.r.t. dataset statistics.
+
+        Args:
+            max_image_size (int): Typical large image size of dataset in pixels.
+            min_object_size (int, optional): Typical small object size of dataset in pixels.
+                None to consider only image size. Defaults to None.
+            downscale_only (bool) : Whether to allow only smaller size than default setting. Defaults to True.
+
+        Returns:
+            Tuple[int, int]: (width, height)
+        """
+
+        logger.info("Adapting model input size based on dataset stat")
+
+        base_input_size = self.base_input_size
+        if isinstance(base_input_size, Dict):
+            base_input_size = base_input_size.get("train", base_input_size.get("test", {}))
+        logger.info(f"-> Current base input size: {base_input_size}")
+
+        if max_image_size <= 0:
+            return base_input_size
+
+        image_size = max_image_size
+        logger.info(f"-> Based on typical large image size: {image_size}")
+
+        # Refine using annotation shape size stat
+        if min_object_size is not None and min_object_size > 0:
+            image_size = round(image_size * self.MIN_RECOGNIZABLE_OBJECT_SIZE / min_object_size)
+            logger.info(f"-> Based on typical small object size {min_object_size}: {image_size}")
+            if image_size > max_image_size:
+                image_size = max_image_size
+                logger.info(f"-> Restrict to max image size: {image_size}")
+            if image_size < self.MIN_DETECTION_INPUT_SIZE:
+                image_size = self.MIN_DETECTION_INPUT_SIZE
+                logger.info(f"-> Based on minimum object detection input size: {image_size}")
+
+        input_size = (round(image_size), round(image_size))
+
+        if downscale_only:
+
+            def area(x: Tuple[int, int]) -> int:
+                return x[0] * x[1]
+
+            if base_input_size and isinstance(base_input_size, tuple) and area(input_size) >= area(base_input_size):
+                logger.info(f"-> Downscale only: {input_size} -> {base_input_size}")
+                return base_input_size
+
+        # Closest preset
+        input_size_preset = InputSizePreset.input_sizes()
+        input_size = self.select_closest_size(input_size, input_size_preset)
+        logger.info(f"-> Closest preset: {input_size}")
+        return input_size

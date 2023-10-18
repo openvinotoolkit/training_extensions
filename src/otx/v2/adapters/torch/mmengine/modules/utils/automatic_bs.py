@@ -129,6 +129,9 @@ def _set_batch_size(cfg: Config, batch_size: int) -> None:
         cfg.data.videos_per_gpu = batch_size
     else:
         cfg.data.train_dataloader["samples_per_gpu"] = batch_size
+        for custom_hook in cfg.custom_hooks:
+            if custom_hook["type"] == "AdaptiveRepeatDataHook":
+                custom_hook["train_batch_size"] = batch_size
 
 
 def _set_max_epoch(cfg: Config, max_epoch: int) -> None:
