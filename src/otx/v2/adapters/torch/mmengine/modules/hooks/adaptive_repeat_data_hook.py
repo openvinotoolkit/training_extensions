@@ -59,12 +59,12 @@ class AdaptiveRepeatDataHook(Hook):
 
             runner._max_iters = int(runner.max_iters * self.n_repeats)
 
-    def before_epoch(self, runner: Runner) -> None:
+    def before_train_epoch(self, runner: Runner) -> None:
         """Convert to OTX Sampler."""
-        dataset = runner.data_loader.dataset
-        num_workers = runner.data_loader.num_workers
-        collate_fn = runner.data_loader.collate_fn
-        worker_init_fn = runner.data_loader.worker_init_fn
+        dataset = runner.train_dataloader.dataset
+        num_workers = runner.train_dataloader.num_workers
+        collate_fn = runner.train_dataloader.collate_fn
+        worker_init_fn = runner.train_dataloader.worker_init_fn
 
         sampler = OTXSampler(
             dataset=dataset,
@@ -77,7 +77,7 @@ class AdaptiveRepeatDataHook(Hook):
             n_repeats=self.n_repeats,
         )
 
-        runner.data_loader = DataLoader(
+        dataloader = DataLoader(
             dataset,
             batch_size=self.batch_size,
             sampler=sampler,
@@ -86,3 +86,5 @@ class AdaptiveRepeatDataHook(Hook):
             pin_memory=False,
             worker_init_fn=worker_init_fn,
         )
+        runner.train_loop.dataloader = dataloader
+        runner._train_dataloader = dataloader
