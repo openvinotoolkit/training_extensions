@@ -1,4 +1,4 @@
-estToolsAnomalyDetection:
+TestToolsAnomalyDetection:
   nncf:
     number_of_fakequantizers: 27
   ptq:
