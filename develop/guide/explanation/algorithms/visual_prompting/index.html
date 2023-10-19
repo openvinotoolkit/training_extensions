@@ -522,38 +522,57 @@ As you can expect, performance will be different between <code class="docutils l
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/sam_vit_b/template_experimental.yaml">Visual_Prompting_SAM_ViT_B</a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/sam_tiny_vit/template_experimental.yaml">Visual_Prompting_SAM_Tiny_ViT</a></p></td>
+<td><p>SAM_Tiny_ViT</p></td>
+<td><p>38.95</p></td>
+<td><p>47</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/blob/develop/src/otx/algorithms/visual_prompting/configs/sam_vit_b/template_experimental.yaml">Visual_Prompting_SAM_ViT_B</a></p></td>
 <td><p>SAM_ViT_B</p></td>
-<td><p>487</p></td>
-<td><p>374</p></td>
+<td><p>483.71</p></td>
+<td><p>362</p></td>
 </tr>
 </tbody>
 </table>
 <p>To check feasibility of <a class="reference external" href="https://arxiv.org/abs/2304.02643">SAM</a>, we did experiments using three public datasets with each other domains: <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a>, <a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a>, and <a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a>, and checked <a class="reference external" href="https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient">Dice score</a>.
-We used sampled training data from <a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a> and <a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a>, and full training data (=110) from <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a>. The below table shows performance improvement after fine-tuning.</p>
+We used sampled training data from <a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a> and <a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a>, and full training data (=110) from <a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a>.</p>
 <table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Dataset</p></th>
 <th class="head"><p>#samples</p></th>
-<th class="head"><p>Before</p></th>
-<th class="head"><p>After fine-tuning</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p><a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a></p></td>
 <td><p>110</p></td>
-<td><p>92.32</p></td>
-<td><p>92.46 (+0.14)</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a></p></td>
-<td><p>100</p></td>
-<td><p>79.61</p></td>
-<td><p>83.92 (+4.31)</p></td>
+<td><p>500</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a></p></td>
 <td><p>1 CT (=100 slices)</p></td>
-<td><p>91.48</p></td>
-<td><p>91.68 (+0.20)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The below table shows performance improvement after fine-tuning.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Model name</p></th>
+<th class="head"><p><a class="reference external" href="https://github.com/thsant/wgisd">WGISD</a></p></th>
+<th class="head"><p><a class="reference external" href="https://conservancy.umn.edu/handle/11299/214865">Trashcan</a></p></th>
+<th class="head"><p><a class="reference external" href="https://flare22.grand-challenge.org/">FLARE22</a></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Tiny_ViT</p></td>
+<td><p>90.32 → 92.29 (+1.97)</p></td>
+<td><p>82.38 → 85.01 (+2.63)</p></td>
+<td><p>89.69 → 93.05 (+3.36)</p></td>
+</tr>
+<tr class="row-odd"><td><p>ViT_B</p></td>
+<td><p>92.32 → 92.46 (+0.14)</p></td>
+<td><p>79.61 → 81.50 (+1.89)</p></td>
+<td><p>91.48 → 91.68 (+0.20)</p></td>
 </tr>
 </tbody>
 </table>
