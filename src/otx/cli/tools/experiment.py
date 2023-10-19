@@ -227,7 +227,7 @@ class BaseExpParser(ABC):
         with file_path.open("r") as f:
             lines = f.readlines()
 
-        val_score_pattern = re.compile(r"score: Performance\(score: (\d+(\.\d*)?|\.\d+)")
+        val_score_pattern = re.compile(r"score: Performance\(score: ([-+]?\d+(\.\d*)?|\.\d+)")
         e2e_time_pattern = re.compile(r"time elapsed: '(\d+:\d+:\d+(\.\d*)?)'")
         for line in lines:
             if save_val_score:
@@ -249,12 +249,12 @@ class MMCVExpParser(BaseExpParser):
                 if eval_files:
                     self._parse_eval_output(eval_files[0])
 
-                # best eval score & iter, data time
+                # iter, data time
                 train_record_files = list((task_dir / "logs").glob("*.log.json"))
                 if train_record_files:
                     self._parse_train_record(train_record_files[0])
 
-                # train e2e time
+                # train e2e time & val score
                 cli_report_files = list(task_dir.glob("cli_report.log"))
                 if cli_report_files:
                     self._parse_cli_report(cli_report_files[0])
@@ -485,6 +485,18 @@ def get_command_list(exp_recipe: Dict) -> Dict[str, str]:
     constants: Dict = exp_recipe.get("constants", {})
     variables: Dict = exp_recipe.get("variables", {})
 
+    def cvt_int_2_str(target: Dict):
+        for key, val in target.items():
+            if isinstance(val, (int, float)):
+                target[key] = str(val)
+            elif isinstance(val, list):
+                for i in range(len(val)):
+                    if isinstance(val[i], (int, float)):
+                        val[i] = str(val[i])
+
+    cvt_int_2_str(constants)
+    cvt_int_2_str(variables)
+
     for key in variables.keys():
         map_variable(constants, variables, key)
     map_variable(constants, exp_recipe, "command")
@@ -533,8 +545,8 @@ def run_experiment_recipe(exp_recipe: Dict):
         console.rule("[bold red]List of failed cases")
         for each_fail_case in failed_case:
             each_fail_case["exception"] = str(each_fail_case["exception"])
-            console.print(f"Case : {each_fail_case['variable']}")
-            console.print("Error log:", each_fail_case['exception'])
+            console.print(f"Case : {each_fail_case['variable']}", crop=False)
+            console.print("Error log:", each_fail_case['exception'], crop=False)
             console.print()
         console.rule()
 
