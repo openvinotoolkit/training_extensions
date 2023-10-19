@@ -6,14 +6,14 @@
 import copy
 import functools
 
+import cv2
+import mmcv
 import numpy as np
 import torch
 from mmdet.core import bbox2result, bbox2roi
 from mmdet.core.mask.structures import BitmapMasks
 from mmdet.models import DETECTORS, build_detector
 from mmdet.models.detectors import BaseDetector
-import mmcv
-import cv2
 
 from otx.algorithms.common.utils.logger import get_logger
 
@@ -36,9 +36,9 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         pseudo_conf_thresh=0.7,
         bg_loss_weight=-1.0,
         min_pseudo_label_ratio=0.0,
-        visualize = False,
-        filter_empty_annotations = False,
-        **kwargs
+        visualize=False,
+        filter_empty_annotations=False,
+        **kwargs,
     ):
         super().__init__()
         self.unlabeled_loss_weights = unlabeled_loss_weights
@@ -133,20 +133,29 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
 
         return list(zip(bbox_results, segm_results))
 
-    def forward_train(self, img, img_metas, img0, gt_bboxes, gt_labels, gt_masks=None, gt_bboxes_ignore=None, **kwargs):
+    def forward_train(
+        self, img, img_metas, img0=None, gt_bboxes=None, gt_labels=None, gt_masks=None, gt_bboxes_ignore=None, **kwargs
+    ):
         """Forward function for UnbiasedTeacher."""
         losses = {}
         self.cur_iter += 1
         # Supervised loss
         # TODO: check img0 only option (which is common for mean teacher method)
+        if img0 is not None:
+            img = torch.cat((img0, img))  # weak + hard augmented images
+            gt_bboxes = gt_bboxes + gt_bboxes
+            gt_labels = gt_labels + gt_labels
+            gt_bboxes_ignore = gt_bboxes_ignore + gt_bboxes_ignore if gt_bboxes_ignore else None
+            gt_masks = gt_masks + gt_masks if self.model_s.with_mask else None
+
         forward_train = functools.partial(
             self.model_s.forward_train,
-            torch.cat((img0, img)),  # weak + hard augmented images
-            img_metas + img_metas,
-            gt_bboxes + gt_bboxes,
-            gt_labels + gt_labels,
-            gt_bboxes_ignore + gt_bboxes_ignore if gt_bboxes_ignore else None,
-            )
+            img,
+            img_metas,
+            gt_bboxes,
+            gt_labels,
+            gt_bboxes_ignore if gt_bboxes_ignore else None,
+        )
         if self.model_s.with_mask:
             sl_losses = forward_train(gt_masks=gt_masks)
         else:
@@ -182,7 +191,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         else:
             non_empty = [True]
         if self.visualize:
-            self.visual_online(ul_img, pseudo_bboxes, pseudo_labels)
+            self._visual_online(ul_img, pseudo_bboxes, pseudo_labels)
         losses.update(ps_ratio=torch.tensor([pseudo_ratio], device=current_device))
 
         # Unsupervised loss
@@ -209,8 +218,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
                     self._update_unlabeled_loss(losses, ul_loss, ul_loss_name, self.unlabeled_loss_weights[target_loss])
         return losses
 
-    def visual_online(self, img, boxes_list, labels_list, img_id=0,
-                      boxes_ignore_list=None, proposal_list=None):
+    def _visual_online(self, img, boxes_list, labels_list, img_id=0, boxes_ignore_list=None, proposal_list=None):
         if not img.size(0):
             return
         img_norm_cfg = dict(mean=np.array([0, 0, 0]), std=np.array([255, 255, 255]))
@@ -224,22 +232,21 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
             for idx, box in enumerate(proposal[:, :4]):
                 x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
                 img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (214, 39, 40), 2)
-                cv2.putText(img_np, f'{idx}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
-                            (214, 39, 40), 2)
+                cv2.putText(img_np, f"{idx}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (214, 39, 40), 2)
         # ignore
         if boxes_ignore_list:
             boxes_ignore = boxes_ignore_list[img_id]
             for idx, box in enumerate(boxes_ignore):
                 x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
                 img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (44, 160, 44), 2)
-                cv2.putText(img_np, f'{idx}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
-                            (44, 160, 44), 2)
+                cv2.putText(img_np, f"{idx}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (44, 160, 44), 2)
         # pseudo gt
         for idx, (box, label) in enumerate(zip(boxes, labels)):
             x1, y1, x2, y2 = [int(a.cpu().item()) for a in box]
             img_np = cv2.rectangle(img_np, (x1, y1), (x2, y2), (157, 80, 136), 2)
-            cv2.putText(img_np, f'{idx}, {self.CLASSES[label]}', (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
-                        (157, 80, 136), 2)
+            cv2.putText(
+                img_np, f"{idx}, {self.CLASSES[label]}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (157, 80, 136), 2
+            )
 
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
         cv2.imwrite(f"test_debug_images/image_{self.cur_iter}.png", img_np)

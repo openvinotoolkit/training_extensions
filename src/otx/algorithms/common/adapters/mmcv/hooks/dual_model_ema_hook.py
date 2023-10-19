@@ -80,7 +80,7 @@ class DualModelEMAHook(Hook):
                 logger.info(f"model_s model_t diff: {self._diff_model()}")
 
     def before_epoch(self, runner):
-        # compute adaptive EMA momentum
+        """Compute adaptive EMA momentum."""
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum

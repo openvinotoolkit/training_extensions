@@ -117,7 +117,7 @@ class DetectionConfigurer(BaseConfigurer):
         # patch pre-trained checkpoint for model
         for name in ckpt:
             # we should add backbone prefix to backbone parameters names to load it for our models
-            if not name.startswith("backbone") and not any([True for prefix in ["head", "neck"] if prefix in name]):
+            if not name.startswith("backbone") and "head" not in name:
                 new_name = "backbone." + name
                 modified = True
             else:
@@ -173,7 +173,7 @@ class DetectionConfigurer(BaseConfigurer):
     def configure_bbox_head(self, cfg):
         """Patch classification loss if there are ignore labels."""
         if cfg.get("task", "detection") == "detection":
-            bbox_head = cfg.model.bbox_head
+            bbox_head = cfg.model.bbox_head if hasattr(cfg.model, "bbox_head") else cfg.model.roi_head.bbox_head
         else:
             bbox_head = cfg.model.roi_head.bbox_head
 

@@ -16,7 +16,7 @@ task = "instance-segmentation"
 model = dict(
     super_type="MeanTeacher",
     pseudo_conf_thresh=0.7,
-    unlabeled_loss_weights={"cls": 2.0, "bbox": 1.0, "mask": 1.0},
+    unlabeled_loss_weights={"cls": 0.1, "bbox": 0.1, "mask": 0.1},
     type="CustomMaskRCNN",
     neck=dict(type="FPN", in_channels=[24, 48, 120, 352], out_channels=80, num_outs=5),
     rpn_head=dict(
@@ -121,3 +121,12 @@ v2/efficientnet_b2b-mask_rcnn-576x576.pth"
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
 fp16 = dict(loss_scale=512.0)
 ignore = True
+
+custom_hooks = [
+    # dict(
+    #     type="CustomModelEMAHook",
+    #     priority="ABOVE_NORMAL",
+    #     epoch_momentum=0.4,
+    # ),
+    dict(type="MeanTeacherHook", epoch_momentum=0.0, start_epoch=5, momentum=0.0004),
+]

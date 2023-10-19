@@ -30,5 +30,5 @@ __all__ = [
     "L2SPDetectorMixin",
     "SAMDetectorMixin",
     "CustomMaskRCNNTileOptimized",
-    "MeanTeacher"
+    "MeanTeacher",
 ]

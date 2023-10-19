@@ -8,11 +8,7 @@ task_adapt = dict(
 )
 
 custom_hooks = [
-    dict(
-        type="MeanTeacherHook",
-        epoch_momentum=0.1,
-        start_epoch=2
-    ),
+    dict(type="MeanTeacherHook", epoch_momentum=0.1, start_epoch=2),
     dict(
         type="LazyEarlyStoppingHook",
         start=3,

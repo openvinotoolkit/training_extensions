@@ -59,7 +59,7 @@ model = dict(
         loss_cls=dict(type="FocalLoss", use_sigmoid=True, gamma=2.0, alpha=0.25, loss_weight=1.0),
         loss_bbox=dict(type="GIoULoss", loss_weight=2.0),
         loss_centerness=dict(type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0),
-        use_qfl=False
+        use_qfl=False,
     ),
     train_cfg=dict(
         assigner=dict(type="ATSSAssigner", topk=9),

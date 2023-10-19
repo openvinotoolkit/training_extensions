@@ -58,4 +58,3 @@ class MeanTeacherHook(DualModelEMAHook):
         runner.log_buffer.output = output_backup
         runner.ready = was_ready
         return average_pseudo_label_ratio
-
