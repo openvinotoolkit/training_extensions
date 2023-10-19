@@ -13,119 +13,117 @@ on:
   workflow_dispatch: # run on request (no need for PR)
 
 jobs:
-  # Code-Quality-Checks:
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
-  #     cancel-in-progress: true
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.10"
-  #     - name: Install dependencies
-  #       run: python -m pip install -r requirements/dev.txt
-  #     - name: Code quality checks
-  #       run: tox -vv -e pre-commit-all-py310
-  # Unit-Test:
-  #   needs: Code-Quality-Checks
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - python-version: "3.8"
-  #           tox-env: "py38"
-  #         - python-version: "3.9"
-  #           tox-env: "py39"
-  #   name: Unit-Test-${{ matrix.python-version }}
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Unit-Test-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
-  #     cancel-in-progress: true
-  #   uses: ./.github/workflows/run_tests_in_tox.yml
-  #   with:
-  #     python-version: ${{ matrix.python-version }}
-  #     toxenv-pyver: ${{ matrix.tox-env }}
-  #     toxenv-task: all
-  #     test-args: tests/unit
-  #     timeout-minutes: 120
-  #     upload-artifact: true
-  #     artifact-prefix: "unit-test-results"
-  #     runs-on: "['otx-gpu-t4-2']"
-  #     custom-container: true
-  # Coverage:
-  #   runs-on: [otx-gpu-t4-2]
-  #   container:
-  #     image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f3b5e4e2bc93875045a54a7f3ea29ca6a6089b33
-  #     options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=10g"
-  #   needs: Code-Quality-Checks
-  #   timeout-minutes: 120
-  #   name: Coverage-with-Python3.10
-  #   # This is what will cancel the job concurrency
-  #   concurrency:
-  #     group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}
-  #     cancel-in-progress: true
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
-  #     - name: Install Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: "3.10"
-  #     - name: Install dependencies
-  #       run: python -m pip install -r requirements/dev.txt
-  #     - name: Run unit test with coverage
-  #       run: tox -vv -e unittest-all-py310-pt1
-  #     - name: Upload coverage artifact
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: coverage
-  #         path: .tox/coverage.xml
-  #     - name: Upload coverage reports to Codecov
-  #       run: |
-  #         # If the workflow is triggered from PR then it gets the commit id from the PR.
-  #         # else it uses the commit id of the latest commit. This is because the commit
-  #         # of the checked-out branch/commit does not exist in the tree as it is grafted.
-  #         # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
-  #         # This means that upload will fail for PRs from forks.
-  #         if [ -n "${{ github.event.pull_request.head.sha }}" ]
-  #         then
-  #           COMMIT_ID=${{ github.event.pull_request.head.sha }}
-  #         else
-  #           COMMIT_ID=${{ github.sha }}
-  #         fi
-  #         # current version of codecov-action does not support uploading reports through the proxy
-  #         # so we use the latest version of codecov uploader binary
-  #         curl -Os https://uploader.codecov.io/latest/linux/codecov
-  #         chmod +x codecov
-  #         ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
-  Integration-Test:
-    # needs: [Unit-Test, Coverage]
+  Code-Quality-Checks:
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Linting-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Code quality checks
+        run: tox -vv -e pre-commit-all-py310
+  Unit-Test:
+    needs: Code-Quality-Checks
     strategy:
       fail-fast: false
       matrix:
         include:
-          # - task: "all"
-          #   test_args: "tests/integration/cli/test_cli.py"
-          # - task: "cls"
-          #   test_args: "tests/integration/cli/classification"
+          - python-version: "3.8"
+            tox-env: "py38"
+          - python-version: "3.9"
+            tox-env: "py39"
+    name: Unit-Test-${{ matrix.python-version }}
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Unit-Test-${{ github.event.pull_request.number || github.ref }}-${{ matrix.tox-env }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/run_tests_in_tox.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      toxenv-pyver: ${{ matrix.tox-env }}
+      toxenv-task: all
+      test-args: tests/unit
+      timeout-minutes: 120
+      upload-artifact: true
+      artifact-prefix: "unit-test-results"
+      runs-on: "['otx-gpu-t4-2']"
+      custom-container: true
+  Coverage:
+    runs-on: [otx-gpu-t4-2]
+    container:
+      image: 219678651685.dkr.ecr.eu-central-1.amazonaws.com/ote-ci:pr-194-f3b5e4e2bc93875045a54a7f3ea29ca6a6089b33
+      options: "--runtime=nvidia --env-file=/home/runner/.nvidia.env --shm-size=10g"
+    needs: Code-Quality-Checks
+    timeout-minutes: 120
+    name: Coverage-with-Python3.10
+    # This is what will cancel the job concurrency
+    concurrency:
+      group: ${{ github.workflow }}-Coverage-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: python -m pip install -r requirements/dev.txt
+      - name: Run unit test with coverage
+        run: tox -vv -e unittest-all-py310-pt1
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: .tox/coverage.xml
+      - name: Upload coverage reports to Codecov
+        run: |
+          # If the workflow is triggered from PR then it gets the commit id from the PR.
+          # else it uses the commit id of the latest commit. This is because the commit
+          # of the checked-out branch/commit does not exist in the tree as it is grafted.
+          # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
+          # This means that upload will fail for PRs from forks.
+          if [ -n "${{ github.event.pull_request.head.sha }}" ]
+          then
+            COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          else
+            COMMIT_ID=${{ github.sha }}
+          fi
+          # current version of codecov-action does not support uploading reports through the proxy
+          # so we use the latest version of codecov uploader binary
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${{ secrets.CODECOV_TOKEN }} --sha $COMMIT_ID -U $HTTP_PROXY -f .tox/coverage.xml -F ${{ matrix.tox-env }}
+  Integration-Test:
+    needs: [Unit-Test, Coverage]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: "all"
+            test_args: "tests/integration/cli/test_cli.py"
+          - task: "cls"
+            test_args: "tests/integration/cli/classification"
           - task: "det"
-            # test_args: "tests/integration/cli/detection"
             test_args: "-m \"not req_large_memory and not req_large_gpu_memory\" tests/integration/cli/detection"
           - task: "iseg"
-            # test_args: "tests/integration/cli/instance_segmentation"
             test_args: "-m \"not req_large_memory and not req_large_gpu_memory\" tests/integration/cli/instance_segmentation"
-          # - task: "seg"
-          #   test_args: "tests/integration/cli/semantic_segmentation"
-          # - task: "act"
-          #   test_args: "tests/integration/cli/action"
-          # - task: "ano"
-          #   test_args: "tests/integration/cli/anomaly"
-          # - task: "visprompt"
-          #   test_args: "tests/integration/cli/visual_prompting"
+          - task: "seg"
+            test_args: "tests/integration/cli/semantic_segmentation"
+          - task: "act"
+            test_args: "tests/integration/cli/action"
+          - task: "ano"
+            test_args: "tests/integration/cli/anomaly"
+          - task: "visprompt"
+            test_args: "tests/integration/cli/visual_prompting"
     name: Integration-Test-py310-${{ matrix.task }}
     # This is what will cancel the job concurrency
     concurrency:
