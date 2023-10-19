@@ -14,7 +14,6 @@ framework: OTXSegmentation v0.14.0
 entrypoints:
   base: otx.algorithms.segmentation.adapters.mmseg.task.MMSegmentationTask
   openvino: otx.algorithms.segmentation.adapters.openvino.task.OpenVINOSegmentationTask
-  nncf: otx.algorithms.segmentation.adapters.mmseg.nncf.task.SegmentationNNCFTask
 
 # Capabilities.
 capabilities:
