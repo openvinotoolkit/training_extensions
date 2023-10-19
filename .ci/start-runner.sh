@@ -153,6 +153,9 @@ if [ "$DEBUG_CONTAINER" = true ]; then
         --name "$CONTAINER_NAME" \
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         ${ENV_FLAGS} \
+        -e http_proxy=http://proxy-chain.intel.com:911 \
+        -e https_proxy=http://proxy-chain.intel.com:912 \
+        -e no_proxy=intel.com,.intel.com,localhost,127.0.0.0/8 \
         ${MOUNT_FLAGS} \
         ${CACHE_MOUNT_FLAGS} \
         "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
@@ -174,6 +177,9 @@ else
         --name "$CONTAINER_NAME" \
         -e NVIDIA_VISIBLE_DEVICES="$GPU_ID" \
         ${ENV_FLAGS} \
+        -e http_proxy=http://proxy-chain.intel.com:911 \
+        -e https_proxy=http://proxy-chain.intel.com:912 \
+        -e no_proxy=intel.com,.intel.com,localhost,127.0.0.0/8 \
         ${MOUNT_FLAGS} \
         ${CACHE_MOUNT_FLAGS} \
         "$DOCKER_REG_ADDR"/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?

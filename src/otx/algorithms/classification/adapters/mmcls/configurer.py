@@ -1,9 +1,9 @@
 """Base configurer for mmdet config."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 from mmcv import build_from_cfg
@@ -22,7 +22,6 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     recursively_update_cfg,
     update_or_add_custom_hook,
 )
-from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
@@ -162,16 +161,19 @@ class ClassificationConfigurer(BaseConfigurer):
 
     @staticmethod
     def configure_input_size(
-        cfg, input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt_path: Optional[str] = None
+        cfg, input_size=Optional[Tuple[int, int]], model_ckpt_path: Optional[str] = None, training=True
     ):
         """Change input size if necessary."""
-        manager = InputSizeManager(cfg)
-        input_size = manager.get_configured_input_size(input_size_config, model_ckpt_path)
         if input_size is None:  # InputSizePreset.DEFAULT
             return
 
+        manager = InputSizeManager(cfg)
+
         if input_size == (0, 0):  # InputSizePreset.AUTO
-            input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager)
+            if training:
+                input_size = BaseConfigurer.adapt_input_size_to_dataset(cfg, manager, use_annotations=False)
+            else:
+                input_size = manager.get_trained_input_size(model_ckpt_path)
             if input_size is None:
                 return
 
