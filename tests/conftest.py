@@ -25,7 +25,8 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     # register additional markers
-    config.addinivalue_line("markers", "req_large_memory: mark a test that required large mount of memory")
+    config.addinivalue_line("markers", "req_large_memory: mark a test that required large amount of memory")
+    config.addinivalue_line("markers", "req_large_gpu_memory: mark a test that required large amount of GPU memory")
 
 
 @pytest.fixture(scope="session")
