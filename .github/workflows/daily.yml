@@ -16,10 +16,10 @@ jobs:
             test_args: "tests/e2e/cli/action"
           - task: "ano"
             test_args: "tests/e2e/cli/anomaly"
-          # - task: "cls"
-          #   test_args: "tests/e2e/cli/classification"
-          # - task: "det"
-          #   test_args: "tests/e2e/cli/detection"
+          - task: "cls"
+            test_args: "tests/e2e/cli/classification"
+          - task: "det"
+            test_args: "tests/e2e/cli/detection"
           # - task: "iseg"
           #   test_args: "tests/e2e/cli/instance_segmentation"
           # - task: "seg"
@@ -36,5 +36,5 @@ jobs:
       timeout-minutes: 360
       upload-artifact: true
       artifact-prefix: "daily-test-results"
-      runs-on: "['otx-gpu-v100-2']"
+      runs-on: "['otx-gpu-v100-1']"
       custom-container: true
