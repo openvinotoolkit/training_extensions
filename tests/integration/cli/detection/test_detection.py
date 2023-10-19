@@ -83,6 +83,7 @@ templates = []
 for template in _templates:
     if template.name not in ["YOLOX-S", "YOLOX-X"]:
         templates.append(template)  # YOLOX-S, and YOLOX-X use same model and data pipeline config with YOLOX-L
+    
 templates_ids = [template.model_template_id for template in templates]
 
 experimental_templates = [
@@ -94,10 +95,18 @@ experimental_templates = [
         "src/otx/algorithms/detection/configs/detection/resnet50_lite_dino/template_experimental.yaml"
     ),
 ]
+
 experimental_template_ids = [template.model_template_id for template in experimental_templates]
 
 templates_w_experimental = templates + experimental_templates
 templates_ids_w_experimental = templates_ids + experimental_template_ids
+
+# set mark to large (gpu) memory required template
+for i, template in enumerate(templates_w_experimental):
+    if template.name in ["YOLO-L"]:
+        templates_w_experimental[i] = pytest.param(template, marks=pytest.mark.req_large_memory)
+    elif template.name in ["DINO"]:
+        templates_w_experimental[i] = pytest.param(template, marks=pytest.mark.req_large_gpu_memory)
 
 
 TestDetectionModelTemplates = generate_model_template_testing(templates)
@@ -162,6 +171,7 @@ class TestDetectionCLI:
         otx_export_testing(template, tmp_dir_path, half_precision=True)
 
     @e2e_pytest_component
+    @pytest.mark.req_large_memory
     @pytest.mark.parametrize("template", templates_w_experimental, ids=templates_ids_w_experimental)
     def test_otx_export_onnx(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
@@ -187,12 +197,14 @@ class TestDetectionCLI:
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.req_large_memory
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_all_classes(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_explain_testing_all_classes(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.req_large_memory
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
@@ -235,6 +247,7 @@ class TestDetectionCLI:
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
+    @pytest.mark.req_large_memory
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"

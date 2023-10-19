@@ -23,6 +23,12 @@ def pytest_addoption(parser):
     otx_pytest_addoption_insertion(parser)  # noqa: F405
 
 
+def pytest_configure(config):
+    # register additional markers
+    config.addinivalue_line("markers", "req_large_memory: mark a test that required large amount of memory")
+    config.addinivalue_line("markers", "req_large_gpu_memory: mark a test that required large amount of GPU memory")
+
+
 @pytest.fixture(scope="session")
 def tmp_dir_path(request) -> Generator[Path, None, None]:
     prefix = request.config.getoption("--test-workspace")
