@@ -193,31 +193,31 @@
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
             "EfficientNet-B0": 0.806,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.536
           },
           "export": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
             "EfficientNet-B0": 0.806,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.772,
             "MobileNet-V3-large-1x": 0.728,
             "EfficientNet-B0": 0.806,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.764,
             "MobileNet-V3-large-1x": 0.733,
             "EfficientNet-B0": 0.742,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.711,
             "MobileNet-V3-large-1x": 0.692,
             "EfficientNet-B0": 0.725,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "multi_label": {
@@ -225,31 +225,31 @@
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.966,
             "EfficientNet-B0": 0.965,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.952
           },
           "export": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
             "EfficientNet-B0": 0.965,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
             "EfficientNet-B0": 0.965,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.967,
             "MobileNet-V3-large-1x": 0.965,
             "EfficientNet-B0": 0.965,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.968,
             "MobileNet-V3-large-1x": 0.965,
             "EfficientNet-B0": 0.964,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "h_label": {
@@ -257,31 +257,31 @@
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
             "EfficientNet-B0": 0.636,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.458
           },
           "export": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
             "EfficientNet-B0": 0.636,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "deploy": {
             "EfficientNet-V2-S": 0.602,
             "MobileNet-V3-large-1x": 0.547,
             "EfficientNet-B0": 0.636,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "nncf": {
             "EfficientNet-V2-S": 0.594,
             "MobileNet-V3-large-1x": 0.622,
             "EfficientNet-B0": 0.638,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           },
           "ptq": {
             "EfficientNet-V2-S": 0.577,
             "MobileNet-V3-large-1x": 0.472,
             "EfficientNet-B0": 0.605,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "supcon": {
@@ -289,7 +289,7 @@
             "EfficientNet-V2-S": 0.783,
             "MobileNet-V3-large-1x": 0.728,
             "EfficientNet-B0": 0.772,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -299,7 +299,7 @@
             "EfficientNet-V2-S": 0.79,
             "MobileNet-V3-large-1x": 0.76,
             "EfficientNet-B0": 0.81,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "multi_label": {
@@ -307,7 +307,7 @@
             "EfficientNet-V2-S": 0.97,
             "MobileNet-V3-large-1x": 0.97,
             "EfficientNet-B0": 0.964,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "h_label": {
@@ -315,7 +315,7 @@
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
             "EfficientNet-B0": 0.0,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -325,7 +325,7 @@
             "EfficientNet-V2-S": 0.822,
             "MobileNet-V3-large-1x": 0.764,
             "EfficientNet-B0": 0.797,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -335,7 +335,7 @@
             "EfficientNet-V2-S": 0.767,
             "MobileNet-V3-large-1x": 0.744,
             "EfficientNet-B0": 0.794,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       }
@@ -1577,7 +1577,7 @@
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.732,
             "EfficientNet-B0": 82.521,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "multi_label": {
@@ -1585,7 +1585,7 @@
             "EfficientNet-V2-S": 214.508,
             "MobileNet-V3-large-1x": 185.442,
             "EfficientNet-B0": 187.332,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "h_label": {
@@ -1593,7 +1593,7 @@
             "EfficientNet-V2-S": 149.627,
             "MobileNet-V3-large-1x": 76.041,
             "EfficientNet-B0": 87.159,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "supcon": {
@@ -1601,7 +1601,7 @@
             "EfficientNet-V2-S": 136.036,
             "MobileNet-V3-large-1x": 134.635,
             "EfficientNet-B0": 124.474,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -1611,7 +1611,7 @@
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 80.603,
             "EfficientNet-B0": 82.521,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "multi_label": {
@@ -1619,7 +1619,7 @@
             "EfficientNet-V2-S": 214.508,
             "MobileNet-V3-large-1x": 185.442,
             "EfficientNet-B0": 187.332,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "h_label": {
@@ -1627,7 +1627,7 @@
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
             "EfficientNet-B0": 0.0,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -1637,7 +1637,7 @@
             "EfficientNet-V2-S": 423.184,
             "MobileNet-V3-large-1x": 227.445,
             "EfficientNet-B0": 230.227,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -1647,7 +1647,7 @@
             "EfficientNet-V2-S": 141.137,
             "MobileNet-V3-large-1x": 72.239,
             "EfficientNet-B0": 82.521,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       }
@@ -2020,7 +2020,7 @@
             "EfficientNet-V2-S": 17.8,
             "MobileNet-V3-large-1x": 16.453,
             "EfficientNet-B0": 15.145,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "multi_label": {
@@ -2028,7 +2028,7 @@
             "EfficientNet-V2-S": 18.706,
             "MobileNet-V3-large-1x": 20.311,
             "EfficientNet-B0": 19.497,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "h_label": {
@@ -2036,7 +2036,7 @@
             "EfficientNet-V2-S": 17.99,
             "MobileNet-V3-large-1x": 18.068,
             "EfficientNet-B0": 13.558,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "supcon": {
@@ -2044,7 +2044,7 @@
             "EfficientNet-V2-S": 17.1,
             "MobileNet-V3-large-1x": 17.988,
             "EfficientNet-B0": 14.586,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -2054,7 +2054,7 @@
             "EfficientNet-V2-S": 16.715,
             "MobileNet-V3-large-1x": 16.722,
             "EfficientNet-B0": 15.488,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "multi_label": {
@@ -2062,7 +2062,7 @@
             "EfficientNet-V2-S": 19.618,
             "MobileNet-V3-large-1x": 20.686,
             "EfficientNet-B0": 17.046,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         },
         "h_label": {
@@ -2070,7 +2070,7 @@
             "EfficientNet-V2-S": 0.0,
             "MobileNet-V3-large-1x": 0.0,
             "EfficientNet-B0": 0.0,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -2080,7 +2080,7 @@
             "EfficientNet-V2-S": 16.885,
             "MobileNet-V3-large-1x": 17.905,
             "EfficientNet-B0": 15.107,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       },
@@ -2090,7 +2090,7 @@
             "EfficientNet-V2-S": 15.552,
             "MobileNet-V3-large-1x": 14.267,
             "EfficientNet-B0": 15.179,
-            "Deti-Tiny": 0.0
+            "DeiT-Tiny": 0.0
           }
         }
       }

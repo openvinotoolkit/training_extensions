@@ -979,6 +979,8 @@ class TestRegressionSupconClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, reg_cfg, template, tmp_dir_path):
+        if template.name == "DeiT-Tiny":
+            pytest.skip(reason="Supcon for ViT template is not supported yet.")
         test_type = "train"
         self.performance[template.name] = {}
 
