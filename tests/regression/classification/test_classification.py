@@ -156,7 +156,7 @@ class TestRegressionMultiClassClassification:
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.update_result(test_type, self.performance)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -581,7 +581,7 @@ class TestRegressionMultiLabelClassification:
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.update_result(test_type, self.performance, is_anomaly=True, category=category)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 

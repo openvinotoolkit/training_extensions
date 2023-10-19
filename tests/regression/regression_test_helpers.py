@@ -178,8 +178,8 @@ class RegressionTestConfig(object):
             self._result_dict[task_type] = {}
 
         if not is_anomaly:
-            label_type = self.label_type
-            train_type = self.train_type
+            label_type = kwargs.get("label_type", self.label_type)
+            train_type = kwargs.get("train_type", self.train_type)
 
             if label_type not in self._result_dict[task_type]:
                 self._result_dict[task_type][label_type] = {}
