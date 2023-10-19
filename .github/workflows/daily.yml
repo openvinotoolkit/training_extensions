@@ -36,5 +36,5 @@ jobs:
       timeout-minutes: 360
       upload-artifact: true
       artifact-prefix: "daily-test-results"
-      runs-on: "['otx-gpu-t4-2']"
+      runs-on: "['otx-gpu-v100-2']"
       custom-container: true
