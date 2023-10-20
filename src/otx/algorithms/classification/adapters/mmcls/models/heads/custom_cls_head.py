@@ -42,6 +42,13 @@ class CustomNonLinearClsHead(NonLinearClsHead):
 
     def forward_train(self, cls_score, gt_label):
         """Forward_train fuction of CustomNonLinearHead class."""
+        # NOTE, when the batch_size is set to 1, this raise an error at BatchNorm1d
+        # To avoid this, use simple trick to pretend batch size as 2.
+        # If loss type isn't IBLoss, the output loss will be same
+        bs = cls_score.shape[0]
+        if bs == 1 and self.loss_type != "IBLoss":
+            cls_score = torch.cat([cls_score, cls_score], dim=0)
+            gt_label = torch.cat([gt_label, gt_label], dim=0)
         logit = self.classifier(cls_score)
         losses = self.loss(logit, gt_label, feature=cls_score)
         return losses
