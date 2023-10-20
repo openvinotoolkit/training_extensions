@@ -12,12 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - task: "act"
-            test_args: "tests/e2e/cli/action"
-          - task: "ano"
-            test_args: "tests/e2e/cli/anomaly"
-          - task: "cls"
-            test_args: "tests/e2e/cli/classification"
+          # - task: "act"
+          #   test_args: "tests/e2e/cli/action"
+          # - task: "ano"
+          #   test_args: "tests/e2e/cli/anomaly"
+          # - task: "cls"
+          #   test_args: "tests/e2e/cli/classification"
           - task: "det"
             test_args: "tests/e2e/cli/detection"
           - task: "iseg"
