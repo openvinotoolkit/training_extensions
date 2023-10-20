@@ -71,13 +71,12 @@ done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-if [[ "$#" -lt 3 ||  "$DEFAULT" == "yes" ]] && [ $DEBUG_CONTAINER = false ]; then
+if [[ "$#" -lt 2 ||  "$DEFAULT" == "yes" ]] && [ $DEBUG_CONTAINER = false ]; then
 cat << EndofMessage
-    USAGE: $0 <container-prefix> <github-token> <runner-prefix> [Options]
+    USAGE: $0 <container-prefix> <github-token> [Options]
     Positional args
-        <container-prefix>  Prefix to the ci container
+        <container-prefix>  Prefix to the ci container and actions-runner
         <github-token>      Github token string
-        <runner-prefix>     Prefix to the actions-runner
     Options
         -g|--gpu-ids        GPU ID or IDs (comma separated) for runner or 'all'
         -c|--cuda           Specify CUDA version
@@ -95,7 +94,6 @@ fi
 
 CONTAINER_NAME=$1
 GITHUB_TOKEN=$2
-INSTANCE_NAME=$3
 LABELS="self-hosted,Linux,X64"
 ENV_FLAGS=""
 MOUNT_FLAGS=""
@@ -125,9 +123,8 @@ if [ "$DEBUG_CONTAINER" = true ]; then
 fi
 
 CONTAINER_NAME="$CONTAINER_NAME"-${GPU_ID//,/_}
-INSTANCE_NAME="$INSTANCE_NAME"-${GPU_ID//,/_}
 
-echo "container name = $CONTAINER_NAME, instance name = $INSTANCE_NAME, labels = $LABELS"
+echo "container name = $CONTAINER_NAME, labels = $LABELS"
 
 docker inspect "$CONTAINER_NAME"; RET=$?
 
@@ -198,7 +195,7 @@ docker exec -it "$CONTAINER_NAME" bash -c \
     --unattended \
     --url https://github.com/openvinotoolkit/training_extensions \
     --token $GITHUB_TOKEN \
-    --name $INSTANCE_NAME \
+    --name $CONTAINER_NAME \
     --labels $LABELS \
     --replace" ; RET=$?
 
