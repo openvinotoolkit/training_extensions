@@ -3,10 +3,10 @@
     "classification": {
       "supervised": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train",
-          "--val-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--test-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--input": "classification/cifar10_subset/test/airplane"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--input": "classification/multiclass_CUB/test/airplane"
         },
         "multi_label": {
           "--train-data-roots": "classification/multi_label_coco_subset_cls_decr",
@@ -15,22 +15,22 @@
           "--input": "classification/multi_label_coco_subset/images/test"
         },
         "h_label": {
-          "--train-data-roots": "classification/h_label_cifar10_subset",
-          "--val-data-roots": "classification/h_label_cifar10_subset",
-          "--test-data-roots": "classification/h_label_cifar10_subset",
-          "--input": "classification/h_label_cifar10_subset/images/test/airplane"
+          "--train-data-roots": "classification/h_label_CUB",
+          "--val-data-roots": "classification/h_label_CUB",
+          "--test-data-roots": "classification/h_label_CUB",
+          "--input": "classification/h_label_CUB/images/test/airplane"
         },
         "supcon": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train",
-          "--val-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--test-data-roots": "classification/cifar10_subset_cls_decr/test"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test"
         }
       },
       "class_incr": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset/train",
-          "--val-data-roots": "classification/cifar10_subset/test",
-          "--test-data-roots": "classification/cifar10_subset/test"
+          "--train-data-roots": "classification/multiclass_CUB/train",
+          "--val-data-roots": "classification/multiclass_CUB/test",
+          "--test-data-roots": "classification/multiclass_CUB/test"
         },
         "multi_label": {
           "--train-data-roots": "classification/multi_label_coco_subset",
@@ -40,15 +40,15 @@
       },
       "semi_supervised": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train",
-          "--val-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--test-data-roots": "classification/cifar10_subset_cls_decr/test",
-          "--unlabeled-data-roots": "classification/cifar10_unlabeled"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
+          "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
+          "--unlabeled-data-roots": "classification/CUB_unlabeled"
         }
       },
       "self_supervised": {
         "multi_class": {
-          "--train-data-roots": "classification/cifar10_subset_cls_decr/train"
+          "--train-data-roots": "classification/multiclass_CUB_cls_decr/train"
         }
       }
     },
