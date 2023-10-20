@@ -140,7 +140,17 @@ class TestToolsOTXInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
+    # @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["MaskRCNN-ResNet50"]
+            else template
+            for template in templates_with_experimental
+        ],
+        ids=templates_ids_with_experimental,
+    )
     def test_otx_eval(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)

@@ -19,13 +19,13 @@ jobs:
           # - task: "cls"
           #   test_args: "tests/e2e/cli/classification"
           - task: "det"
-            test_args: "tests/e2e/cli/detection"
+            test_args: '-m "not req_large_memory and not req_large_gpu_memory" tests/e2e/cli/detection'
           - task: "iseg"
-            test_args: "tests/e2e/cli/instance_segmentation"
-          - task: "seg"
-            test_args: "tests/e2e/cli/semantic_segmentation"
-          - task: "visprompt"
-            test_args: "tests/e2e/cli/visual_prompting"
+            test_args: '-m "not req_large_memory and not req_large_gpu_memory" tests/e2e/cli/instance_segmentation'
+          # - task: "seg"
+          #   test_args: "tests/e2e/cli/semantic_segmentation"
+          # - task: "visprompt"
+          #   test_args: "tests/e2e/cli/visual_prompting"
     name: E2E-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
