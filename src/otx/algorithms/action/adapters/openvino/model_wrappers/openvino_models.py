@@ -20,12 +20,11 @@ from typing import Any, Dict, List
 
 import numpy as np
 from openvino.model_api.adapters import OpenvinoAdapter
+from openvino.model_api.adapters.utils import RESIZE_TYPES, InputTransform
 from openvino.model_api.models.model import Model
 from openvino.model_api.models.utils import (
-    RESIZE_TYPES,
     ClassificationResult,
     Detection,
-    InputTransform,
 )
 
 from otx.api.entities.datasets import DatasetItemEntity

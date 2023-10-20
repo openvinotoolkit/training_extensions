@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Visual_Prompting_SAM_ViT_B
-name: SAM_ViT_B
+model_template_id: Visual_Prompting_SAM_Tiny_ViT
+name: SAM_Tiny_ViT
 task_type: VISUAL_PROMPTING
 task_family: VISION
 instantiation: "CLASS"
-summary: Visual Prompting with ViT-B for the accurate predictions
+summary: Visual Prompting with TinyViT for the accurate predictions
 application: ~
 
 # Algo backend.
@@ -26,5 +26,5 @@ training_targets:
   - CPU
 
 # Computational Complexity
-gigaflops: 483.71
-size: 362
+gigaflops: 38.95
+size: 47

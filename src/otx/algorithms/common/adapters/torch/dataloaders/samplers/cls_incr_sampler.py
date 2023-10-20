@@ -47,7 +47,7 @@ class ClsIncrSampler(OTXSampler):  # pylint: disable=too-many-instance-attribute
         num_replicas: int = 1,
         rank: int = 0,
         drop_last: bool = False,
-        n_repeats: Union[float, int, str] = "auto",
+        n_repeats: Union[float, int, str] = 1,
     ):
         self.samples_per_gpu = samples_per_gpu
         self.num_replicas = num_replicas
