@@ -157,7 +157,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["ResNeXt101-ATSS"]
+            if template.name in ["ResNeXt101-ATSS", "SSD"]
             else template
             for template in templates
         ],
@@ -169,7 +169,14 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory) if template.name in ["YOLOX-TINY"] else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     @pytest.mark.parametrize("half_precision", [True, False])
     def test_otx_eval_openvino(self, template, tmp_dir_path, half_precision):
         if template.name == "YOLOX-L" or template.name == "SSD":
@@ -179,7 +186,14 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory) if template.name in ["YOLOX-TINY"] else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_explain(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args, trained=True)
@@ -193,7 +207,16 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["ResNeXt101-ATSS"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_explain_process_saliency_maps(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_explain_testing_process_saliency_maps(template, tmp_dir_path, otx_dir, args, trained=True)

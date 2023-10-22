@@ -240,7 +240,7 @@ class TestToolsOTXInstanceSegmentation:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["MaskRCNN-EfficientNetB2B"]
+            if template.name in ["MaskRCNN-EfficientNetB2B", "MaskRCNN-SwinT-FP16", "MaskRCNN-ResNet50"]
             else template
             for template in templates
         ],
@@ -339,7 +339,16 @@ class TestToolsOTXInstanceSegmentation:
 
 class TestToolsOTXSemiSLInstanceSegmentation:
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["MaskRCNN-EfficientNetB2B"]
+            else template
+            for template in templates_with_experimental
+        ],
+        ids=templates_ids_with_experimental,
+    )
     def test_otx_train(self, template, tmp_dir_path):
         if not (Path(template.model_template_path).parent / "semisl").is_dir():
             pytest.skip("Semi-SL training type isn't available for this template")
