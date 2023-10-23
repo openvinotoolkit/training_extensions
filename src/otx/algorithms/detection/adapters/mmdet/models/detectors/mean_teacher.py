@@ -143,6 +143,7 @@ class MeanTeacher(SAMDetectorMixin, BaseDetector):
         # TODO: check img0 only option (which is common for mean teacher method)
         if img0 is not None:
             img = torch.cat((img0, img))  # weak + hard augmented images
+            img_metas = img_metas + img_metas
             gt_bboxes = gt_bboxes + gt_bboxes
             gt_labels = gt_labels + gt_labels
             gt_bboxes_ignore = gt_bboxes_ignore + gt_bboxes_ignore if gt_bboxes_ignore else None
