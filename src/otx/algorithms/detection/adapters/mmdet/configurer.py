@@ -3,21 +3,21 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Optional
 import os
-import torch
 from collections import OrderedDict
+from typing import Optional, Tuple
 
-from mmcv.utils import ConfigDict
+import torch
 from mmcv.runner import CheckpointLoader
+from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.configurer import BaseConfigurer
 from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMixin
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
 )
+from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
