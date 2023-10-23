@@ -8,7 +8,7 @@
 /.github                                                    @samet-akcay @yunchu
 
 # Docs
-/docs                                                       @samet-akcay @harimkang
+/docs                                                       @samet-akcay @harimkang @yunchu
 
 # OTX config
 /src/otx/v2/config                                          @samet-akcay @harimkang @goodsong81
@@ -18,8 +18,8 @@
 /src/otx/v2/cli                                             @samet-akcay @harimkang
 
 # OTX Adapters Datumaro/Openvino
-/src/otx/v2/adapters/datumaro                               @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/openvino                               @samet-akcay @harimkang @goodsong81
+/src/otx/v2/adapters/datumaro                               @samet-akcay @harimkang
+/src/otx/v2/adapters/openvino                               @samet-akcay @harimkang
 
 # OTX Adapters torch modules
 /src/otx/v2/adapters/torch/modules                          @samet-akcay @harimkang @goodsong81
@@ -52,7 +52,7 @@
 
 # Misc
 /pyproject.toml                                             @samet-akcay @harimkang @yunchu
-/README.md                                                  @samet-akcay
+/README.md                                                  @samet-akcay @yunchu
 /setup.py                                                   @samet-akcay @harimkang @yunchu
-/third-party-programs.txt                                   @samet-akcay @harimkang
+/third-party-programs.txt                                   @samet-akcay @harimkang @yunchu
 /tox.ini                                                    @samet-akcay @yunchu
