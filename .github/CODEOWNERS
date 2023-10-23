@@ -51,8 +51,8 @@
 /tests/v2                                                   @samet-akcay @harimkang
 
 # Misc
-/pyproject.toml                                             @samet-akcay @harimkan
+/pyproject.toml                                             @samet-akcay @harimkang
 /README.md                                                  @samet-akcay
-/setup.py                                                   @samet-akcay @harimkan
-/third-party-programs.txt                                   @samet-akcay @harimkan
+/setup.py                                                   @samet-akcay @harimkang
+/third-party-programs.txt                                   @samet-akcay @harimkang
 /tox.ini                                                    @samet-akcay
