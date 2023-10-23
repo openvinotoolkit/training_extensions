@@ -157,7 +157,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["ResNeXt101-ATSS", "SSD"]
+            if template.name in ["ResNeXt101-ATSS", "SSD", "MobileNetV2-ATSS"]
             else template
             for template in templates
         ],
