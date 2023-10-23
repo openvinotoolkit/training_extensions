@@ -178,6 +178,8 @@ class BaseConfigurer:
 
                 if is_xpu_available():
                     cfg.device = "xpu"
+                else:
+                    cfg.device = "cpu"
             except ModuleNotFoundError:
                 cfg.device = "cpu"
                 cfg.gpu_ids = range(-1, 0)
