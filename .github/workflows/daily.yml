@@ -14,10 +14,10 @@ jobs:
         include:
           # - task: "act"
           #   test_args: "tests/e2e/cli/action"
-          # - task: "ano"
-          #   test_args: "tests/e2e/cli/anomaly"
-          # - task: "cls"
-          #   test_args: "tests/e2e/cli/classification"
+          - task: "ano"
+            test_args: "tests/e2e/cli/anomaly"
+          - task: "cls"
+            test_args: "tests/e2e/cli/classification"
           - task: "det"
             test_args: '-m "not req_large_memory and not req_large_gpu_memory" tests/e2e/cli/detection'
           - task: "iseg"
