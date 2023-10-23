@@ -123,10 +123,5 @@ fp16 = dict(loss_scale=512.0)
 ignore = True
 
 custom_hooks = [
-    # dict(
-    #     type="CustomModelEMAHook",
-    #     priority="ABOVE_NORMAL",
-    #     epoch_momentum=0.4,
-    # ),
     dict(type="MeanTeacherHook", epoch_momentum=0.0, start_epoch=5, momentum=0.0004),
 ]
