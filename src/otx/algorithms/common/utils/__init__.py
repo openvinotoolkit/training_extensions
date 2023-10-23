@@ -31,6 +31,7 @@ from .utils import (
     load_template,
     read_py_config,
     set_random_seed,
+    is_hpu_available,
 )
 
 __all__ = [
@@ -51,4 +52,5 @@ __all__ = [
     "read_py_config",
     "get_default_async_reqs_num",
     "is_xpu_available",
+    "is_hpu_available",
 ]

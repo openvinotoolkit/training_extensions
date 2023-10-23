@@ -17,6 +17,7 @@ import onnx
 import torch
 import yaml
 from addict import Dict as adict
+import habana_frameworks.torch as htorch
 
 
 class UncopiableDefaultDict(defaultdict):
@@ -165,3 +166,8 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
 def is_xpu_available():
     """Checks if XPU device is available."""
     return hasattr(torch, "xpu") and torch.xpu.is_available()
+    
+    
+def is_hpu_available() -> bool:
+    """Check if HPU device is available."""
+    return htorch.hpu.is_available()
