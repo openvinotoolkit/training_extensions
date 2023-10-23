@@ -3,12 +3,8 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import os
-from collections import OrderedDict
 from typing import Optional, Tuple
 
-import torch
-from mmcv.runner import CheckpointLoader
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.clsincr_mixin import IncrConfigurerMixin
@@ -17,7 +13,6 @@ from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMix
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
 )
-from otx.algorithms.common.utils import append_dist_rank_suffix
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
@@ -55,7 +50,7 @@ class DetectionConfigurer(BaseConfigurer):
                     if "pretrained" in cfg.model:
                         l2sp_ckpt = cfg.model.pretrained
                     if cfg.load_from:
-                        l2sp_ckpt = self.patch_chkpt(cfg.load_from)
+                        l2sp_ckpt = cfg.load_from
                 cfg.model.l2sp_ckpt = l2sp_ckpt
 
                 # Disable weight decay
@@ -68,7 +63,6 @@ class DetectionConfigurer(BaseConfigurer):
         assert "train_dataset" in kwargs
         train_dataset = kwargs["train_dataset"]
 
-        cfg.load_from = self.patch_chkpt(cfg.load_from)
         super().configure_task(cfg, **kwargs)
         if "task_adapt" in cfg:
             if self.data_classes != self.model_classes:
@@ -101,35 +95,6 @@ class DetectionConfigurer(BaseConfigurer):
             for head_name in head_names:
                 if head_name in cfg.model:
                     cfg.model[head_name].num_classes = num_classes
-
-    @staticmethod
-    def patch_chkpt(ckpt_path: str, new_path: Optional[str] = None) -> str:
-        """Modify state dict for pretrained weights to match model state dict."""
-        ckpt = CheckpointLoader.load_checkpoint(ckpt_path, map_location="cpu")
-        local_torch_hub_folder = torch.hub.get_dir()
-        if "state_dict" in ckpt:
-            ckpt = ckpt["state_dict"]
-        else:
-            ckpt = ckpt
-
-        new_ckpt = OrderedDict()
-        modified = False
-        # patch pre-trained checkpoint for model
-        for name in ckpt:
-            # we should add backbone prefix to backbone parameters names to load it for our models
-            if not name.startswith("backbone") and "head" not in name:
-                new_name = "backbone." + name
-                modified = True
-            else:
-                new_name = name
-            new_ckpt[new_name] = ckpt[name]
-        if modified:
-            if not new_path:
-                new_path = os.path.join(local_torch_hub_folder, "converted.pth")
-            new_path = append_dist_rank_suffix(new_path)
-            torch.save(new_ckpt, new_path)
-            return new_path
-        return ckpt_path
 
     def _configure_eval_dataset(self, cfg):
         if cfg.get("task", "detection") == "detection":
