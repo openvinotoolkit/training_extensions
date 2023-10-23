@@ -94,6 +94,7 @@ class XPUDataParallel(MMDataParallel):
 
     def scatter(self, inputs, kwargs, device_ids):
         inputs, kwargs = super().scatter(inputs, kwargs, [-1])
+        target_device = torch.device(f"xpu:{device_ids[0]}")
 
         for x in inputs:
             if isinstance(x, tuple):
@@ -101,20 +102,20 @@ class XPUDataParallel(MMDataParallel):
                     if isinstance(val, dict):
                         for k in val:
                             if isinstance(val[k], torch.Tensor):
-                                val[k] = val[k].to(torch.device(f"xpu:{device_ids[0]}"))
+                                val[k] = val[k].to(target_device)
                             elif isinstance(val[k], list):
                                 for i, item in enumerate(val[k]):
                                     if isinstance(item, torch.Tensor):
-                                        val[k][i] = item.to(torch.device(f"xpu:{device_ids[0]}"))
+                                        val[k][i] = item.to(target_device)
 
         for x in kwargs:
             if isinstance(x, dict):
                 for k in x:
                     if isinstance(x[k], torch.Tensor):
-                        x[k] = x[k].to("xpu")
+                        x[k] = x[k].to(target_device)
                     elif isinstance(x[k], list):
                         for i, item in enumerate(x[k]):
                             if isinstance(item, torch.Tensor):
-                                x[k][i] = item.to(torch.device(f"xpu:{device_ids[0]}"))
+                                x[k][i] = item.to(target_device)
 
         return inputs, kwargs
