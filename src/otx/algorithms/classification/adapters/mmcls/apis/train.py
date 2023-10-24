@@ -13,6 +13,7 @@ from mmcls.utils import get_root_logger, wrap_distributed_model, wrap_non_distri
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
+from otx.algorithms.common.adapters.mmcv.hooks import HPUFp16OptimizerHook, HPUOptimizerHook, HPUDistOptimizerHook
 
 
 def train_model(model, dataset, cfg, distributed=False, validate=False, timestamp=None, device=None, meta=None):
@@ -119,7 +120,12 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     runner.timestamp = timestamp
 
     if fp16_cfg is None and distributed and "type" not in cfg.optimizer_config:
-        optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
+        if device == "hpu":
+            optimizer_config = HPUDistOptimizerHook(**cfg.optimizer_config)
+        else:
+            optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
+    elif device == "hpu":
+        optimizer_config = HPUOptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config
 
