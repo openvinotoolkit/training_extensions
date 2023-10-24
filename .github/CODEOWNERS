@@ -18,18 +18,14 @@
 /src/otx/v2/cli                                             @samet-akcay @harimkang
 
 # OTX Adapters Datumaro/Openvino
-/src/otx/v2/adapters/datumaro                               @samet-akcay @harimkang
-/src/otx/v2/adapters/openvino                               @samet-akcay @harimkang
+/src/otx/v2/adapters/datumaro                               @samet-akcay @harimkang @wonjuleee
+/src/otx/v2/adapters/openvino                               @samet-akcay @harimkang @sovrasov
 
 # OTX Adapters torch modules
 /src/otx/v2/adapters/torch/modules                          @samet-akcay @harimkang @goodsong81
 
 # OTX Adapters anomalib
-/src/otx/v2/adapters/torch/anomalib/engine.py               @samet-akcay @harimkang
-/src/otx/v2/adapters/torch/anomalib/dataset.py              @samet-akcay @harimkang
-/src/otx/v2/adapters/torch/anomalib/model.py                @samet-akcay @harimkang
-/src/otx/v2/adapters/torch/anomalib/regisry.py              @samet-akcay @harimkang
-/src/otx/v2/adapters/torch/anomalib/modules                 @samet-akcay @harimkang
+/src/otx/v2/adapters/torch/anomalib                         @samet-akcay @harimkang @ashwinvaidya17
 
 # OTX Adapters mmengine
 /src/otx/v2/adapters/torch/mmengine/engine.py               @samet-akcay @harimkang @goodsong81
@@ -45,7 +41,7 @@
 /src/otx/v2/adapters/torch/mmengine/mmpretrain/modules      @samet-akcay @harimkang @goodsong81
 
 # OTX Adapters mmdeploy
-/src/otx/v2/adapters/torch/mmengine/mmdeploy                @samet-akcay @harimkang @goodsong81
+/src/otx/v2/adapters/torch/mmengine/mmdeploy                @samet-akcay @harimkang @goodsong81 @sovrasov
 
 # Tests
 /tests/v2                                                   @samet-akcay @harimkang @goodsong81
