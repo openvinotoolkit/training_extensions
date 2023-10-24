@@ -274,7 +274,9 @@ class TestToolsOTXDetection:
     @pytest.mark.parametrize(
         "template",
         [
-            pytest.param(template, marks=pytest.mark.req_large_memory) if template.name in ["YOLOX-L"] else template
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["YOLOX-L", "ResNeXt101-ATSS"]
+            else template
             for template in templates
         ],
         ids=templates_ids,
