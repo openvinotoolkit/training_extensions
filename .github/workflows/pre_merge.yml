@@ -6,6 +6,8 @@ on:
       - develop
       - releases/**
   pull_request:
+    branches-ignore:
+      - feature/v2
     types:
       - opened
       - reopened
