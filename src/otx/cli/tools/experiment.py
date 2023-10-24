@@ -92,6 +92,7 @@ class ExperimentResult:
     max_gpu_mem: Union[float, None] = None
     avg_gpu_util: Union[float, None] = None
     optimize_model_score: Union[float, None] = None
+    epoch: Union[int, None] = None
 
     def get_formatted_result(self):
         result = dataclasses.asdict(self)
@@ -273,11 +274,16 @@ class MMCVExpParser(BaseExpParser):
         with file_path.open("r") as f:
             lines = f.readlines()
 
+        last_epoch = 0
         for line in lines:
             iter_history = json.loads(line)
             if iter_history.get("mode") == "train":
                 self._iter_time_arr.append(iter_history["time"])
                 self._data_time_arr.append(iter_history["data_time"])
+                if iter_history["epoch"] > last_epoch:
+                    last_epoch = iter_history["epoch"]
+
+        self._exp_result.epoch = last_epoch
 
 
 class AnomalibExpParser(BaseExpParser):
@@ -403,7 +409,7 @@ def aggregate_all_exp_result(exp_dir: Union[str, Path]):
         print("There aren't any experiment results.")
         return
 
-    headers = meta_header + list(metric_header)
+    headers = sorted(meta_header) + sorted(metric_header)
 
     write_csv(exp_dir / "all_exp_result.csv", headers, all_exp_result)
 
