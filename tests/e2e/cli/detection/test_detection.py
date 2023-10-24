@@ -111,7 +111,9 @@ class TestToolsOTXDetection:
     @pytest.mark.parametrize(
         "template",
         [
-            pytest.param(template, marks=pytest.mark.req_large_memory) if template.name in ["YOLOX-L"] else template
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["ResNeXt101-ATSS", "YOLOX-L"]
+            else template
             for template in templates
         ],
         ids=templates_ids,
@@ -253,21 +255,44 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["ResNeXt101-ATSS", "SSD", "MobilenetV2-ATSS"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_demo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_demo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory) if template.name in ["YOLOX-L"] else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory) if template.name in ["YOLOX-Tiny"] else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
@@ -414,7 +439,16 @@ class TestToolsOTXSemiSLDetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["ResNeXt101-ATSS"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args_semisl)
