@@ -13,7 +13,7 @@ from mmcls.utils import get_root_logger, wrap_distributed_model, wrap_non_distri
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
-from otx.algorithms.common.adapters.mmcv.hooks import HPUFp16OptimizerHook, HPUOptimizerHook, HPUDistOptimizerHook
+from otx.algorithms.common.adapters.mmcv.hooks import HPUOptimizerHook, HPUDistOptimizerHook
 
 
 def train_model(model, dataset, cfg, distributed=False, validate=False, timestamp=None, device=None, meta=None):
@@ -82,8 +82,8 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     elif cfg.device == "hpu":
         assert len(cfg.gpu_ids) == 1
         model.to(f"hpu:{cfg.gpu_ids[0]}")
-        if is_autocast := bool(cfg.optimizer_config.get("loss_scale", False) or cfg.get("fp16", False)):
-            model = HPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, is_autocast=is_autocast)
+        is_autocast = bool(cfg.get("fp16", False))
+        model = HPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, is_autocast=is_autocast)
     else:
         model = wrap_non_distributed_model(model, cfg.device, device_ids=cfg.gpu_ids)
 
@@ -125,7 +125,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
             optimizer_config = HPUDistOptimizerHook(**cfg.optimizer_config)
         else:
             optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
-    elif device == "hpu":
+    elif cfg.device == "hpu": # TODO (sungchul): duplicated
         optimizer_config = HPUOptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config

@@ -271,12 +271,7 @@ class BaseConfigurer:
                     opts = dict()
                 cfg.optimizer_config.update(opts)
             elif is_hpu_available():
-                opts: Dict[str, Any] = dict(
-                    type="HPUFp16OptimizerHook",
-                    distributed=getattr(cfg, "distributed", False),
-                    **fp16_config,
-                )
-                cfg.optimizer_config.update(opts)
+                cfg.fp16 = fp16_config
             else:
                 logger.info("Revert FP16 to FP32 on CPU device")
 
