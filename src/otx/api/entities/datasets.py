@@ -349,10 +349,14 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
         Returns:
             DatasetEntity: DatasetEntity with items matching subsets
         """
-        dataset = DatasetEntity(
-            items=[item for item in self._items if item.subset in set(subsets)],
-            purpose=self.purpose,
-        )
+
+        dataset = DatasetEntity(purpose=self.purpose)
+
+        if subsets:
+            dataset = self.get_subset(subsets[0])
+            for subset in subsets[1:]:
+                dataset += self.get_subset(subset)
+
         return dataset
 
     def get_subset(self, subset: Subset) -> "DatasetEntity":
