@@ -25,7 +25,7 @@ class TestMeanTeacher:
         self.gt_masks = torch.rand(4, 3, 300, 300)
 
     @e2e_pytest_unit
-    def test_forward_train(self, mocker, monkeypatch):
+    def test_forward_train_segmentation(self, mocker, monkeypatch):
         def mock_forward_train(*args, **kwargs):
             return {"loss_bbox": 1.0, "loss_cls": 1.0, "loss_mask": 1.0}
 
@@ -33,7 +33,7 @@ class TestMeanTeacher:
             return (self.gt_bboxes, self.gt_labels, self.gt_masks, 0.0)
 
         monkeypatch.setattr(self.mt_is.model_s, "forward_train", mock_forward_train)
-        loss = self.mt_is.forward_train(self.img, self.img_metas, self.gt_bboxes, self.gt_labels)
+        loss = self.mt_is.forward_train(self.img, self.img_metas, self.img, self.gt_bboxes, self.gt_labels, self.gt_masks)
         gt_loss = mock_forward_train()
         assert loss == gt_loss
         self.mt_is.enable_unlabeled_loss(True)
@@ -41,7 +41,7 @@ class TestMeanTeacher:
         mocker.patch.object(MeanTeacher, "forward_teacher")
         kwargs = {"extra_0": {"img0": self.img, "img": self.img, "img_metas": self.img_metas}}
         loss_mask = self.mt_is.forward_train(
-            self.img, self.img_metas, self.gt_bboxes, self.gt_labels, self.gt_masks, **kwargs
+            self.img, self.img_metas, None, self.gt_bboxes, self.gt_labels, self.gt_masks, **kwargs
         )
         gt_loss.update(
             {
@@ -62,14 +62,15 @@ class TestMeanTeacher:
             return (self.gt_bboxes, self.gt_labels, [], 0.0)
 
         monkeypatch.setattr(self.mt_det.model_s, "forward_train", mock_forward_train)
-        loss = self.mt_det.forward_train(self.img, self.img_metas, self.gt_bboxes, self.gt_labels)
+        monkeypatch.setattr(self.mt_is.model_s, "with_mask", False)
+        loss = self.mt_det.forward_train(self.img, self.img_metas, self.img, self.gt_bboxes, self.gt_labels)
         gt_loss = mock_forward_train()
         assert loss == gt_loss
         self.mt_det.enable_unlabeled_loss(True)
         monkeypatch.setattr(MeanTeacher, "generate_pseudo_labels", mock_generate_pseudo_labels)
         mocker.patch.object(MeanTeacher, "forward_teacher")
         kwargs = {"extra_0": {"img0": self.img, "img": self.img, "img_metas": self.img_metas}}
-        loss_det = self.mt_det.forward_train(self.img, self.img_metas, self.gt_bboxes, self.gt_labels, **kwargs)
+        loss_det = self.mt_det.forward_train(self.img, self.img_metas, self.img, self.gt_bboxes, self.gt_labels, **kwargs)
         gt_loss.update(
             {
                 "ps_ratio": torch.tensor([0.0]),
