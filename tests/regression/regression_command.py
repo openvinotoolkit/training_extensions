@@ -59,7 +59,7 @@ def regression_eval_testing(
                 regression_result["passed"] = False
                 regression_result[
                     "log"
-                ] = f"Performance: ({trained_performance[k]}) < Criteria: ({model_criteria}), threshold: {threshold}."
+                ] = f"[{template.name}] Performance: ({trained_performance[k]}) < Criteria: ({model_criteria}), threshold: {threshold}."
 
     result_dict["Model size (MB)"] = round(
         os.path.getsize(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth") / 1e6, 2
@@ -120,7 +120,9 @@ def regression_openvino_testing(
             and abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) > threshold
         ):
             regression_result["passed"] = False
-            regression_result["log"] = f"{trained_performance[k]=}, {exported_performance[k]=}, {threshold=}"
+            regression_result[
+                "log"
+            ] = f"[{template.name}] {trained_performance[k]=}, {exported_performance[k]=}, {threshold=}"
 
     return regression_result
 
@@ -160,7 +162,9 @@ def regression_deployment_testing(
             and abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) > threshold
         ):
             regression_result["passed"] = False
-            regression_result["log"] = f"{exported_performance[k]=}, {deployed_performance[k]=}, {threshold=}"
+            regression_result[
+                "log"
+            ] = f"[{template.name}] {exported_performance[k]=}, {deployed_performance[k]=}, {threshold=}"
 
     return regression_result
 
@@ -216,7 +220,7 @@ def regression_nncf_eval_testing(
                 > threshold
             ):
                 regression_result["passed"] = False
-                regression_result["log"] = f"{trained_performance[k]=}, {evaluated_performance[k]=}"
+                regression_result["log"] = f"[{template.name}] {trained_performance[k]=}, {evaluated_performance[k]=}"
 
     return regression_result
 
@@ -260,7 +264,7 @@ def regression_ptq_eval_testing(template, root, otx_dir, args, criteria=None, re
                 regression_result["passed"] = False
                 regression_result[
                     "log"
-                ] = f"ptq performance: {ptq_performance[k]=}, {model_criteria=}, {reg_threshold=}"
+                ] = f"[{template.name}] ptq performance: {ptq_performance[k]=}, {model_criteria=}, {reg_threshold=}"
 
     return regression_result
 
@@ -280,7 +284,9 @@ def regression_train_time_testing(train_time_criteria, e2e_train_time, template,
 
     if e2e_train_time > modified_train_criteria:
         regression_result["passed"] = False
-        regression_result["log"] = f"Train time: ({e2e_train_time}) < Criteria: ({modified_train_criteria})."
+        regression_result[
+            "log"
+        ] = f"[{template.name}] Train time: ({e2e_train_time}) < Criteria: ({modified_train_criteria})."
 
     return regression_result
 
@@ -300,6 +306,8 @@ def regression_eval_time_testing(eval_time_criteria, e2e_eval_time, template, th
 
     if e2e_eval_time > modified_eval_criteria:
         regression_result["passed"] = False
-        regression_result["log"] = f"Eval time: ({e2e_eval_time}) < criteria: ({modified_eval_criteria})."
+        regression_result[
+            "log"
+        ] = f"[{template.name}] Eval time: ({e2e_eval_time}) < criteria: ({modified_eval_criteria})."
 
     return regression_result

@@ -6,7 +6,7 @@
           "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
           "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
           "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
-          "--input": "classification/multiclass_CUB/test/airplane"
+          "--input": "classification/multiclass_CUB/test"
         },
         "multi_label": {
           "--train-data-roots": "classification/multi_label_coco_subset_cls_decr",
@@ -18,7 +18,7 @@
           "--train-data-roots": "classification/h_label_CUB",
           "--val-data-roots": "classification/h_label_CUB",
           "--test-data-roots": "classification/h_label_CUB",
-          "--input": "classification/h_label_CUB/images/test/airplane"
+          "--input": "classification/h_label_CUB/images/test"
         },
         "supcon": {
           "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
