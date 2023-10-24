@@ -184,6 +184,7 @@ class HPUDataParallel(MMDataParallel):
         if output_device is None:
             output_device = device_ids[0]
 
+        super().__init__(module=module)
         self.dim = dim
         self.device_ids = [_get_device_index(x, True) for x in device_ids]
         self.output_device = _get_device_index(output_device, True)
