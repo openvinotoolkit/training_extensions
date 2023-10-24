@@ -82,7 +82,8 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     elif cfg.device == "hpu":
         assert len(cfg.gpu_ids) == 1
         model.to(f"hpu:{cfg.gpu_ids[0]}")
-        model = HPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids)
+        if is_autocast := bool(cfg.optimizer_config.get("loss_scale", False) or cfg.get("fp16", False)):
+            model = HPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, is_autocast=is_autocast)
     else:
         model = wrap_non_distributed_model(model, cfg.device, device_ids=cfg.gpu_ids)
 
