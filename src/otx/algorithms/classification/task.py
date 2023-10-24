@@ -1,18 +1,7 @@
 """Task of OTX Classification."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import io
 import json
@@ -34,6 +23,7 @@ from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
 from otx.algorithms.common.configs import TrainType
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
@@ -80,6 +70,7 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {
@@ -128,6 +119,12 @@ class OTXClassificationTask(OTXTask, ABC):
 
         if self._task_environment.model is not None:
             self._load_model()
+
+        if hasattr(self._hyperparams.learning_parameters, "input_size"):
+            input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
+        else:
+            input_size_cfg = InputSizePreset.DEFAULT
+        self._input_size = input_size_cfg.tuple
 
     def _is_multi_label(self, label_groups: List[LabelGroup], all_labels: List[LabelEntity]):
         """Check whether the current training mode is multi-label or not."""
@@ -214,6 +211,8 @@ class OTXClassificationTask(OTXTask, ABC):
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
 
         results = self._train_model(dataset)
+
+        MemCacheHandlerSingleton.delete()
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
@@ -476,6 +475,7 @@ class OTXClassificationTask(OTXTask, ABC):
             "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
 

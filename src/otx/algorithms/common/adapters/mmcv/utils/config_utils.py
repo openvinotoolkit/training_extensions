@@ -4,6 +4,7 @@
 
 import copy
 import glob
+import math
 import multiprocessing
 import os
 import os.path as osp
@@ -517,15 +518,11 @@ def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     algo_backend = hyperparams.algo_backend
     warmup_iters = int(params.learning_rate_warmup_iters)
 
-    model_label_type = config.filename.split("/")[-1]
-    if "multilabel" in model_label_type:
-        lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
-    else:
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
+    lr_config = (
+        ConfigDict(warmup_iters=warmup_iters)
+        if warmup_iters > 0
+        else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+    )
 
     if params.enable_early_stopping and config.get("evaluation", None):
         early_stop = ConfigDict(
@@ -597,14 +594,6 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
         config.runner.meta = ConfigDict()
     config.runner.meta.exp_name = f"train_round_{len(checkpoint_dirs)}"
     return train_round_checkpoint_dir
-
-
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
 
 
 class InputSizeManager:
@@ -693,12 +682,12 @@ class InputSizeManager:
                     self._set_pipeline_size_value(pipelines, resize_ratio)
 
         # Set model size
-        # - needed only for YOLOX
         model_cfg = self._config.get("model", {})
+        model_cfg["input_size"] = input_size
         if model_cfg.get("type", "") == "CustomYOLOX":
+            # - needed only for YOLOX
             if input_size[0] % 32 != 0 or input_size[1] % 32 != 0:
                 raise ValueError("YOLOX should have input size being multiple of 32.")
-            model_cfg["input_size"] = input_size
 
     @property
     def base_input_size(self) -> Union[Tuple[int, int], Dict[str, Tuple[int, int]]]:
@@ -873,39 +862,28 @@ class InputSizeManager:
             pipeline[attr] = (round(pipeline[attr][0] * scale[0]), round(pipeline[attr][1] * scale[1]))
 
     @staticmethod
-    def get_configured_input_size(
-        input_size_config: InputSizePreset = InputSizePreset.DEFAULT, model_ckpt: Optional[str] = None
-    ) -> Optional[Tuple[int, int]]:
-        """Get configurable input size configuration. If it doesn't exist, return None.
+    def get_trained_input_size(model_ckpt: Optional[str] = None) -> Optional[Tuple[int, int]]:
+        """Get trained input size from checkpoint. If it doesn't exist, return None.
 
         Args:
-            input_size_config (InputSizePreset, optional): Input size setting. Defaults to InputSizePreset.DEFAULT.
             model_ckpt (Optional[str], optional): Model weight to load. Defaults to None.
 
         Returns:
             Optional[Tuple[int, int]]: Pair of width and height. If there is no input size configuration, return None.
         """
-        input_size = None
-        if input_size_config == InputSizePreset.DEFAULT:
-            if model_ckpt is None:
-                return None
+        if model_ckpt is None:
+            return None
 
-            model_info = torch.load(model_ckpt, map_location="cpu")
-            for key in ["config", "learning_parameters", "input_size", "value"]:
-                if key not in model_info:
-                    return None
-                model_info = model_info[key]
-            input_size = model_info
+        model_info = torch.load(model_ckpt, map_location="cpu")
+        if model_info is None:
+            return None
 
-            if input_size == InputSizePreset.DEFAULT.value:
-                return None
+        input_size = model_info.get("input_size", None)
+        if not input_size:
+            return None
 
-            logger.info("Given model weight was trained with {} input size.".format(input_size))
-
-        else:
-            input_size = input_size_config.value
-
-        return InputSizePreset.parse(input_size)
+        logger.info("Given model weight was trained with {} input size.".format(input_size))
+        return input_size
 
     @staticmethod
     def select_closest_size(input_size: Tuple[int, int], preset_sizes: List[Tuple[int, int]]):
@@ -984,3 +962,25 @@ class InputSizeManager:
         input_size = self.select_closest_size(input_size, input_size_preset)
         logger.info(f"-> Closest preset: {input_size}")
         return input_size
+
+
+def get_proper_repeat_times(
+    data_size: int,
+    batch_size: int,
+    coef: float,
+    min_repeat: float,
+) -> float:
+    """Get proper repeat times for adaptive training.
+
+    Args:
+        data_size (int): The total number of the training dataset
+        batch_size (int): The batch size for the training data loader
+        coef (float) : coefficient that effects to number of repeats
+                       (coef * math.sqrt(num_iters-1)) +5
+        min_repeat (float) : minimum repeats
+    """
+    if data_size == 0 or batch_size == 0:
+        logger.info("Repeat dataset enabled, but not a train mode. repeat times set to 1.")
+        return 1
+    n_iters_per_epoch = math.ceil(data_size / batch_size)
+    return math.floor(max(coef * math.sqrt(n_iters_per_epoch - 1) + 5, min_repeat))

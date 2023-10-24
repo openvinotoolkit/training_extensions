@@ -417,17 +417,6 @@ class OpenVINOVisualPromptingTask(IInferenceTask, IEvaluationTask, IOptimization
         dataset = dataset.get_subset(Subset.TRAINING)
 
         for i, (name, is_encoder) in enumerate(zip(["image_encoder", "decoder"], [True, False]), 1):
-            if name == "decoder":
-                # TODO (sungchul): quantize decoder, too
-                logger.info(f"{name} won't do PTQ.")
-                output_model.set_data(
-                    f"visual_prompting_{name}.xml", self.model.get_data(f"visual_prompting_{name}.xml")
-                )
-                output_model.set_data(
-                    f"visual_prompting_{name}.bin", self.model.get_data(f"visual_prompting_{name}.bin")
-                )
-                continue
-
             data_loader = OTXOpenVinoDataLoader(
                 dataset, self.inferencer, is_encoder=is_encoder, output_model=output_model
             )
