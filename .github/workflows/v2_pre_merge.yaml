@@ -62,6 +62,7 @@ jobs:
       - name: Run unit test
         run: tox -vv -e unit-test-v2
   Integration-Test:
+    runs-on: [self-hosted, linux, x64, dev]
     needs: Unit-Test
     strategy:
       fail-fast: false
