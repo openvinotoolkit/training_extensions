@@ -91,7 +91,7 @@ class TestOpenVINOTask:
         openvino_task.deploy(output_model)
         assert output_model.exportable_code is not None
 
-    @patch.multiple(OpenVINOTask, get_config=MagicMock(), load_inferencer=MagicMock())
+    @patch.multiple(OpenVINOTask, get_config=MagicMock(), get_openvino_model=MagicMock())
     @patch("otx.algorithms.anomaly.tasks.openvino.get_transforms", MagicMock())
     def test_anomaly_legacy_keys(self, mocker, tmp_dir):
         """Checks whether the model is loaded correctly with legacy and current keys."""
