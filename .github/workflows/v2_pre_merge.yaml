@@ -69,7 +69,7 @@ jobs:
       matrix:
         include:
         - python-version: "3.10"
-            tox-env: "py310"
+          tox-env: "py310"
     name: Integration-Test-Integration-Test-v2-Python${{ matrix.python-version }}
     # This is what will cancel the job concurrency
     concurrency:
