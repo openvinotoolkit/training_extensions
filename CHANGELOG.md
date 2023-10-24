@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v1.4.4\]
+
+### Enhancements
+
+- Update ModelAPI configuration(<https://github.com/openvinotoolkit/training_extensions/pull/2564>)
+- Add Anomaly modelAPI changes (<https://github.com/openvinotoolkit/training_extensions/pull/2563>)
+
 ## \[v1.4.3\]
 
 ### Enhancements
