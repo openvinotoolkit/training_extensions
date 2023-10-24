@@ -52,13 +52,15 @@ class TestRegressionMultiClassClassification:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
@@ -477,13 +479,15 @@ class TestRegressionMultiLabelClassification:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
@@ -747,13 +751,15 @@ class TestRegressionHierarchicalLabelClassification:
 
     @classmethod
     @pytest.fixture(scope="class")
-    def reg_cfg(cls):
+    def reg_cfg(cls, tmp_dir_path):
+        results_root = os.environ.get("REG_RESULTS_ROOT", tmp_dir_path)
         cls.reg_cfg = RegressionTestConfig(
             cls.TASK_TYPE,
             cls.TRAIN_TYPE,
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
+            results_root=results_root,
         )
 
         yield cls.reg_cfg
