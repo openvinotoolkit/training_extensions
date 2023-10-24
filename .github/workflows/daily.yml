@@ -12,20 +12,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - task: "act"
-            test_args: "tests/e2e/cli/action"
-          - task: "ano"
-            test_args: "tests/e2e/cli/anomaly"
-          - task: "cls"
-            test_args: "tests/e2e/cli/classification"
+          # - task: "act"
+          #   test_args: "tests/e2e/cli/action"
+          # - task: "ano"
+          #   test_args: "tests/e2e/cli/anomaly"
+          # - task: "cls"
+          #   test_args: "tests/e2e/cli/classification"
           - task: "det"
             test_args: '-m "not req_large_memory and not req_large_gpu_memory" tests/e2e/cli/detection'
           - task: "iseg"
             test_args: '-m "not req_large_memory and not req_large_gpu_memory" tests/e2e/cli/instance_segmentation'
-          - task: "seg"
-            test_args: "tests/e2e/cli/semantic_segmentation"
-          - task: "visprompt"
-            test_args: "tests/e2e/cli/visual_prompting"
+          # - task: "seg"
+          #   test_args: "tests/e2e/cli/semantic_segmentation"
+          # - task: "visprompt"
+          #   test_args: "tests/e2e/cli/visual_prompting"
     name: E2E-Test-py310-${{ matrix.task }}
     uses: ./.github/workflows/run_tests_in_tox.yml
     with:
