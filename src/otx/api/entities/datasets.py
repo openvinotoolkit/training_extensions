@@ -350,7 +350,7 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
             DatasetEntity: DatasetEntity with items matching subsets
         """
 
-        dataset = DatasetEntity(purpose=self.purpose)
+        dataset: DatasetEntity = DatasetEntity(purpose=self.purpose)
 
         if subsets:
             dataset = self.get_subset(subsets[0])
