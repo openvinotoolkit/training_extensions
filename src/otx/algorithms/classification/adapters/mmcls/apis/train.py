@@ -14,6 +14,7 @@ from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
 from otx.algorithms.common.adapters.mmcv.hooks import HPUOptimizerHook, HPUDistOptimizerHook
+import habana_dataloader
 
 
 def train_model(model, dataset, cfg, distributed=False, validate=False, timestamp=None, device=None, meta=None):
@@ -64,7 +65,10 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     # The specific dataloader settings
     train_loader_cfg = {**loader_cfg, **cfg.data.get("train_dataloader", {})}
 
-    data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
+    if cfg.device == "hpu":
+        data_loaders = [habana_dataloader.habana_dataset.ResnetDataLoader(ds, **train_loader_cfg) for ds in dataset]
+    else:
+        data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
     fp16_cfg = cfg.get("fp16_", None)
     # put model on gpus
@@ -153,7 +157,10 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
             "drop_last": False,  # Not drop last by default
             **cfg.data.get("val_dataloader", {}),
         }
-        val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
+        if cfg.device == "hpu":
+            val_dataloader = habana_dataloader.habana_dataset.ResnetDataLoader(val_dataset, **val_loader_cfg)
+        else:
+            val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
         eval_cfg = cfg.get("evaluation", {})
         eval_cfg["by_epoch"] = cfg.runner["type"] != "IterBasedRunner"
         eval_hook = DistEvalHook if distributed else EvalHook
