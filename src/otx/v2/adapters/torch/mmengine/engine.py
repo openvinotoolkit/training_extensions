@@ -111,7 +111,7 @@ class MMXEngine(Engine):
                 kwargs[arg_key] = arg_config
 
         precision: str | None = func_args.get("precision", None)
-        precision = self.config.get(arg_key, None) if precision is None else precision
+        precision = self.config.get("precision", None) if precision is None else precision
 
         # Update train_cfg & val_cfg (ValLoop) & test_cfg (TestLoop)
         self.config, kwargs = update_runner_config(
