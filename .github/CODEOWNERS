@@ -8,7 +8,7 @@
 /.github                                                    @samet-akcay @yunchu
 
 # Docs
-/docs                                                       @samet-akcay @harimkang @yunchu
+/docs                                                       @samet-akcay @harimkang @yunchu @kprokofi
 
 # OTX config
 /src/otx/v2/config                                          @samet-akcay @harimkang @goodsong81
@@ -28,17 +28,7 @@
 /src/otx/v2/adapters/torch/anomalib                         @samet-akcay @harimkang @ashwinvaidya17
 
 # OTX Adapters mmengine
-/src/otx/v2/adapters/torch/mmengine/engine.py               @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/torch/mmengine/registry.py             @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/torch/mmengine/modules                 @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/torch/mmengine/utils                   @samet-akcay @harimkang @goodsong81
-
-# OTX Adapters mmpretrain
-/src/otx/v2/adapters/torch/mmengine/mmpretrain/engine.py    @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/torch/mmengine/mmpretrain/dataset.py   @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/torch/mmengine/mmpretrain/model.py     @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/torch/mmengine/mmpretrain/registry.py  @samet-akcay @harimkang @goodsong81
-/src/otx/v2/adapters/torch/mmengine/mmpretrain/modules      @samet-akcay @harimkang @goodsong81
+/src/otx/v2/adapters/torch/mmengine                         @samet-akcay @harimkang @goodsong81
 
 # OTX Adapters mmdeploy
 /src/otx/v2/adapters/torch/mmengine/mmdeploy                @samet-akcay @harimkang @goodsong81 @sovrasov
@@ -48,7 +38,7 @@
 
 # Misc
 /pyproject.toml                                             @samet-akcay @harimkang @yunchu
-/README.md                                                  @samet-akcay @yunchu
+/README.md                                                  @samet-akcay @yunchu @goodsong81
 /setup.py                                                   @samet-akcay @harimkang @yunchu
 /third-party-programs.txt                                   @samet-akcay @harimkang @yunchu
 /tox.ini                                                    @samet-akcay @yunchu
