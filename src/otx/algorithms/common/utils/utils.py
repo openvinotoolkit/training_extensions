@@ -14,6 +14,7 @@ from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
 import onnx
+import torch
 import yaml
 from addict import Dict as adict
 
@@ -104,6 +105,8 @@ def set_random_seed(seed, logger=None, deterministic=False):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    if is_xpu_available():
+        torch.xpu.manual_seed_all(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     if logger:
         logger.info(f"Training seed was set to {seed} w/ deterministic={deterministic}.")
@@ -157,3 +160,8 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
         meta.value = str(extra_model_data[item])
 
     onnx.save(model, onnx_file)
+
+
+def is_xpu_available():
+    """Checks if XPU device is available."""
+    return hasattr(torch, "xpu") and torch.xpu.is_available()

@@ -17,7 +17,6 @@ import torch
 from mmcv.runner import wrap_fp16_model
 from mmcv.utils import Config, ConfigDict, get_git_hash
 from mmseg import __version__
-from mmseg.apis import train_segmentor
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import collect_env
 
@@ -40,6 +39,7 @@ from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
+from otx.algorithms.segmentation.adapters.mmseg.apis.train import train_segmentor
 from otx.algorithms.segmentation.adapters.mmseg.configurer import (
     IncrSegmentationConfigurer,
     SegmentationConfigurer,

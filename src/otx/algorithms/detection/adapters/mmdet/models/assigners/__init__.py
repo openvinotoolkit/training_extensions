@@ -4,5 +4,6 @@
 #
 
 from .custom_max_iou_assigner import CustomMaxIoUAssigner
+from .xpu_atss_assigner import XPUATSSAssigner
 
-__all__ = ["CustomMaxIoUAssigner"]
+__all__ = ["CustomMaxIoUAssigner", "XPUATSSAssigner"]

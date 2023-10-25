@@ -27,6 +27,7 @@ from .utils import (
     get_arg_spec,
     get_default_async_reqs_num,
     get_task_class,
+    is_xpu_available,
     load_template,
     read_py_config,
     set_random_seed,
@@ -49,4 +50,5 @@ __all__ = [
     "OTXOpenVinoDataLoader",
     "read_py_config",
     "get_default_async_reqs_num",
+    "is_xpu_available",
 ]
