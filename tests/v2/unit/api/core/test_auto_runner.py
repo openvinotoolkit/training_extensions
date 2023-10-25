@@ -23,7 +23,7 @@ class TestAutoRunner:
         assert isinstance(auto_runner, AutoRunner)
 
         auto_runner = AutoRunner(task="anomaly_classification")
-        assert auto_runner.framework == "otx.v2.adapters.torch.anomalib"
+        assert auto_runner.framework == "otx.v2.adapters.torch.lightning.anomalib"
         assert auto_runner.task == TaskType.ANOMALY_CLASSIFICATION
 
         with pytest.raises(TypeError):

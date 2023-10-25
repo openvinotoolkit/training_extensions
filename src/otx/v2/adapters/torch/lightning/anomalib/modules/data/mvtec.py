@@ -56,7 +56,7 @@ from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from pandas.core.frame import DataFrame
 
 

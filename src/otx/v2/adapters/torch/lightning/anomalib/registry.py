@@ -1,4 +1,4 @@
-"""OTX adapters.torch.anomalib.Registry module."""
+"""OTX adapters.torch.lightning.anomalib.Registry module."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -6,11 +6,10 @@
 from __future__ import annotations
 
 from importlib import import_module
-from typing import Callable
 
 from anomalib.models import _snake_to_pascal_case
 
-from otx.v2.api.core.registry import BaseRegistry
+from otx.v2.adapters.torch.lightning.registry import LightningRegistry
 
 # COPY from anomalib.models.__init__.py
 model_list = [
@@ -31,7 +30,7 @@ model_list = [
 ]
 
 
-class AnomalibRegistry(BaseRegistry):
+class AnomalibRegistry(LightningRegistry):
     """A registry for registering and retrieving anomaly modules.
 
     Attributes:
@@ -53,17 +52,3 @@ class AnomalibRegistry(BaseRegistry):
             model = getattr(module, f"{_snake_to_pascal_case(model_name)}Lightning")
             if module is not None:
                 self.register_module(name=model_name, module=model)
-
-    def get(self, module_type: str) -> Callable | None:
-        """Retrieve a registered module by its type.
-
-        Args:
-            module_type (str): The type of the module to retrieve.
-
-        Returns:
-            Optional[Callable]: The registered module, or None if not found.
-        """
-        # The module_dict is the highest priority.
-        if module_type in self.module_dict:
-            return self.module_dict[module_type]
-        return None

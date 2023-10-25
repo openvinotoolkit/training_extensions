@@ -22,7 +22,7 @@ import torch
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
-from otx.v2.adapters.torch.anomalib.modules.logger import get_logger
+from otx.v2.adapters.torch.lightning.anomalib.modules.logger import get_logger
 from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity
@@ -32,7 +32,7 @@ from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     import pytorch_lightning as pl
     from anomalib.models import AnomalyModule
 
