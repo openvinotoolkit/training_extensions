@@ -258,8 +258,7 @@ class BaseConfigurer:
                     **fp16_config,
                 )
                 if is_xpu_available():
-                    from mmcv.runner.fp16_utils import autocast
-                    autocast = torch.xpu.amp.autocast
+                    torch.cuda.amp = torch.xpu.amp
 
                 if optim_type == "SAMOptimizerHook":
                     opts["type"] = "Fp16SAMOptimizerHook"
