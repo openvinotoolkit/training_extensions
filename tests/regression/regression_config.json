@@ -6,7 +6,7 @@
           "--train-data-roots": "classification/multiclass_CUB_cls_decr/train",
           "--val-data-roots": "classification/multiclass_CUB_cls_decr/test",
           "--test-data-roots": "classification/multiclass_CUB_cls_decr/test",
-          "--input": "classification/multiclass_CUB/test"
+          "--input": "classification/multiclass_CUB/test/Acadian_Flycatcher"
         },
         "multi_label": {
           "--train-data-roots": "classification/multi_label_coco_subset_cls_decr",
