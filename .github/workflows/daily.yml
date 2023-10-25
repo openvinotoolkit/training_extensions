@@ -22,7 +22,7 @@ jobs:
             test_args: '-m "not req_large_memory and not req_large_gpu_memory" tests/e2e/cli/detection'
           - task: "iseg"
             test_args: '-m "not req_large_memory and not req_large_gpu_memory" tests/e2e/cli/instance_segmentation'
-          # # - task: "seg"
+          # - task: "seg"
           #   test_args: "tests/e2e/cli/semantic_segmentation"
           # - task: "visprompt"
           #   test_args: "tests/e2e/cli/visual_prompting"

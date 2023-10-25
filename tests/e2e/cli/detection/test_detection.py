@@ -259,7 +259,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["ResNeXt101-ATSS", "SSD", "MobilenetV2-ATSS"]
+            if template.name in ["ResNeXt101-ATSS", "SSD", "MobileNetV2-ATSS"]
             else template
             for template in templates
         ],
@@ -275,7 +275,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["YOLOX-L", "ResNeXt101-ATSS"]
+            if template.name in ["YOLOX-L", "ResNeXt101-ATSS", "SSD", "MobileNetV2-ATSS"]
             else template
             for template in templates
         ],
@@ -303,7 +303,16 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["MobileNetV2-ATSS"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         if template.name == "YOLOX-L":
             pytest.skip(reason="Issue#2518: YOLOX-L, Tiling-ATSS showed 0.0 after export")
@@ -325,7 +334,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name == "ResNeXt101-ATSS"
+            if template.name in ["ResNeXt101-ATSS", "YOLOX-L", "YOLOX-TINY", "SSD"]
             else template
             for template in templates
         ],
@@ -418,7 +427,16 @@ class TestToolsOTXDetection:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["YOLOX-TINY", "MobileNetV2-ATSS", "SSD"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_multi_gpu"
         args1 = copy.deepcopy(args)
