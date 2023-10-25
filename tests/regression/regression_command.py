@@ -213,7 +213,7 @@ def regression_nncf_eval_testing(
                 regression_result[
                     "log"
                 ] = f"[{template.name}] NNCF performance is lower than criteria: {evaluated_performance[k]=}, {model_criteria=}, {threshold=}"
-            elif evaluated_performance[k] < train_performance[k]:
+            elif evaluated_performance[k] < trained_performance[k]:
                 regression_result["passed"] = False
                 regression_result[
                     "log"
