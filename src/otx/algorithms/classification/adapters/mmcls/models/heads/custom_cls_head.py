@@ -89,6 +89,9 @@ class CustomLinearClsHead(LinearClsHead):
         if torch.onnx.is_in_onnx_export():
             return cls_score
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        if pred.dtype == torch.bfloat16:
+            # numpy doesn't support bfloat16, convert pred to float32
+            pred = pred.to(torch.float32)
 
         return self.post_process(pred)
 

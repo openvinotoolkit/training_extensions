@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import torch
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import VisionTransformerClsHead
 
@@ -31,3 +32,9 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
             losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         losses["loss"] = loss
         return losses
+    
+    def post_process(self, pred):
+        if pred.dtype == torch.bfloat16:
+            # numpy doesn't support bfloat16, convert pred to float32
+            pred = pred.to(torch.float32)
+        return super().post_process(pred)
