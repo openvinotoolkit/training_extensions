@@ -45,6 +45,7 @@ train_pipeline = [
                     ],
                     multiscale_mode="value",
                     keep_ratio=True,
+                    override=True,  # Allows multiple resize
                 )
             ],
             [
@@ -55,6 +56,7 @@ train_pipeline = [
                     img_scale=[(400, 4200), (500, 4200), (600, 4200)],
                     multiscale_mode="value",
                     keep_ratio=True,
+                    override=True,  # Allows multiple resize
                 ),
                 dict(type="RandomCrop", crop_type="absolute_range", crop_size=(384, 600), allow_negative_crop=True),
                 dict(
@@ -73,8 +75,8 @@ train_pipeline = [
                         (800, 1333),
                     ],
                     multiscale_mode="value",
-                    override=True,
                     keep_ratio=True,
+                    override=True,  # Allows multiple resize
                 ),
             ],
         ],

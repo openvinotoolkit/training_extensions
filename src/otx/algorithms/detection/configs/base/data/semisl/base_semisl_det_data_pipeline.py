@@ -23,6 +23,7 @@ common_pipeline = [
         ],
         multiscale_mode="value",
         keep_ratio=False,
+        override=True,  # Allow multiple resize
     ),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="BranchImage", key_map=dict(img="img0")),
@@ -103,6 +104,7 @@ train_pipeline = [
         ],
         multiscale_mode="value",
         keep_ratio=False,
+        override=True,  # Allow multiple resize
     ),
     dict(type="RandomFlip", flip_ratio=0.5),
     dict(type="Normalize", **__img_norm_cfg),
