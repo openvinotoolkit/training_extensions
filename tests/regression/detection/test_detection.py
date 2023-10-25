@@ -125,6 +125,7 @@ class TestRegressionDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr(self, reg_cfg, template, tmp_dir_path):
         train_type = "class_incr"
+        test_type = "train"
         self.performance[template.name] = {}
 
         sl_template_work_dir = get_template_dir(template, tmp_dir_path / reg_cfg.task_type)
@@ -156,7 +157,7 @@ class TestRegressionDetection:
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 
@@ -187,9 +188,10 @@ class TestRegressionDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_semisl(self, reg_cfg, template, tmp_dir_path):
+        train_type = "semi_supervised"
+        test_type = "train"
         self.performance[template.name] = {}
 
-        train_type = "semi_supervised"
         tmp_dir_path = tmp_dir_path / f"{reg_cfg.task_type}/test_semisl"
         config_semisl = reg_cfg.load_config(train_type=train_type)
         args_semisl = config_semisl["data_path"]
@@ -221,7 +223,7 @@ class TestRegressionDetection:
 
         self.performance[template.name][TIME_LOG["train_time"]] = round(train_elapsed_time, 3)
         self.performance[template.name][TIME_LOG["infer_time"]] = round(infer_elapsed_time, 3)
-        reg_cfg.result_dict[reg_cfg.task_type][reg_cfg.label_type][train_type]["train"].append(self.performance)
+        reg_cfg.update_result(test_type, self.performance, train_type=train_type)
 
         assert test_result["passed"] is True, test_result["log"]
 

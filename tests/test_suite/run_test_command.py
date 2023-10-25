@@ -85,7 +85,9 @@ def runner(
                 stream_handler(process.stdout, stdout_stream),
                 stream_handler(process.stderr, stderr_stream),
             )
-        except Exception:
+        except Exception as e:
+            print(f"%%%%%%%% catched exception {e}")
+            print(f"%%%%%%%% killing process {process.pid}")
             process.kill()
             raise
         finally:
