@@ -322,7 +322,7 @@ class TestToolsOTXInstanceSegmentation:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["MaskRCNN-SwinT-FP16"]
+            if template.name in ["MaskRCNN-SwinT-FP16", "MaskRCNN-ResNet50"]
             else template
             for template in templates
         ],
