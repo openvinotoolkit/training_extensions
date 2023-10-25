@@ -212,15 +212,17 @@ def regression_nncf_eval_testing(
                 regression_result["passed"] = False
                 regression_result[
                     "log"
-                ] = f"NNCF performance: {evaluated_performance[k]=}, {model_criteria=}, {threshold=}"
-
-            if (
-                evaluated_performance[k] < trained_performance[k]
-                and abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10)
-                > threshold
-            ):
+                ] = f"[{template.name}] NNCF performance is lower than criteria: {evaluated_performance[k]=}, {model_criteria=}, {threshold=}"
+            elif evaluated_performance[k] < train_performance[k]:
                 regression_result["passed"] = False
-                regression_result["log"] = f"[{template.name}] {trained_performance[k]=}, {evaluated_performance[k]=}"
+                regression_result[
+                    "log"
+                ] = f"[{template.name}] NNCF eval performance is lower than train: {evaluated_performance[k]=}, {train_performance=}"
+            elif abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) > threshold:
+                regression_result["passed"] = False
+                regression_result[
+                    "log"
+                ] = f"[{template.name}] NNCF train & eval delta is too big: {evaluated_performance[k]=}, {trained_performance[k]=}, {threshold=}"
 
     return regression_result
 
