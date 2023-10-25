@@ -53,6 +53,6 @@ __dataset_type = "OTXClsDataset"
 
 data = dict(
     train=dict(type=__dataset_type, pipeline=__train_pipeline),
-    val=dict(type=__dataset_type, test_mode=True, pipeline=__val__pipeline),
+    val=dict(type=__dataset_type, test_mode=True, pipeline=__val_pipeline),
     test=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
 )

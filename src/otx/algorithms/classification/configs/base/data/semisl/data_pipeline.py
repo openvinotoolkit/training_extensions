@@ -57,7 +57,6 @@ __val_pipeline = [
         resize_cfg=dict(type="Resize", size=__resize_target_size, downscale_only=False),
         enable_memcache=True,  # Cache after resizing image
     ),
-    dict(type="Resize", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="Collect", keys=["img"]),

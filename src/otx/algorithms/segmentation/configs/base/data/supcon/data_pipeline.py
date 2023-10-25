@@ -83,7 +83,7 @@ __val_pipeline = [
         resize_cfg=dict(
             type="Resize",
             img_scale=__img_scale,
-            keep_ratio=False
+            keep_ratio=False,
             downscale_only=False,
         ),
         enable_memcache=True,  # Cache after resizing image

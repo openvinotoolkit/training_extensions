@@ -55,6 +55,7 @@ val_pipeline = [
             img_scale=__img_scale,
             keep_ratio=False,
             downscale_only=False,
+        ),
         enable_memcache=True,  # Cache after resizing image & annotations
     ),
     dict(
