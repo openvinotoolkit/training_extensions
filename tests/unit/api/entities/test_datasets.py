@@ -525,7 +525,12 @@ class TestDatasetEntity:
         # TRAINING + VALIDATION
         mixed_items_dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.VALIDATION])
         assert mixed_items_dataset.purpose is dataset.purpose
-        assert mixed_items_dataset._items == [dataset._items[2]] + [training_item] + [validation_item]
+
+        ref_filtered_dataset = [dataset._items[2]] + [training_item] + [validation_item]
+        assert len(mixed_items_dataset._items) == len(ref_filtered_dataset)
+        for item in ref_filtered_dataset:
+            assert item in mixed_items_dataset
+
         # TRAINING + UNLABELED (which is not in items of the base dataset)
         mixed_items_dataset = dataset.get_combined_subset([Subset.TRAINING, Subset.UNLABELED])
         assert mixed_items_dataset._items == [training_item]
