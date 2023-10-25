@@ -89,7 +89,14 @@ class TestToolsTilingDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory) if template.name in ["YOLOX-L"] else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_resume(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "tiling_det/test_resume"
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
