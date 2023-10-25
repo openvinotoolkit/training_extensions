@@ -249,6 +249,8 @@ class BaseConfigurer:
         """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
 
         fp16_config = cfg.pop("fp16", None)
+        # workaround to forward FP16 config to mmapi.train funcitons
+        cfg.fp16_ = fp16_config
 
         if fp16_config is not None:
             if torch.cuda.is_available() or is_xpu_available():

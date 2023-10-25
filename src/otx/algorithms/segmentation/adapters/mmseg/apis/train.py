@@ -67,15 +67,18 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
                 "1.4.4"
             ), "Please use MMCV >= 1.4.4 for CPU training!"
 
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
         if cfg.device == "xpu":
+            use_autocast = bool(cfg.get("fp16_", False))
+            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
             model.to(f"xpu:{cfg.gpu_ids[0]}")
+        else:
+            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        fp16_cfg = cfg.get("fp16", None)
+        fp16_cfg = cfg.get("fp16_", None)
         if fp16_cfg is not None:
             dtype = torch.bfloat16
         else:

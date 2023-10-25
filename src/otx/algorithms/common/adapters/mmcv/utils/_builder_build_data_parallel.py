@@ -89,8 +89,9 @@ def build_data_parallel(
 
 
 class XPUDataParallel(MMDataParallel):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, enable_autocast: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.enable_autocast = enable_autocast
 
     def scatter(self, inputs, kwargs, device_ids):
         inputs, kwargs = super().scatter(inputs, kwargs, [-1])
@@ -119,3 +120,17 @@ class XPUDataParallel(MMDataParallel):
                                 x[k][i] = item.to(target_device)
 
         return inputs, kwargs
+
+    def forward(self, *inputs, **kwargs):
+        # we have to apply autocast here, because the original mmcv's fp16 decorator is hard to override.
+        # Perhaps, one global autocast is not as accurate as original mmcv's approach
+        with torch.autocast(device_type="xpu", dtype=torch.bfloat16, enabled=self.enable_autocast):
+            return super().forward(*inputs, **kwargs)
+
+    def train_step(self, *inputs, **kwargs):
+        with torch.autocast(device_type="xpu", dtype=torch.bfloat16, enabled=self.enable_autocast):
+            return super().train_step(*inputs, **kwargs)
+
+    def val_step(self, *inputs, **kwargs):
+        with torch.autocast(device_type="xpu", dtype=torch.bfloat16, enabled=self.enable_autocast):
+            return super().val_step(*inputs, **kwargs)

@@ -10,7 +10,7 @@ import torch
 from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger, wrap_distributed_model, wrap_non_distributed_model
-from mmcv.runner import DistSamplerSeedHook, Fp16OptimizerHook, build_optimizer, build_runner
+from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
 
@@ -65,6 +65,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
 
     data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
+    fp16_cfg = cfg.get("fp16_", None)
     # put model on gpus
     if distributed:
         find_unused_parameters = cfg.get("find_unused_parameters", False)
@@ -76,14 +77,13 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     elif cfg.device == "xpu":
         assert len(cfg.gpu_ids) == 1
         model.to(f"xpu:{cfg.gpu_ids[0]}")
-        model = XPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids)
+        model = XPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
     else:
         model = wrap_non_distributed_model(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
     if cfg.device == "xpu":
-        fp16_cfg = cfg.get("fp16", None)
         if fp16_cfg is not None:
             dtype = torch.bfloat16
         else:
@@ -97,14 +97,6 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
             "config is now expected to have a `runner` section, " "please set `runner` in your config.", UserWarning
         )
 
-    if device == "ipu":
-        if not cfg.runner["type"].startswith("IPU"):
-            cfg.runner["type"] = "IPU" + cfg.runner["type"]
-        if "options_cfg" not in cfg.runner:
-            cfg.runner["options_cfg"] = {}
-        cfg.runner["options_cfg"]["replicationFactor"] = cfg.ipu_replicas
-        cfg.runner["fp16_cfg"] = cfg.get("fp16", None)
-
     runner = build_runner(
         cfg.runner,
         default_args=dict(
@@ -115,24 +107,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     # an ugly walkaround to make the .log and .log.json filenames the same
     runner.timestamp = timestamp
 
-    # fp16 setting
-    fp16_cfg = cfg.get("fp16", None)
-
-    if fp16_cfg is None and device == "npu":
-        fp16_cfg = {"loss_scale": "dynamic"}
-
-    if fp16_cfg is not None:
-        if device == "ipu":
-            from mmcv.device.ipu import IPUFp16OptimizerHook
-
-            optimizer_config = IPUFp16OptimizerHook(
-                **cfg.optimizer_config, loss_scale=fp16_cfg["loss_scale"], distributed=distributed
-            )
-        else:
-            optimizer_config = Fp16OptimizerHook(
-                **cfg.optimizer_config, loss_scale=fp16_cfg["loss_scale"], distributed=distributed
-            )
-    elif distributed and "type" not in cfg.optimizer_config:
+    if fp16_cfg is None and distributed and "type" not in cfg.optimizer_config:
         optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config

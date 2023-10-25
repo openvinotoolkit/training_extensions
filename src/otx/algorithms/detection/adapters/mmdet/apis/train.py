@@ -104,6 +104,7 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
 
     data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
+    fp16_cfg = cfg.get("fp16_", None)
     # put model on gpus
     if distributed:
         find_unused_parameters = cfg.get("find_unused_parameters", False)
@@ -117,16 +118,17 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
             find_unused_parameters=find_unused_parameters,
         )
     else:
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
         if cfg.device == "xpu":
+            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
             model.to(f"xpu:{cfg.gpu_ids[0]}")
+        else:
+            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build optimizer
     auto_scale_lr(cfg, distributed, logger)
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        fp16_cfg = cfg.get("fp16", None)
         # dinamic patch for nms and roi_align
         NMSop.forward = monkey_patched_xpu_nms
         RoIAlign.forward = monkey_patched_xpu_roi_align
@@ -144,13 +146,7 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
     # an ugly workaround to make .log and .log.json filenames the same
     runner.timestamp = timestamp
 
-    # fp16 setting
-    fp16_cfg = cfg.get("fp16", None)
-    if fp16_cfg is None and cfg.get("device", None) == "npu":
-        fp16_cfg = dict(loss_scale="dynamic")
-    if fp16_cfg is not None:
-        optimizer_config = Fp16OptimizerHook(**cfg.optimizer_config, **fp16_cfg, distributed=distributed)
-    elif distributed and "type" not in cfg.optimizer_config:
+    if fp16_cfg is None and distributed and "type" not in cfg.optimizer_config:
         optimizer_config = OptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config
