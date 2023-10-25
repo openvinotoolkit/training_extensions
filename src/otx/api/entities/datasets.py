@@ -349,8 +349,9 @@ class DatasetEntity(Generic[TDatasetItemEntity]):
         Returns:
             DatasetEntity: DatasetEntity with items matching subsets
         """
+        to_keep = set(subsets)
         dataset = DatasetEntity(
-            items=[item for item in self._items if item.subset in set(subsets)],
+            items=[item for item in self if item.subset in to_keep],
             purpose=self.purpose,
         )
         return dataset
