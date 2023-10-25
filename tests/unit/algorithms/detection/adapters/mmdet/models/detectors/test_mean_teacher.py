@@ -33,7 +33,9 @@ class TestMeanTeacher:
             return (self.gt_bboxes, self.gt_labels, self.gt_masks, 0.0)
 
         monkeypatch.setattr(self.mt_is.model_s, "forward_train", mock_forward_train)
-        loss = self.mt_is.forward_train(self.img, self.img_metas, self.img, self.gt_bboxes, self.gt_labels, self.gt_masks)
+        loss = self.mt_is.forward_train(
+            self.img, self.img_metas, self.img, self.gt_bboxes, self.gt_labels, self.gt_masks
+        )
         gt_loss = mock_forward_train()
         assert loss == gt_loss
         self.mt_is.enable_unlabeled_loss(True)
@@ -70,7 +72,9 @@ class TestMeanTeacher:
         monkeypatch.setattr(MeanTeacher, "generate_pseudo_labels", mock_generate_pseudo_labels)
         mocker.patch.object(MeanTeacher, "forward_teacher")
         kwargs = {"extra_0": {"img0": self.img, "img": self.img, "img_metas": self.img_metas}}
-        loss_det = self.mt_det.forward_train(self.img, self.img_metas, self.img, self.gt_bboxes, self.gt_labels, **kwargs)
+        loss_det = self.mt_det.forward_train(
+            self.img, self.img_metas, self.img, self.gt_bboxes, self.gt_labels, **kwargs
+        )
         gt_loss.update(
             {
                 "ps_ratio": torch.tensor([0.0]),
