@@ -76,9 +76,7 @@ class TestDetectionConfigurer:
         )
         mock_cfg_ckpt.assert_called_once_with(model_cfg, "")
         mock_cfg_env.assert_called_once_with(model_cfg)
-        mock_cfg_data_pipeline.assert_called_once_with(
-            model_cfg, InputSizePreset.DEFAULT, "", train_dataset=self.det_dataset
-        )
+        mock_cfg_data_pipeline.assert_called_once_with(model_cfg, None, "", train_dataset=self.det_dataset)
         mock_cfg_recipe.assert_called_once_with(model_cfg, train_dataset=self.det_dataset)
         mock_cfg_hook.assert_called_once_with(model_cfg)
         mock_cfg_model.assert_called_once_with(model_cfg, None, None, None, train_dataset=self.det_dataset)
@@ -169,32 +167,30 @@ class TestDetectionConfigurer:
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("input_size", [None, (0, 0), (256, 256)])
-    def test_configure_input_size_not_yolox(self, mocker, input_size):
+    @pytest.mark.parametrize("training", [True, False])
+    def test_configure_input_size_not_yolox(self, mocker, input_size, training):
         # prepare
         mock_cfg = mocker.MagicMock()
         mock_input_manager_cls = mocker.patch.object(configurer, "InputSizeManager")
         mock_input_manager = mock_input_manager_cls.return_value
-        mock_input_manager.get_configured_input_size.return_value = input_size
+        mock_input_manager.get_trained_input_size.return_value = (32, 32)
         mock_input_manager_cls.return_value = mock_input_manager
         mock_base_configurer_cls = mocker.patch.object(configurer, "BaseConfigurer")
         mock_base_configurer_cls.adapt_input_size_to_dataset.return_value = (64, 64)
 
         # execute
-        self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
+        self.configurer.configure_input_size(mock_cfg, input_size, "ckpt/path", training=training)
 
         # check
         if input_size is None:
             mock_input_manager.set_input_size.assert_not_called()
         elif input_size == (0, 0):
-            mock_input_manager.set_input_size.assert_called_once_with((64, 64))
+            if training:
+                mock_input_manager.set_input_size.assert_called_once_with((64, 64))
+            else:
+                mock_input_manager.set_input_size.assert_called_once_with((32, 32))
         else:
             mock_input_manager.set_input_size.assert_called_once_with(input_size)
-
-        if input_size == (0, 0):
-            mock_input_manager.set_input_size = mocker.MagicMock()
-            mock_base_configurer_cls.adapt_input_size_to_dataset.return_value = None
-            self.configurer.configure_input_size(mock_cfg, InputSizePreset.DEFAULT, self.data_cfg)
-            mock_input_manager.set_input_size.assert_not_called()
 
     @e2e_pytest_unit
     @pytest.mark.parametrize("is_yolox_tiny", [True, False])
@@ -323,12 +319,12 @@ class TestDetectionConfigurer:
         self.configurer.configure_compat_cfg(model_cfg)
 
     @e2e_pytest_unit
-    def test_get_data_cfg(self):
+    def test_get_subset_data_cfg(self):
         config = copy.deepcopy(self.model_cfg)
         data_pipeline_cfg = OTXConfig.fromfile(self.data_pipeline_path)
         config.merge_from_dict(data_pipeline_cfg)
         config.data.train.dataset = ConfigDict({"dataset": [1, 2, 3]})
-        assert [1, 2, 3] == self.configurer.get_data_cfg(config, "train")
+        assert [1, 2, 3] == self.configurer.get_subset_data_cfg(config, "train")
 
 
 class TestIncrDetectionConfigurer:

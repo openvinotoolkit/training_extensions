@@ -575,6 +575,44 @@ class TestTrainer:
         mock_report_func.assert_called_once_with(0, 0, done=True)  # finilize report
         mock_task.train.assert_not_called()  # check task.train() is called
 
+    @e2e_pytest_unit
+    def test_delete_unused_model_weight(self, mocker, cls_template_path):
+        # prepare
+        trial0_weight_dir = self.hpo_workdir / "weight" / "0"
+        mocker.patch(
+            "otx.cli.utils.hpo.TaskManager.get_latest_weight", return_value=str(trial0_weight_dir / "latest.pth")
+        )
+        mocker.patch("otx.cli.utils.hpo.get_best_hpo_weight", return_value=str(trial0_weight_dir / "best.pth"))
+
+        self.hpo_workdir.mkdir()
+        (self.hpo_workdir / "0.json").touch()
+        for i in range(2):
+            weight_dir = self.hpo_workdir / "weight" / str(i)
+            weight_dir.mkdir(parents=True)
+            (weight_dir / "latest.pth").touch()
+            (weight_dir / "best.pth").touch()
+            (weight_dir / "unused.pth").touch()
+
+        # run
+        trainer = Trainer(
+            hp_config={"configuration": {"iterations": 10}, "id": "1"},
+            report_func=mocker.MagicMock(),
+            model_template=find_and_parse_model_template(cls_template_path),
+            data_roots=mocker.MagicMock(),
+            task_type=TaskType.CLASSIFICATION,
+            hpo_workdir=self.hpo_workdir,
+            initial_weight_name="fake",
+            metric="fake",
+        )
+        trainer._delete_unused_model_weight()
+
+        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "0").iterdir()]) == sorted(
+            ["latest.pth", "best.pth"]
+        )
+        assert sorted([f.name for f in (self.hpo_workdir / "weight" / "1").iterdir()]) == sorted(
+            ["latest.pth", "best.pth", "unused.pth"]
+        )
+
 
 class TestHpoCallback:
     @e2e_pytest_unit

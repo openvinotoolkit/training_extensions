@@ -7,13 +7,14 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     patch_persistent_workers,
     get_adaptive_num_workers,
     InputSizeManager,
+    get_proper_repeat_times,
 )
 from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 
-def get_data_cfg(workers_per_gpu: int = 2) -> dict:
+def get_subset_data_cfg(workers_per_gpu: int = 2) -> dict:
     data_cfg = {}
     for subset in ["train", "val", "test", "unlabeled"]:
         data_cfg[subset] = "fake"
@@ -25,7 +26,7 @@ def get_data_cfg(workers_per_gpu: int = 2) -> dict:
 @e2e_pytest_unit
 @pytest.mark.parametrize("workers_per_gpu", [0, 2])
 def test_patch_persistent_workers(mocker, workers_per_gpu):
-    data_cfg = get_data_cfg(workers_per_gpu)
+    data_cfg = get_subset_data_cfg(workers_per_gpu)
     config = mocker.MagicMock()
     config.data = data_cfg
 
@@ -43,7 +44,7 @@ def test_patch_persistent_workers(mocker, workers_per_gpu):
 
 @e2e_pytest_unit
 def test_patch_persistent_workers_dist_semisl(mocker):
-    data_cfg = get_data_cfg()
+    data_cfg = get_subset_data_cfg()
     config = mocker.MagicMock()
     config.data = data_cfg
 
@@ -294,11 +295,11 @@ def get_mock_model_ckpt(case):
     if case == "none":
         return None
     if case == "no_input_size":
-        return {"config": {}}
+        return {}
     if case == "input_size_default":
-        return {"config": {"learning_parameters": {"input_size": {"value": "Default"}}}}
+        return {"input_size": None}
     if case == "input_size_exist":
-        return {"config": {"learning_parameters": {"input_size": {"value": "512x512"}}}}
+        return {"input_size": (512, 512)}
 
 
 @e2e_pytest_unit
@@ -407,40 +408,20 @@ class TestInputSizeManager:
         assert input_size_manager.get_input_size_from_cfg("train") == input_size
 
     @e2e_pytest_unit
-    @pytest.mark.parametrize(
-        "input_size_config", [InputSizePreset.DEFAULT, InputSizePreset.AUTO, InputSizePreset._1024x1024]
-    )
     @pytest.mark.parametrize("model_ckpt_case", ["none", "no_input_size", "input_size_default", "input_size_exist"])
-    def test_get_configured_input_size(self, mocker, input_size_config, model_ckpt_case):
+    def test_get_trained_input_size(self, mocker, model_ckpt_case):
         # prepare
         mock_torch = mocker.patch.object(config_utils, "torch")
         mock_torch.load.return_value = get_mock_model_ckpt(model_ckpt_case)
-        input_size_parser = re.compile("(\d+)x(\d+)")
 
-        if input_size_config == InputSizePreset.DEFAULT:
-            if (
-                model_ckpt_case == "none"
-                or model_ckpt_case == "no_input_size"
-                or model_ckpt_case == "input_size_default"
-            ):
-                expected_value = None
-            elif model_ckpt_case == "input_size_exist":
-                input_size = get_mock_model_ckpt(model_ckpt_case)["config"]["learning_parameters"]["input_size"][
-                    "value"
-                ]
-                pattern = input_size_parser.search(input_size)
-                expected_value = (int(pattern.group(1)), int(pattern.group(2)))
-        elif input_size_config == InputSizePreset.AUTO:
-            expected_value = (0, 0)
+        if model_ckpt_case == "none" or model_ckpt_case == "no_input_size" or model_ckpt_case == "input_size_default":
+            expected_value = None
         else:
-            pattern = input_size_parser.search(input_size_config.value)
-            expected_value = (int(pattern.group(1)), int(pattern.group(2)))
+            expected_value = (512, 512)
 
         # check expected value is returned
         assert (
-            InputSizeManager.get_configured_input_size(
-                input_size_config, None if model_ckpt_case == "none" else mocker.MagicMock()
-            )
+            InputSizeManager.get_trained_input_size(None if model_ckpt_case == "none" else mocker.MagicMock())
             == expected_value
         )
 
@@ -491,3 +472,18 @@ class TestInputSizeManager:
             downscale_only=False,
         )  # 1024 -> 2048 -> 1024
         assert input_size == (1024, 1024)
+
+
+@e2e_pytest_unit
+def test_get_proper_repeat_times():
+    batch_size = 2
+    coef = 1.0
+    min_repeat = 1.0
+
+    data_size = 0
+    repeats = get_proper_repeat_times(data_size=data_size, batch_size=batch_size, coef=coef, min_repeat=min_repeat)
+    assert repeats == 1
+
+    batch_size = 0
+    repeats = get_proper_repeat_times(data_size=data_size, batch_size=batch_size, coef=coef, min_repeat=min_repeat)
+    assert repeats == 1
