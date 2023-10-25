@@ -12,7 +12,6 @@ from mmcv.ops.roi_align import RoIAlign
 from mmcv.runner import (
     DistSamplerSeedHook,
     EpochBasedRunner,
-    Fp16OptimizerHook,
     OptimizerHook,
     build_runner,
     get_dist_info,
@@ -117,12 +116,11 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters,
         )
+    elif cfg.device == "xpu":
+        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
+        model.to(f"xpu:{cfg.gpu_ids[0]}")
     else:
-        if cfg.device == "xpu":
-            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
-            model.to(f"xpu:{cfg.gpu_ids[0]}")
-        else:
-            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
+        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build optimizer
     auto_scale_lr(cfg, distributed, logger)
