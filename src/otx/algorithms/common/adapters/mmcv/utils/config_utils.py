@@ -566,6 +566,7 @@ def patch_from_hyperparams(config: Config, hyperparams, **kwargs):
     if hyperparams.learning_parameters.auto_num_workers:
         adapted_num_worker = get_adaptive_num_workers(2 if is_semi_sl else 1)
         if adapted_num_worker is not None:
+            logger.info(f"adjusted workers_per_gpu={adapted_num_worker} by auto_num_workers feature")
             hparams.data.workers_per_gpu = adapted_num_worker
 
     if is_semi_sl:

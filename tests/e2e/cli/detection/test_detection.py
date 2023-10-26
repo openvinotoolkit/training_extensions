@@ -291,7 +291,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["YOLOX-TINY", "YOLOX-L"]
+            if template.name in ["YOLOX-TINY", "YOLOX-L", "SSD", "MobileNetV2-ATSS"]
             else template
             for template in templates
         ],
@@ -323,7 +323,16 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["SSD", "MobileNetV2-ATSS"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args)
@@ -334,7 +343,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["ResNeXt101-ATSS", "YOLOX-L", "YOLOX-TINY", "SSD"]
+            if template.name in ["ResNeXt101-ATSS", "YOLOX-L", "YOLOX-TINY", "SSD", "MobileNetV2-ATSS"]
             else template
             for template in templates
         ],
@@ -346,7 +355,16 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["YOLOX-L", "YOLOX-TINY", "MobileNetV2-ATSS", "SSD", "ResNeXt101-ATSS"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_nncf_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         if template.entrypoints.nncf is None:
@@ -405,7 +423,16 @@ class TestToolsOTXDetection:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["MobileNetV2-ATSS", "YOLOX-L", "YOLOX-TINY", "SSD"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_ptq_optimize(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection"
         ptq_optimize_testing(template, tmp_dir_path, otx_dir, args)
@@ -431,7 +458,7 @@ class TestToolsOTXDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["YOLOX-TINY", "MobileNetV2-ATSS", "SSD"]
+            if template.name in ["YOLOX-TINY", "MobileNetV2-ATSS", "SSD", "YOLOX-L", "ResNeXt101-ATSS"]
             else template
             for template in templates
         ],
@@ -446,7 +473,16 @@ class TestToolsOTXDetection:
 
 class TestToolsOTXSemiSLDetection:
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["YOLOX-L", "MobileNetV2-ATSS", "YOLOX-TINY", "ResNeXt101-ATSS", "SSD"]
+            else template
+            for template in templates
+        ],
+        ids=templates_ids,
+    )
     def test_otx_train(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "detection/test_semisl"
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
@@ -474,7 +510,7 @@ class TestToolsOTXSemiSLDetection:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["ResNeXt101-ATSS"]
+            if template.name in ["ResNeXt101-ATSS", "YOLOX-L", "MobileNetV2-ATSS", "SSD", "YOLOX-TINY"]
             else template
             for template in templates
         ],

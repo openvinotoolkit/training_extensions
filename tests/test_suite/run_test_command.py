@@ -340,7 +340,7 @@ def otx_eval_openvino_testing(
         perf_path = f"{template_work_dir}/exported_{template.model_template_id}_fp16/performance.json"
 
     if not os.path.exists(weights_path):
-        pytest.skip(reason=f"required file is not exist - {weights_path}")
+        pytest.skip(reason=f"required file is not existed - {weights_path}")
 
     command_line = [
         "otx",
@@ -356,7 +356,10 @@ def otx_eval_openvino_testing(
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
     assert os.path.exists(perf_path)
-    with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
+    ref_pref_path = f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
+    if not os.path.exists(ref_pref_path):
+        pytest.skip(reason=f"required file is not existed - {ref_pref_path}")
+    with open(ref_pref_path) as read_file:
         trained_performance = json.load(read_file)
     with open(perf_path) as read_file:
         exported_performance = json.load(read_file)
@@ -888,6 +891,11 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
     else:
         train_type = "default"
 
+    save_dir_explain_only_predicted_classes = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir_explain_only_predicted_classes = os.path.join(template_work_dir, save_dir_explain_only_predicted_classes)
+    if not os.path.exists(output_dir_explain_only_predicted_classes):
+        pytest.skip(reason=f"required file is not exist - {output_dir_explain_only_predicted_classes}")
+
     save_dir = f"explain_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
     explain_data_root = os.path.join(otx_dir, args["--input"])
@@ -908,8 +916,6 @@ def otx_explain_testing_all_classes(template, root, otx_dir, args):
     check_run(command_line)
     assert os.path.exists(output_dir)
 
-    save_dir_explain_only_predicted_classes = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
-    output_dir_explain_only_predicted_classes = os.path.join(template_work_dir, save_dir_explain_only_predicted_classes)
     if test_algorithm == "ActivationMap":
         assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
     else:
@@ -1016,6 +1022,11 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
     else:
         train_type = "default"
 
+    save_dir_explain_only_predicted_classes = f"explain_ov_{template.model_template_id}/{test_algorithm}/{train_type}/"
+    output_dir_explain_only_predicted_classes = os.path.join(template_work_dir, save_dir_explain_only_predicted_classes)
+    if not os.path.exists(output_dir_explain_only_predicted_classes):
+        pytest.skip(reason=f"required file is not exist - {output_dir_explain_only_predicted_classes}")
+
     save_dir = f"explain_ov_all_classes_{template.model_template_id}/{test_algorithm}/{train_type}/"
     output_dir = os.path.join(template_work_dir, save_dir)
     explain_data_root = os.path.join(otx_dir, args["--input"])
@@ -1037,8 +1048,6 @@ def otx_explain_all_classes_openvino_testing(template, root, otx_dir, args):
     check_run(command_line)
     assert os.path.exists(output_dir)
 
-    save_dir_explain_only_predicted_classes = f"explain_ov_{template.model_template_id}/{test_algorithm}/{train_type}/"
-    output_dir_explain_only_predicted_classes = os.path.join(template_work_dir, save_dir_explain_only_predicted_classes)
     if test_algorithm == "ActivationMap":
         assert len(os.listdir(output_dir)) == len(os.listdir(output_dir_explain_only_predicted_classes))
     else:

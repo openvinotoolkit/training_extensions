@@ -142,7 +142,16 @@ class TestToolsOTXInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["MaskRCNN-SwinT-FP16", "MaskRCNN-ResNet50", "MaskRCNN-EfficientNetB2B"]
+            else template
+            for template in templates_with_experimental
+        ],
+        ids=templates_ids_with_experimental,
+    )
     def test_otx_export_fp16(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_export_testing(template, tmp_dir_path, half_precision=True)
@@ -178,7 +187,7 @@ class TestToolsOTXInstanceSegmentation:
         "template",
         [
             pytest.param(template, marks=pytest.mark.req_large_memory)
-            if template.name in ["MaskRCNN-EfficientNetB2B"]
+            if template.name in ["MaskRCNN-EfficientNetB2B", "MaskRCNN-SwinT-FP16"]
             else template
             for template in templates_with_experimental
         ],
@@ -198,7 +207,16 @@ class TestToolsOTXInstanceSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)
+    @pytest.mark.parametrize(
+        "template",
+        [
+            pytest.param(template, marks=pytest.mark.req_large_memory)
+            if template.name in ["MaskRCNN-EfficientNetB2B"]
+            else template
+            for template in templates_with_experimental
+        ],
+        ids=templates_ids_with_experimental,
+    )
     def test_otx_demo(self, template, tmp_dir_path):
         tmp_dir_path = tmp_dir_path / "ins_seg"
         otx_demo_testing(template, tmp_dir_path, otx_dir, args)

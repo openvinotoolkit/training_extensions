@@ -36,6 +36,7 @@ class MemCacheHandlerBase:
         self._init_data_structs(mem_size)
 
     def _init_data_structs(self, mem_size: int):
+        logger.info("")
         self._arr = (ct.c_uint8 * mem_size)()
         self._cur_page = ct.c_size_t(0)
         self._cache_addr: Union[Dict, DictProxy] = {}
@@ -199,7 +200,7 @@ class MemCacheHandlerSingleton:
             available_cpu_mem = available_cpu_mem // world_size
             logger.info(f"Since world_size={world_size} > 1, each worker a {mem_size} size memory pool.")
 
-        logger.info(f"Try to create a {mem_size} size memory pool.")
+        logger.info(f"Try to create a {mem_size} size memory pool. (available cpu mem: {available_cpu_mem}G)")
         if available_cpu_mem < ((mem_size / GIB) + cls.CPU_MEM_LIMITS_GIB):
             logger.warning("No available CPU memory left, mem_size will be set to 0.")
             mem_size = 0
