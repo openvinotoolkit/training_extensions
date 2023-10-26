@@ -16,6 +16,7 @@ class HPUOptimizerHook(OptimizerHook):
         if self.detect_anomalous_params:
             self.detect_anomalous_parameters(runner.outputs['loss'], runner)
         runner.outputs['loss'].backward()
+        htcore.mark_step()
 
         if self.grad_clip is not None:
             grad_norm = self.clip_grads(runner.model.parameters())
@@ -24,12 +25,7 @@ class HPUOptimizerHook(OptimizerHook):
                 runner.log_buffer.update({'grad_norm': float(grad_norm)},
                                          runner.outputs['num_samples'])
         
-        # API call to trigger execution
-        htcore.mark_step()
-
         runner.optimizer.step()
-        
-        # API call to trigger execution
         htcore.mark_step()
     
     
@@ -38,13 +34,10 @@ class HPUDistOptimizerHook(DistOptimizerHook):
     def after_train_iter(self, runner):
         runner.optimizer.zero_grad()
         runner.outputs['loss'].backward()
+        htcore.mark_step()
+
         if self.grad_clip is not None:
             self.clip_grads(runner.model.parameters())
             
-        # API call to trigger execution
-        htcore.mark_step()
-        
         runner.optimizer.step()
-        
-        # API call to trigger execution
         htcore.mark_step()
