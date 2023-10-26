@@ -122,13 +122,13 @@ class LightningEngine(Engine):
 
     def _update_logger(
         self,
-        logger: list[Logger] | Logger | None = None,
+        logger: list[Logger] | Logger | bool | None = None,
         target_path: str | None = None,
     ) -> list[Logger] | Logger | None:
         """Update the logger and logs them to the console and any other configured loggers.
 
         Args:
-            logger(list[Logger] | Logger | None): Input of loggers
+            logger(list[Logger] | Logger | bool | None): Input of loggers
             target_path(str | None): logger's target output path
 
         Returns:
@@ -137,12 +137,14 @@ class LightningEngine(Engine):
 
     def _update_callbacks(
         self,
-        callbacks: list[pl.Callback] | pl.Callback | None = None,
+        callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
+        mode: str | None = None,
     ) -> list[pl.Callback] | pl.Callback | None:
         """Update the list of callbacks to be executed during training and validation.
 
         Args:
-            callbacks(list[pl.Callback] | pl.Callback | None): Input of callbacks
+            callbacks(list[pl.Callback] | pl.Callback | DictConfig | None): Input of callbacks
+            mode(bool): Current Running mode status
 
         Returns:
             list[pl.Callback] | pl.Callback | None: Updated callbacks.
@@ -162,8 +164,8 @@ class LightningEngine(Engine):
         deterministic: bool | None = None,
         precision: _PRECISION_INPUT | None = None,
         val_interval: int | None = None,
-        logger: list[Logger] | Logger | None = None,
-        callbacks: list[pl.Callback] | pl.Callback | None = None,
+        logger: list[Logger] | Logger | bool | None = None,
+        callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
         """Train the given model using the provided data loaders and optimizer.
@@ -182,6 +184,8 @@ class LightningEngine(Engine):
             deterministic (Optional[bool], optional): Whether to use deterministic training. Defaults to None.
             precision (Optional[_PRECISION_INPUT], optional): The precision to use for training. Defaults to None.
             val_interval (Optional[int], optional): The interval at which to run validation. Defaults to None.
+            logger (list[Logger] | Logger | bool | None, optional): Logger to use in train.
+            callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in train.
             **kwargs: Additional arguments to pass to the Trainer constructor.
 
         Returns:
@@ -200,7 +204,8 @@ class LightningEngine(Engine):
         update_check = self._update_config(func_args=train_args, **kwargs)
         datamodule = self.trainer_config.pop("datamodule", None)
 
-        callbacks = self._update_callbacks(callbacks=callbacks)
+        mode = "train_val" if val_dataloader is not None else "train"
+        callbacks = self._update_callbacks(callbacks=callbacks, mode=mode)
         logger = self._update_logger(logger=logger, target_path=target_path)
 
         if not hasattr(self, "trainer") or update_check:
@@ -233,8 +238,8 @@ class LightningEngine(Engine):
         val_dataloader: DataLoader | dict | None = None,
         checkpoint: str | Path | None = None,
         precision: _PRECISION_INPUT | None = None,
-        logger: list[Logger] | Logger | None = None,
-        callbacks: list[pl.Callback] | pl.Callback | None = None,
+        logger: list[Logger] | Logger | bool | None = None,
+        callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
         **kwargs,
     ) -> dict:
         """Run validation on the given model using the provided validation dataloader and checkpoint.
@@ -246,6 +251,8 @@ class LightningEngine(Engine):
             checkpoint (Optional[Union[str, Path]]): The checkpoint to use for validation.
                 If not provided, the latest checkpoint will be used.
             precision (Optional[_PRECISION_INPUT]): The precision to use for validation.
+            logger (list[Logger] | Logger | bool | None, optional): Logger to use in validate.
+            callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in validate.
             **kwargs: Additional keyword arguments to pass to the method.
 
         Returns:
@@ -279,8 +286,8 @@ class LightningEngine(Engine):
         test_dataloader: DataLoader | None = None,
         checkpoint: str | Path | None = None,
         precision: _PRECISION_INPUT | None = None,
-        logger: list[Logger] | Logger | None = None,
-        callbacks: list[pl.Callback] | pl.Callback | None = None,
+        logger: list[Logger] | Logger | bool | None = None,
+        callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
         **kwargs,
     ) -> dict:
         """Test the given model on the provided test dataloader.
@@ -292,6 +299,8 @@ class LightningEngine(Engine):
             checkpoint (Optional[Union[str, Path]]): The checkpoint to use for testing.
                 If not provided, the latest checkpoint will be used.
             precision (Optional[_PRECISION_INPUT]): The precision to use for testing.
+            logger (list[Logger] | Logger | bool | None, optional): Logger to use in test.
+            callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in test.
             **kwargs: Additional keyword arguments to pass to the method.
 
         Returns:
@@ -323,8 +332,8 @@ class LightningEngine(Engine):
         img: PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None = None,
         checkpoint: str | Path | None = None,
         device: list | None = None,  # ["auto", "cpu", "gpu", "cuda"]
-        logger: list[Logger] | Logger | None = None,
-        callbacks: list[pl.Callback] | pl.Callback | None = None,
+        logger: list[Logger] | Logger | bool | None = None,
+        callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
     ) -> list:
         """Run inference on the given model and input data.
 
@@ -333,6 +342,8 @@ class LightningEngine(Engine):
             img (Optional[Union[PREDICT_FORMAT, LightningDataModule]]): The input data to run inference on.
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
             device (Optional[list]): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
+            logger (list[Logger] | Logger | bool | None, optional): Logger to use in prediction.
+            callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in prediction.
 
         Returns:
             list: The output of the inference.
@@ -344,7 +355,7 @@ class LightningEngine(Engine):
         if device is None:
             device = self.trainer_config.pop("device", None)
 
-        callbacks = self._update_callbacks(callbacks=callbacks)
+        callbacks = self._update_callbacks(callbacks=callbacks, mode="predict")
         logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_predict")
 
         trainer = Trainer(

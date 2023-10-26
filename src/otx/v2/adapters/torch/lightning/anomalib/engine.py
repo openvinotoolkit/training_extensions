@@ -59,13 +59,13 @@ class AnomalibEngine(LightningEngine):
 
     def _update_logger(
         self,
-        logger: list[Logger] | Logger | None = None,
+        logger: list[Logger] | Logger | bool | None = None,
         target_path: str | None = None,
     ) -> list[Logger] | Logger | None:
         """Update the logger and logs them to the console or use AnomalibTensorBoardLogger.
 
         Args:
-            logger(list[Logger] | Logger | None): Input of loggers
+            logger(list[Logger] | Logger | bool | None): Input of loggers
             target_path(str | None): logger's target output path
 
         Returns:
@@ -75,21 +75,25 @@ class AnomalibEngine(LightningEngine):
         if logger is not None:
             if isinstance(logger, list):
                 return logger
-            return [logger]
+            if isinstance(logger, Logger):
+                return [logger]
         return [AnomalibTensorBoardLogger(save_dir=self.work_dir, name=target_path)]
 
     def _update_callbacks(
         self,
         callbacks: list[pl.Callback] | pl.Callback | None = None,
+        mode: str | None = None,
     ) -> list[pl.Callback] | pl.Callback | None:
         """Update the list of callbacks to be executed during training and validation.
 
         Args:
             callbacks(list[pl.Callback] | pl.Callback | None): Input of callbacks
+            mode(bool): Current Running mode status
 
         Returns:
             list[pl.Callback] | pl.Callback | None: Updated callbacks.
         """
+        _ = mode
         if callbacks is not None:
             if isinstance(callbacks, list):
                 return callbacks
