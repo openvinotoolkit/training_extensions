@@ -253,13 +253,12 @@ class BaseConfigurer:
         # workaround to forward FP16 config to mmapi.train funcitons
         cfg.fp16_ = fp16_config
 
+        optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
+        distributed = getattr(cfg, "distributed", False)
+        opts: Dict[str, Any] = {}
         if fp16_config is not None:
             if torch.cuda.is_available() or is_xpu_available():
-                optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
-                opts: Dict[str, Any] = dict(
-                    distributed=getattr(cfg, "distributed", False),
-                    **fp16_config,
-                )
+                opts.update({"distributed": distributed, **fp16_config})
                 if optim_type == "SAMOptimizerHook":
                     opts["type"] = "Fp16SAMOptimizerHook"
                 elif optim_type == "OptimizerHook":
@@ -271,9 +270,23 @@ class BaseConfigurer:
                     opts = dict()
                 cfg.optimizer_config.update(opts)
             elif is_hpu_available():
-                cfg.fp16 = fp16_config
+                if optim_type == "SAMOptimizerHook":
+                    # TODO (sungchul): consider SAM optimizer
+                    logger.warning("SAMOptimizerHook is not supported on HPU. Changed to OptimizerHook.")
+                opts["type"] = "HPUOptimizerHook"
+                cfg.optimizer_config.update(opts)
             else:
                 logger.info("Revert FP16 to FP32 on CPU device")
+
+        elif is_hpu_available():
+            if distributed:
+                opts["type"] = "HPUDistOptimizerHook"
+            else:
+                opts["type"] = "HPUOptimizerHook"
+            cfg.optimizer_config.update(opts)
+
+        else:
+            logger.info("Revert FP16 to FP32 on CPU device")
 
     def configure_model(self, cfg, data_classes, model_classes, ir_options, **kwargs):
         """Configuration model config settings."""

@@ -122,12 +122,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
     runner.timestamp = timestamp
 
     if fp16_cfg is None and distributed and "type" not in cfg.optimizer_config:
-        if device == "hpu":
-            optimizer_config = HPUDistOptimizerHook(**cfg.optimizer_config)
-        else:
-            optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
-    elif cfg.device == "hpu": # TODO (sungchul): duplicated
-        optimizer_config = HPUOptimizerHook(**cfg.optimizer_config)
+        optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config
 
