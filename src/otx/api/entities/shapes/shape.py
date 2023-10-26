@@ -27,6 +27,7 @@ class ShapeType(IntEnum):
     ELLIPSE = auto()
     RECTANGLE = auto()
     POLYGON = auto()
+    BITMASK = auto()
 
 
 class ShapeEntity(metaclass=abc.ABCMeta):

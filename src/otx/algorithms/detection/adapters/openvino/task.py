@@ -77,6 +77,7 @@ from otx.api.usecases.exportable_code.prediction_to_annotation_converter import 
     IPredictionToAnnotationConverter,
     MaskToAnnotationConverter,
     RotatedRectToAnnotationConverter,
+    BitmapAnnotationConverter,
 )
 from otx.api.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -260,7 +261,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         configuration.update(model_configuration)
 
         model = Model.create_model(model_adapter, "MaskRCNN", configuration, preload=True)
-        converter = MaskToAnnotationConverter(label_schema, configuration)
+        converter = BitmapAnnotationConverter(label_schema, configuration)
 
         super().__init__(configuration, model, converter)
 
@@ -346,7 +347,7 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
             "max_pred_number": max_number,
         }
 
-        is_segm = isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
+        is_segm = isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter, BitmapAnnotationConverter))
         if is_segm:
             self.tiler = InstanceSegmentationTiler(
                 inferencer.model, tiler_config, execution_mode=mode, tile_classifier_model=classifier

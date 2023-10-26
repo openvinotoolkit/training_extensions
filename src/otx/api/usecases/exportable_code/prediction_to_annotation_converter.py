@@ -30,6 +30,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.shapes.bitmask import BitmapMask
 from otx.api.utils.detection_utils import detection2array
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
@@ -515,9 +516,7 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                 )
             else:
                 mask = obj.mask.astype(np.uint8)
-                contours, hierarchies = cv2.findContours(
-                    mask[obj.ymin : obj.ymax, obj.xmin : obj.xmax], cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
-                )
+                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 if hierarchies is None:
                     continue
                 for contour, hierarchy in zip(contours, hierarchies[0]):
@@ -528,8 +527,8 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     contour = list(contour)
                     points = [
                         Point(
-                            x=(point[0][0] + obj.xmin) / width,
-                            y=(point[0][1] + obj.ymin) / height,
+                            x=point[0][0] / width,
+                            y=point[0][1] / height,
                         )
                         for point in contour
                     ]
@@ -616,6 +615,60 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                             labels=[ScoredLabel(self.labels[int(obj.id) - 1], float(obj.score))],
                         )
                     )
+        annotation_scene = AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION,
+            annotations=annotations,
+        )
+        return annotation_scene
+
+class BitmapAnnotationConverter(IPredictionToAnnotationConverter):
+    """Converts DetectionBox Predictions ModelAPI to Annotations."""
+
+    def __init__(self, labels: LabelSchemaEntity, configuration: Optional[Dict[str, Any]] = None):
+        self.labels = labels.get_labels(include_empty=False)
+        self.use_ellipse_shapes = False
+        self.confidence_threshold = 0.0
+        if configuration is not None:
+            if "use_ellipse_shapes" in configuration:
+                self.use_ellipse_shapes = configuration["use_ellipse_shapes"]
+            if "confidence_threshold" in configuration:
+                self.confidence_threshold = configuration["confidence_threshold"]
+
+    def convert_to_annotation(
+        self, predictions: InstanceSegmentationResult, metadata: Dict[str, Any]
+    ) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
+        annotations = []
+        height, width, _ = metadata["original_shape"]
+        shape: Union[BitmapMask, Ellipse]
+        for obj in predictions.segmentedObjects:
+            if obj.score < self.confidence_threshold:
+                continue
+            if self.use_ellipse_shapes:
+                shape = convert_bbox_to_ellipse(
+                    obj.xmin / width, obj.ymin / height, obj.xmax / width, obj.ymax / height
+                )
+                annotations.append(
+                    Annotation(
+                        shape,
+                        labels=[ScoredLabel(self.labels[int(obj.id) - 1], float(obj.score))],
+                    )
+                )
+            else:
+                mask = obj.mask.astype(np.uint8)
+                shape = BitmapMask(mask, obj.xmin, obj.ymin, obj.xmax, obj.ymax)
+                annotations.append(
+                    Annotation(
+                        shape,
+                        labels=[ScoredLabel(self.labels[int(obj.id) - 1], float(obj.score))],
+                    )
+                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,

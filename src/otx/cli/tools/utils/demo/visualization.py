@@ -24,7 +24,6 @@ from cv2 import Mat
 
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.model_template import TaskType
-from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
 
 
@@ -55,22 +54,16 @@ def draw_masks(frame: Mat, predictions, put_object_count: bool = False):
     """Converts predictions to masks and draw them on frame."""
 
     frame = frame.copy()
-    height, width = frame.shape[0], frame.shape[1]
     segments_image = frame.copy()
     aggregated_mask = np.zeros(frame.shape[:2], dtype=np.uint8)
     aggregated_colored_mask = np.zeros(frame.shape, dtype=np.uint8)
     for prediction in predictions:
-        if not isinstance(prediction.shape, Polygon):
-            continue
-        contours = np.array([[(int(p.x * width), int(p.y * height)) for p in prediction.shape.points]])
         assert len(prediction.get_labels()) == 1
         label = prediction.get_labels()[0]
         color = tuple(getattr(label.color, x) for x in ("blue", "green", "red"))
-        mask = np.zeros(shape=(height, width), dtype=np.uint8)
-        cv2.drawContours(mask, contours, -1, 255, -1)
-        cv2.drawContours(frame, contours, -1, color, 1)
-        rect = cv2.boundingRect(contours[0])
-        cv2.rectangle(frame, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), color, 1)
+        mask = prediction.shape.mask
+        rect = prediction.shape.get_bbox()
+        cv2.rectangle(frame, (rect[0], rect[1]), (rect[2], rect[3]), color, 1)
         put_text_on_rect_bg(frame, label.name, (rect[0], rect[1]), color=color)
         cv2.bitwise_or(aggregated_mask, mask, dst=aggregated_mask)
         cv2.bitwise_or(

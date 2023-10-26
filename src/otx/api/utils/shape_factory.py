@@ -7,6 +7,7 @@
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.shapes.bitmask import BitmapMask
 from otx.api.entities.shapes.shape import ShapeEntity
 
 
@@ -90,6 +91,11 @@ class ShapeFactory:
             x2 = shape.max_x
             y1 = shape.min_y
             y2 = shape.max_y
+        elif isinstance(shape, BitmapMask):
+            x1 = shape.x1/shape.width
+            y1 = shape.y1/shape.height
+            x2 = shape.x2/shape.width
+            y2 = shape.y2/shape.height
         else:
             raise NotImplementedError(f"Conversion of a {type(shape)} to a rectangle is not implemented yet: {shape}")
 
