@@ -17,7 +17,7 @@ from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.decorators import add_subset_dataloader
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import albumentations as al
     from omegaconf import DictConfig
 

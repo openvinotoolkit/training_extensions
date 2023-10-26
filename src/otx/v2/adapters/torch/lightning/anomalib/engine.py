@@ -25,7 +25,7 @@ from otx.v2.adapters.torch.lightning.engine import LightningEngine
 
 from .registry import AnomalibRegistry
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import pytorch_lightning as pl
     import torch
     from pytorch_lightning.loggers.logger import Logger

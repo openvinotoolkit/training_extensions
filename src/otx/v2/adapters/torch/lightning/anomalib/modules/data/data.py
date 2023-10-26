@@ -37,7 +37,7 @@ from otx.v2.api.entities.utils.dataset_utils import (
 )
 from otx.v2.api.entities.utils.segmentation_utils import mask_from_dataset_item
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from omegaconf import DictConfig, ListConfig
 
 logger = get_logger(__name__)

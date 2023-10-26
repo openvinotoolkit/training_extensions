@@ -14,7 +14,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import torch
 
 MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/anomaly_classification/models"
