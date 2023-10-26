@@ -4,49 +4,59 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from mmseg.registry import (
-    DATA_SAMPLERS, DATASETS, EVALUATOR, HOOKS, INFERENCERS,
-                       LOG_PROCESSORS, LOOPS, METRICS, MODEL_WRAPPERS, MODELS,
-                       OPTIM_WRAPPER_CONSTRUCTORS, OPTIM_WRAPPERS, OPTIMIZERS,
-                       PARAM_SCHEDULERS, RUNNER_CONSTRUCTORS, RUNNERS,
-                       TASK_UTILS, TRANSFORMS, VISBACKENDS, VISUALIZERS,
-                       WEIGHT_INITIALIZERS,
+    DATA_SAMPLERS,
+    DATASETS,
+    HOOKS,
+    LOG_PROCESSORS,
+    LOOPS,
+    METRICS,
+    MODEL_WRAPPERS,
+    MODELS,
+    OPTIM_WRAPPER_CONSTRUCTORS,
+    OPTIM_WRAPPERS,
+    OPTIMIZERS,
+    PARAM_SCHEDULERS,
+    RUNNER_CONSTRUCTORS,
+    RUNNERS,
+    TASK_UTILS,
+    TRANSFORMS,
+    VISBACKENDS,
+    VISUALIZERS,
+    WEIGHT_INITIALIZERS,
 )
-
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 
 REGISTRY_LIST = [
-    RUNNERS,
-    RUNNER_CONSTRUCTORS,
-    LOOPS,
+    DATA_SAMPLERS,
+    DATASETS,
     HOOKS,
     LOG_PROCESSORS,
-    OPTIMIZERS,
-    OPTIM_WRAPPERS,
-    OPTIM_WRAPPER_CONSTRUCTORS,
-    PARAM_SCHEDULERS,
-    DATASETS,
-    DATA_SAMPLERS,
-    TRANSFORMS,
-    MODELS,
-    MODEL_WRAPPERS,
-    WEIGHT_INITIALIZERS,
-    BATCH_AUGMENTS,
-    TASK_UTILS,
+    LOOPS,
     METRICS,
-    EVALUATORS,
-    VISUALIZERS,
+    MODEL_WRAPPERS,
+    MODELS,
+    OPTIM_WRAPPER_CONSTRUCTORS,
+    OPTIM_WRAPPERS,
+    OPTIMIZERS,
+    PARAM_SCHEDULERS,
+    RUNNER_CONSTRUCTORS,
+    RUNNERS,
+    TASK_UTILS,
+    TRANSFORMS,
     VISBACKENDS,
+    VISUALIZERS,
+    WEIGHT_INITIALIZERS,
 ]
 
 
-class MMPretrainRegistry(MMEngineRegistry):
-    """Registry for MMPretrain models and related components."""
+class MMSegmentationRegistry(MMEngineRegistry):
+    """Registry for MMSegmentation models and related components."""
 
-    def __init__(self, name: str = "mmpretrain") -> None:
+    def __init__(self, name: str = "mmseg") -> None:
         """Initialize a new instance of the `Registry` class.
 
         Args:
-            name (str): The name of the registry. Defaults to "mmpretrain".
+            name (str): The name of the registry. Defaults to "mmseg".
         """
         super().__init__(name)
         self._registry_dict = {registry.name: registry for registry in REGISTRY_LIST}
