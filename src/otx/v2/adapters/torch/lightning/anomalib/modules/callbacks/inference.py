@@ -22,7 +22,7 @@ import torch
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
-from otx.v2.adapters.torch.anomalib.modules.logger import get_logger
+from otx.v2.adapters.torch.lightning.anomalib.modules.logger import get_logger
 from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity

@@ -12,7 +12,7 @@ try:
 
     VERSION = anomalib.__version__
 
-    from .dataset import Dataset
+    from .dataset import AnomalibDataset as Dataset
     from .engine import AnomalibEngine as Engine
     from .model import get_model, list_models
 

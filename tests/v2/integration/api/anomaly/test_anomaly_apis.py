@@ -3,7 +3,7 @@
 
 
 import torch
-from otx.v2.adapters.torch.anomalib import Dataset, get_model, list_models
+from otx.v2.adapters.torch.lightning.anomalib import Dataset, get_model, list_models
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
 from tests.v2.integration.test_helper import TASK_CONFIGURATION

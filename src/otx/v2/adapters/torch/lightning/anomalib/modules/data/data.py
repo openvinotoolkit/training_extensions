@@ -25,7 +25,7 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from otx.v2.adapters.torch.anomalib.modules.logger import get_logger
+from otx.v2.adapters.torch.lightning.anomalib.modules.logger import get_logger
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.shapes.polygon import Polygon
 from otx.v2.api.entities.shapes.rectangle import Rectangle

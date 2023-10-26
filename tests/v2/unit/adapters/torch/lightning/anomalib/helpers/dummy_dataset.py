@@ -11,11 +11,11 @@ import numpy as np
 from albumentations.pytorch import ToTensorV2
 from bson import ObjectId
 from omegaconf import OmegaConf
-from otx.v2.adapters.torch.anomalib.modules.data.data import (
+from otx.v2.adapters.torch.lightning.anomalib.modules.data.data import (
     OTXAnomalyDataModule,
     OTXAnomalyDataset,
 )
-from otx.v2.adapters.torch.anomalib.modules.data.dataset import (
+from otx.v2.adapters.torch.lightning.anomalib.modules.data.dataset import (
     AnomalyClassificationDataset,
     AnomalyDetectionDataset,
     AnomalySegmentationDataset,
