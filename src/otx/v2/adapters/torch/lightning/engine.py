@@ -23,7 +23,7 @@ from otx.v2.api.utils.importing import get_all_args, get_default_args
 
 from .registry import LightningRegistry
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from pytorch_lightning.core.datamodule import LightningDataModule
     from pytorch_lightning.loggers.logger import Logger
     from pytorch_lightning.trainer.connectors.accelerator_connector import (
