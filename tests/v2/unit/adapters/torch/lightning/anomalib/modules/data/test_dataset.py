@@ -6,7 +6,7 @@
 import pytest
 from otx.v2.api.entities.task_type import TaskType
 
-from tests.v2.unit.adapters.torch.anomalib.helpers.dummy_dataset import HazelnutDataModule
+from tests.v2.unit.adapters.torch.lightning.anomalib.helpers.dummy_dataset import HazelnutDataModule
 
 
 @pytest.mark.parametrize("stage", ["predict", "fit", "validate", "test"])

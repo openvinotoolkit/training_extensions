@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 import torch
-from otx.v2.adapters.torch.anomalib import Dataset, Engine, get_model, list_models
+from otx.v2.adapters.torch.lightning.anomalib import Dataset, Engine, get_model, list_models
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
