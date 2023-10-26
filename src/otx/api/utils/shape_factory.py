@@ -92,10 +92,10 @@ class ShapeFactory:
             y1 = shape.min_y
             y2 = shape.max_y
         elif isinstance(shape, BitmapMask):
-            x1 = shape.x1/shape.width
-            y1 = shape.y1/shape.height
-            x2 = shape.x2/shape.width
-            y2 = shape.y2/shape.height
+            x1 = shape.x1 / shape.width
+            y1 = shape.y1 / shape.height
+            x2 = shape.x2 / shape.width
+            y2 = shape.y2 / shape.height
         else:
             raise NotImplementedError(f"Conversion of a {type(shape)} to a rectangle is not implemented yet: {shape}")
 

@@ -31,9 +31,7 @@ class BitmapMask(Shape):
 
     def __repr__(self):
         """String representation of the bitmap mask."""
-        return (
-            f"Bitmap, min_x={self.x1}, min_y={self.y1}, max_x={self.x2}, max_y={self.y2})"
-        )
+        return f"Bitmap, min_x={self.x1}, min_y={self.y1}, max_x={self.x2}, max_y={self.y2})"
 
     def __hash__(self):
         return hash(str(self))

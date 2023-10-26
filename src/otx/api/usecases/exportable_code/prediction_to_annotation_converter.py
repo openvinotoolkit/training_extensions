@@ -621,6 +621,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
         )
         return annotation_scene
 
+
 class BitmapAnnotationConverter(IPredictionToAnnotationConverter):
     """Converts DetectionBox Predictions ModelAPI to Annotations."""
 

@@ -73,11 +73,11 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
 from otx.api.usecases.exportable_code.inference import IInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
+    BitmapAnnotationConverter,
     DetectionToAnnotationConverter,
     IPredictionToAnnotationConverter,
     MaskToAnnotationConverter,
     RotatedRectToAnnotationConverter,
-    BitmapAnnotationConverter,
 )
 from otx.api.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -347,7 +347,10 @@ class OpenVINOTileClassifierWrapper(BaseInferencerWithConverter):
             "max_pred_number": max_number,
         }
 
-        is_segm = isinstance(inferencer.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter, BitmapAnnotationConverter))
+        is_segm = isinstance(
+            inferencer.converter,
+            (MaskToAnnotationConverter, RotatedRectToAnnotationConverter, BitmapAnnotationConverter),
+        )
         if is_segm:
             self.tiler = InstanceSegmentationTiler(
                 inferencer.model, tiler_config, execution_mode=mode, tile_classifier_model=classifier
