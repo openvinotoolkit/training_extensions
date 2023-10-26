@@ -103,6 +103,10 @@ classification = [
     "yapf<0.40.0",
 ]
 
+segmentation = [
+    "mmsegmentation==1.2.1",
+]
+
 [project.scripts]
 otx = "otx.v2.cli.cli:main"
 
