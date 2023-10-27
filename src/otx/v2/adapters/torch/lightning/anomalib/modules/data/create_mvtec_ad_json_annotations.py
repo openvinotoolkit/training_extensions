@@ -51,7 +51,7 @@ import cv2
 from anomalib.data.mvtec import make_mvtec_dataset
 from anomalib.data.utils import Split
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import pandas as pd
 
 

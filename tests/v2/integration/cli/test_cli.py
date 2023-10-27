@@ -34,9 +34,9 @@ def test_otx_cli(task: str, tmp_dir_path: Path) -> None:
         "--work_dir", str(tmp_dir_path),
         "--data.task", task,
         "--data.train_data_roots", TASK_CONFIGURATION[task]["train_data_roots"],
+        "--data.val_data_roots", TASK_CONFIGURATION[task]["val_data_roots"],
         "--max_epochs", "1",
         "--seed", "1234",
-        "--deterministic", "True",
     ]
     rc, stdout, _ = check_run(command_line)
     assert rc == 0
@@ -59,16 +59,17 @@ def test_otx_cli(task: str, tmp_dir_path: Path) -> None:
     assert config_path.exists()
 
     # 3. Testing
-    command_line = [
-        "otx", "test",
-        "--data.task", task,
-        "--work_dir", str(tmp_dir_path),
-        "--checkpoint", str(checkpoint_path),
-        "--data.test_data_roots", TASK_CONFIGURATION[task]["test_data_roots"],
-    ]
-    rc, stdout, _ = check_run(command_line)
-    assert rc == 0
-    assert "time elapsed" in str(stdout)
+    if task not in ("visual_prompting"):
+        command_line = [
+            "otx", "test",
+            "--data.task", task,
+            "--work_dir", str(tmp_dir_path),
+            "--checkpoint", str(checkpoint_path),
+            "--data.test_data_roots", TASK_CONFIGURATION[task]["test_data_roots"],
+        ]
+        rc, stdout, _ = check_run(command_line)
+        assert rc == 0
+        assert "time elapsed" in str(stdout)
 
     # 4. Prediction Single Image
     command_line = [

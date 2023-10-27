@@ -16,6 +16,7 @@ import yaml
 from lightning_fabric.utilities.seed import seed_everything
 from omegaconf import DictConfig
 from pytorch_lightning import Trainer
+from torch.optim import Optimizer
 
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils import set_tuple_constructor
@@ -30,7 +31,6 @@ if TYPE_CHECKING:
         _PRECISION_INPUT,
     )
     from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-    from torch.optim import Optimizer
     from torch.utils.data import DataLoader
 
 PREDICT_FORMAT = Union[str, Path, np.ndarray]
@@ -227,7 +227,8 @@ class LightningEngine(Engine):
                 **self.trainer_config,
             )
         self.config["trainer"] = self.trainer_config
-        if optimizer is not None:
+
+        if isinstance(optimizer, Optimizer):
             self.trainer.optimizers = optimizer
 
         self.trainer.fit(

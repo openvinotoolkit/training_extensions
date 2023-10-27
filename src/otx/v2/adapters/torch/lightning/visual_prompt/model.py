@@ -42,8 +42,14 @@ def get_model(
             model = MODEL_CONFIGS[model]
         if Path(model).is_file():
             model = OmegaConf.load(model)
-    if not model.get("model", False):
-        model = DictConfig(content={"model": model})
+    elif isinstance(model, (dict, DictConfig)):
+        if not model.get("model", False):
+            model = DictConfig(content={"model": model})
+        if isinstance(model, dict):
+            model = OmegaConf.create(model)
+        if getattr(model.model, "name", None) in MODEL_CONFIGS:
+            model = MODEL_CONFIGS[model.model["name"]]
+            model = OmegaConf.load(model)
 
     state_dict = None
     if checkpoint is not None:
@@ -53,11 +59,6 @@ def get_model(
             state_dict = state_dict["model"]
         if "state_dict" in state_dict:
             state_dict = state_dict["state_dict"]
-
-    if isinstance(model, dict):
-        model = OmegaConf.create(model)
-    if model.model.name.startswith("otx"):
-        model.model.name = "_".join(model.model.name.split("_")[1:])
 
     model_class = MODELS.get(model.model.name)
     if model_class is None:

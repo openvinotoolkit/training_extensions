@@ -9,6 +9,7 @@ ADAPTERS = [
     "openvino",
     "torch",
     "torch.lightning.anomalib",
+    "torch.lightning.visual_prompt",
     "torch.mmengine",
     "torch.mmengine.mmdeploy",
     "torch.mmengine.mmpretrain",

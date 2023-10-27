@@ -21,7 +21,7 @@ from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 from otx.v2.api.entities.train_parameters import TrainParameters, default_progress_callback
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     import torch
     from pytorch_lightning import LightningModule, Trainer
 

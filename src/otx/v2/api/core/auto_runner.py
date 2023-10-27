@@ -70,6 +70,7 @@ ADAPTER_QUICK_LINK = {
     "mmdet": "torch.mmengine.mmdet",
     "mmseg": "torch.mmengine.mmseg",
     "anomalib": "torch.lightning.anomalib",
+    "visual_prompt": "torch.lightning.visual_prompt",
 }
 
 
