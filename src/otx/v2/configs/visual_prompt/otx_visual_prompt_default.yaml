@@ -21,12 +21,12 @@ model:
   image_size: 1024
   mask_threshold: 0.
   return_logits: true
-  backbone: vit_b
+  backbone: tiny_vit
   loss_type: sam # <"sam", "medsam">
   freeze_image_encoder: true
   freeze_prompt_encoder: true
   freeze_mask_decoder: false
-  checkpoint: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+  checkpoint: https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt
   # just for inference
   return_single_mask: true
   use_stability_score: false

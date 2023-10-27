@@ -41,8 +41,8 @@ def test_dataset_api() -> None:
         None
     """
     dataset = Dataset(
-        train_data_roots=TASK_CONFIGURATION["visual_prompt"]["train_data_roots"],
-        val_data_roots=TASK_CONFIGURATION["visual_prompt"]["val_data_roots"],
-        test_data_roots=TASK_CONFIGURATION["visual_prompt"]["test_data_roots"],
+        train_data_roots=TASK_CONFIGURATION["visual_prompting"]["train_data_roots"],
+        val_data_roots=TASK_CONFIGURATION["visual_prompting"]["val_data_roots"],
+        test_data_roots=TASK_CONFIGURATION["visual_prompting"]["test_data_roots"],
     )
     assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=6, val_data_size=2, test_data_size=2)

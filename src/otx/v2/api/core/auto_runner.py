@@ -56,6 +56,12 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
         "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
         "default_config": {},
     },
+    TaskType.VISUAL_PROMPTING: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.visual_prompt",
+        "default_config": {
+            TrainType.Incremental: f"{CONFIG_ROOT}/visual_prompt/otx_visual_prompt_default.yaml",
+        },
+    },
 }
 
 

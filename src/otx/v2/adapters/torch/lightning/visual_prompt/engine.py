@@ -5,12 +5,13 @@
 
 from __future__ import annotations
 
-import warnings
 from pathlib import Path
+from subprocess import run
 from typing import TYPE_CHECKING, Union
 
 import numpy as np
 import pytorch_lightning as pl
+import torch
 from omegaconf import DictConfig
 from pytorch_lightning.callbacks import (
     EarlyStopping,
@@ -27,8 +28,10 @@ from otx.v2.adapters.torch.lightning.engine import LightningEngine
 
 from .registry import VisualPromptRegistry
 
-if TYPE_CHECKING:  # pragma: no cover
-    import torch
+if TYPE_CHECKING:
+    from pytorch_lightning.trainer.connectors.accelerator_connector import (
+        _PRECISION_INPUT,
+    )
     from pytorch_lightning.utilities.types import EVAL_DATALOADERS
 
 PREDICT_FORMAT = Union[str, Path, np.ndarray]
@@ -101,10 +104,12 @@ class VisualPromptEngine(LightningEngine):
             TQDMProgressBar(),
         ]
         if mode in ("train_val", "train"):
-            callback_list.extend([
-                ModelCheckpoint(dirpath=self.work_dir, filename="{epoch:02d}", **callbacks.checkpoint),
-                LearningRateMonitor(),
-            ])
+            callback_list.extend(
+                [
+                    ModelCheckpoint(dirpath=self.work_dir, filename="{epoch:02d}", **callbacks.checkpoint),
+                    LearningRateMonitor(),
+                ],
+            )
             if mode == "train_val":
                 callback_list.append(EarlyStopping(**callbacks.early_stopping))
         return callback_list
@@ -131,7 +136,12 @@ class VisualPromptEngine(LightningEngine):
         """
         dataloader = None
         if isinstance(img, (str, Path)):
-            pass
+            from .modules.datasets.dataset import VisualPromptInferenceDataset
+
+            dataset_config = self.config.get("dataset", {})
+            image_size = dataset_config.get("image_size", 1024)
+            dataset = VisualPromptInferenceDataset(path=img, image_size=image_size)
+            dataloader = DataLoader(dataset)
         elif isinstance(img, (DataLoader, LightningDataModule)):
             dataloader = [img]
         return super().predict(
@@ -151,29 +161,18 @@ class VisualPromptEngine(LightningEngine):
         output_names: list,
         dynamic_axes: dict | None = None,
     ) -> None:
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)
-            warnings.filterwarnings("ignore", category=UserWarning)
-            with export_path.open("wb") as f:
-                torch.onnx.export(
-                    model,
-                    tuple(dummy_inputs.values()),
-                    f,
-                    export_params=True,
-                    verbose=False,
-                    opset_version=13,
-                    do_constant_folding=True,
-                    input_names=list(dummy_inputs.keys()),
-                    output_names=output_names,
-                    dynamic_axes=dynamic_axes,
-                )
-
-    def _onnx_to_ir(
-        self,
-        onnx_model_path: Path,
-        export_path: Path,
-        command: list,
-    ) -> None:
+        torch.onnx.export(
+            model=model,
+            args=tuple(dummy_inputs.values()),
+            f=export_path,
+            export_params=True,
+            verbose=False,
+            opset_version=13,
+            do_constant_folding=True,
+            input_names=list(dummy_inputs.keys()),
+            output_names=output_names,
+            dynamic_axes=dynamic_axes,
+        )
 
     def export(
         self,
@@ -200,7 +199,7 @@ class VisualPromptEngine(LightningEngine):
         _model = self.latest_model.get("model", None) if model is None else model
         _model = getattr(_model, "model", _model)
         model_config = self.config.get("model", {})
-        height, width = model_config.get("input_size", (256, 256))
+        height = width = model_config.get("image_size", 1024)
         if input_shape is not None:
             height, width = input_shape
 
@@ -214,27 +213,26 @@ class VisualPromptEngine(LightningEngine):
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
         if _model is not None and checkpoint is not None:
-            state_dict = torch.load(checkpoint)
-            if "model" in state_dict:
-                state_dict = state_dict["model"]
-            if "state_dict" in state_dict:
-                state_dict = state_dict["state_dict"]
-            _model.load_state_dict(state_dict, strict=False)
+            self._load_checkpoint(model=_model, checkpoint=checkpoint)
 
         onnx_dir = export_dir / "onnx"
+        onnx_dir.mkdir(exist_ok=True, parents=True)
         results: dict = {"outputs": {}}
         # 1) visual_prompting_image_encoder
         dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float)}
-        output_names = ["image_embeddings"]
-        dynamic_axes = None
-        model_encoder = _model.image_encoder
-        self._onnx_export(
-            model=model_encoder,
-            export_path=onnx_dir / "sam_encoder.onnx",
-            dummy_inputs=dummy_inputs,
-            output_names=output_names,
-            dynamic_axes=dynamic_axes,
+        torch.onnx.export(
+            model=_model.image_encoder,
+            args=tuple(dummy_inputs.values()),
+            f=onnx_dir / "sam_encoder.onnx",
+            export_params=True,
+            verbose=False,
+            opset_version=13,
+            do_constant_folding=True,
+            input_names=list(dummy_inputs.keys()),
+            output_names=["image_embeddings"],
+            dynamic_axes=None,
         )
+        results["outputs"]["onnx"] = {}
         results["outputs"]["onnx"]["encoder"] = str(onnx_dir / "sam_encoder.onnx")
 
         # 2) SAM without backbone
@@ -252,12 +250,16 @@ class VisualPromptEngine(LightningEngine):
             "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
             "has_mask_input": torch.tensor([[1]], dtype=torch.float),
         }
-        output_names = ["iou_predictions", "low_res_masks"]
-        self._onnx_export(
+        torch.onnx.export(
             model=_model,
-            export_path=onnx_dir / "sam.onnx",
-            dummy_inputs=dummy_inputs,
-            output_names=output_names,
+            args=tuple(dummy_inputs.values()),
+            f=onnx_dir / "sam.onnx",
+            export_params=True,
+            verbose=False,
+            opset_version=13,
+            do_constant_folding=True,
+            input_names=list(dummy_inputs.keys()),
+            output_names=["iou_predictions", "low_res_masks"],
             dynamic_axes=dynamic_axes,
         )
 
@@ -266,6 +268,7 @@ class VisualPromptEngine(LightningEngine):
         if export_type.upper() == "OPENVINO":
             ir_dir = export_dir / "openvino"
             ir_dir.mkdir(exist_ok=True, parents=True)
+            results["outputs"]["openvino"] = {}
             for onnx_key, model_path in results["outputs"]["onnx"].items():
                 optimize_command = [
                     "mo",
@@ -277,20 +280,25 @@ class VisualPromptEngine(LightningEngine):
                     onnx_key,
                 ]
                 if onnx_key == "encoder":
+                    dataset_config = self.config.get("dataset", {})
+                    normalize = dataset_config.get("normalize", {})
+                    mean = normalize.get("mean", [123.675, 116.28, 103.53])
+                    std = normalize.get("std", [58.395, 57.12, 57.375])
                     optimize_command += [
                         "--mean_values",
-                        str(self.config.dataset.normalize.mean).replace(", ", ","),
+                        str(mean).replace(", ", ","),
                         "--scale_values",
-                        str(self.config.dataset.normalize.std).replace(", ", ","),
+                        str(std).replace(", ", ","),
                     ]
                 if precision in ("16", 16, "fp16"):
                     optimize_command.append("--compress_to_fp16")
                 _ = run(args=optimize_command, check=False)
-                bin_file = Path(ir_dir) / "openvino.bin"
-                xml_file = Path(ir_dir) / "openvino.xml"
+                bin_file = Path(ir_dir) / f"{onnx_key}.bin"
+                xml_file = Path(ir_dir) / f"{onnx_key}.xml"
                 if bin_file.exists() and xml_file.exists():
-                    results["outputs"][onnx_key]["bin"] = str(Path(ir_dir) / f"{onnx_key}.bin")
-                    results["outputs"][onnx_key]["xml"] = str(Path(ir_dir) / f"{onnx_key}.xml")
+                    results["outputs"]["openvino"][onnx_key] = {}
+                    results["outputs"]["openvino"][onnx_key]["bin"] = str(Path(ir_dir) / f"{onnx_key}.bin")
+                    results["outputs"]["openvino"][onnx_key]["xml"] = str(Path(ir_dir) / f"{onnx_key}.xml")
                 else:
                     msg = "OpenVINO Export failed."
                     raise RuntimeError(msg)

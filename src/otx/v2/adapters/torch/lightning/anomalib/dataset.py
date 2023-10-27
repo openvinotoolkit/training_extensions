@@ -21,7 +21,6 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type
 
 if TYPE_CHECKING:
-    import albumentations as al
     from torch.utils.data import DataLoader as TorchDataLoader
     from torch.utils.data import Dataset as TorchDataset
     from torch.utils.data import Sampler
@@ -94,18 +93,18 @@ class AnomalibDataset(LightningDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: str | al.Compose | None = None,  # transform_config
+        pipeline: list | None = None,  # transform_config
         config: str | (DictConfig | dict) | None = None,
     ) -> TorchDataset | None:
         """Build a TorchDataset for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[str, al.Compose]]): The pipeline to use for data transformation.
-            config (Optional[Union[str, DictConfig, dict]]): The configuration to use for the dataset.
+            pipeline (list | None, optional): The pipeline to use for data transformation.
+            config (str | (DictConfig | dict) | None, optional): The configuration to use for the dataset.
 
         Returns:
-            Optional[TorchDataset]: The built TorchDataset, or None if the dataset is empty.
+            TorchDataset | None: The built TorchDataset, or None if the dataset is empty.
         """
         if not self.initialize:
             self._initialize()

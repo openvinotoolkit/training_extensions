@@ -25,7 +25,7 @@ from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 from otx.v2.adapters.torch.lightning.visual_prompt.modules.models.decoders import SAMMaskDecoder
 from otx.v2.adapters.torch.lightning.visual_prompt.modules.models.encoders import SAMImageEncoder, SAMPromptEncoder
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from omegaconf import DictConfig
 
 CKPT_PATHS = {

@@ -318,7 +318,7 @@ class BaseDataset:
     def subset_dataloader(  # noqa: ANN201
         self,
         subset: str,
-        pipeline: dict | list | None = None,
+        pipeline: list | None = None,
         batch_size: int | None = None,
         num_workers: int | None = None,
         **kwargs,
@@ -330,7 +330,7 @@ class BaseDataset:
 
         Args:
             subset (str): Subset of dataloader.
-            pipeline (Optional[Union[List, Dict]], optional): The data pipe to apply to that dataset. Defaults to None.
+            pipeline (Optional[List], optional): The data pipe to apply to that dataset. Defaults to None.
             batch_size (Optional[int], optional): Batch size of this dataloader. Defaults to None.
             num_workers (Optional[int], optional): Number of workers for this dataloader. Defaults to None.
             **kwargs (optional): Additional keyword arguments to be passed to the dataloader.

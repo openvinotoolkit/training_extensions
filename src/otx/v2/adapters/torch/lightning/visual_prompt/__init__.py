@@ -9,6 +9,7 @@ DEBUG = None
 
 try:
     import os
+
     os.environ["FEATURE_FLAGS_OTX_VISUAL_PROMPTING_TASKS"] = "1"
 
     from .dataset import VisualPromptDataset as Dataset

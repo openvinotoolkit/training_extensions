@@ -17,8 +17,7 @@ from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.decorators import add_subset_dataloader
 
-if TYPE_CHECKING:  # pragma: no cover
-    import albumentations as al
+if TYPE_CHECKING:
     from omegaconf import DictConfig
 
 SUBSET_LIST = ["train", "val", "test"]
@@ -35,18 +34,18 @@ class LightningDataset(BaseDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: str | al.Compose | None = None,  # transform_config
+        pipeline: list | None = None,  # transform_config
         config: str | (DictConfig | dict) | None = None,
     ) -> TorchDataset | None:
         """Build a TorchDataset for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[str, al.Compose]]): The pipeline to use for data transformation.
-            config (Optional[Union[str, DictConfig, dict]]): The configuration to use for the dataset.
+            pipeline (list | None, optional): The pipeline to use for data transformation.
+            config (str | (DictConfig | dict) | None, optional): The configuration to use for the dataset.
 
         Returns:
-            Optional[TorchDataset]: The built TorchDataset, or None if the dataset is empty.
+            TorchDataset | None: The built TorchDataset, or None if the dataset is empty.
         """
 
     def build_dataloader(
@@ -100,7 +99,7 @@ class LightningDataset(BaseDataset):
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: dict | list | None = None,
+        pipeline: list | None = None,
         batch_size: int | None = None,
         num_workers: int | None = None,
         config: str | dict | None = None,
@@ -115,7 +114,7 @@ class LightningDataset(BaseDataset):
 
         Args:
             subset (str): The subset of the dataset to load. Must be one of "train", "val", "test", or "predict".
-            pipeline (Optional[Union[dict, list]]): A pipeline of transformations to apply to the data.
+            pipeline (Optional[list]): A pipeline of transformations to apply to the data.
             batch_size (Optional[int]): The batch size to use for the DataLoader. If not provided, will be
                 determined by the configuration file or default to 1.
             num_workers (Optional[int]): The number of worker processes to use for loading the data. If not

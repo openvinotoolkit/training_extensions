@@ -16,12 +16,12 @@ from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from torch.utils.data import DataLoader as TorchDataLoader
     from torch.utils.data import Dataset as TorchDataset
     from torch.utils.data import Sampler
 
-SUBSET_LIST = ["train", "val", "test"]
+SUBSET_LIST = ["train", "val", "test", "predict"]
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -89,7 +89,6 @@ class VisualPromptDataset(LightningDataset):
         subset: str,
         pipeline: list | None = None,  # transform_config
         config: str | (DictConfig | dict) | None = None,
-        image_size: int | None = None,
     ) -> TorchDataset | None:
         """Build a TorchDataset for the given subset using the specified pipeline and configuration.
 
@@ -97,7 +96,6 @@ class VisualPromptDataset(LightningDataset):
             subset (str): The subset to build the dataset for.
             pipeline (list | None, optional): The pipeline to use for data transformation.
             config (str | (DictConfig | dict) | None, optional): The configuration to use for the dataset.
-            image_size (int | None, optional): The size to resize images to. Defaults to None.
 
         Returns:
             Optional[TorchDataset]: The built TorchDataset, or None if the dataset is empty.
@@ -107,8 +105,7 @@ class VisualPromptDataset(LightningDataset):
 
         config = OmegaConf.load(filename=config) if isinstance(config, str) else DictConfig({})
         config = config.get("dataset", config)
-        if image_size is None:
-            image_size = config.get("image_size", 1024)
+        image_size = config.get("image_size", 1024)
         normalize = config.get("normalize", {})
         mean = normalize.get("mean", [123.675, 116.28, 103.53])
         std = normalize.get("std", [58.395, 57.12, 57.375])

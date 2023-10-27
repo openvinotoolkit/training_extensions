@@ -68,7 +68,6 @@ def get_model(
     return model_class(config=model, state_dict=state_dict)
 
 
-
 def list_models(pattern: str | None = None) -> list[str]:
     """Return a list of available model names.
 

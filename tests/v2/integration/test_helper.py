@@ -18,7 +18,7 @@ TASK_CONFIGURATION = {
         "sample": "tests/assets/anomaly/hazelnut/test/colour/01.jpg",
         "models": ["otx_padim"],
     },
-    "visual_prompt": {
+    "visual_prompting": {
         "train_data_roots": "tests/assets/car_tree_bug",
         "val_data_roots": "tests/assets/car_tree_bug",
         "test_data_roots": "tests/assets/car_tree_bug",

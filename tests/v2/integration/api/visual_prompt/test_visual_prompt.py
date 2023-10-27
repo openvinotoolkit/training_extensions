@@ -11,7 +11,7 @@ from otx.v2.adapters.torch.lightning.visual_prompt import Dataset, Engine, get_m
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
 # Test-related datasets are managed by tests.v2.integration.api.test_helper.
-PREDICTION_SAMPLE = TASK_CONFIGURATION["visual_prompt"]["sample"]
+PREDICTION_SAMPLE = TASK_CONFIGURATION["visual_prompting"]["sample"]
 
 MODELS: list = list_models("otx*")
 
@@ -29,9 +29,9 @@ class TestVisaulPromptAPI:
                 Dataset: A Dataset object containing the paths to the training, validation, and test data.
             """
             return Dataset(
-                train_data_roots=TASK_CONFIGURATION["visual_prompt"]["train_data_roots"],
-                val_data_roots=TASK_CONFIGURATION["visual_prompt"]["val_data_roots"],
-                test_data_roots=TASK_CONFIGURATION["visual_prompt"]["test_data_roots"],
+                train_data_roots=TASK_CONFIGURATION["visual_prompting"]["train_data_roots"],
+                val_data_roots=TASK_CONFIGURATION["visual_prompting"]["val_data_roots"],
+                test_data_roots=TASK_CONFIGURATION["visual_prompting"]["test_data_roots"],
             )
 
     @pytest.mark.parametrize("model", MODELS)
@@ -74,32 +74,41 @@ class TestVisaulPromptAPI:
 
         # Validation
         val_score = engine.validate(val_dataloader=dataset.val_dataloader())
-        # TODO: Check Validation results
+        assert isinstance(val_score, list)
+        assert len(val_score) > 0
 
-        # Test
-        # test_score = engine.test(test_dataloader=dataset.test_dataloader())
-        # TODO: Check Test results
+        # NOTE: SAM Model, No `test_step()` method defined to run `Trainer.test`.
 
-        # # Prediction with single image
-        # pred_result = engine.predict(
-        #     model=results["model"],
-        #     checkpoint=results["checkpoint"],
-        #     img=PREDICTION_SAMPLE,
-        # )
-        # assert isinstance(pred_result, list)
-        # assert len(pred_result) == 1
-        # assert "pred_boxes" in pred_result[0]
-        # assert len(pred_result[0]["pred_boxes"]) > 0
+        # Prediction with single image
+        pred_result = engine.predict(
+            model=built_model,
+            checkpoint=results["checkpoint"],
+            img=PREDICTION_SAMPLE,
+        )
+        assert isinstance(pred_result, list)
+        assert len(pred_result) == 1
 
         # Export Openvino IR Model
         export_output = engine.export(
-            model=results["model"],
             checkpoint=results["checkpoint"],
         )
         assert isinstance(export_output, dict)
         assert "outputs" in export_output
         assert isinstance(export_output["outputs"], dict)
-        assert "bin" in export_output["outputs"]
-        assert "xml" in export_output["outputs"]
-        assert Path(export_output["outputs"]["bin"]).exists()
-        assert Path(export_output["outputs"]["xml"]).exists()
+        assert "onnx" in export_output["outputs"]
+        assert "encoder" in export_output["outputs"]["onnx"]
+        assert "sam" in export_output["outputs"]["onnx"]
+        assert Path(export_output["outputs"]["onnx"]["encoder"]).exists()
+        assert Path(export_output["outputs"]["onnx"]["sam"]).exists()
+
+        assert "openvino" in export_output["outputs"]
+        assert "encoder" in export_output["outputs"]["openvino"]
+        assert "bin" in export_output["outputs"]["openvino"]["encoder"]
+        assert "xml" in export_output["outputs"]["openvino"]["encoder"]
+        assert Path(export_output["outputs"]["openvino"]["encoder"]["bin"]).exists()
+        assert Path(export_output["outputs"]["openvino"]["encoder"]["xml"]).exists()
+        assert "sam" in export_output["outputs"]["openvino"]
+        assert "bin" in export_output["outputs"]["openvino"]["sam"]
+        assert "xml" in export_output["outputs"]["openvino"]["sam"]
+        assert Path(export_output["outputs"]["openvino"]["sam"]["bin"]).exists()
+        assert Path(export_output["outputs"]["openvino"]["sam"]["xml"]).exists()

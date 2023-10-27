@@ -22,7 +22,7 @@ from otx.v2.api.entities.utils.segmentation_utils import (
     create_hard_prediction_from_soft_prediction,
 )
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from pytorch_lightning import LightningModule, Trainer
 
 

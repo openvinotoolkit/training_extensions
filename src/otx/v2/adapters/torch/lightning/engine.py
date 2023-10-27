@@ -150,6 +150,18 @@ class LightningEngine(Engine):
             list[pl.Callback] | pl.Callback | None: Updated callbacks.
         """
 
+    def _load_checkpoint(
+        self,
+        model: torch.nn.Module | pl.LightningModule,
+        checkpoint: str | Path,
+    ) -> None:
+        state_dict = torch.load(checkpoint, map_location=model.device)
+        if "model" in state_dict:
+            state_dict = state_dict["model"]
+        if "state_dict" in state_dict:
+            state_dict = state_dict["state_dict"]
+        model.load_state_dict(state_dict, strict=False)
+
     def train(
         self,
         model: torch.nn.Module | pl.LightningModule,
@@ -261,6 +273,8 @@ class LightningEngine(Engine):
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
 
         datamodule = self.trainer_config.pop("datamodule", None)
+        if checkpoint is None:
+            checkpoint = self.latest_model.get("checkpoint")
 
         callbacks = self._update_callbacks(callbacks=callbacks)
         logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_val")
@@ -271,8 +285,9 @@ class LightningEngine(Engine):
                 callbacks=callbacks,
                 **self.trainer_config,
             )
-        if checkpoint is None:
-            checkpoint = self.latest_model.get("checkpoint")
+
+        if model is not None and checkpoint is not None:
+            self._load_checkpoint(model, checkpoint)
         return self.trainer.validate(
             model=model,
             dataloaders=val_dataloader,
@@ -318,9 +333,11 @@ class LightningEngine(Engine):
         self.trainer = Trainer(
             logger=logger,
             callbacks=callbacks,
-            resume_from_checkpoint=str(checkpoint) if checkpoint is not None else None,
             **self.trainer_config,
         )
+
+        if model is not None and checkpoint is not None:
+            self._load_checkpoint(model, checkpoint)
         return self.trainer.test(
             model=model,
             dataloaders=[test_dataloader],
@@ -361,10 +378,11 @@ class LightningEngine(Engine):
         trainer = Trainer(
             logger=logger,
             callbacks=callbacks,
-            resume_from_checkpoint=str(checkpoint) if checkpoint is not None else None,
             **self.trainer_config,
         )
 
+        if model is not None and checkpoint is not None:
+            self._load_checkpoint(model, checkpoint)
         # Lightning Inferencer
         return trainer.predict(
             model=model,
@@ -411,12 +429,7 @@ class LightningEngine(Engine):
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
         if _model is not None and checkpoint is not None:
-            state_dict = torch.load(checkpoint)
-            if "model" in state_dict:
-                state_dict = state_dict["model"]
-            if "state_dict" in state_dict:
-                state_dict = state_dict["state_dict"]
-            _model.load_state_dict(state_dict, strict=False)
+            self._load_checkpoint(_model, checkpoint)
 
         # Torch to onnx
         onnx_dir = export_dir / "onnx"

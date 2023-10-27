@@ -19,6 +19,7 @@ from anomalib.utils.callbacks import (
 )
 from anomalib.utils.loggers import AnomalibTensorBoardLogger
 from pytorch_lightning.core.datamodule import LightningDataModule
+from pytorch_lightning.loggers.logger import Logger
 from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.lightning.engine import LightningEngine
@@ -28,7 +29,6 @@ from .registry import AnomalibRegistry
 if TYPE_CHECKING:
     import pytorch_lightning as pl
     import torch
-    from pytorch_lightning.loggers.logger import Logger
     from pytorch_lightning.trainer.connectors.accelerator_connector import (
         _PRECISION_INPUT,
     )
@@ -116,6 +116,15 @@ class AnomalibEngine(LightningEngine):
                 manual_pixel_threshold=metric_threshold.get("manual_pixel", None),
             ),
         ]
+
+    def _load_checkpoint(
+        self,
+        model: torch.nn.Module | pl.LightningModule,
+        checkpoint: str | Path,
+    ) -> None:
+        # NOTE: LightningEngine's _load_checkpoint function doesn't work with AnomalibModule when inference mode.
+        # we need to find the cause and fix it.
+        pass
 
     def train(
         self,
