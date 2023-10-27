@@ -161,7 +161,7 @@ class OTXVisualPromptingDataset(Dataset):
         mean: list[float],
         std: list[float],
         offset_bbox: int = 0,
-        pipeline: list | None = None,
+        pipeline: dict | list | None = None,
     ) -> None:
         """Initializes a Dataset object.
 
@@ -171,6 +171,7 @@ class OTXVisualPromptingDataset(Dataset):
             mean (list[float]): The mean values for normalization.
             std (list[float]): The standard deviation values for normalization.
             offset_bbox (int, optional): The offset for bounding boxes. Defaults to 0.
+            pipeline (dict | list | None, optional): The pipeline to use for data transformation.
         """
         self.dataset = dataset
         if pipeline is not None:

@@ -87,14 +87,14 @@ class VisualPromptDataset(LightningDataset):
     def build_dataset(
         self,
         subset: str,
-        pipeline: list | None = None,  # transform_config
+        pipeline: dict | list | None = None,  # transform_config
         config: str | (DictConfig | dict) | None = None,
     ) -> TorchDataset | None:
         """Build a TorchDataset for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (list | None, optional): The pipeline to use for data transformation.
+            pipeline (dict | list | None, optional): The pipeline to use for data transformation.
             config (str | (DictConfig | dict) | None, optional): The configuration to use for the dataset.
 
         Returns:
