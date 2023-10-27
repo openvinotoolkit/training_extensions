@@ -40,7 +40,7 @@ class VisualPromptDataset(LightningDataset):
         test_ann_files: str | None = None,
         unlabeled_data_roots: str | None = None,
         unlabeled_file_list: str | None = None,
-        data_format: str | None = "mvtec",
+        data_format: str | None = None,
     ) -> None:
         """Initialize a Dataset object for VISUAL_PROMPTING tasks.
 
