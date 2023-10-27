@@ -20,11 +20,7 @@ adaptive_validation_interval = dict(
     enable_adaptive_interval_hook=True,
     enable_eval_before_run=True,
 )
+
 custom_hooks = [
-    dict(
-        type="CustomModelEMAHook",
-        priority="ABOVE_NORMAL",
-        epoch_momentum=0.4,
-    ),
-    dict(type="MeanTeacherHook", epoch_momentum=0.0, start_epoch=8, momentum=0.0004),
+    dict(type="MeanTeacherHook", epoch_momentum=0.1, start_epoch=5),
 ]

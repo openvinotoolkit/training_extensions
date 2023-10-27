@@ -93,23 +93,21 @@ train_pipeline = [
         enable_memcache=True,  # Cache after resizing image & annotations
     ),
     dict(type="MinIoURandomCrop", min_ious=(0.1, 0.3, 0.5, 0.7, 0.9), min_crop_size=0.3),
+    *common_pipeline,
+    dict(type="ToTensor", keys=["gt_bboxes", "gt_labels"]),
     dict(
-        type="Resize",
-        img_scale=[
-            (992, 736),
-            (896, 736),
-            (1088, 736),
-            (992, 672),
-            (992, 800),
+        type="ToDataContainer",
+        fields=[
+            dict(key="img", stack=True),
+            dict(key="img0", stack=True),
+            dict(key="gt_bboxes"),
+            dict(key="gt_labels"),
         ],
-        multiscale_mode="value",
-        keep_ratio=False,
-        override=True,  # Allow multiple resize
     ),
-    dict(type="RandomFlip", flip_ratio=0.5),
-    dict(type="Normalize", **__img_norm_cfg),
-    dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
+    dict(
+        type="Collect",
+        keys=["img", "img0", "gt_bboxes", "gt_labels"],
+    ),
 ]
 
 unlabeled_pipeline = [

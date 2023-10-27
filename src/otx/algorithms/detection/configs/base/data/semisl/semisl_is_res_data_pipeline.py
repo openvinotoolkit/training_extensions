@@ -170,7 +170,10 @@ test_pipeline = [
 data = dict(
     samples_per_gpu=4,
     workers_per_gpu=2,
-    train=dict(type="RepeatDataset", times=13, dataset=dict(type=__dataset_type, pipeline=train_pipeline)),
+    train=dict(
+        type=__dataset_type,
+        pipeline=train_pipeline,
+    ),
     val=dict(
         type=__dataset_type,
         test_mode=True,
