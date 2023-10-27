@@ -268,12 +268,13 @@ class BaseConfigurer:
                     # let mm library handle it
                     cfg.fp16 = fp16_config
                     opts = dict()
-                cfg.optimizer_config.update(opts)
-            elif is_hpu_available():
-                if optim_type == "SAMOptimizerHook":
-                    # TODO (sungchul): consider SAM optimizer
-                    logger.warning("SAMOptimizerHook is not supported on HPU. Changed to OptimizerHook.")
-                opts["type"] = "HPUOptimizerHook"
+                if is_hpu_available():
+                    if optim_type == "SAMOptimizerHook":
+                        # TODO (sungchul): consider SAM optimizer
+                        logger.warning("SAMOptimizerHook is not supported on HPU. Changed to OptimizerHook.")
+                    opts["type"] = "HPUOptimizerHook"
+                    opts.pop("distributed")
+                    opts.pop("loss_scale")
                 cfg.optimizer_config.update(opts)
             else:
                 logger.info("Revert FP16 to FP32 on CPU device")

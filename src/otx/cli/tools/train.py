@@ -16,6 +16,10 @@
 
 # pylint: disable=too-many-locals
 
+# TODO (sungchul): move import location (cli/__init__.py?)
+import habana_frameworks.torch.gpu_migration
+import habana_frameworks.torch.core as htcore
+
 import datetime
 import time
 from contextlib import ExitStack

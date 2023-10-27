@@ -80,8 +80,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
         model = XPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
     elif cfg.device == "hpu":
         assert len(cfg.gpu_ids) == 1
-        model.to(f"hpu:{cfg.gpu_ids[0]}")
-        model = HPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, is_autocast=bool(fp16_cfg))
+        model = HPUDataParallel(model.cuda(), dim=0, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
     else:
         model = wrap_non_distributed_model(model, cfg.device, device_ids=cfg.gpu_ids)
 

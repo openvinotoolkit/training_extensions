@@ -170,25 +170,10 @@ def _get_all_device_indices():
 
 
 class HPUDataParallel(MMDataParallel):
-    def __init__(self, module, device_ids=None, output_device=None, dim=0, is_autocast=True):
-        super().__init__(module=module)
-        device_type = _get_available_device_type()
-        if device_type is None:
-            self.module = module
-            self.device_ids = []
-            return
-
-        if device_ids is None:
-            device_ids = _get_all_device_indices()
-
-        if output_device is None:
-            output_device = device_ids[0]
-
-        self.dim = dim
-        self.device_ids = [_get_device_index(x, True) for x in device_ids]
-        self.output_device = _get_device_index(output_device, True)
-        self.src_device_obj = torch.device(device_type, self.device_ids[0])
-        self.is_autocast = is_autocast
+    def __init__(self, *args, enable_autocast: bool = False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.enable_autocast = enable_autocast
+        self.src_device_obj = torch.device("hpu", self.device_ids[0])
 
     def scatter(self, inputs, kwargs, device_ids):
         inputs, kwargs = super().scatter(inputs, kwargs, [-1])
@@ -218,13 +203,13 @@ class HPUDataParallel(MMDataParallel):
         return inputs, kwargs
 
     def forward(self, *inputs, **kwargs):
-        with torch.autocast(device_type="hpu", dtype=torch.bfloat16, enabled=self.is_autocast):
+        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
             return super().forward(*inputs, **kwargs)
 
     def train_step(self, *inputs, **kwargs):
-        with torch.autocast(device_type="hpu", dtype=torch.bfloat16, enabled=self.is_autocast):
+        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
             return super().train_step(*inputs, **kwargs)
 
     def val_step(self, *inputs, **kwargs):
-        with torch.autocast(device_type="hpu", dtype=torch.bfloat16, enabled=self.is_autocast):
+        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
             return super().val_step(*inputs, **kwargs)
