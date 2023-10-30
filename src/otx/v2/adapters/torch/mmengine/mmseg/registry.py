@@ -24,6 +24,7 @@ from mmseg.registry import (
     VISUALIZERS,
     WEIGHT_INITIALIZERS,
 )
+
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 
 REGISTRY_LIST = [

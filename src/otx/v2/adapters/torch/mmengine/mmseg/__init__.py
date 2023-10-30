@@ -16,9 +16,8 @@ try:
 
     register_all_modules(init_default_scope=True)
 
-    from .mmseg import Dataset
+    from .mmseg import Dataset, get_model, list_models
     from .mmseg import MMPTEngine as Engine
-    from .mmseg import get_model, list_models
 
     __all__ = ["get_model", "Dataset", "Engine", "list_models"]
 

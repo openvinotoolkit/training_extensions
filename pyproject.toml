@@ -105,6 +105,11 @@ classification = [
 
 segmentation = [
     "mmsegmentation==1.2.1",
+    "mmdeploy",
+    "timm==0.6.12",
+    "pytorchcv",
+    "yapf<0.40.0",
+    "einops==0.6.1",
 ]
 
 [project.scripts]
