@@ -9,7 +9,7 @@ import fnmatch
 from pathlib import Path
 
 import torch
-from mmseg.models import build_backbone, build_neck
+from mmseg.models import build_backbone
 from mmseg.apis import init_model as get_mmseg_model
 
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
@@ -159,12 +159,12 @@ def list_models(pattern: str | None = None, **kwargs) -> list[str]:
         List[str]: A sorted list of available models for pretraining.
     """
     # First, make sure it's a model from mmpretrain.
-    model_list = list_mmseg_model(pattern=pattern, **kwargs)
-    # Add OTX Custom models
-    model_list.extend(list(MODEL_CONFIGS.keys()))
+    # model_list = list_mmseg_model(pattern=pattern, **kwargs)
+    # # Add OTX Custom models
+    # model_list.extend(list(MODEL_CONFIGS.keys()))
 
-    if pattern is not None:
-        # Always match keys with any postfix.
-        model_list = set(fnmatch.filter(model_list, pattern + "*"))
+    # if pattern is not None:
+    #     # Always match keys with any postfix.
+    #     model_list = set(fnmatch.filter(model_list, pattern + "*"))
 
-    return sorted(model_list)
+    return []
