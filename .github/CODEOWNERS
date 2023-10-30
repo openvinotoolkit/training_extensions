@@ -28,7 +28,10 @@
 /src/otx/v2/adapters/torch/lightning                        @samet-akcay @harimkang
 
 # OTX Adapters anomalib
-/src/otx/v2/adapters/torch/lightning/anomalib                         @samet-akcay @harimkang @ashwinvaidya17
+/src/otx/v2/adapters/torch/lightning/anomalib               @samet-akcay @harimkang @ashwinvaidya17
+
+# OTX Adapters visual_prompt
+/src/otx/v2/adapters/torch/lightning/visual_prompt          @samet-akcay @harimkang @ashwinvaidya17
 
 # OTX Adapters mmengine
 /src/otx/v2/adapters/torch/mmengine                         @samet-akcay @harimkang @goodsong81
