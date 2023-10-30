@@ -16,8 +16,12 @@
 
 from __future__ import annotations
 
+import cv2
 import numpy as np
 from skimage.measure import find_contours, label, regionprops
+
+from otx.v2.api.entities.shapes.polygon import Polygon
+from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 
 
 def mask_to_border(mask: np.ndarray) -> np.ndarray:
@@ -67,3 +71,76 @@ def mask2bbox(mask: np.ndarray) -> list[list[int]]:
         bboxes.append([x1, y1, x2, y2])
 
     return bboxes
+
+
+def convert_polygon_to_mask(shape: Polygon, width: int, height: int) -> np.ndarray:
+    """Convert polygon to mask.
+
+    Args:
+        shape (Polygon): Polygon to convert.
+        width (int): Width of image.
+        height (int): Height of image.
+
+    Returns:
+        np.ndarray: Generated mask from given polygon.
+    """
+    polygon = ShapeFactory.shape_as_polygon(shape)
+    contour = [[int(point.x * width), int(point.y * height)] for point in polygon.points]
+    gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
+    return cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
+
+
+def generate_bbox(
+    x1: int,
+    y1: int,
+    x2: int,
+    y2: int,
+    width: int,
+    height: int,
+    offset_bbox: int = 0,
+) -> list[int]:
+    """Generate bounding box.
+
+    Args:
+        x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
+        width (int): Width of image.
+        height (int): Height of image.
+        offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
+
+    Returns:
+        list[int]: Generated bounding box.
+    """
+
+    def get_randomness(length: int) -> int:
+        if offset_bbox == 0:
+            return 0
+        rng = np.random.default_rng()
+        return int(rng.normal(0, min(int(length * 0.1), offset_bbox)))
+
+    return [
+        max(0, x1 + get_randomness(width)),
+        max(0, y1 + get_randomness(height)),
+        min(width, x2 + get_randomness(width)),
+        min(height, y2 + get_randomness(height)),
+    ]
+
+
+def generate_bbox_from_mask(gt_mask: np.ndarray, width: int, height: int) -> list[int]:
+    """Generate bounding box from given mask.
+
+    Args:
+        gt_mask (np.ndarry): Mask to generate bounding box.
+        width (int): Width of image.
+        height (int): Height of image.
+
+    Returns:
+        list[int]: Generated bounding box from given mask.
+    """
+    x_indices: np.ndarray
+    y_indices: np.ndarray
+    x_min, x_max = 0, width
+    y_min, y_max = 0, height
+    y_indices, x_indices = np.where(gt_mask == 1)
+    x_min, x_max = np.min(x_indices), np.max(x_indices)
+    y_min, y_max = np.min(y_indices), np.max(y_indices)
+    return generate_bbox(x_min, y_min, x_max, y_max, width, height)

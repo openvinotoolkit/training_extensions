@@ -90,7 +90,8 @@ class TestSAMPromptEncoder:
 
         assert results == expected
 
-    @pytest.mark.parametrize("device", ["cpu", "cuda"])
+    # NOTE: It only checks the CPU, because it can give errors in environments that don't have CUDA or use different devices.
+    @pytest.mark.parametrize("device", ["cpu"])
     def test_get_device(self, device: str) -> None:
         """Test _get_device."""
         self.prompt_encoder.point_embeddings.to(device)

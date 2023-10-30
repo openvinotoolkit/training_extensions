@@ -16,16 +16,21 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-import cv2
 import numpy as np
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
-from torchvision.datasets.folder import IMG_EXTENSIONS
 
+from otx.v2.adapters.torch.modules.utils.io import (
+    get_image_filenames,
+    read_image,
+)
+from otx.v2.adapters.torch.modules.utils.mask_to_bbox import (
+    convert_polygon_to_mask,
+    generate_bbox_from_mask,
+)
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
@@ -33,7 +38,6 @@ from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.polygon import Polygon
 from otx.v2.api.entities.subset import Subset
-from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 from otx.v2.api.utils.logger import get_logger
 
 from .pipelines import (
@@ -44,6 +48,8 @@ from .pipelines import (
 )
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import albumentations as al
     from omegaconf import DictConfig, ListConfig
 
@@ -76,79 +82,6 @@ def get_transform(
             transforms.Normalize(mean=mean, std=std),
         ],
     )
-
-
-def convert_polygon_to_mask(shape: Polygon, width: int, height: int) -> np.ndarray:
-    """Convert polygon to mask.
-
-    Args:
-        shape (Polygon): Polygon to convert.
-        width (int): Width of image.
-        height (int): Height of image.
-
-    Returns:
-        np.ndarray: Generated mask from given polygon.
-    """
-    polygon = ShapeFactory.shape_as_polygon(shape)
-    contour = [[int(point.x * width), int(point.y * height)] for point in polygon.points]
-    gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
-    return cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
-
-
-def generate_bbox(
-    x1: int,
-    y1: int,
-    x2: int,
-    y2: int,
-    width: int,
-    height: int,
-    offset_bbox: int = 0,
-) -> list[int]:
-    """Generate bounding box.
-
-    Args:
-        x1, y1, x2, y2 (int): Bounding box coordinates. # type: ignore
-        width (int): Width of image.
-        height (int): Height of image.
-        offset_bbox (int): Offset to apply to the bounding box, defaults to 0.
-
-    Returns:
-        list[int]: Generated bounding box.
-    """
-
-    def get_randomness(length: int) -> int:
-        if offset_bbox == 0:
-            return 0
-        rng = np.random.default_rng()
-        return int(rng.normal(0, min(int(length * 0.1), offset_bbox)))
-
-    return [
-        max(0, x1 + get_randomness(width)),
-        max(0, y1 + get_randomness(height)),
-        min(width, x2 + get_randomness(width)),
-        min(height, y2 + get_randomness(height)),
-    ]
-
-
-def generate_bbox_from_mask(gt_mask: np.ndarray, width: int, height: int) -> list[int]:
-    """Generate bounding box from given mask.
-
-    Args:
-        gt_mask (np.ndarry): Mask to generate bounding box.
-        width (int): Width of image.
-        height (int): Height of image.
-
-    Returns:
-        list[int]: Generated bounding box from given mask.
-    """
-    x_indices: np.ndarray
-    y_indices: np.ndarray
-    x_min, x_max = 0, width
-    y_min, y_max = 0, height
-    y_indices, x_indices = np.where(gt_mask == 1)
-    x_min, x_max = np.min(x_indices), np.max(x_indices)
-    y_min, y_max = np.min(y_indices), np.max(y_indices)
-    return generate_bbox(x_min, y_min, x_max, y_max, width, height)
 
 
 class OTXVisualPromptingDataset(Dataset):
@@ -394,99 +327,6 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             num_workers=self.config.num_workers,
             collate_fn=collate_fn,
         )
-
-
-def get_image_filenames(path: str | Path) -> list[Path]:
-    """Get image filenames.
-
-    Args:
-        path (str | Path): Path to image or image-folder.
-
-    Returns:
-        list[Path]: List of image filenames
-
-    """
-    image_filenames: list[Path] = []
-
-    if isinstance(path, str):
-        path = Path(path)
-
-    if path.is_file() and path.suffix.lower() in IMG_EXTENSIONS:
-        image_filenames = [path]
-
-    if path.is_dir():
-        image_filenames = [p for p in path.glob("**/*") if p.suffix.lower() in IMG_EXTENSIONS]
-
-    if not image_filenames:
-        msg = f"Found 0 images in {path}"
-        raise ValueError(msg)
-
-    return image_filenames
-
-
-def get_image_height_and_width(image_size: int | tuple[int, int]) -> tuple[int, int]:
-    """Get image height and width from ``image_size`` variable.
-
-    Args:
-        image_size (int | tuple[int, int] | None, optional): Input image size.
-
-    Raises:
-        ValueError: Image size not None, int or tuple.
-
-    Examples:
-        >>> get_image_height_and_width(image_size=256)
-        (256, 256)
-
-        >>> get_image_height_and_width(image_size=(256, 256))
-        (256, 256)
-
-        >>> get_image_height_and_width(image_size=(256, 256, 3))
-        (256, 256)
-
-        >>> get_image_height_and_width(image_size=256.)
-        Traceback (most recent call last):
-        File "<string>", line 1, in <module>
-        File "<string>", line 18, in get_image_height_and_width
-        TypeError: ``image_size`` could be either int or tuple[int, int]
-
-    Returns:
-        tuple[int | None, int | None]: A tuple containing image height and width values.
-    """
-    if isinstance(image_size, int):
-        height_and_width = (image_size, image_size)
-    elif isinstance(image_size, tuple):
-        height_and_width = int(image_size[0]), int(image_size[1])
-    else:
-        msg = "``image_size`` could be either int or tuple[int, int]"
-        raise TypeError(msg)
-
-    return height_and_width
-
-
-def read_image(path: str | Path, image_size: int | tuple[int, int] | None = None) -> np.ndarray:
-    """Read image from disk in RGB format.
-
-    Args:
-        path (str, Path): path to the image file
-
-    Example:
-        >>> image = read_image("test_image.jpg")
-
-    Returns:
-        image as numpy array
-    """
-    path = path if isinstance(path, str) else str(path)
-    image = cv2.imread(path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    if image_size:
-        # This part is optional, where the user wants to quickly resize the image
-        # with a one-liner code. This would particularly be useful especially when
-        # prototyping new ideas.
-        height, width = get_image_height_and_width(image_size)
-        image = cv2.resize(image, dsize=(width, height), interpolation=cv2.INTER_AREA)
-
-    return image
 
 
 class VisualPromptInferenceDataset(Dataset):
