@@ -153,27 +153,6 @@ class VisualPromptEngine(LightningEngine):
             callbacks=callbacks,
         )
 
-    def _onnx_export(
-        self,
-        model: torch.nn.Module | pl.LightningModule,
-        export_path: Path,
-        dummy_inputs: dict,
-        output_names: list,
-        dynamic_axes: dict | None = None,
-    ) -> None:
-        torch.onnx.export(
-            model=model,
-            args=tuple(dummy_inputs.values()),
-            f=export_path,
-            export_params=True,
-            verbose=False,
-            opset_version=13,
-            do_constant_folding=True,
-            input_names=list(dummy_inputs.keys()),
-            output_names=output_names,
-            dynamic_axes=dynamic_axes,
-        )
-
     def export(
         self,
         model: torch.nn.Module | pl.LightningModule | None = None,  # Module with _config OR Model Config OR config-file

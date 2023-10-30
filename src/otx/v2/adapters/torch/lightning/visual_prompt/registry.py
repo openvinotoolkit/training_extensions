@@ -13,7 +13,7 @@ class VisualPromptRegistry(LightningRegistry):
         name (str): The name of the registry.
     """
 
-    def __init__(self, name: str = "VisualPromptRegistry") -> None:
+    def __init__(self, name: str = "visual_prompt") -> None:
         """Initialize a new instance of the AnomalibRegistry class.
 
         Args:
