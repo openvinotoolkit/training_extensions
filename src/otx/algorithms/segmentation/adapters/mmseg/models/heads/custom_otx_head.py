@@ -188,7 +188,7 @@ def otx_head_factory(*args, base_type="FCNHead", **kwargs):
                         seg_logit, seg_label, weight=seg_weight, ignore_index=self.ignore_index, **valid_label_mask_cfg
                     )
 
-            loss["acc_seg"] = accuracy(seg_logit, seg_label, ignore_index=self.ignore_index)
+            loss["acc_seg"] = accuracy(seg_logit.clone().detach().to("cpu"), seg_label.clone().detach().to("cpu"), ignore_index=self.ignore_index)
 
             return loss
 
