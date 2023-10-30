@@ -21,7 +21,6 @@ import numpy as np
 from mmseg.datasets.builder import DATASETS
 from mmseg.datasets.custom import CustomDataset
 from mmseg.datasets.pipelines import Compose
-
 from otx.algorithms.common.utils.data import get_old_new_img_indices
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -65,7 +64,7 @@ class _OTXSegDataset(CustomDataset, metaclass=ABCMeta):
     named like that and not dataset_items.
 
     """
-
+    # TODO: remove data proxy
     class _DataInfoProxy:
         """This class is intended to be a wrapper to use it in CustomDataset-derived class as `self.data_infos`.
 
@@ -158,12 +157,10 @@ class _OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
     def __len__(self):
         """Total number of samples of data."""
-
         return len(self.data_infos)
 
     def pre_pipeline(self, results: Dict[str, Any]):
         """Prepare results dict for pipeline."""
-
         results["seg_fields"] = []
 
     def prepare_train_img(self, idx: int) -> dict:
@@ -175,7 +172,6 @@ class _OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         Returns:
             dict: Training data and annotation after pipeline with new keys introduced by pipeline.
         """
-
         item = self.data_infos[idx]
 
         self.pre_pipeline(item)
@@ -192,7 +188,6 @@ class _OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         Returns:
             dict: Testing data after pipeline with new keys introduced by pipeline.
         """
-
         item = self.data_infos[idx]
 
         self.pre_pipeline(item)
@@ -209,7 +204,6 @@ class _OTXSegDataset(CustomDataset, metaclass=ABCMeta):
         :param idx: index of the dataset item for which to get the annotations
         :return ann_info: dict that contains the coordinates of the bboxes and their corresponding labels
         """
-
         dataset_item = self.otx_dataset[idx]
         ann_info = get_annotation_mmseg_format(dataset_item, self.project_labels, self.use_otx_adapter)
 
@@ -217,7 +211,6 @@ class _OTXSegDataset(CustomDataset, metaclass=ABCMeta):
 
     def get_gt_seg_maps(self, efficient_test: bool = False):
         """Get ground truth segmentation maps for evaluation."""
-
         gt_seg_maps = []
         for item_id in range(len(self)):
             ann_info = self.get_ann_info(item_id)

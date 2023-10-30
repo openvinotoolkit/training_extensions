@@ -5,9 +5,8 @@
 from typing import Any, Dict, Optional
 
 import numpy as np
-from mmseg.datasets.builder import PIPELINES, build_from_cfg
-
 import otx.algorithms.common.adapters.mmcv.pipelines.load_image_from_otx_dataset as load_image_base
+from mmseg.datasets.builder import PIPELINES, build_from_cfg
 from otx.algorithms.segmentation.adapters.mmseg.datasets.dataset import (
     get_annotation_mmseg_format,
 )
