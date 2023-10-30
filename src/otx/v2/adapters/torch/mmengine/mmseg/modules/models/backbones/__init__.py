@@ -16,7 +16,7 @@
 
 
 from .litehrnet import LiteHRNet
-from .mmov_backbone import MMOVBackbone
-from .mscan import MSCAN
 
-__all__ = ["LiteHRNet", "MMOVBackbone", "MSCAN"]
+# TODO "MMOVBackbone", "MSCAN" to be added
+
+__all__ = ["LiteHRNet"]

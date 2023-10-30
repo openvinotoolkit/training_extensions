@@ -18,19 +18,19 @@ train_dataloader:
     pipeline:
       - type: RandomResize
         scale: !!python/tuple
-         - 544
-         - 544
+          - 544
+          - 544
       - type: RandomCrop
         crop_size: !!python/tuple
-         - 512
-         - 512
+          - 512
+          - 512
       - type: RandomFlip
         direction: horizontal
         prob: 0.5
       - type: Pad
         size: !!python/tuple
-         - 512
-         - 512
+          - 512
+          - 512
         pad_val: 0
         seg_pad_val: 255
       - type: PackSegInputs

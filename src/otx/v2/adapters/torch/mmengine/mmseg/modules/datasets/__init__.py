@@ -1,4 +1,4 @@
-"""Scaler schedulers for semantic segmentation."""
+"""OTX Algorithms - Segmentation Dataset."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,12 +14,17 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .constant import ConstantScalarScheduler
-from .poly import PolyScalarScheduler
-from .step import StepScalarScheduler
+from .dataset import OTXSegDataset, get_annotation_mmseg_format
+from .pipelines import (
+    LoadAnnotationFromOTXDataset,
+    LoadImageFromOTXDataset,
+    LoadResizeDataFromOTXDataset,
+)
 
 __all__ = [
-    "ConstantScalarScheduler",
-    "PolyScalarScheduler",
-    "StepScalarScheduler",
+    "LoadAnnotationFromOTXDataset",
+    "LoadImageFromOTXDataset",
+    "LoadResizeDataFromOTXDataset",
+    "get_annotation_mmseg_format",
+    "OTXSegDataset",
 ]

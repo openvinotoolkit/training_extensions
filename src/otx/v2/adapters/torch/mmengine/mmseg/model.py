@@ -5,12 +5,11 @@
 
 from __future__ import annotations
 
-import fnmatch
 from pathlib import Path
 
 import torch
-from mmseg.models import build_backbone
 from mmseg.apis import init_model as get_mmseg_model
+from mmseg.models import build_backbone
 
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path

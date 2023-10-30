@@ -11,47 +11,47 @@ Modified from:
 
 import mmcv
 import torch
-import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (
     ConvModule,
     build_conv_layer,
     build_norm_layer,
-    constant_init,
-    normal_init,
 )
-
-from mmengine.model import BaseModule
+from mmengine.model import BaseModule, constant_init, normal_init
 from mmengine.runner import load_checkpoint
-
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
-from mmseg.utils import get_root_logger
-from torch import nn
-
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
     channel_shuffle,
 )
+from torch import nn
+from torch.nn import functional
 
 
-# pylint: disable=invalid-name, too-many-lines, too-many-instance-attributes, too-many-locals, too-many-arguments
-# pylint: disable=unused-argument, consider-using-enumerate
 class NeighbourSupport(nn.Module):
-    """Neighbour support module."""
-
     def __init__(
         self,
-        channels,
-        kernel_size=3,
-        key_ratio=8,
-        value_ratio=8,
+        channels: int,
+        kernel_size: int = 3,
+        key_ratio: int = 8,
+        value_ratio: int = 8,
         conv_cfg=None,
         norm_cfg=None,
-    ):
+    ) -> None:
+        """Neighbour support module.
+
+        Args:
+            channels (_type_): _description_
+            kernel_size (int, optional): _description_. Defaults to 3.
+            key_ratio (int, optional): _description_. Defaults to 8.
+            value_ratio (int, optional): _description_. Defaults to 8.
+            conv_cfg (_type_, optional): _description_. Defaults to None.
+            norm_cfg (_type_, optional): _description_. Defaults to None.
+        """
         super().__init__()
 
         self.in_channels = channels
@@ -114,7 +114,7 @@ class NeighbourSupport(nn.Module):
 
     def forward(self, x):
         """Forward."""
-        h, w = [int(_) for _ in x.size()[-2:]]
+        h, w = (int(_) for _ in x.size()[-2:])
 
         key = self.key(x).view(-1, 1, self.kernel_size**2, h, w)
         weights = torch.softmax(key, dim=2)
@@ -172,12 +172,12 @@ class CrossResolutionWeighting(nn.Module):
         """Forward."""
         min_size = [int(_) for _ in x[-1].size()[-2:]]
 
-        out = [F.adaptive_avg_pool2d(s, min_size) for s in x[:-1]] + [x[-1]]
+        out = [functional.adaptive_avg_pool2d(s, min_size) for s in x[:-1]] + [x[-1]]
         out = torch.cat(out, dim=1)
         out = self.conv1(out)
         out = self.conv2(out)
         out = torch.split(out, self.channels, dim=1)
-        out = [s * F.interpolate(a, size=s.size()[-2:], mode="nearest") for s, a in zip(x, out)]
+        out = [s * functional.interpolate(a, size=s.size()[-2:], mode="nearest") for s, a in zip(x, out)]
 
         return out
 
@@ -299,7 +299,7 @@ class SpatialWeightingV2(nn.Module):
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
 
     def _channel_weighting(self, x):
-        h, w = [int(_) for _ in x.size()[-2:]]
+        h, w = (int(_) for _ in x.size()[-2:])
 
         v = self.v_channel(x).view(-1, self.internal_channels, h * w)
 
@@ -315,7 +315,7 @@ class SpatialWeightingV2(nn.Module):
         return out
 
     def _spatial_weighting(self, x):
-        h, w = [int(_) for _ in x.size()[-2:]]
+        h, w = (int(_) for _ in x.size()[-2:])
 
         v = self.v_spatial(x)
         v = v.view(-1, self.internal_channels, h * w)
@@ -371,7 +371,10 @@ class ConditionalChannelWeighting(nn.Module):
         branch_channels = [channel // 2 for channel in in_channels]
 
         self.cross_resolution_weighting = CrossResolutionWeighting(
-            branch_channels, ratio=reduce_ratio, conv_cfg=conv_cfg, norm_cfg=norm_cfg
+            branch_channels,
+            ratio=reduce_ratio,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
         )
         self.depthwise_convs = nn.ModuleList(
             [
@@ -387,7 +390,7 @@ class ConditionalChannelWeighting(nn.Module):
                     act_cfg=None,
                 )
                 for channel in branch_channels
-            ]
+            ],
         )
         self.spatial_weighting = nn.ModuleList(
             [
@@ -399,7 +402,7 @@ class ConditionalChannelWeighting(nn.Module):
                     enable_norm=True,
                 )
                 for channel in branch_channels
-            ]
+            ],
         )
 
         self.neighbour_weighting = None
@@ -415,7 +418,7 @@ class ConditionalChannelWeighting(nn.Module):
                         norm_cfg=norm_cfg,
                     )
                     for channel in branch_channels
-                ]
+                ],
             )
 
         self.dropout = None
@@ -695,7 +698,7 @@ class StemV2(nn.Module):
                         norm_cfg=norm_cfg,
                         act_cfg=dict(type="ReLU"),
                     ),
-                )
+                ),
             )
 
             self.branch2.append(
@@ -731,7 +734,7 @@ class StemV2(nn.Module):
                         norm_cfg=norm_cfg,
                         act_cfg=dict(type="ReLU"),
                     ),
-                )
+                ),
             )
 
     def _inner_forward(self, x):
@@ -811,9 +814,9 @@ class ShuffleUnit(nn.Module):
             )
 
         if in_channels != branch_features * 2:
-            assert self.stride != 1, (
-                f"stride ({self.stride}) should not equal 1 when " f"in_channels != branch_features * 2"
-            )
+            assert (
+                self.stride != 1
+            ), f"stride ({self.stride}) should not equal 1 when in_channels != branch_features * 2"
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
@@ -944,7 +947,6 @@ class LiteHRModule(nn.Module):
     @staticmethod
     def _check_branches(num_branches, in_channels):
         """Check input to avoid ValueError."""
-
         if num_branches != len(in_channels):
             error_msg = f"NUM_BRANCHES({num_branches}) != NUM_INCHANNELS({len(in_channels)})"
             raise ValueError(error_msg)
@@ -963,14 +965,13 @@ class LiteHRModule(nn.Module):
                     dropout=dropout,
                     weighting_module_version=self.weighting_module_version,
                     neighbour_weighting=self.neighbour_weighting,
-                )
+                ),
             )
 
         return nn.Sequential(*layers)
 
     def _make_one_branch(self, branch_index, num_blocks, stride=1):
         """Make one branch."""
-
         layers = [
             ShuffleUnit(
                 self.in_channels[branch_index],
@@ -980,7 +981,7 @@ class LiteHRModule(nn.Module):
                 norm_cfg=self.norm_cfg,
                 act_cfg=dict(type="ReLU"),
                 with_cp=self.with_cp,
-            )
+            ),
         ]
         for _ in range(1, num_blocks):
             layers.append(
@@ -992,14 +993,13 @@ class LiteHRModule(nn.Module):
                     norm_cfg=self.norm_cfg,
                     act_cfg=dict(type="ReLU"),
                     with_cp=self.with_cp,
-                )
+                ),
             )
 
         return nn.Sequential(*layers)
 
     def _make_naive_branches(self, num_branches, num_blocks):
         """Make branches."""
-
         branches = []
         for i in range(num_branches):
             branches.append(self._make_one_branch(i, num_blocks))
@@ -1008,7 +1008,6 @@ class LiteHRModule(nn.Module):
 
     def _make_fuse_layers(self):
         """Make fuse layer."""
-
         if self.num_branches == 1:
             return None
 
@@ -1033,7 +1032,7 @@ class LiteHRModule(nn.Module):
                                 bias=False,
                             ),
                             build_norm_layer(self.norm_cfg, in_channels[i])[1],
-                        )
+                        ),
                     )
                 elif j == i:
                     fuse_layer.append(None)
@@ -1064,7 +1063,7 @@ class LiteHRModule(nn.Module):
                                         bias=False,
                                     ),
                                     build_norm_layer(self.norm_cfg, in_channels[i])[1],
-                                )
+                                ),
                             )
                         else:
                             conv_downsamples.append(
@@ -1091,7 +1090,7 @@ class LiteHRModule(nn.Module):
                                     ),
                                     build_norm_layer(self.norm_cfg, in_channels[j])[1],
                                     nn.ReLU(inplace=True),
-                                )
+                                ),
                             )
                     fuse_layer.append(nn.Sequential(*conv_downsamples))
             fuse_layers.append(nn.ModuleList(fuse_layer))
@@ -1100,7 +1099,6 @@ class LiteHRModule(nn.Module):
 
     def forward(self, x):
         """Forward function."""
-
         if self.num_branches == 1:
             return [self.layers[0](x[0])]
 
@@ -1122,7 +1120,7 @@ class LiteHRModule(nn.Module):
                         fuse_y = self.fuse_layers[i][j](out[j])
 
                     if fuse_y.size()[-2:] != y.size()[-2:]:
-                        fuse_y = F.interpolate(fuse_y, size=y.size()[-2:], mode="nearest")
+                        fuse_y = functional.interpolate(fuse_y, size=y.size()[-2:], mode="nearest")
 
                     y += fuse_y
 
@@ -1237,7 +1235,7 @@ class LiteHRNet(BaseModule):
                         conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
                         act_cfg=dict(type="ReLU"),
-                    )
+                    ),
                 )
                 in_modules_channels = out_modules_channels
             if self.extra["out_modules"]["position_att"]["enable"]:
@@ -1249,7 +1247,7 @@ class LiteHRNet(BaseModule):
                         psp_size=self.extra["out_modules"]["position_att"]["psp_size"],
                         conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
-                    )
+                    ),
                 )
             if self.extra["out_modules"]["local_att"]["enable"]:
                 out_modules.append(
@@ -1257,7 +1255,7 @@ class LiteHRNet(BaseModule):
                         num_channels=in_modules_channels,
                         conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
-                    )
+                    ),
                 )
 
             if len(out_modules) > 0:
@@ -1303,7 +1301,6 @@ class LiteHRNet(BaseModule):
 
     def _make_transition_layer(self, num_channels_pre_layer, num_channels_cur_layer):
         """Make transition layer."""
-
         num_branches_cur = len(num_channels_cur_layer)
         num_branches_pre = len(num_channels_pre_layer)
 
@@ -1335,7 +1332,7 @@ class LiteHRNet(BaseModule):
                             ),
                             build_norm_layer(self.norm_cfg, num_channels_cur_layer[i])[1],
                             nn.ReLU(),
-                        )
+                        ),
                     )
                 else:
                     transition_layers.append(None)
@@ -1368,7 +1365,7 @@ class LiteHRNet(BaseModule):
                             ),
                             build_norm_layer(self.norm_cfg, out_channels)[1],
                             nn.ReLU(),
-                        )
+                        ),
                     )
                 transition_layers.append(nn.Sequential(*conv_downsamples))
 
@@ -1414,7 +1411,7 @@ class LiteHRNet(BaseModule):
                     dropout=dropout,
                     weighting_module_version=weighting_module_version,
                     neighbour_weighting=neighbour_weighting,
-                )
+                ),
             )
             in_channels = modules[-1].in_channels
 
@@ -1427,7 +1424,6 @@ class LiteHRNet(BaseModule):
             pretrained (str, optional): Path to pre-trained weights.
                 Defaults to None.
         """
-
         if isinstance(pretrained, str):
             logger = get_root_logger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
@@ -1449,7 +1445,6 @@ class LiteHRNet(BaseModule):
 
     def forward(self, x):
         """Forward function."""
-
         stem_outputs = self.stem(x)
         y_x2 = y_x4 = stem_outputs
         # y_x2, y_x4 = stem_outputs[-2:]
@@ -1493,7 +1488,6 @@ class LiteHRNet(BaseModule):
 
     def train(self, mode=True):
         """Convert the model into training mode."""
-
         super().train(mode)
 
         if mode and self.norm_eval:

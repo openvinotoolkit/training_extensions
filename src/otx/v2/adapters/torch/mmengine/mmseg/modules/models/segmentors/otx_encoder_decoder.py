@@ -9,7 +9,6 @@ import torch
 from mmseg.models import SEGMENTORS
 from mmseg.models.segmentors.encoder_decoder import EncoderDecoder
 from mmseg.utils import get_root_logger
-
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
 from otx.algorithms.common.utils.task_adapt import map_class_names
 
@@ -31,7 +30,7 @@ class OTXEncoderDecoder(EncoderDecoder):
                 self,  # model
                 task_adapt["dst_classes"],  # model_classes
                 task_adapt["src_classes"],  # chkpt_classes
-            )
+            ),
         )
 
     def simple_test(self, img, img_meta, rescale=True, output_logits=False):
@@ -54,7 +53,13 @@ class OTXEncoderDecoder(EncoderDecoder):
 
     @staticmethod
     def load_state_dict_pre_hook(
-        model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs
+        model,
+        model_classes,
+        chkpt_classes,
+        chkpt_dict,
+        prefix,
+        *args,
+        **kwargs,
     ):  # pylint: disable=too-many-locals, unused-argument
         """Modify input state_dict according to class name matching before weight loading."""
         logger = get_root_logger("INFO")
@@ -90,7 +95,6 @@ class OTXEncoderDecoder(EncoderDecoder):
 
 if is_mmdeploy_enabled():
     from mmdeploy.core import FUNCTION_REWRITER
-
     from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (  # pylint: disable=ungrouped-imports
         FeatureVectorHook,
     )

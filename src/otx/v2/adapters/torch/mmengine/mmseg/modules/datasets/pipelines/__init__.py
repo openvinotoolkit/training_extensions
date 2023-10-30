@@ -1,4 +1,4 @@
-"""Segmentation losses."""
+"""OTX Algorithms - Segmentation pipelines."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .cross_entropy_loss_with_ignore import CrossEntropyLossWithIgnore
-from .detcon_loss import DetConLoss
-from .pixel_prototype_ce_loss import PixelPrototypeCELoss
+from .loads import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset, LoadResizeDataFromOTXDataset
 
-__all__ = ["DetConLoss", "CrossEntropyLossWithIgnore", "PixelPrototypeCELoss"]
+__all__ = [
+    "LoadImageFromOTXDataset",
+    "LoadAnnotationFromOTXDataset",
+    "LoadResizeDataFromOTXDataset",
+]
