@@ -49,8 +49,6 @@ def patch_datasets(
         for cfg in cfgs:
             cfg.update(kwargs)
 
-    patch_color_conversion(config)
-
 
 def patch_evaluation(config: Config, task: str):
     """Patch evaluation."""
