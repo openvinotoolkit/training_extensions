@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import VisionTransformerClsHead
 

@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 ### Bug fixes
 
 - Fix F1 auto-threshold to choose best largest confidence (<https://github.com/openvinotoolkit/training_extensions/pull/2371>)
+- Fix IBLoss enablement with DeiT-Tiny when class incremental training (<https://github.com/openvinotoolkit/training_extensions/pull/2594>)
 
 ### Known issues
 
