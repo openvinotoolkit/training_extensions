@@ -66,7 +66,6 @@ class TestAutoRunnerAPI:
 
         # Export Openvino IR Model
         export_output = auto_runner.export(
-            model=results["model"],
             checkpoint=results["checkpoint"],
         )
         assert isinstance(export_output, dict)

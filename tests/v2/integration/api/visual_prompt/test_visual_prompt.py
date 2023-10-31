@@ -84,7 +84,7 @@ class TestVisaulPromptAPI:
 
         # Prediction with single image
         pred_result = engine.predict(
-            model=built_model,
+            model=results["model"],
             checkpoint=results["checkpoint"],
             img=PREDICTION_SAMPLE,
         )

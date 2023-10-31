@@ -93,7 +93,6 @@ class TestAnomalibClassificationAPI:
 
         # Export Openvino IR Model
         export_output = engine.export(
-            model=results["model"],
             checkpoint=results["checkpoint"],
         )
         assert isinstance(export_output, dict)
