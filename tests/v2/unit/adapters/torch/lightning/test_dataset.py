@@ -58,7 +58,7 @@ class TestLightningDataset:
         dataset = LightningDataset()
         assert dataset.build_dataloader(dataset=None) is None
 
-        mock_torch_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.TorchDataLoader")
+        mock_torch_dataloader = mocker.patch("otx.v2.adapters.torch.dataset.TorchDataLoader")
         mock_dataset = mocker.MagicMock()
         dataset.build_dataloader(
             dataset=mock_dataset,
@@ -73,14 +73,14 @@ class TestLightningDataset:
             num_workers=2,
             pin_memory=False,
             shuffle=False,
-            drop_last=False,
+            drop_last=True,
             persistent_workers=False,
         )
 
     def test_subset_dataloader(self, mocker: MockerFixture) -> None:
-        mocker.patch("otx.v2.adapters.torch.lightning.dataset.Path.open")
-        mocker.patch("otx.v2.adapters.torch.lightning.dataset.yaml.safe_load", return_value={"batch_size": 3, "num_workers": 2})
-        mocker.patch("otx.v2.adapters.torch.lightning.dataset.set_tuple_constructor")
+        mocker.patch("otx.v2.adapters.torch.dataset.Path.open")
+        mocker.patch("otx.v2.adapters.torch.dataset.yaml.safe_load", return_value={"batch_size": 3, "num_workers": 2})
+        mocker.patch("otx.v2.adapters.torch.dataset.set_tuple_constructor")
 
         mock_build_dataset = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset.build_dataset")
         mock_build_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset.build_dataloader")
@@ -101,7 +101,7 @@ class TestLightningDataset:
             num_workers=2,
             shuffle=True,
             pin_memory=False,
-            drop_last=False,
+            drop_last=True,
             sampler=None,
             persistent_workers=False,
         )
