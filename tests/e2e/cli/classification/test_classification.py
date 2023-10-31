@@ -306,6 +306,8 @@ class TestToolsMultiClassSemiSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         args_semisl = copy.deepcopy(args0)
         args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
@@ -315,6 +317,8 @@ class TestToolsMultiClassSemiSLClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_semisl"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args0)
 
@@ -323,6 +327,8 @@ class TestToolsMultiClassSemiSLClassification:
     @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train_semisl(self, template, tmp_dir_path):
+        if not (Path(template.model_template_path).parent / "semisl").is_dir():
+            pytest.skip(f"Semi-SL training type isn't available for {template.name}")
         tmp_dir_path = tmp_dir_path / "multi_class_cls/test_multi_gpu_semisl"
         args_semisl_multigpu = copy.deepcopy(args0)
         args_semisl_multigpu["--unlabeled-data-roots"] = args["--train-data-roots"]
