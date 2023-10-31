@@ -92,9 +92,13 @@ class Image(IMedia2DEntity):
             np.ndarray: NumPy representation of the image.
         """
         if self.__data is None:
-            img = PILImage.open(self.__file_path)
-            img.draft("RGB", (img.width, img.height))
-            return np.asarray(img)
+            try:
+                image = PILImage.open(self.__file_path)
+                image.draft("RGB", (image.width, image.height))
+                image = np.asarray(image)
+            except ValueError:
+                image = cv2.cvtColor(cv2.imread(self.__file_path), cv2.COLOR_BGR2RGB)
+            return image
         if callable(self.__data):
             return self.__data()
         return self.__data
