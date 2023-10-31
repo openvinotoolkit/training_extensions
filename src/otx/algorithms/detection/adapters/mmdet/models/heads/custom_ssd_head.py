@@ -13,6 +13,7 @@ from mmdet.models.builder import HEADS, build_loss
 from mmdet.models.dense_heads.ssd_head import SSDHead
 from mmdet.models.losses import smooth_l1_loss
 from torch import nn
+import time
 
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import TrackingLossDynamicsMixIn
 from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import (
@@ -81,6 +82,32 @@ class CustomSSDHead(SSDHead):
                     nn.Conv2d(in_channel, num_base_priors * self.cls_out_channels, kernel_size=3, padding=1)
                 )
 
+    def forward(self, feats):
+        """Forward features from the upstream network.
+
+        Args:
+            feats (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+
+        Returns:
+            tuple:
+                cls_scores (list[Tensor]): Classification scores for all scale
+                    levels, each is a 4D-tensor, the channels number is
+                    num_anchors * num_classes.
+                bbox_preds (list[Tensor]): Box energies / deltas for all scale
+                    levels, each is a 4D-tensor, the channels number is
+                    num_anchors * 4.
+        """
+        cls_scores = []
+        bbox_preds = []
+        start = time.time()
+        for feat, reg_conv, cls_conv in zip(feats, self.reg_convs,
+                                            self.cls_convs):
+            cls_scores.append(cls_conv(feat))
+            bbox_preds.append(reg_conv(feat))
+        print("bbox_head_forward:  ", time.time() - start)
+        return cls_scores, bbox_preds
+
     def loss_single(
         self,
         cls_score,
@@ -118,6 +145,7 @@ class CustomSSDHead(SSDHead):
         """
 
         # Re-weigting BG loss
+        start1 = time.time()
         label_weights = label_weights.reshape(-1)
         if self.bg_loss_weight >= 0.0:
             neg_indices = labels == self.num_classes
@@ -125,6 +153,7 @@ class CustomSSDHead(SSDHead):
             label_weights[neg_indices] = self.bg_loss_weight
 
         loss_cls_all = self.loss_cls(cls_score, labels, label_weights)
+        print("loss_cls_all:  ", time.time() - start1)
         if len(loss_cls_all.shape) > 1:
             loss_cls_all = loss_cls_all.sum(-1)
         # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
@@ -146,7 +175,10 @@ class CustomSSDHead(SSDHead):
 
         # TODO: We need to verify that this is working properly.
         # pylint: disable=redundant-keyword-arg
+        start = time.time()
         loss_bbox = self._get_loss_bbox(bbox_pred, bbox_targets, bbox_weights, num_total_samples)
+        print("loss_bbox:  ", time.time() - start)
+        print("loss_single:  ", time.time() - start1)
         return loss_cls[None], loss_bbox
 
     def _get_pos_inds(self, labels):
@@ -172,7 +204,9 @@ class CustomSSDHead(SSDHead):
 
     def loss(self, cls_scores, bbox_preds, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Loss function."""
+        start = time.time()
         losses = super().loss(cls_scores, bbox_preds, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore)
+        print("loss_ALL:  ", time.time() - start)
         losses_cls = losses["loss_cls"]
         losses_bbox = losses["loss_bbox"]
 

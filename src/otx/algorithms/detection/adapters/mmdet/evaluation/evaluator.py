@@ -60,7 +60,6 @@ def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
         assert len(scale_ranges) == num_scales
 
     num_classes = len(results)
-
     recalls = np.zeros((num_scales, num_classes), dtype=np.float32)
     aps = np.zeros((num_scales, num_classes), dtype=np.float32)
     num_gts = np.zeros((num_scales, num_classes), dtype=int)
@@ -376,7 +375,7 @@ class Evaluator:
             metric: mAP and mIoU metric
         """
         if self.domain == Domain.DETECTION:
-            return eval_map(
+            output = eval_map(
                 results,
                 self.annotation,
                 scale_ranges=scale_ranges,
@@ -384,4 +383,5 @@ class Evaluator:
                 dataset=self.classes,
                 logger=logger,
             )
+            return output
         return self.evaluate_mask(results, logger, iou_thr)

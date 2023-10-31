@@ -129,7 +129,7 @@ learning_parameters:
     warning: null
   enable_early_stopping:
     affects_outcome_of: TRAINING
-    default_value: true
+    default_value: false
     description: Early exit from training when validation accuracy isn't changed or decreased for several epochs.
     editable: true
     header: Enable early stopping of the training

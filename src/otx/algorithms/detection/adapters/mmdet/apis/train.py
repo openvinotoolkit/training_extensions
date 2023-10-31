@@ -23,11 +23,15 @@ from mmdet.utils import build_ddp, compat_cfg, find_latest_checkpoint, get_root_
 from mmdet.utils.util_distribution import build_dp, dp_factory
 from torchvision.ops import nms as tv_nms
 from torchvision.ops import roi_align as tv_roi_align
+from torch.profiler import profile, record_function, ProfilerActivity
 
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
+from habana_frameworks.torch.utils.library_loader import load_habana_module
+from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
 
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
 dp_factory["xpu"] = XPUDataParallel
+dp_factory["hpu"] = HPUDataParallel
+load_habana_module()
 
 
 def auto_scale_lr(cfg, distributed, logger):
@@ -119,6 +123,15 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
     elif cfg.device == "xpu":
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
         model.to(f"xpu:{cfg.gpu_ids[0]}")
+    elif cfg.device == "hpu":
+        import habana_frameworks.torch.core as htcore
+        os.environ["PT_HPU_LAZY_MODE"] = "1"
+        assert len(cfg.gpu_ids) == 1
+        # CHECK IT
+        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, dim=0, is_autocast=bool(fp16_cfg))
+        # model = HPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, is_autocast=bool(fp16_cfg))
+        model.to(f"hpu:{cfg.gpu_ids[0]}")
+        htcore.mark_step()
     else:
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
@@ -136,6 +149,30 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
             dtype = torch.float32
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
+
+    if cfg.device == "hpu":
+        NMSop.forward = monkey_patched_xpu_nms
+        RoIAlign.forward = monkey_patched_xpu_roi_align
+        from otx.algorithms.common.adapters.mmcv.optimizer.hpu_optimizer import register_habana_optimizers
+        habana_optimizers = register_habana_optimizers()
+        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in habana_optimizers:
+            cfg.optimizer["type"] = new_type
+    # activities = [torch.profiler.ProfilerActivity.CPU]
+    # activities.append(torch.profiler.ProfilerActivity.HPU)
+    # for epoch in range(10):
+    #     for det_out in data_loaders[0]:
+    #         img = det_out["img"].data[-1].to(torch.device("hpu"))
+    #         img_metas = det_out["img_metas"].data[-1]
+    #         gt_bboxes = [bbox.to(torch.device("hpu")) for bbox in det_out["gt_bboxes"].data[-1]]
+    #         gt_labels = [label.to(torch.device("hpu")) for label in det_out["gt_labels"].data[-1]]
+    #         with torch.profiler.profile(
+    #                 # schedule=torch.profiler.schedule(wait=0, warmup=20, active=5, repeat=1),
+    #                 activities=activities,
+    #                 on_trace_ready=torch.profiler.tensorboard_trace_handler('logs')) as profiler:
+    #             model.module.forward_train(img, img_metas, gt_bboxes, gt_labels)
+    #         print(profiler.key_averages().table())
+    #         # print(losses)
+    #         breakpoint()
 
     runner = build_runner(
         cfg.runner, default_args=dict(model=model, optimizer=optimizer, work_dir=cfg.work_dir, logger=logger, meta=meta)
@@ -220,7 +257,6 @@ def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_thr
         inds = ext_module.nms(bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
         bboxes = bboxes.to(device)
         scores = scores.to(device)
-
     if max_num > 0:
         inds = inds[:max_num]
     if is_filtering_by_score:

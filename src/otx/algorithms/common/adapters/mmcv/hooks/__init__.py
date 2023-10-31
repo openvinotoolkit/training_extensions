@@ -52,6 +52,7 @@ from .sam_optimizer_hook import SAMOptimizerHook
 from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
 from .two_crop_transform_hook import TwoCropTransformHook
+from .hpu_optimizer_hook import HPUOptimizerHook, HPUDistOptimizerHook
 
 __all__ = [
     "AdaptiveRepeatDataHook",
@@ -90,6 +91,8 @@ __all__ = [
     "MeanTeacherHook",
     "MemCacheHook",
     "LossDynamicsTrackingHook",
+    "HPUOptimizerHook",
+    "HPUDistOptimizerHook",
 ]
 
 try:

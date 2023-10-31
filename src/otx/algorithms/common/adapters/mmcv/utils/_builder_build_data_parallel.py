@@ -12,7 +12,13 @@ import torch
 from mmcv import Config
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
+<<<<<<< HEAD
 from otx.algorithms.common.utils import is_hpu_available, is_xpu_available
+=======
+from otx.algorithms.common.utils import is_xpu_available, is_hpu_available
+import habana_frameworks.torch as htorch
+from torch._utils import _get_device_index
+>>>>>>> added support for OD on habana
 
 
 @overload
@@ -138,12 +144,63 @@ class XPUDataParallel(MMDataParallel):
         with torch.autocast(device_type="xpu", dtype=torch.bfloat16, enabled=self.enable_autocast):
             return super().val_step(*inputs, **kwargs)
 
+<<<<<<< HEAD
 
 class HPUDataParallel(MMDataParallel):
     def __init__(self, *args, enable_autocast: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self.enable_autocast = enable_autocast
         self.src_device_obj = torch.device("hpu", self.device_ids[0])
+=======
+def _get_available_device_type():
+    if torch.cuda.is_available():
+        return "cuda"
+    if hasattr(torch, "xpu") and torch.xpu.is_available():  # type: ignore[attr-defined]
+        return "xpu"
+    if is_hpu_available():
+        return "hpu"
+    # add more available device types here
+    return None
+
+
+def _get_device_attr(get_member):
+    device_type = _get_available_device_type()
+    if device_type and device_type.lower() == "cuda":
+        return get_member(torch.cuda)
+    if device_type and device_type.lower() == "xpu":
+        return get_member(torch.xpu)  # type: ignore[attr-defined]
+    if device_type and device_type.lower() == "hpu":
+        return get_member(htorch.hpu)
+    # add more available device types here
+    return None
+
+
+def _get_all_device_indices():
+    # all device index
+    return _get_device_attr(lambda m: list(range(m.device_count())))
+
+
+class HPUDataParallel(MMDataParallel):
+    def __init__(self, module, device_ids=None, output_device=None, dim=0, is_autocast=True):
+        super().__init__(module=module)
+        device_type = _get_available_device_type()
+        if device_type is None:
+            self.module = module
+            self.device_ids = []
+            return
+
+        if device_ids is None:
+            device_ids = _get_all_device_indices()
+
+        if output_device is None:
+            output_device = device_ids[0]
+
+        self.dim = dim
+        self.device_ids = [_get_device_index(x, True) for x in device_ids]
+        self.output_device = _get_device_index(output_device, True)
+        self.src_device_obj = torch.device(device_type, self.device_ids[0])
+        self.is_autocast = is_autocast
+>>>>>>> added support for OD on habana
 
     def scatter(self, inputs, kwargs, device_ids):
         inputs, kwargs = super().scatter(inputs, kwargs, [-1])
@@ -154,25 +211,42 @@ class HPUDataParallel(MMDataParallel):
                     if isinstance(val, dict):
                         for k in val:
                             if isinstance(val[k], torch.Tensor):
+<<<<<<< HEAD
                                 val[k] = val[k].to(self.src_device_obj)
                             elif isinstance(val[k], list):
                                 for i, item in enumerate(val[k]):
                                     if isinstance(item, torch.Tensor):
                                         val[k][i] = item.to(self.src_device_obj)
+=======
+                                val[k] = val[k].to(torch.device(f"hpu:{device_ids[0]}"))
+                            elif isinstance(val[k], list):
+                                for i, item in enumerate(val[k]):
+                                    if isinstance(item, torch.Tensor):
+                                        val[k][i] = item.to(torch.device(f"hpu:{device_ids[0]}"))
+>>>>>>> added support for OD on habana
 
         for x in kwargs:
             if isinstance(x, dict):
                 for k in x:
                     if isinstance(x[k], torch.Tensor):
+<<<<<<< HEAD
                         x[k] = x[k].to(f"hpu:{device_ids[0]}")
                     elif isinstance(x[k], list):
                         for i, item in enumerate(x[k]):
                             if isinstance(item, torch.Tensor):
                                 x[k][i] = item.to(self.src_device_obj)
+=======
+                        x[k] = x[k].to("hpu")
+                    elif isinstance(x[k], list):
+                        for i, item in enumerate(x[k]):
+                            if isinstance(item, torch.Tensor):
+                                x[k][i] = item.to(torch.device(f"hpu:{device_ids[0]}"))
+>>>>>>> added support for OD on habana
 
         return inputs, kwargs
 
     def forward(self, *inputs, **kwargs):
+<<<<<<< HEAD
         with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
             return super().forward(*inputs, **kwargs)
 
@@ -182,4 +256,15 @@ class HPUDataParallel(MMDataParallel):
 
     def val_step(self, *inputs, **kwargs):
         with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
+=======
+        with torch.autocast(device_type="hpu", dtype=torch.bfloat16, enabled=self.is_autocast):
+            return super().forward(*inputs, **kwargs)
+
+    def train_step(self, *inputs, **kwargs):
+        with torch.autocast(device_type="hpu", dtype=torch.bfloat16, enabled=self.is_autocast):
+            return super().train_step(*inputs, **kwargs)
+
+    def val_step(self, *inputs, **kwargs):
+        with torch.autocast(device_type="hpu", dtype=torch.bfloat16, enabled=self.is_autocast):
+>>>>>>> added support for OD on habana
             return super().val_step(*inputs, **kwargs)

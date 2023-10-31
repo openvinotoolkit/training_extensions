@@ -30,6 +30,7 @@ from .utils import (
     get_task_class,
     is_hpu_available,
     is_xpu_available,
+    is_hpu_available,
     load_template,
     read_py_config,
     set_random_seed,

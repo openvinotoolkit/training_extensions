@@ -17,6 +17,7 @@ import onnx
 import torch
 import yaml
 from addict import Dict as adict
+import habana_frameworks.torch as htorch
 
 HPU_AVAILABLE = None
 try:
