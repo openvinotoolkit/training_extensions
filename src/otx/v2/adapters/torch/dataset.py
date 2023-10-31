@@ -46,6 +46,7 @@ class TorchBaseDataset(BaseDataset):
         Returns:
             Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
         """
+        raise NotImplementedError
 
 
     def build_dataloader(

@@ -42,3 +42,4 @@ class LightningDataset(TorchBaseDataset):
         Returns:
             Optional[TorchDataset]: The built TorchDataset, or None if the dataset is empty.
         """
+        raise NotImplementedError

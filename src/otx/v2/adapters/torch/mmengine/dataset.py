@@ -98,6 +98,7 @@ class MMXDataset(TorchBaseDataset):
         Returns:
             TorchDataset: A TorchDataset object containing the data for the current sub-task.
         """
+        raise NotImplementedError
 
     def build_dataset(
         self,
