@@ -146,7 +146,7 @@ class TestLightningEngine:
         export_dir = tmp_dir_path / f"{engine.timestamp}_export"
 
         mock_export.assert_called_once_with(
-            model=mock_model.model,
+            model=mock_model,
             args=mock_zeros.return_value.to.return_value,
             f=str(export_dir / "onnx" / "onnx_model.onnx"),
             opset_version=11,

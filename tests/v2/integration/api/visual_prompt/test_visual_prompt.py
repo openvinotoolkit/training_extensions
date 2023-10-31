@@ -77,7 +77,10 @@ class TestVisaulPromptAPI:
         assert isinstance(val_score, list)
         assert len(val_score) > 0
 
-        # NOTE: SAM Model, No `test_step()` method defined to run `Trainer.test`.
+        # Test
+        test_score = engine.test(test_dataloader=dataset.test_dataloader())
+        assert isinstance(test_score, list)
+        assert len(val_score) > 0
 
         # Prediction with single image
         pred_result = engine.predict(

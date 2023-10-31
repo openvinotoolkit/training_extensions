@@ -55,8 +55,7 @@ class TestAutoRunnerAPI:
         auto_runner.validate()
 
         # Test
-        if task not in ("visual_prompting"):
-            auto_runner.test()
+        auto_runner.test()
 
         # Prediction with single image
         auto_runner.predict(

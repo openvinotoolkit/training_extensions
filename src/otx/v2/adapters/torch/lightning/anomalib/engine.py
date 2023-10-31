@@ -117,14 +117,6 @@ class AnomalibEngine(LightningEngine):
             ),
         ]
 
-    def _load_checkpoint(
-        self,
-        model: torch.nn.Module | pl.LightningModule,
-        checkpoint: str | Path,
-    ) -> None:
-        # NOTE: LightningEngine's _load_checkpoint function doesn't work with AnomalibModule when inference mode.
-        # we need to find the cause and fix it.
-        pass
 
     def train(
         self,
@@ -218,7 +210,7 @@ class AnomalibEngine(LightningEngine):
                 center_crop=center_crop,
                 normalization=normalization,
             )
-            dataset = InferenceDataset(img, image_size=image_size, transform=transform)
+            dataset = InferenceDataset(path=img, image_size=image_size, transform=transform)
             dataloader = DataLoader(dataset)
         elif isinstance(img, (DataLoader, LightningDataModule)):
             dataloader = [img]

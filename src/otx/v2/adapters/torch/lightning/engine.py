@@ -155,12 +155,15 @@ class LightningEngine(Engine):
         model: torch.nn.Module | pl.LightningModule,
         checkpoint: str | Path,
     ) -> None:
-        state_dict = torch.load(checkpoint, map_location=model.device)
-        if "model" in state_dict:
-            state_dict = state_dict["model"]
-        if "state_dict" in state_dict:
-            state_dict = state_dict["state_dict"]
-        model.load_state_dict(state_dict, strict=False)
+        if isinstance(model, pl.LightningModule):
+            model = model.load_from_checkpoint(checkpoint)
+        else:
+            state_dict = torch.load(checkpoint, map_location=model.device)
+            if "model" in state_dict:
+                state_dict = state_dict["model"]
+            if "state_dict" in state_dict:
+                state_dict = state_dict["state_dict"]
+            model.load_state_dict(state_dict, strict=False)
 
     def train(
         self,
@@ -274,6 +277,8 @@ class LightningEngine(Engine):
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
 
         datamodule = self.trainer_config.pop("datamodule", None)
+        if model is None:
+            model = self.latest_model.get("model")
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint")
 
@@ -414,7 +419,6 @@ class LightningEngine(Engine):
         """
         # Set input_shape (input_size)
         _model = self.latest_model.get("model", None) if model is None else model
-        _model = getattr(_model, "model", _model)
         model_config = self.config.get("model", {})
         height, width = model_config.get("input_size", (256, 256))
         if input_shape is not None:

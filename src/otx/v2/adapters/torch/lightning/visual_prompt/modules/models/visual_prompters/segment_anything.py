@@ -130,6 +130,15 @@ class SegmentAnything(LightningModule):
             },
         )
 
+        # set test metrics
+        self.test_metrics = MetricCollection(
+            {
+                "test_IoU": BinaryJaccardIndex(),
+                "test_F1": BinaryF1Score(),
+                "test_Dice": Dice(),
+            },
+        )
+
     def load_checkpoint(
         self,
         state_dict: OrderedDict | None = None,
@@ -557,6 +566,29 @@ class SegmentAnything(LightningModule):
             masks.append(mask)
 
         return {"masks": masks, "iou_predictions": iou_predictions, "path": batch["path"], "labels": batch["labels"]}
+
+    def test_step(self, batch: dict, batch_idx: int) -> dict[str, Tensor]:
+        """Test step of SAM.
+
+        Args:
+            batch (Dict): Batch data.
+            batch_idx (int): Batch index.
+
+        Returns:
+            Dict[str, Tensor]: Predicted masks, IoU predictions, image paths, and labels.
+        """
+        pred = self.predict_step(batch, batch_idx)
+        for _, (pred_mask, gt_mask) in enumerate(zip(pred["masks"], batch["gt_masks"])):
+            for t in self.test_metrics.values():
+                t.update(pred_mask, gt_mask)
+        return self.test_metrics
+
+    def test_epoch_end(self, outputs: Tensor) -> None:
+        """Test epoch end for SAM."""
+        _ = outputs
+        self.log_dict(self.test_metrics.compute(), on_epoch=True, prog_bar=True)
+        for t in self.test_metrics.values():
+            t.reset()
 
     def postprocess_masks(
         self,
