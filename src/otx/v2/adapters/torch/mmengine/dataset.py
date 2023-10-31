@@ -20,6 +20,7 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type
 
 if TYPE_CHECKING:
+    from mmengine.registry import Registry
     from torch.utils.data import DataLoader as TorchDataLoader
     from torch.utils.data import Dataset as TorchDataset
     from torch.utils.data import Sampler
@@ -84,7 +85,7 @@ class MMXDataset(TorchBaseDataset):
             data_format,
         )
         self.scope = "mmengine"
-        self.dataset_registry = MMEngineRegistry().get("dataset")
+        self.dataset_registry: Registry = MMEngineRegistry().get("dataset")
 
     def _initialize(self) -> None:
         self.set_datumaro_adapters()  # Set self.dataset_entity & self.label_schema
@@ -167,8 +168,8 @@ class MMXDataset(TorchBaseDataset):
     def build_dataloader(
         self,
         dataset: TorchDataset | None,
-        batch_size: int = 2,
-        num_workers: int = 0,
+        batch_size: int | None = 2,
+        num_workers: int | None = 0,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = True,

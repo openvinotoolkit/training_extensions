@@ -5,13 +5,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Iterable
 
+import yaml
 from torch.utils.data import DataLoader as TorchDataLoader
 from torch.utils.data import Dataset as TorchDataset
 from torch.utils.data import Sampler
 
 from otx.v2.api.core.dataset import BaseDataset
+from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.decorators import add_subset_dataloader
 
 SUBSET_LIST = ["train", "val", "test"]
@@ -48,8 +51,8 @@ class TorchBaseDataset(BaseDataset):
     def build_dataloader(
         self,
         dataset: TorchDataset | None,
-        batch_size: int = 2,
-        num_workers: int = 0,
+        batch_size: int | None = 2,
+        num_workers: int | None = 0,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = True,
@@ -111,8 +114,9 @@ class TorchBaseDataset(BaseDataset):
         self,
         subset: str,
         pipeline: dict | list | None = None,
-        batch_size: int = 2,
-        num_workers: int = 0,
+        batch_size: int | None = None,
+        num_workers: int | None = None,
+        config: str | dict | None = None,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = True,
@@ -150,10 +154,22 @@ class TorchBaseDataset(BaseDataset):
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
         """
         # Config Setting
+        _config: dict = {}
+        if isinstance(config, str):
+            set_tuple_constructor()
+            with Path(config).open() as f:
+                _config = yaml.safe_load(f)
+        elif config is not None:
+            _config = config
+
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline)
+        subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=_config)
+        if batch_size is None:
+            batch_size = _config.get("batch_size", 1)
+        if num_workers is None:
+            num_workers = _config.get("num_workers", 0)
 
         # kwargs conflict
         return self.build_dataloader(
