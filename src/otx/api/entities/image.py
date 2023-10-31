@@ -94,8 +94,7 @@ class Image(IMedia2DEntity):
         if self.__data is None:
             try:
                 image = PILImage.open(self.__file_path)
-                image.draft("RGB", (image.width, image.height))
-                image = np.asarray(image)
+                image = np.asarray(image.convert("RGB"))
             except ValueError:
                 image = cv2.cvtColor(cv2.imread(self.__file_path), cv2.COLOR_BGR2RGB)
             return image
