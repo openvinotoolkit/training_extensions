@@ -299,7 +299,7 @@ class LightningEngine(Engine):
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint")
 
-        if not hasattr(self, "trainer") or update_check or device:
+        if not hasattr(self, "trainer") or update_check:
             self._set_device(device=device)
             callbacks = self._update_callbacks(callbacks=callbacks)
             logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_val")
