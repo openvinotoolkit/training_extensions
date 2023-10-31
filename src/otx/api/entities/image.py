@@ -36,13 +36,17 @@ class Image(IMedia2DEntity):
         size: Optional[Union[Tuple[int, int], Callable[[], Tuple[int, int]]]] = None,
     ):
         if (data is None) == (file_path is None):
-            raise ValueError("Either path to image file or image data should be provided.")
+            raise ValueError(
+                "Either path to image file or image data should be provided."
+            )
         self.__data: Optional[Union[np.ndarray, Callable[[], np.ndarray]]] = data
         self.__file_path: Optional[str] = file_path
         self.__height: Optional[int] = None
         self.__width: Optional[int] = None
         # TODO: refactor this
-        self.__size: Optional[Union[Tuple[int, int], Callable[[], Tuple[int, int]]]] = size
+        self.__size: Optional[
+            Union[Tuple[int, int], Callable[[], Tuple[int, int]]]
+        ] = size
 
     def __str__(self):
         """String representation of the image. Returns the image format, name and dimensions."""
@@ -93,7 +97,7 @@ class Image(IMedia2DEntity):
         """
         if self.__data is None:
             img = PILImage.open(self.__file_path)
-            img.draft('RGB', (img.width, img.height))
+            img.draft("RGB", (img.width, img.height))
             return np.asarray(img)
         if callable(self.__data):
             return self.__data()
@@ -127,7 +131,9 @@ class Image(IMedia2DEntity):
             raise ValueError("Numpy array is None, and thus cannot be cropped")
 
         if len(data.shape) < 2:
-            raise ValueError("This image is one dimensional, and thus cannot be cropped")
+            raise ValueError(
+                "This image is one dimensional, and thus cannot be cropped"
+            )
 
         return roi.shape.crop_numpy_array(data)
 
