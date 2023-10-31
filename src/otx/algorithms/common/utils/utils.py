@@ -20,6 +20,8 @@ from addict import Dict as adict
 import habana_frameworks.torch as htorch
 
 
+HPU_AVAILABLE = None
+
 class UncopiableDefaultDict(defaultdict):
     """Defauldict type object to avoid deepcopy."""
 
@@ -170,4 +172,7 @@ def is_xpu_available():
     
 def is_hpu_available() -> bool:
     """Check if HPU device is available."""
-    return htorch.hpu.is_available()
+    global HPU_AVAILABLE
+    if HPU_AVAILABLE is None:
+        HPU_AVAILABLE = htorch.hpu.is_available()
+    return HPU_AVAILABLE
