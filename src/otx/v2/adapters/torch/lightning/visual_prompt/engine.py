@@ -119,9 +119,9 @@ class VisualPromptEngine(LightningEngine):
         model: torch.nn.Module | pl.LightningModule | None = None,
         img: PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None = None,
         checkpoint: str | Path | None = None,
-        device: list | None = None,  # ["auto", "cpu", "gpu", "cuda"]
         logger: list[Logger] | Logger | bool | None = False,
         callbacks: list[pl.Callback] | pl.Callback | None = None,
+        device: str | None = "auto",  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
         """Run inference on the given model and input data.
 
@@ -148,9 +148,9 @@ class VisualPromptEngine(LightningEngine):
             model=model,
             img=dataloader,
             checkpoint=checkpoint,
-            device=device,
             logger=logger,
             callbacks=callbacks,
+            device=device,
         )
 
     def export(

@@ -134,6 +134,7 @@ class AnomalibEngine(LightningEngine):
         val_interval: int | None = None,
         logger: list[Logger] | Logger | None = None,
         callbacks: list[pl.Callback] | pl.Callback | None = None,
+        device: str | None = "auto",
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
         """Trains the given model using the provided data loaders and optimizer.
@@ -151,6 +152,7 @@ class AnomalibEngine(LightningEngine):
             deterministic: Whether to use deterministic training (optional).
             precision: The precision to use for training (optional).
             val_interval: The number of training iterations between validation checks (optional).
+            device: Supports passing different accelerator types ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
             **kwargs: Additional arguments to pass to the PyTorch Lightning Trainer.
 
         Returns:
@@ -172,6 +174,7 @@ class AnomalibEngine(LightningEngine):
             val_interval=val_interval,
             logger=logger,
             callbacks=callbacks,
+            device=device,
             **kwargs,
         )
 
@@ -180,9 +183,9 @@ class AnomalibEngine(LightningEngine):
         model: torch.nn.Module | pl.LightningModule | None = None,
         img: PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None = None,
         checkpoint: str | Path | None = None,
-        device: list | None = None,  # ["auto", "cpu", "gpu", "cuda"]
         logger: list[Logger] | Logger | None = None,
         callbacks: list[pl.Callback] | pl.Callback | None = None,
+        device: str | None = "auto",  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
         """Run inference on the given model and input data.
 
@@ -190,7 +193,7 @@ class AnomalibEngine(LightningEngine):
             model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to use for inference.
             img (Optional[Union[PREDICT_FORMAT, LightningDataModule]]): The input data to run inference on.
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
-            device (Optional[list]): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
+            device (Optional[str]): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
 
         Returns:
             list: The output of the inference.
@@ -219,7 +222,7 @@ class AnomalibEngine(LightningEngine):
             model=model,
             img=dataloader,
             checkpoint=checkpoint,
-            device=device,
             logger=logger,
             callbacks=callbacks,
+            device=device,
         )

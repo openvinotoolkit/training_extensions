@@ -165,6 +165,17 @@ class LightningEngine(Engine):
                 state_dict = state_dict["state_dict"]
             model.load_state_dict(state_dict, strict=False)
 
+    def _set_device(self, device: str | None = None) -> None:
+        # Set accelerator
+        accelerator = self.trainer_config.pop("accelerator", "auto")
+        if device is not None:
+            self.trainer_config["accelerator"] = device
+        else:
+            self.trainer_config["accelerator"] = accelerator
+
+        # Set number of devices
+        self.trainer_config["devices"] = self.trainer_config.get("devices", 1)
+
     def train(
         self,
         model: torch.nn.Module | pl.LightningModule,
@@ -181,6 +192,7 @@ class LightningEngine(Engine):
         val_interval: int | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
+        device: str | None = "auto",
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
         """Train the given model using the provided data loaders and optimizer.
@@ -201,6 +213,8 @@ class LightningEngine(Engine):
             val_interval (Optional[int], optional): The interval at which to run validation. Defaults to None.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in train.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in train.
+            device (str | None, optional): Supports passing different accelerator types
+                ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
             **kwargs: Additional arguments to pass to the Trainer constructor.
 
         Returns:
@@ -219,11 +233,11 @@ class LightningEngine(Engine):
         update_check = self._update_config(func_args=train_args, **kwargs)
         datamodule = self.trainer_config.pop("datamodule", None)
 
-        mode = "train_val" if val_dataloader is not None else "train"
-        callbacks = self._update_callbacks(callbacks=callbacks, mode=mode)
-        logger = self._update_logger(logger=logger, target_path=target_path)
-
         if not hasattr(self, "trainer") or update_check:
+            self._set_device(device=device)
+            mode = "train_val" if val_dataloader is not None else "train"
+            callbacks = self._update_callbacks(callbacks=callbacks, mode=mode)
+            logger = self._update_logger(logger=logger, target_path=target_path)
             self.trainer = Trainer(
                 logger=logger,
                 callbacks=callbacks,
@@ -256,6 +270,7 @@ class LightningEngine(Engine):
         precision: _PRECISION_INPUT | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
+        device: str | None = "auto",
         **kwargs,
     ) -> dict:
         """Run validation on the given model using the provided validation dataloader and checkpoint.
@@ -269,6 +284,8 @@ class LightningEngine(Engine):
             precision (Optional[_PRECISION_INPUT]): The precision to use for validation.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in validate.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in validate.
+            device (str | None, optional): Supports passing different accelerator types
+                ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
             **kwargs: Additional keyword arguments to pass to the method.
 
         Returns:
@@ -282,10 +299,10 @@ class LightningEngine(Engine):
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint")
 
-        callbacks = self._update_callbacks(callbacks=callbacks)
-        logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_val")
-
-        if not hasattr(self, "trainer") or update_check:
+        if not hasattr(self, "trainer") or update_check or device:
+            self._set_device(device=device)
+            callbacks = self._update_callbacks(callbacks=callbacks)
+            logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_val")
             self.trainer = Trainer(
                 logger=logger,
                 callbacks=callbacks,
@@ -309,6 +326,7 @@ class LightningEngine(Engine):
         precision: _PRECISION_INPUT | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
+        device: str | None = "auto",
         **kwargs,
     ) -> dict:
         """Test the given model on the provided test dataloader.
@@ -322,25 +340,28 @@ class LightningEngine(Engine):
             precision (Optional[_PRECISION_INPUT]): The precision to use for testing.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in test.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in test.
+            device (str | None, optional): Supports passing different accelerator types
+                ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
             **kwargs: Additional keyword arguments to pass to the method.
 
         Returns:
             dict: The test results as a dictionary.
         """
-        _ = self._update_config(func_args={"precision": precision}, **kwargs)
+        update_check = self._update_config(func_args={"precision": precision}, **kwargs)
         if model is None:
             model = self.latest_model.get("model", None)
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
 
-        callbacks = self._update_callbacks(callbacks=callbacks)
-        logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_test")
-
-        self.trainer = Trainer(
-            logger=logger,
-            callbacks=callbacks,
-            **self.trainer_config,
-        )
+        if not hasattr(self, "trainer") or update_check:
+            self._set_device(device=device)
+            callbacks = self._update_callbacks(callbacks=callbacks)
+            logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_test")
+            self.trainer = Trainer(
+                logger=logger,
+                callbacks=callbacks,
+                **self.trainer_config,
+            )
 
         if model is not None and checkpoint is not None:
             self._load_checkpoint(model, checkpoint)
@@ -354,9 +375,9 @@ class LightningEngine(Engine):
         model: torch.nn.Module | pl.LightningModule | None = None,
         img: PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None = None,
         checkpoint: str | Path | None = None,
-        device: list | None = None,  # ["auto", "cpu", "gpu", "cuda"]
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
+        device: str | None = "auto",  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
         """Run inference on the given model and input data.
 
@@ -364,9 +385,10 @@ class LightningEngine(Engine):
             model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to use for inference.
             img (Optional[Union[PREDICT_FORMAT, LightningDataModule]]): The input data to run inference on.
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
-            device (Optional[list]): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in prediction.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in prediction.
+            device (str | None, optional): Supports passing different accelerator types
+                ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
 
         Returns:
             list: The output of the inference.
@@ -375,22 +397,21 @@ class LightningEngine(Engine):
             model = self.latest_model.get("model", None)
         if checkpoint is None:
             checkpoint = self.latest_model.get("checkpoint", None)
-        if device is None:
-            device = self.trainer_config.pop("device", None)
 
-        callbacks = self._update_callbacks(callbacks=callbacks, mode="predict")
-        logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_predict")
-
-        trainer = Trainer(
-            logger=logger,
-            callbacks=callbacks,
-            **self.trainer_config,
-        )
+        if not hasattr(self, "trainer"):
+            self._set_device(device=device)
+            callbacks = self._update_callbacks(callbacks=callbacks, mode="predict")
+            logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_predict")
+            self.trainer = Trainer(
+                logger=logger,
+                callbacks=callbacks,
+                **self.trainer_config,
+            )
 
         if model is not None and checkpoint is not None:
             self._load_checkpoint(model, checkpoint)
         # Lightning Inferencer
-        return trainer.predict(
+        return self.trainer.predict(
             model=model,
             dataloaders=[img],
         )
@@ -411,8 +432,9 @@ class LightningEngine(Engine):
             checkpoint (Optional[Union[str, Path]]): The checkpoint to use for exporting the model.
             precision (Optional[_PRECISION_INPUT]): The precision to use for exporting the model.
             export_type (str): The type of export to perform. Can be "ONNX" or "OPENVINO".
-            device (Optional[str]): The device to use for exporting the model.
             input_shape (Optional[Tuple[int, int]]): The input shape to use for exporting the model.
+            device (str | None, optional): Supports passing different accelerator types
+                ("cpu", "gpu", "tpu", "ipu", "hpu", "mps")
 
         Returns:
             dict: A dictionary containing the exported model(s).
@@ -425,7 +447,7 @@ class LightningEngine(Engine):
             height, width = input_shape
 
         # Set device
-        if device is None:
+        if device is None or device == "auto":
             device = getattr(model, "device", None)
 
         export_dir = self.work_dir / f"{self.timestamp}_export"

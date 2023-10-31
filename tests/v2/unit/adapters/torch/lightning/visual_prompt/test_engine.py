@@ -10,7 +10,7 @@ from otx.v2.adapters.torch.lightning.visual_prompt.engine import VisualPromptEng
 from pytest_mock.plugin import MockerFixture
 
 
-class TestMMPTEngine:
+class TestVisualPromptEngine:
     def test_init(self, tmp_dir_path: Path) -> None:
         engine = VisualPromptEngine(work_dir=tmp_dir_path)
         assert engine.work_dir == tmp_dir_path
@@ -78,7 +78,7 @@ class TestMMPTEngine:
             model=mock_model,
             img=[mock_dataloader],
             checkpoint = None,
-            device=None,
+            device="auto",
             logger=False,
             callbacks=None,
         )
@@ -102,7 +102,7 @@ class TestMMPTEngine:
             model=mock_model,
             img=mock_torch_dataloader.return_value,
             checkpoint =tmp_dir_path / "weight.pth",
-            device=None,
+            device="auto",
             logger=False,
             callbacks=None,
         )
