@@ -195,7 +195,7 @@ class HPUDataParallel(MMDataParallel):
             if isinstance(x, dict):
                 for k in x:
                     if isinstance(x[k], torch.Tensor):
-                        x[k] = x[k].to("hpu")
+                        x[k] = x[k].to(f"hpu:{device_ids[0]}")
                     elif isinstance(x[k], list):
                         for i, item in enumerate(x[k]):
                             if isinstance(item, torch.Tensor):
