@@ -13,6 +13,7 @@ from mmcls.utils import get_root_logger, wrap_distributed_model, wrap_non_distri
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
+from otx.algorithms.classification.adapters.mmcls.optimizer.hpu_optimizers import HABANA_OPTIMIZERS
 
 
 def train_model(model, dataset, cfg, distributed=False, validate=False, timestamp=None, device=None, meta=None):
@@ -86,9 +87,7 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
 
     # build runner
     if cfg.device == "hpu":
-        from otx.algorithms.classification.adapters.mmcls.optimizer.hpu_optimizers import register_habana_optimizers
-        habana_optimizers = register_habana_optimizers()
-        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in habana_optimizers:
+        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in HABANA_OPTIMIZERS:
             cfg.optimizer["type"] = new_type
 
     optimizer = build_optimizer(model, cfg.optimizer)

@@ -18,7 +18,7 @@ from mmseg.utils import build_ddp, find_latest_checkpoint, get_root_logger
 from mmseg.utils.util_distribution import build_dp, dp_factory
 
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
-from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import register_habana_optimizers
+from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 
 dp_factory["xpu"] = XPUDataParallel
 dp_factory["hpu"] = HPUDataParallel
@@ -78,8 +78,7 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
 
     # build runner
     if cfg.device == "hpu":
-        habana_optimizers = register_habana_optimizers()
-        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in habana_optimizers:
+        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in HABANA_OPTIMIZERS:
             cfg.optimizer["type"] = new_type
 
     optimizer = build_optimizer(model, cfg.optimizer)
