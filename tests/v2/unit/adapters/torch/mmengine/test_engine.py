@@ -82,14 +82,14 @@ class TestMMXEngine:
         assert "val_cfg" in engine.config
         assert "val_evaluator" in engine.config
         assert engine.config["val_evaluator"] is not None
-        assert "test_cfg" in engine.config
-        assert "test_evaluator" in engine.config
-        assert engine.config["test_evaluator"] is not None
 
         # Test with test_dataloader argument
         test_dataloader = mocker.Mock()
         engine._update_config({"test_dataloader": test_dataloader})
         assert engine.config["test_dataloader"] == test_dataloader
+        assert "test_cfg" in engine.config
+        assert "test_evaluator" in engine.config
+        assert engine.config["test_evaluator"] is not None
 
         # Test with param_scheduler argument
         param_scheduler = {"foo": "bar"}
