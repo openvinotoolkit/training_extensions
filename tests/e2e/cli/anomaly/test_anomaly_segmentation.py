@@ -58,12 +58,12 @@ class TestToolsAnomalySegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=False)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
-        otx_export_testing(template, tmp_dir_path)
+        otx_export_testing(template, tmp_dir_path, check_ir_meta=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

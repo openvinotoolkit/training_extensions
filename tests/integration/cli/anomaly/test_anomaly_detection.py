@@ -11,6 +11,7 @@ from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 from tests.test_suite.run_test_command import (
+    generate_model_template_testing,
     nncf_optimize_testing,
     otx_deploy_openvino_testing,
     otx_eval_deployment_testing,
@@ -18,7 +19,6 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
-    generate_model_template_testing,
 )
 
 args = {
@@ -42,7 +42,7 @@ class TestToolsAnomalyDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=False)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args, deterministic=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -57,7 +57,7 @@ class TestToolsAnomalyDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export_onnx(self, template, tmp_dir_path):
-        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True)
+        otx_export_testing(template, tmp_dir_path, half_precision=False, is_onnx=True, check_ir_meta=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

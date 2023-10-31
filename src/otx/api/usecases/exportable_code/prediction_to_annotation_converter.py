@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import cv2
 import numpy as np
 from openvino.model_api.models import utils
+from openvino.model_api.models.utils import AnomalyResult
 
 from otx.api.entities.annotation import (
     Annotation,
@@ -20,10 +21,9 @@ from otx.api.entities.id import ID
 from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.ellipse import Ellipse
+from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 from otx.api.utils.time_utils import now
@@ -321,7 +321,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
 
-    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: AnomalyResult, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
@@ -331,15 +331,14 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
-        pred_label = predictions >= metadata.get("threshold", 0.5)
-
-        label = self.anomalous_label if pred_label else self.normal_label
-        probability = (1 - predictions) if predictions < 0.5 else predictions
+        assert predictions.pred_score is not None
+        assert predictions.pred_label is not None
+        label = self.anomalous_label if predictions.pred_label == "Anomaly" else self.normal_label
 
         annotations = [
             Annotation(
                 Rectangle.generate_full_box(),
-                labels=[ScoredLabel(label=label, probability=float(probability))],
+                labels=[ScoredLabel(label=label, probability=float(predictions.pred_score))],
             )
         ]
         return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
@@ -358,19 +357,21 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
-    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: AnomalyResult, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
-            predictions (tuple): Raw predictions from the model.
+            predictions (AnomalyResult): Raw predictions from the model.
             metadata (Dict[str, Any]): Variable containing metadata information.
 
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
-        pred_mask = predictions >= 0.5
-        mask = pred_mask.squeeze().astype(np.uint8)
-        annotations = create_annotation_from_segmentation_map(mask, predictions, self.label_map)
+        assert predictions.pred_mask is not None
+        assert predictions.anomaly_map is not None
+        annotations = create_annotation_from_segmentation_map(
+            predictions.pred_mask, predictions.anomaly_map, self.label_map
+        )
         if len(annotations) == 0:
             # TODO: add confidence to this label
             annotations = [
@@ -400,7 +401,7 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
-    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: AnomalyResult, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         Args:
@@ -410,9 +411,18 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         Returns:
             AnnotationSceneEntity: OTX annotation scene entity object.
         """
-        pred_mask = predictions >= 0.5
-        mask = pred_mask.squeeze().astype(np.uint8)
-        annotations = create_detection_annotation_from_anomaly_heatmap(mask, predictions, self.label_map)
+        assert predictions.pred_boxes is not None
+        assert predictions.pred_score is not None
+        assert predictions.pred_mask is not None
+        annotations = []
+        image_h, image_w = predictions.pred_mask.shape
+        for box in predictions.pred_boxes:
+            annotations.append(
+                Annotation(
+                    Rectangle(box[0] / image_w, box[1] / image_h, box[2] / image_w, box[3] / image_h),
+                    labels=[ScoredLabel(label=self.anomalous_label, probability=predictions.pred_score)],
+                )
+            )
         if len(annotations) == 0:
             # TODO: add confidence to this label
             annotations = [

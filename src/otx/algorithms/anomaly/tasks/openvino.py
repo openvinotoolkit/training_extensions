@@ -19,7 +19,7 @@ import json
 import os
 import random
 import tempfile
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import nncf
@@ -27,14 +27,14 @@ import numpy as np
 import openvino.runtime as ov
 from addict import Dict as ADDict
 from anomalib.data.utils.transform import get_transforms
-from anomalib.deploy import OpenVINOInferencer
 from nncf.common.quantization.structs import QuantizationPreset
 from omegaconf import OmegaConf
+from openvino.model_api.models import AnomalyDetection, AnomalyResult
 
-import otx.algorithms.anomaly.adapters.anomalib.exportable_code
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.utils import read_py_config
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
@@ -75,22 +75,23 @@ from otx.api.utils.segmentation_utils import create_annotation_from_segmentation
 logger = get_logger(__name__)
 
 
-class OTXOpenVINOAnomalyDataloader:
-    """Dataloader for loading OTX dataset into OTX OpenVINO Inferencer.
+class OTXNNCFAnomalyDataloader:
+    """Dataloader for loading OTX dataset for NNCF optimization.
 
     Args:
         dataset (DatasetEntity): OTX dataset entity
-        inferencer (OpenVINOInferencer): OpenVINO Inferencer
+        model: (AnomalyDetection) The modelAPI model used for fetching the transforms.
+        shuffle (bool, optional): Shuffle dataset. Defaults to True.
     """
 
     def __init__(
         self,
         dataset: DatasetEntity,
-        inferencer: OpenVINOInferencer,
+        model: AnomalyDetection,
         shuffle: bool = True,
     ):
         self.dataset = dataset
-        self.inferencer = inferencer
+        self.model = model
         self.shuffler = None
         if shuffle:
             self.shuffler = list(range(len(dataset)))
@@ -110,9 +111,12 @@ class OTXOpenVINOAnomalyDataloader:
 
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
-        inputs = self.inferencer.pre_process(image)
 
-        return (index, annotation), inputs
+        resized_image = self.model.resize(image, (self.model.w, self.model.h))
+        resized_image = self.model.input_transform(resized_image)
+        resized_image = self.model._change_layout(resized_image)
+
+        return (index, annotation), resized_image
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -135,7 +139,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         self.task_environment = task_environment
         self.task_type = self.task_environment.model_template.task_type
         self.config = self.get_config()
-        self.inferencer = self.load_inferencer()
+        self.inference_model = self.get_openvino_model()
 
         labels = self.task_environment.get_labels()
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
@@ -173,15 +177,13 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
-        # This always assumes that threshold is available in the task environment's model
-        meta_data = self.get_metadata()
         for idx, dataset_item in enumerate(dataset):
-            image_result = self.inferencer.predict(dataset_item.numpy, metadata=meta_data)
+            image_result: AnomalyResult = self.inference_model(dataset_item.numpy)
 
             # TODO: inferencer should return predicted label and mask
-            pred_label = image_result.pred_score >= 0.5
-            pred_mask = (image_result.anomaly_map >= 0.5).astype(np.uint8)
-            probability = image_result.pred_score if pred_label else 1 - image_result.pred_score
+            pred_label = image_result.pred_label
+            pred_mask = image_result.pred_mask
+            probability = image_result.pred_score if pred_label == "Anomaly" else 1 - image_result.pred_score
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
                 label = self.anomalous_label if image_result.pred_score >= 0.5 else self.normal_label
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
@@ -320,7 +322,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         )
 
         logger.info("Starting PTQ optimization.")
-        data_loader = OTXOpenVINOAnomalyDataloader(dataset=dataset, inferencer=self.inferencer)
+        data_loader = OTXNNCFAnomalyDataloader(dataset=dataset, model=self.inference_model)
         quantization_dataset = nncf.Dataset(data_loader, lambda data: data[1])
 
         with tempfile.TemporaryDirectory() as tempdir:
@@ -355,34 +357,105 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        output_model.set_data("metadata", self.task_environment.model.get_data("metadata"))
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
         output_model.precision = [ModelPrecision.INT8]
 
         self.task_environment.model = output_model
-        self.inferencer = self.load_inferencer()
+        self.inference_model = self.get_openvino_model()
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100, None)
         logger.info("PTQ optimization completed")
 
-    def load_inferencer(self) -> OpenVINOInferencer:
+    def get_openvino_model(self) -> AnomalyDetection:
         """Create the OpenVINO inferencer object.
 
         Returns:
-            OpenVINOInferencer object
+            AnomalyDetection model
         """
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
-        return OpenVINOInferencer(
-            path=(
-                self.task_environment.model.get_data("openvino.xml"),
-                self.task_environment.model.get_data("openvino.bin"),
-            ),
-            metadata=self.get_metadata(),
-        )
+        try:
+            model = AnomalyDetection.create_model(
+                model=self.task_environment.model.get_data("openvino.xml"),
+                weights_path=self.task_environment.model.get_data("openvino.bin"),
+            )
+        except RuntimeError as exception:
+            logger.exception(exception)
+            logger.info("Possibly a legacy model is being loaded.")
+            self._create_from_legacy()
+            model = AnomalyDetection.create_model(
+                model=self.task_environment.model.get_data("openvino.xml"),
+                weights_path=self.task_environment.model.get_data("openvino.bin"),
+            )
+
+        return model
+
+    def _create_from_legacy(self) -> None:
+        """Generates an OpenVINO model in new format from the legacy model.
+
+        TODO: This needs to be removed once all projects in Geti have been migrated to the newer version.
+
+        Args:
+            model_file (str): The XML model file.
+        """
+        extra_model_data = self._metadata_in_ir_format()
+
+        for key, value in extra_model_data.items():
+            if isinstance(value, np.ndarray):
+                extra_model_data[key] = value.tolist()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            xml_data = self.task_environment.model.get_data("openvino.xml")
+            bin_data = self.task_environment.model.get_data("openvino.bin")
+            with open(f"{temp_dir}/openvino.xml", "wb") as file:
+                file.write(xml_data)
+            with open(f"{temp_dir}/openvino.bin", "wb") as file:
+                file.write(bin_data)
+            embed_ir_model_data(f"{temp_dir}/openvino.xml", extra_model_data)
+            with open(f"{temp_dir}/openvino.xml", "rb") as file:
+                self.task_environment.model.set_data("openvino.xml", file.read())
+            with open(f"{temp_dir}/openvino.bin", "rb") as file:
+                self.task_environment.model.set_data("openvino.bin", file.read())
+
+    def _metadata_in_ir_format(self) -> Dict[Tuple[str, str], Union[str, int, float, List[Union[int, float]]]]:
+        """Return metadata in format of tuple keys that are used in IR with modelAPI."""
+        metadata = self.get_metadata()
+        extra_model_data: Dict[Tuple[str, str], Any] = {}
+        for key, value in metadata.items():
+            if key in ("transform", "min", "max"):
+                continue
+            extra_model_data[("model_info", key)] = value
+        # Add transforms
+        if "transform" in metadata:
+            for transform_dict in metadata["transform"]["transform"]["transforms"]:
+                transform = transform_dict.pop("__class_fullname__")
+                if transform == "Normalize":
+                    extra_model_data[("model_info", "mean_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["mean"]]
+                    )
+                    extra_model_data[("model_info", "scale_values")] = self._serialize_list(
+                        [x * 255.0 for x in transform_dict["std"]]
+                    )
+                elif transform == "Resize":
+                    extra_model_data[("model_info", "orig_height")] = transform_dict["height"]
+                    extra_model_data[("model_info", "orig_width")] = transform_dict["width"]
+                else:
+                    logger.warn(f"Transform {transform} is not supported currently")
+        # Since we only need the diff of max and min, we fuse the min and max into one op
+        if "min" in metadata and "max" in metadata:
+            extra_model_data[("model_info", "normalization_scale")] = metadata["max"] - metadata["min"]
+
+        extra_model_data[("model_info", "reverse_input_channels")] = False
+        extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
+        extra_model_data[("model_info", "labels")] = "Normal Anomaly"
+        return extra_model_data
+
+    def _serialize_list(self, arr: Union[Tuple, List]) -> str:
+        """Converts a list to space separated string."""
+        return " ".join(map(str, arr))
 
     @staticmethod
     def __save_weights(path: str, data: bytes) -> None:
@@ -412,18 +485,20 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot get configuration.")
 
-        configuration = {
-            "metadata": self.get_metadata(),
+        configuration: Dict[str, Any] = {
             "labels": LabelSchemaMapper.forward(self.task_environment.label_schema),
-            "threshold": 0.5,
         }
-
-        if "transforms" not in self.config.keys():
-            configuration["mean_values"] = list(np.array([0.485, 0.456, 0.406]) * 255)
-            configuration["scale_values"] = list(np.array([0.229, 0.224, 0.225]) * 255)
-        else:
-            configuration["mean_values"] = self.config.transforms.mean
-            configuration["scale_values"] = self.config.transforms.std
+        # Add new IR keys to parameters
+        for key, value in self._metadata_in_ir_format().items():
+            # since the same key is used to store label info in OTX SDK format
+            if key[1] == "labels":
+                assert isinstance(value, str)
+                configuration["modelapi_labels"] = [name for name in value.split(" ")]
+            elif key[1] in ("mean_values", "scale_values"):
+                assert isinstance(value, str)
+                configuration[key[1]] = [float(x) for x in value.split(" ")]
+            else:
+                configuration[key[1]] = value
 
         return configuration
 
@@ -446,7 +521,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
         task_type = str(self.task_type).lower()
 
-        parameters["type_of_model"] = task_type
+        parameters["type_of_model"] = "AnomalyDetection"
         parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()
         zip_buffer = io.BytesIO()
@@ -455,17 +530,6 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
             arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
-            # model_wrappers files
-            for root, _, files in os.walk(
-                os.path.dirname(otx.algorithms.anomaly.adapters.anomalib.exportable_code.__file__)
-            ):
-                if "__pycache__" in root:
-                    continue
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arch.write(
-                        file_path, os.path.join("python", "model_wrappers", file_path.split("exportable_code/")[1])
-                    )
             # other python files
             arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
