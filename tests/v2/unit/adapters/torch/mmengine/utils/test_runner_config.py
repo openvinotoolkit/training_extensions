@@ -3,7 +3,6 @@
 
 import pytest
 from otx.v2.adapters.torch.mmengine.utils.runner_config import (
-    configure_evaluator,
     update_train_config,
     update_val_test_config,
 )
@@ -78,31 +77,12 @@ def test_update_train_config_with_train_dataloader_as_dict_in_config(func_args: 
     assert updated_config["optim_wrapper"] is None
     assert updated_kwargs == {}
 
-def test_configure_evaluator_with_list_input() -> None:
-    evaluator = [
-        {"metric2": 0.8, "topk": 5},
-    ]
-    num_classes = 10
-    scope = "mmX"
-    expected_output = {"_scope_": "mmX", "metric2": 0.8, "topk": [1, 5]}
-    result = configure_evaluator(evaluator, num_classes, scope)
-    assert result[0] == expected_output
-
-    evaluator = {"metric1": 0.5, "metric2": 0.8, "topk": 5}
-    num_classes = 3
-    scope = "mmXX"
-    expected_output = {"metric1": 0.5, "metric2": 0.8, "topk": [1], "_scope_": "mmXX"}
-    assert configure_evaluator(evaluator, num_classes, scope) == expected_output
-
 
 def test_update_val_test_config(mocker: MockerFixture) -> None:
     mocker.patch("otx.v2.adapters.torch.mmengine.utils.runner_config.get_value_from_config", return_value=None)
-    mocker.patch("otx.v2.adapters.torch.mmengine.utils.runner_config.configure_evaluator", return_value=[{"type": "Accuracy"}])
     precision = "fp16"
-    num_classes = 10
-    scope = "mmX"
     mock_kwargs = {"val_dataloader": mocker.MagicMock(), "test_dataloader": mocker.MagicMock()}
-    updated_config, updated_kwargs = update_val_test_config({}, {}, precision, num_classes, scope, **mock_kwargs)
+    updated_config, updated_kwargs = update_val_test_config({}, {}, precision, **mock_kwargs)
 
     assert updated_config == {}
     assert "val_dataloader" in updated_kwargs
@@ -116,7 +96,7 @@ def test_update_val_test_config(mocker: MockerFixture) -> None:
 
     mock_kwargs = {}
     mock_config = {"val_dataloader": {}, "test_dataloader": {}}
-    updated_config, updated_kwargs = update_val_test_config({}, mock_config, precision, num_classes, scope, **mock_kwargs)
+    updated_config, updated_kwargs = update_val_test_config({}, mock_config, precision, **mock_kwargs)
 
     assert updated_kwargs == {}
     assert "val_dataloader" in updated_config

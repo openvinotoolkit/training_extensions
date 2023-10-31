@@ -79,6 +79,9 @@ class TestMMXEngine:
         val_dataloader = mocker.Mock()
         engine._update_config({"val_dataloader": val_dataloader})
         assert engine.config["val_dataloader"] == val_dataloader
+        assert "val_cfg" in engine.config
+        assert "val_evaluator" in engine.config
+        assert engine.config["val_evaluator"]
 
         # Test with test_dataloader argument
         test_dataloader = mocker.Mock()
@@ -120,6 +123,7 @@ class TestMMXEngine:
         visualizer = {"foo": "bar"}
         engine._update_config({"visualizer": visualizer})
         assert engine.config["visualizer"]["foo"] == "bar"
+
 
     def test_train(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
         mocker.patch("otx.v2.adapters.torch.mmengine.engine.Path.glob", return_value=["test1.pth"])
