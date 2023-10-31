@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Update ModelAPI configuration(<https://github.com/openvinotoolkit/training_extensions/pull/2564>)
 - Add Anomaly modelAPI changes (<https://github.com/openvinotoolkit/training_extensions/pull/2563>)
+- Fix IBLoss enablement with DeiT-Tiny when class incremental training (<https://github.com/openvinotoolkit/training_extensions/pull/2595>)
+
 
 ## \[v1.4.3\]
 
