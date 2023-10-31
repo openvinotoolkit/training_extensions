@@ -11,6 +11,15 @@ from timeit import default_timer as timer
 import pytest
 
 from otx.cli.registry import Registry
+from tests.regression.regression_command import (
+    regression_deployment_testing,
+    regression_eval_testing,
+    regression_eval_time_testing,
+    regression_nncf_eval_testing,
+    regression_openvino_testing,
+    regression_ptq_eval_testing,
+    regression_train_time_testing,
+)
 from tests.regression.regression_test_helpers import (
     ANOMALY_DATASET_CATEGORIES,
     TIME_LOG,
@@ -25,16 +34,6 @@ from tests.test_suite.run_test_command import (
     ptq_optimize_testing,
 )
 
-from tests.regression.regression_command import (
-    regression_eval_testing,
-    regression_openvino_testing,
-    regression_deployment_testing,
-    regression_nncf_eval_testing,
-    regression_ptq_eval_testing,
-    regression_train_time_testing,
-    regression_eval_time_testing,
-)
-
 
 class TestRegressionAnomalyClassification:
     # Configurations for regression test.
@@ -44,7 +43,7 @@ class TestRegressionAnomalyClassification:
     LABEL_TYPE = None
     TRAIN_PARAMS = None
 
-    SAMPLED_ANOMALY_DATASET_CATEGORIES = random.sample(ANOMALY_DATASET_CATEGORIES, 3)
+    SAMPLED_ANOMALY_DATASET_CATEGORIES = ANOMALY_DATASET_CATEGORIES
 
     templates = Registry(f"src/otx/algorithms/{REG_CATEGORY}").filter(task_type=TASK_TYPE.upper()).templates
     templates_ids = [template.model_template_id for template in templates]
@@ -66,9 +65,7 @@ class TestRegressionAnomalyClassification:
 
         yield cls.reg_cfg
 
-        print(f"\nwritting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TASK_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict(dump_path=os.path.join(cls.reg_cfg.result_dir, f"result_{cls.TASK_TYPE}.json"))
 
     def setup_method(self):
         self.performance = {}

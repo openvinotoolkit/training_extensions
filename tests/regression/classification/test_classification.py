@@ -65,9 +65,7 @@ class TestRegressionMultiClassClassification:
 
         yield cls.reg_cfg
 
-        print(f"\nwritting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
@@ -494,9 +492,7 @@ class TestRegressionMultiLabelClassification:
 
         yield cls.reg_cfg
 
-        print(f"\nwritting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
@@ -766,9 +762,7 @@ class TestRegressionHierarchicalLabelClassification:
 
         yield cls.reg_cfg
 
-        print(f"\nwritting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
@@ -977,9 +971,7 @@ class TestRegressionSupconClassification:
 
         yield cls.reg_cfg
 
-        print(f"\nwritting regression result to {cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json")
-        with open(f"{cls.reg_cfg.result_dir}/result_{cls.TRAIN_TYPE}_{cls.LABEL_TYPE}.json", "w") as result_file:
-            json.dump(cls.reg_cfg.result_dict, result_file, indent=4)
+        cls.reg_cfg.dump_result_dict()
 
     def setup_method(self):
         self.performance = {}
