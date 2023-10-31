@@ -4,8 +4,15 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+<<<<<<< HEAD
 import habana_frameworks.torch.core as htcore
 from mmcv.runner import HOOKS, OptimizerHook
+=======
+from mmcv.runner import HOOKS, OptimizerHook
+from mmcls.core import DistOptimizerHook
+import time
+import habana_frameworks.torch.core as htcore
+>>>>>>> added hpu_opt
 
 
 @HOOKS.register_module()
