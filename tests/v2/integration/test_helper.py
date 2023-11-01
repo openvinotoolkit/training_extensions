@@ -19,9 +19,9 @@ TASK_CONFIGURATION = {
         "models": ["otx_padim"],
     },
     "segmentation": {
-        "train_data_roots": "tests/assets/kvasir_36",
-        "val_data_roots": "tests/assets/kvasir_36",
-        "test_data_roots": "tests/assets/kvasir_36",
+        "train_data_roots": "tests/assets/kvasir_36/train_set",
+        "val_data_roots": "tests/assets/kvasir_36/val_set",
+        "test_data_roots": "tests/assets/kvasir_36/val_set",
         "sample": "tests/assets/kvasir_36/val_set/images/cju0t4oil7vzk099370nun5h9.png",
         "models": ["ocr_lite_hrnet_s_mod2"],
     }

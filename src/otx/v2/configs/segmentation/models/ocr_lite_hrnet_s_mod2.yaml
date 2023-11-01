@@ -1,0 +1,73 @@
+# Model Configuration
+model:
+  type: OTXEncoderDecoder
+  data_preprocessor:
+    type: SegDataPreProcessor
+    mean: [123.675, 116.28, 103.53]
+    std: [58.395, 57.12, 57.375]
+    bgr_to_rgb: true
+    pad_val: 0
+    seg_pad_val: 255
+  backbone:
+    type: LiteHRNet
+    norm_cfg:
+      type: BN
+      requires_grad: true
+    norm_eval: false
+    extra:
+      stem:
+        stem_channels: 32
+        out_channels: 32
+        expand_ratio: 1
+        strides: [2, 2]
+        extra_stride: false
+        input_norm: false
+      num_stages: 3
+      stages_spec:
+        num_modules: [2, 4, 2]
+        num_branches: [2, 3, 4]
+        num_blocks: [2, 2, 2]
+        module_type: ["LITE", "LITE", "LITE"]
+        with_fuse: [true, true, true]
+        reduce_ratios: [8, 8, 8]
+        num_channels: [[40, 80], [40, 80, 160], [40, 80, 160, 320]]
+      out_modules:
+        conv:
+          enable: false
+          channels: 320
+        position_att:
+          enable: false
+          key_channels: 128
+          value_channels: 320
+          psp_size: [1, 3, 6, 8]
+        local_att:
+          enable: false
+      out_aggregator:
+        enable: false
+      add_input: false
+  decode_head:
+    type: OTXFCNHead
+    in_channels: [40, 80, 160, 320]
+    in_index: [0, 1, 2, 3]
+    input_transform: multiple_select
+    channels: 40
+    kernel_size: 1
+    num_convs: 1
+    concat_input: false
+    dropout_ratio: -1
+    num_classes: 2
+    norm_cfg:
+      type: BN
+      requires_grad: true
+    align_corners: false
+    enable_aggregator: true
+    loss_decode:
+      type: CrossEntropyLoss
+      use_sigmoid: false
+      loss_weight: 1.0
+  train_cfg:
+    mix_loss:
+      enable: false
+      weight: 0.1
+  test_cfg:
+    mode: whole

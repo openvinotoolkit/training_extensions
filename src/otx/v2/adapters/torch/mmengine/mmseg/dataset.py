@@ -12,16 +12,12 @@ import torch
 from mmengine.dataset import default_collate, worker_init_fn
 from mmengine.dist import get_dist_info
 from mmengine.utils import digit_version
+from mmseg.registry import DATASETS
 from torch.utils.data import DataLoader as TorchDataLoader
 from torch.utils.data import Dataset as TorchDataset
 from torch.utils.data import Sampler
 
-from otx.v2.adapters.torch.mmengine.mmpretrain.modules.datasets import (
-    OTXClsDataset,
-    OTXHierarchicalClsDataset,
-    OTXMultilabelClsDataset,
-    SelfSLDataset,
-)
+from otx.v2.adapters.torch.mmengine.mmseg.modules.datasets import OTXSegDataset
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
 from otx.v2.api.core.dataset import BaseDataset
@@ -33,6 +29,7 @@ SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
 def get_default_pipeline(semisl: bool = False) -> dict | list:
+    # TODO[EUGENE]: define this
     """Returns the default pipeline for pretraining a model.
 
     Args:
@@ -79,7 +76,7 @@ class Dataset(BaseDataset):
         unlabeled_file_list: str | None = None,
         data_format: str | None = None,
     ) -> None:
-        r"""MMPretrain's Dataset class.
+        r"""MMSeg's Dataset class.
 
         Args:
             task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load.
@@ -120,19 +117,7 @@ class Dataset(BaseDataset):
 
     def _initialize(self) -> None:
         self.set_datumaro_adapters()  # Set self.dataset_entity & self.label_schema
-        self.base_dataset = self._get_sub_task_dataset()
         self.initialize = True
-
-    def _get_sub_task_dataset(self) -> TorchDataset:
-        if self.train_type == TrainType.Selfsupervised:
-            return SelfSLDataset
-        len_group = len(self.label_schema.get_groups(False))
-        len_labels = len(self.label_schema.get_labels(include_empty=False))
-        if len_group > 1:
-            if len_group == len_labels:
-                return OTXMultilabelClsDataset
-            return OTXHierarchicalClsDataset
-        return OTXClsDataset
 
     def build_dataset(
         self,
@@ -166,9 +151,9 @@ class Dataset(BaseDataset):
         # Case without config
         if config is None:
             _pipeline = pipeline if pipeline is not None else get_default_pipeline()
-            dataset = self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=_pipeline)
+            dataset = OTXSegDataset(otx_dataset=otx_dataset, labels=labels, pipeline=_pipeline)
             dataset.configs = {
-                "type": str(self.base_dataset.__qualname__),
+                "type": str(OTXSegDataset.__qualname__),
                 "data_root": getattr(self, f"{subset}_data_roots"),
                 "ann_file": getattr(self, f"{subset}_ann_files"),
                 "data_prefix": "",
@@ -196,10 +181,10 @@ class Dataset(BaseDataset):
         dataset_config["_scope_"] = "mmpretrain"
         # Valid inputs
         if not dataset_config.get("type", False):
-            dataset_config["type"] = self.base_dataset.__name__
+            dataset_config["type"] = OTXSegDataset.__name__
         if not dataset_config.get("pipeline", False):
             dataset_config["pipeline"] = get_default_pipeline()
-        dataset = mmpretrain_build_dataset(dataset_config)
+        dataset = DATASETS.build(dataset_config)
         dataset.configs = init_config
         return dataset
 

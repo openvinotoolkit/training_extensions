@@ -112,6 +112,7 @@ segmentation = [
     "einops==0.6.1",
     "ftfy==6.1.1",
     "regex==2023.10.3",
+    "scikit-image==0.21.0",
 ]
 
 [project.scripts]

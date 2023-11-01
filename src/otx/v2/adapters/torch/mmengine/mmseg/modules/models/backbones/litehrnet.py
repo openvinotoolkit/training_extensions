@@ -9,7 +9,6 @@ Modified from:
 #
 
 
-import mmcv
 import torch
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (
@@ -19,17 +18,19 @@ from mmcv.cnn import (
 )
 from mmengine.model import BaseModule, constant_init, normal_init
 from mmengine.runner import load_checkpoint
+from mmengine.utils import is_tuple_of
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
-from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
+from torch import nn
+from torch.nn import functional
+
+from otx.v2.adapters.torch.mmengine.mmseg.modules.models.utils import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
     channel_shuffle,
 )
-from torch import nn
-from torch.nn import functional
 
 
 class NeighbourSupport(nn.Module):
@@ -144,7 +145,7 @@ class CrossResolutionWeighting(nn.Module):
         if isinstance(act_cfg, dict):
             act_cfg = (act_cfg, act_cfg)
         assert len(act_cfg) == 2
-        assert mmcv.is_tuple_of(act_cfg, dict)
+        assert is_tuple_of(act_cfg, dict)
 
         self.channels = channels
         total_channel = sum(channels)
@@ -198,7 +199,7 @@ class SpatialWeighting(nn.Module):
         if isinstance(act_cfg, dict):
             act_cfg = (act_cfg, act_cfg)
         assert len(act_cfg) == 2
-        assert mmcv.is_tuple_of(act_cfg, dict)
+        assert is_tuple_of(act_cfg, dict)
 
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         self.conv1 = ConvModule(

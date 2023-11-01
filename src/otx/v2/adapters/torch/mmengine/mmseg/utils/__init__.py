@@ -1,4 +1,4 @@
-"""Adapters for OTX Common Algorithm. - mmseg.model."""
+"""OTX Adapters - mmseg.utils."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .backbones import LiteHRNet
-from .segmentors.otx_encoder_decoder import OTXEncoderDecoder
+from .data_utils import get_valid_label_mask_per_batch
 
-__all__ = ["LiteHRNet", "OTXEncoderDecoder"]
+__all__ = [
+    "get_valid_label_mask_per_batch",
+]

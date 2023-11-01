@@ -1,4 +1,4 @@
-"""OTX Algorithms - Segmentation pipelines."""
+"""Semantic segmentation heads."""
 
 # Copyright (C) 2023 Intel Corporation
 #
@@ -14,10 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .loads import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset, LoadResizeDataFromOTXDataset
+from .otx_fcn_head import OTXFCNHead
 
-__all__ = [
-    "LoadImageFromOTXDataset",
-    "LoadAnnotationFromOTXDataset",
-    "LoadResizeDataFromOTXDataset",
-]
+__all__ = ["OTXFCNHead"]
