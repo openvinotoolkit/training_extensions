@@ -359,7 +359,20 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         extra_model_data[("model_info", "reverse_input_channels")] = False
         extra_model_data[("model_info", "model_type")] = "AnomalyDetection"
-        extra_model_data[("model_info", "labels")] = "Normal Anomaly"
+
+        labels = []
+        label_ids = []
+        for label_entity in self.task_environment.label_schema.get_labels(include_empty=False):
+            label_name = label_entity.name.replace(" ", "_")
+            # There is a mismatch between labels in OTX and modelAPI
+            if label_name == "Anomalous":
+                label_name = "Anomaly"
+            labels.append(label_name)
+            label_ids.append(str(label_entity.id_))
+
+        extra_model_data[("model_info", "labels")] = " ".join(labels)
+        extra_model_data[("model_info", "label_ids")] = " ".join(label_ids)
+
         if export_type == ExportType.OPENVINO:
             embed_ir_model_data(model_file, extra_model_data)
         elif export_type == ExportType.ONNX:
