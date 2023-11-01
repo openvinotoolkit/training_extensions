@@ -25,4 +25,11 @@ TASK_CONFIGURATION = {
         "sample": "tests/assets/car_tree_bug/images/train/Slide6.PNG",
         "models": ["otx_tiny_vit"],
     },
+    "detection": {
+        "train_data_roots": "tests/assets/car_tree_bug",
+        "val_data_roots": "tests/assets/car_tree_bug",
+        "test_data_roots": "tests/assets/car_tree_bug",
+        "sample": "tests/assets/car_tree_bug/images",
+        "models": ["mobilenetv2-atss"],
+    }
 }
