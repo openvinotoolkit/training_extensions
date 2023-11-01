@@ -1,0 +1,133 @@
+# Basic Information for Config
+framework: mmaction
+data:
+  task: Action Classification
+  train_type: Incremental
+
+model:
+  name: Recognizer3D
+  head:
+    num_classes: 400
+
+train_dataloader:
+  batch_size: 10
+  num_workers: 0
+  dataset:
+    type: RawframeDataset
+    pipeline:
+    - type: SampleFrames
+      clip_len: 8
+      frame_interval: 4
+      num_clips: 1
+    - type: RawFrameDecode
+    - type: Resize
+      scale: !!python/tuple
+        - -1
+        - 256
+    - type: Flip
+      flip_ratio: 0.5
+    - type: FormatShape
+      input_format: NCTHW
+    - type: PackActionInputs
+
+val_dataloader:
+  batch_size: 1
+  num_workers: 0
+  dataset:
+    type: RawframeDataset
+    pipeline:
+    - type: SampleFrames
+      clip_len: 8
+      frame_interval: 4
+      num_clips: 1
+      test_mode: True
+    - type: RawFrameDecode
+    - type: Resize
+      scale: !!python/tuple
+        - -1
+        - 256
+    - type: CenterCrop
+      crop_size: 224
+    - type: FormatShape
+      input_format: NCTHW
+    - type: PackActionInputs
+
+test_dataloader:
+  batch_size: 1
+  num_workers: 0
+  dataset:
+    type: RawframeDataset
+    pipeline:
+    - type: SampleFrames
+      clip_len: 8
+      frame_interval: 4
+      num_clips: 1
+      test_mode: True
+    - type: RawFrameDecode
+    - type: Resize
+      scale: !!python/tuple
+        - -1
+        - 256
+    - type: CenterCrop
+      crop_size: 224
+    - type: FormatShape
+      input_format: NCTHW
+    - type: PackActionInputs
+
+# Hooks
+default_hooks:
+  logger:
+    type: LoggerHook
+    interval: 10
+  timer:
+    type: IterTimerHook
+  checkpoint:
+    type: CheckpointHook
+    interval: 1
+    max_keep_ckpts: 1
+    save_best: auto
+
+param_scheduler:
+  - type: LinearLR
+    by_epoch: true
+    begin: 0
+    end: 3
+  - type: CosineAnnealingLR
+
+# Visualizer
+visualizer:
+  type: ActionVisualizer
+  vis_backends:
+    - type: LocalVisBackend
+    - type: TensorboardVisBackend
+
+# Evaluation
+val_evaluator:
+  type: AccMetric
+  metric_list: !!python/tuple
+    - top_k_accuracy
+    - mean_class_accuracy
+
+test_evaluator:
+  type: AccMetric
+  metric_list: !!python/tuple
+    - top_k_accuracy
+    - mean_class_accuracy
+
+# Optimizer
+optim_wrapper:
+  optimizer:
+    type: AdamW
+    lr: 0.001
+    weight_decay: 0.0001
+  clip_grad:
+    max_norm: 40.0
+    norm_type: 2
+
+# OTX Training Configs
+max_epochs: 10
+max_iters: null
+val_interval: 1
+seed: 2
+deterministic: false
+precision: float32

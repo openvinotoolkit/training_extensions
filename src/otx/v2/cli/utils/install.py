@@ -33,11 +33,12 @@ MM_REQUIREMENTS = [
     "mmsegmentation",
     "mmpretrain",
     "mmdeploy",
+    "mmaction2",
 ]
 
 # NOTE: We might need to move this to a more centralized location and use it for other modules as well.
 # NOTE: In this case, requirement fileanames are to be renamed.
-SUPPORTED_TASKS = ["classification", "anomaly"]
+SUPPORTED_TASKS = ["classification", "anomaly", "action"]
 
 
 def get_requirements_from_file(filenames: str | list[str]) -> list[Requirement]:
