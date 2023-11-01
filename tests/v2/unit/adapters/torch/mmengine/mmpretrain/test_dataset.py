@@ -192,6 +192,6 @@ class TestDataset:
             pin_memory=False,
             shuffle=False,
             worker_init_fn=None,
-            drop_last=True,
+            drop_last=False,
             persistent_workers=False,
         )

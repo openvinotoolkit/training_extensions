@@ -56,7 +56,7 @@ class TorchBaseDataset(BaseDataset):
         num_workers: int | None = 0,
         shuffle: bool = True,
         pin_memory: bool = False,
-        drop_last: bool = True,
+        drop_last: bool = False,
         sampler: Sampler | (Iterable | dict) | None = None,
         persistent_workers: bool = False,
         **kwargs,
@@ -97,7 +97,18 @@ class TorchBaseDataset(BaseDataset):
             persistent_workers=persistent_workers,
             **kwargs,
         )
-        sampler_cfg = sampler if isinstance(sampler, dict) else {"type": f"{sampler.__class__.__qualname__}"}
+        sampler_cfg: dict | list | None = None
+        if isinstance(sampler, dict):
+            sampler_cfg = sampler
+        elif isinstance(sampler, Sampler):
+            sampler_class_name = getattr(sampler.__class__, '__qualname__', None)
+            sampler_cfg = {"type": sampler_class_name} if sampler_class_name else {"type": str(sampler.__class__)}
+        elif isinstance(sampler, Iterable):
+            sampler_cfg = []
+            for s in sampler:
+                sampler_class_name = getattr(s.__class__, '__qualname__', None)
+                sampler_cfg.append({"type": sampler_class_name} if sampler_class_name else {"type": str(s.__class__)})
+
         dataset_cfg = dataset.configs if hasattr(dataset, "configs") else dataset
         dataloader.configs = {
             "batch_size": batch_size,
@@ -120,7 +131,7 @@ class TorchBaseDataset(BaseDataset):
         config: str | dict | None = None,
         shuffle: bool = True,
         pin_memory: bool = False,
-        drop_last: bool = True,
+        drop_last: bool = False,
         sampler: Sampler | (Iterable | dict) | None = None,
         persistent_workers: bool = False,
         **kwargs,

@@ -73,7 +73,7 @@ class TestLightningDataset:
             num_workers=2,
             pin_memory=False,
             shuffle=False,
-            drop_last=True,
+            drop_last=False,
             persistent_workers=False,
         )
 
@@ -101,7 +101,7 @@ class TestLightningDataset:
             num_workers=2,
             shuffle=True,
             pin_memory=False,
-            drop_last=True,
+            drop_last=False,
             sampler=None,
             persistent_workers=False,
         )
