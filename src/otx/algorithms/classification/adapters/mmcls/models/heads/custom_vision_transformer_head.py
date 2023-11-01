@@ -31,7 +31,7 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
             losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         losses["loss"] = loss
         return losses
-    
+
     def forward_train(self, x, gt_label, **kwargs):
         """Forward_train fuction of CustomVisionTransformerClsHead class."""
         x = self.pre_logits(x)
