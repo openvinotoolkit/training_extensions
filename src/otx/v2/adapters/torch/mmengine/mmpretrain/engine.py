@@ -39,20 +39,20 @@ class MMPTEngine(MMXEngine):
         super().__init__(work_dir=work_dir, config=config)
         self.registry = MMPretrainRegistry()
 
-    def _update_evaluator(self, evaluator: list | dict | None, num_classes: int) -> list | dict | None:
-        if evaluator is None or not evaluator:
-            evaluator = [{"type": "Accuracy"}]
-        if isinstance(evaluator, list):
-            for metric in evaluator:
-                if isinstance(metric, dict):
-                    metric["_scope_"] = self.registry.name
-                    if "topk" in metric:
-                        metric["topk"] = [1] if num_classes < 5 else [1, 5]
-        elif isinstance(evaluator, dict):
-            evaluator["_scope_"] = self.registry.name
-            if "topk" in evaluator:
-                evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
-        return evaluator
+    def _update_eval_config(self, evaluator_config: list | dict | None, num_classes: int) -> list | dict | None:
+        if evaluator_config is None or not evaluator_config:
+            evaluator_config = [{"type": "Accuracy"}]
+        if isinstance(evaluator_config, list):
+            for metric_config in evaluator_config:
+                if isinstance(metric_config, dict):
+                    metric_config["_scope_"] = self.registry.name
+                    if "topk" in metric_config:
+                        metric_config["topk"] = [1] if num_classes < 5 else [1, 5]
+        elif isinstance(evaluator_config, dict):
+            evaluator_config["_scope_"] = self.registry.name
+            if "topk" in evaluator_config:
+                evaluator_config["topk"] = [1] if num_classes < 5 else [1, 5]
+        return evaluator_config
 
     def _update_config(self, func_args: dict, **kwargs) -> bool:
         update_check = super()._update_config(func_args, **kwargs)
@@ -66,9 +66,9 @@ class MMPTEngine(MMXEngine):
             num_classes = head.get("num_classes", -1)
         for subset in ("val", "test"):
             if f"{subset}_dataloader" in self.config and self.config[f"{subset}_dataloader"] is not None:
-                evaluator = get_value_from_config(f"{subset}_evaluator", func_args, config=self.config)
-                self.config[f"{subset}_evaluator"] = self._update_evaluator(
-                    evaluator=evaluator, num_classes=num_classes,
+                evaluator_config = get_value_from_config(f"{subset}_evaluator", func_args, config=self.config)
+                self.config[f"{subset}_evaluator"] = self._update_eval_config(
+                    evaluator_config=evaluator_config, num_classes=num_classes,
                 )
 
         return update_check
