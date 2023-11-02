@@ -14,20 +14,19 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
-from mmengine.registry import build_from_cfg
 from mmseg.datasets import BaseCDDataset
-from mmseg.registry import DATASETS, TRANSFORMS
+from mmengine.dataset import Compose
+from otx.v2.adapters.torch.mmengine.mmseg.registry import DATASETS
+from mmengine.registry import TRANSFORMS
+from otx.v2.api.entities.dataset_item import DatasetItemEntity
+from otx.v2.api.entities.datasets import DatasetEntity
+from otx.v2.api.entities.label import LabelEntity
+from otx.v2.api.entities.utils.segmentation_utils import mask_from_dataset_item
 
-from otx.api.entities.dataset_item import DatasetItemEntity
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label import LabelEntity
-from otx.api.utils.segmentation_utils import mask_from_dataset_item
 
-
-# pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 def get_annotation_mmseg_format(
     dataset_item: DatasetItemEntity,
     labels: List[LabelEntity],
@@ -45,7 +44,7 @@ def get_annotation_mmseg_format(
     gt_seg_map = mask_from_dataset_item(dataset_item, labels, use_otx_adapter)
 
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
-    ann_info = dict(gt_semantic_seg=gt_seg_map)
+    ann_info = dict(gt_seg_map=gt_seg_map)
 
     return ann_info
 
@@ -74,16 +73,12 @@ class OTXSegDataset(BaseCDDataset):
     ):
         self.otx_dataset = otx_dataset
         self.empty_label = empty_label
+        self.labels = labels
         metainfo = {"classes": [lbs.name for lbs in labels]}
         test_mode = kwargs.get("test_mode", False)
-        _pipeline = [{"type": "LoadImageFromOTXDataset"}, *pipeline]
-        pipeline_modules = []
-        for p in _pipeline:
-            if isinstance(p, dict):
-                pipeline_modules.append(build_from_cfg(p, TRANSFORMS))
-            else:
-                pipeline_modules.append(p)
-        super().__init__(metainfo=metainfo, pipeline=pipeline_modules, test_mode=test_mode)
+        super().__init__(metainfo=metainfo, pipeline=pipeline, test_mode=test_mode, lazy_init=True)
+        self.serialize_data = None  # OTX has its own data caching mechanism
+        self._fully_initialized = True
 
     def __len__(self) -> int:
         """Return the number of items in the dataset.
@@ -93,33 +88,45 @@ class OTXSegDataset(BaseCDDataset):
         """
         return len(self.otx_dataset)
 
-    def __getitem__(self, index: int) -> dict:
+    def prepare_data(self, idx: int) -> Any:
         """Get item from dataset."""
         dataset = self.otx_dataset
-        item = dataset[index]
+        item = dataset[idx]
         ignored_labels = np.array([self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
 
         data_info = dict(
             dataset_item=item,
             width=item.width,
             height=item.height,
-            index=index,
+            index=idx,
             ann_info=dict(labels=self.labels),
             ignored_labels=ignored_labels,
+            seg_fields=[],
         )
+        return self.pipeline(data_info)
 
-        return data_info
 
-    def get_ann_info(self, idx: int):
-        """This method is used for evaluation of predictions.
+@TRANSFORMS.register_module()
+class LoadAnnotationFromOTXDataset:
+    """Pipeline element that loads an annotation from a OTX Dataset on the fly.
 
-        The CustomDataset class implements a method
-        CustomDataset.evaluate, which uses the class method get_ann_info to retrieve annotations.
+    Expected entries in the 'results' dict that should be passed to this pipeline element are:
+        results['dataset_item']: dataset_item from which to load the annotation
+        results['ann_info']['label_list']: list of all labels in the project
 
-        :param idx: index of the dataset item for which to get the annotations
-        :return ann_info: dict that contains the coordinates of the bboxes and their corresponding labels
-        """
-        dataset_item = self.otx_dataset[idx]
-        ann_info = get_annotation_mmseg_format(dataset_item, self.project_labels, self.use_otx_adapter)
+    """
 
-        return ann_info
+    def __init__(self, use_otx_adapter=True):
+        self.use_otx_adapter = use_otx_adapter
+
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of LoadAnnotationFromOTXDataset."""
+        dataset_item = results.pop("dataset_item")  # Prevent unnessary deepcopy
+        labels = results["ann_info"]["labels"]
+
+        ann_info = get_annotation_mmseg_format(dataset_item, labels, self.use_otx_adapter)
+
+        results["gt_seg_map"] = ann_info["gt_seg_map"]
+        results["seg_fields"].append("gt_seg_map")
+
+        return results

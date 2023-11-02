@@ -9,6 +9,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
+from mmengine.evaluator import Evaluator
+from mmengine.hooks import Hook
+from mmengine.optim import _ParamScheduler
+from mmengine.visualization import Visualizer
+from torch.optim import Optimizer
+from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmseg.registry import MMSegmentationRegistry
@@ -37,6 +43,55 @@ class MMSegEngine(MMXEngine):
         """
         super().__init__(work_dir=work_dir, config=config)
         self.registry = MMSegmentationRegistry()
+
+    def train(
+        self,
+        model: torch.nn.Module | dict | None = None,
+        train_dataloader: DataLoader | dict | None = None,
+        val_dataloader: DataLoader | dict | None = None,
+        optimizer: dict | Optimizer | None = None,
+        checkpoint: str | Path | None = None,
+        max_iters: int | None = None,
+        max_epochs: int | None = None,
+        distributed: bool | None = None,
+        seed: int | None = None,
+        deterministic: bool | None = None,
+        precision: str | None = None,
+        val_interval: int | None = None,
+        val_evaluator: Evaluator | dict | list | None = None,
+        param_scheduler: _ParamScheduler | dict | list | None = None,
+        default_hooks: dict | None = None,
+        custom_hooks: list | dict | Hook | None = None,
+        visualizer: Visualizer | dict | None = None,
+        **kwargs,
+    ) -> dict:
+        if val_evaluator is None:
+            val_evaluator = dict(
+                iou_metrics=[
+                    "mDice",
+                ],
+                type="IoUMetric",
+            )
+        return super().train(
+            model,
+            train_dataloader,
+            val_dataloader,
+            optimizer,
+            checkpoint,
+            max_iters,
+            max_epochs,
+            distributed,
+            seed,
+            deterministic,
+            precision,
+            val_interval,
+            val_evaluator,
+            param_scheduler,
+            default_hooks,
+            custom_hooks,
+            visualizer,
+            **kwargs,
+        )
 
     def predict(
         self,
@@ -74,14 +129,13 @@ class MMSegEngine(MMXEngine):
             List[Dict]: A list of dictionaries containing the inference results.
         """
         from mmengine.model import BaseModel
-        from mmpretrain import ImageClassificationInferencer, inference_model
+        from mmseg.apis import MMSegInferencer, inference_model
 
         # Model config need data_pipeline of test_dataloader
         # Update pipelines
         if pipeline is None:
-            from otx.v2.adapters.torch.mmengine.mmpretrain.dataset import get_default_pipeline
-
-            pipeline = get_default_pipeline()
+            from otx.v2.adapters.torch.mmengine.mmseg.dataset import get_subset_pipeline
+            pipeline = get_subset_pipeline(subset="test")
         config = Config({})
         if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
             config = model._config  # noqa: SLF001
@@ -93,10 +147,11 @@ class MMSegEngine(MMXEngine):
         elif isinstance(model, torch.nn.Module):
             model._config = config  # noqa: SLF001
 
-        # Check if the model can use mmpretrain's inference api.
+        # Check if the model can use mmseg's inference api.
         if isinstance(checkpoint, Path):
             checkpoint = str(checkpoint)
         metainfo = getattr(model, "_metainfo", None)
+        # what is this for?
         if isinstance(model, BaseModel) and metainfo is not None and metainfo.results is not None:
             task = next(result.task for result in metainfo.results)
             inputs = {
@@ -111,9 +166,9 @@ class MMSegEngine(MMXEngine):
             return [inference_model(**inputs, **kwargs)]
         if task is not None and task != "Image Classification":
             raise NotImplementedError
-        inferencer = ImageClassificationInferencer(
+        inferencer = MMSegInferencer(
             model=model,
-            pretrained=checkpoint,
+            weights=checkpoint,
             device=device,
         )
 

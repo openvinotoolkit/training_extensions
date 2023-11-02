@@ -44,10 +44,9 @@ class OTXFCNHead(FCNHead):
         aggregator_merge_norm: Optional[str] = None,
         aggregator_use_concat: bool = False,
         *args,
-        **kwargs
+        **kwargs,
     ):
-        """
-        Initializes OTXFCNHead.
+        """Initializes OTXFCNHead.
 
         Args:
             enable_aggregator (bool): Whether to enable the Lite-HRNet aggregator.
@@ -105,8 +104,7 @@ class OTXFCNHead(FCNHead):
             self.init_weights()
 
     def _transform_inputs(self, inputs: torch.Tensor):
-        """
-        Transforms inputs.
+        """Transforms inputs.
 
         Args:
             inputs (torch.Tensor): Input tensor.
@@ -130,8 +128,7 @@ class OTXFCNHead(FCNHead):
         train_cfg: Dict = dict(),
         loss_only: bool = False,
     ):
-        """
-        Forward function for training.
+        """Forward function for training.
 
         Args:
             inputs (list[Tensor]): List of multi-level img features.
@@ -161,8 +158,7 @@ class OTXFCNHead(FCNHead):
         seg_label: torch.Tensor,
         valid_label_mask: Optional[torch.Tensor] = None,
     ):
-        """
-        Compute segmentation loss.
+        """Compute segmentation loss.
 
         Args:
             seg_logit (torch.Tensor): Logits tensor.
@@ -197,11 +193,19 @@ class OTXFCNHead(FCNHead):
                 valid_label_mask_cfg["valid_label_mask"] = valid_label_mask
             if loss_decode.loss_name not in loss:
                 loss[loss_decode.loss_name] = loss_decode(
-                    seg_logit, seg_label, weight=seg_weight, ignore_index=self.ignore_index, **valid_label_mask_cfg
+                    seg_logit,
+                    seg_label,
+                    weight=seg_weight,
+                    ignore_index=self.ignore_index,
+                    **valid_label_mask_cfg,
                 )
             else:
                 loss[loss_decode.loss_name] += loss_decode(
-                    seg_logit, seg_label, weight=seg_weight, ignore_index=self.ignore_index, **valid_label_mask_cfg
+                    seg_logit,
+                    seg_label,
+                    weight=seg_weight,
+                    ignore_index=self.ignore_index,
+                    **valid_label_mask_cfg,
                 )
 
         loss["acc_seg"] = accuracy(seg_logit, seg_label, ignore_index=self.ignore_index)

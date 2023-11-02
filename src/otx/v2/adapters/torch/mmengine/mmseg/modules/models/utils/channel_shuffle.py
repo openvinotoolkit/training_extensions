@@ -23,7 +23,6 @@ def channel_shuffle(x, groups):
     Returns:
         Tensor: The output tensor after channel shuffle operation.
     """
-
     batch_size, num_channels, height, width = x.size()
     assert num_channels % groups == 0, "num_channels should be divisible by groups"
 

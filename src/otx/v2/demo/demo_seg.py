@@ -18,6 +18,7 @@ dataset = Dataset(
 )
 
 tmp_dir_path = "tmp_dir_path"
+model = "ocr_lite_hrnet_s_mod2"
 
 # Setup Engine
 engine = Engine(work_dir=tmp_dir_path)
@@ -38,19 +39,19 @@ assert Path(results["checkpoint"]).exists()
 
 # Validation
 val_score = engine.validate()
-assert "accuracy/top1" in val_score
-assert val_score["accuracy/top1"] > 0.0
+assert "mDice" in val_score
+assert val_score["mDice"] > 0.0
 
 # Test
 test_score = engine.test(test_dataloader=dataset.test_dataloader())
-assert "accuracy/top1" in test_score
-assert test_score["accuracy/top1"] > 0.0
+assert "mDice" in test_score
+assert test_score["mDice"] > 0.0
 
 # Prediction with single image
 pred_result = engine.predict(
     model=results["model"],
     checkpoint=results["checkpoint"],
-    img=TASK_CONFIGURATION["classification"]["sample"],
+    img=TASK_CONFIGURATION["segmentation"]["sample"],
 )
 assert isinstance(pred_result, list)
 assert len(pred_result) == 1

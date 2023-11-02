@@ -54,7 +54,7 @@ class IterativeAggregator(nn.Module):
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
                         act_cfg=dict(type="ReLU"),
-                    )
+                    ),
                 )
 
             if i != num_branches - 1:
@@ -74,7 +74,7 @@ class IterativeAggregator(nn.Module):
                     act_cfg=dict(type="ReLU"),
                     dw_act_cfg=None,
                     pw_act_cfg=dict(type="ReLU"),
-                )
+                ),
             )
 
             if self.in_channels[i] < min_channels:
@@ -87,7 +87,7 @@ class IterativeAggregator(nn.Module):
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
                         act_cfg=dict(type="ReLU"),
-                    )
+                    ),
                 )
             else:
                 expanders.append(None)

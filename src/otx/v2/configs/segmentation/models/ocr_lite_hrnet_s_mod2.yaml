@@ -8,6 +8,7 @@ model:
     bgr_to_rgb: true
     pad_val: 0
     seg_pad_val: 255
+    size: [512, 512]
   backbone:
     type: LiteHRNet
     norm_cfg:

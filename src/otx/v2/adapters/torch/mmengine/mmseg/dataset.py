@@ -9,17 +9,16 @@ from functools import partial
 from typing import Iterable
 
 import torch
-from mmengine.dataset import default_collate, worker_init_fn
+from mmengine.dataset import pseudo_collate, worker_init_fn
 from mmengine.dist import get_dist_info
 from mmengine.utils import digit_version
-from mmseg.registry import DATASETS
+from mmseg.registry import DATA_SAMPLERS, DATASETS
 from torch.utils.data import DataLoader as TorchDataLoader
 from torch.utils.data import Dataset as TorchDataset
 from torch.utils.data import Sampler
 
 from otx.v2.adapters.torch.mmengine.mmseg.modules.datasets import OTXSegDataset
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
-from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
 from otx.v2.api.core.dataset import BaseDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
@@ -28,34 +27,27 @@ from otx.v2.api.utils.type_utils import str_to_subset_type
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_default_pipeline(semisl: bool = False) -> dict | list:
-    # TODO[EUGENE]: define this
-    """Returns the default pipeline for pretraining a model.
-
-    Args:
-        semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
-
-    Returns:
-        Union[Dict, List]: The default pipeline as a dictionary or list, depending on whether `semisl` is True or False.
-    """
-    default_pipeline = [
-        {"type": "Resize", "scale": [224, 224]},
-        {"type": "mmpretrain.PackInputs"},
-    ]
-    if semisl:
-        strong_pipeline = [
-            {"type": "OTXRandAugment", "num_aug": 8, "magnitude": 10},
+def get_subset_pipeline(subset: str) -> list:
+    if subset == "train":
+        pipeline = [
+            {"type": "LoadImageFromOTXDataset"},
+            {"type": "LoadAnnotationFromOTXDataset"},
+            {"type": "RandomResize", "scale": (544, 544), "ratio_range": (0.5, 2.0)},
+            {"type": "RandomCrop", "crop_size": (512, 512), "cat_max_ratio": 0.75},
+            {"type": "RandomFlip", "prob": 0.5, "direction": "horizontal"},
+            {"type": "PackSegInputs"},
         ]
-        return {
-            "train": default_pipeline,
-            "unlabeled": [
-                {"type": "Resize", "scale": [224, 224]},
-                {"type": "PostAug", "keys": {"img_strong": strong_pipeline}},
-                {"type": "mmpretrain.PackMultiKeyInputs", "input_key": "img", "multi_key": ["img_strong"]},
-            ],
-        }
-
-    return default_pipeline
+        return pipeline
+    elif subset == "test" or subset == "val":
+        pipeline = [
+            {"type": "LoadImageFromOTXDataset"},
+            {"type": "Resize", "scale": (544, 544)},
+            {"type": "LoadAnnotationFromOTXDataset"},
+            {"type": "PackSegInputs"},
+        ]
+        return pipeline
+    else:
+        raise NotImplementedError("Not supported subset")
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -150,7 +142,7 @@ class Dataset(BaseDataset):
             return None
         # Case without config
         if config is None:
-            _pipeline = pipeline if pipeline is not None else get_default_pipeline()
+            _pipeline = pipeline if pipeline is not None else get_subset_pipeline(subset=subset)
             dataset = OTXSegDataset(otx_dataset=otx_dataset, labels=labels, pipeline=_pipeline)
             dataset.configs = {
                 "type": str(OTXSegDataset.__qualname__),
@@ -161,6 +153,7 @@ class Dataset(BaseDataset):
             }
             return dataset
 
+        # TODO: need to figure out this part????
         # Config Setting
         if isinstance(config, str):
             _config = Config.fromfile(filename=config)
@@ -178,12 +171,13 @@ class Dataset(BaseDataset):
         dataset_config.pop("data_roots", None)
         dataset_config.pop("ann_files", None)
         dataset_config.pop("file_list", None)
+        # TODO: is it necessary for all this?
         dataset_config["_scope_"] = "mmpretrain"
         # Valid inputs
         if not dataset_config.get("type", False):
             dataset_config["type"] = OTXSegDataset.__name__
         if not dataset_config.get("pipeline", False):
-            dataset_config["pipeline"] = get_default_pipeline()
+            dataset_config["pipeline"] = get_subset_pipeline()
         dataset = DATASETS.build(dataset_config)
         dataset.configs = init_config
         return dataset
@@ -220,12 +214,19 @@ class Dataset(BaseDataset):
             return None
         rank, _ = get_dist_info()
 
-        # Sampler
-        seed = kwargs.get("seed", None)
-        if isinstance(sampler, dict):
-            pass
-        if sampler is not None:
-            shuffle = False
+        # TODO: need to rethink about the design here
+        # mmengine build dataloader in runner where we build in dataset.
+        # So, I'm basically copying things from runner.build_dataloader to here
+        # which does not make sense. why do we not use dataloader_cfg and build dataloader
+        # in runner.build_dataloader?
+        seed = kwargs.get("seed", 0)
+
+        # build sampler
+        if sampler is None:
+            sampler = DATA_SAMPLERS.build(
+                {"type": "DefaultSampler", "shuffle": shuffle},
+                default_args=dict(dataset=dataset, seed=seed),
+            )
 
         init_fn = partial(worker_init_fn, num_workers=num_workers, rank=rank, seed=seed) if seed is not None else None
         if digit_version(torch.__version__) >= digit_version("1.8.0"):
@@ -236,9 +237,8 @@ class Dataset(BaseDataset):
             batch_size=batch_size,
             sampler=sampler,
             num_workers=num_workers,
-            collate_fn=partial(default_collate),
+            collate_fn=partial(pseudo_collate),
             pin_memory=pin_memory,
-            shuffle=shuffle,
             worker_init_fn=init_fn,
             drop_last=drop_last,
             **kwargs,
@@ -249,7 +249,7 @@ class Dataset(BaseDataset):
             "batch_size": batch_size,
             "sampler": sampler_cfg,
             "num_workers": num_workers,
-            "collate_fn": {"type": "default_collate"},
+            "collate_fn": {"type": "pseudo_collate"},
             "pin_memory": pin_memory,
             "shuffle": shuffle,
             "dataset": dataset_cfg,
@@ -300,6 +300,7 @@ class Dataset(BaseDataset):
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
         """
         # Config Setting
+        # TODO: how to pass dataloader_cfg?
         if isinstance(config, str):
             _config = Config.fromfile(filename=config)
         elif isinstance(config, dict):
@@ -319,38 +320,17 @@ class Dataset(BaseDataset):
             num_workers = _config.get("num_workers", 0)
 
         # kwargs conflict
-        unlabeled_batch_size = kwargs.pop("unlabeled_batch_size", _config.get("unlabeled_batch_size", batch_size))
         subset_dataloader = self.build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
             num_workers=num_workers,
-            shuffle=shuffle,
+            shuffle=shuffle if subset == "train" else False,
             pin_memory=pin_memory,
             drop_last=drop_last,
             sampler=sampler,
             persistent_workers=persistent_workers,
             **kwargs,
         )
-        if subset == "train" and self.train_type == TrainType.Semisupervised:
-            unlabeled_pipeline = None
-            if isinstance(pipeline, dict):
-                default_pipeline = get_default_pipeline(semisl=True)
-                if isinstance(default_pipeline, dict):
-                    default_pipeline = default_pipeline.get("unlabeled", None)
-                unlabeled_pipeline = pipeline.get("unlabeled", default_pipeline)
-            unlabeled_dataset = self.build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=_config)
-            unlabeled_dataloader = self.build_dataloader(
-                dataset=unlabeled_dataset,
-                batch_size=unlabeled_batch_size,
-                num_workers=num_workers,
-                shuffle=shuffle,
-                pin_memory=pin_memory,
-                drop_last=drop_last,
-                sampler=sampler,
-                persistent_workers=persistent_workers,
-                **kwargs,
-            )
-            return ComposedDL([subset_dataloader, unlabeled_dataloader])
         return subset_dataloader
 
     @property

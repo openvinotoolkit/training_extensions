@@ -85,10 +85,10 @@ class LoadImageFromOTXDataset:
         results["filename"] = filename
         results["ori_filename"] = filename
         results["img"] = img
-        results["img_shape"] = shape
-        results["ori_shape"] = shape
+        results["img_shape"] = shape[:2]
+        results["ori_shape"] = shape[:2]
         # Set initial values for default meta_keys
-        results["pad_shape"] = shape
+        results["pad_shape"] = shape[:2]
         num_channels = 1 if len(shape) < 3 else shape[2]
         results["img_norm_cfg"] = {
             "mean": np.zeros(num_channels, dtype=np.float32),
