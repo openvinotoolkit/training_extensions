@@ -21,7 +21,7 @@ SUBSET_LIST = ["train", "val", "test"]
 
 
 @add_subset_dataloader(SUBSET_LIST)
-class TorchBaseDataset(BaseDataset):
+class BaseTorchDataset(BaseDataset):
     """A class representing a dataset for pretraining a model."""
 
     def _initialize(self) -> None:
@@ -45,6 +45,10 @@ class TorchBaseDataset(BaseDataset):
 
         Returns:
             Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
+
+        Example:
+        >>> dataset._build_dataet(subset="train")
+        torch.utils.data.Dataset()
         """
         raise NotImplementedError
 
@@ -72,10 +76,16 @@ class TorchBaseDataset(BaseDataset):
             drop_last (bool): Whether to drop the last incomplete batch.
             sampler (Optional[Union[Sampler, Iterable, Dict]]): The sampler to use for data loading.
             persistent_workers (bool): Whether to keep the worker processes alive between iterations.
-            **kwargs: Additional arguments to pass to the DataLoader constructor.
+            **kwargs: This can take more input provided by ``torch.utils.data.DataLoader`` via kwargs.
 
         Returns:
             Optional[TorchDataLoader]: The DataLoader for the given dataset.
+
+        Example:
+        >>> torch_dataset
+        torch.utils.data.Dataset()
+        >>> dataset._build_datloader(dataset=torch_dataset)
+        torch.utils.data.DataLoader()
         """
         if dataset is None:
             return None
@@ -97,27 +107,29 @@ class TorchBaseDataset(BaseDataset):
             persistent_workers=persistent_workers,
             **kwargs,
         )
-        sampler_cfg: dict | list | None = None
+        sampler_config: dict | list | None = None
         if isinstance(sampler, dict):
-            sampler_cfg = sampler
+            sampler_config = sampler
         elif isinstance(sampler, Sampler):
             sampler_class_name = getattr(sampler.__class__, '__qualname__', None)
-            sampler_cfg = {"type": sampler_class_name} if sampler_class_name else {"type": str(sampler.__class__)}
+            sampler_config = {"type": sampler_class_name} if sampler_class_name else {"type": str(sampler.__class__)}
         elif isinstance(sampler, Iterable):
-            sampler_cfg = []
+            sampler_config = []
             for s in sampler:
                 sampler_class_name = getattr(s.__class__, '__qualname__', None)
-                sampler_cfg.append({"type": sampler_class_name} if sampler_class_name else {"type": str(s.__class__)})
+                sampler_config.append(
+                    {"type": sampler_class_name} if sampler_class_name else {"type": str(s.__class__)},
+                )
 
-        dataset_cfg = dataset.configs if hasattr(dataset, "configs") else dataset
+        dataset_config  = dataset.configs if hasattr(dataset, "configs") else dataset
         dataloader.configs = {
             "batch_size": batch_size,
-            "sampler": sampler_cfg,
+            "sampler": sampler_config,
             "num_workers": num_workers,
             "pin_memory": pin_memory,
             "shuffle": shuffle,
             "persistent_workers": persistent_workers,
-            "dataset": dataset_cfg,
+            "dataset": dataset_config,
             **kwargs,
         }
         return dataloader
@@ -137,6 +149,16 @@ class TorchBaseDataset(BaseDataset):
         **kwargs,
     ) -> TorchDataLoader:
         r"""Torch Based Dataset.subset_dataloader.
+
+        This is a method named ``subset_dataloader`` within a class.
+        This method is designed to create a PyTorch DataLoader for a specific subset of a dataset.
+        The method returns a TorchDataLoader object, which is a PyTorch DataLoader configured
+        according to the provided parameters. This DataLoader can then be used to iterate over the specified subset of
+        the dataset in the specified batch size, potentially with multiple worker processes and with the data optionally
+        reshuffled at every epoch.
+        It also provides more versatility through the ``add_subset_dataloader`` decorator function.
+        This minimizes duplication of code and provides a more intuitive function.
+        Can see a detailed example of this in Example section.
 
         Args:
             subset (str): Enter an available subset of that dataset.
@@ -164,6 +186,14 @@ class TorchBaseDataset(BaseDataset):
 
         Returns:
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
+
+        Example:
+        >>> dataset.subset_dataloader(subset="train")
+        torch.utils.data.Dataloader()
+        >>> dataset.train_dataloader()
+        torch.utils.data.Dataloader()
+        >>> dataset.train_dataloader(batch_size=4)
+        torch.utils.data.Dataloader() (batch size: 4)
         """
         # Config Setting
         _config: dict = {}
@@ -183,7 +213,6 @@ class TorchBaseDataset(BaseDataset):
         if num_workers is None:
             num_workers = _config.get("num_workers", 0)
 
-        # kwargs conflict
         return self._build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,

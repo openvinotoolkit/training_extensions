@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from otx.v2.adapters.torch.dataset import TorchBaseDataset
+from otx.v2.adapters.torch.dataset import BaseTorchDataset
 from otx.v2.api.utils.decorators import add_subset_dataloader
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ SUBSET_LIST = ["train", "val", "test"]
 
 
 @add_subset_dataloader(SUBSET_LIST)
-class LightningDataset(TorchBaseDataset):
+class LightningDataset(BaseTorchDataset):
     """A class representing a dataset for Lightning."""
 
     def _initialize(self) -> None:

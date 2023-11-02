@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Iterable
 from mmengine.dataset import default_collate, worker_init_fn
 from mmengine.dist import get_dist_info
 
-from otx.v2.adapters.torch.dataset import TorchBaseDataset
+from otx.v2.adapters.torch.dataset import BaseTorchDataset
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
@@ -29,7 +29,7 @@ SUBSET_LIST = ["train", "val", "test"]
 
 
 @add_subset_dataloader(SUBSET_LIST)
-class MMXDataset(TorchBaseDataset):
+class MMXDataset(BaseTorchDataset):
     """A class representing a dataset for pretraining a model."""
 
     def __init__(
@@ -70,6 +70,10 @@ class MMXDataset(TorchBaseDataset):
             unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared.
                 Defaults to None.
             data_format (Optional[str], optional): The format of the dataset. Defaults to None.
+
+        Example:
+        >>> MMXDataset(train_data_roots="dataset/train", val_data_roots="dataset/val")
+        MMXDataset with train/val subsets
         """
         super().__init__(
             task,
@@ -148,7 +152,6 @@ class MMXDataset(TorchBaseDataset):
             _config = Config(cfg_dict=config)
         else:
             _config = config
-        # Case with Config
         dataset_config = _config.get("dataset", _config)
         init_config = dataset_config.copy()
         dataset_config["otx_dataset"] = otx_dataset
@@ -159,7 +162,7 @@ class MMXDataset(TorchBaseDataset):
         dataset_config.pop("ann_files", None)
         dataset_config.pop("file_list", None)
         dataset_config["_scope_"] = self.scope
-        # Valid inputs
+
         if not dataset_config.get("type", False):
             dataset_config["type"] = self.base_dataset.__name__
         dataset = self.dataset_registry.build(dataset_config)
@@ -231,6 +234,16 @@ class MMXDataset(TorchBaseDataset):
     ) -> TorchDataLoader:
         r"""MMEngine's Dataset.subset_dataloader.
 
+        This is a method named ``subset_dataloader`` within a class.
+        This method is designed to create a PyTorch DataLoader for a specific subset of a dataset with mmX framework.
+        The method returns a TorchDataLoader object, which is a PyTorch DataLoader configured
+        according to the provided parameters. This DataLoader can then be used to iterate over the specified subset of
+        the dataset in the specified batch size, potentially with multiple worker processes and with the data optionally
+        reshuffled at every epoch.
+        It also provides more versatility through the ``add_subset_dataloader`` decorator function.
+        This minimizes duplication of code and provides a more intuitive function.
+        Can see a detailed example of this in Example section.
+
         Args:
             subset (str): Enter an available subset of that dataset.
             pipeline (Optional[Union[list, dict]], optional):
@@ -257,6 +270,12 @@ class MMXDataset(TorchBaseDataset):
 
         Returns:
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
+
+        Example:
+        >>> dataset.subset_dataloader(subset="train")
+        torch.utils.data.Dataloader()
+        >>> dataset.train_dataloader()
+        torch.utils.data.Dataloader()
         """
         # Config Setting
         if isinstance(config, str):
