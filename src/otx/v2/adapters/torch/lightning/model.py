@@ -5,89 +5,82 @@
 
 from __future__ import annotations
 
+import fnmatch
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import torch
+from omegaconf import DictConfig, OmegaConf
 
-from otx.v2.adapters.torch.model import BaseOTXModel
+from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
-    from pytorch_lightning.trainer.connectors.accelerator_connector import (
-        _PRECISION_INPUT,
-    )
+from .modules.models import MODELS
 
+MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/lightning/models"
+MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
-class BaseOTXLightningModel(BaseOTXModel):
-    """Abstract base class for OTX Lightning models.
+def get_model(
+    model: dict | (DictConfig | str) | None = None,
+    checkpoint: str | None = None,
+    **kwargs,
+) -> torch.nn.Module:
+    """Return a torch.nn.Module object based on the provided model configuration or VisualPrompt model api.
 
-    This class defines the interface for OTX Lightning models, including the callbacks to be used during training
-    and the ability to export the model to a specified format (ONNX & OPENVINO).
+    Args:
+        model (Optional[Union[Dict[str, Any], DictConfig, str]]): The model configuration. Can be a dictionary,
+            a DictConfig object, or a path to a YAML file containing the configuration.
+        checkpoint (Optional[str]): The path to a checkpoint file to load weights from.
+        **kwargs: Additional keyword arguments to pass to the `get_model` function.
 
-    Attributes:
-        callbacks (list[Callback]): A list of callbacks to be used during training.
+    Returns:
+        torch.nn.Module: The model object.
+
     """
-    config: DictConfig
-    device: torch.device
+    kwargs = kwargs or {}
+    if isinstance(model, str):
+        if model in MODEL_CONFIGS:
+            model = MODEL_CONFIGS[model]
+        if Path(model).is_file():
+            model = OmegaConf.load(model)
+    elif isinstance(model, (dict, DictConfig)):
+        if not model.get("model", False):
+            model = DictConfig(content={"model": model})
+        if isinstance(model, dict):
+            model = OmegaConf.create(model)
+        if getattr(model.model, "name", None) in MODEL_CONFIGS:
+            model = MODEL_CONFIGS[model.model["name"]]
+            model = OmegaConf.load(model)
 
-    def export(
-        self,
-        export_dir: str | Path,
-        export_type: str = "OPENVINO",
-        precision: _PRECISION_INPUT | None = None,
-    ) -> dict:
-        """Export the model to a specified format.
+    state_dict = None
+    if checkpoint is not None:
+        model["checkpoint"] = checkpoint
+        state_dict = torch.load(checkpoint)
+        if "model" in state_dict:
+            state_dict = state_dict["model"]
+        if "state_dict" in state_dict:
+            state_dict = state_dict["state_dict"]
 
-        Args:
-            export_dir (str | Path): The directory to export the model to.
-            export_type (str, optional): The type of export to perform. Defaults to "OPENVINO".
-            precision (_PRECISION_INPUT | None, optional): The precision to use for the export. Defaults to None.
-
-        Returns:
-            dict: A dictionary containing information about the exported model.
-        """
-        Path(export_dir).mkdir(exist_ok=True, parents=True)
-
-        # Torch to onnx
-        onnx_dir = Path(export_dir) / "onnx"
-        onnx_dir.mkdir(exist_ok=True, parents=True)
-        onnx_model = str(onnx_dir / "onnx_model.onnx")
-
-        height, width = self.config.model.get("input_size", (256, 256))
-        torch.onnx.export(
-            model=self,
-            args=torch.zeros((1, 3, height, width)).to(self.device),
-            f=onnx_model,
-            opset_version=11,
+    model_class = MODELS.get(model.model.name)
+    if model_class is None:
+        msg = f"Current selected model {model.model.name} is not implemented."
+        raise NotImplementedError(
+            msg,
         )
+    return model_class(config=model, state_dict=state_dict)
 
-        results: dict = {"outputs": {}}
-        results["outputs"]["onnx"] = onnx_model
 
-        if export_type.upper() == "OPENVINO":
-            # ONNX to IR
-            from subprocess import run
-            ir_dir = Path(export_dir) / "openvino"
-            ir_dir.mkdir(exist_ok=True, parents=True)
-            optimize_command = [
-                "mo",
-                "--input_model",
-                onnx_model,
-                "--output_dir",
-                str(ir_dir),
-                "--model_name",
-                "openvino",
-            ]
-            if precision in ("16", 16, "fp16"):
-                optimize_command.append("--compress_to_fp16")
-            _ = run(args=optimize_command, check=False)
-            bin_file = Path(ir_dir) / "openvino.bin"
-            xml_file = Path(ir_dir) / "openvino.xml"
-            if bin_file.exists() and xml_file.exists():
-                results["outputs"]["bin"] = str(Path(ir_dir) / "openvino.bin")
-                results["outputs"]["xml"] = str(Path(ir_dir) / "openvino.xml")
-            else:
-                msg = "OpenVINO Export failed."
-                raise RuntimeError(msg)
-        return results
+def list_models(pattern: str | None = None) -> list[str]:
+    """Return a list of available model names.
+
+    Args:
+        pattern (Optional[str]): A pattern to filter the model names. Defaults to None.
+
+    Returns:
+        List[str]: A sorted list of available model names.
+    """
+    model_list = list(MODEL_CONFIGS.keys())
+
+    if pattern is not None:
+        # Always match keys with any postfix.
+        model_list = list(set(fnmatch.filter(model_list, pattern + "*")))
+
+    return sorted(model_list)

@@ -45,7 +45,7 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     TaskType.ANOMALY_CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
         "default_config": {
-            TrainType.Incremental: f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_default.yaml",
+            TrainType.Incremental: f"{CONFIG_ROOT}/lightning/otx_anomaly_classification_default.yaml",
         },
     },
     TaskType.ANOMALY_DETECTION: {
@@ -57,9 +57,9 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
         "default_config": {},
     },
     TaskType.VISUAL_PROMPTING: {
-        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.visual_prompt",
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning",
         "default_config": {
-            TrainType.Incremental: f"{CONFIG_ROOT}/visual_prompt/otx_visual_prompt_default.yaml",
+            TrainType.Incremental: f"{CONFIG_ROOT}/lightning/otx_visual_prompt_default.yaml",
         },
     },
 }
@@ -70,7 +70,7 @@ ADAPTER_QUICK_LINK = {
     "mmdet": "torch.mmengine.mmdet",
     "mmseg": "torch.mmengine.mmseg",
     "anomalib": "torch.lightning.anomalib",
-    "visual_prompt": "torch.lightning.visual_prompt",
+    "lightning": "torch.lightning",
 }
 
 

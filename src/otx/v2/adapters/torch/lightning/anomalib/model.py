@@ -20,13 +20,13 @@ from anomalib.utils.callbacks import (
 from omegaconf import DictConfig, OmegaConf
 
 from otx.v2.adapters.torch.lightning.anomalib.registry import AnomalibRegistry
-from otx.v2.adapters.torch.lightning.model import BaseOTXLightningModel
+from otx.v2.adapters.torch.lightning.modules.models.base_model import BaseOTXLightningModel
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 
 if TYPE_CHECKING:
     import torch
 
-MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/anomaly_classification/models"
+MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/lightning/models"
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 map_task_type = {str(task_type.name).upper(): task_type for task_type in TaskType}

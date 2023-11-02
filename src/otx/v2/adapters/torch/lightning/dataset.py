@@ -6,19 +6,21 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable
+from typing import Iterable
 
 import yaml
+from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader as TorchDataLoader
 from torch.utils.data import Dataset as TorchDataset
 from torch.utils.data import Sampler
 
+from otx.v2.adapters.torch.lightning.modules.datasets import OTXVisualPromptingDataset
+from otx.v2.adapters.torch.lightning.modules.datasets.pipelines import collate_fn
 from otx.v2.api.core.dataset import BaseDataset
+from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.decorators import add_subset_dataloader
-
-if TYPE_CHECKING:
-    from omegaconf import DictConfig
+from otx.v2.api.utils.type_utils import str_to_subset_type
 
 SUBSET_LIST = ["train", "val", "test"]
 
@@ -47,6 +49,35 @@ class LightningDataset(BaseDataset):
         Returns:
             TorchDataset | None: The built TorchDataset, or None if the dataset is empty.
         """
+        if not self.initialize:
+            self._initialize()
+
+        # NOTE: It needs to be refactored in a more general way.
+        if self.task in (TaskType.VISUAL_PROMPTING, "visual_prompting"):
+            config = OmegaConf.load(filename=config) if isinstance(config, str) else DictConfig({})
+            config = config.get("dataset", config)
+            image_size = config.get("image_size", 1024)
+            normalize = config.get("normalize", {})
+            mean = normalize.get("mean", [123.675, 116.28, 103.53])
+            std = normalize.get("std", [58.395, 57.12, 57.375])
+            offset_bbox = config.get("offset_bbox", 20)
+
+            if subset == "predict":
+                otx_dataset = self.dataset_entity
+            else:
+                otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
+            if len(otx_dataset) < 1:
+                return None
+
+            return OTXVisualPromptingDataset(
+                dataset=otx_dataset,
+                image_size=image_size,
+                mean=mean,
+                std=std,
+                offset_bbox=offset_bbox,
+                pipeline=pipeline,
+            )
+        raise NotImplementedError
 
     def build_dataloader(
         self,
@@ -84,11 +115,13 @@ class LightningDataset(BaseDataset):
             shuffle = False
 
         # Currently, copy from mm's
+        input_collate_fn = kwargs.pop("collate_fn", collate_fn)
         return TorchDataLoader(
             dataset,
             batch_size=batch_size,
             sampler=sampler,
             num_workers=num_workers,
+            collate_fn=input_collate_fn,
             pin_memory=pin_memory,
             shuffle=shuffle,
             drop_last=drop_last,

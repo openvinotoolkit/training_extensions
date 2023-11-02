@@ -3,7 +3,7 @@
 
 
 import torch
-from otx.v2.adapters.torch.lightning.visual_prompt import Dataset, get_model, list_models
+from otx.v2.adapters.torch.lightning import Dataset, get_model, list_models
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
@@ -21,10 +21,10 @@ def test_model_api() -> None:
     """
     models = list_models()
     assert len(models) > 0
-    otx_models = list_models("otx*")
+    otx_models = list_models("otx_sam*")
     assert len(otx_models) > 0
 
-    build_model = get_model(models[0])
+    build_model = get_model(otx_models[0])
     assert isinstance(build_model, torch.nn.Module)
     otx_model = get_model(otx_models[0])
     assert isinstance(otx_model, torch.nn.Module)
@@ -41,6 +41,7 @@ def test_dataset_api() -> None:
         None
     """
     dataset = Dataset(
+        task="visual_prompting",
         train_data_roots=TASK_CONFIGURATION["visual_prompting"]["train_data_roots"],
         val_data_roots=TASK_CONFIGURATION["visual_prompting"]["val_data_roots"],
         test_data_roots=TASK_CONFIGURATION["visual_prompting"]["test_data_roots"],

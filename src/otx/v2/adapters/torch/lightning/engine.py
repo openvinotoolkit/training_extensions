@@ -17,8 +17,9 @@ from omegaconf import DictConfig
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import CSVLogger
 from torch.optim import Optimizer
+from torch.utils.data import DataLoader
 
-from otx.v2.adapters.torch.lightning.model import BaseOTXLightningModel
+from otx.v2.adapters.torch.lightning.modules.models.base_model import BaseOTXLightningModel
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.importing import get_all_args, get_default_args
@@ -32,7 +33,6 @@ if TYPE_CHECKING:
         _PRECISION_INPUT,
     )
     from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-    from torch.utils.data import DataLoader
 
 PREDICT_FORMAT = Union[str, Path, np.ndarray]
 
@@ -44,7 +44,7 @@ class LightningEngine(Engine):
         self,
         work_dir: str | Path | None = None,
         config: str | dict | None = None,
-        task: str = "classification",
+        task: str = "visual_prompting",     # ["visual_prompting", "anomaly_classification"]
     ) -> None:
         """Initialize the Lightning engine.
 
@@ -389,6 +389,18 @@ class LightningEngine(Engine):
         Returns:
             list: The output of the inference.
         """
+        dataloader = None
+        # NOTE: It needs to be refactored in a more general way.
+        if self.task.lower() == "visual_prompting" and isinstance(img, (str, Path)):
+            from .modules.datasets.dataset import VisualPromptInferenceDataset
+
+            dataset_config = self.config.get("dataset", {})
+            image_size = dataset_config.get("image_size", 1024)
+            dataset = VisualPromptInferenceDataset(path=img, image_size=image_size)
+            dataloader = DataLoader(dataset)
+        if dataloader is None:
+            dataloader = [img]
+
         callbacks = callbacks if callbacks is not None else []
         if model is None:
             model = self.latest_model.get("model", None)
@@ -410,7 +422,7 @@ class LightningEngine(Engine):
         # Lightning Inferencer
         return self.trainer.predict(
             model=model,
-            dataloaders=[img],
+            dataloaders=dataloader,
             ckpt_path=checkpoint,
         )
 
