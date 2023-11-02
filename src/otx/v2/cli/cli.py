@@ -349,6 +349,7 @@ class OTXCLIv2:
             raise TypeError(msg)
         self.model = self.auto_runner.get_model(model={**model_cfg}, num_classes=num_classes)
         # For prediction class
+        # NOTE: We'll need to move this somewhere other than here in the next phase.
         if num_classes is not None and "num_classes" in model_cfg.get("head", {}):
             model_cfg["head"]["num_classes"] = num_classes
         workspace_config["model"] = {**model_cfg}
