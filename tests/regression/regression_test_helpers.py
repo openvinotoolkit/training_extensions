@@ -79,11 +79,12 @@ class RegressionTestConfig(object):
         self.otx_dir = otx_dir
 
         self._result_dict = {}
-        results_prefix = kwargs.get("results_prefix", "")
-        if len(results_prefix) > 0:
-            results_prefix = results_prefix + "_"
         results_root = kwargs.get("results_root", "/tmp/reg_test_results")
-        self.result_dir = os.path.join(results_root, "reg_test_results", f"{results_prefix}{task_type}")
+        if task_type.startswith("action_"):
+            task_type = "action"
+        elif task_type.startswith("anomaly_"):
+            task_type = "anomaly"
+        self.result_dir = os.path.join(results_root, "reg_test_results", f"{task_type}")
         Path(self.result_dir).mkdir(parents=True, exist_ok=True)
 
         self.config_dict = self.load_config()

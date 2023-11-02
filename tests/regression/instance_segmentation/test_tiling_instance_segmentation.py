@@ -65,7 +65,6 @@ class TestRegressionTilingInstanceSegmentation:
             cls.LABEL_TYPE,
             os.getcwd(),
             train_params=cls.TRAIN_PARAMS,
-            results_prefix="tiling",
             results_root=results_root,
         )
 
