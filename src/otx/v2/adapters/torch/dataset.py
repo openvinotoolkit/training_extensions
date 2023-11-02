@@ -28,7 +28,7 @@ class TorchBaseDataset(BaseDataset):
         self.set_datumaro_adapters()  # Set self.dataset_entity & self.label_schema
         self.initialize = True
 
-    def build_dataset(
+    def _build_dataset(
         self,
         subset: str,
         pipeline: list | dict | None = None,
@@ -49,7 +49,7 @@ class TorchBaseDataset(BaseDataset):
         raise NotImplementedError
 
 
-    def build_dataloader(
+    def _build_dataloader(
         self,
         dataset: TorchDataset | None,
         batch_size: int | None = 2,
@@ -177,14 +177,14 @@ class TorchBaseDataset(BaseDataset):
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=_config)
+        subset_dataset = self._build_dataset(subset=subset, pipeline=subset_pipeline, config=_config)
         if batch_size is None:
             batch_size = _config.get("batch_size", 1)
         if num_workers is None:
             num_workers = _config.get("num_workers", 0)
 
         # kwargs conflict
-        return self.build_dataloader(
+        return self._build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
             num_workers=num_workers,

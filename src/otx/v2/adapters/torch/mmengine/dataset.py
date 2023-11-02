@@ -100,7 +100,7 @@ class MMXDataset(TorchBaseDataset):
         """
         raise NotImplementedError
 
-    def build_dataset(
+    def _build_dataset(
         self,
         subset: str,
         pipeline: list | dict | None = None,
@@ -166,7 +166,7 @@ class MMXDataset(TorchBaseDataset):
         dataset.configs = init_config
         return dataset
 
-    def build_dataloader(
+    def _build_dataloader(
         self,
         dataset: TorchDataset | None,
         batch_size: int | None = 2,
@@ -203,7 +203,7 @@ class MMXDataset(TorchBaseDataset):
         kwargs["worker_init_fn"] = init_fn
         kwargs["collate_fn"] = partial(default_collate)
 
-        return super().build_dataloader(
+        return super()._build_dataloader(
             dataset,
             batch_size=batch_size,
             sampler=sampler,
@@ -271,7 +271,7 @@ class MMXDataset(TorchBaseDataset):
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
+        subset_dataset = self._build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
         if batch_size is None:
             batch_size = _config.get("batch_size", 2)
         if num_workers is None:
@@ -279,7 +279,7 @@ class MMXDataset(TorchBaseDataset):
 
         # kwargs conflict
         unlabeled_batch_size = kwargs.pop("unlabeled_batch_size", _config.get("unlabeled_batch_size", batch_size))
-        subset_dataloader = self.build_dataloader(
+        subset_dataloader = self._build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
             num_workers=num_workers,
@@ -294,8 +294,8 @@ class MMXDataset(TorchBaseDataset):
             unlabeled_pipeline = None
             if isinstance(pipeline, dict):
                 unlabeled_pipeline = pipeline.get("unlabeled", None)
-            unlabeled_dataset = self.build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=_config)
-            unlabeled_dataloader = self.build_dataloader(
+            unlabeled_dataset = self._build_dataset(subset="unlabeled", pipeline=unlabeled_pipeline, config=_config)
+            unlabeled_dataloader = self._build_dataloader(
                 dataset=unlabeled_dataset,
                 batch_size=unlabeled_batch_size,
                 num_workers=num_workers,

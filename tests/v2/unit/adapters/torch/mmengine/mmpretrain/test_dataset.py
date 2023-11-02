@@ -118,7 +118,7 @@ class TestDataset:
             train_ann_files="train/ann/files",
         )
         with pytest.raises(ValueError, match="invalid is not supported subset"):
-            dataset.build_dataset(subset="invalid")
+            dataset._build_dataset(subset="invalid")
         mock_initialize.assert_called_once()
 
         mock_label_schema = mocker.MagicMock()
@@ -129,7 +129,7 @@ class TestDataset:
         mock_dataset_entity = mocker.MagicMock()
         mock_dataset_entity.get_subset.return_value = []
         dataset.dataset_entity = mock_dataset_entity
-        result = dataset.build_dataset(subset="train")
+        result = dataset._build_dataset(subset="train")
         assert result is None
         mock_dataset_entity.get_subset.assert_called_once_with(Subset.TRAINING)
         mock_label_schema.get_labels.assert_called_once_with(include_empty=False)
@@ -144,7 +144,7 @@ class TestDataset:
         mock_base_dataset.return_value = mocker.MagicMock()
         dataset.base_dataset = mock_base_dataset
 
-        result = dataset.build_dataset(subset="train")
+        result = dataset._build_dataset(subset="train")
         mock_base_dataset.assert_called_once()
 
         # config is not None
@@ -154,29 +154,29 @@ class TestDataset:
         })
         mock_fromfile = mocker.patch("otx.v2.adapters.torch.mmengine.dataset.Config.fromfile")
         mock_fromfile.return_value = mock_config
-        result = dataset.build_dataset(subset="train", config="test.yaml")
+        result = dataset._build_dataset(subset="train", config="test.yaml")
         mock_fromfile.assert_called_once_with(filename="test.yaml")
         mock_registry.return_value.get.return_value.build.assert_called()
 
         # config is dict
-        result = dataset.build_dataset(subset="train", config={})
+        result = dataset._build_dataset(subset="train", config={})
         mock_registry.return_value.get.return_value.build.assert_called()
 
         # config is Config with pipeline
-        result = dataset.build_dataset(subset="train", config=Config({}), pipeline=[mocker.MagicMock()])
+        result = dataset._build_dataset(subset="train", config=Config({}), pipeline=[mocker.MagicMock()])
         mock_registry.return_value.get.return_value.build.assert_called()
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
         # dataset is None
         dataset = MMPretrainDataset()
-        assert dataset.build_dataloader(dataset=None) is None
+        assert dataset._build_dataloader(dataset=None) is None
 
         mock_get_dist_info = mocker.patch("otx.v2.adapters.torch.mmengine.dataset.get_dist_info", return_value=(1, 2))
         mock_torch_dataloader = mocker.patch("otx.v2.adapters.torch.dataset.TorchDataLoader")
         mock_patial = mocker.patch("otx.v2.adapters.torch.mmengine.dataset.partial")
         mock_patial.return_value = mocker.MagicMock()
         mock_dataset = mocker.MagicMock()
-        dataset.build_dataloader(
+        dataset._build_dataloader(
             dataset=mock_dataset,
             batch_size=4,
             sampler={},

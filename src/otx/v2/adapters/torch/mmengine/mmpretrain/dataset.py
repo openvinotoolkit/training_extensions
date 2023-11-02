@@ -123,7 +123,7 @@ class MMPretrainDataset(MMXDataset):
             return OTXHierarchicalClsDataset
         return OTXClsDataset
 
-    def build_dataset(
+    def _build_dataset(
         self,
         subset: str,
         pipeline: list | dict | None = None,
@@ -144,4 +144,4 @@ class MMPretrainDataset(MMXDataset):
         if pipeline is None:
             semisl = subset == "unlabeled"
             pipeline = get_default_pipeline(semisl=semisl)
-        return super().build_dataset(subset, pipeline, config)
+        return super()._build_dataset(subset, pipeline, config)

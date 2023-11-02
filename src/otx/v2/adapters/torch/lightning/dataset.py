@@ -26,7 +26,7 @@ class LightningDataset(TorchBaseDataset):
         self.set_datumaro_adapters()
         self.initialize = True
 
-    def build_dataset(
+    def _build_dataset(
         self,
         subset: str,
         pipeline: str | al.Compose | None = None,  # transform_config
