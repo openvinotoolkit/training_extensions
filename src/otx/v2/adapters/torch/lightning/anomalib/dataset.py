@@ -90,7 +90,7 @@ class AnomalibDataset(LightningDataset):
             data_format=data_format,
         )
 
-    def build_dataset(
+    def _build_dataset(
         self,
         subset: str,
         pipeline: dict | list | None = None,  # transform_config
@@ -122,7 +122,7 @@ class AnomalibDataset(LightningDataset):
         task_type = str_to_task_type(self.task) if isinstance(self.task, str) else self.task
         return OTXAnomalyDataset(config=config, dataset=otx_dataset, task_type=task_type)
 
-    def build_dataloader(
+    def _build_dataloader(
         self,
         dataset: OTXAnomalyDataset | None,
         batch_size: int | None = None,
@@ -152,7 +152,7 @@ class AnomalibDataset(LightningDataset):
         Returns:
             Optional[TorchDataLoader]: The PyTorch DataLoader object.
         """
-        return super().build_dataloader(
+        return super()._build_dataloader(
             dataset,
             batch_size=batch_size,
             sampler=sampler,

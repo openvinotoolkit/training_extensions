@@ -66,22 +66,22 @@ class TestLightningDataset:
         # Empty Dataset
         mock_dataset_entity.get_subset.return_value = []
         dataset.dataset_entity = mock_dataset_entity
-        assert dataset.build_dataset(subset="train") is None
+        assert dataset._build_dataset(subset="train") is None
         mock_initialize.assert_called_once_with()
 
         # Predict Dataset
         dataset.dataset_entity = mock_dataset_entity
-        dataset.build_dataset(subset="predict")
-        assert dataset.build_dataset(subset="predict") is None
+        dataset._build_dataset(subset="predict")
+        assert dataset._build_dataset(subset="predict") is None
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
         # dataset is None
         dataset = LightningDataset()
-        assert dataset.build_dataloader(dataset=None) is None
+        assert dataset._build_dataloader(dataset=None) is None
 
-        mock_torch_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.TorchDataLoader")
+        mock_torch_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.BaseTorchDataset._build_dataloader")
         mock_dataset = mocker.MagicMock()
-        dataset.build_dataloader(
+        dataset._build_dataloader(
             dataset=mock_dataset,
             batch_size=4,
             sampler={},
@@ -101,12 +101,12 @@ class TestLightningDataset:
         )
 
     def test_subset_dataloader(self, mocker: MockerFixture) -> None:
-        mocker.patch("otx.v2.adapters.torch.lightning.dataset.Path.open")
-        mocker.patch("otx.v2.adapters.torch.lightning.dataset.yaml.safe_load", return_value={"batch_size": 3, "num_workers": 2})
-        mocker.patch("otx.v2.adapters.torch.lightning.dataset.set_tuple_constructor")
+        mocker.patch("otx.v2.adapters.torch.dataset.Path.open")
+        mocker.patch("otx.v2.adapters.torch.dataset.yaml.safe_load", return_value={"batch_size": 3, "num_workers": 2})
+        mocker.patch("otx.v2.adapters.torch.dataset.set_tuple_constructor")
 
-        mock_build_dataset = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset.build_dataset")
-        mock_build_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset.build_dataloader")
+        mock_build_dataset = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset._build_dataset")
+        mock_build_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset._build_dataloader")
 
         dataset = LightningDataset()
         dataset.subset_dataloader(
@@ -203,20 +203,20 @@ class TestVisualPromptDataset:
         # Empty Dataset
         mock_dataset_entity.get_subset.return_value = []
         dataset.dataset_entity = mock_dataset_entity
-        assert dataset.build_dataset(subset="train") is None
+        assert dataset._build_dataset(subset="train") is None
         mock_initialize.assert_called_once_with()
 
         # Predict Dataset
         dataset.dataset_entity = mock_dataset_entity
-        dataset.build_dataset(subset="predict")
-        assert dataset.build_dataset(subset="predict") is None
+        dataset._build_dataset(subset="predict")
+        assert dataset._build_dataset(subset="predict") is None
 
         # Dataset
         mock_vp_dataset = mocker.patch("otx.v2.adapters.torch.lightning.dataset.OTXVisualPromptingDataset")
         mock_dataset_entity.get_subset.return_value = mocker.MagicMock()
         mock_dataset_entity.get_subset.return_value.__len__.return_value = 3
         dataset.dataset_entity = mock_dataset_entity
-        dataset.build_dataset(subset="train")
+        dataset._build_dataset(subset="train")
         mock_vp_dataset.assert_called_once_with(
             dataset=mock_dataset_entity.get_subset.return_value,
             image_size=1024,
@@ -227,14 +227,14 @@ class TestVisualPromptDataset:
         )
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
-        mock_build_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset.build_dataloader")
+        mock_build_dataloader = mocker.patch("otx.v2.adapters.torch.lightning.dataset.LightningDataset._build_dataloader")
         dataset = LightningDataset(
             train_data_roots="train/data/roots",
             train_ann_files="train/ann/files",
             task="visual_prompting",
         )
         mock_torch_dataset = mocker.MagicMock()
-        dataset.build_dataloader(
+        dataset._build_dataloader(
             dataset=mock_torch_dataset,
             batch_size=2,
             num_workers=2,
