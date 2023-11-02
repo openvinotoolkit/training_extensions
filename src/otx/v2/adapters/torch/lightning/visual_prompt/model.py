@@ -24,13 +24,13 @@ def get_model(
     checkpoint: str | None = None,
     **kwargs,
 ) -> torch.nn.Module:
-    """Return a torch.nn.Module object based on the provided model configuration or anomalib model api.
+    """Return a torch.nn.Module object based on the provided model configuration or VisualPrompt model api.
 
     Args:
         model (Optional[Union[Dict[str, Any], DictConfig, str]]): The model configuration. Can be a dictionary,
             a DictConfig object, or a path to a YAML file containing the configuration.
         checkpoint (Optional[str]): The path to a checkpoint file to load weights from.
-        **kwargs: Additional keyword arguments to pass to the `anomalib_get_model` function.
+        **kwargs: Additional keyword arguments to pass to the `get_model` function.
 
     Returns:
         torch.nn.Module: The model object.

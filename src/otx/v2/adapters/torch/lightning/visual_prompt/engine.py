@@ -1,4 +1,4 @@
-"""OTX adapters.torch.lightning.anomalib.Engine API."""
+"""OTX adapters.torch.lightning.visual_prompt.Engine API."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -38,7 +38,7 @@ PREDICT_FORMAT = Union[str, Path, np.ndarray]
 
 
 class VisualPromptEngine(LightningEngine):
-    """Anomalib engine using PyTorch and PyTorch Lightning."""
+    """VisualPrompt engine using PyTorch and PyTorch Lightning."""
 
     def __init__(
         self,
@@ -46,7 +46,7 @@ class VisualPromptEngine(LightningEngine):
         config: str | dict | None = None,
         task: str = "visual_prompting",
     ) -> None:
-        """Initialize the Anomalib engine.
+        """Initialize the VisualPrompt engine.
 
         Args:
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
@@ -61,7 +61,7 @@ class VisualPromptEngine(LightningEngine):
         logger: list[Logger] | Logger | bool | None = None,
         target_path: str | None = None,
     ) -> list[Logger] | Logger | None:
-        """Update the logger and logs them to the console or use AnomalibTensorBoardLogger.
+        """Update the logger and logs them to the console.
 
         Args:
             logger(list[Logger] | Logger | bool | None): Input of loggers
