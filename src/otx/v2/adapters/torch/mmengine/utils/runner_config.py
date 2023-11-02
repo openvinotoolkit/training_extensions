@@ -31,36 +31,6 @@ def get_value_from_config(
     return config.get(arg_key, default) if arg_config is None else arg_config
 
 
-def configure_evaluator(
-    evaluator: list | dict | None,
-    num_classes: int,
-    scope: str | None = None,
-) -> list | dict | None:
-    """Configures the evaluator by adding the scope and topk metrics.
-
-    Args:
-        evaluator (list | dict | None): The evaluator to configure.
-        num_classes (int): The number of classes.
-        scope (str | None, optional): The scope to add to the evaluator. Defaults to None.
-
-    Returns:
-        list | dict | None: The configured evaluator.
-    """
-    if isinstance(evaluator, list):
-        for metric in evaluator:
-            if isinstance(metric, dict):
-                if scope is not None:
-                    metric["_scope_"] = scope
-                if "topk" in metric:
-                    metric["topk"] = [1] if num_classes < 5 else [1, 5]
-    elif isinstance(evaluator, dict):
-        if scope is not None:
-            evaluator["_scope_"] = scope
-        if "topk" in evaluator:
-            evaluator["topk"] = [1] if num_classes < 5 else [1, 5]
-    return evaluator
-
-
 def update_train_config(func_args: dict, config: Config, precision: str | None, **kwargs) -> tuple:
     """Update the training configuration for a PyTorch model training process and mmengine.
 
@@ -112,8 +82,6 @@ def update_val_test_config(
     func_args: dict,
     config: Config,
     precision: str | None,
-    num_classes: int,
-    scope: str | None,
     **kwargs,
 ) -> tuple:
     """Update validation and test configurations with the given arguments.
@@ -122,8 +90,6 @@ def update_val_test_config(
         func_args (dict): Dictionary of function arguments.
         config (Config): Configuration object.
         precision (str | None): Precision type. Defaults to None.
-        num_classes (int): Number of classes.
-        scope (str | None): Scope. Defaults to None.
         **kwargs: Additional keyword arguments.
 
     Returns:
@@ -136,9 +102,7 @@ def update_val_test_config(
             kwargs["val_cfg"]["fp16"] = True
         # Update val_evaluator
         val_evaluator = get_value_from_config("val_evaluator", func_args, config=config)
-        if val_evaluator is None:
-            val_evaluator = [{"type": "Accuracy"}]
-        kwargs["val_evaluator"] = configure_evaluator(val_evaluator, num_classes=num_classes, scope=scope)
+        kwargs["val_evaluator"] = val_evaluator if val_evaluator is not None else {}
     elif isinstance(config.get("val_dataloader", None), dict):
         config["val_dataloader"] = None
         config["val_cfg"] = None
@@ -151,9 +115,7 @@ def update_val_test_config(
             kwargs["test_cfg"]["fp16"] = True
         # Update test_evaluator
         test_evaluator = get_value_from_config("test_evaluator", func_args, config=config)
-        if test_evaluator is None:
-            test_evaluator = config.get("val_evaluator", [{"type": "Accuracy"}])
-        kwargs["test_evaluator"] = configure_evaluator(test_evaluator, num_classes=num_classes, scope=scope)
+        kwargs["test_evaluator"] = test_evaluator if test_evaluator is not None else {}
     elif isinstance(config.get("test_dataloader", None), dict):
         config["test_dataloader"] = None
         config["test_cfg"] = None
@@ -165,8 +127,6 @@ def update_runner_config(
     func_args: dict,
     config: Config,
     precision: str | None,
-    num_classes: int,
-    scope: str | None = None,
     **kwargs,
 ) -> tuple:
     """Update the runner configuration with the given arguments.
@@ -175,8 +135,6 @@ def update_runner_config(
         func_args (dict): The function arguments.
         config (Config): The configuration object.
         precision (str | None): The precision.
-        num_classes (int): The number of classes.
-        scope (str | None): The scope. Defaults to None.
         **kwargs: Additional keyword arguments.
 
     Returns:
@@ -187,7 +145,5 @@ def update_runner_config(
         func_args=func_args,
         config=config,
         precision=precision,
-        num_classes=num_classes,
-        scope=scope,
         **kwargs,
     )
