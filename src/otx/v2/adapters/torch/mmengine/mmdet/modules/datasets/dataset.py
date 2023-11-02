@@ -22,76 +22,10 @@ import numpy as np
 from mmcv.transforms import Compose
 from mmdet.datasets import BaseDetDataset
 from mmdet.registry import DATASETS
-from mmdet.structures.mask.structures import PolygonMasks
 
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.entities.label import Domain, LabelEntity
+from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.utils.data_utils import get_old_new_img_indices
-from otx.v2.api.entities.utils.shape_factory import ShapeFactory
-
-
-# pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
-def get_annotation_mmdet_format(
-    dataset_item: DatasetItemEntity,
-    labels: list[LabelEntity],
-    domain: Domain,
-    min_size: int = -1,
-) -> dict:
-    """Function to convert a OTX annotation to mmdetection format.
-
-    This is used both in the OTXDataset class defined in
-    this file as in the custom pipeline element 'LoadAnnotationFromOTXDataset'
-
-    :param dataset_item: DatasetItem for which to get annotations
-    :param labels: List of labels that are used in the task
-    :return dict: annotation information dict in mmdet format
-    """
-    width, height = dataset_item.width, dataset_item.height
-
-    # load annotations for item
-    gt_bboxes = []
-    gt_labels = []
-    gt_polygons = []
-    gt_ann_ids = []
-
-    label_idx = {label.id: i for i, label in enumerate(labels)}
-
-    for annotation in dataset_item.get_annotations(labels=labels, include_empty=False, preserve_id=True):
-        box = ShapeFactory.shape_as_rectangle(annotation.shape)
-
-        if min(box.width * width, box.height * height) < min_size:
-            continue
-
-        class_indices = [
-            label_idx[label.id] for label in annotation.get_labels(include_empty=False) if label.domain == domain
-        ]
-
-        n = len(class_indices)
-        gt_bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
-        if domain != Domain.DETECTION:
-            polygon = ShapeFactory.shape_as_polygon(annotation.shape)
-            polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
-            gt_polygons.extend([[polygon] for _ in range(n)])
-        gt_labels.extend(class_indices)
-        item_id = getattr(dataset_item, "id_", None)
-        gt_ann_ids.append((item_id, annotation.id_))
-
-    if len(gt_bboxes) > 0:
-        ann_info = {
-            "bboxes": np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
-            "labels": np.array(gt_labels, dtype=int),
-            "masks": PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
-            "ann_ids": gt_ann_ids,
-        }
-    else:
-        ann_info = {
-            "bboxes": np.zeros((0, 4), dtype=np.float32),
-            "labels": np.array([], dtype=int),
-            "masks": np.zeros((0, 1), dtype=np.float32),
-            "ann_ids": [],
-        }
-    return ann_info
 
 
 @DATASETS.register_module()
@@ -218,16 +152,3 @@ class OTXDetDataset(BaseDetDataset):
     def __len__(self) -> int:
         """Return length of dataset."""
         return len(self.data_list)
-
-    def get_ann_info(self, idx: int) -> dict:
-        """This method is used for evaluation of predictions.
-
-        The BaseDetDataset class implements a method
-        BaseDetDataset.evaluate, which uses the class method get_ann_info to retrieve annotations.
-
-        :param idx: index of the dataset item for which to get the annotations
-        :return ann_info: dict that contains the coordinates of the bboxes and their corresponding labels
-        """
-        dataset_item = self.otx_dataset[idx]
-        labels = self.labels
-        return get_annotation_mmdet_format(dataset_item, labels, self.domain)

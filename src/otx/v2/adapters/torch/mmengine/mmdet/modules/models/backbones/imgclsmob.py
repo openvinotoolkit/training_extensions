@@ -26,7 +26,7 @@ def replace_activation(model: nn.Module, activation_cfg: dict) -> nn.Module:
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
             model._modules[name] = replace_activation(module, activation_cfg)
-        if name == "activ":
+        if "activ" in name:
             if activation_cfg["type"] == "torch_swish":
                 model._modules[name] = nn.SiLU()
             else:
@@ -39,7 +39,7 @@ def replace_norm(model: nn.Module, cfg: dict) -> nn.Module:
     for name, module in model._modules.items():
         if len(list(module.children())) > 0:
             model._modules[name] = replace_norm(module, cfg)
-        if name == "bn":
+        if "bn" in name:
             model._modules[name] = build_norm_layer(cfg, num_features=module.num_features)[1]
     return model
 

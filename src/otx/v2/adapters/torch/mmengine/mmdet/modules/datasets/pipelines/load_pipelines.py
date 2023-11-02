@@ -8,17 +8,15 @@ import copy
 from typing import Any, Callable
 
 import numpy as np
-from mmdet.datasets.transforms import Resize
 from mmdet.registry import TRANSFORMS
+from mmdet.structures.mask.structures import PolygonMasks
 
 import otx.v2.adapters.torch.mmengine.modules.pipelines.transforms.pipelines as load_image_base
-from otx.v2.adapters.torch.mmengine.mmdet.modules.datasets.dataset import (
-    get_annotation_mmdet_format,
-)
-from otx.v2.api.entities.label import Domain
+from otx.v2.api.entities.dataset_item import DatasetItemEntity
+from otx.v2.api.entities.label import Domain, LabelEntity
+from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 
 
-# pylint: disable=too-many-instance-attributes, too-many-arguments
 @TRANSFORMS.register_module()
 class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
     """Pipeline element that loads an image from a OTX Dataset on the fly."""
@@ -39,35 +37,6 @@ class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset)
         if cfg is None:
             return None
         return TRANSFORMS.build(cfg)
-
-
-@TRANSFORMS.register_module()
-class ResizeTo(Resize):
-    """Resize to specific size.
-
-    This operation works if the input is not in desired shape.
-    If it's already in the shape, it just returns input dict for efficiency.
-    """
-
-    def __init__(self, **kwargs) -> None:
-        """Initialize method.
-
-        Args:
-            kwargs: Additional kwargs for parent classes
-        """
-        super().__init__(override=True, **kwargs)  # Allow multiple calls
-
-    def __call__(self, results: dict[str, Any]) -> dict[str, Any]:
-        """Callback function of ResizeTo.
-
-        Args:
-            results: Inputs to be transformed.
-        """
-        img_shape = results.get("img_shape", (0, 0))
-        img_scale = self.img_scale[0]
-        if img_shape[0] == img_scale[0] and img_shape[1] == img_scale[1]:
-            return results
-        return super().__call__(results)
 
 
 @TRANSFORMS.register_module()
@@ -117,6 +86,72 @@ class LoadAnnotationFromOTXDataset:
         self.min_size = min_size
 
     @staticmethod
+    def _get_annotation_mmdet_format(
+        dataset_item: DatasetItemEntity,
+        labels: list[LabelEntity],
+        domain: Domain,
+        min_size: int = -1,
+    ) -> dict:
+        """Function to convert a OTX annotation to mmdetection format.
+
+        This is used both in the OTXDataset class defined in
+        this file as in the custom pipeline element 'LoadAnnotationFromOTXDataset'
+
+        Args:
+            dataset_item: DatasetItem for which to get annotations
+            labels: List of labels that are used in the task
+            domain: Domain of dataset item entity; Detection, Instance Segmentation, Rotated Detection
+            min_size: Minimum bbox or mask size for positive annotation
+        Return
+            dict: annotation information dict in mmdet format
+        """
+        width, height = dataset_item.width, dataset_item.height
+
+        # load annotations for item
+        gt_bboxes = []
+        gt_labels = []
+        gt_polygons = []
+        gt_ann_ids = []
+
+        label_idx = {label.id: i for i, label in enumerate(labels)}
+
+        for annotation in dataset_item.get_annotations(labels=labels, include_empty=False, preserve_id=True):
+            box = ShapeFactory.shape_as_rectangle(annotation.shape)
+
+            if min(box.width * width, box.height * height) < min_size:
+                continue
+
+            class_indices = [
+                label_idx[label.id] for label in annotation.get_labels(include_empty=False) if label.domain == domain
+            ]
+
+            n = len(class_indices)
+            gt_bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
+            if domain != Domain.DETECTION:
+                polygon = ShapeFactory.shape_as_polygon(annotation.shape)
+                polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
+                gt_polygons.extend([[polygon] for _ in range(n)])
+            gt_labels.extend(class_indices)
+            item_id = getattr(dataset_item, "id_", None)
+            gt_ann_ids.append((item_id, annotation.id_))
+
+        if len(gt_bboxes) > 0:
+            ann_info = {
+                "bboxes": np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
+                "labels": np.array(gt_labels, dtype=int),
+                "masks": PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
+                "ann_ids": gt_ann_ids,
+            }
+        else:
+            ann_info = {
+                "bboxes": np.zeros((0, 4), dtype=np.float32),
+                "labels": np.array([], dtype=int),
+                "masks": np.zeros((0, 1), dtype=np.float32),
+                "ann_ids": [],
+            }
+        return ann_info
+
+    @staticmethod
     def _load_bboxes(results: dict[str, Any], ann_info: dict[str, Any]) -> dict[str, Any]:
         results["bbox_fields"].append("gt_bboxes")
         results["gt_bboxes"] = copy.deepcopy(ann_info["bboxes"])
@@ -139,7 +174,7 @@ class LoadAnnotationFromOTXDataset:
         """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results.pop("dataset_item")  # Prevent unnecessary deepcopy
         label_list = results.pop("ann_info")["label_list"]
-        ann_info = get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
+        ann_info = self._get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
         if self.with_bbox:
             results = self._load_bboxes(results, ann_info)
         if self.with_label:

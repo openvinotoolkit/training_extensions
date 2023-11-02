@@ -7,12 +7,10 @@ from .load_pipelines import (
     LoadAnnotationFromOTXDataset,
     LoadImageFromOTXDataset,
     LoadResizeDataFromOTXDataset,
-    ResizeTo,
 )
 
 __all__ = [
     "LoadImageFromOTXDataset",
     "LoadAnnotationFromOTXDataset",
     "LoadResizeDataFromOTXDataset",
-    "ResizeTo",
 ]

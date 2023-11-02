@@ -113,7 +113,7 @@ class CrossSigmoidFocalLoss(nn.Module):
         reduction_override: str | None = None,
         avg_factor: int | None = None,
         use_vfl: bool = False,
-        valid_label_mask: list[torch.Tensor] | None = None,
+        valid_label_mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Forward funtion of CrossSigmoidFocalLoss.
 
@@ -124,7 +124,7 @@ class CrossSigmoidFocalLoss(nn.Module):
             reduction_override (str | None): Override for reduction
             avg_factor (int | None): Value for average the loss
             use_vfl (bool): Whether use vfl
-            valid_label_mask (list[torch.Tensor]): Mask for valid labels
+            valid_label_mask (torch.Tensor): Mask for valid labels
         """
         reduction = reduction_override if reduction_override else self.reduction
         return self.loss_weight * self.cls_criterion(
