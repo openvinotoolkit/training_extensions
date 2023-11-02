@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 import torch
-from otx.v2.adapters.torch.lightning.visual_prompt import Dataset, Engine, get_model, list_models
+from otx.v2.adapters.torch.lightning import Dataset, Engine, get_model, list_models
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
 # Test-related datasets are managed by tests.v2.integration.api.test_helper.
 PREDICTION_SAMPLE = TASK_CONFIGURATION["visual_prompting"]["sample"]
 
-MODELS: list = list_models("otx*")
+MODELS: list = list_models("otx_sam*")
 
 class TestVisaulPromptAPI:
     """
@@ -29,6 +29,7 @@ class TestVisaulPromptAPI:
                 Dataset: A Dataset object containing the paths to the training, validation, and test data.
             """
             return Dataset(
+                task="visual_prompting",
                 train_data_roots=TASK_CONFIGURATION["visual_prompting"]["train_data_roots"],
                 val_data_roots=TASK_CONFIGURATION["visual_prompting"]["val_data_roots"],
                 test_data_roots=TASK_CONFIGURATION["visual_prompting"]["test_data_roots"],
@@ -56,7 +57,7 @@ class TestVisaulPromptAPI:
             None
         """
         # Setup Engine
-        engine = Engine(work_dir=tmp_dir_path)
+        engine = Engine(work_dir=tmp_dir_path, task="visual_prompting")
         built_model = get_model(model=model)
 
         # Train (1 epochs)

@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from subprocess import run
 from typing import TYPE_CHECKING, Union
 
 import numpy as np
@@ -16,8 +15,11 @@ import yaml
 from lightning_fabric.utilities.seed import seed_everything
 from omegaconf import DictConfig
 from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import CSVLogger
 from torch.optim import Optimizer
+from torch.utils.data import DataLoader
 
+from otx.v2.adapters.torch.lightning.modules.models.base_model import BaseOTXLightningModel
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.importing import get_all_args, get_default_args
@@ -31,7 +33,6 @@ if TYPE_CHECKING:
         _PRECISION_INPUT,
     )
     from pytorch_lightning.utilities.types import EVAL_DATALOADERS
-    from torch.utils.data import DataLoader
 
 PREDICT_FORMAT = Union[str, Path, np.ndarray]
 
@@ -43,7 +44,7 @@ class LightningEngine(Engine):
         self,
         work_dir: str | Path | None = None,
         config: str | dict | None = None,
-        task: str = "classification",
+        task: str = "visual_prompting",     # ["visual_prompting", "anomaly_classification"]
     ) -> None:
         """Initialize the Lightning engine.
 
@@ -55,7 +56,7 @@ class LightningEngine(Engine):
         super().__init__(work_dir=work_dir)
         self.trainer: Trainer
         self.trainer_config: dict = {}
-        self.latest_model = {"model": None, "checkpoint": None}
+        self.latest_model : dict[str, torch.nn.Module | str | None] = {"model": None, "checkpoint": None}
         self.task = task
         self.config = self._initial_config(config)
         if hasattr(self, "work_dir"):
@@ -122,7 +123,7 @@ class LightningEngine(Engine):
 
     def _update_logger(
         self,
-        logger: list[Logger] | Logger | bool | None = None,
+        logger: list[Logger] | bool | None = None,
         target_path: str | None = None,
     ) -> list[Logger] | Logger | None:
         """Update the logger and logs them to the console and any other configured loggers.
@@ -134,21 +135,13 @@ class LightningEngine(Engine):
         Returns:
             list[Logger] | Logger | None: Updated loggers.
         """
-
-    def _update_callbacks(
-        self,
-        callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
-        mode: str | None = None,
-    ) -> list[pl.Callback] | pl.Callback | None:
-        """Update the list of callbacks to be executed during training and validation.
-
-        Args:
-            callbacks(list[pl.Callback] | pl.Callback | DictConfig | None): Input of callbacks
-            mode(bool): Current Running mode status
-
-        Returns:
-            list[pl.Callback] | pl.Callback | None: Updated callbacks.
-        """
+        self.trainer_config.pop("logger", None)
+        logger_list = [CSVLogger(save_dir=self.work_dir, name=target_path, version=self.timestamp)]
+        if isinstance(logger, list):
+            logger_list.extend(logger)
+        elif logger is False:
+            return None
+        return logger_list
 
     def _load_checkpoint(
         self,
@@ -178,7 +171,7 @@ class LightningEngine(Engine):
 
     def train(
         self,
-        model: torch.nn.Module | pl.LightningModule,
+        model: BaseOTXLightningModel | pl.LightningModule,
         train_dataloader: DataLoader | LightningDataModule,
         val_dataloader: DataLoader | None = None,
         optimizer: dict | Optimizer | None = None,
@@ -221,6 +214,7 @@ class LightningEngine(Engine):
             dict: A dictionary containing the trained model and the path to the saved checkpoint.
         """
         _ = distributed
+        callbacks = [] if callbacks is None else callbacks
         target_path = f"{self.timestamp}_train"
         train_args = {
             "max_iters": max_iters,
@@ -235,8 +229,8 @@ class LightningEngine(Engine):
 
         if not hasattr(self, "trainer") or update_check:
             self._set_device(device=device)
-            mode = "train_val" if val_dataloader is not None else "train"
-            callbacks = self._update_callbacks(callbacks=callbacks, mode=mode)
+            if hasattr(model, "callbacks"):
+                callbacks.extend(model.callbacks)
             logger = self._update_logger(logger=logger, target_path=target_path)
             self.trainer = Trainer(
                 logger=logger,
@@ -264,7 +258,7 @@ class LightningEngine(Engine):
 
     def validate(
         self,
-        model: torch.nn.Module | pl.LightningModule | None = None,
+        model: BaseOTXLightningModel | pl.LightningModule | None = None,
         val_dataloader: DataLoader | dict | None = None,
         checkpoint: str | Path | None = None,
         precision: _PRECISION_INPUT | None = None,
@@ -292,7 +286,7 @@ class LightningEngine(Engine):
             dict: The validation metric (data_class or dict).
         """
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
-
+        callbacks = callbacks if callbacks is not None else []
         datamodule = self.trainer_config.pop("datamodule", None)
         if model is None:
             model = self.latest_model.get("model")
@@ -301,7 +295,8 @@ class LightningEngine(Engine):
 
         if not hasattr(self, "trainer") or update_check:
             self._set_device(device=device)
-            callbacks = self._update_callbacks(callbacks=callbacks)
+            if model is not None and hasattr(model, "callbacks"):
+                callbacks.extend(model.callbacks)
             logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_val")
             self.trainer = Trainer(
                 logger=logger,
@@ -309,8 +304,7 @@ class LightningEngine(Engine):
                 **self.trainer_config,
             )
 
-        if model is not None and checkpoint is not None:
-            self._load_checkpoint(model, checkpoint)
+        checkpoint = str(checkpoint) if checkpoint is not None else None
         return self.trainer.validate(
             model=model,
             dataloaders=val_dataloader,
@@ -320,7 +314,7 @@ class LightningEngine(Engine):
 
     def test(
         self,
-        model: torch.nn.Module | pl.LightningModule | None = None,
+        model: BaseOTXLightningModel | pl.LightningModule | None = None,
         test_dataloader: DataLoader | None = None,
         checkpoint: str | Path | None = None,
         precision: _PRECISION_INPUT | None = None,
@@ -348,6 +342,7 @@ class LightningEngine(Engine):
             dict: The test results as a dictionary.
         """
         update_check = self._update_config(func_args={"precision": precision}, **kwargs)
+        callbacks = callbacks if callbacks is not None else []
         if model is None:
             model = self.latest_model.get("model", None)
         if checkpoint is None:
@@ -355,7 +350,8 @@ class LightningEngine(Engine):
 
         if not hasattr(self, "trainer") or update_check:
             self._set_device(device=device)
-            callbacks = self._update_callbacks(callbacks=callbacks)
+            if model is not None and hasattr(model, "callbacks"):
+                callbacks.extend(model.callbacks)
             logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_test")
             self.trainer = Trainer(
                 logger=logger,
@@ -363,36 +359,49 @@ class LightningEngine(Engine):
                 **self.trainer_config,
             )
 
-        if model is not None and checkpoint is not None:
-            self._load_checkpoint(model, checkpoint)
+        checkpoint = str(checkpoint) if checkpoint is not None else None
         return self.trainer.test(
             model=model,
             dataloaders=[test_dataloader],
+            ckpt_path=checkpoint,
         )
 
     def predict(
         self,
-        model: torch.nn.Module | pl.LightningModule | None = None,
+        model: BaseOTXLightningModel | pl.LightningModule | None = None,
         img: PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None = None,
         checkpoint: str | Path | None = None,
         logger: list[Logger] | Logger | bool | None = None,
-        callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
+        callbacks: list | None = None,
         device: str | None = "auto",  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
         """Run inference on the given model and input data.
 
         Args:
-            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to use for inference.
+            model (Optional[Union[BaseOTXLightningModel, pl.LightningModule]]): The model to use for inference.
             img (Optional[Union[PREDICT_FORMAT, LightningDataModule]]): The input data to run inference on.
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in prediction.
-            callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in prediction.
+            callbacks (list | None, optional): callbacks to use in prediction.
             device (str | None, optional): Supports passing different accelerator types
                 ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
 
         Returns:
             list: The output of the inference.
         """
+        dataloader = None
+        # NOTE: It needs to be refactored in a more general way.
+        if self.task.lower() == "visual_prompting" and isinstance(img, (str, Path)):
+            from .modules.datasets.dataset import VisualPromptInferenceDataset
+
+            dataset_config = self.config.get("dataset", {})
+            image_size = dataset_config.get("image_size", 1024)
+            dataset = VisualPromptInferenceDataset(path=img, image_size=image_size)
+            dataloader = DataLoader(dataset)
+        if dataloader is None:
+            dataloader = [img]
+
+        callbacks = callbacks if callbacks is not None else []
         if model is None:
             model = self.latest_model.get("model", None)
         if checkpoint is None:
@@ -400,7 +409,8 @@ class LightningEngine(Engine):
 
         if not hasattr(self, "trainer"):
             self._set_device(device=device)
-            callbacks = self._update_callbacks(callbacks=callbacks, mode="predict")
+            if model is not None and hasattr(model, "callbacks"):
+                callbacks.extend(model.callbacks)
             logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_predict")
             self.trainer = Trainer(
                 logger=logger,
@@ -408,22 +418,20 @@ class LightningEngine(Engine):
                 **self.trainer_config,
             )
 
-        if model is not None and checkpoint is not None:
-            self._load_checkpoint(model, checkpoint)
+        checkpoint = str(checkpoint) if checkpoint is not None else None
         # Lightning Inferencer
         return self.trainer.predict(
             model=model,
-            dataloaders=[img],
+            dataloaders=dataloader,
+            ckpt_path=checkpoint,
         )
 
     def export(
         self,
-        model: torch.nn.Module | pl.LightningModule | None = None,  # Module with _config OR Model Config OR config-file
+        model: BaseOTXLightningModel | pl.LightningModule | None = None,
         checkpoint: str | Path | None = None,
         precision: _PRECISION_INPUT | None = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        device: str | None = None,
-        input_shape: tuple[int, int] | None = None,
     ) -> dict:
         """Export the model to a specified format.
 
@@ -441,59 +449,18 @@ class LightningEngine(Engine):
         """
         # Set input_shape (input_size)
         _model = self.latest_model.get("model", None) if model is None else model
-        model_config = self.config.get("model", {})
-        height, width = model_config.get("input_size", (256, 256))
-        if input_shape is not None:
-            height, width = input_shape
-
-        # Set device
-        if device is None or device == "auto":
-            device = getattr(model, "device", None)
-
-        export_dir = self.work_dir / f"{self.timestamp}_export"
-        export_dir.mkdir(exist_ok=True, parents=True)
 
         if checkpoint is None:
-            checkpoint = self.latest_model.get("checkpoint", None)
-        if _model is not None and checkpoint is not None:
-            self._load_checkpoint(_model, checkpoint)
+            checkpoint = self.latest_model.get("checkpoint")
+        if checkpoint is not None and isinstance(_model, pl.LightningModule):
+            _model = _model.load_from_checkpoint(checkpoint)
 
-        # Torch to onnx
-        onnx_dir = export_dir / "onnx"
-        onnx_dir.mkdir(exist_ok=True, parents=True)
-        onnx_model = str(onnx_dir / "onnx_model.onnx")
-        torch.onnx.export(
-            model=_model,
-            args=torch.zeros((1, 3, height, width)).to(device),
-            f=onnx_model,
-            opset_version=11,
-        )
-
-        results: dict = {"outputs": {}}
-        results["outputs"]["onnx"] = onnx_model
-
-        if export_type.upper() == "OPENVINO":
-            # ONNX to IR
-            ir_dir = export_dir / "openvino"
-            ir_dir.mkdir(exist_ok=True, parents=True)
-            optimize_command = [
-                "mo",
-                "--input_model",
-                onnx_model,
-                "--output_dir",
-                str(ir_dir),
-                "--model_name",
-                "openvino",
-            ]
-            if precision in ("16", 16, "fp16"):
-                optimize_command.append("--compress_to_fp16")
-            _ = run(args=optimize_command, check=False)
-            bin_file = Path(ir_dir) / "openvino.bin"
-            xml_file = Path(ir_dir) / "openvino.xml"
-            if bin_file.exists() and xml_file.exists():
-                results["outputs"]["bin"] = str(Path(ir_dir) / "openvino.bin")
-                results["outputs"]["xml"] = str(Path(ir_dir) / "openvino.xml")
-            else:
-                msg = "OpenVINO Export failed."
-                raise RuntimeError(msg)
-        return results
+        export_dir = self.work_dir / f"{self.timestamp}_export"
+        if _model is not None and hasattr(_model, "export"):
+            return _model.export(
+                export_dir=export_dir,
+                export_type=export_type,
+                precision=precision,
+            )
+        msg = f"{_model} does not support export."
+        raise NotImplementedError(msg)

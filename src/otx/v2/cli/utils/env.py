@@ -26,7 +26,7 @@ REQUIRED_ADAPTERS_PER_TASK = {
     "visual_prompt": [
         "openvino",
         "datumaro",
-        "torch.lightning.visual_prompt",
+        "torch.lightning",
     ],
 }
 
