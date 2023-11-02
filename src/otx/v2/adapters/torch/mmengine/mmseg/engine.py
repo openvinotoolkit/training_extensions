@@ -13,6 +13,7 @@ from mmengine.evaluator import Evaluator
 from mmengine.hooks import Hook
 from mmengine.optim import _ParamScheduler
 from mmengine.visualization import Visualizer
+from mmseg.apis import MMSegInferencer
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
@@ -128,59 +129,47 @@ class MMSegEngine(MMXEngine):
         Returns:
             List[Dict]: A list of dictionaries containing the inference results.
         """
-        from mmengine.model import BaseModel
-        from mmseg.apis import MMSegInferencer, inference_model
-
         # Model config need data_pipeline of test_dataloader
         # Update pipelines
         if pipeline is None:
-            from otx.v2.adapters.torch.mmengine.mmseg.dataset import get_subset_pipeline
-            pipeline = get_subset_pipeline(subset="test")
+            pipeline = [
+                {"type": "LoadImageFromFile"},
+                {"type": "Resize", "scale": (544, 544)},
+                {"type": "PackSegInputs", "_scope_": "mmseg"},
+            ]
         config = Config({})
-        if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
-            config = model._config  # noqa: SLF001
-        elif isinstance(model, dict) and "_config" in model:
-            config = model["_config"]
+        if isinstance(model, torch.nn.Module) and hasattr(model, "cfg"):
+            config = model.cfg
+        elif isinstance(model, dict) and "cfg" in model:
+            config = model["cfg"]
         config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}
-        if isinstance(model, dict):
-            model.setdefault("_config", config)
-        elif isinstance(model, torch.nn.Module):
-            model._config = config  # noqa: SLF001
 
         # Check if the model can use mmseg's inference api.
         if isinstance(checkpoint, Path):
             checkpoint = str(checkpoint)
-        metainfo = getattr(model, "_metainfo", None)
-        # what is this for?
-        if isinstance(model, BaseModel) and metainfo is not None and metainfo.results is not None:
-            task = next(result.task for result in metainfo.results)
-            inputs = {
-                "model": model,
-                "pretrained": checkpoint,
-                "device": device,
-                "inputs": img,
-                "batch_size": batch_size,
+
+        # set visualizer
+        if config.get("visualizer") is None:
+            config["visualizer"] = {
+                "name": "visualizer",
+                "type": "SegLocalVisualizer",
             }
-            if task in ("Image Caption", "Visual Grounding", "Visual Question Answering"):
-                inputs["images"] = inputs.pop("inputs")
-            return [inference_model(**inputs, **kwargs)]
-        if task is not None and task != "Image Classification":
-            raise NotImplementedError
+
         inferencer = MMSegInferencer(
-            model=model,
+            model=config,
             weights=checkpoint,
             device=device,
         )
 
-        return inferencer(img, batch_size, **kwargs)
+        return inferencer(img, batch_size=batch_size, **kwargs)
 
     def export(
         self,
         model: torch.nn.Module | (str | Config) | None = None,
         checkpoint: str | Path | None = None,
         precision: str | None = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: str | None = "Classification",
-        codebase: str | None = "mmpretrain",
+        task: str | None = "Segmentation",
+        codebase: str | None = "mmseg",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: str | None = None,  # File path only?
         device: str = "cpu",

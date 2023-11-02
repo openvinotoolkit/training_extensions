@@ -31,19 +31,19 @@ def get_subset_pipeline(subset: str) -> list:
     if subset == "train":
         pipeline = [
             {"type": "LoadImageFromOTXDataset"},
-            {"type": "LoadAnnotationFromOTXDataset"},
+            {"type": "LoadAnnotationFromOTXDataset", "_scope_": "mmseg"},
             {"type": "RandomResize", "scale": (544, 544), "ratio_range": (0.5, 2.0)},
             {"type": "RandomCrop", "crop_size": (512, 512), "cat_max_ratio": 0.75},
             {"type": "RandomFlip", "prob": 0.5, "direction": "horizontal"},
-            {"type": "PackSegInputs"},
+            {"type": "PackSegInputs", "_scope_": "mmseg"},
         ]
         return pipeline
-    elif subset == "test" or subset == "val":
+    elif subset == "val" or subset == "test":
         pipeline = [
             {"type": "LoadImageFromOTXDataset"},
             {"type": "Resize", "scale": (544, 544)},
-            {"type": "LoadAnnotationFromOTXDataset"},
-            {"type": "PackSegInputs"},
+            {"type": "LoadAnnotationFromOTXDataset", "_scope_": "mmseg"},
+            {"type": "PackSegInputs", "_scope_": "mmseg"},
         ]
         return pipeline
     else:

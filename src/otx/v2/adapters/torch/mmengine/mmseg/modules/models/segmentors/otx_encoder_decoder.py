@@ -9,6 +9,7 @@ from otx.v2.api.utils.logger import get_logger
 
 logger = get_logger()
 
+
 @SEGMENTORS.register_module()
 class OTXEncoderDecoder(EncoderDecoder):
     """OTX encoder decoder."""

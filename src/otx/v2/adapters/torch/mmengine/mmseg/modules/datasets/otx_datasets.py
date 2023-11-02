@@ -18,9 +18,8 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from mmseg.datasets import BaseCDDataset
-from mmengine.dataset import Compose
-from otx.v2.adapters.torch.mmengine.mmseg.registry import DATASETS
-from mmengine.registry import TRANSFORMS
+
+from otx.v2.adapters.torch.mmengine.mmseg.registry import DATASETS, TRANSFORMS
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity

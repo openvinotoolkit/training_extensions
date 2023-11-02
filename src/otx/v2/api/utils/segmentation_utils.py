@@ -4,13 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import List
+
 import cv2
 import numpy as np
-from typing import List
 
 from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.scored_label import ScoredLabel
 from otx.v2.api.entities.shapes.polygon import Polygon
@@ -18,7 +18,9 @@ from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 
 
 def mask_from_dataset_item(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity], use_otx_adapter: bool = True
+    dataset_item: DatasetItemEntity,
+    labels: List[LabelEntity],
+    use_otx_adapter: bool = True,
 ) -> np.ndarray:
     """Creates a mask from dataset item.
 
@@ -34,7 +36,7 @@ def mask_from_dataset_item(
     Returns:
         Numpy array of mask
     """
-    # todo: cache this so that it does not have to be redone for all the same media
+    # TODO: cache this so that it does not have to be redone for all the same media
     if use_otx_adapter:
         mask = mask_from_annotation(dataset_item.get_annotations(), labels, dataset_item.width, dataset_item.height)
     else:
@@ -47,7 +49,6 @@ def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
 
     Only Common Sematic Segmentation format is supported.
     """
-
     mask_form_file = dataset_item.media.path
     if mask_form_file is None:
         raise ValueError("Mask file doesn't exist or corrupted")
@@ -58,7 +59,10 @@ def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
 
 
 def mask_from_annotation(
-    annotations: List[Annotation], labels: List[LabelEntity], width: int, height: int
+    annotations: List[Annotation],
+    labels: List[LabelEntity],
+    width: int,
+    height: int,
 ) -> np.ndarray:
     """Generate a segmentation mask of a numpy image, and a list of shapes.
 
@@ -76,7 +80,6 @@ def mask_from_annotation(
     Returns:
         2d numpy array of mask
     """
-
     mask = np.zeros(shape=(height, width), dtype=np.uint8)
     for annotation in annotations:
         shape = annotation.shape

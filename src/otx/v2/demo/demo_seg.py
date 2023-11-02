@@ -9,6 +9,7 @@ from otx.v2.adapters.torch.mmengine.mmseg import Engine, get_model, list_models
 from otx.v2.adapters.torch.mmengine.mmseg.dataset import Dataset
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
+import numpy as np
 
 
 dataset = Dataset(
@@ -53,10 +54,8 @@ pred_result = engine.predict(
     checkpoint=results["checkpoint"],
     img=TASK_CONFIGURATION["segmentation"]["sample"],
 )
-assert isinstance(pred_result, list)
-assert len(pred_result) == 1
-assert "num_classes" in pred_result[0]
-assert pred_result[0].num_classes == dataset.num_classes
+assert isinstance(pred_result, dict)
+assert isinstance(pred_result["predictions"], np.ndarray)
 
 # Export Openvino IR Model
 export_output = engine.export(
