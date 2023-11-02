@@ -1,4 +1,4 @@
-"""Collection of transfrom pipelines for visual prompting task."""
+"""Collection of transfrom pipelines."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

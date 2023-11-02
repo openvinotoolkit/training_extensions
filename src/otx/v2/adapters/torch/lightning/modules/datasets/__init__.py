@@ -1,4 +1,4 @@
-"""OTX Algorithms - Visual prompting Dataset."""
+"""OTX Algorithms - Dataset."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

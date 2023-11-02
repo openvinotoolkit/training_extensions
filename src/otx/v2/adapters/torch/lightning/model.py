@@ -23,7 +23,7 @@ def get_model(
     checkpoint: str | None = None,
     **kwargs,
 ) -> torch.nn.Module:
-    """Return a torch.nn.Module object based on the provided model configuration or VisualPrompt model api.
+    """Return a torch.nn.Module object based on the provided model configuration or Lightning model api.
 
     Args:
         model (Optional[Union[Dict[str, Any], DictConfig, str]]): The model configuration. Can be a dictionary,

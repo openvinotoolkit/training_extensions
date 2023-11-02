@@ -1,4 +1,4 @@
-"""Visual Prompting Dataset & DataModule."""
+"""Dataset & DataModule."""
 
 # Copyright (C) 2023 Intel Corporation
 #

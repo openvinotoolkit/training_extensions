@@ -1,4 +1,4 @@
-"""Utils used for visual prompting model."""
+"""Utils used for Lightning Module."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

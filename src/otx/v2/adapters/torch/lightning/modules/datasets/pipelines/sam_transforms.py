@@ -1,4 +1,4 @@
-"""SAM transfrom pipeline for visual prompting task."""
+"""SAM transfrom pipeline."""
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
