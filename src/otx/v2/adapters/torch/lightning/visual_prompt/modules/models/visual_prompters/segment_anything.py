@@ -17,16 +17,27 @@ from typing import TYPE_CHECKING
 
 import torch
 from pytorch_lightning import LightningModule
+from pytorch_lightning.callbacks import (
+    Callback,
+    EarlyStopping,
+    LearningRateMonitor,
+    ModelCheckpoint,
+    TQDMProgressBar,
+)
 from torch import Tensor, optim
 from torch.nn import functional
 from torchmetrics import MeanMetric, MetricCollection
 from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, Dice
 
+from otx.v2.adapters.torch.lightning.model import BaseOTXLightningModel
 from otx.v2.adapters.torch.lightning.visual_prompt.modules.models.decoders import SAMMaskDecoder
 from otx.v2.adapters.torch.lightning.visual_prompt.modules.models.encoders import SAMImageEncoder, SAMPromptEncoder
 
 if TYPE_CHECKING:
     from omegaconf import DictConfig
+    from pytorch_lightning.trainer.connectors.accelerator_connector import (
+        _PRECISION_INPUT,
+    )
 
 CKPT_PATHS = {
     "tiny_vit": "https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt",
@@ -36,7 +47,7 @@ CKPT_PATHS = {
 }
 
 
-class SegmentAnything(LightningModule):
+class SegmentAnything(BaseOTXLightningModel, LightningModule):
     """SAM predicts object masks from an image and input prompts."""
 
     def __init__(self, config: DictConfig, state_dict: OrderedDict | None = None) -> None:
@@ -691,3 +702,130 @@ class SegmentAnything(LightningModule):
         intersection = torch.sum(torch.mul(pred_mask, targets), dim=1)
         union = torch.sum(pred_mask, dim=1) + torch.sum(targets, dim=1) - intersection
         return intersection / (union + epsilon)
+
+    def export(
+        self,
+        export_dir: str | Path,
+        export_type: str = "OPENVINO",
+        precision: _PRECISION_INPUT | None = None,
+    ) -> dict:
+        """Exports the model to the specified format and precision.
+
+        Args:
+            export_dir (str | Path): The directory to export the model to.
+            export_type (str, optional): The type of export to perform. Defaults to "OPENVINO".
+            precision (_PRECISION_INPUT | None, optional): The precision to use for the export. Defaults to None.
+
+        Returns:
+            dict: A dictionary containing the paths to the exported models.
+        """
+        onnx_dir = Path(export_dir) / "onnx"
+        onnx_dir.mkdir(exist_ok=True, parents=True)
+        results: dict = {"outputs": {}}
+        # 1) visual_prompting_image_encoder
+        height = width = self.config.model.image_size
+        dummy_inputs = {"images": torch.randn(1, 3, height, width, dtype=torch.float)}
+        torch.onnx.export(
+            model=self.image_encoder,
+            args=tuple(dummy_inputs.values()),
+            f=onnx_dir / "sam_encoder.onnx",
+            export_params=True,
+            verbose=False,
+            opset_version=13,
+            do_constant_folding=True,
+            input_names=list(dummy_inputs.keys()),
+            output_names=["image_embeddings"],
+            dynamic_axes=None,
+        )
+        results["outputs"]["onnx"] = {}
+        results["outputs"]["onnx"]["encoder"] = str(onnx_dir / "sam_encoder.onnx")
+
+        # 2) SAM without backbone
+        embed_dim = self.prompt_encoder.embed_dim
+        embed_size = self.prompt_encoder.image_embedding_size
+        mask_input_size = [4 * x for x in embed_size]
+        dynamic_axes = {
+            "point_coords": {1: "num_points"},
+            "point_labels": {1: "num_points"},
+        }
+        dummy_inputs = {
+            "image_embeddings": torch.zeros(1, embed_dim, *embed_size, dtype=torch.float),
+            "point_coords": torch.randint(low=0, high=1024, size=(1, 2, 2), dtype=torch.float),
+            "point_labels": torch.randint(low=0, high=4, size=(1, 2), dtype=torch.float),
+            "mask_input": torch.randn(1, 1, *mask_input_size, dtype=torch.float),
+            "has_mask_input": torch.tensor([[1]], dtype=torch.float),
+        }
+        torch.onnx.export(
+            model=self,
+            args=tuple(dummy_inputs.values()),
+            f=onnx_dir / "sam.onnx",
+            export_params=True,
+            verbose=False,
+            opset_version=13,
+            do_constant_folding=True,
+            input_names=list(dummy_inputs.keys()),
+            output_names=["iou_predictions", "low_res_masks"],
+            dynamic_axes=dynamic_axes,
+        )
+
+        results["outputs"]["onnx"]["sam"] = str(onnx_dir / "sam.onnx")
+
+        if export_type.upper() == "OPENVINO":
+            ir_dir =  Path(export_dir) / "openvino"
+            ir_dir.mkdir(exist_ok=True, parents=True)
+            results["outputs"]["openvino"] = {}
+            from subprocess import run
+            for onnx_key, model_path in results["outputs"]["onnx"].items():
+                optimize_command = [
+                    "mo",
+                    "--input_model",
+                    model_path,
+                    "--output_dir",
+                    ir_dir,
+                    "--model_name",
+                    onnx_key,
+                ]
+                if onnx_key == "encoder":
+                    dataset_config = self.config.get("dataset", {})
+                    normalize = dataset_config.get("normalize", {})
+                    mean = normalize.get("mean", [123.675, 116.28, 103.53])
+                    std = normalize.get("std", [58.395, 57.12, 57.375])
+                    optimize_command += [
+                        "--mean_values",
+                        str(mean).replace(", ", ","),
+                        "--scale_values",
+                        str(std).replace(", ", ","),
+                    ]
+                if precision in ("16", 16, "fp16"):
+                    optimize_command.append("--compress_to_fp16")
+                _ = run(args=optimize_command, check=False)
+                bin_file = Path(ir_dir) / f"{onnx_key}.bin"
+                xml_file = Path(ir_dir) / f"{onnx_key}.xml"
+                if bin_file.exists() and xml_file.exists():
+                    results["outputs"]["openvino"][onnx_key] = {}
+                    results["outputs"]["openvino"][onnx_key]["bin"] = str(Path(ir_dir) / f"{onnx_key}.bin")
+                    results["outputs"]["openvino"][onnx_key]["xml"] = str(Path(ir_dir) / f"{onnx_key}.xml")
+                else:
+                    msg = "OpenVINO Export failed."
+                    raise RuntimeError(msg)
+        return results
+
+    @property
+    def callbacks(self) -> list[Callback]:
+        """Returns a list of callbacks to be used.
+
+        Returns:
+            list[Callback]: A list of callbacks.
+        """
+        callback_list = [
+            TQDMProgressBar(),
+        ]
+        if self.training:
+            callback_list.extend(
+                [
+                    ModelCheckpoint(dirpath=self.work_dir, filename="{epoch:02d}", **self.config.callback.checkpoint),
+                    LearningRateMonitor(),
+                    EarlyStopping(**self.config.callback.early_stopping),
+                ],
+            )
+        return callback_list

@@ -9,26 +9,22 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Union
 
 import numpy as np
+import pytorch_lightning as pl
+import torch
 from anomalib.data.inference import InferenceDataset
 from anomalib.data.utils import InputNormalizationMethod, get_transforms
-from anomalib.post_processing import NormalizationMethod, ThresholdMethod
-from anomalib.utils.callbacks import (
-    MetricsConfigurationCallback,
-    MinMaxNormalizationCallback,
-    PostProcessingConfigurationCallback,
-)
 from anomalib.utils.loggers import AnomalibTensorBoardLogger
+from pytorch_lightning import Trainer
 from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.loggers.logger import Logger
 from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.lightning.engine import LightningEngine
+from otx.v2.adapters.torch.lightning.model import BaseOTXLightningModel
 
 from .registry import AnomalibRegistry
 
 if TYPE_CHECKING:
-    import pytorch_lightning as pl
-    import torch
     from pytorch_lightning.trainer.connectors.accelerator_connector import (
         _PRECISION_INPUT,
     )
@@ -59,7 +55,7 @@ class AnomalibEngine(LightningEngine):
 
     def _update_logger(
         self,
-        logger: list[Logger] | Logger | bool | None = None,
+        logger: list | bool | None = None,
         target_path: str | None = None,
     ) -> list[Logger] | Logger | None:
         """Update the logger and logs them to the console or use AnomalibTensorBoardLogger.
@@ -79,44 +75,20 @@ class AnomalibEngine(LightningEngine):
                 return [logger]
         return [AnomalibTensorBoardLogger(save_dir=self.work_dir, name=target_path)]
 
-    def _update_callbacks(
+    def _load_checkpoint(
         self,
-        callbacks: list[pl.Callback] | pl.Callback | None = None,
-        mode: str | None = None,
-    ) -> list[pl.Callback] | pl.Callback | None:
-        """Update the list of callbacks to be executed during training and validation.
-
-        Args:
-            callbacks(list[pl.Callback] | pl.Callback | None): Input of callbacks
-            mode(bool): Current Running mode status
-
-        Returns:
-            list[pl.Callback] | pl.Callback | None: Updated callbacks.
-        """
-        _ = mode
-        if callbacks is not None:
-            if isinstance(callbacks, list):
-                return callbacks
-            return [callbacks]
-        metrics = self.trainer_config.pop("metrics", None)
-        if metrics is None:
-            metrics = self.config.get("metrics", {})
-        metric_threshold = metrics.get("threshold", {})
-        return [
-            MinMaxNormalizationCallback(),
-            MetricsConfigurationCallback(
-                task=self.task,
-                image_metrics=metrics.get("image", None),
-                pixel_metrics=metrics.get("pixel", None),
-            ),
-            PostProcessingConfigurationCallback(
-                normalization_method=NormalizationMethod.MIN_MAX,
-                threshold_method=ThresholdMethod.ADAPTIVE,
-                manual_image_threshold=metric_threshold.get("manual_image", None),
-                manual_pixel_threshold=metric_threshold.get("manual_pixel", None),
-            ),
-        ]
-
+        model: torch.nn.Module | pl.LightningModule,
+        checkpoint: str | Path,
+    ) -> None:
+        if isinstance(model, pl.LightningModule):
+            model = model.load_from_checkpoint(checkpoint)
+        else:
+            state_dict = torch.load(checkpoint, map_location=model.device)
+            if "model" in state_dict:
+                state_dict = state_dict["model"]
+            if "state_dict" in state_dict:
+                state_dict = state_dict["state_dict"]
+            model.load_state_dict(state_dict, strict=False)
 
     def train(
         self,
@@ -133,7 +105,7 @@ class AnomalibEngine(LightningEngine):
         precision: _PRECISION_INPUT | None = None,
         val_interval: int | None = None,
         logger: list[Logger] | Logger | None = None,
-        callbacks: list[pl.Callback] | pl.Callback | None = None,
+        callbacks: list | None = None,
         device: str | None = "auto",
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
@@ -178,6 +150,60 @@ class AnomalibEngine(LightningEngine):
             **kwargs,
         )
 
+    def test(
+        self,
+        model: torch.nn.Module | pl.LightningModule | None = None,
+        test_dataloader: DataLoader | None = None,
+        checkpoint: str | Path | None = None,
+        precision: _PRECISION_INPUT | None = None,
+        logger: list[Logger] | Logger | bool | None = None,
+        callbacks: list | None = None,
+        device: str | None = "auto",
+        **kwargs,
+    ) -> dict:
+        """Test the given model on the provided test dataloader.
+
+        Args:
+            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to test.
+                If not provided, the latest model will be used.
+            test_dataloader (Optional[DataLoader]): The dataloader to use for testing.
+            checkpoint (Optional[Union[str, Path]]): The checkpoint to use for testing.
+                If not provided, the latest checkpoint will be used.
+            precision (Optional[_PRECISION_INPUT]): The precision to use for testing.
+            logger (list[Logger] | Logger | bool | None, optional): Logger to use in test.
+            callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in test.
+            device (str | None, optional): Supports passing different accelerator types
+                ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
+            **kwargs: Additional keyword arguments to pass to the method.
+
+        Returns:
+            dict: The test results as a dictionary.
+        """
+        update_check = self._update_config(func_args={"precision": precision}, **kwargs)
+        callbacks = callbacks if callbacks is not None else []
+        if model is None:
+            model = self.latest_model.get("model", None)
+        if checkpoint is None:
+            checkpoint = self.latest_model.get("checkpoint", None)
+
+        if not hasattr(self, "trainer") or update_check:
+            self._set_device(device=device)
+            if model is not None and hasattr(model, "callbacks"):
+                callbacks.extend(model.callbacks)
+            logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_test")
+            self.trainer = Trainer(
+                logger=logger,
+                callbacks=callbacks,
+                **self.trainer_config,
+            )
+
+        if model is not None and checkpoint is not None:
+            self._load_checkpoint(model, checkpoint)
+        return self.trainer.test(
+            model=model,
+            dataloaders=[test_dataloader],
+        )
+
     def predict(
         self,
         model: torch.nn.Module | pl.LightningModule | None = None,
@@ -218,11 +244,66 @@ class AnomalibEngine(LightningEngine):
         elif isinstance(img, (DataLoader, LightningDataModule)):
             dataloader = [img]
         # Lightning Inferencer
-        return super().predict(
+        if model is None:
+            model = self.latest_model.get("model", None)
+        if checkpoint is None:
+            checkpoint = self.latest_model.get("checkpoint", None)
+
+        callbacks = callbacks if callbacks is not None else []
+        if not hasattr(self, "trainer"):
+            self._set_device(device=device)
+            if model is not None and hasattr(model, "callbacks"):
+                callbacks.extend(model.callbacks)
+            logger = self._update_logger(logger=logger, target_path=f"{self.timestamp}_predict")
+            self.trainer = Trainer(
+                logger=logger,
+                callbacks=callbacks,
+                **self.trainer_config,
+            )
+
+        if model is not None and checkpoint is not None:
+            self._load_checkpoint(model, checkpoint)
+        # Lightning Inferencer
+        return self.trainer.predict(
             model=model,
-            img=dataloader,
-            checkpoint=checkpoint,
-            logger=logger,
-            callbacks=callbacks,
-            device=device,
+            dataloaders=dataloader,
         )
+
+    def export(
+        self,
+        model: BaseOTXLightningModel | pl.LightningModule | None = None,
+        checkpoint: str | Path | None = None,
+        precision: _PRECISION_INPUT | None = None,
+        export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
+    ) -> dict:
+        """Export the model to a specified format.
+
+        Args:
+            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to export.
+            checkpoint (Optional[Union[str, Path]]): The checkpoint to use for exporting the model.
+            precision (Optional[_PRECISION_INPUT]): The precision to use for exporting the model.
+            export_type (str): The type of export to perform. Can be "ONNX" or "OPENVINO".
+            input_shape (Optional[Tuple[int, int]]): The input shape to use for exporting the model.
+            device (str | None, optional): Supports passing different accelerator types
+                ("cpu", "gpu", "tpu", "ipu", "hpu", "mps")
+
+        Returns:
+            dict: A dictionary containing the exported model(s).
+        """
+        # Set input_shape (input_size)
+        _model = self.latest_model.get("model", None) if model is None else model
+
+        if checkpoint is None:
+            checkpoint = self.latest_model.get("checkpoint")
+        if _model is not None and checkpoint is not None:
+            self._load_checkpoint(_model, checkpoint)
+
+        export_dir = self.work_dir / f"{self.timestamp}_export"
+        if _model is not None and hasattr(_model, "export"):
+            return _model.export(
+                export_dir=export_dir,
+                export_type=export_type,
+                precision=precision,
+            )
+        msg = f"{_model} does not support export."
+        raise NotImplementedError(msg)
