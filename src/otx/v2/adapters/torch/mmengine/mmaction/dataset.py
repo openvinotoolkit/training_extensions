@@ -27,7 +27,7 @@ from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type
 
-SUBSET_LIST = ["train", "val", "test", "unlabeled"]
+SUBSET_LIST = ["train", "val", "test"]
 
 
 def get_default_pipeline() -> dict | list:

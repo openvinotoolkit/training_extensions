@@ -68,7 +68,7 @@ class ActionBaseDatasetAdapter(DatumaroDatasetAdapter):
             if val_data_roots:
                 dataset[Subset.VALIDATION] = self._prepare_cvat_pair_data(val_data_roots)
             self.is_train_phase = True
-        if test_data_roots is not None and train_data_roots is None:
+        if test_data_roots is not None:
             dataset[Subset.TESTING] = self._prepare_cvat_pair_data(test_data_roots)
             self.is_train_phase = False
 

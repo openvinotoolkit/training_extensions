@@ -74,6 +74,7 @@ class OTXCLIv2:
         self.parser = self.setup_parser(main_kwargs, subcommand_kwargs)
 
         # Main Parse Arguments
+        breakpoint()
         self.config = self.parse_arguments(self.parser, args)
 
         self.subcommand = self.config["subcommand"]

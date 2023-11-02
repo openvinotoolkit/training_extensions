@@ -18,4 +18,11 @@ TASK_CONFIGURATION = {
         "sample": "tests/assets/anomaly/hazelnut/test/colour/01.jpg",
         "models": ["otx_padim"],
     },
+    "action_classification": {
+        "train_data_roots": "tests/assets/cvat_dataset/action_classification/train",
+        "val_data_roots": "tests/assets/cvat_dataset/action_classification/train",
+        "test_data_roots": "tests/assets/cvat_dataset/action_classification/train",
+        "sample": "tests/assets/cvat_dataset/action_classification/train/0/images/00022.jpg",
+        "models": ["otx_x3d"],
+    },
 }

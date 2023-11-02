@@ -13,7 +13,7 @@ train_dataloader:
   batch_size: 10
   num_workers: 0
   dataset:
-    type: RawframeDataset
+    type: OTXActionClsDataset
     pipeline:
     - type: SampleFrames
       clip_len: 8
@@ -34,7 +34,7 @@ val_dataloader:
   batch_size: 1
   num_workers: 0
   dataset:
-    type: RawframeDataset
+    type: OTXActionClsDataset
     pipeline:
     - type: SampleFrames
       clip_len: 8
@@ -56,7 +56,7 @@ test_dataloader:
   batch_size: 1
   num_workers: 0
   dataset:
-    type: RawframeDataset
+    type: OTXActionClsDataset
     pipeline:
     - type: SampleFrames
       clip_len: 8

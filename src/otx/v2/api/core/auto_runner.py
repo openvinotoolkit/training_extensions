@@ -40,8 +40,14 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmseg",
         "default_config": {},
     },
-    # TaskType.ACTION_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
-    # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
+    TaskType.ACTION_CLASSIFICATION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmaction",
+        "default_config": {TrainType.Incremental: f"{CONFIG_ROOT}/action_classification/otx_mmaction_classification_default.yaml"},
+    },
+    TaskType.ACTION_DETECTION: {
+        "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmaction",
+        "default_config": {},
+    },
     TaskType.ANOMALY_CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
         "default_config": {
@@ -64,6 +70,7 @@ ADAPTER_QUICK_LINK = {
     "mmdet": "torch.mmengine.mmdet",
     "mmseg": "torch.mmengine.mmseg",
     "anomalib": "torch.lightning.anomalib",
+    "mmaction": "torch.mmengine.mmaction"
 }
 
 

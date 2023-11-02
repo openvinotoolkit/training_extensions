@@ -38,6 +38,22 @@ class MMActionEngine(MMXEngine):
         super().__init__(work_dir=work_dir, config=config)
         self.registry = MMActionRegistry()
 
+    def _update_config(
+        self,
+        func_args: dict,
+        **kwargs,
+    ) -> bool:
+        """Update the configuration of the runner with the provided arguments.
+
+        Args:
+            func_args (dict): The arguments passed to the engine.
+            **kwargs: Additional keyword arguments to update the configuration for mmengine.Runner.
+
+        Returns:
+            bool: True if the configuration was updated, False otherwise.
+        """
+        update_check = super()._update_config(func_args, **kwargs)
+    
     def predict(
         self,
         model: torch.nn.Module | (dict | str) | None = None,
