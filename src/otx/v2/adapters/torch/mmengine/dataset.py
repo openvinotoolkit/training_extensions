@@ -163,9 +163,9 @@ class MMXDataset(BaseTorchDataset):
         dataset_config.pop("file_list", None)
         dataset_config["_scope_"] = self.scope
 
-        if not dataset_config.get("type", False):
-            dataset_config["type"] = self.base_dataset.__name__
-        dataset = self.dataset_registry.build(dataset_config)
+        if not _config.get("type", False):
+            _config["type"] = self.base_dataset.__name__
+        dataset = self.dataset_registry.build(_config)
         dataset.configs = init_config
         return dataset
 
@@ -286,12 +286,10 @@ class MMXDataset(BaseTorchDataset):
         elif config is not None:
             _config = config
 
-        dataloader_config = _config.get(f"{subset}_dataloader", None)
-
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self._build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
+        subset_dataset = self._build_dataset(subset=subset, pipeline=subset_pipeline, config=_config)
         if batch_size is None:
             batch_size = _config.get("batch_size", 2)
         if num_workers is None:

@@ -17,7 +17,7 @@ try:
     register_all_modules(init_default_scope=True)
 
     from . import modules
-    from .dataset import Dataset
+    from .dataset import MMDetDataset as Dataset
     from .engine import MMDetEngine as Engine
     from .model import get_model, list_models
 
