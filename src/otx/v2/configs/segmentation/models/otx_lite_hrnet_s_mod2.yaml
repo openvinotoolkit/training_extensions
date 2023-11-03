@@ -1,6 +1,6 @@
 # Model Configuration
 model:
-  type: OTXEncoderDecoder
+  type: EncoderDecoder
   data_preprocessor:
     type: SegDataPreProcessor
     mean: [123.675, 116.28, 103.53]
@@ -72,3 +72,7 @@ model:
       weight: 0.1
   test_cfg:
     mode: whole
+
+visualizer:
+  name: visualizer
+  type: SegLocalVisualizer

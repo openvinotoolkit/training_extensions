@@ -15,6 +15,5 @@
 # and limitations under the License.
 
 from .backbones import LiteHRNet
-from .segmentors.otx_encoder_decoder import OTXEncoderDecoder
 
-__all__ = ["LiteHRNet", "OTXEncoderDecoder"]
+__all__ = ["LiteHRNet"]

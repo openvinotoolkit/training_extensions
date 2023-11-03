@@ -16,11 +16,8 @@ from mmcv.cnn import (
     build_conv_layer,
     build_norm_layer,
 )
-from mmengine.model import BaseModule, constant_init, normal_init
-from mmengine.runner import load_checkpoint
+from mmengine.model import BaseModule
 from mmengine.utils import is_tuple_of
-from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
-from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
 from torch import nn
 from torch.nn import functional
@@ -1418,37 +1415,10 @@ class LiteHRNet(BaseModule):
 
         return nn.Sequential(*modules), in_channels
 
-    def init_weights(self, pretrained=None):
-        """Initialize the weights in backbone.
-
-        Args:
-            pretrained (str, optional): Path to pre-trained weights.
-                Defaults to None.
-        """
-        if isinstance(pretrained, str):
-            logger = get_root_logger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    normal_init(m, std=0.001)
-                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                    constant_init(m, 1)
-
-            if self.zero_init_residual:
-                for m in self.modules():
-                    if isinstance(m, Bottleneck):
-                        constant_init(m.norm3, 0)
-                    elif isinstance(m, BasicBlock):
-                        constant_init(m.norm2, 0)
-        else:
-            raise TypeError("pretrained must be a str or None")
-
     def forward(self, x):
         """Forward function."""
         stem_outputs = self.stem(x)
         y_x2 = y_x4 = stem_outputs
-        # y_x2, y_x4 = stem_outputs[-2:]
         y = y_x4
 
         if self.enable_stem_pool:
@@ -1486,12 +1456,3 @@ class LiteHRNet(BaseModule):
             out = [x] + out
 
         return out
-
-    def train(self, mode=True):
-        """Convert the model into training mode."""
-        super().train(mode)
-
-        if mode and self.norm_eval:
-            for m in self.modules():
-                if isinstance(m, _BatchNorm):
-                    m.eval()

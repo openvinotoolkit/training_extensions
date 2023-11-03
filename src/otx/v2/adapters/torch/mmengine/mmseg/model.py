@@ -5,11 +5,14 @@
 
 from __future__ import annotations
 
+import re
+import warnings
 from pathlib import Path
+from typing import Union
 
 import torch
-from mmseg.apis import init_model
 
+from otx.v2.adapters.torch.mmengine.mmseg.registry import MODELS
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.utils.importing import get_files_dict, get_otx_root_path
 from otx.v2.api.utils.logger import get_logger
@@ -45,7 +48,7 @@ MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 #     assert d['layers'][1]['num_classes'] == 5
 
 
-def replace_num_classes(d: dict, num_classes: int) -> None:
+def replace_num_classes(d: Union[Config | dict], num_classes: int) -> None:
     """Recursively replaces the value of 'num_classes' in a nested dictionary with the given num_classes.
 
     Args:
@@ -70,6 +73,8 @@ def get_model(
     model: str | (Config | dict),
     pretrained: str | bool = False,
     num_classes: int | None = None,
+    device=None,
+    url_mapping: tuple[str, str] = None,
     **kwargs,
 ) -> torch.nn.Module:
     """Return a PyTorch model for training.
@@ -85,21 +90,68 @@ def get_model(
     Returns:
         torch.nn.Module: The PyTorch model for pretraining.
     """
-    model_cfg = Config(cfg_dict={})
+    config = Config(cfg_dict={})
     if isinstance(model, dict):
-        model_cfg = Config(cfg_dict=model)
+        config = Config(cfg_dict=model)
     elif isinstance(model, str):
         if Path(model).is_file():
-            model_cfg = Config.fromfile(filename=model)
+            config = Config.fromfile(filename=model)
         elif model in MODEL_CONFIGS:
-            model_cfg = Config.fromfile(filename=MODEL_CONFIGS[model])
+            config = Config.fromfile(filename=MODEL_CONFIGS[model])
+    else:
+        raise TypeError("model must be a name, a path or a Config object, " f"but got {type(model)}")
 
     if num_classes is not None:
-        replace_num_classes(model_cfg, num_classes)
+        replace_num_classes(config, num_classes)
 
-    # TODO: load pretrained model
-    model = init_model(model_cfg, **kwargs)
+    metainfo = None
+    if pretrained is True and "load_from" in config:
+        pretrained = config.load_from
 
+    if pretrained is True:
+        warnings.warn("Unable to find pre-defined checkpoint of the model.")
+        pretrained = None
+    elif pretrained is False:
+        pretrained = None
+
+    if kwargs:
+        config.merge_from_dict({"model": kwargs})
+    config.model.setdefault("data_preprocessor", config.get("data_preprocessor", None))
+
+    if not hasattr(config, "model"):
+        config["_scope_"] = "mmseg"
+    else:
+        config["model"]["_scope_"] = "mmseg"
+
+    from mmengine.registry import DefaultScope
+
+    with DefaultScope.overwrite_default_scope("mmseg"):
+        model = MODELS.build(config.model)
+
+    dataset_meta = {}
+    if pretrained:
+        # Mapping the weights to GPU may cause unexpected video memory leak
+        # which refers to https://github.com/open-mmlab/mmdetection/pull/6405
+        from mmengine.runner import load_checkpoint
+
+        if url_mapping is not None:
+            pretrained = re.sub(url_mapping[0], url_mapping[1], pretrained)
+        checkpoint = load_checkpoint(model, pretrained, map_location="cpu")
+        # TODO: need to check this part for mmseg
+        if "dataset_meta" in checkpoint.get("meta", {}):
+            # mmpretrain 1.x
+            dataset_meta = checkpoint["meta"]["dataset_meta"]
+        elif "CLASSES" in checkpoint.get("meta", {}):
+            # mmcls 0.x
+            dataset_meta = {"classes": checkpoint["meta"]["CLASSES"]}
+
+    if device is not None:
+        model.to(device)
+
+    model._dataset_meta = dataset_meta  # save the dataset meta
+    model._config = config  # save the config in the model
+    model._metainfo = metainfo  # save the metainfo in the model
+    model.eval()
     return model
 
 

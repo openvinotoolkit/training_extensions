@@ -138,22 +138,15 @@ class MMSegEngine(MMXEngine):
                 {"type": "PackSegInputs", "_scope_": "mmseg"},
             ]
         config = Config({})
-        if isinstance(model, torch.nn.Module) and hasattr(model, "cfg"):
-            config = model.cfg
-        elif isinstance(model, dict) and "cfg" in model:
-            config = model["cfg"]
+        if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
+            config = model._config
+        elif isinstance(model, dict) and "_config" in model:
+            config = model["_config"]
         config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}
 
         # Check if the model can use mmseg's inference api.
         if isinstance(checkpoint, Path):
             checkpoint = str(checkpoint)
-
-        # set visualizer
-        if config.get("visualizer") is None:
-            config["visualizer"] = {
-                "name": "visualizer",
-                "type": "SegLocalVisualizer",
-            }
 
         inferencer = MMSegInferencer(
             model=config,
