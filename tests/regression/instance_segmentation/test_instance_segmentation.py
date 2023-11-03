@@ -248,6 +248,8 @@ class TestRegressionInstanceSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        if template.name == "MaskRCNN-EfficientNetB2B":
+            pytest.skip("Issue#2497: RuntimeError")
         test_type = "nncf"
         self.performance[template.name] = {}
 

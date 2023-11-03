@@ -102,7 +102,11 @@ class RegressionTestConfig(object):
         return self._result_dict
 
     def dump_result_dict(self, dump_path=None):
-        dump_path_ = dump_path if dump_path is not None else os.path.join(self.result_dir, f"result_{self.train_type}_{self.label_type}.json")
+        dump_path_ = (
+            dump_path
+            if dump_path is not None
+            else os.path.join(self.result_dir, f"result_{self.train_type}_{self.label_type}.json")
+        )
         print(f"writing regression result to {dump_path_}")
         with open(dump_path_, "w") as result_file:
             json.dump(self.result_dict, result_file, indent=4)

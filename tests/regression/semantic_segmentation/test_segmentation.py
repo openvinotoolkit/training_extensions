@@ -123,6 +123,8 @@ class TestRegressionSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_cls_incr(self, reg_cfg, template, tmp_dir_path):
+        if "SegNext" in template.name:
+            pytest.skip("Issue#2600: RuntimeError - can't cast ComplexFloat to Float")
         train_type = "class_incr"
         test_type = "train"
         self.performance[template.name] = {}

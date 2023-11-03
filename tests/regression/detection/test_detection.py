@@ -312,6 +312,8 @@ class TestRegressionDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_optimize_eval(self, reg_cfg, template, tmp_dir_path):
+        if template.name == "YOLOX-S":
+            pytest.skip("Issue#2596: IndexError")
         test_type = "nncf"
         self.performance[template.name] = {}
 
