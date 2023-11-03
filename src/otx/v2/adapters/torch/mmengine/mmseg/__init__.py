@@ -8,17 +8,19 @@ AVAILABLE = True
 VERSION = None
 DEBUG = None
 
-# TODO: formalize this
+try:
+    import mmseg
 
-import mmseg
+    VERSION = mmseg.__version__
+    from mmseg.utils import register_all_modules
 
-VERSION = mmseg.__version__
-from mmseg.utils import register_all_modules
+    register_all_modules(init_default_scope=True)
 
-register_all_modules(init_default_scope=True)
+    from .dataset import Dataset
+    from .engine import MMSegEngine as Engine
+    from .model import get_model, list_models
 
-from .dataset import Dataset
-from .engine import MMSegEngine as Engine
-from .model import get_model, list_models
-
-__all__ = ["get_model", "Dataset", "Engine", "list_models"]
+    __all__ = ["get_model", "Dataset", "Engine", "list_models"]
+except ImportError as e:
+    AVAILABLE = False
+    DEBUG = e

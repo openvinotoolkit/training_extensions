@@ -8,6 +8,7 @@ Modified from:
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
 
 import torch
 import torch.utils.checkpoint as cp
@@ -65,7 +66,7 @@ class NeighbourSupport(nn.Module):
                 stride=1,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=dict(type="ReLU"),
+                act_cfg={"type": "ReLU"},
             ),
             ConvModule(
                 self.key_channels,
@@ -131,12 +132,12 @@ class CrossResolutionWeighting(nn.Module):
 
     def __init__(
         self,
-        channels,
-        ratio=16,
-        conv_cfg=None,
-        norm_cfg=None,
-        act_cfg=(dict(type="ReLU"), dict(type="Sigmoid")),
-    ):
+        channels: list[int],
+        ratio: int = 16,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg=({"type": "ReLU"}, {"type": "Sigmoid"}),
+    ) -> None:
         super().__init__()
 
         if isinstance(act_cfg, dict):
@@ -188,7 +189,7 @@ class SpatialWeighting(nn.Module):
         channels,
         ratio=16,
         conv_cfg=None,
-        act_cfg=(dict(type="ReLU"), dict(type="Sigmoid")),
+        act_cfg=({"type": "ReLU"}, dict(type="Sigmoid")),
         **kwargs,
     ):
         super().__init__()
@@ -345,21 +346,21 @@ class ConditionalChannelWeighting(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        stride,
-        reduce_ratio,
-        conv_cfg=None,
-        norm_cfg=None,
-        with_cp=False,
-        dropout=None,
-        weighting_module_version="v1",
-        neighbour_weighting=False,
-        dw_ksize=3,
-    ):
+        in_channels: list[int],
+        stride: int,
+        reduce_ratio: int,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        with_cp: bool = False,
+        dropout: float | None = None,
+        weighting_module_version: str = "v1",
+        neighbour_weighting: bool = False,
+        dw_ksize: int = 3,
+    ) -> None:
         super().__init__()
 
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
 
         self.with_cp = with_cp
         self.stride = stride
@@ -420,7 +421,7 @@ class ConditionalChannelWeighting(nn.Module):
             )
 
         self.dropout = None
-        if dropout is not None and dropout > 0:
+        if dropout is not None and dropout > 0.0:
             self.dropout = nn.ModuleList([nn.Dropout(p=dropout) for _ in branch_channels])
 
     def _inner_forward(self, x):
@@ -459,21 +460,21 @@ class Stem(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        stem_channels,
-        out_channels,
-        expand_ratio,
-        conv_cfg=None,
-        norm_cfg=None,
-        with_cp=False,
-        strides=(2, 2),
-        extra_stride=False,
-        input_norm=False,
-    ):
+        in_channels: int,
+        stem_channels: int,
+        out_channels: int,
+        expand_ratio: int,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        with_cp: bool = False,
+        strides: tuple[int, int] = (2, 2),
+        extra_stride: bool = False,
+        input_norm: bool = False,
+    ) -> None:
         super().__init__()
 
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
 
         assert isinstance(strides, (tuple, list))
         assert len(strides) == 2
@@ -496,7 +497,7 @@ class Stem(nn.Module):
             padding=1,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
 
         self.conv2 = None
@@ -509,7 +510,7 @@ class Stem(nn.Module):
                 padding=1,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=dict(type="ReLU"),
+                act_cfg={"type": "ReLU"},
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -539,7 +540,7 @@ class Stem(nn.Module):
                 padding=0,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                act_cfg=dict(type="ReLU"),
+                act_cfg={"type": "ReLU"},
             ),
         )
 
@@ -551,7 +552,7 @@ class Stem(nn.Module):
             padding=0,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
         self.depthwise_conv = ConvModule(
             mid_channels,
@@ -572,7 +573,7 @@ class Stem(nn.Module):
             padding=0,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
 
     def _inner_forward(self, x):
@@ -626,7 +627,7 @@ class StemV2(nn.Module):
         super().__init__()
 
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
 
         assert num_stages > 0
         assert isinstance(strides, (tuple, list))
@@ -651,7 +652,7 @@ class StemV2(nn.Module):
             padding=1,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
 
         self.conv2 = None
@@ -664,7 +665,7 @@ class StemV2(nn.Module):
                 padding=1,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=dict(type="ReLU"),
+                act_cfg={"type": "ReLU"},
             )
 
         mid_channels = int(round(stem_channels * expand_ratio))
@@ -694,7 +695,7 @@ class StemV2(nn.Module):
                         padding=0,
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg=dict(type="ReLU"),
+                        act_cfg={"type": "ReLU"},
                     ),
                 ),
             )
@@ -709,7 +710,7 @@ class StemV2(nn.Module):
                         padding=0,
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg=dict(type="ReLU"),
+                        act_cfg={"type": "ReLU"},
                     ),
                     ConvModule(
                         mid_channels,
@@ -730,7 +731,7 @@ class StemV2(nn.Module):
                         padding=0,
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg=dict(type="ReLU"),
+                        act_cfg={"type": "ReLU"},
                     ),
                 ),
             )
@@ -767,54 +768,52 @@ class StemV2(nn.Module):
 
 
 class ShuffleUnit(nn.Module):
-    """InvertedResidual block for ShuffleNetV2 backbone.
-
-    Args:
-        in_channels (int): The input channels of the block.
-        out_channels (int): The output channels of the block.
-        stride (int): Stride of the 3x3 convolution layer. Default: 1
-        conv_cfg (dict): Config dict for convolution layer.
-            Default: None, which means using conv2d.
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU').
-        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
-    """
+    """InvertedResidual block for ShuffleNetV2 backbone."""
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        stride=1,
-        conv_cfg=None,
-        norm_cfg=None,
-        act_cfg=None,
-        with_cp=False,
+        in_channels: int,
+        out_channels: int,
+        stride: int = 1,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        act_cfg: dict | None = None,
+        with_cp: bool = False,
     ):
+        """InvertedResidual block for ShuffleNetV2 backbone.
+
+        Args:
+            in_channels (int): The input channels of the block.
+            out_channels (int): The output channels of the block.
+            stride (int): Stride of the 3x3 convolution layer. Default: 1
+            conv_cfg (dict): Config dict for convolution layer.
+                Default: None, which means using conv2d.
+            norm_cfg (dict): Config dict for normalization layer.
+                Default: dict(type='BN').
+            act_cfg (dict): Config dict for activation layer.
+                Default: dict(type='ReLU').
+            with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+                memory while slowing down the training speed. Default: False.
+
+        """
         super().__init__()
 
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
         if act_cfg is None:
-            act_cfg = dict(type="ReLU")
+            act_cfg = {"type": "ReLU"}
 
         self.stride = stride
         self.with_cp = with_cp
 
         branch_features = out_channels // 2
-        if self.stride == 1:
-            assert in_channels == branch_features * 2, (
+        if self.stride == 1 and in_channels != branch_features * 2:
+            msg = (
                 f"in_channels ({in_channels}) should equal to "
                 f"branch_features * 2 ({branch_features * 2}) "
                 "when stride is 1"
             )
-
-        if in_channels != branch_features * 2:
-            assert (
-                self.stride != 1
-            ), f"stride ({self.stride}) should not equal 1 when in_channels != branch_features * 2"
+            raise ValueError(msg)
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
@@ -875,7 +874,8 @@ class ShuffleUnit(nn.Module):
             ),
         )
 
-    def _inner_forward(self, x):
+    def _inner_forward(self, x: torch.Tensor) -> torch.Tensor:
+        """_inner_forward."""
         if self.stride > 1:
             out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
         else:
@@ -886,14 +886,9 @@ class ShuffleUnit(nn.Module):
 
         return out
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
-        if self.with_cp and x.requires_grad:
-            out = cp.checkpoint(self._inner_forward, x)
-        else:
-            out = self._inner_forward(x)
-
-        return out
+        return cp.checkpoint(self._inner_forward, x) if self.with_cp and x.requires_grad else self._inner_forward(x)
 
 
 class LiteHRModule(nn.Module):
@@ -901,24 +896,24 @@ class LiteHRModule(nn.Module):
 
     def __init__(
         self,
-        num_branches,
-        num_blocks,
-        in_channels,
-        reduce_ratio,
-        module_type,
-        multiscale_output=False,
-        with_fuse=True,
-        conv_cfg=None,
-        norm_cfg=None,
-        with_cp=False,
-        dropout=None,
-        weighting_module_version="v1",
-        neighbour_weighting=False,
-    ):
+        num_branches: int,
+        num_blocks: int,
+        in_channels: list[int],
+        reduce_ratio: int,
+        module_type: str,
+        multiscale_output: bool = False,
+        with_fuse: bool = True,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        with_cp: bool = False,
+        dropout: float | None = None,
+        weighting_module_version: str = "v1",
+        neighbour_weighting: bool = False,
+    ) -> None:
         super().__init__()
 
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
         self._check_branches(num_branches, in_channels)
 
         self.in_channels = in_channels
@@ -943,32 +938,37 @@ class LiteHRModule(nn.Module):
             self.relu = nn.ReLU()
 
     @staticmethod
-    def _check_branches(num_branches, in_channels):
+    def _check_branches(num_branches: int, in_channels: list[int]) -> None:
         """Check input to avoid ValueError."""
         if num_branches != len(in_channels):
             error_msg = f"NUM_BRANCHES({num_branches}) != NUM_INCHANNELS({len(in_channels)})"
             raise ValueError(error_msg)
 
-    def _make_weighting_blocks(self, num_blocks, reduce_ratio, stride=1, dropout=None):
-        layers = []
-        for _ in range(num_blocks):
-            layers.append(
-                ConditionalChannelWeighting(
-                    self.in_channels,
-                    stride=stride,
-                    reduce_ratio=reduce_ratio,
-                    conv_cfg=self.conv_cfg,
-                    norm_cfg=self.norm_cfg,
-                    with_cp=self.with_cp,
-                    dropout=dropout,
-                    weighting_module_version=self.weighting_module_version,
-                    neighbour_weighting=self.neighbour_weighting,
-                ),
+    def _make_weighting_blocks(
+        self,
+        num_blocks: int,
+        reduce_ratio: int,
+        stride: int = 1,
+        dropout: float | None = None,
+    ) -> nn.Sequential:
+        layers = [
+            ConditionalChannelWeighting(
+                self.in_channels,
+                stride=stride,
+                reduce_ratio=reduce_ratio,
+                conv_cfg=self.conv_cfg,
+                norm_cfg=self.norm_cfg,
+                with_cp=self.with_cp,
+                dropout=dropout,
+                weighting_module_version=self.weighting_module_version,
+                neighbour_weighting=self.neighbour_weighting,
             )
+            for _ in range(num_blocks)
+        ]
 
         return nn.Sequential(*layers)
 
-    def _make_one_branch(self, branch_index, num_blocks, stride=1):
+    def _make_one_branch(self, branch_index: int, num_blocks: int, stride: int = 1) -> nn.Sequential:
         """Make one branch."""
         layers = [
             ShuffleUnit(
@@ -977,7 +977,7 @@ class LiteHRModule(nn.Module):
                 stride=stride,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=dict(type="ReLU"),
+                act_cfg={"type": "ReLU"},
                 with_cp=self.with_cp,
             ),
         ]
@@ -989,22 +989,19 @@ class LiteHRModule(nn.Module):
                     stride=1,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=dict(type="ReLU"),
+                    act_cfg={"type": "ReLU"},
                     with_cp=self.with_cp,
                 ),
             )
 
         return nn.Sequential(*layers)
 
-    def _make_naive_branches(self, num_branches, num_blocks):
+    def _make_naive_branches(self, num_branches: int, num_blocks: int) -> nn.ModuleList:
         """Make branches."""
-        branches = []
-        for i in range(num_branches):
-            branches.append(self._make_one_branch(i, num_blocks))
-
+        branches = [self._make_one_branch(i, num_blocks) for i in range(num_branches)]
         return nn.ModuleList(branches)
 
-    def _make_fuse_layers(self):
+    def _make_fuse_layers(self) -> nn.ModuleList:
         """Make fuse layer."""
         if self.num_branches == 1:
             return None
@@ -1095,7 +1092,7 @@ class LiteHRModule(nn.Module):
 
         return nn.ModuleList(fuse_layers)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward function."""
         if self.num_branches == 1:
             return [self.layers[0](x[0])]
@@ -1112,11 +1109,7 @@ class LiteHRModule(nn.Module):
             for i in range(len(self.fuse_layers)):
                 y = out[0] if i == 0 else self.fuse_layers[i][0](out[0])
                 for j in range(self.num_branches):
-                    if i == j:
-                        fuse_y = out[j]
-                    else:
-                        fuse_y = self.fuse_layers[i][j](out[j])
-
+                    fuse_y = out[j] if i == j else self.fuse_layers[i][j](out[j])
                     if fuse_y.size()[-2:] != y.size()[-2:]:
                         fuse_y = functional.interpolate(fuse_y, size=y.size()[-2:], mode="nearest")
 
@@ -1154,20 +1147,21 @@ class LiteHRNet(BaseModule):
 
     def __init__(
         self,
-        extra,
-        in_channels=3,
-        conv_cfg=None,
-        norm_cfg=None,
-        norm_eval=False,
-        with_cp=False,
-        zero_init_residual=False,
-        dropout=None,
-        init_cfg=None,
-    ):
+        extra: dict,
+        in_channels: int = 3,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        norm_eval: bool = False,
+        with_cp: bool = False,
+        zero_init_residual: bool = False,
+        dropout: float | None = None,
+        init_cfg: dict | None = None,
+    ) -> None:
+        """Init."""
         super().__init__(init_cfg=init_cfg)
 
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
 
         self.extra = extra
         self.conv_cfg = conv_cfg
@@ -1232,7 +1226,7 @@ class LiteHRNet(BaseModule):
                         padding=0,
                         conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
-                        act_cfg=dict(type="ReLU"),
+                        act_cfg={"type": "ReLU"},
                     ),
                 )
                 in_modules_channels = out_modules_channels
@@ -1282,11 +1276,11 @@ class LiteHRNet(BaseModule):
                     padding=0,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=dict(type="ReLU"),
+                    act_cfg={"type": "ReLU"},
                 ),
             )
 
-            num_channels_last = [num_channels_last[0]] + num_channels_last
+            num_channels_last = [num_channels_last[0], *num_channels_last]
 
         self.with_aggregator = self.extra.get("out_aggregator") and self.extra["out_aggregator"]["enable"]
         if self.with_aggregator:
@@ -1297,7 +1291,11 @@ class LiteHRNet(BaseModule):
                 norm_cfg=self.norm_cfg,
             )
 
-    def _make_transition_layer(self, num_channels_pre_layer, num_channels_cur_layer):
+    def _make_transition_layer(
+        self,
+        num_channels_pre_layer: list[int],
+        num_channels_cur_layer: list[int],
+    ) -> nn.ModuleList:
         """Make transition layer."""
         num_branches_cur = len(num_channels_cur_layer)
         num_branches_pre = len(num_channels_pre_layer)
@@ -1371,12 +1369,24 @@ class LiteHRNet(BaseModule):
 
     def _make_stage(
         self,
-        stages_spec,
-        stage_index,
-        in_channels,
-        multiscale_output=True,
-        dropout=None,
-    ):
+        stages_spec: dict,
+        stage_index: int,
+        in_channels: list[int],
+        multiscale_output: bool = True,
+        dropout: float | None = None,
+    ) -> tuple[nn.Module, list[int]]:
+        """Create a stage of the LiteHRNet backbone.
+
+        Args:
+            stages_spec (dict): Specification of the stages of the backbone.
+            stage_index (int): Index of the current stage.
+            in_channels (list[int]): List of input channels for each branch.
+            multiscale_output (bool, optional): Whether to output features from all branches. Defaults to True.
+            dropout (float | None, optional): Dropout probability. Defaults to None.
+
+        Returns:
+            tuple[nn.Module, list[int]]: A tuple containing the stage module and the output channels for each branch.
+        """
         num_modules = stages_spec["num_modules"][stage_index]
         num_branches = stages_spec["num_branches"][stage_index]
         num_blocks = stages_spec["num_blocks"][stage_index]
@@ -1389,10 +1399,7 @@ class LiteHRNet(BaseModule):
         modules = []
         for i in range(num_modules):
             # multi_scale_output is only used last module
-            if not multiscale_output and i == num_modules - 1:
-                reset_multiscale_output = False
-            else:
-                reset_multiscale_output = True
+            reset_multiscale_output = not ((not multiscale_output) and i == num_modules - 1)
 
             modules.append(
                 LiteHRModule(
@@ -1415,7 +1422,7 @@ class LiteHRNet(BaseModule):
 
         return nn.Sequential(*modules), in_channels
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward function."""
         stem_outputs = self.stem(x)
         y_x2 = y_x4 = stem_outputs
@@ -1446,13 +1453,13 @@ class LiteHRNet(BaseModule):
 
         if self.add_stem_features:
             y_stem = self.stem_transition(y_x2)
-            y_list = [y_stem] + y_list
+            y_list = [y_stem, *y_list]
 
         out = y_list
         if self.with_aggregator:
             out = self.aggregator(out)
 
         if self.extra.get("add_input", False):
-            out = [x] + out
+            out = [x, *out]
 
         return out

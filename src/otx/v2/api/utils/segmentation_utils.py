@@ -3,8 +3,7 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
-from typing import List
+from __future__ import annotations
 
 import cv2
 import numpy as np
@@ -19,7 +18,7 @@ from otx.v2.api.entities.utils.shape_factory import ShapeFactory
 
 def mask_from_dataset_item(
     dataset_item: DatasetItemEntity,
-    labels: List[LabelEntity],
+    labels: list[LabelEntity],
     use_otx_adapter: bool = True,
 ) -> np.ndarray:
     """Creates a mask from dataset item.
@@ -36,7 +35,6 @@ def mask_from_dataset_item(
     Returns:
         Numpy array of mask
     """
-    # TODO: cache this so that it does not have to be redone for all the same media
     if use_otx_adapter:
         mask = mask_from_annotation(dataset_item.get_annotations(), labels, dataset_item.width, dataset_item.height)
     else:
@@ -51,16 +49,16 @@ def mask_from_file(dataset_item: DatasetItemEntity) -> np.ndarray:
     """
     mask_form_file = dataset_item.media.path
     if mask_form_file is None:
-        raise ValueError("Mask file doesn't exist or corrupted")
+        msg = "Mask file doesn't exist or corrupted"
+        raise ValueError(msg)
     mask_form_file = mask_form_file.replace("images", "masks")
     mask = cv2.imread(mask_form_file, cv2.IMREAD_GRAYSCALE)
-    mask = np.expand_dims(mask, axis=2)
-    return mask
+    return np.expand_dims(mask, axis=2)
 
 
 def mask_from_annotation(
-    annotations: List[Annotation],
-    labels: List[LabelEntity],
+    annotations: list[Annotation],
+    labels: list[LabelEntity],
     width: int,
     height: int,
 ) -> np.ndarray:
@@ -95,12 +93,8 @@ def mask_from_annotation(
         label_to_compare = known_labels[0].get_label()
 
         class_idx = labels.index(label_to_compare) + 1
-        contour = []
-        for point in shape.points:
-            contour.append([int(point.x * width), int(point.y * height)])
+        contour = [[int(point.x * width), int(point.y * height)] for point in shape.points]
 
         mask = cv2.drawContours(mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1)
 
-    mask = np.expand_dims(mask, axis=2)
-
-    return mask
+    return np.expand_dims(mask, axis=2)

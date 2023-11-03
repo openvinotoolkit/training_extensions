@@ -3,7 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-from typing import Optional
+from __future__ import annotations
 
 import torch
 from mmseg.models.builder import HEADS
@@ -36,8 +36,8 @@ class OTXFCNHead(FCNHead):
     def __init__(
         self,
         enable_aggregator: bool = False,
-        aggregator_min_channels: Optional[int] = None,
-        aggregator_merge_norm: Optional[str] = None,
+        aggregator_min_channels: int | None = None,
+        aggregator_merge_norm: str | None = None,
         aggregator_use_concat: bool = False,
         *args,
         **kwargs,
@@ -53,7 +53,7 @@ class OTXFCNHead(FCNHead):
             **kwargs: Arbitrary keyword arguments.
 
         """
-        in_channels = kwargs.get("in_channels")
+        in_channels: list[int] = kwargs.get("in_channels", [])
         in_index = kwargs.get("in_index")
         norm_cfg = kwargs.get("norm_cfg")
         conv_cfg = kwargs.get("conv_cfg")

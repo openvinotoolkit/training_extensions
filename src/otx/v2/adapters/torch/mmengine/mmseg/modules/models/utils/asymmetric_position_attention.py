@@ -5,9 +5,10 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional
 from mmcv.cnn import ConvModule
 from torch import nn
 
@@ -23,19 +24,40 @@ class AsymmetricPositionAttentionModule(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        key_channels,
-        value_channels=None,
-        psp_size=None,
-        conv_cfg=None,
-        norm_cfg=None,
-    ):
+        in_channels: int,
+        key_channels: int,
+        value_channels: int | None = None,
+        psp_size: tuple[int, ...] | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+    ) -> None:
+        """Asymmetric Position Attention Module.
+
+        Args:
+            in_channels (int): Number of input channels.
+            key_channels (int): Number of channels for the query and key projections.
+            value_channels (int, optional): Number of channels for the value projection.
+                If not specified, defaults to `in_channels`.
+            psp_size (tuple[int], optional): Pyramid pooling module sizes.
+                If not specified, defaults to `(1, 3, 6, 8)`.
+            conv_cfg (dict, optional): Dictionary to configure the convolutional layers.
+                If not specified, defaults to `None`.
+            norm_cfg (dict, optional): Dictionary to configure the normalization layers.
+                If not specified, defaults to `{"type": "BN"}`.
+
+        Attributes:
+            query_key (ConvModule): Convolutional module for the query and key projections.
+            key_psp (PSPModule): Pyramid pooling module for the key tensor.
+            value (ConvModule): Convolutional module for the value projection.
+            value_psp (PSPModule): Pyramid pooling module for the value tensor.
+            out_conv (ConvModule): Convolutional module for the output tensor.
+        """
         super().__init__()
 
         if psp_size is None:
             psp_size = (1, 3, 6, 8)
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
 
         self.in_channels = in_channels
         self.key_channels = key_channels
@@ -51,7 +73,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             padding=0,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
         self.key_psp = PSPModule(psp_size, method="max")
 
@@ -63,7 +85,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             padding=0,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
         self.value_psp = PSPModule(psp_size, method="max")
 
@@ -78,7 +100,7 @@ class AsymmetricPositionAttentionModule(nn.Module):
             act_cfg=None,
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         batch_size, _, _ = x.size(0), x.size(2), x.size(3)
 
@@ -90,13 +112,11 @@ class AsymmetricPositionAttentionModule(nn.Module):
 
         similarity_scores = torch.matmul(query, key)
         similarity_scores = (self.key_channels**-0.5) * similarity_scores
-        similarity_scores = F.softmax(similarity_scores, dim=-1)
+        similarity_scores = torch.nn.functional.softmax(similarity_scores, dim=-1)
 
         y = torch.matmul(similarity_scores, value)
         y = y.permute(0, 2, 1).contiguous()
         y = y.view(batch_size, self.value_channels, *x.size()[2:])
         y = self.out_conv(y)
 
-        out = x + y
-
-        return out
+        return x + y

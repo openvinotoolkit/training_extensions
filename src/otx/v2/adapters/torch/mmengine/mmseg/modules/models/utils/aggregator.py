@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import torch
-import torch.nn.functional as F
+import torch.nn.functional
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from torch import nn
 
@@ -20,15 +22,29 @@ class IterativeAggregator(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        min_channels=None,
-        conv_cfg=None,
-        norm_cfg=None,
-        merge_norm=None,
-        use_concat=False,
-    ):
+        in_channels: list[int],
+        min_channels: int | None = None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        merge_norm: str | None = None,
+        use_concat: bool = False,
+    ) -> None:
+        """Initializes IterativeAggregator.
+
+        Args:
+            in_channels (list[int]): Number of input channels for each branch.
+            min_channels (int, optional): Minimum number of output channels. Defaults to None.
+            conv_cfg (dict, optional): Config for convolution layers. Defaults to None.
+            norm_cfg (dict, optional): Config for normalization layers. Defaults to None.
+            merge_norm (str, optional): Type of normalization to apply after feature aggregation. Allowed values are
+                None, 'none', 'channel', 'spatial'. Defaults to None.
+            use_concat (bool, optional): Whether to concatenate features from all branches. Defaults to False.
+
+        Raises:
+            ValueError: If `merge_norm` is not None, 'none', 'channel', or 'spatial'.
+        """
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
         super().__init__()
 
         self.use_concat = use_concat
@@ -37,10 +53,13 @@ class IterativeAggregator(nn.Module):
         self.in_channels = in_channels[::-1]
 
         min_channels = min_channels if min_channels is not None else 0
-        assert min_channels >= 0
+        if min_channels < 0:
+            msg = f"min_channels must be greater than or equal to 0. Got {min_channels}."
+            raise ValueError(msg)
 
-        out_channels = None
-        projects, expanders, fuse_layers = [], [], []
+        out_channels = 1
+        projects, expanders = [], []
+        fuse_layers: list[torch.nn.Module] = []
         for i in range(num_branches):
             if not self.use_concat or i == 0:
                 fuse_layers.append(None)
@@ -53,7 +72,7 @@ class IterativeAggregator(nn.Module):
                         stride=1,
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg=dict(type="ReLU"),
+                        act_cfg={"type": "ReLU"},
                     ),
                 )
 
@@ -71,9 +90,9 @@ class IterativeAggregator(nn.Module):
                     padding=1,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=dict(type="ReLU"),
+                    act_cfg={"type": "ReLU"},
                     dw_act_cfg=None,
-                    pw_act_cfg=dict(type="ReLU"),
+                    pw_act_cfg={"type": "ReLU"},
                 ),
             )
 
@@ -86,7 +105,7 @@ class IterativeAggregator(nn.Module):
                         stride=1,
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
-                        act_cfg=dict(type="ReLU"),
+                        act_cfg={"type": "ReLU"},
                     ),
                 )
             else:
@@ -96,11 +115,13 @@ class IterativeAggregator(nn.Module):
         self.expanders = nn.ModuleList(expanders)
         self.fuse_layers = nn.ModuleList(fuse_layers)
 
-        assert merge_norm in [None, "none", "channel", "spatial"]
+        if merge_norm not in [None, "none", "channel", "spatial"]:
+            msg = "Invalid value for merge_norm. Allowed values are None, 'none', 'channel', 'spatial'."
+            raise ValueError(msg)
         self.merge_norm = merge_norm
 
     @staticmethod
-    def _norm(x, mode=None):
+    def _norm(x: torch.Tensor, mode: str | None = None) -> torch.Tensor:
         if mode is None or mode == "none":
             out = x
         elif mode == "channel":
@@ -113,7 +134,7 @@ class IterativeAggregator(nn.Module):
 
         return out
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward."""
         x = x[::-1]
 
@@ -121,21 +142,26 @@ class IterativeAggregator(nn.Module):
         last_x = None
         for i, s in enumerate(x):
             if self.expanders[i] is not None:
-                s = self.expanders[i](s)
+                s = self.expanders[i](s)  # noqa: PLW2901
 
             if last_x is not None:
-                last_x = F.interpolate(last_x, size=s.size()[-2:], mode="bilinear", align_corners=True)
+                last_x = torch.nn.functional.interpolate(
+                    last_x,
+                    size=s.size()[-2:],
+                    mode="bilinear",
+                    align_corners=True,
+                )
 
                 norm_s = self._norm(s, self.merge_norm)
                 norm_x = self._norm(last_x, self.merge_norm)
 
                 if self.use_concat:
                     concat_s = torch.cat([norm_s, norm_x], dim=1)
-                    s = self.fuse_layers[i](concat_s)
+                    s = self.fuse_layers[i](concat_s)  # noqa: PLW2901
                 else:
-                    s = norm_s + norm_x
+                    s = norm_s + norm_x  # noqa: PLW2901
 
-            s = self.projects[i](s)
+            s = self.projects[i](s)  # noqa: PLW2901
             last_x = s
 
             y_list.append(s)

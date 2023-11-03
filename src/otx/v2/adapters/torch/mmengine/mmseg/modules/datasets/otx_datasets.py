@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Any, Dict, List, Optional
+from __future__ import annotations
+
+from typing import Any
 
 import numpy as np
 from mmseg.datasets import BaseCDDataset
@@ -28,7 +30,7 @@ from otx.v2.api.entities.utils.segmentation_utils import mask_from_dataset_item
 
 def get_annotation_mmseg_format(
     dataset_item: DatasetItemEntity,
-    labels: List[LabelEntity],
+    labels: list[LabelEntity],
     use_otx_adapter: bool = True,
 ) -> dict:
     """Function to convert a OTX annotation to mmsegmentation format.
@@ -41,11 +43,8 @@ def get_annotation_mmseg_format(
     :return dict: annotation information dict in mmseg format
     """
     gt_seg_map = mask_from_dataset_item(dataset_item, labels, use_otx_adapter)
-
     gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
-    ann_info = dict(gt_seg_map=gt_seg_map)
-
-    return ann_info
+    return {"gt_seg_map": gt_seg_map}
 
 
 @DATASETS.register_module()
@@ -66,8 +65,8 @@ class OTXSegDataset(BaseCDDataset):
         self,
         otx_dataset: DatasetEntity,
         labels: list[LabelEntity],
-        empty_label: Optional[list] = None,
-        pipeline: list = [],
+        empty_label: list | None = None,
+        pipeline: list | dict | None = None,
         **kwargs,
     ):
         self.otx_dataset = otx_dataset
@@ -87,7 +86,7 @@ class OTXSegDataset(BaseCDDataset):
         """
         return len(self.otx_dataset)
 
-    def prepare_data(self, idx: int) -> Any:
+    def prepare_data(self, idx: int) -> dict:
         """Get item from dataset."""
         dataset = self.otx_dataset
         item = dataset[idx]
@@ -118,7 +117,7 @@ class LoadAnnotationFromOTXDataset:
     def __init__(self, use_otx_adapter=True):
         self.use_otx_adapter = use_otx_adapter
 
-    def __call__(self, results: Dict[str, Any]):
+    def __call__(self, results: dict[str, Any]):
         """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results.pop("dataset_item")  # Prevent unnessary deepcopy
         labels = results["ann_info"]["labels"]

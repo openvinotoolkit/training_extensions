@@ -9,13 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
-from mmengine.evaluator import Evaluator
-from mmengine.hooks import Hook
-from mmengine.optim import _ParamScheduler
-from mmengine.visualization import Visualizer
 from mmseg.apis import MMSegInferencer
-from torch.optim import Optimizer
-from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmseg.registry import MMSegmentationRegistry
@@ -24,6 +18,12 @@ from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
     import numpy as np
+    from mmengine.evaluator import Evaluator
+    from mmengine.hooks import Hook
+    from mmengine.optim import _ParamScheduler
+    from mmengine.visualization import Visualizer
+    from torch.optim import Optimizer
+    from torch.utils.data import DataLoader
 
 logger = get_logger()
 
@@ -66,13 +66,38 @@ class MMSegEngine(MMXEngine):
         visualizer: Visualizer | dict | None = None,
         **kwargs,
     ) -> dict:
+        """Train the model using the given data and hyperparameters.
+
+        Args:
+            model (torch.nn.Module | dict | None): The model to train.
+            train_dataloader (DataLoader | dict | None): The dataloader for training data.
+            val_dataloader (DataLoader | dict | None): The dataloader for validation data.
+            optimizer (dict | Optimizer | None): The optimizer to use for training.
+            checkpoint (str | Path | None): The path to save the checkpoint file.
+            max_iters (int | None): The maximum number of iterations to train for.
+            max_epochs (int | None): The maximum number of epochs to train for.
+            distributed (bool | None): Whether to use distributed training.
+            seed (int | None): The random seed to use for training.
+            deterministic (bool | None): Whether to use deterministic training.
+            precision (str | None): The precision to use for training.
+            val_interval (int | None): The interval at which to perform validation.
+            val_evaluator (Evaluator | dict | list | None): The evaluator to use for validation.
+            param_scheduler (_ParamScheduler | dict | list | None): The parameter scheduler to use for training.
+            default_hooks (dict | None): The default hooks to use for training.
+            custom_hooks (list | dict | Hook | None): The custom hooks to use for training.
+            visualizer (Visualizer | dict | None): The visualizer to use for training.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            dict: A dictionary containing the training results.
+        """
         if val_evaluator is None:
-            val_evaluator = dict(
-                iou_metrics=[
+            val_evaluator = {
+                "type": "IoUMetric",
+                "iou_metrics": [
                     "mDice",
                 ],
-                type="IoUMetric",
-            )
+            }
         return super().train(
             model,
             train_dataloader,
@@ -101,7 +126,7 @@ class MMSegEngine(MMXEngine):
         checkpoint: str | Path | None = None,
         pipeline: dict | list | None = None,
         device: str | (torch.device | None) = None,
-        task: str | None = None,
+        task: str | None = None,  # noqa: ARG002
         batch_size: int = 1,
         **kwargs,
     ) -> list[dict]:

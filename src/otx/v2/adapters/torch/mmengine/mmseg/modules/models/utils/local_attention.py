@@ -5,8 +5,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+from __future__ import annotations
 
-import torch.nn.functional as F
+import torch.nn.functional
 from mmcv.cnn import ConvModule
 from torch import nn
 
@@ -17,9 +18,23 @@ class LocalAttentionModule(nn.Module):
     Reference: https://github.com/lxtGH/GALD-DGCNet.
     """
 
-    def __init__(self, num_channels, conv_cfg=None, norm_cfg=None):
+    def __init__(self, num_channels: int, conv_cfg: dict | None = None, norm_cfg: dict | None = None) -> None:
+        """Initializes LocalAttentionModule.
+
+        Args:
+        num_channels (int): The number of input channels.
+        conv_cfg (dict | None): Optional configuration dictionary for the convolutional layers. Defaults to None.
+        norm_cfg (dict | None): Optional configuration dictionary for the normalization layers. If None, batch
+            normalization is used by default.
+
+        Attributes:
+            dwconv1 (ConvModule): The first depthwise separable convolutional layer.
+            dwconv2 (ConvModule): The second depthwise separable convolutional layer.
+            dwconv3 (ConvModule): The third depthwise separable convolutional layer.
+            sigmoid_spatial (nn.Sigmoid): The sigmoid activation function used to compute the spatial attention maps.
+        """
         if norm_cfg is None:
-            norm_cfg = dict(type="BN")
+            norm_cfg = {"type": "BN"}
         super().__init__()
 
         self.num_channels = num_channels
@@ -35,7 +50,7 @@ class LocalAttentionModule(nn.Module):
             groups=self.num_channels,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
         self.dwconv2 = ConvModule(
             in_channels=self.num_channels,
@@ -46,7 +61,7 @@ class LocalAttentionModule(nn.Module):
             groups=self.num_channels,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
         self.dwconv3 = ConvModule(
             in_channels=self.num_channels,
@@ -57,20 +72,18 @@ class LocalAttentionModule(nn.Module):
             groups=self.num_channels,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type="ReLU"),
+            act_cfg={"type": "ReLU"},
         )
         self.sigmoid_spatial = nn.Sigmoid()
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         _, _, h, w = x.size()
 
         y = self.dwconv1(x)
         y = self.dwconv2(y)
         y = self.dwconv3(y)
-        y = F.interpolate(y, size=(h, w), mode="bilinear", align_corners=True)
+        y = torch.nn.functional.interpolate(y, size=(h, w), mode="bilinear", align_corners=True)
         mask = self.sigmoid_spatial(y)
 
-        out = x + x * mask
-
-        return out
+        return x + x * mask

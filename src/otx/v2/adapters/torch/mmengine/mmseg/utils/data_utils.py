@@ -21,7 +21,7 @@ from otx.v2.api.utils.logger import get_logger
 logger = get_logger()
 
 
-def get_valid_label_mask_per_batch(img_metas, num_classes):
+def get_valid_label_mask_per_batch(img_metas: dict, num_classes: int) -> list:
     """Get valid label mask removing ignored classes to zero mask in a batch."""
     valid_label_mask_per_batch = []
     for _, meta in enumerate(img_metas):

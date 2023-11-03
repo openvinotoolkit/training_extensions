@@ -27,9 +27,17 @@ from otx.v2.api.utils.type_utils import str_to_subset_type
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_subset_pipeline(subset: str) -> list:
+def get_default_pipeline(subset: str) -> list:
+    """Returns the default data processing pipeline for the given subset.
+
+    Args:
+        subset (str): The subset of the dataset. Can be "train", "val", or "test".
+
+    Returns:
+        list: The list of processing steps to be applied to the data.
+    """
     if subset == "train":
-        pipeline = [
+        return [
             {"type": "LoadImageFromOTXDataset"},
             {"type": "LoadAnnotationFromOTXDataset", "_scope_": "mmseg"},
             {"type": "RandomResize", "scale": (544, 544), "ratio_range": (0.5, 2.0)},
@@ -37,17 +45,15 @@ def get_subset_pipeline(subset: str) -> list:
             {"type": "RandomFlip", "prob": 0.5, "direction": "horizontal"},
             {"type": "PackSegInputs", "_scope_": "mmseg"},
         ]
-        return pipeline
-    elif subset == "val" or subset == "test":
-        pipeline = [
+    if subset in ("val", "test"):
+        return [
             {"type": "LoadImageFromOTXDataset"},
             {"type": "Resize", "scale": (544, 544)},
             {"type": "LoadAnnotationFromOTXDataset", "_scope_": "mmseg"},
             {"type": "PackSegInputs", "_scope_": "mmseg"},
         ]
-        return pipeline
-    else:
-        raise NotImplementedError("Not supported subset")
+    msg = "Not supported subset"
+    raise NotImplementedError(msg)
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -142,7 +148,7 @@ class Dataset(BaseDataset):
             return None
         # Case without config
         if config is None:
-            _pipeline = pipeline if pipeline is not None else get_subset_pipeline(subset=subset)
+            _pipeline = pipeline if pipeline is not None else get_default_pipeline(subset=subset)
             dataset = OTXSegDataset(otx_dataset=otx_dataset, labels=labels, pipeline=_pipeline)
             dataset.configs = {
                 "type": str(OTXSegDataset.__qualname__),
@@ -153,7 +159,7 @@ class Dataset(BaseDataset):
             }
             return dataset
 
-        # TODO: need to figure out this part????
+        # TODO @eugene: need to figure out this part????
         # Config Setting
         if isinstance(config, str):
             _config = Config.fromfile(filename=config)
@@ -171,13 +177,12 @@ class Dataset(BaseDataset):
         dataset_config.pop("data_roots", None)
         dataset_config.pop("ann_files", None)
         dataset_config.pop("file_list", None)
-        # TODO: is it necessary for all this?
         dataset_config["_scope_"] = "mmpretrain"
         # Valid inputs
         if not dataset_config.get("type", False):
             dataset_config["type"] = OTXSegDataset.__name__
         if not dataset_config.get("pipeline", False):
-            dataset_config["pipeline"] = get_subset_pipeline()
+            dataset_config["pipeline"] = get_default_pipeline(subset=subset)
         dataset = DATASETS.build(dataset_config)
         dataset.configs = init_config
         return dataset
@@ -225,7 +230,7 @@ class Dataset(BaseDataset):
         if sampler is None:
             sampler = DATA_SAMPLERS.build(
                 {"type": "DefaultSampler", "shuffle": shuffle},
-                default_args=dict(dataset=dataset, seed=seed),
+                default_args={"dataset": dataset, "seed": seed},
             )
 
         init_fn = partial(worker_init_fn, num_workers=num_workers, rank=rank, seed=seed) if seed is not None else None
@@ -319,8 +324,7 @@ class Dataset(BaseDataset):
         if num_workers is None:
             num_workers = _config.get("num_workers", 0)
 
-        # kwargs conflict
-        subset_dataloader = self.build_dataloader(
+        return self.build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
             num_workers=num_workers,
@@ -331,7 +335,6 @@ class Dataset(BaseDataset):
             persistent_workers=persistent_workers,
             **kwargs,
         )
-        return subset_dataloader
 
     @property
     def num_classes(self) -> int:

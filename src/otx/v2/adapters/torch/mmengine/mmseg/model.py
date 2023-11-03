@@ -8,7 +8,6 @@ from __future__ import annotations
 import re
 import warnings
 from pathlib import Path
-from typing import Union
 
 import torch
 
@@ -23,32 +22,7 @@ MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/segmentation/models"
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 
-# def test_replace_num_classes():
-#     # Define a nested dictionary with 'num_classes' values to be replaced
-#     d = {
-#         'num_classes': 10,
-#         'layers': [
-#             {
-#                 'num_classes': 20,
-#                 'filters': 32
-#             },
-#             {
-#                 'num_classes': 30,
-#                 'filters': 64
-#             }
-#         ]
-#     }
-
-#     # Call the function to replace 'num_classes' values with 5
-#     replace_num_classes(d, 5)
-
-#     # Check that all 'num_classes' values have been replaced with 5
-#     assert d['num_classes'] == 5
-#     assert d['layers'][0]['num_classes'] == 5
-#     assert d['layers'][1]['num_classes'] == 5
-
-
-def replace_num_classes(d: Union[Config | dict], num_classes: int) -> None:
+def replace_num_classes(d: Config | dict, num_classes: int) -> None:
     """Recursively replaces the value of 'num_classes' in a nested dictionary with the given num_classes.
 
     Args:
@@ -71,10 +45,10 @@ def replace_num_classes(d: Union[Config | dict], num_classes: int) -> None:
 
 def get_model(
     model: str | (Config | dict),
-    pretrained: str | bool = False,
+    pretrained: str | bool | None = False,
     num_classes: int | None = None,
     device=None,
-    url_mapping: tuple[str, str] = None,
+    url_mapping: tuple[str, str] | None = None,
     **kwargs,
 ) -> torch.nn.Module:
     """Return a PyTorch model for training.
@@ -84,7 +58,12 @@ def get_model(
             a Config object, or a dictionary.
         pretrained (Union[str, bool], optional): Whether to use a pretrained model. Defaults to False.
         num_classes (Optional[int], optional): The number of classes in the dataset. Defaults to None.
-        channel_last (bool, optional): Whether to use channel last memory format. Defaults to False.
+        device (str | torch.device | None): Transfer the model to the target
+            device. Defaults to None.
+        url_mapping (Tuple[str, str], optional): The mapping of pretrained
+            checkpoint link. For example, load checkpoint from a local dir
+            instead of download by ``('https://.*/', './checkpoint')``.
+            Defaults to None.
         **kwargs: Additional keyword arguments to pass to the model.
 
     Returns:
@@ -126,7 +105,7 @@ def get_model(
     from mmengine.registry import DefaultScope
 
     with DefaultScope.overwrite_default_scope("mmseg"):
-        model = MODELS.build(config.model)
+        seg_model = MODELS.build(config.model)
 
     dataset_meta = {}
     if pretrained:
@@ -136,7 +115,7 @@ def get_model(
 
         if url_mapping is not None:
             pretrained = re.sub(url_mapping[0], url_mapping[1], pretrained)
-        checkpoint = load_checkpoint(model, pretrained, map_location="cpu")
+        checkpoint = load_checkpoint(seg_model, pretrained, map_location="cpu")
         # TODO: need to check this part for mmseg
         if "dataset_meta" in checkpoint.get("meta", {}):
             # mmpretrain 1.x
@@ -146,13 +125,13 @@ def get_model(
             dataset_meta = {"classes": checkpoint["meta"]["CLASSES"]}
 
     if device is not None:
-        model.to(device)
+        seg_model.to(device)
 
-    model._dataset_meta = dataset_meta  # save the dataset meta
-    model._config = config  # save the config in the model
-    model._metainfo = metainfo  # save the metainfo in the model
-    model.eval()
-    return model
+    seg_model._dataset_meta = dataset_meta  # save the dataset meta
+    seg_model._config = config  # save the config in the model
+    seg_model._metainfo = metainfo  # save the metainfo in the model
+    seg_model.eval()
+    return seg_model
 
 
 def list_models(pattern: str | None = None, **kwargs) -> list[str]:
