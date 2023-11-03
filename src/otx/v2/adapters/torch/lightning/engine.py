@@ -102,7 +102,7 @@ class LightningEngine(Engine):
         if seed is not None:
             seed_everything(seed=seed)
         if deterministic is not None:
-            self.trainer_config["deterministic"] = deterministic
+            self.trainer_config["deterministic"] = "warn" if deterministic else deterministic
         if val_interval is not None:
             # Validation Interval in Trainer -> val_check_interval
             self.trainer_config["val_check_interval"] = val_interval

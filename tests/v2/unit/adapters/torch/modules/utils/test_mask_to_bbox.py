@@ -7,8 +7,9 @@ from __future__ import annotations
 import numpy as np
 from otx.v2.adapters.torch.modules.utils.mask_to_bbox import (
     convert_polygon_to_mask,
-    generate_bbox,
     generate_bbox_from_mask,
+    generate_bbox_with_perturbation,
+    generate_fitted_bbox,
 )
 from otx.v2.api.entities.shapes.polygon import Point, Polygon
 
@@ -27,24 +28,52 @@ def test_convert_polygon_to_mask() -> None:
     assert mask.sum() == 21
 
 
-def test_generate_bbox() -> None:
+def test_generate_bbox(mocker) -> None:
     """Test generate_bbox."""
 
     x1, y1, x2, y2 = 10, 20, 30, 40
     width = 100
     height = 100
 
-    bbox = generate_bbox(x1, y1, x2, y2, width, height)
+    bbox = generate_fitted_bbox(x1, y1, x2, y2, width, height)
 
     assert isinstance(bbox, list)
     assert len(bbox) == 4
-    assert bbox[0] >= 0
+    assert bbox[0] == 10
     assert bbox[0] <= width
-    assert bbox[1] >= 0
+    assert bbox[1] == 20
     assert bbox[1] <= height
-    assert bbox[2] >= 0
+    assert bbox[2] == 30
     assert bbox[2] <= width
-    assert bbox[3] >= 0
+    assert bbox[3] == 40
+    assert bbox[3] <= height
+
+    bbox = generate_bbox_with_perturbation(x1, y1, x2, y2, width, height)
+
+    assert isinstance(bbox, list)
+    assert len(bbox) == 4
+    assert bbox[0] == 10
+    assert bbox[0] <= width
+    assert bbox[1] == 20
+    assert bbox[1] <= height
+    assert bbox[2] == 30
+    assert bbox[2] <= width
+    assert bbox[3] == 40
+    assert bbox[3] <= height
+
+    mock_random = mocker.patch("otx.v2.adapters.torch.modules.utils.mask_to_bbox.np.random.default_rng")
+    mock_random.return_value.normal.return_value = 4.0
+    bbox = generate_bbox_with_perturbation(x1, y1, x2, y2, width, height, offset_bbox=2)
+
+    assert isinstance(bbox, list)
+    assert len(bbox) == 4
+    assert bbox[0] == 14
+    assert bbox[0] <= width
+    assert bbox[1] == 24
+    assert bbox[1] <= height
+    assert bbox[2] == 34
+    assert bbox[2] <= width
+    assert bbox[3] == 44
     assert bbox[3] <= height
 
 
