@@ -129,6 +129,8 @@ def otx_train_testing(template, root, otx_dir, args, deterministic=True):
     command_line.extend(["--output", f"{template_work_dir}/trained_{template.model_template_id}"])
     command_line.extend(["--workspace", f"{template_work_dir}"])
     if "--load-weights" in args:
+        if not os.path.exists(args["--load-weights"]):
+            pytest.skip(reason=f"required file is not exist - {args['--load-weights']}")
         command_line.extend(["--load-weights", args["--load-weights"]])
     if "--gpus" in args:
         command_line.extend(["--gpus", args["--gpus"]])
@@ -163,6 +165,10 @@ def otx_resume_testing(template, root, otx_dir, args):
     ]:
         if option in args:
             command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
+
+    if "--resume-from" in args:
+        if not os.path.exists(args["--resume-from"]):
+            pytest.skip(reason=f"required file is not exist - {args['--resume-from']}")
 
     command_line.extend(["--output", f"{template_work_dir}/trained_for_resume_{template.model_template_id}"])
     command_line.extend(["--workspace", f"{template_work_dir}"])
