@@ -147,23 +147,12 @@ class TestDataset:
         result = dataset._build_dataset(subset="train")
         mock_base_dataset.assert_called_once()
 
-        # config is not None
-        # config is str
-        mock_config = Config({
-            "dataset": {}
-        })
-        mock_fromfile = mocker.patch("otx.v2.adapters.torch.mmengine.dataset.Config.fromfile")
-        mock_fromfile.return_value = mock_config
-        result = dataset._build_dataset(subset="train", config="test.yaml")
-        mock_fromfile.assert_called_once_with(filename="test.yaml")
-        mock_registry.return_value.get.return_value.build.assert_called()
-
         # config is dict
         result = dataset._build_dataset(subset="train", config={})
         mock_registry.return_value.get.return_value.build.assert_called()
 
         # config is Config with pipeline
-        result = dataset._build_dataset(subset="train", config=Config({}), pipeline=[mocker.MagicMock()])
+        result = dataset._build_dataset(subset="train", config={}, pipeline=[mocker.MagicMock()])
         mock_registry.return_value.get.return_value.build.assert_called()
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:

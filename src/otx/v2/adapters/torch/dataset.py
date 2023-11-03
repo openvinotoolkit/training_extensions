@@ -31,20 +31,20 @@ class BaseTorchDataset(BaseDataset):
     def _build_dataset(
         self,
         subset: str,
-        pipeline: list | dict | None = None,
-        config: str | dict | None = None,
+        pipeline: list | None = None,
+        config: dict | None = None,
     ) -> TorchDataset | None:
         """Builds a TorchDataset object for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[list, dict]]): The pipeline to use for the dataset.
+            pipeline (list | None, optional): The pipeline to use for the dataset.
                 Defaults to None.
-            config (Optional[Union[str, dict]]): The configuration to use for the dataset.
+            config (dict | None, optional): The configuration to use for the dataset.
                 Defaults to None.
 
         Returns:
-            Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
+            TorchDataset | None: The built TorchDataset object, or None if the dataset is empty.
 
         Example:
         >>> dataset._build_dataet(subset="train")
@@ -137,7 +137,7 @@ class BaseTorchDataset(BaseDataset):
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: dict | list | None = None,
+        pipeline: dict[str, list] | list | None = None,
         batch_size: int | None = None,
         num_workers: int | None = None,
         config: str | dict | None = None,
@@ -162,12 +162,12 @@ class BaseTorchDataset(BaseDataset):
 
         Args:
             subset (str): Enter an available subset of that dataset.
-            pipeline (Optional[Union[list, dict]], optional):
+            pipeline (dict[str, list] | list | None, optional):
                 Dataset Pipeline. Defaults to None.
-            batch_size (Optional[int], optional): How many samples per batch to load. Defaults to None.
-            num_workers (Optional[int], optional): How many subprocesses to use for data loading.
+            batch_size (int | None, optional): How many samples per batch to load. Defaults to None.
+            num_workers (int | None, optional): How many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process. Defaults to None.
-            config (Optional[Union[str, dict]], optional): Path to configuration file or Config.
+            config (str | dict | None, optional): Path to configuration file or Config.
                 Defaults to None.
             shuffle (bool, optional): Set to ``True`` to have the data reshuffled at every epoch. Defaults to True.
             pin_memory (bool, optional): If ``True``, the data loader will copy Tensors
@@ -176,7 +176,7 @@ class BaseTorchDataset(BaseDataset):
                 see the example below. Defaults to False.
             drop_last (bool, optional): value for whether to drop the last data when the batch is not divided up.
                 Defaults to False.
-            sampler (Optional[Union[Sampler, Iterable, Dict]], optional): Defines the strategy to draw
+            sampler (Sampler | (Iterable | dict) | None, optional): Defines the strategy to draw
                 samples from the dataset. Can be any ``Iterable`` with ``__len__``
                 implemented. If specified, :attr:`shuffle` must not be specified.. Defaults to None.
             persistent_workers (bool, optional): If ``True``, the data loader will not shutdown

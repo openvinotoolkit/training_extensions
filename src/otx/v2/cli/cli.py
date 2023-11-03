@@ -468,7 +468,10 @@ class OTXCLIv2:
         dl_kwargs = self.config_init[subcommand].pop(f"{subset}_dataloader", None)
         dl_kwargs.pop("self", None)
         dl_kwargs.pop("subset", None)
-        dl_kwargs.pop("dataset", None)
+        dataset_config = dl_kwargs.pop("dataset", {})
+        # Pull out the pipeline from Default Config.
+        if "pipeline" not in dl_kwargs or dl_kwargs["pipeline"] is None:
+            dl_kwargs["pipeline"] = dataset_config.get("pipeline", None)
         return dl_kwargs
 
 
