@@ -1,15 +1,21 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pytest
 from otx.v2.adapters.torch.mmengine.mmpretrain.dataset import MMPretrainDataset, get_default_pipeline
-from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TrainType
-from pytest_mock.plugin import MockerFixture
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
 
 
 def test_get_default_pipeline() -> None:
+    expected_pipeline: list | dict[str, list]
     expected_pipeline = [
         {"type": "Resize", "scale": [224, 224]},
         {"type": "mmpretrain.PackInputs"},
@@ -144,16 +150,39 @@ class TestDataset:
         mock_base_dataset.return_value = mocker.MagicMock()
         dataset.base_dataset = mock_base_dataset
 
+        mock_mmx_dataset = mocker.patch("otx.v2.adapters.torch.mmengine.mmpretrain.dataset.MMXDataset._build_dataset")
         result = dataset._build_dataset(subset="train")
-        mock_base_dataset.assert_called_once()
+        mock_mmx_dataset.assert_called_with(
+            "train",
+            [{'type': 'Resize', 'scale': [224, 224]}, {'type': 'mmpretrain.PackInputs'}],
+            None,
+        )
 
         # config is dict
         result = dataset._build_dataset(subset="train", config={})
-        mock_registry.return_value.get.return_value.build.assert_called()
+        mock_mmx_dataset.assert_called_with(
+            "train",
+            [{'type': 'Resize', 'scale': [224, 224]}, {'type': 'mmpretrain.PackInputs'}],
+            {},
+        )
 
-        # config is Config with pipeline
-        result = dataset._build_dataset(subset="train", config={}, pipeline=[mocker.MagicMock()])
-        mock_registry.return_value.get.return_value.build.assert_called()
+        # config is Config with pipeline arg
+        mock_pipeline = [{"type": "Resize", "scale": [224, 224]}]
+        result = dataset._build_dataset(subset="train", config={}, pipeline=mock_pipeline)
+        mock_mmx_dataset.assert_called_with(
+            "train",
+            mock_pipeline,
+            {},
+        )
+
+        # config is Config with pipeline (inside config)
+        mock_config = {"dataset": {"pipeline": [{"type": "Resize", "scale": [224, 224]}]}}
+        result = dataset._build_dataset(subset="train", config=mock_config)
+        mock_mmx_dataset.assert_called_with(
+            "train",
+            None,
+            mock_config,
+        )
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
         # dataset is None
