@@ -126,22 +126,24 @@ class MMPretrainDataset(MMXDataset):
     def _build_dataset(
         self,
         subset: str,
-        pipeline: list | dict | None = None,
-        config: str | dict | None = None,
+        pipeline: list | None = None,
+        config: dict | None = None,
     ) -> TorchDataset | None:
         """Builds a TorchDataset object for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[list, dict]]): The pipeline to use for the dataset.
+            pipeline (list | None, optional): The pipeline to use for the dataset.
                 Defaults to None.
-            config (Optional[Union[str, dict]]): The configuration to use for the dataset.
+            config (dict | None, optional): The configuration to use for the dataset.
                 Defaults to None.
 
         Returns:
             Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
         """
-        if pipeline is None:
+        dataset_config = config.get("dataset", config) if config is not None else {}
+        if pipeline is None and "pipeline" not in dataset_config:
             semisl = subset == "unlabeled"
-            pipeline = get_default_pipeline(semisl=semisl)
+            default_pipeline = get_default_pipeline(semisl=semisl)
+            pipeline = default_pipeline[subset] if isinstance(default_pipeline, dict) else default_pipeline
         return super()._build_dataset(subset, pipeline, config)

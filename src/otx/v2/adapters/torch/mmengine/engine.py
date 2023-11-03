@@ -147,6 +147,9 @@ class MMXEngine(Engine):
             if isinstance(visualizer, dict):
                 self.config["visualizer"]["_scope_"] = self.registry.name
 
+        # Update scope for Registry import step
+        kwargs["default_scope"] = self.registry.name
+
         # kwargs -> Update config
         for kwarg_key, kwarg_value in kwargs.items():
             if kwarg_value is None:

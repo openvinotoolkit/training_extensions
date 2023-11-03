@@ -54,6 +54,7 @@ class TestMMXEngine:
         model = mocker.Mock()
         engine._update_config({}, model=None)
         assert not hasattr(engine.config, "model")
+        assert engine.config.default_scope == "mmengine"
 
         # Test with invalid argument
         model = mocker.Mock()
