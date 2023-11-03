@@ -9,7 +9,7 @@ from functools import partial
 from typing import Iterable
 
 import torch
-from mmengine.dataset import default_collate, worker_init_fn
+from mmengine.dataset import default_collate, worker_init_fn, pseudo_collate
 from mmengine.dist import get_dist_info
 from mmengine.utils import digit_version
 from mmaction.registry import DATASETS
@@ -43,7 +43,7 @@ def get_default_pipeline() -> dict | list:
             "frame_interval": 4,
             "num_clips": 1,
         },
-        {"type": "mmaction.RawFrameDecode"},
+        {"type": "RawFrameDecode"},
         {"type": "mmaction.Resize", "scale": (-1, 256)},
         {"type": "mmaction.FormatShape", "input_format": "NCTHW"},
         {"type": "mmaction.PackActionInputs"},
@@ -234,7 +234,7 @@ class Dataset(BaseDataset):
             batch_size=batch_size,
             sampler=sampler,
             num_workers=num_workers,
-            collate_fn=partial(default_collate),
+            collate_fn=partial(pseudo_collate),
             pin_memory=pin_memory,
             shuffle=shuffle,
             worker_init_fn=init_fn,
@@ -247,7 +247,7 @@ class Dataset(BaseDataset):
             "batch_size": batch_size,
             "sampler": sampler_cfg,
             "num_workers": num_workers,
-            "collate_fn": {"type": "default_collate"},
+            "collate_fn": {"type": "pseudo_collate"},
             "pin_memory": pin_memory,
             "shuffle": shuffle,
             "dataset": dataset_cfg,

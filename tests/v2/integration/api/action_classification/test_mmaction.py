@@ -90,7 +90,6 @@ class TestMMActionAPI:
         # Setup Engine
         engine = Engine(work_dir=tmp_dir_path, config="/home/sungmanc/scripts/otx_2.0/otx/src/otx/v2/configs/action_classification/otx_mmaction_classification_default.yaml")
         built_model = get_model(model=model, num_classes=dataset.num_classes)
-
         # Train (1 epochs)
         results = engine.train(
             model=built_model,
@@ -106,19 +105,19 @@ class TestMMActionAPI:
 
         # Validation
         val_score = engine.validate()
-        assert "accuracy/top1" in val_score
-        assert val_score["accuracy/top1"] > 0.0
+        assert "acc/top1" in val_score
+        assert val_score["acc/top1"] > 0.0
 
         # Test
         test_score = engine.test(test_dataloader=dataset.test_dataloader())
-        assert "accuracy/top1" in test_score
-        assert test_score["accuracy/top1"] > 0.0
+        assert "acc/top1" in test_score
+        assert test_score["acc/top1"] > 0.0
 
         # Prediction with single image
         pred_result = engine.predict(
             model=results["model"],
             checkpoint=results["checkpoint"],
-            img=TASK_CONFIGURATION["classification"]["sample"],
+            img=TASK_CONFIGURATION["action_classification"]["sample"],
         )
         assert isinstance(pred_result, list)
         assert len(pred_result) == 1

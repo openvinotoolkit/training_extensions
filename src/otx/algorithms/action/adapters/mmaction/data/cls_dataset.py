@@ -18,8 +18,8 @@ from copy import copy
 from typing import Any, Dict, List, Sequence
 
 import numpy as np
-from mmaction.datasets.builder import DATASETS
-from mmaction.datasets.pipelines import Compose
+from mmaction.registry import DATASETS
+from mmaction.datasets.transforms import Compose
 from mmaction.datasets.rawframe_dataset import RawframeDataset
 
 from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode

@@ -12,13 +12,17 @@ model:
 train_dataloader:
   batch_size: 10
   num_workers: 0
+  persistent_workers: true
+  sampler:
+    type: DefaultSampler
+    shuffle: false
   dataset:
     type: OTXActionClsDataset
     pipeline:
     - type: SampleFrames
       clip_len: 8
       frame_interval: 4
-      num_clips: 1
+      num_clips: 2
     - type: RawFrameDecode
     - type: Resize
       scale: !!python/tuple
