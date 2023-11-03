@@ -49,6 +49,11 @@ class BaseTorchDataset(BaseDataset):
         Example:
         >>> dataset._build_dataet(subset="train")
         torch.utils.data.Dataset()
+        >>> dataset._build_dataset(
+            subset="train",
+            pipeline=[dict(type="Resize", scale=[224, 224])],
+        )
+        Dataset with Resize pipeline
         """
         raise NotImplementedError
 
@@ -162,7 +167,14 @@ class BaseTorchDataset(BaseDataset):
 
         Args:
             subset (str): Enter an available subset of that dataset.
-            pipeline (dict[str, list] | list | None, optional):
+            pipeline (dict[str, list] | list | None, optional): This can take a dict or a list.
+                Case with Dict: In the Semi-SL case,
+                    may want to apply a different pipeline between labeled and unlabeled.
+                    then we can give a dictionary of the form below.
+                    pipeline = {
+                        "train": [...],
+                        "unlabeled": [...]
+                    }
                 Dataset Pipeline. Defaults to None.
             batch_size (int | None, optional): How many samples per batch to load. Defaults to None.
             num_workers (int | None, optional): How many subprocesses to use for data loading.
@@ -189,11 +201,22 @@ class BaseTorchDataset(BaseDataset):
 
         Example:
         >>> dataset.subset_dataloader(subset="train")
-        torch.utils.data.Dataloader()
+        Training Dataloader
         >>> dataset.train_dataloader()
-        torch.utils.data.Dataloader()
+        Training Dataloader
         >>> dataset.train_dataloader(batch_size=4)
-        torch.utils.data.Dataloader() (batch size: 4)
+        Training Dataloader with batch size 4
+        >>> dataset.train_dataloader(
+            pipeline=[dict(type="Resize", scale=[224, 224])],
+        )
+        Training Dataloader with Resize pipeline
+        >>> dataset.train_dataloader(
+            pipeline={
+                "train": [...],
+                "unlabeled": [...]
+            },
+        )
+        Semi-SL Training DataLoader
         """
         # Config Setting
         _config: dict = {}
