@@ -90,15 +90,8 @@ class MMXEngine(Engine):
 
         # Update Model & Dataloaders & Custom hooks
         model = func_args.get("model", None)
-        num_classes = -1
         if model is not None:
             kwargs["model"] = model
-            if isinstance(model, torch.nn.Module):
-                head = model.head if hasattr(model, "head") else None
-                num_classes = head.num_classes if hasattr(head, "num_classes") else -1
-            else:
-                head = model.get("head", {})
-                num_classes = head.get("num_classes", -1)
         for subset_dataloader in ("train_dataloader", "val_dataloader", "test_dataloader"):
             data_loader = func_args.get(subset_dataloader, None)
             if data_loader is not None:
@@ -118,8 +111,6 @@ class MMXEngine(Engine):
             func_args=func_args,
             config=self.config,
             precision=precision,
-            num_classes=num_classes,
-            scope=self.registry.name,
             **kwargs,
         )
 
