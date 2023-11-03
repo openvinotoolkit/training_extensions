@@ -77,9 +77,7 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
             self.image_embedding_size = self.config.model.image_size // patch_size
         else:
             msg = f"{self.config.model.backbone} for image encoder of SAM is not implemented yet. Use vit_b, l, or h."
-            raise NotImplementedError(
-                msg,
-            )
+            raise NotImplementedError(msg)
 
         self.image_encoder = SAMImageEncoder(self.config.model)
         self.prompt_encoder = SAMPromptEncoder(
@@ -817,9 +815,7 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
         Returns:
             list[Callback]: A list of callbacks.
         """
-        callback_list = [
-            TQDMProgressBar(),
-        ]
+        callback_list = [TQDMProgressBar()]
         if self.training:
             callback_list.extend(
                 [

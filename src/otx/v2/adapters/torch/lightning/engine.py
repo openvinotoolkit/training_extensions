@@ -49,8 +49,8 @@ class LightningEngine(Engine):
         """Initialize the Lightning engine.
 
         Args:
-            work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
-            config (Optional[Union[str, dict]], optional): The configuration for the engine. Defaults to None.
+            work_dir (str | Path | None, optional): The working directory for the engine. Defaults to None.
+            config (str | dict | None, optional): The configuration for the engine. Defaults to None.
             task (str, optional): The task to perform. Defaults to "classification".
         """
         super().__init__(work_dir=work_dir)
@@ -158,13 +158,9 @@ class LightningEngine(Engine):
                 state_dict = state_dict["state_dict"]
             model.load_state_dict(state_dict, strict=False)
 
-    def _set_device(self, device: str | None = None) -> None:
+    def _set_device(self, device: str = "auto") -> None:
         # Set accelerator
-        accelerator = self.trainer_config.pop("accelerator", "auto")
-        if device is not None:
-            self.trainer_config["accelerator"] = device
-        else:
-            self.trainer_config["accelerator"] = accelerator
+        self.trainer_config["accelerator"] = device
 
         # Set number of devices
         self.trainer_config["devices"] = self.trainer_config.get("devices", 1)
@@ -185,17 +181,17 @@ class LightningEngine(Engine):
         val_interval: int | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
-        device: str | None = "auto",
+        device: str = "auto",
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
         """Train the given model using the provided data loaders and optimizer.
 
         Args:
-            model (Union[torch.nn.Module, pl.LightningModule]): The model to train.
-            train_dataloader (Union[DataLoader, LightningDataModule]): The data loader for training data.
-            val_dataloader (Optional[DataLoader], optional): The data loader for validation data. Defaults to None.
-            optimizer (Optional[Union[dict, Optimizer]], optional): The optimizer to use for training. Defaults to None.
-            checkpoint (Optional[Union[str, Path]], optional): The path to a checkpoint to load before training.
+            model (BaseOTXLightningModel | pl.LightningModule): The model to train.
+            train_dataloader (DataLoader | LightningDataModule): The data loader for training data.
+            val_dataloader (DataLoader | None, optional): The data loader for validation data. Defaults to None.
+            optimizer (dict | Optimizer | None, optional): The optimizer to use for training. Defaults to None.
+            checkpoint (str | Path | None, optional): The path to a checkpoint to load before training.
                 Defaults to None.
             max_iters (Optional[int], optional): The maximum number of iterations to train for. Defaults to None.
             max_epochs (Optional[int], optional): The maximum number of epochs to train for. Defaults to None.
@@ -206,7 +202,7 @@ class LightningEngine(Engine):
             val_interval (Optional[int], optional): The interval at which to run validation. Defaults to None.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in train.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in train.
-            device (str | None, optional): Supports passing different accelerator types
+            device (str, optional): Supports passing different accelerator types
                 ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
             **kwargs: Additional arguments to pass to the Trainer constructor.
 
@@ -264,7 +260,7 @@ class LightningEngine(Engine):
         precision: _PRECISION_INPUT | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
-        device: str | None = "auto",
+        device: str = "auto",
         **kwargs,
     ) -> dict:
         """Run validation on the given model using the provided validation dataloader and checkpoint.
@@ -278,7 +274,7 @@ class LightningEngine(Engine):
             precision (Optional[_PRECISION_INPUT]): The precision to use for validation.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in validate.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in validate.
-            device (str | None, optional): Supports passing different accelerator types
+            device (str, optional): Supports passing different accelerator types
                 ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
             **kwargs: Additional keyword arguments to pass to the method.
 
@@ -320,7 +316,7 @@ class LightningEngine(Engine):
         precision: _PRECISION_INPUT | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list[pl.Callback] | pl.Callback | DictConfig | None = None,
-        device: str | None = "auto",
+        device: str = "auto",
         **kwargs,
     ) -> dict:
         """Test the given model on the provided test dataloader.
@@ -334,7 +330,7 @@ class LightningEngine(Engine):
             precision (Optional[_PRECISION_INPUT]): The precision to use for testing.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in test.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in test.
-            device (str | None, optional): Supports passing different accelerator types
+            device (str, optional): Supports passing different accelerator types
                 ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
             **kwargs: Additional keyword arguments to pass to the method.
 
@@ -373,7 +369,7 @@ class LightningEngine(Engine):
         checkpoint: str | Path | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list | None = None,
-        device: str | None = "auto",  # ["auto", "cpu", "gpu", "cuda"]
+        device: str = "auto",  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
         """Run inference on the given model and input data.
 
@@ -383,7 +379,7 @@ class LightningEngine(Engine):
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in prediction.
             callbacks (list | None, optional): callbacks to use in prediction.
-            device (str | None, optional): Supports passing different accelerator types
+            device (str, optional): Supports passing different accelerator types
                 ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
 
         Returns:
@@ -431,7 +427,7 @@ class LightningEngine(Engine):
         model: BaseOTXLightningModel | pl.LightningModule | None = None,
         checkpoint: str | Path | None = None,
         precision: _PRECISION_INPUT | None = None,
-        export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
+        export_type: str = "OPENVINO",
     ) -> dict:
         """Export the model to a specified format.
 

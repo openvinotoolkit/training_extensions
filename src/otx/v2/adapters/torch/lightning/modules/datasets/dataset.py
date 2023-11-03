@@ -11,14 +11,8 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from otx.v2.adapters.torch.modules.utils.io import (
-    get_image_filenames,
-    read_image,
-)
-from otx.v2.adapters.torch.modules.utils.mask_to_bbox import (
-    convert_polygon_to_mask,
-    generate_bbox_from_mask,
-)
+from otx.v2.adapters.torch.modules.utils.io import get_image_filenames, read_image
+from otx.v2.adapters.torch.modules.utils.mask_to_bbox import convert_polygon_to_mask, generate_bbox_from_mask
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
@@ -28,12 +22,7 @@ from otx.v2.api.entities.shapes.polygon import Polygon
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.utils.logger import get_logger
 
-from .pipelines import (
-    MultipleInputsCompose,
-    Pad,
-    ResizeLongestSide,
-    collate_fn,
-)
+from .pipelines import MultipleInputsCompose, Pad, ResizeLongestSide, collate_fn
 
 if TYPE_CHECKING:
     from pathlib import Path

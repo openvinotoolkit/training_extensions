@@ -29,9 +29,7 @@ class SAMImageEncoder(nn.Module):
             self.backbone = build_vit(config.backbone, config.image_size)
         else:
             msg = f"{config.backbone} for image encoder of SAM is not implemented yet. Use vit_b, l, or h."
-            raise NotImplementedError(
-                msg,
-            )
+            raise NotImplementedError(msg)
 
     def forward(self, images: Tensor) -> Tensor:
         """Forward function of image encoder.

@@ -106,7 +106,7 @@ class AnomalibEngine(LightningEngine):
         val_interval: int | None = None,
         logger: list[Logger] | Logger | None = None,
         callbacks: list | None = None,
-        device: str | None = "auto",
+        device: str = "auto",
         **kwargs,  # Trainer.__init__ arguments
     ) -> dict:
         """Trains the given model using the provided data loaders and optimizer.
@@ -158,7 +158,7 @@ class AnomalibEngine(LightningEngine):
         precision: _PRECISION_INPUT | None = None,
         logger: list[Logger] | Logger | bool | None = None,
         callbacks: list | None = None,
-        device: str | None = "auto",
+        device: str = "auto",
         **kwargs,
     ) -> dict:
         """Test the given model on the provided test dataloader.
@@ -172,9 +172,9 @@ class AnomalibEngine(LightningEngine):
             precision (Optional[_PRECISION_INPUT]): The precision to use for testing.
             logger (list[Logger] | Logger | bool | None, optional): Logger to use in test.
             callbacks (list[pl.Callback] | pl.Callback | DictConfig | None, optional): callbacks to use in test.
-            device (str | None, optional): Supports passing different accelerator types
+            device (str, optional): Supports passing different accelerator types
                 ("cpu", "gpu", "tpu", "ipu", "hpu", "mps", "auto")
-            **kwargs: Additional keyword arguments to pass to the method.
+            **kwargs: Additional keyword arguments to pass to the method. This is used as the args for the Trainer.
 
         Returns:
             dict: The test results as a dictionary.
@@ -206,20 +206,20 @@ class AnomalibEngine(LightningEngine):
 
     def predict(
         self,
-        model: torch.nn.Module | pl.LightningModule | None = None,
+        model: BaseOTXLightningModel | pl.LightningModule | None = None,
         img: PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None = None,
         checkpoint: str | Path | None = None,
         logger: list[Logger] | Logger | None = None,
         callbacks: list[pl.Callback] | pl.Callback | None = None,
-        device: str | None = "auto",  # ["auto", "cpu", "gpu", "cuda"]
+        device: str = "auto",  # ["auto", "cpu", "gpu", "cuda"]
     ) -> list:
         """Run inference on the given model and input data.
 
         Args:
-            model (Optional[Union[torch.nn.Module, pl.LightningModule]]): The model to use for inference.
-            img (Optional[Union[PREDICT_FORMAT, LightningDataModule]]): The input data to run inference on.
-            checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for inference.
-            device (Optional[str]): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
+            model (BaseOTXLightningModel | pl.LightningModule | None): The model to use for inference.
+            img (PREDICT_FORMAT | (EVAL_DATALOADERS | LightningDataModule) | None): The input data to run inference on.
+            checkpoint (str | Path | None): The path to the checkpoint file to use for inference.
+            device (str, optional): The device to use for inference. Can be "auto", "cpu", "gpu", or "cuda".
 
         Returns:
             list: The output of the inference.
@@ -243,7 +243,6 @@ class AnomalibEngine(LightningEngine):
             dataloader = DataLoader(dataset)
         elif isinstance(img, (DataLoader, LightningDataModule)):
             dataloader = [img]
-        # Lightning Inferencer
         if model is None:
             model = self.latest_model.get("model", None)
         if checkpoint is None:
@@ -263,7 +262,6 @@ class AnomalibEngine(LightningEngine):
 
         if model is not None and checkpoint is not None:
             self._load_checkpoint(model, checkpoint)
-        # Lightning Inferencer
         return self.trainer.predict(
             model=model,
             dataloaders=dataloader,
@@ -274,8 +272,8 @@ class AnomalibEngine(LightningEngine):
         model: BaseOTXLightningModel | pl.LightningModule | None = None,
         checkpoint: str | Path | None = None,
         precision: _PRECISION_INPUT | None = None,
-        export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-    ) -> dict:
+        export_type: str = "OPENVINO",
+    ) -> dict[str, str | dict]:
         """Export the model to a specified format.
 
         Args:
@@ -284,11 +282,11 @@ class AnomalibEngine(LightningEngine):
             precision (Optional[_PRECISION_INPUT]): The precision to use for exporting the model.
             export_type (str): The type of export to perform. Can be "ONNX" or "OPENVINO".
             input_shape (Optional[Tuple[int, int]]): The input shape to use for exporting the model.
-            device (str | None, optional): Supports passing different accelerator types
+            device (str, optional): Supports passing different accelerator types
                 ("cpu", "gpu", "tpu", "ipu", "hpu", "mps")
 
         Returns:
-            dict: A dictionary containing the exported model(s).
+            dict[str, str | dict[str, str]]: A dictionary containing the exported model(s).
         """
         # Set input_shape (input_size)
         _model = self.latest_model.get("model", None) if model is None else model
