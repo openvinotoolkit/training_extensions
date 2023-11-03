@@ -9,7 +9,6 @@ from otx.v2.adapters.torch.modules.utils.mask_to_bbox import (
     convert_polygon_to_mask,
     generate_bbox_from_mask,
     generate_bbox_with_perturbation,
-    generate_fitted_bbox,
 )
 from otx.v2.api.entities.shapes.polygon import Point, Polygon
 
@@ -34,19 +33,6 @@ def test_generate_bbox(mocker) -> None:
     x1, y1, x2, y2 = 10, 20, 30, 40
     width = 100
     height = 100
-
-    bbox = generate_fitted_bbox(x1, y1, x2, y2, width, height)
-
-    assert isinstance(bbox, list)
-    assert len(bbox) == 4
-    assert bbox[0] == 10
-    assert bbox[0] <= width
-    assert bbox[1] == 20
-    assert bbox[1] <= height
-    assert bbox[2] == 30
-    assert bbox[2] <= width
-    assert bbox[3] == 40
-    assert bbox[3] <= height
 
     bbox = generate_bbox_with_perturbation(x1, y1, x2, y2, width, height)
 
