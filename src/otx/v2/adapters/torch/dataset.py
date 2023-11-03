@@ -46,8 +46,8 @@ class BaseTorchDataset(BaseDataset):
         Returns:
             TorchDataset | None: The built TorchDataset object, or None if the dataset is empty.
 
-        Example:
-        >>> dataset._build_dataet(subset="train")
+        Examples:
+        >>> dataset._build_dataset(subset="train")
         torch.utils.data.Dataset()
         >>> dataset._build_dataset(
             subset="train",
