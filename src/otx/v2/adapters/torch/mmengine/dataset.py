@@ -6,8 +6,10 @@
 from __future__ import annotations
 
 from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING, Iterable
 
+import yaml
 from mmengine.dataset import default_collate, worker_init_fn
 from mmengine.dist import get_dist_info
 
@@ -16,6 +18,7 @@ from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConf
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
 from otx.v2.adapters.torch.modules.dataloaders import ComposedDL
 from otx.v2.api.entities.task_type import TaskType, TrainType
+from otx.v2.api.utils import set_tuple_constructor
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type
 
@@ -107,16 +110,16 @@ class MMXDataset(BaseTorchDataset):
     def _build_dataset(
         self,
         subset: str,
-        pipeline: list | dict | None = None,
-        config: str | (dict | Config) | None = None,
+        pipeline: list | None = None,
+        config: dict | None = None,
     ) -> TorchDataset | None:
         """Builds a TorchDataset object for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[list, dict]]): The pipeline to use for the dataset.
+            pipeline (list | None, optional): The pipeline to use for the dataset.
                 Defaults to None.
-            config (Optional[Union[str, dict, Config]]): The configuration to use for the dataset.
+            config (dict | None, optional): The configuration to use for the dataset.
                 Defaults to None.
 
         Returns:
@@ -133,6 +136,7 @@ class MMXDataset(BaseTorchDataset):
         labels = self.label_schema.get_labels(include_empty=False)
         if len(otx_dataset) < 1:
             return None
+
         # Case without config
         if config is None:
             dataset = self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=pipeline)
@@ -146,12 +150,7 @@ class MMXDataset(BaseTorchDataset):
             return dataset
 
         # Config Setting
-        if isinstance(config, str):
-            _config = Config.fromfile(filename=config)
-        elif isinstance(config, dict):
-            _config = Config(cfg_dict=config)
-        else:
-            _config = config
+        _config = Config(cfg_dict=config)
         dataset_config = _config.get("dataset", _config)
         init_config = dataset_config.copy()
         dataset_config["otx_dataset"] = otx_dataset
@@ -221,7 +220,7 @@ class MMXDataset(BaseTorchDataset):
     def subset_dataloader(
         self,
         subset: str,
-        pipeline: dict | list | None = None,
+        pipeline: dict[str, list] | list | None = None,
         batch_size: int | None = None,
         num_workers: int | None = None,
         config: str | dict | None = None,
@@ -278,15 +277,16 @@ class MMXDataset(BaseTorchDataset):
         torch.utils.data.Dataloader()
         """
         # Config Setting
+        _config: dict = {}
         if isinstance(config, str):
-            _config = Config.fromfile(filename=config)
-        elif isinstance(config, dict):
-            _config = Config(cfg_dict=config)
-        elif config is None:
-            _config = Config(cfg_dict={})
-        else:
+            set_tuple_constructor()
+            with Path(config).open() as f:
+                _config = yaml.safe_load(f)
+        elif config is not None:
             _config = config
+
         dataloader_config = _config.get(f"{subset}_dataloader", None)
+
         subset_pipeline = pipeline
         if isinstance(subset_pipeline, dict):
             subset_pipeline = subset_pipeline[subset]
