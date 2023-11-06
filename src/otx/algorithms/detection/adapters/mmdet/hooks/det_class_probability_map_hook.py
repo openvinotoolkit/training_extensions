@@ -28,6 +28,7 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 
 # pylint: disable=too-many-locals
 
+# def normalize(tensor):
 
 class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
@@ -60,12 +61,9 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
         else:
             cls_scores = self._get_cls_scores_from_feature_map(feature_map)
 
-        # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
-        # it would highlight one of the class maps as a background class
-        if self.use_cls_softmax and self._num_cls_out_channels > 1:
-            cls_scores = [torch.softmax(t, dim=1) for t in cls_scores]
-
-        batch_size, _, height, width = cls_scores[-1].size()
+        middle_idx = len(cls_scores) // 2
+        # resize to the middle feature map
+        batch_size, _, height, width = cls_scores[middle_idx].size()
         saliency_maps = torch.empty(batch_size, self._num_cls_out_channels, height, width)
         for batch_idx in range(batch_size):
             cls_scores_anchorless = []
@@ -81,6 +79,11 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                     F.interpolate(cls_scores_anchorless_per_level, (height, width), mode="bilinear")
                 )
             saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
+
+        # Don't use softmax for tiles in tiling detection, if the tile doesn't contain objects,
+        # it would highlight one of the class maps as a background class
+        if self.use_cls_softmax and self._num_cls_out_channels > 1:
+            saliency_maps[0] = torch.stack([torch.softmax(t, dim=1) for t in saliency_maps[0]])
 
         if self._norm_saliency_maps:
             saliency_maps = saliency_maps.reshape((batch_size, self._num_cls_out_channels, -1))
@@ -106,20 +109,35 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                     for cls_conv in self._bbox_head.cls_convs:
                         cls_feat = cls_conv(cls_feat)
                     cls_score = self._bbox_head.atss_cls(cls_feat)
+                    # centerness = self._bbox_head.atss_centerness(cls_feat)
+                    
+                    # min_values = torch.min(centerness)
+                    # max_values = torch.max(centerness)
+                    # norm_centerness = (centerness - min_values) / (max_values - min_values + 1e-12)
+                    
+                    # weighted_cls_score = (cls_score - torch.min(cls_score)) * norm_centerness
                     cls_scores.append(cls_score)
             elif isinstance(self._bbox_head, CustomVFNetHead):
                 # Not clear how to separate cls_scores from bbox_preds
                 cls_scores, _, _ = self._bbox_head(x)
             elif isinstance(self._bbox_head, CustomYOLOXHead):
 
-                def forward_single(x, cls_convs, conv_cls):
+                def forward_single(x, cls_convs, conv_cls, objectness):
                     """Forward feature of a single scale level."""
                     cls_feat = cls_convs(x)
                     cls_score = conv_cls(cls_feat)
+
+                    # object_score = objectness(x)
+
+                    # min_values = torch.min(object_score)
+                    # max_values = torch.max(object_score)
+                    # norm_object_score = (object_score - min_values) / (max_values - min_values + 1e-12)
+
+                    # weighted_cls_score = (cls_score - torch.min(cls_score)) / norm_object_score
                     return cls_score
 
                 map_results = map(
-                    forward_single, x, self._bbox_head.multi_level_cls_convs, self._bbox_head.multi_level_conv_cls
+                    forward_single, x, self._bbox_head.multi_level_cls_convs, self._bbox_head.multi_level_conv_cls, self._bbox_head.multi_level_conv_obj
                 )
                 cls_scores = list(map_results)
             else:
