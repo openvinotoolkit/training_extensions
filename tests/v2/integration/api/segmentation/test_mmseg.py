@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
-
+import numpy as np
 import pytest
 import torch
 from otx.v2.adapters.torch.mmengine.mmseg import Engine, get_model, list_models
@@ -66,7 +66,7 @@ class TestMMSegAPI:
         Returns:
             None
         """
-        assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=32, val_data_size=32, test_data_size=32)
+        assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=36, val_data_size=80, test_data_size=80)
 
     @pytest.mark.parametrize("model", MODELS)
     def test_engine_api(self, dataset: Dataset, model: str, tmp_dir_path: Path) -> None:
@@ -101,20 +101,20 @@ class TestMMSegAPI:
             max_epochs=1,
         )
         assert "model" in results
-        assert "checkpoint" in  results
+        assert "checkpoint" in results
         assert isinstance(results["model"], torch.nn.Module)
         assert isinstance(results["checkpoint"], str)
         assert Path(results["checkpoint"]).exists()
 
         # Validation
         val_score = engine.validate()
-        assert "accuracy/top1" in val_score
-        assert val_score["accuracy/top1"] > 0.0
+        assert "mDice" in val_score
+        assert val_score["mDice"] > 0.0
 
         # Test
         test_score = engine.test(test_dataloader=dataset.test_dataloader())
-        assert "accuracy/top1" in test_score
-        assert test_score["accuracy/top1"] > 0.0
+        assert "mDice" in test_score
+        assert test_score["mDice"] > 0.0
 
         # Prediction with single image
         pred_result = engine.predict(
@@ -122,10 +122,8 @@ class TestMMSegAPI:
             checkpoint=results["checkpoint"],
             img=TASK_CONFIGURATION["classification"]["sample"],
         )
-        assert isinstance(pred_result, list)
-        assert len(pred_result) == 1
-        assert "num_classes" in pred_result[0]
-        assert pred_result[0].num_classes == dataset.num_classes
+        assert isinstance(pred_result, dict)
+        assert isinstance(pred_result["predictions"], np.ndarray)
 
         # Export Openvino IR Model
         export_output = engine.export(

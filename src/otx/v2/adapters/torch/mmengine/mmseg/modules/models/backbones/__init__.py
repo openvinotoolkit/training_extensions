@@ -17,7 +17,7 @@
 
 from .litehrnet import LiteHRNet
 
-# TODO (Eugene): MMOVBackbone, MSCAN, SegNeXt to be added
+# TODO (Eugene): MMOVBackbone, MSCAN, SegNeXt, otx_lite_hrnet_18_mod2, otx_lite_hrnet_x_mod3
 # CVS-124394
 
 __all__ = ["LiteHRNet"]
