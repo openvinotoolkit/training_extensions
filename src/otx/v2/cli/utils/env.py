@@ -15,7 +15,7 @@ from otx.v2.adapters import ADAPTERS
 from .install import get_module_version, get_requirements
 
 REQUIRED_ADAPTERS_PER_TASK = {
-    "anomaly": ["openvino", "datumaro", "torch.anomalib"],
+    "anomaly": ["openvino", "datumaro", "torch.lightning.anomalib"],
     "classification": [
         "openvino",
         "datumaro",

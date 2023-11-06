@@ -23,7 +23,7 @@ class TestAutoRunner:
         assert isinstance(auto_runner, AutoRunner)
 
         auto_runner = AutoRunner(task="anomaly_classification")
-        assert auto_runner.framework == "otx.v2.adapters.torch.anomalib"
+        assert auto_runner.framework == "otx.v2.adapters.torch.lightning.anomalib"
         assert auto_runner.task == TaskType.ANOMALY_CLASSIFICATION
 
         with pytest.raises(TypeError):
@@ -305,7 +305,7 @@ def test_set_adapters_from_string() -> None:
 
     result = set_adapters_from_string(framework=framework, engine=False, dataset=True, get_model=False, list_models=False, model_configs=False)
     assert "dataset" in result
-    assert result["dataset"].__name__ == "Dataset"
+    assert result["dataset"].__name__ == "MMPretrainDataset"
 
     result = set_adapters_from_string(framework=framework)
     assert "engine" in result

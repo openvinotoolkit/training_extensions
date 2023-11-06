@@ -43,17 +43,17 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     # TaskType.ACTION_CLASSIFICATION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     # TaskType.ACTION_DETECTION: f"{ADAPTERS_ROOT}.torch.mmcv.mmaction",
     TaskType.ANOMALY_CLASSIFICATION: {
-        "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
         "default_config": {
             TrainType.Incremental: f"{CONFIG_ROOT}/anomaly_classification/otx_anomalib_default.yaml",
         },
     },
     TaskType.ANOMALY_DETECTION: {
-        "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
         "default_config": {},
     },
     TaskType.ANOMALY_SEGMENTATION: {
-        "adapter": f"{ADAPTERS_ROOT}.torch.anomalib",
+        "adapter": f"{ADAPTERS_ROOT}.torch.lightning.anomalib",
         "default_config": {},
     },
 }
@@ -63,7 +63,7 @@ ADAPTER_QUICK_LINK = {
     "mmpretrain": "torch.mmengine.mmpretrain",
     "mmdet": "torch.mmengine.mmdet",
     "mmseg": "torch.mmengine.mmseg",
-    "anomalib": "torch.anomalib",
+    "anomalib": "torch.lightning.anomalib",
 }
 
 

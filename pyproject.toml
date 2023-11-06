@@ -81,7 +81,7 @@ base = [
     "bayesian-optimization>=1.2.0",
     "tensorboard>=2.11.0",
     "multiprocess",
-    "torch==2.0.0",
+    "torch==2.0.1",
 ]
 openvino = [
     "nncf==2.5.0",
@@ -96,7 +96,7 @@ anomaly = [
     "kornia==0.6.9",
 ]
 classification = [
-    "mmpretrain==1.0.*",
+    "mmpretrain==1.0.1",
     "mmdeploy",
     "timm==0.6.12",
     "pytorchcv",
