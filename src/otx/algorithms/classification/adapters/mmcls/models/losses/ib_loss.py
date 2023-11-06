@@ -1,5 +1,5 @@
 """Module for defining IB Loss which alleviate effect of imbalanced dataset."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
