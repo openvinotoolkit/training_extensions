@@ -17,7 +17,7 @@ from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
-from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config, update_runner_config
+from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config, update_train_config
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils.importing import get_all_args, get_default_args
 from otx.v2.api.utils.logger import get_logger
@@ -32,6 +32,42 @@ if TYPE_CHECKING:
 
 logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
+# NOTE: We need to discuss where to declare the default value.
+DEFAULT_CONFIG: dict[str, dict | list | str | int | float | None] = {
+    "max_epochs": 10,
+    "max_iters": None,
+    "val_interval": 1,
+    "seed": 1234,
+    "deterministic": False,
+    "precision": "float32",
+    "default_hooks": {
+        "logger": {
+            "type": "LoggerHook",
+            "interval": 100,
+        },
+        "timer": {
+            "type": "IterTimerHook",
+        },
+        "checkpoint": {
+            "type": "CheckpointHook",
+            "interval": 1,
+            "save_best": "auto",
+            "max_keep_ckpts": 1,
+        },
+    },
+    "custom_hooks": [],
+    "param_scheduler": {"type": "CosineAnnealingLR"},
+    "visualizer": {
+        "type": "UniversalVisualizer",
+        "vis_backends": [
+            {"type": "LocalVisBackend"},
+            {"type": "TensorboardVisBackend"},
+        ],
+    },
+    "optimizer": {
+        "type": "SGD", "lr": 0.01, "momentum": 0.9, "weight_decay": 0.0005,
+    },
+}
 
 
 class MMXEngine(Engine):
@@ -44,37 +80,24 @@ class MMXEngine(Engine):
     def __init__(
         self,
         work_dir: str | Path | None = None,
-        config: dict | (Config | str) | None = None,
     ) -> None:
         """Initialize a new instance of the MMEngine class.
 
         Args:
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
-            config (Optional[Union[dict, Config, str]], optional): The configuration for the engine. Defaults to None.
         """
         super().__init__(work_dir=work_dir)
         self.runner: Runner
         self.latest_model = {"model": None, "checkpoint": None}
         self.registry = MMEngineRegistry()
-        self._initial_config(config)
+        self.default_config = Config(DEFAULT_CONFIG)
         self.dumped_config = Config({})
-
-    def _initial_config(self, config: dict | (Config | str) | None) -> None:
-        if config is not None:
-            if isinstance(config, str):
-                self.config = Config.fromfile(config)
-            elif isinstance(config, Config):
-                self.config = copy.deepcopy(config)
-            elif isinstance(config, dict):
-                self.config = Config(config)
-        else:
-            self.config = Config({})
 
     def _update_config(
         self,
         func_args: dict,
         **kwargs,
-    ) -> bool:
+    ) -> tuple[Config, bool]:
         """Update the configuration of the runner with the provided arguments.
 
         Args:
@@ -82,93 +105,83 @@ class MMXEngine(Engine):
             **kwargs: Additional keyword arguments to update the configuration for mmengine.Runner.
 
         Returns:
-            bool: True if the configuration was updated, False otherwise.
+            tuple[Config, bool]: Config, True if the configuration was updated, False otherwise.
         """
         update_check = not all(value is None for value in func_args.values()) or not all(
             value is None for value in kwargs.values()
         )
 
-        # Update Model & Dataloaders & Custom hooks
+        runner_config = Config({})
+        for key, value in kwargs.items():
+            if value is None:
+                continue
+            runner_config[key] = value
+
+        # Update Model & Dataloaders
         model = func_args.get("model", None)
         if model is not None:
-            kwargs["model"] = model
-        for subset_dataloader in ("train_dataloader", "val_dataloader", "test_dataloader"):
-            data_loader = func_args.get(subset_dataloader, None)
+            runner_config["model"] = model
+
+        # train_dataloader & train_cfg & optim_wrapper
+        train_dataloader = func_args.get("train_dataloader", None)
+        precision = get_value_from_config("precision", func_args, config=self.default_config)
+        if train_dataloader is not None:
+            update_train_config(
+                train_dataloader=train_dataloader,
+                arguments=func_args,
+                default_config=self.default_config,
+                config=runner_config,
+            )
+        elif train_dataloader is None:
+            runner_config["train_dataloader"] = None
+            runner_config["train_cfg"] = None
+            runner_config["optim_wrapper"] = None
+
+        for subset in ("val", "test"):
+            data_loader = func_args.get(f"{subset}_dataloader", None)
             if data_loader is not None:
-                kwargs[subset_dataloader] = data_loader
-        # Sub Arguments
-        arg_keys = ["param_scheduler", "custom_hooks"]
-        for arg_key in arg_keys:
-            arg_config = get_value_from_config(arg_key, func_args, config=self.config)
-            if arg_config is not None:
-                kwargs[arg_key] = arg_config
-
-        precision: str | None = func_args.get("precision", None)
-        precision = self.config.get("precision", None) if precision is None else precision
-
-        # Update train_cfg & val_cfg (ValLoop) & test_cfg (TestLoop)
-        self.config, kwargs = update_runner_config(
-            func_args=func_args,
-            config=self.config,
-            precision=precision,
-            **kwargs,
-        )
+                runner_config[f"{subset}_dataloader"] = data_loader
+                if f"{subset}_cfg" not in runner_config or runner_config[f"{subset}_cfg"] is None:
+                    runner_config[f"{subset}_cfg"] = {}
+                if precision in ["float16", "fp16"]:
+                    runner_config[f"{subset}_cfg"]["fp16"] = True
+                # Update val_evaluator
+                evaluator = get_value_from_config(f"{subset}_evaluator", func_args, config=self.default_config)
+                runner_config[f"{subset}_evaluator"] = evaluator if evaluator is not None else {}
+            else:
+                runner_config[f"{subset}_dataloader"] = None
+                runner_config[f"{subset}_cfg"] = None
+                runner_config[f"{subset}_evaluator"] = None
 
         # Update randomness
-        seed = func_args.get("seed", self.config.pop("seed", None))
-        deterministic = func_args.get("deterministic", self.config.pop("deterministic", None))
+        seed = get_value_from_config("seed", func_args, config=self.default_config)
+        deterministic = get_value_from_config("deterministic", func_args, config=self.default_config)
         if seed is not None:
-            kwargs["randomness"] = {"seed": seed, "deterministic": deterministic}
+            runner_config["randomness"] = {"seed": seed, "deterministic": deterministic}
 
-        distributed = get_value_from_config("distributed", func_args, config=self.config, default=False)
-        default_hooks = get_value_from_config("default_hooks", func_args, config=self.config)
-        if default_hooks is None:
-            default_hooks = {
-                # record the time of every iterations.
-                "timer": {"type": "IterTimerHook"},
-                # print log every 100 iterations.
-                "logger": {"type": "LoggerHook", "interval": 100},
-                # enable the parameter scheduler.
-                "param_scheduler": {"type": "ParamSchedulerHook"},
-                # save checkpoint per epoch, and automatically save the best checkpoint.
-                "checkpoint": {
-                    "type": "CheckpointHook",
-                    "interval": 1,
-                    "max_keep_ckpts": 1,
-                    "save_best": "auto",
-                },
-                # set sampler seed in distributed evrionment.
-                "sampler_seed": {"type": "DistSamplerSeedHook"} if distributed else None,
-            }
-        kwargs["default_hooks"] = default_hooks
-        visualizer = get_value_from_config("visualizer", func_args, config=self.config)
+        default_hooks = get_value_from_config("default_hooks", func_args, config=self.default_config)
+        runner_config["default_hooks"] = default_hooks
+        visualizer = get_value_from_config("visualizer", func_args, config=self.default_config)
         if visualizer is not None:
-            self.config["visualizer"] = visualizer
-            if isinstance(visualizer, dict):
-                self.config["visualizer"]["_scope_"] = self.registry.name
+            runner_config["visualizer"] = visualizer
 
         # Update scope for Registry import step
-        kwargs["default_scope"] = self.registry.name
+        runner_config["default_scope"] = self.registry.name
 
-        # kwargs -> Update config
-        for kwarg_key, kwarg_value in kwargs.items():
-            if kwarg_value is None:
-                continue
-            self.config[kwarg_key] = kwarg_value
         # Check Config Default is not None
         runner_default_args = get_default_args(Runner.__init__)
         for not_none_arg, default_value in runner_default_args:
-            if self.config.get(not_none_arg) is None:
-                self.config[not_none_arg] = default_value
+            if runner_config.get(not_none_arg, None) is None:
+                runner_config[not_none_arg] = default_value
         # Last Check for Runner.__init__
         runner_arg_list = get_all_args(Runner.__init__)
-        removed_key = [config_key for config_key in self.config if config_key not in runner_arg_list]
+        removed_key = [config_key for config_key in runner_config if config_key not in runner_arg_list]
         if removed_key:
             msg = f"In Engine.config, remove {removed_key} that are unavailable to the Runner."
             logger.warning(msg, stacklevel=2)
             for config_key in removed_key:
-                self.config.pop(config_key)
-        return update_check
+                runner_config.pop(config_key)
+        return runner_config, update_check
 
     def train(
         self,
@@ -250,12 +263,12 @@ class MMXEngine(Engine):
             "custom_hooks": custom_hooks,
             "visualizer": visualizer,
         }
-        update_check = self._update_config(func_args=train_args, **kwargs)
+        config, update_check = self._update_config(func_args=train_args, **kwargs)
 
         target_folder = Path(self.work_dir) / f"{self.timestamp}_train"
 
         if not hasattr(self, "runner") or update_check:
-            self.config.pop("work_dir")
+            config.pop("work_dir")
             base_runner = self.registry.get("Runner")
             if base_runner is None:
                 msg = "Runner not found."
@@ -264,15 +277,15 @@ class MMXEngine(Engine):
                 work_dir=str(target_folder),
                 experiment_name="otx_train",
                 cfg=Config({}),  # To prevent unnecessary dumps.
-                **self.config,
+                **config,
             )
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
-        self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
+        self.dumped_config = dump_lazy_config(config=config, scope=self.registry.name)
         output_model = self.runner.train()
 
         # Get CKPT path
-        if self.config.train_cfg.by_epoch:
+        if config.train_cfg.by_epoch:
             ckpt_path = list(Path(target_folder).glob("epoch*.pth"))[-1]
         else:
             ckpt_path = list(Path(target_folder).glob("iter*.pth"))[-1]
@@ -322,10 +335,10 @@ class MMXEngine(Engine):
             "val_evaluator": val_evaluator,
             "precision": precision,
         }
-        update_check = self._update_config(func_args=val_args, **kwargs)
+        config, update_check = self._update_config(func_args=val_args, **kwargs)
         target_folder = Path(self.work_dir) / f"{self.timestamp}_validate"
         if not hasattr(self, "runner"):
-            self.config.pop("work_dir")
+            config.pop("work_dir")
             base_runner = self.registry.get("Runner")
             if base_runner is None:
                 msg = "Runner not found."
@@ -334,17 +347,17 @@ class MMXEngine(Engine):
                 work_dir=str(target_folder),
                 experiment_name="otx_validate",
                 cfg=Config({}),  # To prevent unnecessary dumps.
-                **self.config,
+                **config,
             )
         elif update_check:
-            self.runner._val_dataloader = self.config["val_dataloader"]  # noqa: SLF001
-            self.runner._val_loop = self.config["val_cfg"]  # noqa: SLF001
-            self.runner._val_evaluator = self.config["val_evaluator"]  # noqa: SLF001
+            self.runner._val_dataloader = config["val_dataloader"]  # noqa: SLF001
+            self.runner._val_loop = config["val_cfg"]  # noqa: SLF001
+            self.runner._val_evaluator = config["val_evaluator"]  # noqa: SLF001
             self.runner._experiment_name = f"otx_validate_{self.runner.timestamp}"  # noqa: SLF001
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
 
-        self.dumped_config = dump_lazy_config(config=self.config, file=None, scope=self.registry.name)
+        self.dumped_config = dump_lazy_config(config=config, file=None, scope=self.registry.name)
 
         return self.runner.val()
 
@@ -381,12 +394,12 @@ class MMXEngine(Engine):
             "test_evaluator": test_evaluator,
             "precision": precision,
         }
-        update_check = self._update_config(func_args=test_args, **kwargs)
+        config, update_check = self._update_config(func_args=test_args, **kwargs)
         # This will not build if there are training-related hooks.
-        self.config["custom_hooks"] = None
+        config["custom_hooks"] = None
         target_folder = Path(self.work_dir) / f"{self.timestamp}_test"
         if not hasattr(self, "runner"):
-            self.config.pop("work_dir")
+            config.pop("work_dir")
             base_runner = self.registry.get("Runner")
             if base_runner is None:
                 msg = "Runner not found."
@@ -395,17 +408,17 @@ class MMXEngine(Engine):
                 work_dir=str(target_folder),
                 experiment_name="otx_test",
                 cfg=Config({}),  # To prevent unnecessary dumps.
-                **self.config,
+                **config,
             )
         elif update_check:
-            self.runner._test_dataloader = self.config["test_dataloader"]  # noqa: SLF001
-            self.runner._test_loop = self.config["test_cfg"]  # noqa: SLF001
-            self.runner._test_evaluator = self.config["test_evaluator"]  # noqa: SLF001
+            self.runner._test_dataloader = config["test_dataloader"]  # noqa: SLF001
+            self.runner._test_loop = config["test_cfg"]  # noqa: SLF001
+            self.runner._test_evaluator = config["test_evaluator"]  # noqa: SLF001
             self.runner._experiment_name = f"otx_test_{self.runner.timestamp}"  # noqa: SLF001
         if checkpoint is not None:
             self.runner.load_checkpoint(checkpoint)
 
-        self.dumped_config = dump_lazy_config(config=self.config, scope=self.registry.name)
+        self.dumped_config = dump_lazy_config(config=config, scope=self.registry.name)
 
         return self.runner.test()
 
