@@ -132,7 +132,7 @@ class MMXDataset(BaseTorchDataset):
             msg = f"{subset} is not supported subset"
             raise ValueError(msg)
 
-        otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
+        otx_dataset = self.dataset_entity.get(str_to_subset_type(subset))
         labels = self.label_schema.get_labels(include_empty=False)
         if len(otx_dataset) < 1:
             return None

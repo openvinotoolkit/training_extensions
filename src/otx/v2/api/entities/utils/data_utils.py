@@ -134,8 +134,8 @@ def get_cls_img_indices(labels: List[LabelEntity], dataset: DatasetEntity) -> Di
     """
     img_indices: Dict[str, List[int]] = {label.name: [] for label in labels}
     for i, item in enumerate(dataset):
-        item_labels = item.annotation_scene.get_labels()
-        for i_l in item_labels:
+        # item_labels = item.annotation_scene.get_labels()
+        for i_l in item.annotations:
             if i_l in labels:
                 img_indices[i_l.name].append(i)
 
@@ -178,7 +178,7 @@ def get_image(results: dict, cache_dir: str, to_float32: bool = False) -> np.nda
     """
 
     def is_training_video_frame(subset: Subset, media: IMedia2DEntity) -> bool:
-        return subset.name in ["TRAINING", "VALIDATION"] and "VideoFrame" in repr(media)
+        return subset in ["train", "val"] and "VideoFrame" in repr(media)
 
     def load_image_from_cache(filename: str, to_float32: bool = False) -> Union[np.ndarray, None]:
         try:
@@ -217,7 +217,18 @@ def get_image(results: dict, cache_dir: str, to_float32: bool = False) -> np.nda
             if loaded_img is not None:
                 return loaded_img
 
-    img = results["dataset_item"].numpy  # this takes long for VideoFrame
+    img = results["dataset_item"].media.data  # this takes long for VideoFrame
+
+    # OTX expects RGB format
+    img = img.astype(np.uint8)
+    if len(img.shape) == 2:
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+    elif len(img.shape) == 3:
+        if img.shape[-1] == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        if img.shape[-1] == 4:
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+    
     if to_float32:
         img = img.astype(np.float32)
 

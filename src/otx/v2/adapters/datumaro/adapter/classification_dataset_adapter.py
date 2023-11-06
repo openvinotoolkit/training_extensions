@@ -6,11 +6,10 @@
 
 from typing import Any, Dict, List, Union
 
-from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.annotation import LabelCategories as DatumLabelCategories
+from datumaro.components.dataset import Dataset as DatumDataset
 
 from otx.v2.api.entities.annotation import Annotation
-from otx.v2.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
@@ -29,41 +28,20 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
     for multi-class, multi-label, and hierarchical-label classification tasks
     """
 
-    def _get_dataset_items(self, fake_ann: bool = False) -> List[DatasetItemEntityWithID]:
-        # Set the DatasetItemEntityWithID
-        dataset_items: List[DatasetItemEntityWithID] = []
-        for subset, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    image = self.datum_media_2_otx_media(datumaro_item.media)
-                    if not fake_ann:
-                        datumaro_labels = []
-                        for ann in datumaro_item.annotations:
-                            if ann.type == DatumAnnotationType.label:
-                                datumaro_labels.append(ann.label)
-                    else:
-                        datumaro_labels = [0]  # fake label
+    def _get_dataset(self, fake_ann: bool = False):       
+         # Set the DatasetItemEntityWithID
+        mode_to_str = {Subset.TRAINING: "train", Subset.VALIDATION: "val", Subset.TESTING: "test"}
 
-                    shapes = self._get_cls_shapes(datumaro_labels)
-                    dataset_item = DatasetItemEntityWithID(
-                        image,
-                        self._get_ann_scene_entity(shapes),
-                        subset=subset,
-                        id_=datumaro_item.id,
-                    )
+        for subset_name, subset in self.dataset.items():
+            for item in subset:
+                item.subset = mode_to_str[subset_name]
+                if fake_ann:
+                    item.annotations = [0]
 
-                    dataset_items.append(dataset_item)
-        return dataset_items
-
-    def get_otx_dataset(self) -> DatasetEntity:
+    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
         """Convert DatumaroDataset to DatasetEntity for Classification."""
-        # Prepare label information
-        label_information = self._prepare_label_information(self.dataset)
-        self.category_items = label_information["category_items"]
-        self.label_groups = label_information["label_groups"]
-        self.label_entities = label_information["label_entities"]
-        dataset_items = self._get_dataset_items()
-        return DatasetEntity(items=dataset_items)
+        self._get_dataset()
+        return self.dataset
 
     def _get_cls_shapes(self, datumaro_labels: List[int]) -> List[Annotation]:
         """Converts a list of datumaro labels to Annotation object."""
@@ -75,6 +53,11 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
+        label_information = self._prepare_label_information(self.dataset)
+        self.category_items = label_information["category_items"]
+        self.label_groups = label_information["label_groups"]
+        self.label_entities = label_information["label_entities"]
+
         return self._generate_classification_label_schema(
             self.category_items,
             self.label_groups,

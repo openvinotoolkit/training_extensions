@@ -7,9 +7,14 @@ from __future__ import annotations
 import importlib
 import os
 from abc import abstractmethod
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
 
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
+from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.auto_utils import configure_task_type, configure_train_type
 from otx.v2.api.utils.type_utils import str_to_task_type, str_to_train_type
@@ -145,7 +150,7 @@ class BaseDatasetAdapter:
         """
 
     @abstractmethod
-    def get_otx_dataset(self) -> DatasetEntity:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Get DatasetEntity."""
         raise NotImplementedError
 
@@ -311,8 +316,8 @@ class BaseDataset:
             unlabeled_data_roots=self.unlabeled_data_roots,
             unlabeled_file_list=self.unlabeled_file_list,
         )
-        self.dataset_entity: DatasetEntity = self.dataset_adapter.get_otx_dataset()
         self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
+        self.dataset_entity: DatasetEntity = self.dataset_adapter.get_otx_dataset()
 
     @abstractmethod
     def subset_dataloader(  # noqa: ANN201
