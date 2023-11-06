@@ -10,7 +10,6 @@ from datumaro.components.annotation import LabelCategories as DatumLabelCategori
 from datumaro.components.dataset import Dataset as DatumDataset
 
 from otx.v2.api.entities.annotation import Annotation
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
@@ -24,21 +23,13 @@ from .datumaro_dataset_adapter import DatumaroDatasetAdapter
 class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
     """Classification adapter inherited from DatumaroDatasetAdapter.
 
-    It converts DatumaroDataset -> DatasetEntity
-    for multi-class, multi-label, and hierarchical-label classification tasks
+    It returns DatumaroDataset for multi-class, multi-label, and
+    hierarchical-label classification tasks.
     """
 
     def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
-        """Convert DatumaroDataset to DatasetEntity for Classification."""
+        """Get DatumaroDataset for Classification."""
         return self.dataset
-
-    def _get_cls_shapes(self, datumaro_labels: List[int]) -> List[Annotation]:
-        """Converts a list of datumaro labels to Annotation object."""
-        otx_labels = []
-        for d_label in datumaro_labels:
-            otx_labels.append(ScoredLabel(label=self.label_entities[d_label], probability=1.0))
-
-        return [Annotation(Rectangle.generate_full_box(), labels=otx_labels)]
 
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
@@ -108,7 +99,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
     """SelfSLClassification adapter inherited from ClassificationDatasetAdapter.
 
     It creates fake annotations to work with DatumaroDataset w/o labels
-    and converts it to DatasetEntity for Self-SL classification pretraining
+    for Self-SL classification pretraining
     """
 
     def get_label_schema(self) -> LabelSchemaEntity:
@@ -122,8 +113,8 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
         self.label_entities = label_information["label_entities"]
         return self._generate_default_label_schema(self.label_entities)
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Self-SL Classification."""
+    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+        """Return DatumaroDataset with fake annotations for Self-SL Classification."""
         self._get_dataset_items(fake_ann=True)
         return self.dataset
 
@@ -136,7 +127,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
     def _get_dataset_items(self, fake_ann: bool = False):       
-         # Set the DatasetItemEntityWithID
+         # Set the DatumDataset for Self-SL Classification.
         for _, subset in self.dataset.items():
             for item in subset:
                 if fake_ann:

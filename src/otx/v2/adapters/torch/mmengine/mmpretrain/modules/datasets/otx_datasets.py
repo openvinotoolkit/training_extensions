@@ -9,6 +9,7 @@ import logging
 from typing import Optional, Union
 
 import numpy as np
+from datumaro.components.dataset import Dataset as DatumDataset
 from mmengine.dataset import Compose
 from mmengine.registry import build_from_cfg
 from mmpretrain.datasets.base_dataset import BaseDataset
@@ -32,7 +33,7 @@ class OTXClsDataset(BaseDataset):
 
     def __init__(
         self,
-        otx_dataset,
+        otx_dataset: DatumDataset,
         labels: list,
         empty_label: Optional[list] = None,
         pipeline: list = [],
