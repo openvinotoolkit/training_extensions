@@ -80,11 +80,9 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
     def __iter__(self):
         """Iter."""
         indices = []
-        for _ in range(self.repeat):
-            for img_indices in self.img_indices.values():
-                indice = np.random.choice(img_indices, self.num_trials)
-                indices.append(indice)
-
+        for img_indices in self.img_indices.values():
+            indice = np.random.choice(img_indices, self.num_trials * self.repeat)
+            indices.append(indice)
         indices = np.concatenate(indices)
         indices = indices.astype(np.int64).tolist()
 
