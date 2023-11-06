@@ -1,4 +1,7 @@
 """Balanced sampler for imbalanced data."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import math
 
 import numpy as np
@@ -32,24 +35,22 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
             self.dataset = dataset.dataset
         else:
             self.dataset = dataset
-        self.img_indices = self.dataset.img_indices
+        self.img_indices = {k: v for k, v in self.dataset.img_indices.items() if len(v) > 0}
         self.num_cls = len(self.img_indices.keys())
         self.data_length = len(self.dataset)
         self.num_replicas = num_replicas
         self.rank = rank
         self.drop_last = drop_last
 
+        self.num_trials = int(self.data_length / self.num_cls)
         if efficient_mode:
             # Reduce the # of sampling (sampling data for a single epoch)
-            self.num_tail = min(len(cls_indices) for cls_indices in self.img_indices.values())
-            base = 1 - (1 / self.num_tail)
-            if base == 0:
-                raise ValueError("Required more than one sample per class")
-            self.num_trials = int(math.log(0.001, base))
-            if int(self.data_length / self.num_cls) < self.num_trials:
-                self.num_trials = int(self.data_length / self.num_cls)
-        else:
-            self.num_trials = int(self.data_length / self.num_cls)
+            num_tail = min(len(cls_indices) for cls_indices in self.img_indices.values())
+            if num_tail > 1:
+                base = 1 - (1 / num_tail)
+                num_reduced_trials = int(math.log(0.001, base))
+                self.num_trials = min(num_reduced_trials, self.num_trials)
+
         self.num_samples = self._calculate_num_samples()
 
         logger.info(f"This sampler will select balanced samples {self.num_trials} times")
@@ -80,10 +81,8 @@ class BalancedSampler(Sampler):  # pylint: disable=too-many-instance-attributes
         """Iter."""
         indices = []
         for _ in range(self.repeat):
-            for _ in range(self.num_trials):
-                indice = np.concatenate(
-                    [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices.keys()]
-                )
+            for img_indices in self.img_indices.values():
+                indice = np.random.choice(img_indices, self.num_trials)
                 indices.append(indice)
 
         indices = np.concatenate(indices)
