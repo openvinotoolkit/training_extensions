@@ -195,9 +195,6 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
                 state_dict = replace_state_dict_keys(_state_dict, revise_keys)
                 self.load_state_dict(state_dict, strict=False)
 
-    ##########################################################
-    #     forward for inference (export/deploy/optimize)     #
-    ##########################################################
     @torch.no_grad()
     def forward(
         self,
@@ -206,7 +203,6 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
         point_labels: Tensor,
         mask_input: Tensor,
         has_mask_input: Tensor,
-        # orig_size: Tensor,
     ) -> tuple:
         """Forward method for SAM inference (export/deploy).
 
@@ -227,8 +223,6 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
             has_mask_input (Tensor): An indicator for the mask input.
                 1 indicates a mask input, 0 indicates no mask input.
                 This input has 1x1 shape due to supporting openvino input layout.
-            orig_size (Tensor): The size of the input image in (H,W) format, before any transformation.
-                This input has 1x2 shape due to supporting openvino input layout.
 
         Returns:
             tuple: Tuple of scores and masks.
