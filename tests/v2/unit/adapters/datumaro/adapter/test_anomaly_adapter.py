@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING
 
 from otx.v2.adapters.datumaro.adapter.anomaly_dataset_adapter import (
     AnomalyClassificationDatasetAdapter,
@@ -51,8 +51,8 @@ class TestOTXAnomalyClassificationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)
 
 
 class TestOTXAnomalyDetectionDatasetAdapter:
@@ -84,8 +84,8 @@ class TestOTXAnomalyDetectionDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)
 
 
 class TestOTXAnomalySegmentationDatasetAdapter:
@@ -117,5 +117,5 @@ class TestOTXAnomalySegmentationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)

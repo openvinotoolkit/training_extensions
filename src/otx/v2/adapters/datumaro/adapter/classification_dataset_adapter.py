@@ -9,12 +9,9 @@ from typing import Any, Dict, List, Union
 from datumaro.components.annotation import LabelCategories as DatumLabelCategories
 from datumaro.components.dataset import Dataset as DatumDataset
 
-from otx.v2.api.entities.annotation import Annotation
 from otx.v2.api.entities.id import ID
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 
 from .datumaro_dataset_adapter import DatumaroDatasetAdapter
@@ -128,7 +125,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
 
     def _get_dataset_items(self, fake_ann: bool = False):       
          # Set the DatumDataset for Self-SL Classification.
-        for _, subset in self.dataset.items():
-            for item in subset:
+        for _, subset_data in self.dataset.items():
+            for item in subset_data:
                 if fake_ann:
                     item.annotations = [0]
