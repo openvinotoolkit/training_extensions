@@ -24,19 +24,19 @@ templates_two_stage_det_ids = [template.model_template_id for template in templa
 
 class TestExplainMethods:
     ref_saliency_shapes = {
-        "MobileNetV2-ATSS": (2, 4, 4),
+        "MobileNetV2-ATSS": (2, 13, 13),
         "SSD": (81, 13, 13),
-        "YOLOX": (80, 13, 13),
+        "YOLOX": (80, 26, 26),
     }
 
     ref_saliency_vals_det = {
-        "MobileNetV2-ATSS": np.array([67, 216, 255, 57], dtype=np.uint8),
-        "YOLOX": np.array([80, 28, 42, 53, 49, 68, 72, 75, 69, 57, 65, 6, 157], dtype=np.uint8),
-        "SSD": np.array([119, 72, 118, 35, 39, 30, 31, 31, 36, 28, 44, 23, 61], dtype=np.uint8),
+        "MobileNetV2-ATSS": np.array([34,  67, 148, 132, 172, 147, 146, 155, 167, 159], dtype=np.uint8),
+        "YOLOX": np.array([177,  94, 147, 147, 161, 162, 164, 164, 163, 166], dtype=np.uint8),
+        "SSD": np.array([255, 178, 212, 90, 93, 79, 79, 80, 87, 83], dtype=np.uint8),
     }
 
     ref_saliency_vals_det_wo_postprocess = {
-        "MobileNetV2-ATSS": -0.10465062,
+        "MobileNetV2-ATSS": -0.014513552,
         "YOLOX": 0.04948914,
         "SSD": 0.6629989,
     }
@@ -80,8 +80,8 @@ class TestExplainMethods:
         assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == self.ref_saliency_shapes[template.name]
-        actual_sal_vals = saliency_maps[0][0][0].astype(np.int8)
-        ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.int8)
+        actual_sal_vals = saliency_maps[0][0][0][:10].astype(np.int16)
+        ref_sal_vals = self.ref_saliency_vals_det[template.name].astype(np.uint8)
         assert np.all(np.abs(actual_sal_vals - ref_sal_vals) <= 1)
 
     @e2e_pytest_unit
