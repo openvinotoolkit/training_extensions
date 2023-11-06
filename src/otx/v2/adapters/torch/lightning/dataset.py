@@ -1,4 +1,4 @@
-"""OTX adapters.torch.lightning.Dataset API."""
+"""Dataset builder API for OTX lightning adapter."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -93,20 +93,20 @@ class LightningDataset(BaseTorchDataset):
         """Build a PyTorch DataLoader object from an TorchDataset object.
 
         Args:
-            dataset (Optional[TorchDataset]): The dataset to load.
-            batch_size (Optional[int], optional): The batch size. Defaults to 1.
-            num_workers (Optional[int], optional): The number of worker threads to use. Defaults to 0.
+            dataset (TorchDataset | None): The dataset to load.
+            batch_size (int | None, optional): The batch size. Defaults to 1.
+            num_workers (int | None, optional): The number of worker threads to use. Defaults to 0.
             shuffle (bool, optional): Whether to shuffle the data. Defaults to False.
             pin_memory (bool, optional): Whether to pin memory. Defaults to False.
             drop_last (bool, optional): Whether to drop the last batch if it is smaller than the batch size.
                 Defaults to False.
-            sampler (Optional[Union[Sampler, Iterable]], optional): The sampler to use. Defaults to None.
+            sampler (Sampler | Iterable | None, optional): The sampler to use. Defaults to None.
             persistent_workers (bool, optional): Whether to keep the worker processes alive between data loading
                 iterations. Defaults to False.
             **kwargs (Any): Takes additional parameters for the torch Dataloader.
 
         Returns:
-            Optional[TorchDataLoader]: The PyTorch DataLoader object.
+            TorchDataLoader | None: The PyTorch DataLoader object.
         """
         if dataset is None:
             return None

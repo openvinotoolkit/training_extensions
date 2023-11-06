@@ -18,8 +18,9 @@ if TYPE_CHECKING:
         _PRECISION_INPUT,
     )
 
+
 class BaseOTXLightningModel(BaseOTXModel):
-    """Abstract base class for OTX Lightning models.
+    """OTX base model class for OTX Lightning models.
 
     This class defines the interface for OTX Lightning models, including the callbacks to be used during training
     and the ability to export the model to a specified format (ONNX & OPENVINO).
@@ -27,6 +28,7 @@ class BaseOTXLightningModel(BaseOTXModel):
     Attributes:
         callbacks (list[Callback]): A list of callbacks to be used during training.
     """
+
     config: DictConfig
     device: torch.device
 
@@ -67,6 +69,7 @@ class BaseOTXLightningModel(BaseOTXModel):
         if export_type.upper() == "OPENVINO":
             # ONNX to IR
             from subprocess import run
+
             ir_dir = Path(export_dir) / "openvino"
             ir_dir.mkdir(exist_ok=True, parents=True)
             optimize_command = [

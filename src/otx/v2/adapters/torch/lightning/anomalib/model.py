@@ -1,4 +1,4 @@
-"""OTX adapters.torch.lightning.anomalib Model APIs."""
+"""Model build & get list API for OTX anomalib adapter."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -31,11 +31,13 @@ MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 map_task_type = {str(task_type.name).upper(): task_type for task_type in TaskType}
 
+
 def get_wrapper_otx_model(model_class: type[AnomalyModule], task: TaskType) -> type[AnomalyModule]:
     """Return a wrapper class for the given model class.
 
     Args:
-        model_class (type): The model class to wrap.
+        model_class (type[AnomalyModule]): The model class to wrap.
+        task (TaskType): The task type of model.
 
     Returns:
         type: The wrapper class.
@@ -67,6 +69,7 @@ def get_wrapper_otx_model(model_class: type[AnomalyModule], task: TaskType) -> t
 
     return OTXAnomalibModel
 
+
 def get_model(
     model: dict | (DictConfig | str) | None = None,
     checkpoint: str | None = None,
@@ -75,9 +78,9 @@ def get_model(
     """Return a torch.nn.Module object based on the provided model configuration or anomalib model api.
 
     Args:
-        model (Optional[Union[Dict[str, Any], DictConfig, str]]): The model configuration. Can be a dictionary,
+        model (dict | (DictConfig | str) | None, optional): The model configuration. Can be a dictionary,
             a DictConfig object, or a path to a YAML file containing the configuration.
-        checkpoint (Optional[str]): The path to a checkpoint file to load weights from.
+        checkpoint (str, optional): The path to a checkpoint file to load weights from.
         **kwargs: Additional keyword arguments to pass to the `anomalib_get_model` function.
 
     Returns:
@@ -108,15 +111,14 @@ def get_model(
     raise NotImplementedError(msg)
 
 
-
 def list_models(pattern: str | None = None) -> list[str]:
     """Return a list of available model names.
 
     Args:
-        pattern (Optional[str]): A pattern to filter the model names. Defaults to None.
+        pattern (str | None, optional): A pattern to filter the model names. Defaults to None.
 
     Returns:
-        List[str]: A sorted list of available model names.
+        list[str]: A sorted list of available model names.
     """
     model_list = list(MODEL_CONFIGS.keys())
 

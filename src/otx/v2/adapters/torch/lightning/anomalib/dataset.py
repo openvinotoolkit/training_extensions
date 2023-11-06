@@ -1,4 +1,4 @@
-"""OTX adapters.torch.lightning.anomalib.Dataset API."""
+"""Dataset Builder API for OTX anomalib adapter."""
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -49,27 +49,27 @@ class AnomalibDataset(LightningDataset):
         """Initialize a Dataset object for anomaly tasks.
 
         Args:
-            task (Optional[Union[TaskType, str]]): The type of anomaly task to perform.
+            task (TaskType | str | None, optional): The type of anomaly task to perform.
                 Defaults to None.
-            train_type (Optional[Union[TrainType, str]]): The type of training to perform.
+            train_type (TrainType | str | None, optional): The type of training to perform.
                 Defaults to None.
-            train_data_roots (Optional[str]): The path to the training data root directory.
+            train_data_roots (str | None, optional): The path to the training data root directory.
                 Defaults to None.
-            train_ann_files (Optional[str]): The path to the training annotation file.
+            train_ann_files (str | None, optional): The path to the training annotation file.
                 Defaults to None.
-            val_data_roots (Optional[str]): The path to the validation data root directory.
+            val_data_roots (str | None, optional): The path to the validation data root directory.
                 Defaults to None.
-            val_ann_files (Optional[str]): The path to the validation annotation file.
+            val_ann_files (str | None, optional): The path to the validation annotation file.
                 Defaults to None.
-            test_data_roots (Optional[str]): The path to the test data root directory.
+            test_data_roots (str | None, optional): The path to the test data root directory.
                 Defaults to None.
-            test_ann_files (Optional[str]): The path to the test annotation file.
+            test_ann_files (str | None, optional): The path to the test annotation file.
                 Defaults to None.
-            unlabeled_data_roots (Optional[str]): The path to the unlabeled data root directory.
+            unlabeled_data_roots (str | None, optional): The path to the unlabeled data root directory.
                 Defaults to None.
-            unlabeled_file_list (Optional[str]): The path to the unlabeled file list.
+            unlabeled_file_list (str | None, optional): The path to the unlabeled file list.
                 Defaults to None.
-            data_format (Optional[str]): The format of the data. Defaults to "mvtec".
+            data_format (str | None, optional): The format of the data. Defaults to "mvtec".
 
         Returns:
             None
@@ -137,20 +137,20 @@ class AnomalibDataset(LightningDataset):
         """Build a PyTorch DataLoader object from an OTXAnomalyDataset object.
 
         Args:
-            dataset (Optional[OTXAnomalyDataset]): The dataset to load.
-            batch_size (Optional[int], optional): The batch size. Defaults to 1.
-            num_workers (Optional[int], optional): The number of worker threads to use. Defaults to 0.
+            dataset (OTXAnomalyDataset | None): The dataset to load.
+            batch_size (int | None, optional): The batch size. Defaults to 1.
+            num_workers (int | None, optional): The number of worker threads to use. Defaults to 0.
             shuffle (bool, optional): Whether to shuffle the data. Defaults to False.
             pin_memory (bool, optional): Whether to pin memory. Defaults to False.
             drop_last (bool, optional): Whether to drop the last batch if it is smaller than the batch size.
                 Defaults to False.
-            sampler (Optional[Union[Sampler, Iterable]], optional): The sampler to use. Defaults to None.
+            sampler (Sampler | Iterable | None, optional): The sampler to use. Defaults to None.
             persistent_workers (bool, optional): Whether to keep the worker processes alive between data loading
                 iterations. Defaults to False.
             **kwargs (Any): Takes additional parameters for the torch Dataloader.
 
         Returns:
-            Optional[TorchDataLoader]: The PyTorch DataLoader object.
+            TorchDataLoader | None: The PyTorch DataLoader object.
         """
         return super()._build_dataloader(
             dataset,

@@ -2,7 +2,8 @@
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
-#
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
@@ -275,7 +276,7 @@ def window_partition(x: Tensor, window_size: int) -> tuple[Tensor, tuple[int, in
 
     Returns:
         windows (Tensor): windows after partition with [B * num_windows, window_size, window_size, C].
-        (Hp, Wp) (Tuple[int, int]): padded height and width before partition
+        (Hp, Wp) (tuple[int, int]): padded height and width before partition
     """
     b, h, w, c = x.shape
 
@@ -296,8 +297,8 @@ def window_unpartition(windows: Tensor, window_size: int, pad_hw: tuple[int, int
     Args:
         windows (Tensor): input tokens with [B * num_windows, window_size, window_size, C].
         window_size (int): window size.
-        pad_hw (Tuple): padded height and width (Hp, Wp).
-        hw (Tuple): original height and width (H, W) before padding.
+        pad_hw (tuple): padded height and width (Hp, Wp).
+        hw (tuple): original height and width (H, W) before padding.
 
     Returns:
         x (Tensor): unpartitioned sequences with [B, H, W, C].
@@ -362,8 +363,8 @@ def add_decomposed_rel_pos(
         q (Tensor): query q in the attention layer with shape (B, q_h * q_w, C).
         rel_pos_h (Tensor): relative position embeddings (Lh, C) for height axis.
         rel_pos_w (Tensor): relative position embeddings (Lw, C) for width axis.
-        q_size (Tuple): spatial sequence size of query q with (q_h, q_w).
-        k_size (Tuple): spatial sequence size of key k with (k_h, k_w).
+        q_size (tuple): spatial sequence size of query q with (q_h, q_w).
+        k_size (tuple): spatial sequence size of key k with (k_h, k_w).
 
     Returns:
         attn (Tensor): attention map with added relative positional embeddings.
@@ -389,9 +390,9 @@ class PatchEmbed(nn.Module):
     """Image to Patch Embedding.
 
     Args:
-        kernel_size (Tuple): kernel size of the projection layer.
-        stride (Tuple): stride of the projection layer.
-        padding (Tuple): padding size of the projection layer.
+        kernel_size (tuple): kernel size of the projection layer.
+        stride (tuple): stride of the projection layer.
+        padding (tuple): padding size of the projection layer.
         in_chans (int): Number of input image channels.
         embed_dim (int): Patch embedding dimension.
     """

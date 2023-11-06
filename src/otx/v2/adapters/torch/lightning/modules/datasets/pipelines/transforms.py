@@ -2,7 +2,6 @@
 
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 from __future__ import annotations
 
@@ -17,7 +16,7 @@ def collate_fn(batch: list) -> dict:
     """Collate function for dataloader.
 
     Args:
-        batch (List): List of batch data.
+        batch (list): List of batch data.
 
     Returns:
         Dict: Collated batch data.
@@ -30,7 +29,7 @@ def collate_fn(batch: list) -> dict:
             x (str): Key of batch data.
 
         Returns:
-            List: List of batch data.
+            list | None: List of batch data.
         """
         func = torch.stack if x == "gt_masks" else torch.tensor
         items = [func(item[x]) for item in batch if item[x] is not None]
@@ -104,10 +103,10 @@ class MultipleInputsCompose(Compose):
         """Composes several transforms have multiple inputs together.
 
         Args:
-            item (Dict[str, Union[int, Tensor]]): Input item.
+            item (dict[str, int | Tensor]): Input item.
 
         Returns:
-            Dict[str, Union[int, Tensor]]: Transformed item.
+            dict[str, int | Tensor]: Transformed item.
         """
         for t in self.transforms:
             if isinstance(t, transforms.Normalize):

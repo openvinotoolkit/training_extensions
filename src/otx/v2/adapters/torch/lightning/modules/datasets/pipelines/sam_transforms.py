@@ -2,7 +2,8 @@
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
-#
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
@@ -35,7 +36,7 @@ class ResizeLongestSide:
             item (dict[str, np.ndarray]): Dictionary of batch data.
 
         Returns:
-        Dict[str, Union[List, Tensor]]: Dictionary of batch data.
+         dict[str, np.ndarray | list]: Dictionary of batch data.
         """
         if isinstance(item["images"], np.ndarray):
             item["images"] = torch.as_tensor(
@@ -70,7 +71,7 @@ class ResizeLongestSide:
 
         Args:
             coords (np.ndarray): Coordinates array.
-            original_size (Union[List[Any], Tensor]): Original size of image.
+            original_size (list | Tensor): Original size of image.
 
         Returns:
             np.ndarray: Resized coordinates.
@@ -87,7 +88,7 @@ class ResizeLongestSide:
 
         Args:
             boxes (np.ndarray): Boxes array.
-            original_size (Union[List[Any], Tensor]): Original size of image.
+            original_size (list | Tensor): Original size of image.
 
         Returns:
             np.ndarray: Resized boxes.
@@ -105,7 +106,7 @@ class ResizeLongestSide:
             long_side_length (int): Target long side length.
 
         Returns:
-            Tuple[int, int]: Output size.
+            tuple[int, int]: Output size.
         """
         scale = long_side_length * 1.0 / max(oldh, oldw)
         newh, neww = oldh * scale, oldw * scale

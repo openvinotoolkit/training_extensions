@@ -6,7 +6,8 @@ reference: https://github.com/facebookresearch/segment-anything
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
-#
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
@@ -156,8 +157,8 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
         """Load checkpoint for SAM.
 
         Args:
-            state_dict (Optional[OrderedDict], optional): State dict of SAM. Defaults to None.
-            revise_keys (List, optional): List of tuples of regex patterns to revise keys of state_dict.
+            state_dict (OrderedDict | None, optional): State dict of SAM. Defaults to None.
+            revise_keys (list | None, optional): List of tuples of regex patterns to revise keys of state_dict.
                 Defaults to [(r'^image_encoder.', r'image_encoder.backbone.')].
         """
         if revise_keys is None:
@@ -402,19 +403,20 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
 
         Args:
             images (Tensor): Images with shape (B, C, H, W).
-            bboxes (List[Tensor]): A Nx4 array given a box prompt to the model, in XYXY format.
-            points (Tuple[Tensor, Tensor], optional): Point coordinates and labels to embed.
+            bboxes (list[Tensor]): A Nx4 array given a box prompt to the model, in XYXY format.
+            points (tuple[Tensor, Tensor], optional): Point coordinates and labels to embed.
                 Point coordinates are BxNx2 arrays of point prompts to the model.
                 Each point is in (X,Y) in pixels. Labels are BxN arrays of labels for the point prompts.
                 1 indicates a foreground point and 0 indicates a background point.
-            masks (Optional[Tensor], optional): A low resolution mask input to the model, typically
+            masks (Tensor | None, optional): A low resolution mask input to the model, typically
                 coming from a previous prediction iteration. Has form Bx1xHxW, where
                 for SAM, H=W=256. Masks returned by a previous iteration of the
                 predict method do not need further transformation.
 
         Returns:
-            pred_masks (List[Tensor]): List with predicted masks with shape (B, 1, H, W).
-            ious (List[Tensor]): List with IoU predictions with shape (N, 1).
+            tuple[list[Tensor], list[Tensor]]: Result of forward_train
+                pred_masks (list[Tensor]): List with predicted masks with shape (B, 1, H, W).
+                ious (list[Tensor]): List with IoU predictions with shape (N, 1).
         """
         image_embeddings = self.image_encoder(images)
         pred_masks = []
@@ -769,10 +771,11 @@ class SegmentAnything(BaseOTXLightningModel, LightningModule):
         results["outputs"]["onnx"]["sam"] = str(onnx_dir / "sam.onnx")
 
         if export_type.upper() == "OPENVINO":
-            ir_dir =  Path(export_dir) / "openvino"
+            ir_dir = Path(export_dir) / "openvino"
             ir_dir.mkdir(exist_ok=True, parents=True)
             results["outputs"]["openvino"] = {}
             from subprocess import run
+
             for onnx_key, model_path in results["outputs"]["onnx"].items():
                 optimize_command = [
                     "mo",

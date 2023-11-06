@@ -9,6 +9,7 @@ DEBUG = None
 
 try:
     import pytorch_lightning as pl
+
     VERSION = pl.__version__
     import os
 

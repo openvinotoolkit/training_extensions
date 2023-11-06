@@ -1,4 +1,5 @@
-"""Dataset & DataModule."""
+"""Dataset & DataModule for OTX lightning modules."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -41,9 +42,9 @@ def get_transform(
     """Get transform pipeline.
 
     Args:
-        image_size (int): Size of image. Defaults to 1024.
-        mean (list[float]): Mean for normalization. Defaults to [123.675, 116.28, 103.53].
-        std (list[float]): Standard deviation for normalization. Defaults to [58.395, 57.12, 57.375].
+        image_size (int, optional): Size of image. Defaults to 1024.
+        mean (list[float] | None, optional): Mean for normalization. Defaults to [123.675, 116.28, 103.53].
+        std (list[float] | None, optional): Standard deviation for normalization. Defaults to [58.395, 57.12, 57.375].
 
     Returns:
         MultipleInputsCompose: Transform pipeline.
@@ -191,10 +192,10 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             dataset (DatasetEntity): The dataset to use.
 
         Attributes:
-                train_otx_dataset (DatasetEntity): The training dataset.
-                val_otx_dataset (DatasetEntity): The validation dataset.
-                test_otx_dataset (DatasetEntity): The testing dataset.
-                predict_otx_dataset (DatasetEntity): The prediction dataset.
+            train_otx_dataset (DatasetEntity): The training dataset.
+            val_otx_dataset (DatasetEntity): The validation dataset.
+            test_otx_dataset (DatasetEntity): The testing dataset.
+            predict_otx_dataset (DatasetEntity): The prediction dataset.
         """
         super().__init__()
         self.config = config
@@ -209,7 +210,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         """Setup Visual Prompting Data Module.
 
         Args:
-            stage (str | None): train/val/test stages, defaults to None.
+            stage (str | None, optional): train/val/test stages, defaults to None.
         """
         if stage != "predict":
             self.summary()
@@ -253,7 +254,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         """Train Dataloader.
 
         Returns:
-            Union[DataLoader, list[DataLoader], Dict[str, DataLoader]]: Train dataloader.
+            DataLoader | (list[DataLoader] | dict[str, DataLoader]): Train dataloader.
         """
         return DataLoader(
             self.train_dataset,
@@ -267,7 +268,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         """Validation Dataloader.
 
         Returns:
-            Union[DataLoader, list[DataLoader]]: Validation Dataloader.
+            DataLoader | list[DataLoader]: Validation Dataloader.
         """
         return DataLoader(
             self.val_dataset,
@@ -281,7 +282,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         """Test Dataloader.
 
         Returns:
-            Union[DataLoader, list[DataLoader]]: Test Dataloader.
+            DataLoader | list[DataLoader]: Test Dataloader.
         """
         return DataLoader(
             self.test_dataset,
@@ -295,7 +296,7 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         """Predict Dataloader.
 
         Returns:
-            Union[DataLoader, list[DataLoader]]: Predict Dataloader.
+            DataLoader | list[DataLoader]: Predict Dataloader.
         """
         return DataLoader(
             self.predict_dataset,
@@ -327,9 +328,9 @@ class VisualPromptInferenceDataset(Dataset):
 
         Args:
             path (str or Path): The path to the directory containing the images.
-            transform (al.Compose or None): A composition of image transformations to apply to the images.
+            transform (al.Compose | None, optional): A composition of image transformations to apply to the images.
                 Defaults to None.
-            image_size (int): The size of the images to be loaded. Defaults to 1024.
+            image_size (int, optional): The size of the images to be loaded. Defaults to 1024.
         """
         super().__init__()
 

@@ -2,7 +2,8 @@
 
 # Copyright (c) 2022 Microsoft
 # https://github.com/ChaoningZhang/MobileSAM
-#
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
 
@@ -77,9 +78,10 @@ class DropPath(TimmDropPath):
         """Initializes a TinyViT backbone.
 
         Args:
-            drop_prob (list[float] | float | None): The dropout probability for each layer. If a list is provided,
-                it should have the same length as the number of layers in the backbone. If a float is provided, the same
-                dropout probability will be used for all layers. If None, no dropout will be applied. Defaults to None.
+            drop_prob (list[float] | float | None, optional): The dropout probability for each layer.
+                If a list is provided, it should have the same length as the number of layers in the backbone.
+                If a float is provided, the same dropout probability will be used for all layers.
+                If None, no dropout will be applied. Defaults to None.
         """
         super().__init__(drop_prob=drop_prob)
         self.drop_prob = drop_prob
@@ -301,8 +303,8 @@ class Mlp(nn.Module):
 
         Args:
             in_features (int): Number of input features.
-            hidden_features (int, optional): Number of hidden features. Defaults to None.
-            out_features (int, optional): Number of output features. Defaults to None.
+            hidden_features (int | None, optional): Number of hidden features. Defaults to None.
+            out_features (int | None, optional): Number of output features. Defaults to None.
             act_layer (nn.Module, optional): Activation function. Defaults to nn.GELU.
             drop (float, optional): Dropout probability. Defaults to 0.0.
         """
@@ -381,7 +383,7 @@ class Attention(nn.Module):
         If not in training mode, the attention biases buffer is created and registered.
 
         Args:
-            mode (bool): Whether to set the module in training mode or not. Default is True.
+            mode (bool, optional): Whether to set the module in training mode or not. Default is True.
         """
         super().train(mode)
         if mode and hasattr(self, "ab"):
@@ -390,7 +392,14 @@ class Attention(nn.Module):
             self.register_buffer("ab", self.attention_biases[:, self.attention_bias_idxs], persistent=False)
 
     def forward(self, x: Tensor) -> Tensor:  # x (B,N,C)
-        """Forward call."""
+        """Forward pass of the TinyViT backbone.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (B, N, C).
+
+        Returns:
+            torch.Tensor: Output tensor of shape (B, N, dh).
+        """
         b, n, _ = x.shape
 
         # Normalization
@@ -460,7 +469,14 @@ class TinyViTBlock(nn.Module):
         self.local_conv = Conv2dBN(dim, dim, ks=local_conv_size, stride=1, pad=pad, groups=dim)
 
     def forward(self, x: Tensor) -> Tensor:
-        """Forward call."""
+        """Forward pass of the TinyViTBlock.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, sequence_length, hidden_size).
+
+        Returns:
+            torch.Tensor: Output tensor of shape (batch_size, sequence_length, hidden_size).
+        """
         h, w = self.input_resolution
         b, _l, c = x.shape
         res_x = x
