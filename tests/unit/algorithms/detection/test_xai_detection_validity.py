@@ -30,8 +30,8 @@ class TestExplainMethods:
     }
 
     ref_saliency_vals_det = {
-        "MobileNetV2-ATSS": np.array([34,  67, 148, 132, 172, 147, 146, 155, 167, 159], dtype=np.uint8),
-        "YOLOX": np.array([177,  94, 147, 147, 161, 162, 164, 164, 163, 166], dtype=np.uint8),
+        "MobileNetV2-ATSS": np.array([34, 67, 148, 132, 172, 147, 146, 155, 167, 159], dtype=np.uint8),
+        "YOLOX": np.array([177, 94, 147, 147, 161, 162, 164, 164, 163, 166], dtype=np.uint8),
         "SSD": np.array([255, 178, 212, 90, 93, 79, 79, 80, 87, 83], dtype=np.uint8),
     }
 
