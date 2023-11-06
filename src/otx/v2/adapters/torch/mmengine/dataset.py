@@ -135,7 +135,10 @@ class MMXDataset(BaseTorchDataset):
 
         otx_dataset: DatumDataset = self.dataset_entity.get(str_to_subset_type(subset))
         labels = self.label_schema.get_labels(include_empty=False)
-        if len(otx_dataset) < 1:
+        print("############# 1 ", self.dataset_entity)
+        print("############# 2 ", str_to_subset_type(subset))
+        print("############# 3 ", otx_dataset)
+        if not otx_dataset or len(otx_dataset) < 1:
             return None
 
         # Case without config
