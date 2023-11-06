@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from datumaro.components.dataset import Dataset as DatumDataset
 
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType, TrainType
@@ -151,7 +150,7 @@ class BaseDatasetAdapter:
 
     @abstractmethod
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
-        """Get DatasetEntity."""
+        """Get Dict[Subset, DatumDataset]."""
         raise NotImplementedError
 
     def get_label_schema(self) -> LabelSchemaEntity:
@@ -288,7 +287,7 @@ class BaseDataset:
             2) Call this function
             3) This will set
                 - self.dataset_adapter (DatumaroDatasetAdapter)
-                - self.dataset_entity (DatasetEntity)
+                - self.dataset_entity (Dict[Subset, DatumDataset])
                 - self.label_schema (LabelSchemaEntity) so that can use it.
             4) Use the above attributes to complete the subset_dataloader function.
         """
@@ -317,7 +316,7 @@ class BaseDataset:
             unlabeled_file_list=self.unlabeled_file_list,
         )
         self.label_schema: LabelSchemaEntity = self.dataset_adapter.get_label_schema()
-        self.dataset_entity: DatasetEntity = self.dataset_adapter.get_otx_dataset()
+        self.dataset_entity: dict[Subset, DatumDataset] = self.dataset_adapter.get_otx_dataset()
 
     @abstractmethod
     def subset_dataloader(  # noqa: ANN201
