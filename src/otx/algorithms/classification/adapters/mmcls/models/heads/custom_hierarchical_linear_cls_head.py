@@ -105,7 +105,7 @@ class CustomHierarchicalLinearClsHead(OTXHeadMixin, MultiLabelClsHead):
                     losses["loss"] += multiclass_loss
                     num_effective_heads_in_batch += 1
 
-        if self.hierarchical_info["num_multiclass_heads"] > 1:
+        if num_effective_heads_in_batch > 0:
             losses["loss"] /= num_effective_heads_in_batch
 
         if self.compute_multilabel_loss:
