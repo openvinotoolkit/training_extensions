@@ -202,7 +202,9 @@ class SpatialWeighting(nn.Module):
         channels: int,
         ratio: int = 16,
         conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,  # noqa: ARG002
         act_cfg: dict | tuple[dict, dict] = ({"type": "ReLU"}, {"type": "Sigmoid"}),
+        enable_norm: bool = False,  # noqa: ARG002
     ) -> None:
         """Spatial weighting.
 
