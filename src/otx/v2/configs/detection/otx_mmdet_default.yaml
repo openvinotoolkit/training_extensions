@@ -6,7 +6,7 @@ data:
   train_type: Incremental
 
 model:
-  name: mobilenetv2_atss
+  name: otx_mobilenetv2_atss
 
 train_dataloader:
   batch_size: 8
@@ -84,6 +84,8 @@ test_dataloader:
       - type: Resize
         scale: !!python/tuple [512, 512]
         keep_ratio: false
+      - type: LoadAnnotationFromOTXDataset
+        with_bbox: true
       - type: PackDetInputs
         meta_keys:
           [
@@ -109,7 +111,7 @@ default_hooks:
     type: CheckpointHook
 custom_hooks:
   - type: EarlyStoppingHook
-    monitor: accuracy/top1
+    monitor: pascal_voc/mAP
     patience: 3
   - type: AdaptiveTrainSchedulingHook
 

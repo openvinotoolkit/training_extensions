@@ -580,10 +580,9 @@ class MMXEngine(Engine):
             deploy_config_dict = {}
 
         # CODEBASE_COFIG Update
-        if "codebase_config" not in deploy_config_dict:
-            codebase = codebase if codebase is not None else self.registry.name
-            codebase_config = {"type": codebase, "task": task}
-            deploy_config_dict["codebase_config"] = codebase_config
+        if codebase_config is None:
+            self._update_codebase_config(codebase, task, deploy_config_dict)
+
         # IR_COFIG Update
         if "ir_config" not in deploy_config_dict:
             ir_config = {
@@ -633,3 +632,15 @@ class MMXEngine(Engine):
         )
 
         return exporter.export()
+
+    def _update_codebase_config(self, codebase: str | None, task: str | None, deploy_config_dict: dict) -> None:
+        """Update specific codebase config.
+
+        Args:
+            codebase(str): mmX codebase framework
+            task(str): mmdeploy task
+            deploy_config_dict(dict): Config dict for deployment
+        """
+        codebase = codebase if codebase is not None else self.registry.name
+        codebase_config = {"type": codebase, "task": task}
+        deploy_config_dict["codebase_config"] = codebase_config

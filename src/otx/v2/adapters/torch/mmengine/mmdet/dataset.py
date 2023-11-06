@@ -21,10 +21,11 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_default_pipeline(semisl: bool = False) -> dict | list:
+def get_default_pipeline(subset: str = "train", semisl: bool = False) -> dict | list:
     """Returns the default pipeline for training a model.
 
     Args:
+        subset (str): Subset of default pipeline
         semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
 
     Returns:
@@ -34,18 +35,63 @@ def get_default_pipeline(semisl: bool = False) -> dict | list:
     if semisl:
         raise NotImplementedError(err_msg)
 
-    return [
-        {
-            "type": "LoadResizeDataFromOTXDataset",
-            "load_ann_cfg": {"type": "LoadAnnotationFromOTXDataset", "with_bbox": True},
-            "resize_cfg": {"type": "Resize", "scale": (640, 640), "keep_ratio": True, "downscale_only": True},
-            "enable_memcache": True,
-        },
-        {"type": "Resize", "scale": [640, 640], "keep_ratio": True},
-        {"type": "Pad"},
-        {"type": "RandomFlip", "prob": 0.5},
-        {"type": "PackInputs"},
-    ]
+    default_pipeline = {
+        "train": [
+            {
+                'type': 'LoadResizeDataFromOTXDataset',
+                'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
+                'resize_cfg': {
+                    'type': 'Resize', 'scale': (512, 512), 'keep_ratio': True, 'downscale_only': True,
+                },
+                'enable_memcache': True},
+            {'type': 'MinIoURandomCrop', 'min_ious': (0.1, 0.3, 0.5, 0.7, 0.9), 'min_crop_size': 0.3},
+            {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
+            {'type': 'RandomFlip', 'prob': 0.5},
+            {
+                'type': 'PackDetInputs',
+                'meta_keys': [
+                    'ori_filename',
+                    'flip_direction',
+                    'scale_factor',
+                    'gt_ann_ids',
+                    'flip',
+                    'ignored_labels',
+                    'ori_shape',
+                    'filename',
+                    'img_shape',
+                    'pad_shape',
+                ],
+            },
+        ],
+        "val": [
+            {
+                'type': 'LoadResizeDataFromOTXDataset',
+                'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
+                'resize_cfg': {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
+                'enable_memcache': True,
+                'eval_mode': True,
+            },
+            {
+                'type': 'PackDetInputs',
+                'meta_keys': ['ori_filename', 'scale_factor', 'ori_shape', 'filename', 'img_shape', 'pad_shape'],
+            },
+        ],
+        "test": [
+            {
+                'type': 'LoadResizeDataFromOTXDataset',
+                'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
+                'resize_cfg': {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
+                'enable_memcache': True,
+                'eval_mode': True,
+            },
+            {
+                'type': 'PackDetInputs',
+                'meta_keys': ['ori_filename', 'scale_factor', 'ori_shape', 'filename', 'img_shape', 'pad_shape'],
+            },
+        ],
+    }
+
+    return default_pipeline[subset]
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -130,5 +176,5 @@ class MMDetDataset(MMXDataset):
         """
         if pipeline is None:
             semisl = subset == "unlabeled"
-            pipeline = get_default_pipeline(semisl=semisl)
+            pipeline = get_default_pipeline(subset, semisl=semisl)
         return super()._build_dataset(subset, pipeline, config)

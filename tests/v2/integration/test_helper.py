@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-
 TASK_CONFIGURATION = {
     "classification": {
         "train_data_roots": "tests/assets/classification_dataset_class_incremental",
@@ -29,7 +28,7 @@ TASK_CONFIGURATION = {
         "train_data_roots": "tests/assets/car_tree_bug",
         "val_data_roots": "tests/assets/car_tree_bug",
         "test_data_roots": "tests/assets/car_tree_bug",
-        "sample": "tests/assets/car_tree_bug/images",
+        "sample": "tests/assets/car_tree_bug/images/val/Slide5.PNG",
         "models": ["mobilenetv2-atss"],
     }
 }

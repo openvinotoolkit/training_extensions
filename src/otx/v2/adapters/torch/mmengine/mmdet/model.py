@@ -94,7 +94,10 @@ def get_model(
     if channel_last and isinstance(torch_model, torch.nn.Module):
         torch_model = torch_model.to(memory_format=torch.channels_last)
 
-    torch_model.config = model_cfg
+    # For compatibility with mmdet api.
+    torch_model.cfg = model_cfg
+    # For compatibility with other tasks.
+    torch_model._config = model_cfg  # noqa: SLF001
     return torch_model
 
 
