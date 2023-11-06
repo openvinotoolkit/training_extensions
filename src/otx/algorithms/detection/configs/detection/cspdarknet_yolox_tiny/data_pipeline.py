@@ -50,7 +50,12 @@ train_pipeline = [
 val_pipeline = [
     dict(
         type="LoadResizeDataFromOTXDataset",
-        resize_cfg=dict(type="Resize", img_scale=__img_size_test, keep_ratio=True),
+        resize_cfg=dict(
+            type="Resize",
+            img_scale=__img_size_test,
+            keep_ratio=True,
+            downscale_only=False,
+        ),
         enable_memcache=True,  # Cache after resizing image
     ),
     dict(

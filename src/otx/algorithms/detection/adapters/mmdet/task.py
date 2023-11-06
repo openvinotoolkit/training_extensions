@@ -356,7 +356,7 @@ class MMDetectionTask(OTXDetectionTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
-        feature_model = model.model_s if self._train_type == TrainType.Semisupervised else model
+        feature_model = model.model_t if self._train_type == TrainType.Semisupervised else model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)

@@ -25,7 +25,9 @@ _base_ = [
 model = dict(
     super_type="MeanTeacher",
     pseudo_conf_thresh=0.25,
-    unlabeled_loss_weights={"cls": 1.0, "bbox": 1.0, "obj": 1.0, "centerness": 1.0},
+    unlabeled_loss_weights={"cls": 0.1, "bbox": 0.0, "obj": 0.0, "centerness": 0.0},
+    filter_empty_annotations=True,
+    visualize=False,
     type="CustomATSS",
     neck=dict(
         type="FPN",
@@ -58,12 +60,6 @@ model = dict(
         loss_bbox=dict(type="GIoULoss", loss_weight=2.0),
         loss_centerness=dict(type="CrossEntropyLoss", use_sigmoid=True, loss_weight=1.0),
         use_qfl=False,
-        qfl_cfg=dict(
-            type="QualityFocalLoss",
-            use_sigmoid=True,
-            beta=2.0,
-            loss_weight=1.0,
-        ),
     ),
     train_cfg=dict(
         assigner=dict(type="XPUATSSAssigner", topk=9),
