@@ -11,7 +11,7 @@ model:
 train_dataloader:
   batch_size: 8
   num_workers: 2
-  config:
+  dataset:
     type: OTXDetDataset
     pipeline:
       - type: LoadResizeDataFromOTXDataset
@@ -50,7 +50,7 @@ train_dataloader:
 val_dataloader:
   batch_size: 8
   num_workers: 2
-  config:
+  dataset:
     type: OTXDetDataset
     pipeline:
       - type: LoadResizeDataFromOTXDataset
@@ -77,7 +77,7 @@ val_dataloader:
 test_dataloader:
   batch_size: 32
   num_workers: 2
-  config:
+  dataset:
     type: OTXClsDataset
     pipeline:
       - type: LoadImageFromOTXDataset
