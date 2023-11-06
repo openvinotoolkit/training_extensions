@@ -212,7 +212,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         return dataset
 
     @abstractmethod
-    def get_otx_dataset(self) -> DatasetEntity:
+    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
         """Get DatasetEntity."""
         raise NotImplementedError
 
