@@ -5,11 +5,15 @@
 #
 from __future__ import annotations
 
-import torch
+from typing import TYPE_CHECKING
+
 from mmseg.models.builder import HEADS
 from mmseg.models.decode_heads.fcn_head import FCNHead
 
 from otx.v2.adapters.torch.mmengine.mmseg.modules.models.utils import IterativeAggregator
+
+if TYPE_CHECKING:
+    import torch
 
 
 @HEADS.register_module()
@@ -41,7 +45,7 @@ class OTXFCNHead(FCNHead):
         aggregator_use_concat: bool = False,
         *args,
         **kwargs,
-    ):
+    ) -> None:
         """Initializes OTXFCNHead.
 
         Args:
@@ -61,8 +65,12 @@ class OTXFCNHead(FCNHead):
 
         aggregator: torch.nn.Module
         if enable_aggregator:  # Lite-HRNet aggregator
-            assert isinstance(in_channels, (tuple, list))
-            assert len(in_channels) > 1
+            if not isinstance(in_channels, (tuple, list)):
+                msg = "in_channels must be tuple or list."
+                raise TypeError(msg)
+            if len(in_channels) < 1:
+                msg = "len(in_channels) must be greater than 0."
+                raise ValueError(msg)
 
             aggregator = IterativeAggregator(
                 in_channels=in_channels,
@@ -99,7 +107,7 @@ class OTXFCNHead(FCNHead):
         if kwargs.get("init_cfg", {}):
             self.init_weights()
 
-    def _transform_inputs(self, inputs: torch.Tensor):
+    def _transform_inputs(self, inputs: torch.Tensor) -> torch.Tensor:
         """Transforms inputs.
 
         Args:
@@ -109,9 +117,4 @@ class OTXFCNHead(FCNHead):
             torch.Tensor: Transformed input tensor.
 
         """
-        if self.aggregator is not None:
-            inputs = self.aggregator(inputs)[0]
-        else:
-            inputs = super()._transform_inputs(inputs)
-
-        return inputs
+        return self.aggregator(inputs)[0] if self.aggregator is not None else super()._transform_inputs(inputs)

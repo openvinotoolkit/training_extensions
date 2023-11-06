@@ -164,7 +164,7 @@ class MMSegEngine(MMXEngine):
             ]
         config = Config({})
         if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
-            config = model._config
+            config = model._config  # noqa: SLF001
         elif isinstance(model, dict) and "_config" in model:
             config = model["_config"]
         config["test_dataloader"] = {"dataset": {"pipeline": pipeline}}

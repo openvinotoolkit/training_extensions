@@ -5,11 +5,14 @@
 
 from __future__ import annotations
 
+import fnmatch
 import re
 import warnings
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import torch
+if TYPE_CHECKING:
+    import torch
 
 from otx.v2.adapters.torch.mmengine.mmseg.registry import MODELS
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
@@ -47,7 +50,7 @@ def get_model(
     model: str | (Config | dict),
     pretrained: str | bool | None = False,
     num_classes: int | None = None,
-    device=None,
+    device: str | torch.device | None = None,
     url_mapping: tuple[str, str] | None = None,
     **kwargs,
 ) -> torch.nn.Module:
@@ -78,7 +81,8 @@ def get_model(
         elif model in MODEL_CONFIGS:
             config = Config.fromfile(filename=MODEL_CONFIGS[model])
     else:
-        raise TypeError("model must be a name, a path or a Config object, " f"but got {type(model)}")
+        msg = f"model must be a name, a path or a Config object, but got {type(model)}"
+        raise TypeError(msg)
 
     if num_classes is not None:
         replace_num_classes(config, num_classes)
@@ -88,7 +92,7 @@ def get_model(
         pretrained = config.load_from
 
     if pretrained is True:
-        warnings.warn("Unable to find pre-defined checkpoint of the model.")
+        warnings.warn("Unable to find pre-defined checkpoint of the model.", stacklevel=2)
         pretrained = None
     elif pretrained is False:
         pretrained = None
@@ -116,41 +120,36 @@ def get_model(
         if url_mapping is not None:
             pretrained = re.sub(url_mapping[0], url_mapping[1], pretrained)
         checkpoint = load_checkpoint(seg_model, pretrained, map_location="cpu")
-        # TODO: need to check this part for mmseg
         if "dataset_meta" in checkpoint.get("meta", {}):
-            # mmpretrain 1.x
+            # mmseg 1.x
             dataset_meta = checkpoint["meta"]["dataset_meta"]
         elif "CLASSES" in checkpoint.get("meta", {}):
-            # mmcls 0.x
+            # mmseg 0.x
             dataset_meta = {"classes": checkpoint["meta"]["CLASSES"]}
 
     if device is not None:
         seg_model.to(device)
 
-    seg_model._dataset_meta = dataset_meta  # save the dataset meta
-    seg_model._config = config  # save the config in the model
-    seg_model._metainfo = metainfo  # save the metainfo in the model
+    seg_model._dataset_meta = dataset_meta  # noqa: SLF001
+    seg_model._config = config  # noqa: SLF001
+    seg_model._metainfo = metainfo  # noqa: SLF001
     seg_model.eval()
     return seg_model
 
 
-def list_models(pattern: str | None = None, **kwargs) -> list[str]:
+def list_models(pattern: str | None = None) -> list[str]:
     """Returns a list of available models for training.
 
     Args:
         pattern (Optional[str]): A string pattern to filter the list of available models. Defaults to None.
-        **kwargs: Additional keyword arguments to pass to the underlying model listing functions.
 
     Returns:
         List[str]: A sorted list of available models for pretraining.
     """
-    # First, make sure it's a model from mmpretrain.
-    # model_list = list_mmseg_model(pattern=pattern, **kwargs)
-    # # Add OTX Custom models
-    # model_list.extend(list(MODEL_CONFIGS.keys()))
+    model_list = []
+    model_list.extend(list(MODEL_CONFIGS.keys()))
 
-    # if pattern is not None:
-    #     # Always match keys with any postfix.
-    #     model_list = set(fnmatch.filter(model_list, pattern + "*"))
-
-    return []
+    if pattern is not None:
+        # Always match keys with any postfix.
+        return sorted(set(fnmatch.filter(model_list, pattern + "*")))
+    return sorted(model_list)

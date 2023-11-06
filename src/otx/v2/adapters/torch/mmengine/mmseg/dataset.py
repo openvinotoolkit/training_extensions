@@ -159,7 +159,9 @@ class Dataset(BaseDataset):
             }
             return dataset
 
-        # TODO @eugene: need to figure out this part????
+        # TODO (Eugene): load dataset from config
+        # CVS-124394
+
         # Config Setting
         if isinstance(config, str):
             _config = Config.fromfile(filename=config)
@@ -215,11 +217,13 @@ class Dataset(BaseDataset):
         Returns:
             Optional[TorchDataLoader]: The DataLoader for the given dataset.
         """
+        # TODO (Eugene): almost identical as mmengine.runner. Need to rethink about the design.
+        # CVS-124394
+
         if dataset is None:
             return None
         rank, _ = get_dist_info()
 
-        # TODO: need to rethink about the design here
         # mmengine build dataloader in runner where we build in dataset.
         # So, I'm basically copying things from runner.build_dataloader to here
         # which does not make sense. why do we not use dataloader_cfg and build dataloader
@@ -305,7 +309,8 @@ class Dataset(BaseDataset):
             torch.utils.data.DataLoader: Returns a subset of dataLoader.
         """
         # Config Setting
-        # TODO: how to pass dataloader_cfg?
+        # TODO (eugene): direct pass config
+        # CVS-124394
         if isinstance(config, str):
             _config = Config.fromfile(filename=config)
         elif isinstance(config, dict):

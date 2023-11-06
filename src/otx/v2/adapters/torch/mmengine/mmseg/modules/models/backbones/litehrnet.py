@@ -32,24 +32,26 @@ from otx.v2.adapters.torch.mmengine.mmseg.modules.models.utils import (
 
 
 class NeighbourSupport(nn.Module):
+    """Neighbour support module."""
+
     def __init__(
         self,
         channels: int,
         kernel_size: int = 3,
         key_ratio: int = 8,
         value_ratio: int = 8,
-        conv_cfg=None,
-        norm_cfg=None,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
     ) -> None:
         """Neighbour support module.
 
         Args:
-            channels (_type_): _description_
-            kernel_size (int, optional): _description_. Defaults to 3.
-            key_ratio (int, optional): _description_. Defaults to 8.
-            value_ratio (int, optional): _description_. Defaults to 8.
-            conv_cfg (_type_, optional): _description_. Defaults to None.
-            norm_cfg (_type_, optional): _description_. Defaults to None.
+            channels (int): Number of input channels.
+            kernel_size (int): Kernel size for convolutional layers. Default is 3.
+            key_ratio (int): Ratio of input channels to key channels. Default is 8.
+            value_ratio (int): Ratio of input channels to value channels. Default is 8.
+            conv_cfg (dict | None): Config for convolutional layers. Default is None.
+            norm_cfg (dict | None): Config for normalization layers. Default is None.
         """
         super().__init__()
 
@@ -111,7 +113,7 @@ class NeighbourSupport(nn.Module):
             act_cfg=None,
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         h, w = (int(_) for _ in x.size()[-2:])
 
@@ -122,9 +124,7 @@ class NeighbourSupport(nn.Module):
         y = torch.sum(weights * value, dim=2)
         y = self.out_conv(y)
 
-        out = x + y
-
-        return out
+        return x + y
 
 
 class CrossResolutionWeighting(nn.Module):
@@ -136,14 +136,28 @@ class CrossResolutionWeighting(nn.Module):
         ratio: int = 16,
         conv_cfg: dict | None = None,
         norm_cfg: dict | None = None,
-        act_cfg=({"type": "ReLU"}, {"type": "Sigmoid"}),
+        act_cfg: dict | tuple[dict, dict] = ({"type": "ReLU"}, {"type": "Sigmoid"}),
     ) -> None:
+        """Cross resolution weighting.
+
+        Args:
+            channels (list[int]): Number of channels for each stage.
+            ratio (int): Reduction ratio of the bottleneck block.
+            conv_cfg (dict | None): Config dict for convolution layer. Default: None
+            norm_cfg (dict | None): Config dict for normalization layer. Default: None
+            act_cfg (dict | tuple[dict, dict]): Config dict or a tuple of config dicts for activation layer(s).
+                Default: ({"type": "ReLU"}, {"type": "Sigmoid"}).
+        """
         super().__init__()
 
         if isinstance(act_cfg, dict):
             act_cfg = (act_cfg, act_cfg)
-        assert len(act_cfg) == 2
-        assert is_tuple_of(act_cfg, dict)
+        if len(act_cfg) != 2:
+            msg = "act_cfg must be a dict or a tuple of dicts of length 2."
+            raise ValueError(msg)
+        if not is_tuple_of(act_cfg, dict):
+            msg = "act_cfg must be a dict or a tuple of dicts."
+            raise TypeError(msg)
 
         self.channels = channels
         total_channel = sum(channels)
@@ -167,7 +181,7 @@ class CrossResolutionWeighting(nn.Module):
             act_cfg=act_cfg[1],
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward."""
         min_size = [int(_) for _ in x[-1].size()[-2:]]
 
@@ -176,9 +190,8 @@ class CrossResolutionWeighting(nn.Module):
         out = self.conv1(out)
         out = self.conv2(out)
         out = torch.split(out, self.channels, dim=1)
-        out = [s * functional.interpolate(a, size=s.size()[-2:], mode="nearest") for s, a in zip(x, out)]
 
-        return out
+        return [s * functional.interpolate(a, size=s.size()[-2:], mode="nearest") for s, a in zip(x, out)]
 
 
 class SpatialWeighting(nn.Module):
@@ -186,18 +199,36 @@ class SpatialWeighting(nn.Module):
 
     def __init__(
         self,
-        channels,
-        ratio=16,
-        conv_cfg=None,
-        act_cfg=({"type": "ReLU"}, dict(type="Sigmoid")),
-        **kwargs,
-    ):
+        channels: int,
+        ratio: int = 16,
+        conv_cfg: dict | None = None,
+        act_cfg: dict | tuple[dict, dict] = ({"type": "ReLU"}, {"type": "Sigmoid"}),
+    ) -> None:
+        """Spatial weighting.
+
+        Args:
+            channels (int): Number of input channels.
+            ratio (int): Reduction ratio for the bottleneck block. Default: 16.
+            conv_cfg (dict | None): Configuration dict for convolutional layers.
+                Default: None.
+            act_cfg (dict | tuple[dict]): Configuration dict or tuple of dicts for
+                activation layers. If a single dict is provided, it will be used for
+                both activation layers. Default: ({"type": "ReLU"}, {"type": "Sigmoid"}).
+
+        Raises:
+            ValueError: act_cfg must be a dict or a tuple of dicts of length 2.
+            TypeError: If act_cfg is not a dict or a tuple of dicts.
+        """
         super().__init__()
 
         if isinstance(act_cfg, dict):
             act_cfg = (act_cfg, act_cfg)
-        assert len(act_cfg) == 2
-        assert is_tuple_of(act_cfg, dict)
+        if len(act_cfg) != 2:
+            msg = "act_cfg must be a dict or a tuple of dicts of length 2."
+            raise ValueError(msg)
+        if not is_tuple_of(act_cfg, dict):
+            msg = "act_cfg must be a dict or a tuple of dicts."
+            raise TypeError(msg)
 
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         self.conv1 = ConvModule(
@@ -217,7 +248,7 @@ class SpatialWeighting(nn.Module):
             act_cfg=act_cfg[1],
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         out = self.global_avgpool(x)
         out = self.conv1(out)
@@ -231,13 +262,21 @@ class SpatialWeightingV2(nn.Module):
 
     def __init__(
         self,
-        channels,
-        ratio=16,
-        conv_cfg=None,
-        norm_cfg=None,
-        enable_norm=False,
-        **kwargs,
-    ):
+        channels: int,
+        ratio: int = 16,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        enable_norm: bool = False,
+    ) -> None:
+        """SpatialWeightingV2.
+
+        Args:
+            channels (int): Number of input channels.
+            ratio (int): Reduction ratio of internal channels.
+            conv_cfg (dict | None): Config dict for convolution layer.
+            norm_cfg (dict | None): Config dict for normalization layer.
+            enable_norm (bool): Whether to enable normalization layers.
+        """
         super().__init__()
 
         self.in_channels = channels
@@ -271,7 +310,7 @@ class SpatialWeightingV2(nn.Module):
             stride=1,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=dict(type="Sigmoid"),
+            act_cf={"type": "Sigmoid"},
         )
 
         # spatial-only branch
@@ -297,7 +336,15 @@ class SpatialWeightingV2(nn.Module):
         )
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
 
-    def _channel_weighting(self, x):
+    def _channel_weighting(self, x: torch.Tensor) -> torch.Tensor:
+        """_channel_weighting.
+
+        Args:
+            x (torch.Tensor): input tensor.
+
+        Returns:
+            torch.Tensor: output tensor.
+        """
         h, w = (int(_) for _ in x.size()[-2:])
 
         v = self.v_channel(x).view(-1, self.internal_channels, h * w)
@@ -309,11 +356,17 @@ class SpatialWeightingV2(nn.Module):
         y = y.view(-1, self.internal_channels, 1, 1)
         y = self.out_channel(y)
 
-        out = x * y
+        return x * y
 
-        return out
+    def _spatial_weighting(self, x: torch.Tensor) -> torch.Tensor:
+        """_spatial_weighting.
 
-    def _spatial_weighting(self, x):
+        Args:
+            x (torch.Tensor): input tensor.
+
+        Returns:
+            torch.Tensor: output tensor.
+        """
         h, w = (int(_) for _ in x.size()[-2:])
 
         v = self.v_spatial(x)
@@ -328,17 +381,14 @@ class SpatialWeightingV2(nn.Module):
         y = y.view(-1, 1, h, w)
         y = torch.sigmoid(y)
 
-        out = x * y
+        return x * y
 
-        return out
-
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
         y_channel = self._channel_weighting(x)
         y_spatial = self._spatial_weighting(x)
-        out = y_channel + y_spatial
 
-        return out
+        return y_channel + y_spatial
 
 
 class ConditionalChannelWeighting(nn.Module):
@@ -357,6 +407,23 @@ class ConditionalChannelWeighting(nn.Module):
         neighbour_weighting: bool = False,
         dw_ksize: int = 3,
     ) -> None:
+        """Conditional channel weighting module.
+
+        Args:
+            in_channels (list[int]): Number of input channels for each input feature map.
+            stride (int): Stride used in the first convolutional layer.
+            reduce_ratio (int): Reduction ratio used in the cross-resolution weighting module.
+            conv_cfg (dict | None): Dictionary to construct and configure the convolutional layers.
+            norm_cfg (dict | None): Dictionary to construct and configure the normalization layers.
+            with_cp (bool): Whether to use checkpointing to save memory.
+            dropout (float | None): Dropout probability used in the depthwise convolutional layers.
+            weighting_module_version (str): Version of the spatial weighting module to use.
+            neighbour_weighting (bool): Whether to use the neighbour support module.
+            dw_ksize (int): Kernel size used in the depthwise convolutional layers.
+
+        Raises:
+            ValueError: If stride is not 1 or 2.
+        """
         super().__init__()
 
         if norm_cfg is None:
@@ -364,7 +431,9 @@ class ConditionalChannelWeighting(nn.Module):
 
         self.with_cp = with_cp
         self.stride = stride
-        assert stride in [1, 2]
+        if stride not in [1, 2]:
+            msg = "stride must be 1 or 2."
+            raise ValueError(msg)
 
         spatial_weighting_module = SpatialWeighting if weighting_module_version == "v1" else SpatialWeightingV2
         branch_channels = [channel // 2 for channel in in_channels]
@@ -424,7 +493,15 @@ class ConditionalChannelWeighting(nn.Module):
         if dropout is not None and dropout > 0.0:
             self.dropout = nn.ModuleList([nn.Dropout(p=dropout) for _ in branch_channels])
 
-    def _inner_forward(self, x):
+    def _inner_forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        """_inner_forward.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            list[torch.Tensor]: Output tensor.
+        """
         x = [s.chunk(2, dim=1) for s in x]
         x1 = [s[0] for s in x]
         x2 = [s[1] for s in x]
@@ -441,18 +518,12 @@ class ConditionalChannelWeighting(nn.Module):
             x2 = [dropout(s) for s, dropout in zip(x2, self.dropout)]
 
         out = [torch.cat([s1, s2], dim=1) for s1, s2 in zip(x1, x2)]
-        out = [channel_shuffle(s, 2) for s in out]
 
-        return out
+        return [channel_shuffle(s, 2) for s in out]
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward."""
-        if self.with_cp and x.requires_grad:
-            out = cp.checkpoint(self._inner_forward, x)
-        else:
-            out = self._inner_forward(x)
-
-        return out
+        return cp.checkpoint(self._inner_forward, x) if self.with_cp and x.requires_grad else self._inner_forward(x)
 
 
 class Stem(nn.Module):
@@ -471,13 +542,36 @@ class Stem(nn.Module):
         extra_stride: bool = False,
         input_norm: bool = False,
     ) -> None:
+        """Stem initialization.
+
+        Args:
+            in_channels (int): Number of input image channels. Typically 3.
+            stem_channels (int): Number of output channels of the stem layer.
+            out_channels (int): Number of output channels of the backbone network.
+            expand_ratio (int): Expansion ratio of the internal channels.
+            conv_cfg (dict | None): Dictionary to construct and configure convolution layers.
+            norm_cfg (dict | None): Dictionary to construct and configure normalization layers.
+            with_cp (bool): Use checkpointing to save memory during forward pass.
+            num_stages (int): Number of stages in the backbone network.
+            strides (tuple[int, int]): Strides of the first and subsequent stages.
+            extra_stride (bool): Use an extra stride in the second stage.
+            input_norm (bool): Use instance normalization on the input image.
+
+        Raises:
+            TypeError: If strides is not a tuple or list.
+            ValueError: If len(strides) is not equal to num_stages + 1.
+        """
         super().__init__()
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
 
-        assert isinstance(strides, (tuple, list))
-        assert len(strides) == 2
+        if not isinstance(strides, (tuple, list)):
+            msg = "strides must be tuple or list."
+            raise TypeError(msg)
+        if len(strides) != 2:
+            msg = "len(strides) must equal to 2."
+            raise ValueError(msg)
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -576,7 +670,15 @@ class Stem(nn.Module):
             act_cfg={"type": "ReLU"},
         )
 
-    def _inner_forward(self, x):
+    def _inner_forward(self, x: torch.Tensor) -> torch.Tensor:
+        """_inner_forward.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         if self.input_norm is not None:
             x = self.input_norm(x)
 
@@ -593,18 +695,12 @@ class Stem(nn.Module):
         x2 = self.linear_conv(x2)
 
         out = torch.cat((x1, x2), dim=1)
-        out = channel_shuffle(out, 2)
 
-        return out
+        return channel_shuffle(out, 2)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
-        if self.with_cp and x.requires_grad:
-            out = cp.checkpoint(self._inner_forward, x)
-        else:
-            out = self._inner_forward(x)
-
-        return out
+        return cp.checkpoint(self._inner_forward, x) if self.with_cp and x.requires_grad else self._inner_forward(x)
 
 
 class StemV2(nn.Module):
@@ -612,26 +708,52 @@ class StemV2(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        stem_channels,
-        out_channels,
-        expand_ratio,
-        conv_cfg=None,
-        norm_cfg=None,
-        with_cp=False,
-        num_stages=1,
-        strides=(2, 2),
-        extra_stride=False,
-        input_norm=False,
-    ):
+        in_channels: int,
+        stem_channels: int,
+        out_channels: int,
+        expand_ratio: int,
+        conv_cfg: dict | None = None,
+        norm_cfg: dict | None = None,
+        with_cp: bool = False,
+        num_stages: int = 1,
+        strides: tuple[int, int] = (2, 2),
+        extra_stride: bool = False,
+        input_norm: bool = False,
+    ) -> None:
+        """StemV2 initialization.
+
+        Args:
+            in_channels (int): Number of input image channels. Typically 3.
+            stem_channels (int): Number of output channels of the stem layer.
+            out_channels (int): Number of output channels of the backbone network.
+            expand_ratio (int): Expansion ratio of the internal channels.
+            conv_cfg (dict | None): Dictionary to construct and configure convolution layers.
+            norm_cfg (dict | None): Dictionary to construct and configure normalization layers.
+            with_cp (bool): Use checkpointing to save memory during forward pass.
+            num_stages (int): Number of stages in the backbone network.
+            strides (tuple[int, int]): Strides of the first and subsequent stages.
+            extra_stride (bool): Use an extra stride in the second stage.
+            input_norm (bool): Use instance normalization on the input image.
+
+        Raises:
+            ValueError: If num_stages is less than 1.
+            TypeError: If strides is not a tuple or list.
+            ValueError: If len(strides) is not equal to num_stages + 1.
+        """
         super().__init__()
 
         if norm_cfg is None:
             norm_cfg = {"type": "BN"}
+        if num_stages < 1:
+            msg = "num_stages must be greater than 0."
+            raise ValueError(msg)
+        if not isinstance(strides, (tuple, list)):
+            msg = "strides must be tuple or list."
+            raise TypeError(msg)
 
-        assert num_stages > 0
-        assert isinstance(strides, (tuple, list))
-        assert len(strides) == 1 + num_stages
+        if len(strides) != 1 + num_stages:
+            msg = "len(strides) must equal to num_stages + 1."
+            raise ValueError(msg)
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -736,7 +858,15 @@ class StemV2(nn.Module):
                 ),
             )
 
-    def _inner_forward(self, x):
+    def _inner_forward(self, x: torch.Tensor) -> list[torch.Tensor]:
+        """Forward pass of Stem module.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, channels, height, width).
+
+        Returns:
+            list[torch.Tensor]: List of output tensors at each stage of the backbone.
+        """
         if self.input_norm is not None:
             x = self.input_norm(x)
 
@@ -757,14 +887,9 @@ class StemV2(nn.Module):
 
         return out_list
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> list[torch.Tensor]:
         """Forward."""
-        if self.with_cp and x.requires_grad:
-            out = cp.checkpoint(self._inner_forward, x)
-        else:
-            out = self._inner_forward(x)
-
-        return out
+        return cp.checkpoint(self._inner_forward, x) if self.with_cp and x.requires_grad else self._inner_forward(x)
 
 
 class ShuffleUnit(nn.Module):
@@ -779,7 +904,7 @@ class ShuffleUnit(nn.Module):
         norm_cfg: dict | None = None,
         act_cfg: dict | None = None,
         with_cp: bool = False,
-    ):
+    ) -> None:
         """InvertedResidual block for ShuffleNetV2 backbone.
 
         Args:
@@ -882,9 +1007,7 @@ class ShuffleUnit(nn.Module):
             x1, x2 = x.chunk(2, dim=1)
             out = torch.cat((x1, self.branch2(x2)), dim=1)
 
-        out = channel_shuffle(out, 2)
-
-        return out
+        return channel_shuffle(out, 2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward."""
@@ -910,6 +1033,23 @@ class LiteHRModule(nn.Module):
         weighting_module_version: str = "v1",
         neighbour_weighting: bool = False,
     ) -> None:
+        """LiteHR module.
+
+        Args:
+            num_branches (int): Number of branches in the network.
+            num_blocks (int): Number of blocks in each branch.
+            in_channels (list[int]): List of input channels for each branch.
+            reduce_ratio (int): Reduction ratio for the weighting module.
+            module_type (str): Type of module to use for the network. Can be "LITE" or "NAIVE".
+            multiscale_output (bool, optional): Whether to output features from all branches. Defaults to False.
+            with_fuse (bool, optional): Whether to use the fuse layer. Defaults to True.
+            conv_cfg (dict, optional): Configuration for the convolutional layers. Defaults to None.
+            norm_cfg (dict, optional): Configuration for the normalization layers. Defaults to None.
+            with_cp (bool, optional): Whether to use checkpointing. Defaults to False.
+            dropout (float, optional): Dropout rate. Defaults to None.
+            weighting_module_version (str, optional): Version of the weighting module to use. Defaults to "v1".
+            neighbour_weighting (bool, optional): Whether to use neighbour weighting. Defaults to False.
+        """
         super().__init__()
 
         if norm_cfg is None:
@@ -980,19 +1120,18 @@ class LiteHRModule(nn.Module):
                 act_cfg={"type": "ReLU"},
                 with_cp=self.with_cp,
             ),
-        ]
-        for _ in range(1, num_blocks):
-            layers.append(
-                ShuffleUnit(
-                    self.in_channels[branch_index],
-                    self.in_channels[branch_index],
-                    stride=1,
-                    conv_cfg=self.conv_cfg,
-                    norm_cfg=self.norm_cfg,
-                    act_cfg={"type": "ReLU"},
-                    with_cp=self.with_cp,
-                ),
+        ] + [
+            ShuffleUnit(
+                self.in_channels[branch_index],
+                self.in_channels[branch_index],
+                stride=1,
+                conv_cfg=self.conv_cfg,
+                norm_cfg=self.norm_cfg,
+                act_cfg={"type": "ReLU"},
+                with_cp=self.with_cp,
             )
+            for _ in range(1, num_blocks)
+        ]
 
         return nn.Sequential(*layers)
 

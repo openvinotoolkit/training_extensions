@@ -68,7 +68,23 @@ class OTXSegDataset(BaseCDDataset):
         empty_label: list | None = None,
         pipeline: list | dict | None = None,
         **kwargs,
-    ):
+    ) -> None:
+        """Dataset class for OTX datasets.
+
+        Args:
+            otx_dataset (DatasetEntity): The OTX dataset to use.
+            labels (list[LabelEntity]): List of label entities.
+            empty_label (list | None, optional): Empty label. Defaults to None.
+            pipeline (list | dict | None, optional): Data processing pipeline. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Attributes:
+            otx_dataset (DatasetEntity): The OTX dataset being used.
+            empty_label (list | None): Empty label.
+            labels (list[LabelEntity]): List of label entities.
+            serialize_data (None): OTX has its own data caching mechanism.
+            _fully_initialized (bool): Whether the dataset has been fully initialized.
+        """
         self.otx_dataset = otx_dataset
         self.empty_label = empty_label
         self.labels = labels
@@ -92,15 +108,15 @@ class OTXSegDataset(BaseCDDataset):
         item = dataset[idx]
         ignored_labels = np.array([self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
 
-        data_info = dict(
-            dataset_item=item,
-            width=item.width,
-            height=item.height,
-            index=idx,
-            ann_info=dict(labels=self.labels),
-            ignored_labels=ignored_labels,
-            seg_fields=[],
-        )
+        data_info = {
+            "dataset_item": item,
+            "width": item.width,
+            "height": item.height,
+            "index": idx,
+            "ann_info": {"labels": self.labels},
+            "ignored_labels": ignored_labels,
+            "seg_fields": [],
+        }
         return self.pipeline(data_info)
 
 
@@ -114,10 +130,15 @@ class LoadAnnotationFromOTXDataset:
 
     """
 
-    def __init__(self, use_otx_adapter=True):
+    def __init__(self, use_otx_adapter: bool = True) -> None:
+        """Initializes the pipeline element.
+
+        Args:
+            use_otx_adapter (bool): Whether to use the OTX adapter or not.
+        """
         self.use_otx_adapter = use_otx_adapter
 
-    def __call__(self, results: dict[str, Any]):
+    def __call__(self, results: dict[str, Any]) -> dict:
         """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results.pop("dataset_item")  # Prevent unnessary deepcopy
         labels = results["ann_info"]["labels"]
