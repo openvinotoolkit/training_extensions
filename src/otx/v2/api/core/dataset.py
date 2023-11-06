@@ -287,7 +287,7 @@ class BaseDataset:
             2) Call this function
             3) This will set
                 - self.dataset_adapter (DatumaroDatasetAdapter)
-                - self.dataset_entity (Dict[Subset, DatumDataset])
+                - self.dataset_entity (dict[Subset, DatumDataset])
                 - self.label_schema (LabelSchemaEntity) so that can use it.
             4) Use the above attributes to complete the subset_dataloader function.
         """
