@@ -28,7 +28,6 @@ from otx.algorithms.detection.adapters.mmdet.models.heads.custom_yolox_head impo
 
 # pylint: disable=too-many-locals
 
-# def normalize(tensor):
 
 class DetClassProbabilityMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
@@ -109,35 +108,20 @@ class DetClassProbabilityMapHook(BaseRecordingForwardHook):
                     for cls_conv in self._bbox_head.cls_convs:
                         cls_feat = cls_conv(cls_feat)
                     cls_score = self._bbox_head.atss_cls(cls_feat)
-                    # centerness = self._bbox_head.atss_centerness(cls_feat)
-                    
-                    # min_values = torch.min(centerness)
-                    # max_values = torch.max(centerness)
-                    # norm_centerness = (centerness - min_values) / (max_values - min_values + 1e-12)
-                    
-                    # weighted_cls_score = (cls_score - torch.min(cls_score)) * norm_centerness
                     cls_scores.append(cls_score)
             elif isinstance(self._bbox_head, CustomVFNetHead):
                 # Not clear how to separate cls_scores from bbox_preds
                 cls_scores, _, _ = self._bbox_head(x)
             elif isinstance(self._bbox_head, CustomYOLOXHead):
 
-                def forward_single(x, cls_convs, conv_cls, objectness):
+                def forward_single(x, cls_convs, conv_cls):
                     """Forward feature of a single scale level."""
                     cls_feat = cls_convs(x)
                     cls_score = conv_cls(cls_feat)
-
-                    # object_score = objectness(x)
-
-                    # min_values = torch.min(object_score)
-                    # max_values = torch.max(object_score)
-                    # norm_object_score = (object_score - min_values) / (max_values - min_values + 1e-12)
-
-                    # weighted_cls_score = (cls_score - torch.min(cls_score)) / norm_object_score
                     return cls_score
 
                 map_results = map(
-                    forward_single, x, self._bbox_head.multi_level_cls_convs, self._bbox_head.multi_level_conv_cls, self._bbox_head.multi_level_conv_obj
+                    forward_single, x, self._bbox_head.multi_level_cls_convs, self._bbox_head.multi_level_conv_cls
                 )
                 cls_scores = list(map_results)
             else:
