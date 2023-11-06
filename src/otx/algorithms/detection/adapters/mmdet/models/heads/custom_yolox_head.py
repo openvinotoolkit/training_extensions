@@ -43,6 +43,7 @@ class CustomYOLOXHead(YOLOXHead):
             gt_bboxes_ignore (None | list[Tensor]): specify which bounding
                 boxes can be ignored when computing the loss.
         """
+
         num_imgs = len(img_metas)
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(
@@ -151,6 +152,14 @@ class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOX
         flatten_priors = torch.cat(mlvl_priors)
         flatten_bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
 
+        if "hpu" in flatten_cls_preds.device:
+            # put loss computastion on CPU -> faster, avoid errors
+            flatten_cls_preds = flatten_cls_preds.cpu()
+            flatten_bbox_preds = flatten_bbox_preds.cpu()
+            flatten_objectness = flatten_objectness.cpu()
+            flatten_priors = flatten_priors.cpu()
+            flatten_bboxes = flatten_bboxes.cpu()
+
         # Init variables for loss dynamics tracking
         self.cur_batch_idx = 0
         self.max_gt_bboxes_len = max([len(gt_bbox) for gt_bbox in gt_bboxes])
@@ -219,7 +228,6 @@ class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOX
         if self.use_l1:
             loss_l1 = self.loss_l1(flatten_bbox_preds.view(-1, 4)[pos_masks], l1_targets) / num_total_samples
             loss_dict.update(loss_l1=loss_l1)
-
         return loss_dict
 
     @torch.no_grad()
@@ -245,6 +253,9 @@ class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOX
         num_priors = priors.size(0)
         num_gts = gt_labels.size(0)
         gt_bboxes = gt_bboxes.to(decoded_bboxes.dtype)
+        if "hpu" in gt_bboxes.device:
+            gt_bboxes = gt_bboxes.cpu()
+            gt_labels = gt_labels.cpu()
         # No target
         if num_gts == 0:
             cls_target = cls_preds.new_zeros((0, self.num_classes))
