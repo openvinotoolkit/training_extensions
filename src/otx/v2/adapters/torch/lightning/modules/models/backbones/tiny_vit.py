@@ -2,8 +2,7 @@
 
 # Copyright (c) 2022 Microsoft
 # https://github.com/ChaoningZhang/MobileSAM
-# Copyright (C) 2023 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+# This code is a modification of the https://github.com/ChaoningZhang/MobileSAM
 
 from __future__ import annotations
 

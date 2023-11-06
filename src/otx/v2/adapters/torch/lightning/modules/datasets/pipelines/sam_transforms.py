@@ -2,8 +2,7 @@
 
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
-# Copyright (C) 2023 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+# This code is a modification of the https://github.com/facebookresearch/segment-anything
 
 from __future__ import annotations
 
