@@ -24,109 +24,84 @@ class TestMMXEngine:
         assert engine.registry.name == "mmengine"
         assert engine.timestamp is not None
 
-    def test_initial_config(self, tmp_dir_path: Path) -> None:
-        engine = MMXEngine(work_dir=tmp_dir_path)
-        assert isinstance(engine.config, Config)
-
-        config = {"foo": "bar"}
-        engine = MMXEngine(work_dir=tmp_dir_path, config=config)
-        assert isinstance(engine.config, Config)
-        assert hasattr(engine.config, "foo")
-        assert engine.config.foo == "bar"
-
-        config = Config({"foo": "bar"})
-        engine = MMXEngine(work_dir=tmp_dir_path, config=config)
-        assert isinstance(engine.config, Config)
-        assert hasattr(engine.config, "foo")
-        assert engine.config.foo == "bar"
-
-        config_file = tmp_dir_path / "config.yaml"
-        config_file.write_text("foo : 'bar'")
-        engine = MMXEngine(work_dir=tmp_dir_path, config=str(config_file))
-        assert isinstance(engine.config, Config)
-        assert hasattr(engine.config, "foo")
-        assert engine.config.foo == "bar"
-
     def test_update_config(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
         engine = MMXEngine(work_dir=tmp_dir_path)
 
         # Test with model is None argument
         model = mocker.Mock()
-        engine._update_config({}, model=None)
-        assert not hasattr(engine.config, "model")
-        assert engine.config.default_scope == "mmengine"
+        config, _ = engine._update_config({}, model=None)
+        assert not hasattr(config, "model")
+        assert config.default_scope == "mmengine"
 
         # Test with invalid argument
         model = mocker.Mock()
-        engine._update_config({}, invalid="test")
-        assert not hasattr(engine.config, "invalid")
+        config, _ = engine._update_config({}, invalid="test")
+        assert not hasattr(config, "invalid")
 
         # Test with model argument
         model = mocker.Mock()
-        engine._update_config({"model": model})
-        assert engine.config["model"] == model
+        config, _ = engine._update_config({"model": model})
+        assert config["model"] == model
 
         # Test with model (Module) argument
         model = MockModel()
-        engine._update_config({"model": model})
-        assert engine.config["model"] == model
+        config, _ = engine._update_config({"model": model})
+        assert config["model"] == model
 
         # Test with train_dataloader argument
         train_dataloader = mocker.Mock()
-        engine._update_config({"train_dataloader": train_dataloader})
-        assert engine.config["train_dataloader"] == train_dataloader
+        config, _ = engine._update_config({"train_dataloader": train_dataloader})
+        assert config["train_dataloader"] == train_dataloader
 
         # Test with val_dataloader argument
         val_dataloader = mocker.Mock()
-        engine._update_config({"val_dataloader": val_dataloader})
-        assert engine.config["val_dataloader"] == val_dataloader
-        assert "val_cfg" in engine.config
-        assert "val_evaluator" in engine.config
-        assert engine.config["val_evaluator"] is not None
+        config, _ = engine._update_config({"val_dataloader": val_dataloader})
+        assert config["val_dataloader"] == val_dataloader
+        assert "val_cfg" in config
+        assert "val_evaluator" in config
+        assert config["val_evaluator"] is not None
 
         # Test with test_dataloader argument
         test_dataloader = mocker.Mock()
-        engine._update_config({"test_dataloader": test_dataloader})
-        assert engine.config["test_dataloader"] == test_dataloader
-        assert "test_cfg" in engine.config
-        assert "test_evaluator" in engine.config
-        assert engine.config["test_evaluator"] is not None
+        config, _ = engine._update_config({"test_dataloader": test_dataloader})
+        assert config["test_dataloader"] == test_dataloader
+        assert "test_cfg" in config
+        assert "test_evaluator" in config
+        assert config["test_evaluator"] is not None
 
         # Test with param_scheduler argument
         param_scheduler = {"foo": "bar"}
-        engine._update_config({"param_scheduler": param_scheduler})
-        assert engine.config["param_scheduler"] == param_scheduler
+        config, _ = engine._update_config({"param_scheduler": param_scheduler})
+        assert config["param_scheduler"] == param_scheduler
 
         # Test with custom_hooks argument
         custom_hooks = {"foo": "bar"}
-        engine._update_config({"custom_hooks": custom_hooks})
-        assert engine.config["custom_hooks"] == custom_hooks
+        config, _ = engine._update_config({"custom_hooks": custom_hooks})
+        assert config["custom_hooks"] == custom_hooks
 
         # Test with precision argument
         mocker.patch("otx.v2.adapters.torch.mmengine.utils.runner_config.get_device", return_value="cpu")
-        engine.config["optim_wrapper"] = None
-        engine._update_config({}, train_dataloader=train_dataloader)
-        assert engine.config["optim_wrapper"]["type"] == "OptimWrapper"
+        config, _ = engine._update_config({"train_dataloader": train_dataloader})
+        assert config["optim_wrapper"]["type"] == "OptimWrapper"
         mocker.patch("otx.v2.adapters.torch.mmengine.utils.runner_config.get_device", return_value="cuda")
-        engine.config["optim_wrapper"] = None
-        engine._update_config({"precision": "fp16"}, train_dataloader=train_dataloader)
-        assert engine.config["optim_wrapper"]["type"] == "AmpOptimWrapper"
-        assert engine.config["optim_wrapper"]["dtype"] == "fp16"
+        config, _ = engine._update_config({"precision": "fp16", "train_dataloader": train_dataloader})
+        assert config["optim_wrapper"]["type"] == "AmpOptimWrapper"
+        assert config["optim_wrapper"]["dtype"] == "fp16"
 
         # Test with seed & deterministic argument
-        engine._update_config({"seed": 123, "deterministic": True})
-        assert engine.config["randomness"]["seed"] == 123
-        assert engine.config["randomness"]["deterministic"]
+        config, _ = engine._update_config({"seed": 123, "deterministic": True})
+        assert config["randomness"]["seed"] == 123
+        assert config["randomness"]["deterministic"]
 
         # Test with default_hooks argument
         default_hooks = {"foo": "bar"}
-        engine._update_config({"default_hooks": default_hooks})
-        assert engine.config["default_hooks"] == default_hooks
+        config, _ = engine._update_config({"default_hooks": default_hooks})
+        assert config["default_hooks"] == default_hooks
 
         # Test with visualizer argument
         visualizer = {"foo": "bar"}
-        engine._update_config({"visualizer": visualizer})
-        assert engine.config["visualizer"]["foo"] == "bar"
+        config, _ = engine._update_config({"visualizer": visualizer})
+        assert config["visualizer"]["foo"] == "bar"
 
 
     def test_train(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
@@ -142,7 +117,7 @@ class TestMMXEngine:
         engine.runner.train.assert_called_once_with()
         engine.runner.load_checkpoint.assert_called_once_with("test.pth")
 
-        engine.train(model=mock_model, train_dataloader=mock_dataloader, checkpoint="test.pth", max_iters=3)
+        engine.train(model=mock_model, train_dataloader=mock_dataloader, checkpoint="test.pth", max_iters=3, max_epochs=None)
         engine.runner.train.assert_called_once_with()
         engine.runner.load_checkpoint.assert_called_once_with("test.pth")
 

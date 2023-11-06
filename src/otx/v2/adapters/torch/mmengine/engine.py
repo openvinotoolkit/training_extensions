@@ -34,8 +34,6 @@ logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
 # NOTE: We need to discuss where to declare the default value.
 DEFAULT_CONFIG: dict[str, dict | list | str | int | float | None] = {
-    "max_epochs": 10,
-    "max_iters": None,
     "val_interval": 1,
     "seed": 1234,
     "deterministic": False,
@@ -56,7 +54,6 @@ DEFAULT_CONFIG: dict[str, dict | list | str | int | float | None] = {
         },
     },
     "custom_hooks": [],
-    "param_scheduler": {"type": "CosineAnnealingLR"},
     "visualizer": {
         "type": "UniversalVisualizer",
         "vis_backends": [
@@ -153,17 +150,17 @@ class MMXEngine(Engine):
                 runner_config[f"{subset}_cfg"] = None
                 runner_config[f"{subset}_evaluator"] = None
 
-        # Update randomness
+        # Update randomness: seed & deterministic
         seed = get_value_from_config("seed", func_args, config=self.default_config)
         deterministic = get_value_from_config("deterministic", func_args, config=self.default_config)
         if seed is not None:
             runner_config["randomness"] = {"seed": seed, "deterministic": deterministic}
 
-        default_hooks = get_value_from_config("default_hooks", func_args, config=self.default_config)
-        runner_config["default_hooks"] = default_hooks
-        visualizer = get_value_from_config("visualizer", func_args, config=self.default_config)
-        if visualizer is not None:
-            runner_config["visualizer"] = visualizer
+        # Update param_scheduler, default_hooks, custom_hooks, visualizer
+        for runner_key in ("param_scheduler", "default_hooks", "custom_hooks", "visualizer"):
+            runner_value = get_value_from_config(runner_key, func_args, config=self.default_config)
+            if runner_value is not None:
+                runner_config[runner_key] = runner_value
 
         # Update scope for Registry import step
         runner_config["default_scope"] = self.registry.name
