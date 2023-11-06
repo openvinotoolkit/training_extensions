@@ -1,4 +1,4 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Visual Prompting Requirements.
-scikit-image
+scikit-image==0.22.*
 pytorch-lightning>=1.7.0,<1.10.0
