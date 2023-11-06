@@ -135,11 +135,11 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         else:
             self._resize_shape = None
 
-    def _create_load_ann_op(self, cfg: dict | None) -> Callable:
+    def _create_load_ann_op(self, cfg: dict | None) -> Callable | None:
         """Creates annotation loading operation."""
         raise NotImplementedError
 
-    def _create_resize_op(self, cfg: dict | None) -> Callable:
+    def _create_resize_op(self, cfg: dict | None) -> Callable | None:
         """Creates resize operation."""
         raise NotImplementedError
 

@@ -21,7 +21,7 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
-def get_default_pipeline(subset: str = "train", semisl: bool = False) -> dict | list:
+def get_default_pipeline(subset: str = "train", semisl: bool = False) -> list:
     """Returns the default pipeline for training a model.
 
     Args:
@@ -159,8 +159,8 @@ class MMDetDataset(MMXDataset):
     def _build_dataset(
         self,
         subset: str,
-        pipeline: list | dict | None = None,
-        config: str | dict | None = None,
+        pipeline: list | None = None,
+        config: dict | None = None,
     ) -> TorchDataset | None:
         """Builds a TorchDataset object for the given subset using the specified pipeline and configuration.
 

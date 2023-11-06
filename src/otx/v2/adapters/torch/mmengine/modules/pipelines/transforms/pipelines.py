@@ -19,6 +19,6 @@ class LoadImageFromOTXDataset(load_image_base.LoadImageFromOTXDataset):
 class LoadResizeDataFromOTXDataset(load_image_base.LoadResizeDataFromOTXDataset):
     """Load and resize image & annotation with cache support."""
 
-    def _create_resize_op(self, cfg) -> Callable:
+    def _create_resize_op(self, cfg) -> Callable | None:
         """Creates resize operation."""
         return TRANSFORMS.build(cfg)
