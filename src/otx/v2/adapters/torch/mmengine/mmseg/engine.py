@@ -7,9 +7,11 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
+from mmengine.evaluator import Evaluator
 
 import torch
 from mmseg.apis import MMSegInferencer
+from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmseg.registry import MMSegmentationRegistry
@@ -44,6 +46,12 @@ class MMSegEngine(MMXEngine):
         """
         super().__init__(work_dir=work_dir, config=config)
         self.registry = MMSegmentationRegistry()
+        self.evaluator = {
+                "type": "IoUMetric",
+                "iou_metrics": [
+                    "mDice",
+                ],
+            }
 
     def train(
         self,
@@ -92,12 +100,7 @@ class MMSegEngine(MMXEngine):
             dict: A dictionary containing the training results.
         """
         if val_evaluator is None:
-            val_evaluator = {
-                "type": "IoUMetric",
-                "iou_metrics": [
-                    "mDice",
-                ],
-            }
+            val_evaluator = self.evaluator
         return super().train(
             model,
             train_dataloader,
@@ -225,3 +228,8 @@ class MMSegEngine(MMXEngine):
             input_shape=input_shape,
             **kwargs,
         )
+
+    def test(self, model: Module | dict | None = None, test_dataloader: DataLoader | None = None, checkpoint: str | Path | None = None, precision: str | None = None, test_evaluator: Evaluator | dict | list | None = None, **kwargs) -> dict:
+        if test_evaluator is None:
+            test_evaluator = self.evaluator
+        return super().test(model, test_dataloader, checkpoint, precision, test_evaluator, **kwargs)

@@ -5,9 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
-from otx.v2.adapters.torch.mmengine.mmseg import Engine, get_model, list_models
-
-from otx.v2.adapters.torch.mmengine.mmseg.dataset import Dataset
+from otx.v2.adapters.torch.mmengine.mmseg import Engine, get_model, list_models, Dataset
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
