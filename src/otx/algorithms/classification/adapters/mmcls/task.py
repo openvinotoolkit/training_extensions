@@ -381,6 +381,10 @@ class MMClassificationTask(OTXClassificationTask):
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
+        if not torch.cuda.is_available():
+            # NOTE: mmcls does not wrap models w/ DP for CPU training not like mmdet
+            # Raw DataContainer "img_metas" is exposed, which results in errors
+            model = build_data_parallel(model, cfg, distributed=False)
         model.train()
 
         if cfg.distributed:
