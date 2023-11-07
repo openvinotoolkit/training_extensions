@@ -5,9 +5,12 @@
 from __future__ import annotations
 
 from tempfile import TemporaryDirectory
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from mmcv.transforms import BaseTransform
 
 from otx.v2.adapters.datumaro.caching.mem_cache_handler import (
     MemCacheHandlerBase,
@@ -128,18 +131,21 @@ class LoadResizeDataFromOTXDataset(LoadImageFromOTXDataset):
         self._downscale_only = resize_cfg.pop("downscale_only", False) if resize_cfg else False
         self._resize_op = self._create_resize_op(resize_cfg)
         if self._resize_op is not None and resize_cfg is not None:
-            self._resize_shape = resize_cfg.get("size", resize_cfg.get("scale"))
+            self._resize_shape = resize_cfg.get("scale", None)
             if isinstance(self._resize_shape, int):
                 self._resize_shape = (self._resize_shape, self._resize_shape)
+            if isinstance(self._resize_shape, list):
+                self._resize_shape = tuple(self._resize_shape)
             assert isinstance(self._resize_shape, tuple), f"Random scale is not supported by {self.__class__.__name__}"
+            self._resize_op.scale = self._resize_shape
         else:
             self._resize_shape = None
 
-    def _create_load_ann_op(self, cfg: dict | None) -> Callable | None:
+    def _create_load_ann_op(self, cfg: dict | None) -> BaseTransform | None:
         """Creates annotation loading operation."""
         raise NotImplementedError
 
-    def _create_resize_op(self, cfg: dict | None) -> Callable | None:
+    def _create_resize_op(self, cfg: dict | None) -> BaseTransform | None:
         """Creates resize operation."""
         raise NotImplementedError
 

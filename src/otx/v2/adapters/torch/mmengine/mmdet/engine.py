@@ -45,6 +45,15 @@ class MMDetEngine(MMXEngine):
         if hasattr(self.config, "test_dataloader") and not hasattr(self.config.test_evaluator, "type"):
             self.config.test_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
         self.config.default_hooks.checkpoint.save_best = "pascal_voc/mAP"
+        max_epochs = getattr(self.config.train_cfg, "max_epochs", None)
+        if max_epochs:
+            for scheduler in self.config.param_scheduler:
+                if hasattr(scheduler, "end") and scheduler.end > max_epochs:
+                    scheduler.end = max_epochs
+                    if hasattr(scheduler, "begin") and scheduler.begin > scheduler.end:
+                        scheduler.begin = scheduler.end
+                if hasattr(scheduler, "begin") and scheduler.begin > max_epochs:
+                    scheduler.begin = max_epochs - 1
         return update_check
 
     def predict(
