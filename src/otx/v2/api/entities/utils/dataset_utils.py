@@ -17,6 +17,7 @@
 from typing import List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
+from datumaro.components.annotation import AnnotationType
 
 from otx.v2.api.entities.annotation import AnnotationSceneEntity
 from otx.v2.api.entities.dataset_item import DatasetItemEntity
@@ -112,7 +113,7 @@ def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
     global_items = []
     for item in dataset:
         global_annotations = [
-            annotation for annotation in item.get_annotations() if Rectangle.is_full_box(annotation.shape)
+            annotation for annotation in item.annotations if annotation.type == AnnotationType.label
         ]
         global_items.append(
             DatasetItemEntity(

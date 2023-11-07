@@ -13,10 +13,6 @@ from omegaconf import DictConfig, OmegaConf
 from otx.v2.adapters.torch.lightning.anomalib.modules.data.data import OTXAnomalyDataset
 from otx.v2.adapters.torch.lightning.dataset import LightningDataset
 from otx.v2.api.entities.task_type import TaskType, TrainType
-from otx.v2.api.entities.utils.dataset_utils import (
-    contains_anomalous_images,
-    split_local_global_dataset,
-)
 from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type
 
@@ -117,9 +113,7 @@ class AnomalibDataset(LightningDataset):
         if not otx_dataset or len(otx_dataset) < 1:
             return None
 
-        if subset == "val":
-            global_dataset, local_dataset = split_local_global_dataset(otx_dataset)
-            otx_dataset = local_dataset if contains_anomalous_images(local_dataset) else global_dataset
+        # [TODO] resotre split_local_global_dataset for subset == "val"
         task_type = str_to_task_type(self.task) if isinstance(self.task, str) else self.task
         return OTXAnomalyDataset(config=config, dataset=otx_dataset, task_type=task_type)
 
