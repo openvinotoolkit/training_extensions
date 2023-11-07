@@ -13,12 +13,12 @@ from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMix
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
 )
-from otx.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
     patch_tiling,
     should_cluster_anchors,
 )
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

@@ -9,8 +9,8 @@ from otx.algorithms.common.adapters.mmcv.tasks.exporter import Exporter
 from otx.algorithms.common.adapters.mmdeploy.utils.utils import (
     sync_batchnorm_2_batchnorm,
 )
-from otx.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

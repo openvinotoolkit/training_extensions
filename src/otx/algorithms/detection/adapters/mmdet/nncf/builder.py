@@ -19,8 +19,8 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
 from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 from otx.algorithms.common.adapters.nncf.utils import no_nncf_trace
-from otx.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

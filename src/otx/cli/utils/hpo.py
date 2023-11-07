@@ -19,7 +19,6 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import torch
 import yaml
 
-from otx.utils.logger import get_logger
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
@@ -31,6 +30,7 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
 from otx.hpo import HyperBand, TrialStatus, run_hpo_loop
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

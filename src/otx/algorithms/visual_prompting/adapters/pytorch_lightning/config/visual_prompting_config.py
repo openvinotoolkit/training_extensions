@@ -20,8 +20,8 @@ from typing import Optional, Union
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
-from otx.utils.logger import get_logger
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

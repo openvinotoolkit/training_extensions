@@ -14,7 +14,6 @@ import numpy as np
 import torch
 
 from otx.algorithms.common.utils import get_task_class
-from otx.utils.logger import get_logger
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -33,6 +32,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.utils.logger import get_logger
 
 SEED = 5
 random.seed(SEED)

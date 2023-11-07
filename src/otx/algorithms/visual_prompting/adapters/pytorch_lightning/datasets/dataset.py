@@ -24,7 +24,6 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from otx.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.pipelines import (
     MultipleInputsCompose,
     Pad,
@@ -39,6 +38,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Polygon
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

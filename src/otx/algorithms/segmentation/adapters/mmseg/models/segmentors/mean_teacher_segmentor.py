@@ -8,8 +8,8 @@ from mmseg.models import SEGMENTORS, build_segmentor
 from mmseg.models.segmentors.base import BaseSegmentor
 from mmseg.ops import resize
 
-from otx.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads.proto_head import ProtoNet
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

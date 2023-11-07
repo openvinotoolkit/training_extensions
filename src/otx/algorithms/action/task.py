@@ -29,7 +29,6 @@ from otx.algorithms.common.utils.callback import (
     InferenceProgressCallback,
     TrainingProgressCallback,
 )
-from otx.utils.logger import get_logger
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import config_to_bytes, ids_to_strings
 from otx.api.entities.annotation import Annotation
@@ -66,6 +65,7 @@ from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.vis_utils import get_actmap
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

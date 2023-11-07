@@ -8,7 +8,6 @@ from typing import List, Optional
 
 import otx.algorithms.segmentation.adapters.mmseg.nncf.patches  # noqa: F401  # pylint: disable=unused-import
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.nncf import build_nncf_segmentor
 from otx.algorithms.segmentation.adapters.mmseg.task import MMSegmentationTask
 from otx.api.entities.datasets import DatasetEntity
@@ -27,6 +26,7 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

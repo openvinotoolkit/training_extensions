@@ -30,12 +30,12 @@ from mmcv.utils import print_log
 
 from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.algorithms.action.adapters.mmaction.utils import det_eval
-from otx.utils.logger import get_logger
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metadata import VideoMetadata
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.utils.logger import get_logger
 
 root_logger = get_logger()
 

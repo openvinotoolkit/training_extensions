@@ -35,7 +35,6 @@ from openvino.model_api.models import Model
 
 from otx.algorithms.common.utils import get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.openvino import model_wrappers
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.datasets.dataset import (
     OTXVisualPromptingDataset,
@@ -76,6 +75,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

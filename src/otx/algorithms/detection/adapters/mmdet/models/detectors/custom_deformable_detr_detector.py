@@ -14,8 +14,8 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
-from otx.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

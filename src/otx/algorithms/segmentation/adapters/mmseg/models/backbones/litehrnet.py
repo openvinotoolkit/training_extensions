@@ -32,13 +32,13 @@ from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
 from torch import nn
 
-from otx.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
     channel_shuffle,
 )
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

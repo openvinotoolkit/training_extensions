@@ -11,8 +11,8 @@ import torch
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.rpn_head import RPNHead
 
-from otx.utils.logger import get_logger
 from otx.core.ov.models.mmov_model import MMOVModel
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

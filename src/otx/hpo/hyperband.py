@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from scipy.stats.qmc import LatinHypercube
 
-from otx.utils.logger import get_logger
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.utils import (
     check_mode_input,
@@ -30,6 +29,7 @@ from otx.hpo.utils import (
     check_positive,
     left_vlaue_is_better,
 )
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 

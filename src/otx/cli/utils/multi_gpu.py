@@ -29,8 +29,8 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
-from otx.utils.logger import get_logger
 from otx.api.configuration import ConfigurableParameters
+from otx.utils.logger import get_logger
 
 logger = get_logger()
 
