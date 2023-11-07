@@ -34,6 +34,7 @@ from .early_stopping_hook import (
 from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
+from .hpu_optimizer_hook import HPUOptimizerHook
 from .ib_loss_hook import IBLossHook
 from .logger_hook import LoggerReplaceHook, OTXLoggerHook
 from .loss_dynamics_tracking_hook import LossDynamicsTrackingHook
@@ -52,7 +53,6 @@ from .sam_optimizer_hook import SAMOptimizerHook
 from .semisl_cls_hook import SemiSLClsHook
 from .task_adapt_hook import TaskAdaptHook
 from .two_crop_transform_hook import TwoCropTransformHook
-from .hpu_optimizer_hook import HPUOptimizerHook, HPUDistOptimizerHook
 
 __all__ = [
     "AdaptiveRepeatDataHook",
@@ -92,5 +92,4 @@ __all__ = [
     "MemCacheHook",
     "LossDynamicsTrackingHook",
     "HPUOptimizerHook",
-    "HPUDistOptimizerHook",
 ]

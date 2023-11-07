@@ -26,7 +26,6 @@ except ImportError:
     htorch = None
 
 
-
 class UncopiableDefaultDict(defaultdict):
     """Defauldict type object to avoid deepcopy."""
 
@@ -173,11 +172,11 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
 def is_xpu_available():
     """Checks if XPU device is available."""
     return hasattr(torch, "xpu") and torch.xpu.is_available()
-    
-    
+
+
 def is_hpu_available() -> bool:
     """Check if HPU device is available."""
-    global HPU_AVAILABLE
+    global HPU_AVAILABLE  # noqa: PLW0603
     if HPU_AVAILABLE is None:
         HPU_AVAILABLE = htorch.hpu.is_available()
     return HPU_AVAILABLE

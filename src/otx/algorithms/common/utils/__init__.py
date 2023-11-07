@@ -27,11 +27,11 @@ from .utils import (
     get_arg_spec,
     get_default_async_reqs_num,
     get_task_class,
+    is_hpu_available,
     is_xpu_available,
     load_template,
     read_py_config,
     set_random_seed,
-    is_hpu_available,
 )
 
 __all__ = [
@@ -57,4 +57,4 @@ __all__ = [
 
 
 if is_hpu_available():
-    import habana_frameworks.torch.gpu_migration
+    import habana_frameworks.torch.gpu_migration  # noqa: F401

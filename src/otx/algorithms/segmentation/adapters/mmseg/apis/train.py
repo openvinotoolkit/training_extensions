@@ -17,7 +17,7 @@ from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import build_ddp, find_latest_checkpoint, get_root_logger
 from mmseg.utils.util_distribution import build_dp, dp_factory
 
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
 from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 
 dp_factory["xpu"] = XPUDataParallel

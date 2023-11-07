@@ -32,8 +32,9 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
             losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         losses["loss"] = loss
         return losses
-    
+
     def post_process(self, pred):
+        """Post processing."""
         if pred.dtype == torch.bfloat16:
             # numpy doesn't support bfloat16, convert pred to float32
             pred = pred.to(torch.float32)

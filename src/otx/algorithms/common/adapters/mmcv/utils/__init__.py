@@ -3,7 +3,7 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from ._builder_build_data_parallel import XPUDataParallel, HPUDataParallel, build_data_parallel
+from ._builder_build_data_parallel import HPUDataParallel, XPUDataParallel, build_data_parallel
 from ._config_utils_get_configs_by_keys import get_configs_by_keys
 from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
 from .automatic_bs import adapt_batch_size
