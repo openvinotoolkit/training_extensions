@@ -23,6 +23,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from scipy.stats.qmc import LatinHypercube
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.utils import (
     check_mode_input,
@@ -31,7 +32,7 @@ from otx.hpo.utils import (
     left_vlaue_is_better,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _check_reduction_factor_value(reduction_factor: int):

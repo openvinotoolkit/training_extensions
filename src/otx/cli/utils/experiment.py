@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import logging
 import multiprocessing as mp
 import os
 import time
+from otx.algorithms.common.utils.logger import get_logger
 from abc import ABC, abstractmethod
 from pathlib import Path
 from statistics import mean
@@ -20,7 +20,7 @@ try:
 except ImportError:
     pynvml = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 GIB = 1024**3
 AVAILABLE_RESOURCE_TYPE = ["cpu", "gpu"]
 

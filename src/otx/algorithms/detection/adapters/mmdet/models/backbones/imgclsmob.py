@@ -8,14 +8,17 @@ import os
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.runner import get_dist_info
 from mmdet.models.builder import BACKBONES
-from mmdet.utils.logger import get_root_logger
 from pytorchcv.model_provider import _models
 from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
+from otx.algorithms.common.utils.logger import get_logger
+
 # TODO: Need to fix pylint issues
 # pylint: disable=protected-access, abstract-method, no-value-for-parameter, assignment-from-no-return
+
+logger = get_logger()
 
 
 def replace_activation(model, activation_cfg):
@@ -95,8 +98,6 @@ def init_weights(self, pretrained=True):
 
 def generate_backbones():
     """Generate backbones of pytorchcv funtion."""
-    logger = get_root_logger()
-
     for model_name, model_getter in _models.items():
 
         def closure(model_name, model_getter):

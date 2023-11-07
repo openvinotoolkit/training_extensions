@@ -21,6 +21,7 @@ import torch
 import yaml
 
 from otx.api.configuration.helper import create
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
@@ -32,7 +33,7 @@ from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
 from otx.hpo import HyperBand, TrialStatus, run_hpo_loop
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _check_hpo_enabled_task(task_type):

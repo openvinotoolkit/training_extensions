@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from otx.algorithms.common.utils.logger import get_logger
 from functools import partial
 from typing import Optional, Union
 
@@ -22,7 +23,7 @@ from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 from otx.algorithms.common.adapters.nncf.utils import no_nncf_trace
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector
 
-logger = get_root_logger()
+logger = get_logger()
 
 
 def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements

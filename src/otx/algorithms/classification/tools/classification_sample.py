@@ -12,9 +12,9 @@ import sys
 
 import numpy as np
 import torch
-from mmcv.utils import get_logger
 
 from otx.algorithms.common.utils import get_task_class
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -42,7 +42,7 @@ torch.cuda.manual_seed_all(SEED)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-logger = get_logger(name="mmcls")
+logger = get_logger()
 
 parser = argparse.ArgumentParser(description="Sample showcasing the new API")
 parser.add_argument("template_file_path", help="path to template file")

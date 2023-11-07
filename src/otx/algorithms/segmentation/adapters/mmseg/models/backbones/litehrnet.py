@@ -30,15 +30,17 @@ from mmcv.runner import BaseModule, load_checkpoint
 from mmcv.utils.parrots_wrapper import _BatchNorm
 from mmseg.models.backbones.resnet import BasicBlock, Bottleneck
 from mmseg.models.builder import BACKBONES
-from mmseg.utils import get_root_logger
 from torch import nn
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.utils import (
     AsymmetricPositionAttentionModule,
     IterativeAggregator,
     LocalAttentionModule,
     channel_shuffle,
 )
+
+logger = get_logger()
 
 
 # pylint: disable=invalid-name, too-many-lines, too-many-instance-attributes, too-many-locals, too-many-arguments

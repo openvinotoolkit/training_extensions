@@ -15,14 +15,14 @@
 # and limitations under the License.
 
 
-import logging
 import math
 import typing
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from otx.hpo.utils import check_positive
+from otx.algorithms.common.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 AVAILABLE_SEARCH_SPACE_TYPE = ["uniform", "quniform", "loguniform", "qloguniform", "choice"]
 

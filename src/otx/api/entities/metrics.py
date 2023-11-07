@@ -6,15 +6,16 @@
 
 import abc
 import datetime
-import logging
 import math
 from enum import Enum
 from typing import Generic, List, Optional, Sequence, TypeVar, Union
+from otx.algorithms.common.utils.logger import get_logger
 
 import numpy as np
 
 from otx.api.utils.time_utils import now
 
+logger = get_logger()
 
 class MetricEntity(metaclass=abc.ABCMeta):
     """This interface represents a metric, which is the smallest building block for the performance statistics.
@@ -370,7 +371,6 @@ class MatrixMetric(MetricEntity):
         if not np.all(self.__matrix_values.sum(axis=1, keepdims=True) > 0):
             self.__matrix_values = np.nan_to_num(self.__matrix_values)
 
-            logger = logging.getLogger(__name__)
             logger.warning("Replacing NaN in the matrix with zeroes since the sum of one (or more) row(s) was zero.")
 
     def __repr__(self):

@@ -16,7 +16,6 @@
 
 import io
 import json
-import logging
 import os
 import random
 import tempfile
@@ -72,8 +71,9 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from otx.algorithms.common.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 # TODO: refactoring to Sphinx style.

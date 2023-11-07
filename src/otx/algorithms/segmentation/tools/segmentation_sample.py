@@ -19,7 +19,6 @@ import sys
 
 import cv2
 import numpy as np
-from mmcv.utils import get_logger
 
 from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
@@ -28,6 +27,7 @@ from otx.api.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
@@ -45,7 +45,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
-logger = get_logger(name="mmseg")
+logger = get_logger()
 
 
 def parse_args():

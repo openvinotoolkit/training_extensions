@@ -5,7 +5,7 @@
 #
 
 import copy
-import logging
+from otx.algorithms.common.utils.logger import get_logger
 import re
 from enum import Enum
 from typing import Dict, List, Optional, Sequence, Union
@@ -18,7 +18,7 @@ from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def natural_sort_label_id(target: Union[ID, LabelEntity, ScoredLabel]) -> List[Union[int, str]]:

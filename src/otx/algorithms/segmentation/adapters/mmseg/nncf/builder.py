@@ -19,11 +19,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
     remove_from_configs_by_type,
 )
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
 from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
 from otx.algorithms.segmentation.adapters.mmseg.utils import build_segmentor
 
-logger = get_root_logger()
+logger = get_logger()
 
 
 def build_nncf_segmentor(  # noqa: C901  # pylint: disable=too-many-locals,too-many-statements

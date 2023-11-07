@@ -6,8 +6,8 @@
 
 # pylint: disable=too-many-instance-attributes,too-many-arguments
 
-import logging
 import math
+from otx.algorithms.common.utils.logger import get_logger
 import time
 from copy import deepcopy
 from typing import List
@@ -20,7 +20,7 @@ from otx.api.entities.train_parameters import (
 )
 from otx.api.usecases.reporting.callback import Callback
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class TimeMonitorCallback(Callback):

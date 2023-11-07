@@ -16,7 +16,6 @@
 
 import io
 import json
-import logging
 import os
 import tempfile
 import time
@@ -39,6 +38,7 @@ from otx.algorithms.classification.utils import (
     get_cls_inferencer_configuration,
     get_hierarchical_label_list,
 )
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num, read_py_config
@@ -80,7 +80,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 # TODO: refactoring to Sphinx style.
