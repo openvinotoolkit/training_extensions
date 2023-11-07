@@ -5,7 +5,6 @@
 #
 
 from mmcv.runner import HOOKS, OptimizerHook
-from mmcls.core import DistOptimizerHook
 import habana_frameworks.torch.core as htcore
 
 
@@ -25,19 +24,5 @@ class HPUOptimizerHook(OptimizerHook):
                 runner.log_buffer.update({'grad_norm': float(grad_norm)},
                                          runner.outputs['num_samples'])
         
-        runner.optimizer.step()
-        htcore.mark_step()
-    
-    
-@HOOKS.register_module()
-class HPUDistOptimizerHook(DistOptimizerHook):
-    def after_train_iter(self, runner):
-        runner.optimizer.zero_grad()
-        runner.outputs['loss'].backward()
-        htcore.mark_step()
-
-        if self.grad_clip is not None:
-            self.clip_grads(runner.model.parameters())
-            
         runner.optimizer.step()
         htcore.mark_step()
