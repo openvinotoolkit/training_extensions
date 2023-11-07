@@ -53,7 +53,6 @@ def get_hazelnut_dataset(task_type: TaskType, one_each: bool = False) -> Dataset
     dataset: DatasetEntity
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
         train_subset, test_subset, val_subset = _get_annotations("classification")
-        print(train_subset)
         dataset = AnomalyClassificationDataset(train_subset, val_subset, test_subset)
     elif task_type == TaskType.ANOMALY_SEGMENTATION:
         train_subset, test_subset, val_subset = _get_annotations("segmentation")
@@ -175,6 +174,6 @@ def _get_annotations(task: str) -> Tuple[Dict, Dict, Dict]:
 
     train_subset = {"ann_file": str(ann_file_root / "train.json"), "data_root": str(data_root)}
     test_subset = {"ann_file": str(ann_file_root / "test.json"), "data_root": str(data_root)}
-
     val_subset = {"ann_file": str(ann_file_root / "val.json"), "data_root": str(data_root)}
+
     return train_subset, test_subset, val_subset

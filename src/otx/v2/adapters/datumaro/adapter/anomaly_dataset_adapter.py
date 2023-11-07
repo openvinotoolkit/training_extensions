@@ -128,7 +128,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
             for item in subset_data:
                 image = item.media.data
                 label = self.label_entities[0] if os.path.dirname(item.id) == "good" else self.label_entities[1]
-                annotations = [DatumLabel(label.id)]
+                annotations = [] # [DatumLabel(label.id)]
 
                 mask_file_path = os.path.join(
                     "/".join(item.media.path.split("/")[:-3]),
@@ -142,10 +142,10 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                         x1, y1, x2, y2 = bbox
                         annotations.append(
                             DatumBbox(
-                                x1=x1 / image.width,
-                                y1=y1 / image.height,
-                                x2=x2 / image.width,
-                                y2=y2 / image.height,
+                                x=x1 / image.width,
+                                y=y1 / image.height,
+                                w=(x2 - x1) / image.width,
+                                h=(y2 - y1) / image.height,
                                 label=self.label_entities[1].id,
                                 attributes={"is_anomalous": label.is_anomalous},
                             ),
@@ -165,7 +165,7 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
         for _, subset_data in self.dataset.items():
             for item in subset_data:
                 label = self.label_entities[0] if os.path.dirname(item.id) == "good" else self.label_entities[1]
-                annotations = [DatumLabel(label.id)]
+                annotations = [] #[DatumLabel(label.id)]
 
                 mask_file_path = os.path.join(
                     "/".join(item.media.path.split("/")[:-3]),

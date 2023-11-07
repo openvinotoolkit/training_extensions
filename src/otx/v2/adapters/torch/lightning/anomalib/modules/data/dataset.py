@@ -82,7 +82,7 @@ class BaseAnomalyDataset(ABC):
         if test_subset is not None:
             test_ann_file = Path(test_subset["ann_file"])
             test_data_root = Path(test_subset["data_root"])
-            self.dataset[Subset.VALIDATION] = DatumDataset.from_iterable(
+            self.dataset[Subset.TESTING] = DatumDataset.from_iterable(
                 self.get_dataset_items(
                     ann_file_path=test_ann_file,
                     data_root_dir=test_data_root,

@@ -115,22 +115,22 @@ class OTXAnomalyDataset(Dataset):
             item["boxes"] = torch.empty((0, 4))
             height, width = self.config.dataset.image_size
             boxes = []
-            for annotation in dataset_item.annotations():
+            for annotation in dataset_item.annotations:
                 if isinstance(annotation.type, Bbox):
                     boxes.append(
                         Tensor(
                             [
-                                annotation.shape.x1 * width,
-                                annotation.shape.y1 * height,
-                                annotation.shape.x2 * width,
-                                annotation.shape.y2 * height,
+                                annotation.x * width,
+                                annotation.y * height,
+                                (annotation.x + annotation.w) * width,
+                                (annotation.y + annotation.h) * height,
                             ],
                         ),
                     )
                 if boxes:
                     item["boxes"] = torch.stack(boxes)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            for annotation in dataset_item.annotations():
+            for annotation in dataset_item.annotations:
                 if isinstance(annotation.type, Mask):
                     mask = annotation.image
                 else:
