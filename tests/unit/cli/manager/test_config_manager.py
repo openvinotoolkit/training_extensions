@@ -3,7 +3,6 @@ import os
 import tempfile
 from pathlib import Path
 import os
-import shutil
 
 import pytest
 from omegaconf import DictConfig, OmegaConf
@@ -149,7 +148,7 @@ class TestConfigManager:
         task_type = "CLASSIFICATION"
         train_type = "Semisupervised"
         workspace_path = "./otx-workspace"
-        args = mocker.Mock()
+        args = mocker.MagicMock()
         args.autosplit = None
         args.workspace = workspace_path
         config_manager = ConfigManager(args)
