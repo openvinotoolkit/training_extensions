@@ -139,34 +139,6 @@ class XPUDataParallel(MMDataParallel):
     def val_step(self, *inputs, **kwargs):
         with torch.autocast(device_type="xpu", dtype=torch.bfloat16, enabled=self.enable_autocast):
             return super().val_step(*inputs, **kwargs)
-    
-    
-def _get_available_device_type():
-    if torch.cuda.is_available():
-        return "cuda"
-    if hasattr(torch, "xpu") and torch.xpu.is_available():  # type: ignore[attr-defined]
-        return "xpu"
-    if is_hpu_available():
-        return "hpu"
-    # add more available device types here
-    return None
-
-
-def _get_device_attr(get_member):
-    device_type = _get_available_device_type()
-    if device_type and device_type.lower() == "cuda":
-        return get_member(torch.cuda)
-    if device_type and device_type.lower() == "xpu":
-        return get_member(torch.xpu)  # type: ignore[attr-defined]
-    if device_type and device_type.lower() == "hpu":
-        return get_member(htorch.hpu)
-    # add more available device types here
-    return None
-
-
-def _get_all_device_indices():
-    # all device index
-    return _get_device_attr(lambda m: list(range(m.device_count())))
 
 
 class HPUDataParallel(MMDataParallel):

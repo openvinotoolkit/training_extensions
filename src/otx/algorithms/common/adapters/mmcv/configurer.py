@@ -257,7 +257,13 @@ class BaseConfigurer:
         distributed = getattr(cfg, "distributed", False)
         opts: Dict[str, Any] = {}
         if fp16_config is not None:
-            if torch.cuda.is_available() or is_xpu_available():
+            if is_hpu_available():
+                if optim_type == "SAMOptimizerHook":
+                    # TODO (sungchul): consider SAM optimizer
+                    logger.warning("SAMOptimizerHook is not supported on HPU. Changed to OptimizerHook.")
+                opts["type"] = "HPUOptimizerHook"
+                cfg.optimizer_config.update(opts)
+            elif torch.cuda.is_available() or is_xpu_available():
                 opts.update({"distributed": distributed, **fp16_config})
                 if optim_type == "SAMOptimizerHook":
                     opts["type"] = "Fp16SAMOptimizerHook"
@@ -268,13 +274,6 @@ class BaseConfigurer:
                     # let mm library handle it
                     cfg.fp16 = fp16_config
                     opts = dict()
-                if is_hpu_available():
-                    if optim_type == "SAMOptimizerHook":
-                        # TODO (sungchul): consider SAM optimizer
-                        logger.warning("SAMOptimizerHook is not supported on HPU. Changed to OptimizerHook.")
-                    opts["type"] = "HPUOptimizerHook"
-                    opts.pop("distributed")
-                    opts.pop("loss_scale")
                 cfg.optimizer_config.update(opts)
             else:
                 logger.info("Revert FP16 to FP32 on CPU device")
