@@ -73,13 +73,15 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
             use_autocast = bool(cfg.get("fp16_", False))
             model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
             model.to(f"xpu:{cfg.gpu_ids[0]}")
+        elif cfg.device == "hpu":
+            use_autocast = bool(cfg.get("fp16_", False))
+            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
+            model.to(model.src_device_obj)
         else:
             model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build runner
     if cfg.device == "hpu":
-        model.to(model.src_device_obj)
-
         optim_type = cfg.optimizer.get("type", "SGD")
         if optim_type == "Adam":  # to avoid segmentation fault
             optim_type = "AdamW"
