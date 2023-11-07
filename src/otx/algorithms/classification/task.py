@@ -495,7 +495,7 @@ class OTXClassificationTask(OTXTask, ABC):
         elif self._hierarchical:
             metric_key = "val/MHAcc"
         else:
-            metric_key = "val/accuracy_top-1"
+            metric_key = "val/accuracy (%)"
 
         # Learning curves
         best_acc = -1
