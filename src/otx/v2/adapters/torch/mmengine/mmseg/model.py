@@ -72,24 +72,33 @@ def get_model(
     Returns:
         torch.nn.Module: The PyTorch model for pretraining.
     """
-    config = Config(cfg_dict={})
+    model_name = None
+    model_cfg = Config(cfg_dict={})
     if isinstance(model, dict):
-        config = Config(cfg_dict=model)
+        model_cfg = Config(cfg_dict=model)
     elif isinstance(model, str):
         if Path(model).is_file():
-            config = Config.fromfile(filename=model)
-        elif model in MODEL_CONFIGS:
-            config = Config.fromfile(filename=MODEL_CONFIGS[model])
-    else:
-        msg = f"model must be a name, a path or a Config object, but got {type(model)}"
-        raise TypeError(msg)
+            model_cfg = Config.fromfile(filename=model)
+        else:
+            model_name = model
+
+    if isinstance(model_cfg, Config):
+        if hasattr(model_cfg, "model"):
+            model_cfg = Config(model_cfg.get("model"))
+        if hasattr(model_cfg, "name"):
+            model_name = model_cfg.pop("name")
+    if isinstance(model_name, str) and model_name in MODEL_CONFIGS:
+        base_model = Config.fromfile(filename=MODEL_CONFIGS[model_name])
+        if isinstance(model_cfg, str):
+            model_cfg = Config(cfg_dict={})
+        model_cfg = Config(cfg_dict=Config.merge_cfg_dict(base_model, model_cfg))
 
     if num_classes is not None:
-        replace_num_classes(config, num_classes)
+        replace_num_classes(model_cfg, num_classes)
 
     metainfo = None
-    if pretrained is True and "load_from" in config:
-        pretrained = config.load_from
+    if pretrained is True and "load_from" in model_cfg:
+        pretrained = model_cfg.load_from
 
     if pretrained is True:
         warnings.warn("Unable to find pre-defined checkpoint of the model.", stacklevel=2)
@@ -98,18 +107,18 @@ def get_model(
         pretrained = None
 
     if kwargs:
-        config.merge_from_dict({"model": kwargs})
-    config.model.setdefault("data_preprocessor", config.get("data_preprocessor", None))
+        model_cfg.merge_from_dict({"model": kwargs})
+    model_cfg.model.setdefault("data_preprocessor", model_cfg.get("data_preprocessor", None))
 
-    if not hasattr(config, "model"):
-        config["_scope_"] = "mmseg"
+    if not hasattr(model_cfg, "model"):
+        model_cfg["_scope_"] = "mmseg"
     else:
-        config["model"]["_scope_"] = "mmseg"
+        model_cfg["model"]["_scope_"] = "mmseg"
 
     from mmengine.registry import DefaultScope
 
     with DefaultScope.overwrite_default_scope("mmseg"):
-        seg_model = MODELS.build(config.model)
+        seg_model = MODELS.build(model_cfg.model)
 
     dataset_meta = {}
     if pretrained:
@@ -131,7 +140,7 @@ def get_model(
         seg_model.to(device)
 
     seg_model._dataset_meta = dataset_meta  # noqa: SLF001
-    seg_model._config = config  # noqa: SLF001
+    seg_model._config = model_cfg  # noqa: SLF001
     seg_model._metainfo = metainfo  # noqa: SLF001
     seg_model.eval()
     return seg_model
