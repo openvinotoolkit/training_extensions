@@ -78,7 +78,11 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
 
     # build runner
     if cfg.device == "hpu":
-        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in HABANA_OPTIMIZERS:
+        optim_type = cfg.optimizer.get("type", "SGD")
+        if optim_type == "Adam":  # to avoid segmentation fault
+            optim_type = "AdamW"
+            cfg.optimizer.type = optim_type
+        if (new_type := "Fused" + optim_type) in HABANA_OPTIMIZERS:
             cfg.optimizer["type"] = new_type
 
     optimizer = build_optimizer(model, cfg.optimizer)

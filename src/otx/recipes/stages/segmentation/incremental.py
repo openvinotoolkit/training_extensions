@@ -1,6 +1,6 @@
 _base_ = ["./train.py", "../_base_/models/segmentors/segmentor.py"]
 
-optimizer = dict(_delete_=True, type="AdamW", lr=1e-3, eps=1e-08, weight_decay=0.0) # If default Adam is used, seg faults occurs
+optimizer = dict(_delete_=True, type="Adam", lr=1e-3, eps=1e-08, weight_decay=0.0)
 
 optimizer_config = dict(
     _delete_=True,
