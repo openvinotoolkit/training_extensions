@@ -10,6 +10,9 @@ import albumentations
 import numpy as np
 from albumentations.pytorch import ToTensorV2
 from bson import ObjectId
+from datumaro.components.annotation import Label, Bbox, Mask
+from datumaro.components.dataset import Dataset
+from datumaro.components.dataset_base import DatasetItem
 from omegaconf import OmegaConf
 from otx.v2.adapters.torch.lightning.anomalib.modules.data.data import (
     OTXAnomalyDataModule,
@@ -50,6 +53,7 @@ def get_hazelnut_dataset(task_type: TaskType, one_each: bool = False) -> Dataset
     dataset: DatasetEntity
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
         train_subset, test_subset, val_subset = _get_annotations("classification")
+        print(train_subset)
         dataset = AnomalyClassificationDataset(train_subset, val_subset, test_subset)
     elif task_type == TaskType.ANOMALY_SEGMENTATION:
         train_subset, test_subset, val_subset = _get_annotations("segmentation")
@@ -101,28 +105,25 @@ class DummyDataset(OTXAnomalyDataset):
         )
         self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
 
-    def get_mock_dataitems(self) -> DatasetEntity:
+    def get_mock_dataitems(self) -> Dataset:
         dataset_items = []
 
-        image_anomalous = Image(np.ones((32, 32, 1)))
+        image_anomalous = np.ones((32, 32, 1))
         annotations = [
-            Annotation(Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.abnormal_label, probability=1.0)]),
+            Label(label=self.abnormal_label.id, attributes={"is_anomalous": True}),
         ]
-        polygon = Polygon(points=[Point(0.0, 0.0), Point(1.0, 1.0)])
         annotations.append(
-            Annotation(shape=polygon, labels=[ScoredLabel(self.abnormal_label, probability=1.0)], id=ID(ObjectId())),
+            Mask(image=np.ones((32, 32, 1)), label=self.abnormal_label.id, attributes={"is_anomalous": True}),
         )
-        annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
-        dataset_items.append(DatasetItemEntity(media=image_anomalous, annotation_scene=annotation_scene))
+        dataset_items.append(DatasetItem(media=image_anomalous, annotations=annotations))
 
         image_normal = Image(np.zeros((32, 32, 1)))
         annotations = [
-            Annotation(Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.normal_label, probability=1.0)]),
+            Label(label=self.normal_label.id, attributes={"is_anomalous": True}),
         ]
-        annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
-        dataset_items.append(DatasetItemEntity(media=image_normal, annotation_scene=annotation_scene))
+        dataset_items.append(DatasetItem(media=image_normal, annotations=annotations))
 
-        return DatasetEntity(items=dataset_items, purpose=DatasetPurpose.INFERENCE)
+        return Dataset.from_iterable(dataset_items)
 
 
 class DummyDataModule(LightningDataModule):

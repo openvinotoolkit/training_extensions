@@ -21,23 +21,17 @@ import numpy as np
 import torch
 from anomalib.data.base.datamodule import collate_fn
 from anomalib.data.utils.transform import get_transforms
+from datumaro.components.annotation import Bbox, Mask
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from otx.v2.adapters.torch.lightning.anomalib.modules.logger import get_logger
-from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.entities.shapes.polygon import Polygon
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
-from otx.v2.api.entities.utils.dataset_utils import (
-    contains_anomalous_images,
-    split_local_global_dataset,
-)
-from otx.v2.api.entities.utils.segmentation_utils import mask_from_dataset_item
 
 if TYPE_CHECKING:
+    from datumaro.components.dataset import Dataset as DatumDataset
     from omegaconf import DictConfig, ListConfig
 
 logger = get_logger(__name__)
@@ -51,7 +45,7 @@ class OTXAnomalyDataset(Dataset):
 
     Args:
         config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (DatasetEntity): [description]: OTX SDK Dataset
+        dataset (Dict[Subset, DatumDataset]): [description]: OTX SDK Dataset
 
     Example:
         >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
@@ -64,12 +58,17 @@ class OTXAnomalyDataset(Dataset):
         torch.Size([3, 256, 256])
     """
 
-    def __init__(self, config: DictConfig | ListConfig, dataset: DatasetEntity, task_type: TaskType) -> None:
+    def __init__(
+            self,
+            config: DictConfig | ListConfig,
+            dataset: DatumDataset,
+            task_type: TaskType,
+        ) -> None:
         """Initializes a new instance of the Data class.
 
         Args:
             config (Union[DictConfig, ListConfig]): The configuration for the data.
-            dataset (DatasetEntity): The dataset to use for the data.
+            dataset (Dict[Subset, DatumDataset]): The dataset to use for the data.
             task_type (TaskType): The type of task to perform on the data.
         """
         self.config = config
@@ -81,6 +80,8 @@ class OTXAnomalyDataset(Dataset):
             image_size=tuple(config.dataset.image_size),
             to_tensor=True,
         )
+
+        self.item_ids: list = [item.id for item in self.dataset]
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -102,20 +103,20 @@ class OTXAnomalyDataset(Dataset):
         Returns:
             Dict[str, Union[int, Tensor]]: Dataset item.
         """
-        dataset_item = self.dataset[index]
+        dataset_item = self.dataset.get(id=self.item_ids[index])
         item: dict[str, int | Tensor] = {}
         item = {"index": index}
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             # Detection currently relies on image labels only, meaning it'll use image
             #   threshold to find the predicted bounding boxes.
-            item["image"] = self.transform(image=dataset_item.numpy)["image"]
+            item["image"] = self.transform(image=dataset_item.media.data)["image"]
         elif self.task_type == TaskType.ANOMALY_DETECTION:
-            item["image"] = self.transform(image=dataset_item.numpy)["image"]
+            item["image"] = self.transform(image=dataset_item.media.data)["image"]
             item["boxes"] = torch.empty((0, 4))
             height, width = self.config.dataset.image_size
             boxes = []
-            for annotation in dataset_item.get_annotations():
-                if isinstance(annotation.shape, Rectangle) and not Rectangle.is_full_box(annotation.shape):
+            for annotation in dataset_item.annotations():
+                if isinstance(annotation.type, Bbox):
                     boxes.append(
                         Tensor(
                             [
@@ -129,10 +130,11 @@ class OTXAnomalyDataset(Dataset):
                 if boxes:
                     item["boxes"] = torch.stack(boxes)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            if any(isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations()):
-                mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
-            else:
-                mask = np.zeros(dataset_item.numpy.shape[:2]).astype(int)
+            for annotation in dataset_item.annotations():
+                if isinstance(annotation.type, Mask):
+                    mask = annotation.image
+                else:
+                    mask = np.zeros(dataset_item.numpy.shape[:2]).astype(int)
             pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
@@ -140,7 +142,7 @@ class OTXAnomalyDataset(Dataset):
             msg = f"Unsupported task type: {self.task_type}"
             raise ValueError(msg)
 
-        if len(dataset_item.get_shapes_labels()) > 0 and dataset_item.get_shapes_labels()[0].is_anomalous:
+        if len(dataset_item.annotations) > 0 and dataset_item.annotations[0].attributes.get("is_anomalous"):
             item["label"] = 1
         else:
             item["label"] = 0
@@ -169,7 +171,12 @@ class OTXAnomalyDataModule(LightningDataModule):
         torch.Size([32, 3, 256, 256])
     """
 
-    def __init__(self, config: DictConfig | ListConfig, dataset: DatasetEntity, task_type: TaskType) -> None:
+    def __init__(
+            self,
+            config: DictConfig | ListConfig,
+            dataset: dict[Subset, DatumDataset],
+            task_type: TaskType,
+        ) -> None:
         """Initializes a DataModule instance.
 
         Args:
@@ -182,10 +189,10 @@ class OTXAnomalyDataModule(LightningDataModule):
         self.dataset = dataset
         self.task_type = task_type
 
-        self.train_otx_dataset: DatasetEntity
-        self.val_otx_dataset: DatasetEntity
-        self.test_otx_dataset: DatasetEntity
-        self.predict_otx_dataset: DatasetEntity
+        self.train_otx_dataset: DatumDataset
+        self.val_otx_dataset: DatumDataset
+        self.test_otx_dataset: DatumDataset
+        self.predict_otx_dataset: DatumDataset
 
     def setup(self, stage: str | None = None) -> None:
         """Setup Anomaly Data Module.
@@ -198,14 +205,14 @@ class OTXAnomalyDataModule(LightningDataModule):
             self.summary()
 
         if stage == "fit" or stage is None:
-            self.train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
-            self.val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
+            self.train_otx_dataset = self.dataset.get(Subset.TRAINING)
+            self.val_otx_dataset = self.dataset.get(Subset.VALIDATION)
 
         if stage == "validate":
-            self.val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
+            self.val_otx_dataset = self.dataset.get(Subset.VALIDATION)
 
         if stage == "test" or stage is None:
-            self.test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
+            self.test_otx_dataset = self.dataset.get(Subset.TESTING)
 
         if stage == "predict":
             self.predict_otx_dataset = self.dataset
@@ -213,10 +220,10 @@ class OTXAnomalyDataModule(LightningDataModule):
     def summary(self) -> None:
         """Print size of the dataset, number of anomalous images and number of normal images."""
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
-            dataset = self.dataset.get_subset(subset)
+            dataset: DatumDataset = self.dataset.get(subset)
             num_items = len(dataset)
-            num_normal = len([item for item in dataset if not item.get_shapes_labels()[0].is_anomalous])
-            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].is_anomalous])
+            num_normal = len([item for item in dataset if not item.attributes.get("is_anomalous")])
+            num_anomalous = len([item for item in dataset if item.attributes.get("is_anomalous")])
             logger.info(
                 "'%s' subset size: Total '%d' images. Normal: '%d', images. Anomalous: '%d' images",
                 subset,
@@ -248,15 +255,8 @@ class OTXAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Validation Dataloader.
         """
-        global_dataset, local_dataset = split_local_global_dataset(self.val_otx_dataset)
-        logger.info(f"Global annotations: {len(global_dataset)}")
-        logger.info(f"Local annotations: {len(local_dataset)}")
-        if contains_anomalous_images(local_dataset):
-            logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
-            dataset = OTXAnomalyDataset(self.config, local_dataset, self.task_type)
-        else:
-            logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
-            dataset = OTXAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
+        # [TODO] restore split_local_global_dataset and contains_anomalous_images logic within DatumDataset
+        dataset = OTXAnomalyDataset(self.config, self.val_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,

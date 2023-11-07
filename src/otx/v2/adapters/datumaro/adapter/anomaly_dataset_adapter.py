@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 from datumaro.components.annotation import Bbox as DatumBbox
 from datumaro.components.annotation import Label as DatumLabel
+from datumaro.components.annotation import Mask as DatumMask
 from datumaro.components.dataset import Dataset as DatumDataset
 
 from otx.v2.adapters.torch.modules.utils.mask_to_bbox import mask2bbox
@@ -111,8 +112,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
         for _, subset_data in self.dataset.items():
             for item in subset_data:
                 label = self.label_entities[0] if os.path.dirname(item.id) == "good" else self.label_entities[1]
-                print(label)
-                item.annotations = [DatumLabel(label.id)]
+                item.annotations = [DatumLabel(label=label.id, attributes={"is_anomalous": label.is_anomalous})]
 
         return self.dataset
 
@@ -147,6 +147,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                                 x2=x2 / image.width,
                                 y2=y2 / image.height,
                                 label=self.label_entities[1].id,
+                                attributes={"is_anomalous": label.is_anomalous},
                             ),
                         )
                 item.annotations = annotations
@@ -161,42 +162,28 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
         """Conver DatumaroDataset to DatasetEntity for Anomaly segmentation."""
 
         # Prepare
-        dataset_items: List[DatasetItemEntity] = []
-        for subset, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    image = Image(file_path=datumaro_item.media.path)
-                    label = self.label_entities[0] if os.path.dirname(datumaro_item.id) == "good" else self.label_entities[1]
-                    shapes = [
-                        Annotation(
-                            Rectangle.generate_full_box(),
-                            labels=[ScoredLabel(label=label, probability=1.0)],
-                        ),
-                    ]
-                    mask_file_path = os.path.join(
-                        "/".join(datumaro_item.media.path.split("/")[:-3]),
-                        "ground_truth",
-                        str(datumaro_item.id) + "_mask.png",
-                    )
-                    if os.path.exists(mask_file_path):
-                        mask = (cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
-                        shapes.extend(
-                            create_annotation_from_segmentation_map(
-                                hard_prediction=mask,
-                                soft_prediction=np.ones_like(mask),
-                                label_map={0: self.label_entities[0], 1: self.label_entities[1]},
-                            ),
-                        )
-                    annotation_scene: Optional[AnnotationSceneEntity] = None
-                    # Unlabeled dataset
-                    if len(shapes) == 0:
-                        annotation_scene = NullAnnotationSceneEntity()
-                    else:
-                        annotation_scene = AnnotationSceneEntity(
-                            kind=AnnotationSceneKind.ANNOTATION,
-                            annotations=shapes,
-                        )
-                    dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
-                    dataset_items.append(dataset_item)
+        for _, subset_data in self.dataset.items():
+            for item in subset_data:
+                label = self.label_entities[0] if os.path.dirname(item.id) == "good" else self.label_entities[1]
+                annotations = [DatumLabel(label.id)]
 
-        return DatasetEntity(items=dataset_items)
+                mask_file_path = os.path.join(
+                    "/".join(item.media.path.split("/")[:-3]),
+                    "ground_truth",
+                    str(item.id) + "_mask.png",
+                )
+                if os.path.exists(mask_file_path):
+                    mask = (cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
+                    annotations.append(
+                        DatumMask(
+                            image=mask,
+                            label=self.label_entities[1].id,
+                            attributes={
+                                "label_map": {0: self.label_entities[0], 1: self.label_entities[1]},
+                                "is_anomalous": label.is_anomalous,
+                            },
+                        ),
+                    )
+                item.annotations = annotations
+
+        return self.dataset

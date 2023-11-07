@@ -4,13 +4,11 @@
 #
 from pathlib import Path
 from typing import Dict, TYPE_CHECKING, Optional
-from datumaro.components.dataset import Dataset as DatumDataset
 
 from otx.v2.adapters.datumaro.adapter.classification_dataset_adapter import (
     ClassificationDatasetAdapter,
     SelfSLClassificationDatasetAdapter,
 )
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
 
@@ -59,7 +57,6 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        print(self.train_dataset_adapter.get_otx_dataset())
         assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
         assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)
 

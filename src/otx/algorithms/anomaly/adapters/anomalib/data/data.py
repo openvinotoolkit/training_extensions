@@ -97,9 +97,9 @@ class OTXAnomalyDataset(Dataset):
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             # Detection currently relies on image labels only, meaning it'll use image
             #   threshold to find the predicted bounding boxes.
-            item["image"] = self.transform(image=dataset_item.numpy)["image"]
+            item["image"] = self.transform(image=dataset_item.media.data)["image"]
         elif self.task_type == TaskType.ANOMALY_DETECTION:
-            item["image"] = self.transform(image=dataset_item.numpy)["image"]
+            item["image"] = self.transform(image=dataset_item.media.data)["image"]
             item["boxes"] = torch.empty((0, 4))
             height, width = self.config.dataset.image_size
             boxes = []
@@ -122,7 +122,7 @@ class OTXAnomalyDataset(Dataset):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
                 mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
-            pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
+            pre_processed = self.transform(image=dataset_item.media.data, mask=mask)
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
