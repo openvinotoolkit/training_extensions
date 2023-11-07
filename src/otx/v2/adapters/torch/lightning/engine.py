@@ -390,7 +390,7 @@ class LightningEngine(Engine):
         dataloader = None
         # NOTE: It needs to be refactored in a more general way.
         if self.task.lower() == "visual_prompting" and isinstance(img, (str, Path)):
-            from .modules.datasets.dataset import VisualPromptInferenceDataset
+            from .modules.datasets.visual_prompting_dataset import VisualPromptInferenceDataset
 
             dataset_config = self.config.get("dataset", {})
             image_size = dataset_config.get("image_size", 1024)

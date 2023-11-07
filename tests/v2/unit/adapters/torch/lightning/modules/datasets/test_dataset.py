@@ -10,16 +10,16 @@ from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 import pytest
-from otx.v2.adapters.torch.lightning.modules.datasets.dataset import (
-    OTXVisualPromptingDataModule,
-    OTXVisualPromptingDataset,
-    get_transform,
-)
 from otx.v2.adapters.torch.lightning.modules.datasets.pipelines import (
     MultipleInputsCompose,
     Pad,
     ResizeLongestSide,
     collate_fn,
+)
+from otx.v2.adapters.torch.lightning.modules.datasets.visual_prompting_dataset import (
+    OTXVisualPromptingDataModule,
+    OTXVisualPromptingDataset,
+    get_transform,
 )
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -82,7 +82,7 @@ class TestOTXVIsualPromptingDataset:
     def test_len(self, mocker, dataset_polygon, transform, image_size, mean, std) -> None:
         """Test __len__."""
         mocker.patch(
-            "otx.v2.adapters.torch.lightning.modules.datasets.dataset.get_transform",
+            "otx.v2.adapters.torch.lightning.modules.datasets.visual_prompting_dataset.get_transform",
             return_value=transform,
         )
         otx_dataset = OTXVisualPromptingDataset(dataset_polygon, image_size, mean, std)
@@ -94,7 +94,7 @@ class TestOTXVIsualPromptingDataset:
     ) -> None:
         """Test __getitem__."""
         mocker.patch(
-            "otx.v2.adapters.torch.lightning.modules.datasets.dataset.get_transform",
+            "otx.v2.adapters.torch.lightning.modules.datasets.visual_prompting_dataset.get_transform",
             return_value=transform,
         )
         dataset = dataset_mask if use_mask else dataset_polygon
