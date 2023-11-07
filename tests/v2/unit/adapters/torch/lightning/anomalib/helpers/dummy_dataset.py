@@ -13,6 +13,7 @@ from bson import ObjectId
 from datumaro.components.annotation import Label, Bbox, Mask
 from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import DatasetItem
+from datumaro.components.media import Image as Image
 from omegaconf import OmegaConf
 from otx.v2.adapters.torch.lightning.anomalib.modules.data.data import (
     OTXAnomalyDataModule,
@@ -28,14 +29,9 @@ from otx.v2.api.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import Domain, LabelEntity
-from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.polygon import Point, Polygon
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 from pytorch_lightning.core.datamodule import LightningDataModule
@@ -103,6 +99,8 @@ class DummyDataset(OTXAnomalyDataset):
             ],
         )
         self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
+        
+        self.item_ids: list = [item.id for item in self.dataset]
 
     def get_mock_dataitems(self) -> Dataset:
         dataset_items = []
@@ -114,13 +112,13 @@ class DummyDataset(OTXAnomalyDataset):
         annotations.append(
             Mask(image=np.ones((32, 32, 1)), label=self.abnormal_label.id, attributes={"is_anomalous": True}),
         )
-        dataset_items.append(DatasetItem(media=image_anomalous, annotations=annotations))
+        dataset_items.append(DatasetItem(id=0, media=Image.from_numpy(image_anomalous), annotations=annotations))
 
-        image_normal = Image(np.zeros((32, 32, 1)))
+        image_normal = np.zeros((32, 32, 1))
         annotations = [
             Label(label=self.normal_label.id, attributes={"is_anomalous": True}),
         ]
-        dataset_items.append(DatasetItem(media=image_normal, annotations=annotations))
+        dataset_items.append(DatasetItem(id=1, media=Image.from_numpy(image_normal), annotations=annotations))
 
         return Dataset.from_iterable(dataset_items)
 

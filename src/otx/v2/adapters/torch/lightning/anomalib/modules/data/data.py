@@ -106,12 +106,13 @@ class OTXAnomalyDataset(Dataset):
         dataset_item = self.dataset.get(id=self.item_ids[index])
         item: dict[str, int | Tensor] = {}
         item = {"index": index}
+        image = dataset_item.media.data
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             # Detection currently relies on image labels only, meaning it'll use image
             #   threshold to find the predicted bounding boxes.
-            item["image"] = self.transform(image=dataset_item.media.data)["image"]
+            item["image"] = self.transform(image=image)["image"]
         elif self.task_type == TaskType.ANOMALY_DETECTION:
-            item["image"] = self.transform(image=dataset_item.media.data)["image"]
+            item["image"] = self.transform(image=image)["image"]
             item["boxes"] = torch.empty((0, 4))
             height, width = self.config.dataset.image_size
             boxes = []
@@ -131,11 +132,8 @@ class OTXAnomalyDataset(Dataset):
                     item["boxes"] = torch.stack(boxes)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             for annotation in dataset_item.annotations:
-                if isinstance(annotation.type, Mask):
-                    mask = annotation.image
-                else:
-                    mask = np.zeros(dataset_item.numpy.shape[:2]).astype(int)
-            pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
+                mask = annotation.image if isinstance(annotation.type, Mask) else np.zeros(image.shape[:2]).astype(int)
+            pre_processed = self.transform(image=image, mask=mask)
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
