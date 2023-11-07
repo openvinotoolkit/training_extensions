@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import numpy as np
+from mmdet.utils import register_all_modules
 
 from otx.v2.adapters.torch.mmengine.mmdet.modules.datasets.pipelines import (
     LoadResizeDataFromOTXDataset,
@@ -14,6 +15,8 @@ from tests.v2.unit.adapters.torch.mmengine.mmdet.test_helpers import generate_de
 
 def test_load_resize_data_from_otx_dataset_call(mocker):
     """Test LoadResizeDataFromOTXDataset."""
+    # Temporary solution for registry confusion.
+    register_all_modules(init_default_scope=True)
     otx_dataset, labels = generate_det_dataset(
         TaskType.INSTANCE_SEGMENTATION,  # covers det & iseg format both
         image_width=320,
