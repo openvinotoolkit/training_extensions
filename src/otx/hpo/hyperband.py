@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import json
-import logging
 import math
 import os
 from os import path as osp

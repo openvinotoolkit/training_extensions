@@ -29,7 +29,7 @@ from pytorch_lightning import Trainer, seed_everything
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.train_parameters import TrainParameters
@@ -37,7 +37,7 @@ from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 
 from .inference import InferenceTask
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class TrainingTask(InferenceTask, ITrainingTask):

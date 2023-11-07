@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import datetime
-import logging
 import os
 import signal
 import socket

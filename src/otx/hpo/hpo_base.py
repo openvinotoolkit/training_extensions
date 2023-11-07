@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import json
-import logging
 import tempfile
 from abc import ABC, abstractmethod
 from enum import IntEnum

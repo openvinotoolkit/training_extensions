@@ -41,7 +41,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import (
     ModelEntity,
@@ -59,7 +59,7 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 
 from .inference import InferenceTask
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class NNCFTask(InferenceTask, IOptimizationTask):
