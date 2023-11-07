@@ -146,7 +146,6 @@ class HPUDataParallel(MMDataParallel):
         super().__init__(*args, **kwargs)
         self.enable_autocast = enable_autocast
         self.src_device_obj = torch.device("hpu", self.device_ids[0])
-        self.module.to(self.src_device_obj)
 
     def scatter(self, inputs, kwargs, device_ids):
         inputs, kwargs = super().scatter(inputs, kwargs, [-1])

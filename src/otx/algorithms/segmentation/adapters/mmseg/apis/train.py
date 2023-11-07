@@ -78,6 +78,8 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
 
     # build runner
     if cfg.device == "hpu":
+        model.to(model.src_device_obj)
+
         optim_type = cfg.optimizer.get("type", "SGD")
         if optim_type == "Adam":  # to avoid segmentation fault
             optim_type = "AdamW"
