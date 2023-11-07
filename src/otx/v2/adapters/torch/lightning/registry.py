@@ -32,7 +32,7 @@ class LightningRegistry(BaseRegistry):
             module_type (str): The type of the module to retrieve.
 
         Returns:
-            Optional[Callable]: The registered module, or None if not found.
+            Callable | None: The registered module, or None if not found.
         """
         # The module_dict is the highest priority.
         if module_type in self.module_dict:

@@ -23,13 +23,18 @@ REQUIRED_ADAPTERS_PER_TASK = {
         "torch.mmengine.mmpretrain",
         "torch.mmengine.mmdeploy",
     ],
+    "visual_prompt": [
+        "openvino",
+        "datumaro",
+        "torch.lightning",
+    ],
     "segmentation": [
         "openvino",
         "datumaro",
         "torch.mmengine",
         "torch.mmengine.mmseg",
         "torch.mmengine.mmdeploy",
-    ],
+    ]
 }
 
 
