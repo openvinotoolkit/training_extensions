@@ -21,7 +21,6 @@ from otx.v2.api.utils.decorators import add_subset_dataloader
 from otx.v2.api.utils.type_utils import str_to_subset_type, str_to_task_type
 
 if TYPE_CHECKING:
-    import albumentations as al
     from datumaro.components.dataset import Dataset as DatumDataset
     from torch.utils.data import DataLoader as TorchDataLoader
     from torch.utils.data import Dataset as TorchDataset

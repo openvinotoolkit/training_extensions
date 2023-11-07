@@ -64,8 +64,8 @@ class LightningDataset(BaseTorchDataset):
             if subset == "predict":
                 otx_dataset = self.dataset_entity
             else:
-                otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
-            if len(otx_dataset) < 1:
+                otx_dataset = self.dataset_entity.get(str_to_subset_type(subset), None)
+            if not otx_dataset or len(otx_dataset) < 1:
                 return None
 
             return OTXVisualPromptingDataset(
