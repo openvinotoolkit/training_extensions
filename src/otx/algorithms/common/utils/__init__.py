@@ -54,3 +54,7 @@ __all__ = [
     "is_xpu_available",
     "is_hpu_available",
 ]
+
+
+if is_hpu_available():
+    import habana_frameworks.torch.gpu_migration
