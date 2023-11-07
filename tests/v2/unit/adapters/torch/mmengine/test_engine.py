@@ -24,6 +24,110 @@ class TestMMXEngine:
         assert engine.registry.name == "mmengine"
         assert engine.timestamp is not None
 
+    def test_get_value_from_config(self, tmp_dir_path: Path) -> None:
+        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine.default_config = Config({"max_epochs": 20})
+        result = engine._get_value_from_config(
+            arg_key="max_epochs",
+            positional_args={"max_epochs": 10},
+        )
+
+        assert result == 10
+
+        result = engine._get_value_from_config(
+            arg_key="max_epochs",
+            positional_args={},
+        )
+
+        assert result == 20
+
+        engine.default_config = Config({})
+        result = engine._get_value_from_config(
+            arg_key="max_epochs",
+            positional_args={},
+        )
+
+        assert result is None
+
+    def test_update_train_config_with_max_epochs(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
+        mocker.patch("otx.v2.adapters.torch.mmengine.engine.get_device", return_value="cuda")
+        precision = "float32"
+        updated_config = Config({"test": "test1"})
+        mock_dataloader = mocker.MagicMock()
+        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine.default_config = Config({"max_epochs": 10, "val_interval": 2, "precision": "float32"})
+        engine._update_train_config(
+            train_dataloader=mock_dataloader,
+            arguments={},
+            config=updated_config,
+        )
+
+        assert updated_config["train_cfg"]["by_epoch"] is True
+        assert updated_config["train_cfg"]["max_epochs"] == engine.default_config["max_epochs"]
+        assert updated_config["optim_wrapper"]["type"] == "AmpOptimWrapper"
+        assert updated_config["optim_wrapper"]["dtype"] == precision
+
+
+    def test_update_train_config_with_max_iters(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
+        mocker.patch("otx.v2.adapters.torch.mmengine.engine.get_device", return_value="cuda")
+        config = {"max_epochs": 10, "val_interval": 2}
+        func_args = {}
+        func_args["max_iters"] = 100
+        func_args["max_epochs"] = 100
+        func_args["precision"] = "float16"
+        engine = MMXEngine(work_dir=tmp_dir_path)
+        updated_config = Config({"test": "test1"})
+        mock_dataloader = mocker.MagicMock()
+        with pytest.raises(ValueError, match="Only one of `max_epochs` or `max_iters`"):
+            engine._update_train_config(
+                train_dataloader=mock_dataloader,
+                arguments=func_args,
+                config=updated_config,
+            )
+        config["max_epochs"] = None
+        func_args["max_epochs"] = None
+        engine._update_train_config(
+            train_dataloader=mock_dataloader,
+            arguments=func_args, config=updated_config,
+        )
+
+        assert updated_config["train_cfg"]["by_epoch"] is False
+        assert updated_config["train_cfg"]["max_iters"] == func_args["max_iters"]
+        assert updated_config["optim_wrapper"]["type"] == "AmpOptimWrapper"
+        assert updated_config["optim_wrapper"]["dtype"] == func_args["precision"]
+
+
+    def test_update_train_config_raises_value_error(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
+        engine = MMXEngine(work_dir=tmp_dir_path)
+        config = {"val_interval": 2}
+        config["max_iters"] = 100
+        config["max_epochs"] = 10
+        engine.default_config = Config(config)
+
+        mock_dataloader = mocker.MagicMock()
+        result_config = Config({})
+        with pytest.raises(ValueError, match="Only one of `max_epochs` or `max_iters`"):
+            engine._update_train_config(
+                train_dataloader=mock_dataloader,
+                arguments={},
+                config=result_config,
+            )
+
+
+    def test_update_train_config_with_train_cfg_in_kwargs(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
+        engine = MMXEngine(work_dir=tmp_dir_path)
+        engine.default_config = Config({"val_interval": 3})
+        updated_config = Config({})
+        func_args = {}
+        mock_dataloader = mocker.MagicMock()
+        engine._update_train_config(
+            train_dataloader=mock_dataloader,
+            arguments=func_args, config=updated_config,
+        )
+
+        assert updated_config["train_cfg"]["val_interval"] == engine.default_config["val_interval"]
+
+
     def test_update_config(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
         engine = MMXEngine(work_dir=tmp_dir_path)
 
@@ -80,10 +184,10 @@ class TestMMXEngine:
         assert config["custom_hooks"] == custom_hooks
 
         # Test with precision argument
-        mocker.patch("otx.v2.adapters.torch.mmengine.utils.runner_config.get_device", return_value="cpu")
+        mocker.patch("otx.v2.adapters.torch.mmengine.engine.get_device", return_value="cpu")
         config, _ = engine._update_config({"train_dataloader": train_dataloader})
         assert config["optim_wrapper"]["type"] == "OptimWrapper"
-        mocker.patch("otx.v2.adapters.torch.mmengine.utils.runner_config.get_device", return_value="cuda")
+        mocker.patch("otx.v2.adapters.torch.mmengine.engine.get_device", return_value="cuda")
         config, _ = engine._update_config({"precision": "fp16", "train_dataloader": train_dataloader})
         assert config["optim_wrapper"]["type"] == "AmpOptimWrapper"
         assert config["optim_wrapper"]["dtype"] == "fp16"

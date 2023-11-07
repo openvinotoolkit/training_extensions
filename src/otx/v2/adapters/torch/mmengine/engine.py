@@ -11,13 +11,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
+from mmengine.device import get_device
 from mmengine.runner import Runner
 
 from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import dump_lazy_config
 from otx.v2.adapters.torch.mmengine.registry import MMEngineRegistry
-from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config, update_train_config
 from otx.v2.api.core.engine import Engine
 from otx.v2.api.utils.importing import get_all_args, get_default_args
 from otx.v2.api.utils.logger import get_logger
@@ -73,6 +73,7 @@ class MMXEngine(Engine):
     This class is a subclass of the otx.v2.api.core.engine.Engine class and provides additional functionality
     for training and evaluating PyTorch models using the MMEngine framework.
     """
+    default_config = Config(DEFAULT_CONFIG)
 
     def __init__(
         self,
@@ -87,8 +88,86 @@ class MMXEngine(Engine):
         self.runner: Runner
         self.latest_model = {"model": None, "checkpoint": None}
         self.registry = MMEngineRegistry()
-        self.default_config = Config(DEFAULT_CONFIG)
         self.dumped_config = Config({})
+
+    def _get_value_from_config(
+        self,
+        arg_key: str,
+        positional_args: dict,
+    ) -> dict | list | Config | None:
+        """Get the value of a given argument key from either the positional arguments or the config.
+
+        Args:
+            arg_key (str): The key of the argument to retrieve.
+            positional_args (dict): The positional arguments passed to the function.
+
+        Returns:
+            dict | list | None: The value of the argument, or the default value if not found.
+
+        Examples:
+        >>> self.default_config = Config({"max_epochs": 20})
+        >>> get_value_from_config(
+                arg_key="max_epochs",
+                positional_args={"max_epochs": 10},
+            )
+        10
+        >>> get_value_from_config(
+                arg_key="max_epochs",
+                positional_args={},
+            )
+        20
+        """
+        # Priority 1: Positional Args
+        result = positional_args.get(arg_key, None)
+        # Priority 2: Input Config Value
+        return self.default_config.get(arg_key, None) if result is None else result
+
+    def _update_train_config(
+        self,
+        train_dataloader: torch.utils.data.DataLoader,
+        arguments: dict,
+        config: Config,
+    ) -> None:
+        """Update the training configuration with the given arguments and default configuration.
+
+        Args:
+            train_dataloader (torch.utils.data.DataLoader): The training dataloader.
+            arguments (dict): The arguments to update the configuration.
+            default_config (Config): The default configuration.
+            config (Config): The configuration to update.
+
+        Raises:
+            ValueError: If both `max_epochs` and `max_iters` are set.
+
+        Returns:
+            None
+        """
+        config["train_dataloader"] = train_dataloader
+        precision = self._get_value_from_config("precision", arguments)
+        max_iters = self._get_value_from_config("max_iters", arguments)
+        max_epochs = self._get_value_from_config("max_epochs", arguments)
+        val_interval = self._get_value_from_config("val_interval", arguments)
+        if max_iters is not None and max_epochs is not None:
+            msg = "Only one of `max_epochs` or `max_iters` can be set."
+            raise ValueError(msg)
+        if "train_cfg" not in config or config["train_cfg"] is None:
+            config["train_cfg"] = {"val_interval": val_interval, "by_epoch": True}
+        if max_epochs is not None:
+            config["train_cfg"]["by_epoch"] = True
+            config["train_cfg"]["max_epochs"] = max_epochs
+        elif max_iters is not None:
+            config["train_cfg"]["by_epoch"] = False
+            config["train_cfg"]["max_iters"] = max_iters
+        # Update Optimizer
+        if "optim_wrapper" not in config or config["optim_wrapper"] is None:
+            optimizer = self._get_value_from_config("optimizer", arguments)
+            if get_device() not in ("cuda", "gpu", "npu", "mlu"):
+                config["optim_wrapper"] = {"type": "OptimWrapper", "optimizer": optimizer}
+            else:
+                config["optim_wrapper"] = {
+                    "type": "AmpOptimWrapper", "dtype": precision, "optimizer": optimizer,
+                }
+
 
     def _update_config(
         self,
@@ -121,12 +200,11 @@ class MMXEngine(Engine):
 
         # train_dataloader & train_cfg & optim_wrapper
         train_dataloader = func_args.get("train_dataloader", None)
-        precision = get_value_from_config("precision", func_args, config=self.default_config)
+        precision = self._get_value_from_config("precision", func_args)
         if train_dataloader is not None:
-            update_train_config(
+            self._update_train_config(
                 train_dataloader=train_dataloader,
                 arguments=func_args,
-                default_config=self.default_config,
                 config=runner_config,
             )
         elif train_dataloader is None:
@@ -143,7 +221,7 @@ class MMXEngine(Engine):
                 if precision in ["float16", "fp16"]:
                     runner_config[f"{subset}_cfg"]["fp16"] = True
                 # Update val_evaluator
-                evaluator = get_value_from_config(f"{subset}_evaluator", func_args, config=self.default_config)
+                evaluator = self._get_value_from_config(f"{subset}_evaluator", func_args)
                 runner_config[f"{subset}_evaluator"] = evaluator if evaluator is not None else {}
             else:
                 runner_config[f"{subset}_dataloader"] = None
@@ -151,14 +229,14 @@ class MMXEngine(Engine):
                 runner_config[f"{subset}_evaluator"] = None
 
         # Update randomness: seed & deterministic
-        seed = get_value_from_config("seed", func_args, config=self.default_config)
-        deterministic = get_value_from_config("deterministic", func_args, config=self.default_config)
+        seed = self._get_value_from_config("seed", func_args)
+        deterministic = self._get_value_from_config("deterministic", func_args)
         if seed is not None:
             runner_config["randomness"] = {"seed": seed, "deterministic": deterministic}
 
         # Update param_scheduler, default_hooks, custom_hooks, visualizer
         for runner_key in ("param_scheduler", "default_hooks", "custom_hooks", "visualizer"):
-            runner_value = get_value_from_config(runner_key, func_args, config=self.default_config)
+            runner_value = self._get_value_from_config(runner_key, func_args)
             if runner_value is not None:
                 runner_config[runner_key] = runner_value
 

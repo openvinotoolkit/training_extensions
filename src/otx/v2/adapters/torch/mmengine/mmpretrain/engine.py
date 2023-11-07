@@ -13,7 +13,6 @@ import torch
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
-from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config
 from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -60,7 +59,7 @@ class MMPTEngine(MMXEngine):
             num_classes = head.get("num_classes", -1)
         for subset in ("val", "test"):
             if f"{subset}_dataloader" in config and config[f"{subset}_dataloader"] is not None:
-                evaluator_config = get_value_from_config(f"{subset}_evaluator", func_args, config=self.default_config)
+                evaluator_config = self._get_value_from_config(f"{subset}_evaluator", func_args)
                 config[f"{subset}_evaluator"] = self._update_eval_config(
                     evaluator_config=evaluator_config, num_classes=num_classes,
                 )
