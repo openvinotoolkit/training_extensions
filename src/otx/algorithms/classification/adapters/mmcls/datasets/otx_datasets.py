@@ -1,6 +1,6 @@
 """Base Dataset for Classification Task."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -176,7 +176,10 @@ class OTXClsDataset(BaseDataset):
         for i in range(self.num_classes):
             cls_pred = pred_label == i
             cls_pred = cls_pred[gt_labels == i]
-            cls_acc = np.sum(cls_pred) / len(cls_pred)
+            if len(cls_pred) > 0:
+                cls_acc = np.sum(cls_pred) / len(cls_pred)
+            else:
+                cls_acc = 0.0
             accracies.append(cls_acc)
         return accracies
 
