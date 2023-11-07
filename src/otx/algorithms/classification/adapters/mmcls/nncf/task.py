@@ -13,7 +13,7 @@ from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
 )
 from otx.algorithms.classification.adapters.mmcls.task import MMClassificationTask
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.metrics import (
     CurveMetric,

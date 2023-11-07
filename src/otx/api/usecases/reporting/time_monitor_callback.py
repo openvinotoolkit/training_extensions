@@ -7,7 +7,7 @@
 # pylint: disable=too-many-instance-attributes,too-many-arguments
 
 import math
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 import time
 from copy import deepcopy
 from typing import List

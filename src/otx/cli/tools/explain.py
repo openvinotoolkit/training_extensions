@@ -18,7 +18,7 @@ from pathlib import Path
 
 # Update environment variables for CLI use
 import otx.cli  # noqa: F401
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.explain_parameters import ExplainParameters
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.manager import ConfigManager

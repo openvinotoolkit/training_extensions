@@ -9,7 +9,7 @@ import datetime
 import math
 from enum import Enum
 from typing import Generic, List, Optional, Sequence, TypeVar, Union
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 import numpy as np
 

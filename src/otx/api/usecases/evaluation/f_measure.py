@@ -4,7 +4,7 @@
 #
 
 from typing import Dict, List, Optional, Tuple
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 import numpy as np
 

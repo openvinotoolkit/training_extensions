@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Union
 import cv2
 import numpy as np
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity

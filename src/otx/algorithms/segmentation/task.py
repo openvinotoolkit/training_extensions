@@ -20,7 +20,7 @@ from otx.algorithms.common.utils.callback import (
     TrainingProgressCallback,
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from otx.algorithms.segmentation.utils import get_activation_map

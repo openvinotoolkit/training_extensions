@@ -12,7 +12,7 @@ from mmcv.utils import Config, ConfigDict
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     update_or_add_custom_hook,
 )
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.core.data.noisy_label_detection.base import LossDynamicsTracker, LossDynamicsTrackingMixin
 

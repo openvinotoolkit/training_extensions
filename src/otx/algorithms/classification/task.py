@@ -27,7 +27,7 @@ from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings

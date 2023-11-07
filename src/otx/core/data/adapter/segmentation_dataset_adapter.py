@@ -23,7 +23,7 @@ from datumaro.plugins.transforms import MasksToPolygons
 from datumaro.util.meta_file_util import parse_meta_file
 from skimage.segmentation import felzenszwalb
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity

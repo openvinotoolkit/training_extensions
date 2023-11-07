@@ -8,7 +8,7 @@ import functools
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.two_stage import TwoStageDetector
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
 
 from .l2sp_detector_mixin import L2SPDetectorMixin

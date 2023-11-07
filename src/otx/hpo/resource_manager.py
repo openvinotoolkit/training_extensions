@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import torch
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.hpo.utils import check_positive
 
 logger = get_logger()

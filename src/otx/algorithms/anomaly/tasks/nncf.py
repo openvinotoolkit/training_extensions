@@ -41,7 +41,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import (
     ModelEntity,

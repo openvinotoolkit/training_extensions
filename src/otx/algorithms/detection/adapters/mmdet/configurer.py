@@ -13,7 +13,7 @@ from otx.algorithms.common.adapters.mmcv.semisl_mixin import SemiSLConfigurerMix
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     InputSizeManager,
 )
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.utils import (
     cluster_anchors,
     patch_tiling,

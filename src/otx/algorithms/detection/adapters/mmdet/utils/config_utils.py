@@ -8,7 +8,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     InputSizeManager,
     get_configs_by_pairs,
 )
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     adaptive_tile_params,

@@ -10,7 +10,7 @@ import torch
 from mmcv.runner import load_checkpoint
 from mmcv.utils import Config, ConfigDict, get_logger
 
-from otx.algorithms.common.utils.logger import LEVEL
+from otx.utils.logger import LEVEL
 
 logger = get_logger("mmdet")
 

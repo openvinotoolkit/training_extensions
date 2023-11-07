@@ -19,7 +19,7 @@ from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
     remove_custom_hook,
 )
 from otx.algorithms.common.utils import append_dist_rank_suffix
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.models.heads import otx_head_factory
 
 logger = get_logger()

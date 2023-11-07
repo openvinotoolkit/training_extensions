@@ -37,7 +37,7 @@ from otx.algorithms.common.adapters.nncf import (
 from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
 from otx.algorithms.common.utils.data import get_dataset
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity

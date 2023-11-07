@@ -7,7 +7,7 @@ from typing import Any, List
 
 import torch
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.core.ov.graph import Graph
 from otx.core.ov.ops.builder import OPS
 from otx.core.ov.ops.infrastructures import ConstantV0

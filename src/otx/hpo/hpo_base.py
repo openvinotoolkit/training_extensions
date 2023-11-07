@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from enum import IntEnum
 from typing import Any, Dict, List, Optional, Union
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.hpo.search_space import SearchSpace
 from otx.hpo.utils import check_mode_input, check_positive
 

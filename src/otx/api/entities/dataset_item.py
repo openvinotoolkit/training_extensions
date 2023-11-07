@@ -14,7 +14,7 @@ from typing import List, Optional, Sequence, Set, Tuple, TypeVar, Union
 from bson import ObjectId
 import numpy as np
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.annotation import Annotation, AnnotationSceneEntity
 from otx.api.entities.id import ID
 from otx.api.entities.label import LabelEntity

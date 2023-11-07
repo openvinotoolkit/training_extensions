@@ -14,7 +14,7 @@ from typing import Generic, Iterator, List, Optional, TypeVar, Union, cast, over
 
 from bson.objectid import ObjectId
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.id import ID

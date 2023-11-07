@@ -29,7 +29,7 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.configuration import ConfigurableParameters
 
 logger = get_logger()

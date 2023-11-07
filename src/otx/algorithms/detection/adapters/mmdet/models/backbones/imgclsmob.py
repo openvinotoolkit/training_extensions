@@ -13,7 +13,7 @@ from pytorchcv.models.model_store import download_model
 from torch import distributed, nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 # TODO: Need to fix pylint issues
 # pylint: disable=protected-access, abstract-method, no-value-for-parameter, assignment-from-no-return

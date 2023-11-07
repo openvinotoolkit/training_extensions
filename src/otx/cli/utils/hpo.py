@@ -19,7 +19,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import torch
 import yaml
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity

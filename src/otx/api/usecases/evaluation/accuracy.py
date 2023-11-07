@@ -11,7 +11,7 @@ from typing import List, Set, Tuple
 import numpy as np
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity

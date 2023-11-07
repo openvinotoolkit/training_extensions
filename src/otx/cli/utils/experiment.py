@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional, Union, no_type_check
 import psutil
 import yaml
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 
 try:
     import pynvml

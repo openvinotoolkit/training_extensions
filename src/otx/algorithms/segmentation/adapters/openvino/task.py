@@ -34,7 +34,7 @@ from openvino.model_api.models.utils import ImageResultWithSoftPrediction
 
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader, get_default_async_reqs_num, read_py_config
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.openvino import model_wrappers
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from otx.algorithms.segmentation.utils import get_activation_map

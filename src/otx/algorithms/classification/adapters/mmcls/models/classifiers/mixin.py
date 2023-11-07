@@ -10,7 +10,7 @@ import datumaro as dm
 import numpy as np
 import pandas as pd
 
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.dataset_item import DatasetItemEntityWithID
 from otx.core.data.noisy_label_detection import (
     LossDynamicsTracker,

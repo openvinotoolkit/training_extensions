@@ -37,7 +37,7 @@ from otx.algorithms.action.adapters.openvino import (
 )
 from otx.algorithms.action.configs.base import ActionConfig
 from otx.algorithms.common.utils.ir import check_if_quantized
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.inference_parameters import (
