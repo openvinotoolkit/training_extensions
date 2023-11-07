@@ -114,9 +114,11 @@ class AnomalibDataset(LightningDataset):
         config = OmegaConf.load(filename=config) if isinstance(config, str) else DictConfig({})
 
         config.dataset = {"transform_config": {"train": pipeline}, "image_size": [256, 256]}
-        otx_dataset: DatumDataset = self.dataset_entity.get(str_to_subset_type(subset))
-        if len(otx_dataset) < 1:
+        otx_dataset: DatumDataset = self.dataset_entity.get(str_to_subset_type(subset), None)
+        if otx_dataset and len(otx_dataset) < 1:
             return None
+
+        print(otx_dataset, subset)
 
         if subset == "val":
             global_dataset, local_dataset = split_local_global_dataset(otx_dataset)

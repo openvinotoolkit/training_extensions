@@ -111,24 +111,8 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
         for _, subset_data in self.dataset.items():
             for item in subset_data:
                 label = self.label_entities[0] if os.path.dirname(item.id) == "good" else self.label_entities[1]
-                item.annotations = [DatumLabel(label)]
-                # shapes = [
-                #     Annotation(
-                #         Rectangle.generate_full_box(),
-                #         labels=[ScoredLabel(label=label, probability=1.0)],
-                #     ),
-                # ]
-                # annotation_scene: Optional[AnnotationSceneEntity] = None
-                # # Unlabeled dataset
-                # if len(shapes) == 0:
-                #     annotation_scene = NullAnnotationSceneEntity()
-                # else:
-                #     annotation_scene = AnnotationSceneEntity(
-                #         kind=AnnotationSceneKind.ANNOTATION,
-                #         annotations=shapes,
-                #     )
-                # dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
-                # dataset_items.append(dataset_item)
+                print(label)
+                item.annotations = [DatumLabel(label.id)]
 
         return self.dataset
 
@@ -144,13 +128,8 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
             for item in subset_data:
                 image = item.media.data
                 label = self.label_entities[0] if os.path.dirname(item.id) == "good" else self.label_entities[1]
-                annotations = [DatumLabel(label)]
-                # shapes = [
-                #     Annotation(
-                #         Rectangle.generate_full_box(),
-                #         labels=[ScoredLabel(label=label, probability=1.0)],
-                #     ),
-                # ]
+                annotations = [DatumLabel(label.id)]
+
                 mask_file_path = os.path.join(
                     "/".join(item.media.path.split("/")[:-3]),
                     "ground_truth",
@@ -167,21 +146,10 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                                 y1=y1 / image.height,
                                 x2=x2 / image.width,
                                 y2=y2 / image.height,
-                                label=[DatumLabel(label=self.label_entities[1])],
+                                label=self.label_entities[1].id,
                             ),
                         )
                 item.annotations = annotations
-                # annotation_scene: Optional[AnnotationSceneEntity] = None
-                # Unlabeled dataset
-                # if len(shapes) == 0:
-                #     annotation_scene = NullAnnotationSceneEntity()
-                # else:
-                #     annotation_scene = AnnotationSceneEntity(
-                #         kind=AnnotationSceneKind.ANNOTATION,
-                #         annotations=shapes,
-                #     )
-                # dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
-                # dataset_items.append(dataset_item)
 
         return self.dataset
 
