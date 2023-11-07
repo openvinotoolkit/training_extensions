@@ -132,37 +132,77 @@ def fill_model_performance(items: Union[list, str], test_type: str, result_data:
         result_data[f"{test_type} Eval Time (Sec.)"].append(items)
 
 
-def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result_data: dict) -> dict:
+def summarize_non_anomaly_data(task: str, json_data: dict, result_data: dict) -> dict:
     """Make DataFrame by gathering all results."""
-    if task_key not in json_data.keys():
-        raise ValueError(f"cannot find '{task_key}' from {json_data}")
-    for label_type in LABEL_TYPES:
-        if label_type not in json_data[task_key].keys():
-            continue
-        for train_type in TRAIN_TYPES:
-            if train_type not in json_data[task_key][label_type].keys():
+    for task_key in json_data.keys():
+        for label_type in LABEL_TYPES:
+            if label_type not in json_data[task_key].keys():
                 continue
-            task_data = json_data[task_key][label_type][train_type]
+            for train_type in TRAIN_TYPES:
+                if train_type not in json_data[task_key][label_type].keys():
+                    continue
+                task_data = json_data[task_key][label_type][train_type]
 
-            train_data = task_data.get("train")
-            if train_data is None:
-                raise ValueError("Train data can't be empty.")
-            export_data = task_data.get("export", None)
-            deploy_data = task_data.get("deploy", None)
-            nncf_data = task_data.get("nncf", None)
-            ptq_data = task_data.get("ptq", None)
+                train_data = task_data.get("train")
+                if train_data is None:
+                    raise ValueError("Train data can't be empty.")
+                export_data = task_data.get("export", None)
+                deploy_data = task_data.get("deploy", None)
+                nncf_data = task_data.get("nncf", None)
+                ptq_data = task_data.get("ptq", None)
 
-            for i, per_model_data in enumerate(train_data):
+                for i, per_model_data in enumerate(train_data):
+                    for model in per_model_data:
+                        train_items = get_metric_items(get_metric_dict(train_data, i, model))
+                        export_items = get_metric_items(get_metric_dict(export_data, i, model))
+                        deploy_items = get_metric_items(get_metric_dict(deploy_data, i, model))
+                        nncf_items = get_metric_items(get_metric_dict(nncf_data, i, model))
+                        ptq_items = get_metric_items(get_metric_dict(ptq_data, i, model))
+
+                        result_data["Task type"].append(task)
+                        result_data["Train type"].append(train_type)
+                        result_data["Label type"].append(label_type)
+                        result_data["Model"].append(model)
+
+                        fill_model_performance(train_items, "train", result_data)
+                        fill_model_performance(export_items, "export", result_data)
+                        fill_model_performance(deploy_items, "deploy", result_data)
+                        fill_model_performance(nncf_items, "nncf", result_data)
+                        fill_model_performance(ptq_items, "ptq", result_data)
+
+
+def summarize_anomaly_data(task: str, json_data: dict, result_data: dict) -> dict:
+    """Make DataFrame by gathering all results."""
+    for task_key in json_data.keys():
+        task_data = json_data[task_key]
+
+        train_data = task_data.get("train")
+        if train_data is None:
+            raise ValueError("Train data can't be empty.")
+        export_data = task_data.get("export")
+        deploy_data = task_data.get("deploy")
+        nncf_data = task_data.get("nncf")
+        ptq_data = task_data.get("ptq")
+
+        for anomaly_category in ANOMALY_DATASET_CATEGORIES:
+            train_cat_data = train_data.get(anomaly_category)
+            if train_cat_data is None:
+                continue
+            export_cat_data = export_data.get(anomaly_category)
+            deploy_cat_data = deploy_data.get(anomaly_category)
+            nncf_cat_data = nncf_data.get(anomaly_category)
+            ptq_cat_data = ptq_data.get(anomaly_category)
+
+            for i, per_model_data in enumerate(train_cat_data):
                 for model in per_model_data:
-                    train_items = get_metric_items(get_metric_dict(train_data, i, model))
-                    export_items = get_metric_items(get_metric_dict(export_data, i, model))
-                    deploy_items = get_metric_items(get_metric_dict(deploy_data, i, model))
-                    nncf_items = get_metric_items(get_metric_dict(nncf_data, i, model))
-                    ptq_items = get_metric_items(get_metric_dict(ptq_data, i, model))
+                    train_items = get_metric_items(get_metric_dict(train_cat_data, i, model))
+                    export_items = get_metric_items(get_metric_dict(export_cat_data, i, model))
+                    deploy_items = get_metric_items(get_metric_dict(deploy_cat_data, i, model))
+                    nncf_items = get_metric_items(get_metric_dict(nncf_cat_data, i, model))
+                    ptq_items = get_metric_items(get_metric_dict(ptq_cat_data, i, model))
 
                     result_data["Task type"].append(task)
-                    result_data["Train type"].append(train_type)
-                    result_data["Label type"].append(label_type)
+                    result_data["MVTec Category"].append(anomaly_category)
                     result_data["Model"].append(model)
 
                     fill_model_performance(train_items, "train", result_data)
@@ -170,49 +210,6 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
                     fill_model_performance(deploy_items, "deploy", result_data)
                     fill_model_performance(nncf_items, "nncf", result_data)
                     fill_model_performance(ptq_items, "ptq", result_data)
-
-
-def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_data: dict) -> dict:
-    """Make DataFrame by gathering all results."""
-    if task_key not in json_data.keys():
-        raise ValueError(f"cannot find '{task_key}' from {json_data}")
-
-    task_data = json_data[task_key]
-
-    train_data = task_data.get("train")
-    if train_data is None:
-        raise ValueError("Train data can't be empty.")
-    export_data = task_data.get("export")
-    deploy_data = task_data.get("deploy")
-    nncf_data = task_data.get("nncf")
-    ptq_data = task_data.get("ptq")
-
-    for anomaly_category in ANOMALY_DATASET_CATEGORIES:
-        train_cat_data = train_data.get(anomaly_category)
-        if train_cat_data is None:
-            continue
-        export_cat_data = export_data.get(anomaly_category)
-        deploy_cat_data = deploy_data.get(anomaly_category)
-        nncf_cat_data = nncf_data.get(anomaly_category)
-        ptq_cat_data = ptq_data.get(anomaly_category)
-
-        for i, per_model_data in enumerate(train_cat_data):
-            for model in per_model_data:
-                train_items = get_metric_items(get_metric_dict(train_cat_data, i, model))
-                export_items = get_metric_items(get_metric_dict(export_cat_data, i, model))
-                deploy_items = get_metric_items(get_metric_dict(deploy_cat_data, i, model))
-                nncf_items = get_metric_items(get_metric_dict(nncf_cat_data, i, model))
-                ptq_items = get_metric_items(get_metric_dict(ptq_cat_data, i, model))
-
-                result_data["Task type"].append(task)
-                result_data["MVTec Category"].append(anomaly_category)
-                result_data["Model"].append(model)
-
-                fill_model_performance(train_items, "train", result_data)
-                fill_model_performance(export_items, "export", result_data)
-                fill_model_performance(deploy_items, "deploy", result_data)
-                fill_model_performance(nncf_items, "nncf", result_data)
-                fill_model_performance(ptq_items, "ptq", result_data)
 
 
 def save_file(result_data: dict, output_path: str, file_name: str):
@@ -252,7 +249,7 @@ def summarize_results_data(input_path: str, output_path: str):
     for entity in os.listdir(input_path):
         entity_path = os.path.join(input_path, entity)
         if os.path.isdir(entity_path):
-            task_key, task = filter_task(entity_path)
+            _, task = filter_task(entity_path)
             results_list = []
             for result_json in os.listdir(entity_path):
                 result_json_path = os.path.join(entity_path, result_json)
@@ -264,8 +261,8 @@ def summarize_results_data(input_path: str, output_path: str):
             assert len(json_data) != 0, "no json results to summary"
 
             if is_anomaly_task(task) is True:
-                summarize_anomaly_data(task, task_key, json_data, ANOMALY_DATA)
-                save_file(ANOMALY_DATA, output_path, f"tests-reg_{task}_{task_key}.csv")
+                summarize_anomaly_data(task, json_data, ANOMALY_DATA)
+                save_file(ANOMALY_DATA, output_path, f"tests-reg_{task}.csv")
             else:
-                summarize_non_anomaly_data(task, task_key, json_data, NON_ANOMALY_DATA)
-                save_file(NON_ANOMALY_DATA, output_path, f"tests-reg_{task}_{task_key}.csv")
+                summarize_non_anomaly_data(task, json_data, NON_ANOMALY_DATA)
+                save_file(NON_ANOMALY_DATA, output_path, f"tests-reg_{task}.csv")
