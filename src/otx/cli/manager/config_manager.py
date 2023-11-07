@@ -29,7 +29,7 @@ from otx.cli.utils.importing import get_otx_root_path
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
 from otx.cli.utils.parser import gen_param_help, gen_params_dict_from_args
 from otx.core.data.manager.dataset_manager import DatasetManager
-from otx.utils.logger import get_logger
+from otx.utils.logger import get_logger, config_logger
 
 logger = get_logger()
 
@@ -114,6 +114,7 @@ class ConfigManager:  # pylint: disable=too-many-instance-attributes
         self.dataset_manager = DatasetManager()
         self.data_format: str = ""
         self.data_config: DefaultDict[str, dict] = defaultdict(dict)
+        config_logger(self.output_path / "otx.log", "INFO")
 
     @property
     def data_config_file_path(self) -> Path:
