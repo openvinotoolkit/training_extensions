@@ -74,6 +74,8 @@ class BaseRecordingForwardHook(ABC):
     ):  # pylint: disable=unused-argument
         tensors = self.func(output)
         if isinstance(tensors, torch.Tensor):
+            if tensors.dtype == torch.bfloat16:
+                tensors = tensors.to(torch.float32)
             tensors_np = tensors.detach().cpu().numpy()
         elif isinstance(tensors, np.ndarray):
             tensors_np = tensors

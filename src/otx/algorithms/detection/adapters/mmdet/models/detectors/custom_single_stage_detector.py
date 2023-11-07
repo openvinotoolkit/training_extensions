@@ -40,7 +40,6 @@ class CustomSingleStageDetector(SAMDetectorMixin, DetLossDynamicsTrackingMixin, 
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, **kwargs)
-
         # Hook for class-sensitive weight loading
         if task_adapt:
             self._register_load_state_dict_pre_hook(
@@ -76,9 +75,7 @@ class CustomSingleStageDetector(SAMDetectorMixin, DetLossDynamicsTrackingMixin, 
         batch_input_shape = tuple(img[0].size()[-2:])
         for img_meta in img_metas:
             img_meta["batch_input_shape"] = batch_input_shape
-        ttt = time.time()
         x = self.extract_feat(img)
-        print("extract_feat", time.time() - ttt)
         losses = self.bbox_head.forward_train(x, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore, **kwargs)
         return losses
 
@@ -100,14 +97,6 @@ class CustomSingleStageDetector(SAMDetectorMixin, DetLossDynamicsTrackingMixin, 
         results_list = self.bbox_head.simple_test(
             feat, img_metas, rescale=rescale)
 
-        # bbox_results = []
-        # for det_bboxes, det_labels in results_list:
-        #     if det_bboxes.dtype == torch.bfloat16:
-        #         det_bboxes = det_bboxes.to(torch.float32)
-        #         det_labels = det_labels.to(torch.float32)
-        #         bbox_results.append(bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes))
-        #     else:
-        #         bbox_results.append(bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes))
         bbox_results = [
             bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
             for det_bboxes, det_labels in results_list

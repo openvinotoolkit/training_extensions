@@ -100,12 +100,16 @@ class CustomSSDHead(SSDHead):
         """
         cls_scores = []
         bbox_preds = []
-        start = time.time()
         for feat, reg_conv, cls_conv in zip(feats, self.reg_convs,
                                             self.cls_convs):
-            cls_scores.append(cls_conv(feat))
-            bbox_preds.append(reg_conv(feat))
-        print("bbox_head_forward:  ", time.time() - start)
+            cls_out = cls_conv(feat)
+            reg_out = reg_conv(feat)
+            if cls_out.device.type == "hpu":
+                cls_scores.append(cls_out.cpu())
+                bbox_preds.append(reg_out.cpu())
+            else:
+                cls_scores.append(cls_out)
+                bbox_preds.append(reg_out)
         return cls_scores, bbox_preds
 
     def loss_single(
@@ -145,7 +149,6 @@ class CustomSSDHead(SSDHead):
         """
 
         # Re-weigting BG loss
-        start1 = time.time()
         label_weights = label_weights.reshape(-1)
         if self.bg_loss_weight >= 0.0:
             neg_indices = labels == self.num_classes
@@ -153,7 +156,6 @@ class CustomSSDHead(SSDHead):
             label_weights[neg_indices] = self.bg_loss_weight
 
         loss_cls_all = self.loss_cls(cls_score, labels, label_weights)
-        print("loss_cls_all:  ", time.time() - start1)
         if len(loss_cls_all.shape) > 1:
             loss_cls_all = loss_cls_all.sum(-1)
         # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
@@ -175,10 +177,7 @@ class CustomSSDHead(SSDHead):
 
         # TODO: We need to verify that this is working properly.
         # pylint: disable=redundant-keyword-arg
-        start = time.time()
         loss_bbox = self._get_loss_bbox(bbox_pred, bbox_targets, bbox_weights, num_total_samples)
-        print("loss_bbox:  ", time.time() - start)
-        print("loss_single:  ", time.time() - start1)
         return loss_cls[None], loss_bbox
 
     def _get_pos_inds(self, labels):
@@ -204,9 +203,7 @@ class CustomSSDHead(SSDHead):
 
     def loss(self, cls_scores, bbox_preds, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Loss function."""
-        start = time.time()
         losses = super().loss(cls_scores, bbox_preds, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore)
-        print("loss_ALL:  ", time.time() - start)
         losses_cls = losses["loss_cls"]
         losses_bbox = losses["loss_bbox"]
 

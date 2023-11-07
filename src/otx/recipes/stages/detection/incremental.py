@@ -21,24 +21,24 @@ custom_hooks = [
         interval=1,
         priority=75,
     ),
-    # dict(
-    #     type="EMAHook",
-    #     priority="ABOVE_NORMAL",
-    #     momentum=0.1,
-    # ),
+    dict(
+        type="EMAHook",
+        priority="ABOVE_NORMAL",
+        momentum=0.1,
+    ),
 ]
 
-# lr_config = dict(
-#     policy="ReduceLROnPlateau",
-#     metric="mAP",
-#     patience=5,
-#     iteration_patience=0,
-#     interval=1,
-#     min_lr=1e-06,
-#     warmup="linear",
-#     warmup_iters=200,
-#     warmup_ratio=0.3333333333333333,
-# )
+lr_config = dict(
+    policy="ReduceLROnPlateau",
+    metric="mAP",
+    patience=5,
+    iteration_patience=0,
+    interval=1,
+    min_lr=1e-06,
+    warmup="linear",
+    warmup_iters=200,
+    warmup_ratio=0.3333333333333333,
+)
 
 ignore = True
 adaptive_validation_interval = dict(

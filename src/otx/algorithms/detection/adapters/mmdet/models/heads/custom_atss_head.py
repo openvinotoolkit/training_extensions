@@ -49,6 +49,41 @@ class CustomATSSHead(CrossDatasetDetectorHead, ATSSHead):
         self.bg_loss_weight = bg_loss_weight
         self.use_qfl = use_qfl
 
+    def forward_single(self, x, scale):
+        """Forward feature of a single scale level.
+
+        Args:
+            x (Tensor): Features of a single scale level.
+            scale (:obj: `mmcv.cnn.Scale`): Learnable scale module to resize
+                the bbox prediction.
+
+        Returns:
+            tuple:
+                cls_score (Tensor): Cls scores for a single scale level
+                    the channels number is num_anchors * num_classes.
+                bbox_pred (Tensor): Box energies / deltas for a single scale
+                    level, the channels number is num_anchors * 4.
+                centerness (Tensor): Centerness for a single scale level, the
+                    channel number is (N, num_anchors * 1, H, W).
+        """
+        cls_feat = x
+        reg_feat = x
+        for cls_conv in self.cls_convs:
+            cls_feat = cls_conv(cls_feat)
+        for reg_conv in self.reg_convs:
+            reg_feat = reg_conv(reg_feat)
+        cls_score = self.atss_cls(cls_feat)
+        # we just follow atss, not apply exp in bbox_pred
+        bbox_pred = scale(self.atss_reg(reg_feat)).float()
+        centerness = self.atss_centerness(reg_feat)
+        if cls_score.device.type == "hpu":
+            # put further post-processing on cpu
+            cls_score = cls_score.cpu()
+            bbox_pred = bbox_pred.cpu()
+            centerness = centerness.cpu()
+
+        return cls_score, bbox_pred, centerness
+
     @force_fp32(apply_to=("cls_scores", "bbox_preds", "centernesses"))
     def loss(self, cls_scores, bbox_preds, centernesses, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """Compute losses of the head.
