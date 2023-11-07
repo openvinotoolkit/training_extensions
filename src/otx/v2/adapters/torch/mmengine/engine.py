@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 logger = get_logger()
 MMENGINE_DTYPE = ("float16", "bfloat16", "float32", "float64")
 # NOTE: We need to discuss where to declare the default value.
-DEFAULT_CONFIG: dict[str, dict | list | str | int | float | None] = {
+DEFAULT_CONFIG = Config({
     "val_interval": 1,
     "seed": 1234,
     "deterministic": False,
@@ -64,7 +64,7 @@ DEFAULT_CONFIG: dict[str, dict | list | str | int | float | None] = {
     "optimizer": {
         "type": "SGD", "lr": 0.01, "momentum": 0.9, "weight_decay": 0.0005,
     },
-}
+})
 
 
 class MMXEngine(Engine):
@@ -73,7 +73,7 @@ class MMXEngine(Engine):
     This class is a subclass of the otx.v2.api.core.engine.Engine class and provides additional functionality
     for training and evaluating PyTorch models using the MMEngine framework.
     """
-    default_config = Config(DEFAULT_CONFIG)
+    default_config = DEFAULT_CONFIG
 
     def __init__(
         self,
