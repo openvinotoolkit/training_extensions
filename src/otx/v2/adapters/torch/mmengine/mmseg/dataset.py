@@ -120,8 +120,8 @@ class MMSegDataset(MMXDataset):
     def _build_dataloader(
         self,
         dataset: TorchDataset | None,
-        batch_size: int = 2,
-        num_workers: int = 0,
+        batch_size: int | None = 2,
+        num_workers: int | None = 0,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = True,

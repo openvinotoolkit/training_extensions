@@ -7,11 +7,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import TYPE_CHECKING
-from mmengine.evaluator import Evaluator
 
 import torch
 from mmseg.apis import MMSegInferencer
-from torch.utils.data import DataLoader
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmseg.registry import MMSegmentationRegistry
@@ -24,6 +22,7 @@ if TYPE_CHECKING:
     from mmengine.hooks import Hook
     from mmengine.optim import _ParamScheduler
     from mmengine.visualization import Visualizer
+    from torch import nn
     from torch.optim import Optimizer
     from torch.utils.data import DataLoader
 
@@ -229,7 +228,31 @@ class MMSegEngine(MMXEngine):
             **kwargs,
         )
 
-    def test(self, model: Module | dict | None = None, test_dataloader: DataLoader | None = None, checkpoint: str | Path | None = None, precision: str | None = None, test_evaluator: Evaluator | dict | list | None = None, **kwargs) -> dict:
+    def test(
+        self,
+        model: nn.Module | dict | None = None,
+        test_dataloader: DataLoader | None = None,
+        checkpoint: str | Path | None = None,
+        precision: str | None = None,
+        test_evaluator: Evaluator | dict | list | None = None,
+        **kwargs,
+    ) -> dict:
+        """Test the given model on the test dataset.
+
+        Args:
+            model (torch.nn.Module or dict, optional): The model to test. If None, the model
+                passed to the latest will be used. Defaults to None.
+            test_dataloader (DataLoader, optional): The dataloader to use for testing. Defaults to None.
+            checkpoint (str or Path, optional): The path to the checkpoint to load before testing.
+                If None, the checkpoint passed to the latest will be used. Defaults to None.
+            precision (str, optional): The precision to use for testing. Defaults to None.
+            test_evaluator (Evaluator or dict or list, optional): The evaluator(s) to use for testing.
+                Defaults to None.
+            **kwargs: Additional keyword arguments to update the configuration.
+
+        Returns:
+            dict: A dictionary containing the test results.
+        """
         if test_evaluator is None:
             test_evaluator = self.evaluator
         return super().test(model, test_dataloader, checkpoint, precision, test_evaluator, **kwargs)
