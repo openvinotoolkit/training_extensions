@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
-from otx.algorithms.common.utils.logger import get_logger
 import shutil
 from collections import defaultdict
 from datetime import datetime
@@ -15,6 +14,7 @@ from datumaro.components.dataset import Dataset
 from datumaro.components.dataset_base import IDataset
 from omegaconf import OmegaConf
 
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.model_template import ModelTemplate, parse_model_template

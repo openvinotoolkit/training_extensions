@@ -27,10 +27,10 @@ from mmaction.datasets.ava_dataset import AVADataset
 from mmaction.datasets.builder import DATASETS
 from mmaction.datasets.pipelines import Compose
 from mmcv.utils import print_log
-from otx.algorithms.common.utils.logger import get_logger
 
 from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.algorithms.action.adapters.mmaction.utils import det_eval
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity

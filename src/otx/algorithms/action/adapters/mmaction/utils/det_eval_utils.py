@@ -21,9 +21,10 @@ import numpy as np
 from mmaction.core.evaluation.ava_evaluation import (
     object_detection_evaluation as mm_det_eval,
 )
-from otx.algorithms.common.utils.logger import get_logger
 from mmaction.core.evaluation.ava_evaluation import standard_fields
 from mmaction.core.evaluation.ava_utils import print_time, read_exclusions
+
+from otx.algorithms.common.utils.logger import get_logger
 
 logger = get_logger()
 

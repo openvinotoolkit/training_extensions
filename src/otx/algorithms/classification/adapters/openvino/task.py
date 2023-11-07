@@ -38,9 +38,9 @@ from otx.algorithms.classification.utils import (
     get_cls_inferencer_configuration,
     get_hierarchical_label_list,
 )
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils import OTXOpenVinoDataLoader
 from otx.algorithms.common.utils.ir import check_if_quantized
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.utils import get_default_async_reqs_num, read_py_config
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity

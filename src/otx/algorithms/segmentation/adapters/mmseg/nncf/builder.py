@@ -19,9 +19,9 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_pairs,
     remove_from_configs_by_type,
 )
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
 from otx.algorithms.common.adapters.nncf.compression import NNCFMetaState
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.segmentation.adapters.mmseg.utils import build_segmentor
 
 logger = get_logger()

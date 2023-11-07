@@ -20,8 +20,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import torch
 import yaml
 
-from otx.api.configuration.helper import create
 from otx.algorithms.common.utils.logger import get_logger
+from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType

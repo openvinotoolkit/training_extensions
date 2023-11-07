@@ -17,6 +17,7 @@ from otx.api.utils.time_utils import now
 
 logger = get_logger()
 
+
 class MetricEntity(metaclass=abc.ABCMeta):
     """This interface represents a metric, which is the smallest building block for the performance statistics.
 

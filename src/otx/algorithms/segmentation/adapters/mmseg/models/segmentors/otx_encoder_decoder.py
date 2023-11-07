@@ -9,8 +9,8 @@ import torch
 from mmseg.models import SEGMENTORS
 from mmseg.models.segmentors.encoder_decoder import EncoderDecoder
 
-from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.adapters.mmdeploy.utils import is_mmdeploy_enabled
+from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.common.utils.task_adapt import map_class_names
 
 logger = get_logger()

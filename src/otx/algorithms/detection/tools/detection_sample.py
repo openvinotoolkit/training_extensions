@@ -20,13 +20,13 @@ import sys
 import numpy as np
 
 from otx.algorithms.common.utils import get_task_class
+from otx.algorithms.common.utils.logger import get_logger
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
-from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image

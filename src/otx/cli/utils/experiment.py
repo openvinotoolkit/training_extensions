@@ -6,7 +6,6 @@
 import multiprocessing as mp
 import os
 import time
-from otx.algorithms.common.utils.logger import get_logger
 from abc import ABC, abstractmethod
 from pathlib import Path
 from statistics import mean
@@ -14,6 +13,8 @@ from typing import Any, Dict, List, Optional, Union, no_type_check
 
 import psutil
 import yaml
+
+from otx.algorithms.common.utils.logger import get_logger
 
 try:
     import pynvml

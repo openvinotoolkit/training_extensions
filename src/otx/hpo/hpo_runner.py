@@ -25,8 +25,8 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, Dict, Literal, Optional, Union
 
-from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.algorithms.common.utils.logger import get_logger
+from otx.hpo.hpo_base import HpoBase, Trial, TrialStatus
 from otx.hpo.resource_manager import get_resource_manager
 
 logger = get_logger()
