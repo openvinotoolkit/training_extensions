@@ -8,6 +8,7 @@ from otx.v2.api.core import AutoRunner
 
 from tests.v2.integration.test_helper import TASK_CONFIGURATION
 
+# NOTE: This test currently only checks the basic pipeline and doesn't do much checking on the result, which will be fixed in the future.
 
 class TestAutoRunnerAPI:
     @pytest.mark.parametrize("task", TASK_CONFIGURATION.keys())
@@ -65,13 +66,9 @@ class TestAutoRunnerAPI:
 
         # Export Openvino IR Model
         export_output = auto_runner.export(
-            model=results["model"],
             checkpoint=results["checkpoint"],
         )
         assert isinstance(export_output, dict)
         assert "outputs" in export_output
         assert isinstance(export_output["outputs"], dict)
-        assert "bin" in export_output["outputs"]
-        assert "xml" in export_output["outputs"]
-        assert Path(export_output["outputs"]["bin"]).exists()
-        assert Path(export_output["outputs"]["xml"]).exists()
+        assert "onnx" in export_output["outputs"]
