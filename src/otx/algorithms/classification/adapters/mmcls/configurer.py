@@ -574,7 +574,7 @@ class ClassificationConfigurer:
 CLASS_INC_DATASET = [
     "OTXClsDataset",
     "OTXMultilabelClsDataset",
-    "MPAHierarchicalClsDataset",
+    "OTXHierarchicalClsDataset",
     "ClsTVDataset",
 ]
 WEIGHT_MIX_CLASSIFIER = ["SAMImageClassifier"]

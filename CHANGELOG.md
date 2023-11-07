@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Fix IBLoss enablement with DeiT-Tiny when class incremental training (<https://github.com/openvinotoolkit/training_extensions/pull/2595>)
 - Fix mmcls bug not wrapping model in DataParallel on CPUs (<https://github.com/openvinotoolkit/training_extensions/pull/2601>)
 - Fix h-label loss normalization issue w/ exclusive label group of singe label (<https://github.com/openvinotoolkit/training_extensions/pull/2604>)
+- Fix division by zero in class incremental learning for classification (<https://github.com/openvinotoolkit/training_extensions/pull/2606>)
 
 ## \[v1.4.3\]
 
