@@ -129,7 +129,11 @@ class TestDataset:
 
         mock_label_schema = mocker.MagicMock()
         mock_label_schema.get_labels.return_value = ["label1"]
+        dataset.label_schema = mock_label_schema
+
+        # otx_dataset < 1
         mock_dataset_entity = mocker.MagicMock()
+        mock_dataset_entity.get_subset.return_value = []
         dataset.dataset_entity = mock_dataset_entity
         result = dataset._build_dataset(subset="train")
         assert result is None

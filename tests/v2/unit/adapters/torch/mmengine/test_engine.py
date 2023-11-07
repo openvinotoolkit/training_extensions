@@ -89,8 +89,11 @@ class TestMMXEngine:
         engine._update_config({"test_dataloader": test_dataloader})
         assert engine.config["test_dataloader"] == test_dataloader
         assert "test_cfg" in engine.config
+        assert "test_evaluator" in engine.config
+        assert engine.config["test_evaluator"] is not None
 
         # Test with param_scheduler argument
+        param_scheduler = {"foo": "bar"}
         engine._update_config({"param_scheduler": param_scheduler})
         assert engine.config["param_scheduler"] == param_scheduler
 
@@ -124,6 +127,7 @@ class TestMMXEngine:
         visualizer = {"foo": "bar"}
         engine._update_config({"visualizer": visualizer})
         assert engine.config["visualizer"]["foo"] == "bar"
+
 
     def test_train(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
         mocker.patch("otx.v2.adapters.torch.mmengine.engine.Path.glob", return_value=["test1.pth"])
