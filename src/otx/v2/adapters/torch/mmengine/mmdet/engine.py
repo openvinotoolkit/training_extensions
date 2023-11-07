@@ -40,9 +40,9 @@ class MMDetEngine(MMXEngine):
 
     def _update_config(self, func_args: dict, **kwargs) -> bool:
         update_check = super()._update_config(func_args, **kwargs)
-        if hasattr(self.config, "val_dataloader") and not hasattr(self.config.val_evaluator, "type"):
+        if getattr(self.config, "val_dataloader", None) and not hasattr(self.config.val_evaluator, "type"):
             self.config.val_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
-        if hasattr(self.config, "test_dataloader") and not hasattr(self.config.test_evaluator, "type"):
+        if getattr(self.config, "test_dataloader", None) and not hasattr(self.config.test_evaluator, "type"):
             self.config.test_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
         self.config.default_hooks.checkpoint.save_best = "pascal_voc/mAP"
         max_epochs = getattr(self.config.train_cfg, "max_epochs", None)
