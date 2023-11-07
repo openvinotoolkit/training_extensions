@@ -126,8 +126,9 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
         import habana_frameworks.torch.core as htcore
         os.environ["PT_HPU_LAZY_MODE"] = "1"
         assert len(cfg.gpu_ids) == 1
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, dim=0, is_autocast=bool(fp16_cfg))
-        model.to(f"hpu:{cfg.gpu_ids[0]}")
+        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, dim=0,
+                         is_autocast=bool(fp16_cfg), put_gt_on_device=False)
+        model.to(f"hpu:{cfg.gpu_ids[0]}", non_blocking=True)
         htcore.mark_step()
         model.zero_grad()
     else:

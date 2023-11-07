@@ -104,6 +104,25 @@ class CustomYOLOXHead(YOLOXHead):
 
         return loss_dict
 
+    def forward_single(self, x, cls_convs, reg_convs, conv_cls, conv_reg,
+                       conv_obj):
+        """Forward feature of a single scale level."""
+
+        cls_feat = cls_convs(x)
+        reg_feat = reg_convs(x)
+
+        cls_score = conv_cls(cls_feat)
+        bbox_pred = conv_reg(reg_feat)
+        objectness = conv_obj(reg_feat)
+
+        if cls_score.device.type == "hpu":
+            # put on cpu for further post-processing
+            cls_score = cls_score.cpu()
+            bbox_pred = bbox_pred.cpu()
+            objectness = objectness.cpu()
+
+        return cls_score, bbox_pred, objectness
+
 
 @HEADS.register_module()
 class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOXHead):
@@ -151,14 +170,6 @@ class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOX
         flatten_objectness = torch.cat(flatten_objectness, dim=1)
         flatten_priors = torch.cat(mlvl_priors)
         flatten_bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
-
-        if "hpu" in flatten_cls_preds.device:
-            # put loss computastion on CPU -> faster, avoid errors
-            flatten_cls_preds = flatten_cls_preds.cpu()
-            flatten_bbox_preds = flatten_bbox_preds.cpu()
-            flatten_objectness = flatten_objectness.cpu()
-            flatten_priors = flatten_priors.cpu()
-            flatten_bboxes = flatten_bboxes.cpu()
 
         # Init variables for loss dynamics tracking
         self.cur_batch_idx = 0
