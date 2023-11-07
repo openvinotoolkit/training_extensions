@@ -34,7 +34,6 @@ from .early_stopping_hook import (
 from .eval_hook import CustomEvalHook, DistCustomEvalHook
 from .force_train_hook import ForceTrainModeHook
 from .fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
-from .hpu_optimizer_hook import HPUOptimizerHook
 from .ib_loss_hook import IBLossHook
 from .logger_hook import LoggerReplaceHook, OTXLoggerHook
 from .loss_dynamics_tracking_hook import LossDynamicsTrackingHook
@@ -91,5 +90,11 @@ __all__ = [
     "MeanTeacherHook",
     "MemCacheHook",
     "LossDynamicsTrackingHook",
-    "HPUOptimizerHook",
 ]
+
+try:
+    from .hpu_optimizer_hook import HPUOptimizerHook
+
+    __all__ += ["HPUOptimizerHook"]
+except:  # noqa: E722
+    pass
