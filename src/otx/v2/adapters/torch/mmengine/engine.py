@@ -463,7 +463,7 @@ class MMXEngine(Engine):
                 model_cfg = model._config.get("model", model._config)  # noqa: SLF001
             else:
                 raise NotImplementedError
-        elif self.dumped_config.get("model", None) and self.dumped_config["model"] is not None:
+        elif self.dumped_config.get("model", None) is not None:
             if isinstance(self.dumped_config["model"], dict):
                 model_cfg = Config(self.dumped_config["model"])
             else:
@@ -517,7 +517,7 @@ class MMXEngine(Engine):
         # Patch input's configuration
         if isinstance(deploy_config_dict, dict):
             deploy_config_dict = Config(deploy_config_dict)
-        data_preprocessor = self.dumped_config.get("data_preprocessor", None)
+        data_preprocessor = self.dumped_config.model.get("data_preprocessor", None)
         mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
         std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
         to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
