@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
+from mmdet.registry import VISUALIZERS
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmdet.registry import MMDetRegistry
@@ -39,13 +40,22 @@ class MMDetEngine(MMXEngine):
 
     def _update_config(self, func_args: dict, **kwargs) -> tuple[Config, bool]:
         config, update_check = super()._update_config(func_args, **kwargs)
+
         if getattr(config, "val_dataloader", None) and not hasattr(config.val_evaluator, "type"):
             config.val_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
         if getattr(config, "test_dataloader", None) and not hasattr(config.test_evaluator, "type"):
             config.test_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
+
         config.default_hooks.checkpoint.save_best = "pascal_voc/mAP"
+
+        if hasattr(config, "visualizer") and config.visualizer.type not in VISUALIZERS:
+            config.visualizer = {
+                "type": "DetLocalVisualizer",
+                "vis_backends": [{"type": "LocalVisBackend"}, {"type": "TensorboardVisBackend"}],
+            }
+
         max_epochs = getattr(config.train_cfg, "max_epochs", None)
-        if max_epochs:
+        if max_epochs and hasattr(config, "param_scheduler"):
             for scheduler in config.param_scheduler:
                 if hasattr(scheduler, "end") and scheduler.end > max_epochs:
                     scheduler.end = max_epochs
