@@ -188,17 +188,13 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 label = self.anomalous_label if image_result.pred_score >= 0.5 else self.normal_label
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 annotations = create_annotation_from_segmentation_map(
-                    pred_mask,
-                    image_result.anomaly_map.squeeze(),
-                    {0: self.normal_label, 1: self.anomalous_label},
+                    pred_mask, image_result.anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
             elif self.task_type == TaskType.ANOMALY_DETECTION:
                 annotations = create_detection_annotation_from_anomaly_heatmap(
-                    pred_mask,
-                    image_result.anomaly_map.squeeze(),
-                    {0: self.normal_label, 1: self.anomalous_label},
+                    pred_mask, image_result.anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
@@ -322,8 +318,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         # Training subset does not contain example of anomalous images.
         # Anomalous examples from all dataset used to get statistics for quantization.
         dataset = DatasetEntity(
-            items=[item for item in dataset if item.get_shapes_labels()[0].is_anomalous],
-            purpose=dataset.purpose,
+            items=[item for item in dataset if item.get_shapes_labels()[0].is_anomalous], purpose=dataset.purpose
         )
 
         logger.info("Starting PTQ optimization.")
@@ -359,16 +354,9 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             xml_path = os.path.join(tempdir, "model.xml")
             ov.serialize(compressed_model, xml_path)
             self.__load_weights(path=xml_path, output_model=output_model, key="openvino.xml")
-            self.__load_weights(
-                path=os.path.join(tempdir, "model.bin"),
-                output_model=output_model,
-                key="openvino.bin",
-            )
+            self.__load_weights(path=os.path.join(tempdir, "model.bin"), output_model=output_model, key="openvino.bin")
 
-        output_model.set_data(
-            "label_schema.json",
-            label_schema_to_bytes(self.task_environment.label_schema),
-        )
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
@@ -434,9 +422,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             with open(f"{temp_dir}/openvino.bin", "rb") as file:
                 self.task_environment.model.set_data("openvino.bin", file.read())
 
-    def _metadata_in_ir_format(
-        self,
-    ) -> Dict[Tuple[str, str], Union[str, int, float, List[Union[int, float]]]]:
+    def _metadata_in_ir_format(self) -> Dict[Tuple[str, str], Union[str, int, float, List[Union[int, float]]]]:
         """Return metadata in format of tuple keys that are used in IR with modelAPI."""
         metadata = self.get_metadata()
         extra_model_data: Dict[Tuple[str, str], Any] = {}
@@ -543,23 +529,11 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
             # model files
-            arch.writestr(
-                os.path.join("model", "model.xml"),
-                self.task_environment.model.get_data("openvino.xml"),
-            )
-            arch.writestr(
-                os.path.join("model", "model.bin"),
-                self.task_environment.model.get_data("openvino.bin"),
-            )
-            arch.writestr(
-                os.path.join("model", "config.json"),
-                json.dumps(parameters, ensure_ascii=False, indent=4),
-            )
+            arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
+            arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
+            arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
             # other python files
-            arch.write(
-                os.path.join(work_dir, "requirements.txt"),
-                os.path.join("python", "requirements.txt"),
-            )
+            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
             arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
             arch.write(os.path.join(work_dir, "README.md"), os.path.join(".", "README.md"))
