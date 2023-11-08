@@ -22,7 +22,6 @@ model:
   mask_threshold: 0.
   return_logits: true
   backbone: tiny_vit
-  loss_type: sam # <"sam", "medsam">
   freeze_image_encoder: true
   freeze_prompt_encoder: true
   freeze_mask_decoder: true
@@ -32,10 +31,6 @@ model:
   use_stability_score: false
   stability_score_offset: 1.
   return_extra_metrics: false
-
-optimizer:
-  name: Adam
-  lr: 0.00001
 
 callback:
   checkpoint: # arguments for ModelCheckpoint
@@ -62,7 +57,7 @@ trainer:
   check_val_every_n_epoch: 1 # Don't validate before extracting features.
   fast_dev_run: false
   accumulate_grad_batches: 1
-  max_epochs: 100
+  max_epochs: 1
   min_epochs: null
   max_steps: -1
   min_steps: null
