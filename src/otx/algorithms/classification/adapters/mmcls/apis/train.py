@@ -12,7 +12,8 @@ from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger, wrap_distributed_model, wrap_non_distributed_model
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 
 
 def train_model(model, dataset, cfg, distributed=False, validate=False, timestamp=None, device=None, meta=None):
@@ -78,11 +79,19 @@ def train_model(model, dataset, cfg, distributed=False, validate=False, timestam
         assert len(cfg.gpu_ids) == 1
         model.to(f"xpu:{cfg.gpu_ids[0]}")
         model = XPUDataParallel(model, dim=0, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
+    elif cfg.device == "hpu":
+        assert len(cfg.gpu_ids) == 1
+        model = HPUDataParallel(model.cuda(), dim=0, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
     else:
         model = wrap_non_distributed_model(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build runner
+    if cfg.device == "hpu":
+        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in HABANA_OPTIMIZERS:
+            cfg.optimizer["type"] = new_type
+
     optimizer = build_optimizer(model, cfg.optimizer)
+
     if cfg.device == "xpu":
         if fp16_cfg is not None:
             dtype = torch.bfloat16

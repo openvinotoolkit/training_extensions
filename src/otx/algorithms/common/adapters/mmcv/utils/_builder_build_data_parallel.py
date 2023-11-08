@@ -12,7 +12,7 @@ import torch
 from mmcv import Config
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
-from otx.algorithms.common.utils import is_xpu_available
+from otx.algorithms.common.utils import is_hpu_available, is_xpu_available
 
 
 @overload
@@ -63,6 +63,9 @@ def build_data_parallel(
     if is_xpu_available() and config.get("gpu_ids", []):
         model = model.xpu()
         model = XPUDataParallel(model, device_ids=config.gpu_ids)
+    elif is_hpu_available() and config.get("gpu_ids", []):
+        model = model.hpu()
+        model = HPUDataParallel(model, device_ids=config.gpu_ids)
     elif torch.cuda.is_available() and config.get("gpu_ids", []):
         if distributed:
             model = model.cuda()
@@ -133,4 +136,50 @@ class XPUDataParallel(MMDataParallel):
 
     def val_step(self, *inputs, **kwargs):
         with torch.autocast(device_type="xpu", dtype=torch.bfloat16, enabled=self.enable_autocast):
+            return super().val_step(*inputs, **kwargs)
+
+
+class HPUDataParallel(MMDataParallel):
+    def __init__(self, *args, enable_autocast: bool = False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.enable_autocast = enable_autocast
+        self.src_device_obj = torch.device("hpu", self.device_ids[0])
+
+    def scatter(self, inputs, kwargs, device_ids):
+        inputs, kwargs = super().scatter(inputs, kwargs, [-1])
+
+        for x in inputs:
+            if isinstance(x, tuple):
+                for val in x:
+                    if isinstance(val, dict):
+                        for k in val:
+                            if isinstance(val[k], torch.Tensor):
+                                val[k] = val[k].to(self.src_device_obj)
+                            elif isinstance(val[k], list):
+                                for i, item in enumerate(val[k]):
+                                    if isinstance(item, torch.Tensor):
+                                        val[k][i] = item.to(self.src_device_obj)
+
+        for x in kwargs:
+            if isinstance(x, dict):
+                for k in x:
+                    if isinstance(x[k], torch.Tensor):
+                        x[k] = x[k].to(f"hpu:{device_ids[0]}")
+                    elif isinstance(x[k], list):
+                        for i, item in enumerate(x[k]):
+                            if isinstance(item, torch.Tensor):
+                                x[k][i] = item.to(self.src_device_obj)
+
+        return inputs, kwargs
+
+    def forward(self, *inputs, **kwargs):
+        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
+            return super().forward(*inputs, **kwargs)
+
+    def train_step(self, *inputs, **kwargs):
+        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
+            return super().train_step(*inputs, **kwargs)
+
+    def val_step(self, *inputs, **kwargs):
+        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=self.enable_autocast):
             return super().val_step(*inputs, **kwargs)

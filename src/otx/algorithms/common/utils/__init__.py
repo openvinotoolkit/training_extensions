@@ -24,9 +24,11 @@ from .dist_utils import append_dist_rank_suffix
 from .ir import embed_ir_model_data
 from .utils import (
     UncopiableDefaultDict,
+    cast_bf16_to_fp32,
     get_arg_spec,
     get_default_async_reqs_num,
     get_task_class,
+    is_hpu_available,
     is_xpu_available,
     load_template,
     read_py_config,
@@ -51,4 +53,10 @@ __all__ = [
     "read_py_config",
     "get_default_async_reqs_num",
     "is_xpu_available",
+    "is_hpu_available",
+    "cast_bf16_to_fp32",
 ]
+
+
+if is_hpu_available():
+    import habana_frameworks.torch.gpu_migration  # noqa: F401

@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import LinearClsHead
 
+from otx.algorithms.common.utils import cast_bf16_to_fp32
+
 from .non_linear_cls_head import NonLinearClsHead
 
 
@@ -89,6 +91,7 @@ class CustomLinearClsHead(LinearClsHead):
         if torch.onnx.is_in_onnx_export():
             return cls_score
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        pred = cast_bf16_to_fp32(pred)
 
         return self.post_process(pred)
 

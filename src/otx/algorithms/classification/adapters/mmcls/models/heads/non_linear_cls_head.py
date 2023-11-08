@@ -10,6 +10,8 @@ from mmcls.models.heads.cls_head import ClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from torch import nn
 
+from otx.algorithms.common.utils import cast_bf16_to_fp32
+
 
 @HEADS.register_module()
 class NonLinearClsHead(ClsHead):
@@ -84,6 +86,7 @@ class NonLinearClsHead(ClsHead):
         if torch.onnx.is_in_onnx_export():
             return cls_score
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        pred = cast_bf16_to_fp32(pred)
         pred = list(pred.detach().cpu().numpy())
         return pred
 

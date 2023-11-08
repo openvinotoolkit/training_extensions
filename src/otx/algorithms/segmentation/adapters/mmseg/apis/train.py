@@ -17,9 +17,11 @@ from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.utils import build_ddp, find_latest_checkpoint, get_root_logger
 from mmseg.utils.util_distribution import build_dp, dp_factory
 
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 
 dp_factory["xpu"] = XPUDataParallel
+dp_factory["hpu"] = HPUDataParallel
 
 
 def train_segmentor(model, dataset, cfg, distributed=False, validate=False, timestamp=None, meta=None):
@@ -71,10 +73,22 @@ def train_segmentor(model, dataset, cfg, distributed=False, validate=False, time
             use_autocast = bool(cfg.get("fp16_", False))
             model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
             model.to(f"xpu:{cfg.gpu_ids[0]}")
+        elif cfg.device == "hpu":
+            use_autocast = bool(cfg.get("fp16_", False))
+            model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=use_autocast)
+            model.to(model.src_device_obj)
         else:
             model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build runner
+    if cfg.device == "hpu":
+        optim_type = cfg.optimizer.get("type", "SGD")
+        if optim_type == "Adam":  # to avoid segmentation fault
+            optim_type = "AdamW"
+            cfg.optimizer.type = optim_type
+        if (new_type := "Fused" + optim_type) in HABANA_OPTIMIZERS:
+            cfg.optimizer["type"] = new_type
+
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
