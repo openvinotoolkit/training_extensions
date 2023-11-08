@@ -443,7 +443,6 @@ class MMXEngine(Engine):
         checkpoint: str | Path | None = None,
         precision: str | None = None,
         test_evaluator: Evaluator | (dict | list) | None = None,
-        visualizer: Visualizer | None | dict = None,
         **kwargs,
     ) -> dict:
         """Test the given model on the test dataset.
@@ -469,7 +468,6 @@ class MMXEngine(Engine):
             "test_dataloader": test_dataloader,
             "test_evaluator": test_evaluator,
             "precision": precision,
-            "visualizer": visualizer,
         }
         config, update_check = self._update_config(func_args=test_args, **kwargs)
         # This will not build if there are training-related hooks.

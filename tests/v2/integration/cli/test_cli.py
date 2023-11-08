@@ -29,6 +29,7 @@ def test_otx_cli(task: str, tmp_dir_path: Path) -> None:
     """
     # 1. Training
     tmp_dir_path = tmp_dir_path / f"{task}_e2e_test"
+    deterministic = "False" if task == "segmentation" else "True"
     command_line = [
         "otx", "train",
         "--work_dir", str(tmp_dir_path),
@@ -37,7 +38,7 @@ def test_otx_cli(task: str, tmp_dir_path: Path) -> None:
         "--data.val_data_roots", TASK_CONFIGURATION[task]["val_data_roots"],
         "--max_epochs", "1",
         "--seed", "1234",
-        "--deterministic", "False",
+        "--deterministic", deterministic,
     ]
     rc, stdout, _ = check_run(command_line)
     assert rc == 0
