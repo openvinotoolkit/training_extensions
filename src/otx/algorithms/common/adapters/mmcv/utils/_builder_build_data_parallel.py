@@ -154,11 +154,11 @@ class HPUDataParallel(MMDataParallel):
                     if isinstance(val, dict):
                         for k in val:
                             if isinstance(val[k], torch.Tensor):
-                                val[k] = val[k].to(torch.device(f"hpu:{device_ids[0]}"))
+                                val[k] = val[k].to(self.src_device_obj)
                             elif isinstance(val[k], list):
                                 for i, item in enumerate(val[k]):
                                     if isinstance(item, torch.Tensor):
-                                        val[k][i] = item.to(torch.device(f"hpu:{device_ids[0]}"))
+                                        val[k][i] = item.to(self.src_device_obj)
 
         for x in kwargs:
             if isinstance(x, dict):
@@ -168,7 +168,7 @@ class HPUDataParallel(MMDataParallel):
                     elif isinstance(x[k], list):
                         for i, item in enumerate(x[k]):
                             if isinstance(item, torch.Tensor):
-                                x[k][i] = item.to(torch.device(f"hpu:{device_ids[0]}"))
+                                x[k][i] = item.to(self.src_device_obj)
 
         return inputs, kwargs
 
