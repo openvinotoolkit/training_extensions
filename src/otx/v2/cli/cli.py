@@ -348,7 +348,8 @@ class OTXCLIv2:
             raise TypeError(msg)
         self.model = self.auto_runner.get_model(model={**model_cfg}, num_classes=num_classes)
         # NOTE: We'll need to move this somewhere other than here in the next phase.
-        model_cfg = self.model.config_dict if hasattr(self.model, 'config_dict') else model_cfg
+        if getattr(self.model, "config_dict", None):
+            model_cfg = self.model.config_dict
         workspace_config["model"] = {**model_cfg}
 
         work_dir = self._pop(self.config_init, "work_dir")
