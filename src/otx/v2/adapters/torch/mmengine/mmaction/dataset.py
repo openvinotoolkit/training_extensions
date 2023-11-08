@@ -9,11 +9,10 @@ from functools import partial
 from typing import Iterable
 
 import torch
-from mmengine.dataset import default_collate, worker_init_fn, pseudo_collate
+from mmaction.registry import DATASETS
+from mmengine.dataset import pseudo_collate, worker_init_fn
 from mmengine.dist import get_dist_info
 from mmengine.utils import digit_version
-from mmaction.registry import DATASETS
-
 from torch.utils.data import DataLoader as TorchDataLoader
 from torch.utils.data import Dataset as TorchDataset
 from torch.utils.data import Sampler
@@ -36,10 +35,10 @@ def get_default_pipeline() -> dict | list:
     Returns:
         Union[Dict, List]: The default pipeline as a dictionary or list, depending on whether `semisl` is True or False.
     """
-    default_pipeline = [
+    return [
         {
-            "type": "SampleFrames", 
-            "clip_len": 8, 
+            "type": "SampleFrames",
+            "clip_len": 8,
             "frame_interval": 4,
             "num_clips": 1,
         },
@@ -48,11 +47,11 @@ def get_default_pipeline() -> dict | list:
         {"type": "mmaction.FormatShape", "input_format": "NCTHW"},
         {"type": "mmaction.PackActionInputs"},
     ]
-    return default_pipeline
+
 
 
 @add_subset_dataloader(SUBSET_LIST)
-class Dataset(BaseDataset):
+class MMActionDataset(BaseDataset):
     """A class representing a dataset for mmaction model."""
 
     def __init__(
@@ -114,7 +113,6 @@ class Dataset(BaseDataset):
         self.initialize = True
 
     def _get_sub_task_dataset(self) -> TorchDataset:
-        #TODO: need to add Action Detection
         return OTXActionClsDataset
 
     def build_dataset(
@@ -316,8 +314,7 @@ class Dataset(BaseDataset):
         if num_workers is None:
             num_workers = _config.get("num_workers", 0)
 
-        # kwargs conflict
-        subset_dataloader = self.build_dataloader(
+        return self.build_dataloader(
             dataset=subset_dataset,
             batch_size=batch_size,
             num_workers=num_workers,
@@ -328,7 +325,6 @@ class Dataset(BaseDataset):
             persistent_workers=persistent_workers,
             **kwargs,
         )
-        return subset_dataloader
 
     @property
     def num_classes(self) -> int:

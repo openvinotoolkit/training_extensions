@@ -3,7 +3,9 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import Any
 
 import numpy as np
 from mmaction.registry import TRANSFORMS
@@ -17,16 +19,14 @@ class RawFrameDecode:
 
     otx_dataset: DatasetEntity
 
-    def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def __call__(self, results: dict[str, Any]) -> dict[str, Any]:
         """Call function of RawFrameDecode."""
-        results = self._decode_from_list(results)
-        return results
+        return self._decode_from_list(results)
 
-    def _decode_from_list(self, results: Dict[str, Any]):
+    def _decode_from_list(self, results: dict[str, Any]) -> dict:
         """Generate numpy array list from list of DatasetItemEntity."""
-        imgs = []
-        for index in results["frame_inds"]:
-            imgs.append(self.otx_dataset[int(index)].media.numpy)
+        imgs = [self.otx_dataset[int(index)].media.numpy for index in results["frame_inds"]]
+
         results["imgs"] = imgs
         results["original_shape"] = imgs[0].shape[:2]
         results["img_shape"] = imgs[0].shape[:2]

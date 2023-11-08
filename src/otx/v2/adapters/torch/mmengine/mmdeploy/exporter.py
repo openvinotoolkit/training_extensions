@@ -85,7 +85,8 @@ class Exporter:
         """Prepare torch model's input and input_metas."""
         input_shape = self.deploy_cfg.backend_config.model_inputs[0]["opt_shapes"]["input"]
         input_tensor = torch.randn(input_shape)
-        input_metas = None
+        input_metas = self.deploy_cfg.backend_config.get("input_metas", None)
+        input_metas["data_samples"] = input_tensor
         return input_tensor, input_metas
 
     def export(self) -> dict[str, dict[str, str]]:

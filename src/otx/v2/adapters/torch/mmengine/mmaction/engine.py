@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,11 +13,14 @@ import torch
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmaction.registry import MMActionRegistry
+from otx.v2.adapters.torch.mmengine.mmdeploy import AVAILABLE
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
+from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config
 from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
     import numpy as np
+
 
 logger = get_logger()
 
@@ -38,22 +42,29 @@ class MMActionEngine(MMXEngine):
         super().__init__(work_dir=work_dir, config=config)
         self.registry = MMActionRegistry()
 
+    def _update_eval_config(self, evaluator_config: list | dict | None) -> list | dict | None:
+        if evaluator_config is None or not evaluator_config:
+            evaluator_config = {
+                "type": "AccMetric",
+                "metric_list": ("top_k_accuracy", "mean_class_accuracy"),
+            }
+        return evaluator_config
+
     def _update_config(
         self,
         func_args: dict,
         **kwargs,
     ) -> bool:
-        """Update the configuration of the runner with the provided arguments.
-
-        Args:
-            func_args (dict): The arguments passed to the engine.
-            **kwargs: Additional keyword arguments to update the configuration for mmengine.Runner.
-
-        Returns:
-            bool: True if the configuration was updated, False otherwise.
-        """
         update_check = super()._update_config(func_args, **kwargs)
-    
+        for subset in ("val", "test"):
+            if f"{subset}_dataloader" in self.config and self.config[f"{subset}_dataloader"] is not None:
+                evaluator_config = get_value_from_config(f"{subset}_evaluator", func_args, config=self.config)
+                self.config[f"{subset}_evaluator"] = self._update_eval_config(
+                    evaluator_config=evaluator_config,
+                )
+
+        return update_check
+
     def predict(
         self,
         model: torch.nn.Module | (dict | str) | None = None,
@@ -109,28 +120,29 @@ class MMActionEngine(MMXEngine):
 
         if isinstance(checkpoint, Path):
             checkpoint = str(checkpoint)
-        if task is not None and task != "Action Classification":
+        if task is not None and task != "VideoRecognition":
             raise NotImplementedError
+
         inferencer = MMAction2Inferencer(
-            model=config,
-            weights=checkpoint,
+            rec=config,
+            rec_weights=checkpoint,
             device=device,
+            input_format="rawframes",
         )
 
-        return inferencer(img, batch_size, **kwargs)
+        return inferencer(img, batch_size=batch_size, **kwargs)
 
     def export(
         self,
         model: torch.nn.Module | (str | Config) | None = None,
         checkpoint: str | Path | None = None,
         precision: str | None = "float32",  # ["float16", "fp16", "float32", "fp32"]
-        task: str | None = "Action Classification",
+        task: str | None = "VideoRecognition",
         codebase: str | None = "mmaction",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
         deploy_config: str | None = None,  # File path only?
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
-        **kwargs,
     ) -> dict:
         """Export a PyTorch model to a specified format for deployment.
 
@@ -139,7 +151,7 @@ class MMActionEngine(MMXEngine):
             checkpoint (Optional[Union[str, Path]]): The path to the checkpoint file to use for exporting.
             precision (Optional[str]): The precision to use for exporting.
                 Can be one of ["float16", "fp16", "float32", "fp32"].
-            task (Optional[str]): The task for which the model is being exported. Defaults to "Action Classification".
+            task (Optional[str]): The task for which the model is being exported. Defaults to "VideoRecognition".
             codebase (Optional[str]): The codebase for the model being exported. Defaults to "mmaction".
             export_type (str): The type of export to perform. Can be one of "ONNX" or "OPENVINO". Defaults to "OPENVINO"
             deploy_config (Optional[str]): The path to the deployment configuration file to use for exporting.
@@ -151,15 +163,127 @@ class MMActionEngine(MMXEngine):
         Returns:
             dict: A dictionary containing information about the exported model.
         """
-        return super().export(
-            model=model,
-            checkpoint=checkpoint,
-            precision=precision,
-            task=task,
-            codebase=codebase,
-            export_type=export_type,
-            deploy_config=deploy_config,
-            device=device,
-            input_shape=input_shape,
-            **kwargs,
+        if not AVAILABLE:
+            msg = "MMXEngine's export is dependent on mmdeploy."
+            raise ModuleNotFoundError(msg)
+        from mmdeploy.utils import get_backend_config, get_codebase_config, get_ir_config, load_config
+
+        from otx.v2.adapters.torch.mmengine.mmdeploy.exporter import Exporter
+        from otx.v2.adapters.torch.mmengine.mmdeploy.utils.deploy_cfg_utils import (
+            patch_input_preprocessing,
+            patch_input_shape,
         )
+
+        # Configure model_cfg
+        model_cfg = None
+        if model is not None:
+            if isinstance(model, str):
+                model_cfg = Config.fromfile(model)
+            elif isinstance(model, Config):
+                model_cfg = copy.deepcopy(model)
+            elif isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
+                model_cfg = model._config.get("model", model._config)  # noqa: SLF001
+            else:
+                raise NotImplementedError
+        elif self.dumped_config.get("model", None) and self.dumped_config["model"] is not None:
+            if isinstance(self.dumped_config["model"], dict):
+                model_cfg = Config(self.dumped_config["model"])
+            else:
+                model_cfg = self.dumped_config["model"]
+        else:
+            msg = "Not fount target model."
+            raise ValueError(msg)
+
+        if checkpoint is None:
+            checkpoint = self.latest_model.get("checkpoint", None)
+        self.dumped_config["model"] = model_cfg
+        self.dumped_config["default_scope"] = "mmengine"
+
+        # Configure deploy_cfg
+        codebase_config = None
+        ir_config = None
+        backend_config = None
+        if deploy_config is not None:
+            deploy_config_dict = load_config(deploy_config)[0]
+            ir_config = get_ir_config(deploy_config_dict)
+            backend_config = get_backend_config(deploy_config_dict)
+            codebase_config = get_codebase_config(deploy_config_dict)
+        else:
+            deploy_config_dict = {}
+
+        # CODEBASE_COFIG Update
+        if codebase_config is None:
+            codebase = codebase if codebase is not None else self.registry.name
+            codebase_config = {"type": codebase, "task": task}
+            deploy_config_dict["codebase_config"] = codebase_config
+        # IR_COFIG Update
+        if ir_config is None:
+            ir_config = {
+                "type": "onnx",
+                "export_params": True,
+                "keep_initializers_as_inputs": False,
+                "opset_version": 11,
+                "save_file": "end2end.onnx",
+                "input_names": ["input"],
+                "output_names": ["output"],
+                "input_shape": None,
+                "optimize": False,
+                "dynamic_axes": {
+                    "input": {
+                        0: "batch",
+                        1: "num_crops * num_segs",
+                        3: "time",
+                        4: "height",
+                        5: "width",
+                    },
+                    "output": {
+                        0: "batch",
+                    },
+                },
+            }
+            deploy_config_dict["ir_config"] = ir_config
+        # BACKEND_CONFIG Update
+        if backend_config is None:
+            backend_config = {
+                "type": "openvino",
+                "model_inputs": [
+                    {
+                        "opt_shapes":{
+                            "input": [1, 1, 3, 32, 224, 224],
+                        },
+                    },
+                ],
+                "input_metas": {"mode": "predict"},
+                "mo_options":{
+                    "args":{
+                        "--source_layout": "?bctwh",
+                    },
+                },
+            }
+            deploy_config_dict["backend_config"] = backend_config
+
+        # Patch input's configuration
+        if isinstance(deploy_config_dict, dict):
+            deploy_config_dict = Config(deploy_config_dict)
+        data_preprocessor = self.dumped_config.model.get("data_preprocessor", None)
+        mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
+        std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
+        to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
+        patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
+        if not deploy_config_dict.backend_config.get("model_inputs", []):
+            if input_shape is None:
+                pass
+            patch_input_shape(deploy_config_dict, input_shape=input_shape)
+
+        export_dir = Path(self.work_dir) / f"{self.timestamp}_export"
+        exporter = Exporter(
+            config=self.dumped_config,
+            checkpoint=str(checkpoint),
+            deploy_config=deploy_config_dict,
+            work_dir=str(export_dir),
+            precision=precision,
+            export_type=export_type,
+            device=device,
+        )
+
+        return exporter.export()

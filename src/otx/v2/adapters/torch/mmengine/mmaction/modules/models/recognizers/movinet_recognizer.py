@@ -6,8 +6,8 @@
 
 import functools
 
-from mmaction.registry import MODELS
 from mmaction.models.recognizers.recognizer3d import Recognizer3D
+from mmaction.registry import MODELS
 
 
 @MODELS.register_module()

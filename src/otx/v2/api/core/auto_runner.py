@@ -70,7 +70,7 @@ ADAPTER_QUICK_LINK = {
     "mmdet": "torch.mmengine.mmdet",
     "mmseg": "torch.mmengine.mmseg",
     "anomalib": "torch.lightning.anomalib",
-    "mmaction": "torch.mmengine.mmaction"
+    "mmaction": "torch.mmengine.mmaction",
 }
 
 

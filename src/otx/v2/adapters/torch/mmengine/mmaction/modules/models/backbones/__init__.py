@@ -10,7 +10,7 @@ from mmdet.registry import MODELS as MMDET_MODELS
 from .movinet import OTXMoViNet
 
 
-def register_action_backbones():
+def register_action_backbones() -> None:
     """Register action backbone to mmdetection backbones."""
     MMDET_MODELS.register_module()(X3D)
 

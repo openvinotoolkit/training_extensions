@@ -3,8 +3,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from mmaction.registry import MODELS 
+import torch
 from mmaction.models.heads.base import BaseHead
+from mmaction.registry import MODELS
 from mmengine.model.weight_init import normal_init
 from torch import nn
 
@@ -13,19 +14,7 @@ from otx.v2.adapters.torch.mmengine.mmaction.modules.models.backbones.movinet im
 
 @MODELS.register_module()
 class MoViNetHead(BaseHead):
-    """Classification head for MoViNet.
-
-    Args:
-        num_classes (int): Number of classes to be classified.
-        in_channels (int): Number of channels in input feature.
-        hidden_dim (int): Number of channels in hidden layer.
-        tf_like (bool): If True, uses TensorFlow-style padding. Default: False.
-        conv_type (str): Type of convolutional layer. Default: '3d'.
-        loss_cls (dict): Config for building loss. Default: dict(type='CrossEntropyLoss').
-        spatial_type (str): Pooling type in spatial dimension. Default: 'avg'.
-        dropout_ratio (float): Probability of dropout layer. Default: 0.5.
-        init_std (float): Standard deviation for initialization. Default: 0.1.
-    """
+    """Classification head for MoViNet."""
 
     def __init__(
         self,
@@ -35,7 +24,20 @@ class MoViNetHead(BaseHead):
         loss_cls: dict,
         tf_like: bool = False,
         conv_type: str = "3d",
-    ):
+    )->None:
+        """Initialization.
+
+        Args:
+            num_classes (int): Number of classes to be classified.
+            in_channels (int): Number of channels in input feature.
+            hidden_dim (int): Number of channels in hidden layer.
+            tf_like (bool): If True, uses TensorFlow-style padding. Default: False.
+            conv_type (str): Type of convolutional layer. Default: '3d'.
+            loss_cls (dict): Config for building loss. Default: dict(type='CrossEntropyLoss').
+            spatial_type (str): Pooling type in spatial dimension. Default: 'avg'.
+            dropout_ratio (float): Probability of dropout layer. Default: 0.5.
+            init_std (float): Standard deviation for initialization. Default: 0.1.
+        """
         super().__init__(num_classes, in_channels, loss_cls)
         self.init_std = 0.1
         self.classifier = nn.Sequential(
@@ -59,11 +61,11 @@ class MoViNetHead(BaseHead):
             ),
         )
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         """Initialize the parameters from scratch."""
         normal_init(self.classifier, std=self.init_std)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> None:
         """Defines the computation performed at every call.
 
         Args:
@@ -72,8 +74,5 @@ class MoViNetHead(BaseHead):
         Returns:
             torch.Tensor: The classification scores for input samples.
         """
-        # [N, in_channels, T, H, W]
         cls_score = self.classifier(x)
-        cls_score = cls_score.flatten(1)
-        # [N, num_classes]
-        return cls_score
+        return cls_score.flatten(1)
