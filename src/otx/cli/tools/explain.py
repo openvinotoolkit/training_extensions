@@ -35,7 +35,7 @@ from otx.cli.utils.parser import (
     get_override_param,
     get_parser_and_hprams_data,
 )
-from otx.utils.logger import get_logger, config_logger
+from otx.utils.logger import config_logger, get_logger
 
 logger = get_logger()
 
