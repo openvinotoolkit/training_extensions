@@ -229,6 +229,7 @@ class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOX
         if self.use_l1:
             loss_l1 = self.loss_l1(flatten_bbox_preds.view(-1, 4)[pos_masks], l1_targets) / num_total_samples
             loss_dict.update(loss_l1=loss_l1)
+
         return loss_dict
 
     @torch.no_grad()

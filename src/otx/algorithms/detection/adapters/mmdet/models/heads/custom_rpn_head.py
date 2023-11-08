@@ -1,4 +1,4 @@
-"""Custom ROI head for OTX template."""
+"""Custom RPN head for OTX template."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
