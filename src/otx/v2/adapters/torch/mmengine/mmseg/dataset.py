@@ -40,7 +40,7 @@ def get_default_pipeline(subset: str) -> list:
             {"type": "LoadImageFromOTXDataset"},
             {"type": "LoadAnnotationFromOTXDataset", "_scope_": "mmseg"},
             {"type": "RandomResize", "scale": (544, 544), "ratio_range": (0.5, 2.0)},
-            {"type": "RandomCrop", "crop_size": (512, 512), "cat_max_ratio": 0.75},
+            {"type": "RandomCrop", "crop_size": (512, 512), "cat_max_ratio": 0.75, "_scope_": "mmseg"},
             {"type": "RandomFlip", "prob": 0.5, "direction": "horizontal"},
             {"type": "PackSegInputs", "_scope_": "mmseg"},
         ]
@@ -211,7 +211,24 @@ class MMSegDataset(MMXDataset):
         Returns:
             Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
         """
+        def check_and_convert_to_tuple(pipeline: list[dict] | None) -> list[dict] | None:
+            """Check if the pipeline is None, and if not, convert any lists in the pipeline to tuples.
+
+            Args:
+                pipeline (list[dict] | None): The pipeline to check and convert.
+
+            Returns:
+                list[dict] | None: The converted pipeline, or None if the input was None.
+            """
+            if pipeline is None:
+                return None
+            for step in pipeline:
+                for key, value in step.items():
+                    if isinstance(value, list):
+                        step[key] = tuple(value)
+            return pipeline
+
         dataset_config = config.get("dataset", config) if config is not None else {}
         if pipeline is None and "pipeline" not in dataset_config:
             pipeline = get_default_pipeline(subset=subset)
-        return super()._build_dataset(subset, pipeline, config)
+        return super()._build_dataset(subset, check_and_convert_to_tuple(pipeline), config)

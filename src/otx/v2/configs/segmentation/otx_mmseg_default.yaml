@@ -23,6 +23,7 @@ train_dataloader:
       - type: RandomCrop
         crop_size: !!python/tuple [512, 512]
         cat_max_ratio: 0.75
+        _scope_: mmseg
       - type: RandomFlip
         prob: 0.5
         direction: horizontal
@@ -77,6 +78,11 @@ custom_hooks:
 
 param_scheduler:
   type: CosineAnnealingLR
+
+# visualization configs
+visualizer:
+  name: visualizer
+  type: SegLocalVisualizer
 
 # Optimizer
 optimizer:

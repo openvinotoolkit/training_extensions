@@ -74,25 +74,29 @@ def get_model(
         torch.nn.Module: The PyTorch model for pretraining.
     """
     model_name = None
-    model_cfg = Config(cfg_dict={})
+    model_cfg = None
     if isinstance(model, dict):
-        model_cfg = Config(cfg_dict=model)
+        if not model.get("model"):
+            model_cfg = Config(cfg_dict={"model": model})
     elif isinstance(model, str):
         if Path(model).is_file():
             model_cfg = Config.fromfile(filename=model)
         else:
             model_name = model
 
-    if isinstance(model_cfg, Config):
-        if hasattr(model_cfg, "model"):
-            model_cfg = Config(model_cfg.get("model"))
-        if hasattr(model_cfg, "name"):
-            model_name = model_cfg.pop("name")
+    if isinstance(model_cfg, Config) and hasattr(model_cfg, "model") and hasattr(model_cfg.model, "name"):
+        model_name = model_cfg.model.pop("name")
+
     if isinstance(model_name, str) and model_name in MODEL_CONFIGS:
-        base_model = Config.fromfile(filename=MODEL_CONFIGS[model_name])
-        if isinstance(model_cfg, str):
-            model_cfg = Config(cfg_dict={})
-        model_cfg = Config(cfg_dict=Config.merge_cfg_dict(base_model, model_cfg))
+        if model_cfg is None:
+            model_cfg = Config.fromfile(filename=MODEL_CONFIGS[model_name])
+        else:
+            base = Config.fromfile(filename=MODEL_CONFIGS[model_name])
+            model_cfg = Config(cfg_dict=Config.merge_cfg_dict(base, model_cfg))
+
+    if model_cfg is None:
+        msg = "model must be a string representing the model name, a Config object, or a dictionary."
+        raise ValueError(msg)
 
     if num_classes is not None:
         replace_num_classes(model_cfg, num_classes)

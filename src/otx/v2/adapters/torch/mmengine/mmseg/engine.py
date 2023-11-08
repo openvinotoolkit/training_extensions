@@ -237,6 +237,7 @@ class MMSegEngine(MMXEngine):
         checkpoint: str | Path | None = None,
         precision: str | None = None,
         test_evaluator: Evaluator | dict | list | None = None,
+        visualizer: Visualizer | dict | None = None,
         **kwargs,
     ) -> dict:
         """Test the given model on the test dataset.
@@ -257,4 +258,6 @@ class MMSegEngine(MMXEngine):
         """
         if test_evaluator is None:
             test_evaluator = self.evaluator
-        return super().test(model, test_dataloader, checkpoint, precision, test_evaluator, **kwargs)
+        if visualizer is None:
+            visualizer = self.visualizer
+        return super().test(model, test_dataloader, checkpoint, precision, test_evaluator, visualizer, **kwargs)

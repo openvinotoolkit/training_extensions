@@ -443,6 +443,7 @@ class MMXEngine(Engine):
         checkpoint: str | Path | None = None,
         precision: str | None = None,
         test_evaluator: Evaluator | (dict | list) | None = None,
+        visualizer: Visualizer | None | dict = None,
         **kwargs,
     ) -> dict:
         """Test the given model on the test dataset.
@@ -468,6 +469,7 @@ class MMXEngine(Engine):
             "test_dataloader": test_dataloader,
             "test_evaluator": test_evaluator,
             "precision": precision,
+            "visualizer": visualizer,
         }
         config, update_check = self._update_config(func_args=test_args, **kwargs)
         # This will not build if there are training-related hooks.
@@ -608,7 +610,13 @@ class MMXEngine(Engine):
         data_preprocessor = self.dumped_config.get("model", {}).get("data_preprocessor", None)
         mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
         std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
-        to_rgb = data_preprocessor["to_rgb"] if data_preprocessor is not None else False
+        if data_preprocessor is not None:
+            for rgb_keyword in ("bgr_to_rgb", "to_rgb"):
+                if rgb_keyword in data_preprocessor:
+                    to_rgb = data_preprocessor[rgb_keyword]
+                    break
+        else:
+            to_rgb = False
         patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
         if not deploy_config_dict.backend_config.get("model_inputs", []):
             if input_shape is None:
