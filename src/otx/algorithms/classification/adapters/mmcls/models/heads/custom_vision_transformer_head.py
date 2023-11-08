@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import VisionTransformerClsHead
+
 from otx.algorithms.common.utils import cast_bf16_to_fp32
 
 

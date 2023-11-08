@@ -184,7 +184,7 @@ def is_hpu_available() -> bool:
 
 def cast_bf16_to_fp32(tensor: torch.Tensor) -> torch.Tensor:
     """Cast bf16 tensor to fp32 before processed by numpy.
-    
+
     numpy doesn't support bfloat16, it is required to convert bfloat16 tensor to float32.
     """
     if tensor.dtype == torch.bfloat16:

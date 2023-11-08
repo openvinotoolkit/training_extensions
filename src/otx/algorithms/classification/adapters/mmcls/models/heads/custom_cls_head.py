@@ -7,6 +7,7 @@ import torch
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import LinearClsHead
+
 from otx.algorithms.common.utils import cast_bf16_to_fp32
 
 from .non_linear_cls_head import NonLinearClsHead
