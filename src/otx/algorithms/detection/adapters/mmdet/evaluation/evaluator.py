@@ -33,7 +33,6 @@ from otx.api.entities.label import Domain
 from otx.api.utils.time_utils import timeit
 
 
-
 def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
     mean_ap, results, dataset=None, scale_ranges=None, logger=None
 ):
@@ -64,6 +63,7 @@ def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
 
     segmentation = "miou" in results
     num_classes = len(results)
+
     recalls = np.zeros((num_scales, num_classes), dtype=np.float32)
     aps = np.zeros((num_scales, num_classes), dtype=np.float32)
     num_gts = np.zeros((num_scales, num_classes), dtype=int)
@@ -386,7 +386,7 @@ class Evaluator:
             metric: mAP and mIoU metric
         """
         if self.domain == Domain.DETECTION:
-            output = eval_map(
+            return eval_map(
                 results,
                 self.annotation,
                 scale_ranges=scale_ranges,
@@ -394,5 +394,4 @@ class Evaluator:
                 dataset=self.classes,
                 logger=logger,
             )
-            return output
         return self.evaluate_mask(results, logger, iou_thr)

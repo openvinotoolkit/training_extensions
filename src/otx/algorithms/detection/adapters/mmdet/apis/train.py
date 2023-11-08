@@ -24,7 +24,6 @@ from mmdet.utils.util_distribution import build_dp, dp_factory
 from torchvision.ops import nms as tv_nms
 from torchvision.ops import roi_align as tv_roi_align
 
-from habana_frameworks.torch.utils.library_loader import load_habana_module
 from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
 from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 
@@ -32,7 +31,6 @@ from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTI
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
 dp_factory["xpu"] = XPUDataParallel
 dp_factory["hpu"] = HPUDataParallel
-load_habana_module()
 
 
 def auto_scale_lr(cfg, distributed, logger):
@@ -125,12 +123,14 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
         model.to(f"xpu:{cfg.gpu_ids[0]}")
     elif cfg.device == "hpu":
+        from habana_frameworks.torch.utils.library_loader import load_habana_module
         import habana_frameworks.torch.core as htcore
+        load_habana_module()
         os.environ["PT_HPU_LAZY_MODE"] = "1"
         assert len(cfg.gpu_ids) == 1
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, dim=0,
                          enable_autocast=bool(fp16_cfg), put_gt_on_device=False)
-        model.to(f"hpu:{cfg.gpu_ids[0]}", non_blocking=True)
+        model.to(model.src_device_obj)
         htcore.mark_step()
         model.zero_grad()
     else:
@@ -254,6 +254,7 @@ def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_thr
         inds = ext_module.nms(bboxes, scores, iou_threshold=float(iou_threshold), offset=offset)
         bboxes = bboxes.to(device)
         scores = scores.to(device)
+
     if max_num > 0:
         inds = inds[:max_num]
     if is_filtering_by_score:

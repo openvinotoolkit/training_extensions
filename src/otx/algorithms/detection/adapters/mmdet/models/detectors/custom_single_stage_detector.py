@@ -6,11 +6,8 @@
 import functools
 
 import torch
-import time
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.single_stage import SingleStageDetector
-from mmdet.core import bbox2result
-
 from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
     FeatureVectorHook,
 )
@@ -36,7 +33,7 @@ logger = get_logger()
 class CustomSingleStageDetector(SAMDetectorMixin, DetLossDynamicsTrackingMixin, L2SPDetectorMixin, SingleStageDetector):
     """SAM optimizer & L2SP regularizer enabled custom SSD."""
 
-    # TRACKING_LOSS_TYPE = (TrackingLossType.cls, TrackingLossType.bbox)
+    TRACKING_LOSS_TYPE = (TrackingLossType.cls, TrackingLossType.bbox)
 
     def __init__(self, *args, task_adapt=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,30 +75,6 @@ class CustomSingleStageDetector(SAMDetectorMixin, DetLossDynamicsTrackingMixin, 
         x = self.extract_feat(img)
         losses = self.bbox_head.forward_train(x, img_metas, gt_bboxes, gt_labels, gt_bboxes_ignore, **kwargs)
         return losses
-
-    def simple_test(self, img, img_metas, rescale=False):
-        """Test function without test-time augmentation.
-
-        Args:
-            img (torch.Tensor): Images with shape (N, C, H, W).
-            img_metas (list[dict]): List of image information.
-            rescale (bool, optional): Whether to rescale the results.
-                Defaults to False.
-
-        Returns:
-            list[list[np.ndarray]]: BBox results of each image and classes.
-                The outer list corresponds to each image. The inner list
-                corresponds to each class.
-        """
-        feat = self.extract_feat(img)
-        results_list = self.bbox_head.simple_test(
-            feat, img_metas, rescale=rescale)
-
-        bbox_results = [
-            bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
-            for det_bboxes, det_labels in results_list
-        ]
-        return bbox_results
 
     @staticmethod
     def load_state_dict_pre_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):

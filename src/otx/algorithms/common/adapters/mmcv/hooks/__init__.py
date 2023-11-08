@@ -89,7 +89,7 @@ __all__ = [
     "TwoCropTransformHook",
     "MeanTeacherHook",
     "MemCacheHook",
-    "LossDynamicsTrackingHook"
+    "LossDynamicsTrackingHook",
 ]
 
 try:
