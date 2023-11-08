@@ -27,7 +27,6 @@ class MMDetEngine(MMXEngine):
     def __init__(
         self,
         work_dir: str | Path | None = None,
-        config: dict | (Config | str) | None = None,
     ) -> None:
         """Initialize a new instance of the MMDetEngine class.
 
@@ -35,26 +34,26 @@ class MMDetEngine(MMXEngine):
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
             config (Optional[Union[Dict, Config, str]], optional): The configuration for the engine. Defaults to None.
         """
-        super().__init__(work_dir=work_dir, config=config)
+        super().__init__(work_dir=work_dir)
         self.registry = MMDetRegistry()
 
-    def _update_config(self, func_args: dict, **kwargs) -> bool:
-        update_check = super()._update_config(func_args, **kwargs)
-        if getattr(self.config, "val_dataloader", None) and not hasattr(self.config.val_evaluator, "type"):
-            self.config.val_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
-        if getattr(self.config, "test_dataloader", None) and not hasattr(self.config.test_evaluator, "type"):
-            self.config.test_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
-        self.config.default_hooks.checkpoint.save_best = "pascal_voc/mAP"
-        max_epochs = getattr(self.config.train_cfg, "max_epochs", None)
+    def _update_config(self, func_args: dict, **kwargs) -> tuple[Config, bool]:
+        config, update_check = super()._update_config(func_args, **kwargs)
+        if getattr(config, "val_dataloader", None) and not hasattr(config.val_evaluator, "type"):
+            config.val_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
+        if getattr(config, "test_dataloader", None) and not hasattr(config.test_evaluator, "type"):
+            config.test_evaluator = {"type": "OTXDetMetric", "metric": "mAP"}
+        config.default_hooks.checkpoint.save_best = "pascal_voc/mAP"
+        max_epochs = getattr(config.train_cfg, "max_epochs", None)
         if max_epochs:
-            for scheduler in self.config.param_scheduler:
+            for scheduler in config.param_scheduler:
                 if hasattr(scheduler, "end") and scheduler.end > max_epochs:
                     scheduler.end = max_epochs
                     if hasattr(scheduler, "begin") and scheduler.begin > scheduler.end:
                         scheduler.begin = scheduler.end
                 if hasattr(scheduler, "begin") and scheduler.begin > max_epochs:
                     scheduler.begin = max_epochs - 1
-        return update_check
+        return config, update_check
 
     def predict(
         self,
