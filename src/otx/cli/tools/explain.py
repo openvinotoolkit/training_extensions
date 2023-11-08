@@ -35,7 +35,7 @@ from otx.cli.utils.parser import (
     get_override_param,
     get_parser_and_hprams_data,
 )
-from otx.utils.logger import get_logger
+from otx.utils.logger import get_logger, config_logger
 
 logger = get_logger()
 
@@ -135,6 +135,7 @@ def main():
     args, override_param = get_args()
 
     config_manager = ConfigManager(args, mode="explain")
+    config_logger(config_manager.output_path / "otx.log", "INFO")
     # Auto-Configuration for model template
     config_manager.configure_template()
 
