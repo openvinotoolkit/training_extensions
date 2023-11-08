@@ -34,6 +34,7 @@ def test_otx_cli(task: str, tmp_dir_path: Path) -> None:
         "--work_dir", str(tmp_dir_path),
         "--data.task", task,
         "--data.train_data_roots", TASK_CONFIGURATION[task]["train_data_roots"],
+        "--data.val_data_roots", TASK_CONFIGURATION[task]["val_data_roots"],
         "--max_epochs", "1",
         "--seed", "1234",
         "--deterministic", "True",

@@ -13,7 +13,6 @@ import torch
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmpretrain.registry import MMPretrainRegistry
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
-from otx.v2.adapters.torch.mmengine.utils.runner_config import get_value_from_config
 from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
@@ -28,15 +27,13 @@ class MMPTEngine(MMXEngine):
     def __init__(
         self,
         work_dir: str | Path | None = None,
-        config: dict | (Config | str) | None = None,
     ) -> None:
         """Initialize a new instance of the MMPretrainEngine class.
 
         Args:
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
-            config (Optional[Union[Dict, Config, str]], optional): The configuration for the engine. Defaults to None.
         """
-        super().__init__(work_dir=work_dir, config=config)
+        super().__init__(work_dir=work_dir)
         self.registry = MMPretrainRegistry()
 
     def _update_eval_config(self, evaluator_config: list | dict | None, num_classes: int) -> list | dict | None:
@@ -44,20 +41,16 @@ class MMPTEngine(MMXEngine):
             evaluator_config = [{"type": "Accuracy"}]
         if isinstance(evaluator_config, list):
             for metric_config in evaluator_config:
-                if isinstance(metric_config, dict):
-                    metric_config["_scope_"] = self.registry.name
-                    if "topk" in metric_config:
-                        metric_config["topk"] = [1] if num_classes < 5 else [1, 5]
-        elif isinstance(evaluator_config, dict):
-            evaluator_config["_scope_"] = self.registry.name
-            if "topk" in evaluator_config:
-                evaluator_config["topk"] = [1] if num_classes < 5 else [1, 5]
+                if isinstance(metric_config, dict) and "topk" in metric_config:
+                    metric_config["topk"] = [1] if num_classes < 5 else [1, 5]
+        elif isinstance(evaluator_config, dict) and "topk" in evaluator_config:
+            evaluator_config["topk"] = [1] if num_classes < 5 else [1, 5]
         return evaluator_config
 
-    def _update_config(self, func_args: dict, **kwargs) -> bool:
-        update_check = super()._update_config(func_args, **kwargs)
+    def _update_config(self, func_args: dict, **kwargs) -> tuple[Config, bool]:
+        config, update_check = super()._update_config(func_args, **kwargs)
         num_classes = -1
-        model = self.config.get("model", {})
+        model = config.get("model", {})
         if isinstance(model, torch.nn.Module):
             head = model.head if hasattr(model, "head") else None
             num_classes = head.num_classes if hasattr(head, "num_classes") else -1
@@ -65,13 +58,13 @@ class MMPTEngine(MMXEngine):
             head = model.get("head", {})
             num_classes = head.get("num_classes", -1)
         for subset in ("val", "test"):
-            if f"{subset}_dataloader" in self.config and self.config[f"{subset}_dataloader"] is not None:
-                evaluator_config = get_value_from_config(f"{subset}_evaluator", func_args, config=self.config)
-                self.config[f"{subset}_evaluator"] = self._update_eval_config(
+            if f"{subset}_dataloader" in config and config[f"{subset}_dataloader"] is not None:
+                evaluator_config = self._get_value_from_config(f"{subset}_evaluator", func_args)
+                config[f"{subset}_evaluator"] = self._update_eval_config(
                     evaluator_config=evaluator_config, num_classes=num_classes,
                 )
 
-        return update_check
+        return config, update_check
 
 
     def predict(
