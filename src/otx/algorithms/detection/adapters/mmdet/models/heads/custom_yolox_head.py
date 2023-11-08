@@ -43,7 +43,6 @@ class CustomYOLOXHead(YOLOXHead):
             gt_bboxes_ignore (None | list[Tensor]): specify which bounding
                 boxes can be ignored when computing the loss.
         """
-
         num_imgs = len(img_metas)
         featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
         mlvl_priors = self.prior_generator.grid_priors(
@@ -104,11 +103,9 @@ class CustomYOLOXHead(YOLOXHead):
 
         return loss_dict
 
-    def forward_single(self, x, cls_convs, reg_convs, conv_cls, conv_reg,
-                       conv_obj):
+    def forward_single(self, x, cls_convs, reg_convs, conv_cls, conv_reg, conv_obj):
         """Forward feature of a single scale level."""
-        cls_score, bbox_pred, objectness = super().forward_single(x, cls_convs, reg_convs, conv_cls, conv_reg,
-                               conv_obj)
+        cls_score, bbox_pred, objectness = super().forward_single(x, cls_convs, reg_convs, conv_cls, conv_reg, conv_obj)
         if cls_score.device.type == "hpu":
             # put on cpu for further post-processing
             cls_score = cls_score.cpu()

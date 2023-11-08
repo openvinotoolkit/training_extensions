@@ -24,9 +24,8 @@ from mmdet.utils.util_distribution import build_dp, dp_factory
 from torchvision.ops import nms as tv_nms
 from torchvision.ops import roi_align as tv_roi_align
 
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel, HPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
 from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
-
 
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
 dp_factory["xpu"] = XPUDataParallel
@@ -123,13 +122,15 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
         model.to(f"xpu:{cfg.gpu_ids[0]}")
     elif cfg.device == "hpu":
-        from habana_frameworks.torch.utils.library_loader import load_habana_module
         import habana_frameworks.torch.core as htcore
+        from habana_frameworks.torch.utils.library_loader import load_habana_module
+
         load_habana_module()
         os.environ["PT_HPU_LAZY_MODE"] = "1"
         assert len(cfg.gpu_ids) == 1
-        model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, dim=0,
-                         enable_autocast=bool(fp16_cfg), put_gt_on_device=False)
+        model = build_dp(
+            model, cfg.device, device_ids=cfg.gpu_ids, dim=0, enable_autocast=bool(fp16_cfg), put_gt_on_device=False
+        )
         model.to(model.src_device_obj)
         htcore.mark_step()
         model.zero_grad()
@@ -221,8 +222,9 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
         runner.load_checkpoint(cfg.load_from)
     runner.run(data_loaders, cfg.workflow)
 
+
 def patch_optimizer(cfg_optim):
-    "Patch optimizer for OD and IS"
+    """Patch optimizer for OD and IS."""
     if cfg_optim["type"] == "SGD":
         return cfg_optim
 
@@ -231,6 +233,7 @@ def patch_optimizer(cfg_optim):
     if "betas" in cfg_optim:
         del cfg_optim["betas"]
     return cfg_optim
+
 
 def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_threshold, max_num):
     """Runs MMCVs NMS with torchvision.nms, or forces NMS from MMCV to run on CPU."""

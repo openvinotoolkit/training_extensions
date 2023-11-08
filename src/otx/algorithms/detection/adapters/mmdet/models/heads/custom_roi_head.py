@@ -134,10 +134,10 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
         return labels, label_weights, bbox_targets, bbox_weights, valid_label_mask
 
     def forward(self, x):
-        '''ConvFCBBoxHead forward'''
+        """ConvFCBBoxHead forward."""
         # shared part
         cls_score, bbox_pred = super().forward(x)
-        if cls_score.device.type == 'hpu':
+        if cls_score.device.type == "hpu":
             cls_score = cls_score.cpu()
             bbox_pred = bbox_pred.cpu()
 

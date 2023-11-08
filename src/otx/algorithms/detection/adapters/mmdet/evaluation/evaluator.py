@@ -15,18 +15,18 @@
 # and limitations under the License.
 
 import multiprocessing as mp
-from typing import Dict, List, Tuple, Union
 import time
+from typing import Dict, List, Tuple, Union
 
 import mmcv
 import numpy as np
 import pycocotools.mask as mask_util
 from mmcv.utils import print_log
 from mmdet.core import BitmapMasks, PolygonMasks, eval_map
+from mmdet.core.evaluation import mean_ap
 from mmdet.core.evaluation.bbox_overlaps import bbox_overlaps
 from mmdet.core.evaluation.class_names import get_classes
 from mmdet.core.evaluation.mean_ap import average_precision
-from mmdet.core.evaluation import mean_ap
 from terminaltables import AsciiTable
 
 from otx.api.entities.label import Domain
@@ -99,16 +99,20 @@ def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
                 num_gts[i, j],
                 results[j]["num_dets"],
                 f"{recalls[i, j]:.3f}",
-                f"{aps[i, j]:.3f}"
+                f"{aps[i, j]:.3f}",
             ]
             if segmentation:
                 row_data.append(f"{mious[i, j]:.3f}")
             table_data.append(row_data)
-        table_ = ["mAP", "", "", "", f"{mean_ap[i]:.3f}", f"{np.mean(mious[i]):.3f}"] if segmentation else ["mAP", "", "", "", f"{mean_ap[i]:.3f}"]
+        table_ = (
+            ["mAP", "", "", "", f"{mean_ap[i]:.3f}", f"{np.mean(mious[i]):.3f}"]
+            if segmentation
+            else ["mAP", "", "", "", f"{mean_ap[i]:.3f}"]
+        )
         table_data.append(table_)
         table = AsciiTable(table_data)
         table.inner_footing_row_border = True
-        time.sleep(0.1) # prevent segmentation fault
+        time.sleep(0.1)  # prevent segmentation fault
         print_log("\n" + table.table, logger=logger)
 
 

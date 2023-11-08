@@ -1,6 +1,9 @@
-import torch.nn.functional as F
-from mmdet.models.dense_heads import RPNHead
+"""Custom ROI head for OTX template."""
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 from mmdet.models.builder import HEADS
+from mmdet.models.dense_heads import RPNHead
 
 
 @HEADS.register_module()

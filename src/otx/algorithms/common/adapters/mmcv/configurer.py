@@ -184,6 +184,7 @@ class BaseConfigurer:
         elif is_xpu_available():
             try:
                 import intel_extension_for_pytorch as ipex  # noqa: F401
+
                 cfg.device = "xpu"
             except ModuleNotFoundError:
                 cfg.device = "cpu"

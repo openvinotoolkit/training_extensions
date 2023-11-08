@@ -13,7 +13,6 @@ from mmdet.models.builder import HEADS, build_loss
 from mmdet.models.dense_heads.ssd_head import SSDHead
 from mmdet.models.losses import smooth_l1_loss
 from torch import nn
-import time
 
 from otx.algorithms.detection.adapters.mmdet.models.heads.cross_dataset_detector_head import TrackingLossDynamicsMixIn
 from otx.algorithms.detection.adapters.mmdet.models.loss_dyns import (
@@ -100,8 +99,7 @@ class CustomSSDHead(SSDHead):
         """
         cls_scores = []
         bbox_preds = []
-        for feat, reg_conv, cls_conv in zip(feats, self.reg_convs,
-                                            self.cls_convs):
+        for feat, reg_conv, cls_conv in zip(feats, self.reg_convs, self.cls_convs):
             cls_out = cls_conv(feat)
             reg_out = reg_conv(feat)
             if cls_out.device.type == "hpu":
