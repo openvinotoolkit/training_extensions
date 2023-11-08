@@ -1,5 +1,5 @@
 [flake8]
-extend-ignore = E203, FIX002
+extend-ignore = E203
 exclude = .venv
 max-complexity = 6
 max-line-length = 120

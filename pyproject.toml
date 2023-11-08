@@ -238,6 +238,7 @@ ignore = [
     "ANN003",   # Missing type annotation for **kwargs
     # flake8-type-checking
     "TCH001",   # typing-only-first-party-import, Sometimes this causes an incorrect error.
+    "FIX002"    # line-contains-todo
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.
