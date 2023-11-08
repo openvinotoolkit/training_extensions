@@ -176,11 +176,7 @@ class BaseConfigurer:
         elif "gpu_ids" not in cfg:
             cfg.gpu_ids = range(1)
 
-<<<<<<< HEAD
-        # consider "cuda", "hpu" and "cpu" device only
-=======
         # consider "cuda", "xpu", "hpu" and "cpu" device only
->>>>>>> added support for OD on habana
         if is_hpu_available():
             cfg.device = "hpu"
         elif torch.cuda.is_available():
@@ -188,10 +184,6 @@ class BaseConfigurer:
         elif is_xpu_available():
             try:
                 import intel_extension_for_pytorch as ipex  # noqa: F401
-<<<<<<< HEAD
-
-=======
->>>>>>> added support for OD on habana
                 cfg.device = "xpu"
             except ModuleNotFoundError:
                 cfg.device = "cpu"
@@ -270,7 +262,6 @@ class BaseConfigurer:
         distributed = getattr(cfg, "distributed", False)
         opts: Dict[str, Any] = {}
         if fp16_config is not None:
-<<<<<<< HEAD
             if is_hpu_available():
                 if optim_type == "SAMOptimizerHook":
                     # TODO (sungchul): consider SAM optimizer
@@ -278,9 +269,6 @@ class BaseConfigurer:
                 opts["type"] = "HPUOptimizerHook"
                 cfg.optimizer_config.update(opts)
             elif torch.cuda.is_available() or is_xpu_available():
-=======
-            if torch.cuda.is_available() or is_xpu_available():
->>>>>>> added support for OD on habana
                 opts.update({"distributed": distributed, **fp16_config})
                 if optim_type == "SAMOptimizerHook":
                     opts["type"] = "Fp16SAMOptimizerHook"
