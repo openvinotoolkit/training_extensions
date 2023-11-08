@@ -35,7 +35,6 @@ class MMSegEngine(MMXEngine):
     def __init__(
         self,
         work_dir: str | Path | None = None,
-        config: dict | (Config | str) | None = None,
     ) -> None:
         """Initialize a new instance of the MMPretrainEngine class.
 
@@ -43,8 +42,9 @@ class MMSegEngine(MMXEngine):
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
             config (Optional[Union[Dict, Config, str]], optional): The configuration for the engine. Defaults to None.
         """
-        super().__init__(work_dir=work_dir, config=config)
+        super().__init__(work_dir=work_dir)
         self.registry = MMSegmentationRegistry()
+        self.visualizer = {"name": "visualizer", "type": "SegLocalVisualizer"}
         self.evaluator = {
                 "type": "IoUMetric",
                 "iou_metrics": [
@@ -100,6 +100,8 @@ class MMSegEngine(MMXEngine):
         """
         if val_evaluator is None:
             val_evaluator = self.evaluator
+        if visualizer is None:
+            visualizer = self.visualizer
         return super().train(
             model,
             train_dataloader,

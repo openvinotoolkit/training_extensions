@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import copy
 import fnmatch
 import re
 import warnings
@@ -143,6 +144,10 @@ def get_model(
     seg_model._config = model_cfg  # noqa: SLF001
     seg_model._metainfo = metainfo  # noqa: SLF001
     seg_model.eval()
+
+    source_config = copy.deepcopy(seg_model._config.model)  # noqa: SLF001
+    source_config.name = model_name
+    seg_model.config_dict = Config.to_dict(source_config)
     return seg_model
 
 
