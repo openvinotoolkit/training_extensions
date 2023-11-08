@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import fnmatch
+from copy import deepcopy
 from pathlib import Path
 
 import torch
@@ -147,11 +148,15 @@ def get_model(
             if head and hasattr(head, "num_classes"):
                 model["model"]["head"]["num_classes"] = num_classes
 
-    model = get_mmpretrain_model(model, pretrained=pretrained, **kwargs)
+    torch_model = get_mmpretrain_model(model, pretrained=pretrained, **kwargs)
 
-    if channel_last and isinstance(model, torch.nn.Module):
-        model = model.to(memory_format=torch.channels_last)
-    return model
+    source_config = deepcopy(torch_model._config.model)  # noqa: SLF001
+    source_config.name = model_name
+    torch_model.config_dict = Config.to_dict(source_config)
+
+    if channel_last and isinstance(torch_model, torch.nn.Module):
+        torch_model = torch_model.to(memory_format=torch.channels_last)
+    return torch_model
 
 
 def list_models(pattern: str | None = None, **kwargs) -> list[str]:
