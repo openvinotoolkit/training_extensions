@@ -78,20 +78,6 @@ custom_hooks:
 param_scheduler:
   type: CosineAnnealingLR
 
-# Visualizer
-visualizer:
-  name: visualizer
-  type: SegLocalVisualizer
-
-# Evaluation
-val_evaluator:
-  - type: IoUMetric
-    iou_metrics: [mDice]
-
-test_evaluator:
-  - type: IoUMetric
-    iou_metrics: [mDice]
-
 # Optimizer
 optimizer:
   type: SGD
