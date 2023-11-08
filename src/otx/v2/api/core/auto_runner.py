@@ -346,7 +346,7 @@ class AutoRunner:
 
     def build_framework_engine(self) -> None:
         """Create the selected framework Engine."""
-        self.engine = self.framework_engine(work_dir=self.work_dir, config=self.config)
+        self.engine = self.framework_engine(work_dir=self.work_dir)
 
     def subset_dataloader(  # noqa: ANN201
         self,

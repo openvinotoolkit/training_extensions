@@ -273,14 +273,13 @@ class OTXCLIv2:
         default_configs = None
         if self.auto_runner is not None:
             self.auto_runner.build_framework_engine()
-            framework_engine = self.auto_runner.engine
             default_configs = []
             # Find Model
             model_name = None
             if "model.name" in self.pre_args:
                 model_name = self.pre_args["model.name"]
-            elif hasattr(framework_engine, "config"):
-                model_cfg = framework_engine.config.get("model", {})
+            elif hasattr(self.auto_runner, "config"):
+                model_cfg = self.auto_runner.config.get("model", {})
                 model_name = model_cfg.get("name", model_cfg.get("type", None))
             if model_name is None:
                 msg = "The appropriate model was not found in config.."
@@ -354,9 +353,6 @@ class OTXCLIv2:
             model_cfg["head"]["num_classes"] = num_classes
         workspace_config["model"] = {**model_cfg}
 
-        config = self._pop(self.config_init, "config")
-        if config is not None and len(config) > 0:
-            config = str(config[0])
         work_dir = self._pop(self.config_init, "work_dir")
         if not isinstance(work_dir, str):
             work_dir = None
@@ -365,7 +361,6 @@ class OTXCLIv2:
         self.workspace = Workspace(work_dir=work_dir, task=str(self.auto_runner.task.name).lower())
         self.engine = self.framework_engine(
             work_dir=str(self.workspace.work_dir),
-            config=config,
         )
         self.workspace.add_config(workspace_config)
 
@@ -459,7 +454,7 @@ class OTXCLIv2:
         for k, v in config.items():
             if k in self._subcommand_method_arguments[subcommand]:
                 subcommand_kwargs[k] = v
-            else:
+            elif k not in ("verbose", "config"):
                 left_kwargs[k] = v
 
         return subcommand_kwargs, left_kwargs

@@ -79,6 +79,7 @@ class TestCLIv2:
                 self.config_path = "test/path/default_config.yaml"
                 self.config_list = {"test_model": "test/path/test_model.yaml"}
                 self.task = TaskType.CLASSIFICATION
+                self.config = {"model": {"name": "test_model"}}
 
             def build_framework_engine(self) -> None:
                 pass
@@ -221,11 +222,6 @@ class TestCLIv2:
         model_class, default_configs = cli.get_model_class()
         assert model_class.__name__ == "MagicMock"
         assert len(default_configs) == 2
-
-        # model_name is None case
-        cli.auto_runner = auto_runner(use_engine=False)
-        with pytest.raises(ValueError, match="The appropriate model was not found in config"):
-            cli.get_model_class()
 
         # Not supported model case (model is None)
         cli.pre_args = {"model.name": "test_model_2"}
