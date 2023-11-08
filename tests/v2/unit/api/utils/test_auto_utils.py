@@ -3,12 +3,9 @@
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-import importlib
 from pathlib import Path
-from types import ModuleType
 
 import pytest
-from _pytest.monkeypatch import MonkeyPatch
 from otx.v2.api.utils.auto_utils import (
     check_semisl_requirements,
     configure_task_type,
@@ -19,7 +16,7 @@ from pytest_mock.plugin import MockerFixture
 
 
 class TestAutoUtils:
-    def test_configure_task_type(self, mocker: MockerFixture, monkeypatch: MonkeyPatch) -> None:
+    def test_configure_task_type(self, mocker: MockerFixture) -> None:
         # Test for valid data format
         with mocker.patch(
             "otx.v2.adapters.datumaro.manager.dataset_manager.DatasetManager.get_data_format", return_value="imagenet",
@@ -33,14 +30,8 @@ class TestAutoUtils:
         ), pytest.raises(ValueError, match="Can't find proper task"):
             configure_task_type("data/roots")
 
-        def mock_import(name: str, *args) -> ModuleType:
-            if name == "otx.v2.adapters.datumaro.manager.dataset_manager":
-                msg = f"No module named {name}"
-                raise ImportError(msg)
-            return importlib.import_module(name, *args)
-
-        monkeypatch.setattr("builtins.__import__", mock_import)
-        with pytest.raises(ImportError, match="Need datumaro to automatically detect the task type."):
+        with mocker.patch.dict("sys.modules", {"otx.v2.adapters.datumaro.manager.dataset_manager": None}) and \
+            pytest.raises(ImportError, match="Need datumaro to automatically detect the task type."):
             configure_task_type(data_roots="data/roots", data_format=None)
 
     def test_count_imgs_in_dir(self, tmp_dir_path: Path) -> None:
