@@ -20,7 +20,7 @@ from otx.v2.api.utils.logger import LEVEL, get_logger
 
 logger = get_logger()
 
-MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/detection/models"
+MODEL_CONFIG_PATH = Path(get_otx_root_path()) / "v2/configs/instance_segmentation/models"
 MODEL_CONFIGS = get_files_dict(MODEL_CONFIG_PATH)
 
 

@@ -3,6 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from . import backbones, detectors, heads
+from . import assigners, backbones, detectors, heads
 
-__all__ = ["backbones", "detectors", "heads"]
+__all__ = ["assigners", "backbones", "detectors", "heads"]

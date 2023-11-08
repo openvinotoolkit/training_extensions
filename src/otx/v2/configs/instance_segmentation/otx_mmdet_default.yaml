@@ -1,0 +1,163 @@
+# Basic Information for Config
+framework: mmdet
+data:
+  task: Instance_Segmentation
+
+  train_type: Incremental
+
+model:
+  name: otx_resnet50_maskrcnn
+
+train_dataloader:
+  batch_size: 8
+  num_workers: 2
+  dataset:
+    type: OTXDetDataset
+    pipeline:
+      - type: LoadResizeDataFromOTXDataset
+        load_ann_cfg:
+          type: LoadAnnotationFromOTXDataset
+          with_bbox: true
+        resize_cfg:
+          type: Resize
+          scale: !!python/tuple [512, 512]
+          keep_ratio: true
+          downscale_only: true
+        enable_memcache: true
+      - type: MinIoURandomCrop
+        min_ious: !!python/tuple [0.1, 0.3, 0.5, 0.7, 0.9]
+        min_crop_size: 0.3
+      - type: Resize
+        scale: !!python/tuple [512, 512]
+        keep_ratio: false
+      - type: RandomFlip
+        prob: 0.5
+      - type: PackDetInputs
+        meta_keys:
+          [
+            ori_filename,
+            flip_direction,
+            scale_factor,
+            gt_ann_ids,
+            flip,
+            ignored_labels,
+            ori_shape,
+            filename,
+            img_shape,
+            pad_shape,
+          ]
+
+val_dataloader:
+  batch_size: 8
+  num_workers: 2
+  dataset:
+    type: OTXDetDataset
+    pipeline:
+      - type: LoadResizeDataFromOTXDataset
+        load_ann_cfg:
+          type: LoadAnnotationFromOTXDataset
+          with_bbox: true
+        resize_cfg:
+          type: Resize
+          scale: !!python/tuple [512, 512]
+          keep_ratio: false
+        enable_memcache: true
+        eval_mode: true
+      - type: PackDetInputs
+        meta_keys:
+          [
+            ori_filename,
+            scale_factor,
+            ori_shape,
+            filename,
+            img_shape,
+            pad_shape,
+          ]
+
+test_dataloader:
+  batch_size: 32
+  num_workers: 2
+  dataset:
+    type: OTXClsDataset
+    pipeline:
+      - type: LoadImageFromOTXDataset
+      - type: Resize
+        scale: !!python/tuple [512, 512]
+        keep_ratio: false
+      - type: LoadAnnotationFromOTXDataset
+        with_bbox: true
+      - type: PackDetInputs
+        meta_keys:
+          [
+            ori_filename,
+            scale_factor,
+            ori_shape,
+            filename,
+            img_shape,
+            pad_shape,
+          ]
+
+# Hooks
+default_hooks:
+  logger:
+    type: LoggerHook
+    interval: 100
+  timer:
+    type: IterTimerHook
+  checkpoint:
+    interval: 1
+    max_keep_ckpts: 1
+    save_best: pascal_voc/mAP
+    type: CheckpointHook
+custom_hooks:
+  - type: EarlyStoppingHook
+    monitor: pascal_voc/mAP
+    patience: 3
+  - type: AdaptiveTrainSchedulingHook
+
+param_scheduler:
+  - type: LinearLR
+    start_factor: 0.3333333333333
+    by_epoch: False
+    begin: 0
+    end: 5
+  - type: ReduceOnPlateauLR
+    monitor: pascal_voc/mAP
+    patience: 4
+    begin: 5
+    min_value: 1e-6
+    rule: greater
+
+# Visualizer
+visualizer:
+  type: DetLocalVisualizer
+  vis_backends:
+    - type: LocalVisBackend
+    - type: TensorboardVisBackend
+
+# Evaluation
+val_evaluator:
+  - type: OTXDetMetric
+    metric: mAP
+
+test_evaluator:
+  - type: OTXDetMetric
+    metric: mAP
+
+# Optimizer
+optimizer:
+  type: SGD
+  lr: 0.004
+  momentum: 0.9
+  weight_decay: 0.001
+clip_grad:
+  max_norm: 35
+  norm_type: 2
+
+# OTX Training Configs
+max_epochs: 10
+max_iters: null
+val_interval: 1
+seed: 1234
+deterministic: false
+precision: float32
