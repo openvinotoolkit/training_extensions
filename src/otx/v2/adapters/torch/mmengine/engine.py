@@ -463,7 +463,7 @@ class MMXEngine(Engine):
                 model_cfg = model._config.get("model", model._config)  # noqa: SLF001
             else:
                 raise NotImplementedError
-        elif self.dumped_config.get("model", None) is not None:
+        elif "model" in self.dumped_config:
             if isinstance(self.dumped_config["model"], dict):
                 model_cfg = Config(self.dumped_config["model"])
             else:
