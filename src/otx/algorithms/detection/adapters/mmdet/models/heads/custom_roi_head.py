@@ -33,25 +33,33 @@ class CustomRoIHead(StandardRoIHead):
             bbox_head.type = "CustomConvFCBBoxHead"
         self.bbox_head = build_head(bbox_head)
 
+    def _bbox_forward_train(self, x, sampling_results, gt_bboxes, gt_labels, img_metas):
+        """Run forward function and calculate loss for box head in training."""
+        rois = bbox2roi([res.bboxes for res in sampling_results])
+        bbox_results = self._bbox_forward(x, rois)
+
+        labels, label_weights, bbox_targets, bbox_weights, valid_label_mask = self.bbox_head.get_targets(
+            sampling_results, gt_bboxes, gt_labels, img_metas, self.train_cfg
+        )
+        loss_bbox = self.bbox_head.loss(
+            bbox_results["cls_score"],
+            bbox_results["bbox_pred"],
+            rois,
+            labels,
+            label_weights,
+            bbox_targets,
+            bbox_weights,
+            valid_label_mask=valid_label_mask,
+        )
+        bbox_results.update(loss_bbox=loss_bbox)
+        return bbox_results
+
     def _mask_forward(self, x, rois=None, pos_inds=None, bbox_feats=None):
         """Mask head forward function used in both training and testing."""
-        assert ((rois is not None) ^
-                (pos_inds is not None and bbox_feats is not None))
-        if rois is not None:
-            mask_feats = self.mask_roi_extractor(
-                x[:self.mask_roi_extractor.num_inputs], rois)
-            if self.with_shared_head:
-                mask_feats = self.shared_head(mask_feats)
-        else:
-            assert bbox_feats is not None
-            mask_feats = bbox_feats[pos_inds]
-
-        mask_pred = self.mask_head(mask_feats)
-        if mask_pred.device.type == "hpu":
-            mask_pred = mask_pred.cpu()
-            mask_feats = mask_feats.cpu()
-
-        mask_results = dict(mask_pred=mask_pred, mask_feats=mask_feats)
+        mask_results = super()._mask_forward(x, rois, pos_inds, bbox_feats)
+        if mask_results["mask_pred"].device.type == "hpu":
+            mask_results["mask_pred"] = mask_results["mask_pred"].cpu()
+            mask_results["mask_feats"] = mask_results["mask_feats"].cpu()
         return mask_results
 
 
@@ -128,7 +136,7 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
     def forward(self, x):
         '''ConvFCBBoxHead forward'''
         # shared part
-        cls_score, bbox_pred = super().forward(self, x)
+        cls_score, bbox_pred = super().forward(x)
         if cls_score.device.type == 'hpu':
             cls_score = cls_score.cpu()
             bbox_pred = bbox_pred.cpu()

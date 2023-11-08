@@ -134,7 +134,6 @@ model = dict(
 )
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
-
 optimizer = dict(
     _delete_=True,
     type="AdamW",
