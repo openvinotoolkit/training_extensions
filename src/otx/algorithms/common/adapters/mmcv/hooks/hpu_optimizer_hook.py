@@ -17,6 +17,7 @@ class HPUOptimizerHook(OptimizerHook):
         runner.optimizer.zero_grad()
         if self.detect_anomalous_params:
             self.detect_anomalous_parameters(runner.outputs["loss"], runner)
+
         runner.outputs["loss"].backward()
         htcore.mark_step()
 

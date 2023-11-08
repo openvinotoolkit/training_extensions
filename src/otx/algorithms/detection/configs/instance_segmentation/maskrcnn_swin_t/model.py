@@ -38,7 +38,7 @@ model = dict(
     ),
     neck=dict(type="FPN", in_channels=[96, 192, 384, 768], out_channels=256, num_outs=5),
     rpn_head=dict(
-        type="RPNHead",
+        type="CustomRPNHead",
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(type="AnchorGenerator", scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4, 8, 16, 32, 64]),
@@ -134,6 +134,7 @@ model = dict(
 )
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP", iou_thr=[0.5])
+
 optimizer = dict(
     _delete_=True,
     type="AdamW",

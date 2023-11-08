@@ -1,14 +1,14 @@
 _base_ = [
     "../_base_/default.py",
     "../_base_/logs/tensorboard_logger.py",
-    "../_base_/optimizers/sgd.py",
+    "../_base_/optimizers/adam.py",
     "../_base_/runners/epoch_runner_cancel.py",
     "../_base_/schedules/plateau.py",
 ]
 
 optimizer = dict(
+    type="SGD",
     lr=0.001,
-    momentum=0.9,
     weight_decay=0.0001,
 )
 
@@ -26,7 +26,6 @@ lr_config = dict(
 
 evaluation = dict(interval=1, metric="mAP", save_best="mAP")
 early_stop_metric = "mAP"
-
 custom_hooks = [
     dict(
         type="LazyEarlyStoppingHook",
@@ -40,7 +39,7 @@ custom_hooks = [
     dict(
         type="AdaptiveTrainSchedulingHook",
         enable_adaptive_interval_hook=False,
-        enable_eval_before_run=True,
+        enable_eval_before_run=False,
     ),
     dict(type="LoggerReplaceHook"),
     dict(

@@ -194,7 +194,7 @@ learning_parameters:
     warning: This is applied exclusively when early stopping is enabled.
   use_adaptive_interval:
     affects_outcome_of: TRAINING
-    default_value: true
+    default_value: false
     description: Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
     editable: true
     header: Use adaptive validation interval
@@ -208,7 +208,7 @@ learning_parameters:
     warning: This will automatically control the patience and interval when early stopping is enabled.
   auto_adapt_batch_size:
     affects_outcome_of: TRAINING
-    default_value: Safe
+    default_value: None
     description: Safe => Prevent GPU out of memory. Full => Find a batch size using most of GPU memory.
     editable: true
     enum_name: BatchSizeAdaptType

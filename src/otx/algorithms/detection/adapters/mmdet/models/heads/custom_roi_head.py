@@ -63,6 +63,8 @@ class CustomRoIHead(StandardRoIHead):
         mask_pred = self.mask_head(mask_feats)
         if mask_pred.device.type == "hpu":
             mask_pred = mask_pred.cpu()
+            mask_feats = mask_feats.cpu()
+
         mask_results = dict(mask_pred=mask_pred, mask_feats=mask_feats)
         return mask_results
 
@@ -87,6 +89,40 @@ class CustomRoIHead(StandardRoIHead):
         bbox_results.update(loss_bbox=loss_bbox)
         return bbox_results
 
+    def _mask_forward_train(self, x, sampling_results, bbox_feats, gt_masks,
+                            img_metas):
+        """Run forward function and calculate loss for mask head in
+        training."""
+        if not self.share_roi_extractor:
+            pos_rois = bbox2roi([res.pos_bboxes for res in sampling_results])
+            mask_results = self._mask_forward(x, pos_rois)
+        else:
+            pos_inds = []
+            device = bbox_feats.device
+            for res in sampling_results:
+                pos_inds.append(
+                    torch.ones(
+                        res.pos_bboxes.shape[0],
+                        device=device,
+                        dtype=torch.uint8))
+                pos_inds.append(
+                    torch.zeros(
+                        res.neg_bboxes.shape[0],
+                        device=device,
+                        dtype=torch.uint8))
+            pos_inds = torch.cat(pos_inds)
+
+            mask_results = self._mask_forward(
+                x, pos_inds=pos_inds, bbox_feats=bbox_feats)
+
+        mask_targets = self.mask_head.get_targets(sampling_results, gt_masks,
+                                                  self.train_cfg)
+        pos_labels = torch.cat([res.pos_gt_labels for res in sampling_results])
+        loss_mask = self.mask_head.loss(mask_results['mask_pred'],
+                                        mask_targets, pos_labels)
+
+        mask_results.update(loss_mask=loss_mask, mask_targets=mask_targets)
+        return mask_results
 
 @HEADS.register_module()
 class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
