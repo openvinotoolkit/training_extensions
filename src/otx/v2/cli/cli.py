@@ -347,10 +347,8 @@ class OTXCLIv2:
             msg = "There is a problem with model configuration. Please check it again."
             raise TypeError(msg)
         self.model = self.auto_runner.get_model(model={**model_cfg}, num_classes=num_classes)
-        # For prediction class
         # NOTE: We'll need to move this somewhere other than here in the next phase.
-        if getattr(self.model, "config_dict", None):
-            model_cfg = self.model.config_dict
+        model_cfg = self.model.config_dict if hasattr(self.model, 'config_dict') else model_cfg
         workspace_config["model"] = {**model_cfg}
 
         work_dir = self._pop(self.config_init, "work_dir")

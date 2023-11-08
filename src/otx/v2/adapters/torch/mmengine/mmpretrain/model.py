@@ -150,6 +150,7 @@ def get_model(
 
     torch_model = get_mmpretrain_model(model, pretrained=pretrained, **kwargs)
 
+    # Config modification below should not affect original model config.
     source_config = deepcopy(torch_model._config.model)  # noqa: SLF001
     source_config.name = model_name
     torch_model.config_dict = Config.to_dict(source_config)
