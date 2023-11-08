@@ -44,5 +44,12 @@ TASK_CONFIGURATION = {
         "test_data_roots": "tests/assets/car_tree_bug",
         "sample": "tests/assets/car_tree_bug/images/val/Slide5.PNG",
         "models": ["otx_mobilenetv2-atss"],
-    }
+    },
+    "instance_segmentation": {
+        "train_data_roots": "tests/assets/car_tree_bug",
+        "val_data_roots": "tests/assets/car_tree_bug",
+        "test_data_roots": "tests/assets/car_tree_bug",
+        "sample": "tests/assets/car_tree_bug/images/val/Slide5.PNG",
+        "models": ["otx_resnet50_maskrcnn"],
+    },
 }
