@@ -42,7 +42,9 @@ DEFAULT_FRAMEWORK_PER_TASK_TYPE: dict[TaskType, dict[str, str | dict]] = {
     },
     TaskType.ACTION_CLASSIFICATION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmaction",
-        "default_config": {TrainType.Incremental: f"{CONFIG_ROOT}/action_classification/otx_mmaction_classification_default.yaml"},
+        "default_config": {
+            TrainType.Incremental: f"{CONFIG_ROOT}/action_classification/otx_mmaction_classification_default.yaml",
+        },
     },
     TaskType.ACTION_DETECTION: {
         "adapter": f"{ADAPTERS_ROOT}.torch.mmengine.mmaction",

@@ -24,6 +24,7 @@ TASK_CONFIGURATION = {
         "test_data_roots": "tests/assets/cvat_dataset/action_classification/train",
         "sample": "tests/assets/cvat_dataset/action_classification/v2_test",
         "models": ["otx_x3d"],
+    },
     "visual_prompting": {
         "train_data_roots": "tests/assets/car_tree_bug",
         "val_data_roots": "tests/assets/car_tree_bug",

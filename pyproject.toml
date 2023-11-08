@@ -110,6 +110,8 @@ action =[
     "mmdet==3.1.0",
     "mmdeploy",
     "yapf<0.40.0"
+]
+
 visual_prompt = [
     "pytorch-lightning>=1.7.0,<1.10.0",
     "timm==0.6.12",

@@ -14,30 +14,30 @@ from mmaction.registry import MODELS
 class MoViNetRecognizer(Recognizer3D):
     """MoViNet recognizer model framework for OTX compatibility."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
+        """Initialization."""
         super().__init__(**kwargs)
         # Hooks for redirect state_dict load/save
         self._register_state_dict_hook(self.state_dict_hook)
         self._register_load_state_dict_pre_hook(functools.partial(self.load_state_dict_pre_hook, self))
 
     @staticmethod
-    def state_dict_hook(module, state_dict, *args, **kwargs):
+    def state_dict_hook(state_dict: dict) -> None:
         """Redirect model as output state_dict for OTX MoviNet compatibility."""
+        new_ckpt = {}
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
-            if "cls_head" in key:
-                key = key.replace("cls_head.", "")
-            else:
-                key = key.replace("backbone.", "")
-            state_dict[key] = val
+            new_key = key.replace("cls_head.", "") if "cls_head" in key else key.replace("backbone.", "")
+            new_ckpt[new_key] = val
+        state_dict = new_ckpt
 
     @staticmethod
-    def load_state_dict_pre_hook(module, state_dict, prefix, *args, **kwargs):
+    def load_state_dict_pre_hook(state_dict: dict, prefix:str) -> None:
         """Redirect input state_dict to model for OTX model compatibility."""
+        new_ckpt = {}
         for key in list(state_dict.keys()):
             val = state_dict.pop(key)
-            if "classifier" in key:
-                key = key.replace("classifier", "cls_head.classifier")
-            else:
-                key = prefix + "backbone." + key[len(prefix) :]
-            state_dict[key] = val
+            clf = "classifier"
+            new_key = key.replace(clf, f"cls_head.{clf}") if "clf" in key else prefix + "backbone." + key[len(prefix) :]
+            new_ckpt[new_key] = val
+        state_dict = new_ckpt
