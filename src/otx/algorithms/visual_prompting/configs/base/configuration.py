@@ -42,6 +42,11 @@ class VisualPromptingBaseConfig(BaseConfig):
     class __LearningParameters(BaseConfig.BaseLearningParameters):
         header = string_attribute("Learning Parameters")
         description = header
+        
+    @attrs
+    class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
+        header = string_attribute("Parameters for the OTX algo-backend")
+        description = header
 
     @attrs
     class __Postprocessing(ParameterGroup):
@@ -112,5 +117,6 @@ class VisualPromptingBaseConfig(BaseConfig):
         )
 
     learning_parameters = add_parameter_group(__LearningParameters)
+    algo_backend = add_parameter_group(__AlgoBackend)
     postprocessing = add_parameter_group(__Postprocessing)
     pot_parameters = add_parameter_group(__POTParameter)

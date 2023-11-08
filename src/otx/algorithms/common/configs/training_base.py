@@ -42,6 +42,7 @@ class TrainType(ConfigurableEnum):
     Semisupervised = "Semisupervised"
     Selfsupervised = "Selfsupervised"
     Incremental = "Incremental"
+    Zeroshot = "Zeroshot"
     Futurework = "Futurework"
 
 
