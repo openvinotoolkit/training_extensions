@@ -5,7 +5,6 @@
 #
 
 import json
-import logging
 import os
 import re
 import shutil
@@ -31,8 +30,9 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data.adapter import get_dataset_adapter
 from otx.hpo import HyperBand, TrialStatus, run_hpo_loop
+from otx.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def _check_hpo_enabled_task(task_type):

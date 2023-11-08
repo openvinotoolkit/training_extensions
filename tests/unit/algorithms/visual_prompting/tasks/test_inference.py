@@ -16,7 +16,7 @@ from otx.api.entities.metrics import NullPerformance
 from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from otx.api.entities.resultset import ResultSetEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from otx.algorithms.common.utils.logger import get_logger
+from otx.utils.logger import get_logger
 from tests.unit.algorithms.visual_prompting.test_helpers import (
     generate_visual_prompting_dataset,
     init_environment,

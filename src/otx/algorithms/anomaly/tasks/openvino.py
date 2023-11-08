@@ -32,7 +32,6 @@ from omegaconf import OmegaConf
 from openvino.model_api.models import AnomalyDetection, AnomalyResult
 
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.algorithms.common.utils import embed_ir_model_data
 from otx.algorithms.common.utils.ir import check_if_quantized
@@ -71,8 +70,9 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 )
 from otx.api.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
+from otx.utils.logger import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 class OTXNNCFAnomalyDataloader:
