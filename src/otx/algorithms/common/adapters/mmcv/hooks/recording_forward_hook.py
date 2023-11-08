@@ -23,6 +23,7 @@ import torch
 from torch.nn import LayerNorm
 
 from otx.algorithms.classification import MMCLS_AVAILABLE
+from otx.algorithms.common.utils.utils import cast_bf16_to_fp32
 
 if MMCLS_AVAILABLE:
     from mmcls.models.necks.gap import GlobalAveragePooling
@@ -74,9 +75,7 @@ class BaseRecordingForwardHook(ABC):
     ):  # pylint: disable=unused-argument
         tensors = self.func(output)
         if isinstance(tensors, torch.Tensor):
-            if tensors.dtype == torch.bfloat16:
-                tensors = tensors.to(torch.float32)
-            tensors_np = tensors.detach().cpu().numpy()
+            tensors_np = cast_bf16_to_fp32(tensors).detach().cpu().numpy()
         elif isinstance(tensors, np.ndarray):
             tensors_np = tensors
         else:
