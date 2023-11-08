@@ -6,6 +6,7 @@
 import torch
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import VisionTransformerClsHead
+from otx.algorithms.common.utils import cast_bf16_to_fp32
 
 
 @HEADS.register_module()
@@ -35,7 +36,5 @@ class CustomVisionTransformerClsHead(VisionTransformerClsHead):
 
     def post_process(self, pred):
         """Post processing."""
-        if pred.dtype == torch.bfloat16:
-            # numpy doesn't support bfloat16, convert pred to float32
-            pred = pred.to(torch.float32)
+        pred = cast_bf16_to_fp32(pred)
         return super().post_process(pred)

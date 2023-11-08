@@ -32,6 +32,7 @@ from .utils import (
     load_template,
     read_py_config,
     set_random_seed,
+    cast_bf16_to_fp32,
 )
 
 __all__ = [
@@ -53,6 +54,7 @@ __all__ = [
     "get_default_async_reqs_num",
     "is_xpu_available",
     "is_hpu_available",
+    "cast_bf16_to_fp32",
 ]
 
 
