@@ -33,6 +33,39 @@ class CustomRoIHead(StandardRoIHead):
             bbox_head.type = "CustomConvFCBBoxHead"
         self.bbox_head = build_head(bbox_head)
 
+
+    def _bbox_forward(self, x, rois):
+        """Box head forward function used in both training and testing."""
+        # TODO: a more flexible way to decide which feature maps to use
+        bbox_feats = self.bbox_roi_extractor(
+            x[:self.bbox_roi_extractor.num_inputs], rois)
+        if self.with_shared_head:
+            bbox_feats = self.shared_head(bbox_feats)
+        cls_score, bbox_pred = self.bbox_head(bbox_feats)
+
+        bbox_results = dict(
+            cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
+        return bbox_results
+
+    def _mask_forward(self, x, rois=None, pos_inds=None, bbox_feats=None):
+        """Mask head forward function used in both training and testing."""
+        assert ((rois is not None) ^
+                (pos_inds is not None and bbox_feats is not None))
+        if rois is not None:
+            mask_feats = self.mask_roi_extractor(
+                x[:self.mask_roi_extractor.num_inputs], rois)
+            if self.with_shared_head:
+                mask_feats = self.shared_head(mask_feats)
+        else:
+            assert bbox_feats is not None
+            mask_feats = bbox_feats[pos_inds]
+
+        mask_pred = self.mask_head(mask_feats)
+        if mask_pred.device.type == "hpu":
+            mask_pred = mask_pred.cpu()
+        mask_results = dict(mask_pred=mask_pred, mask_feats=mask_feats)
+        return mask_results
+
     def _bbox_forward_train(self, x, sampling_results, gt_bboxes, gt_labels, img_metas):
         """Run forward function and calculate loss for box head in training."""
         rois = bbox2roi([res.bboxes for res in sampling_results])
@@ -124,6 +157,52 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
             bbox_weights = torch.cat(bbox_weights, 0)
             valid_label_mask = torch.cat(valid_label_mask, 0)
         return labels, label_weights, bbox_targets, bbox_weights, valid_label_mask
+
+
+    def forward(self, x):
+        # shared part
+        if self.num_shared_convs > 0:
+            for conv in self.shared_convs:
+                x = conv(x)
+
+        if self.num_shared_fcs > 0:
+            if self.with_avg_pool:
+                x = self.avg_pool(x)
+
+            x = x.flatten(1)
+
+            for fc in self.shared_fcs:
+                x = self.relu(fc(x))
+        # separate branches
+        x_cls = x
+        x_reg = x
+
+        for conv in self.cls_convs:
+            x_cls = conv(x_cls)
+        if x_cls.dim() > 2:
+            if self.with_avg_pool:
+                x_cls = self.avg_pool(x_cls)
+            x_cls = x_cls.flatten(1)
+        for fc in self.cls_fcs:
+            x_cls = self.relu(fc(x_cls))
+
+        for conv in self.reg_convs:
+            x_reg = conv(x_reg)
+        if x_reg.dim() > 2:
+            if self.with_avg_pool:
+                x_reg = self.avg_pool(x_reg)
+            x_reg = x_reg.flatten(1)
+        for fc in self.reg_fcs:
+            x_reg = self.relu(fc(x_reg))
+
+        cls_score = self.fc_cls(x_cls) if self.with_cls else None
+        bbox_pred = self.fc_reg(x_reg) if self.with_reg else None
+        if cls_score.device.type == 'hpu':
+            cls_score = cls_score.cpu()
+            bbox_pred = bbox_pred.cpu()
+
+        return cls_score, bbox_pred
+
 
     @force_fp32(apply_to=("cls_score", "bbox_pred"))
     def loss(
