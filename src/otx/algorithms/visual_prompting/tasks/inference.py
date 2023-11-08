@@ -62,6 +62,7 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from collections import defaultdict
 
 logger = get_logger()
 
@@ -464,3 +465,37 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """Remove model checkpoints and otx logs."""
         if os.path.exists(self.output_path):
             shutil.rmtree(self.output_path, ignore_errors=False)
+
+
+class ZeroShotLearnTask(InferenceTask):
+    """Learn task for Zero-shot learning.
+    
+    **There are two ways to be decided:
+    1. use it independently <-- temporarily current setting
+    2. use it depending on template
+    
+    The objective of this task is to get reference features and export it with decoder modules.
+    """
+    def export(
+        self,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = False,
+    ):
+        """Export"""
+        pass
+    
+    def learn(
+        self,
+        dataset: DatasetEntity,
+        inference_parameters: InferenceParameters,
+        export_type: ExportType,
+        output_model: ModelEntity,
+        precision: ModelPrecision = ModelPrecision.FP32,
+        dump_features: bool = False,
+    ):
+        """Get reference features from given images and prompts and export both reference features and decoders."""
+        self._initialize_reference()
+        
+        self.export(export_type, output_model, precision, dump_features)

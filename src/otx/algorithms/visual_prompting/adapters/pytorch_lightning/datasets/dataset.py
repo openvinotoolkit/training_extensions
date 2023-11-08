@@ -234,6 +234,38 @@ class OTXVisualPromptingDataset(Dataset):
         item.update({**prompts, "path": dataset_item.media.path})
         item = self.transform(item)
         return item
+    
+    
+class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
+    """Visual Prompting for Zero-shot learning Dataset Adaptor.
+
+    Args:
+        dataset (DatasetEntity): Dataset entity.
+        image_size (int): Target size to resize image.
+        mean (List[float]): Mean for normalization.
+        std (List[float]): Standard deviation for normalization.
+    """
+
+    def __init__(self, dataset: DatasetEntity, image_size: int, mean: List[float], std: List[float]) -> None:
+        super().__init__(dataset, image_size, mean, std, 0)
+        
+    def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
+        """Get dataset item.
+
+        Args:
+            index (int): Index of the dataset sample.
+
+        Returns:
+            Dict[str, Union[int, List, Tensor]]: Dataset item.
+        """
+        dataset_item = self.dataset[index]
+        item: Dict[str, Union[int, Tensor]] = {"index": index, "images": dataset_item.numpy}
+
+        prompts = self.get_prompts(dataset_item, self.labels)
+        prompts["bboxes"] = np.array(prompts["bboxes"])
+        item.update({**prompts, "path": dataset_item.media.path})
+        item = self.transform(item)
+        return item
 
 
 class OTXVisualPromptingDataModule(LightningDataModule):
