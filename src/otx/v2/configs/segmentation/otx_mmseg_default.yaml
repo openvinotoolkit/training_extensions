@@ -98,3 +98,6 @@ val_interval: 1
 seed: 1234
 deterministic: false
 precision: float32
+
+val_cfg:
+  type: ValLoop

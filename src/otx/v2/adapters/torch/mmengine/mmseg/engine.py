@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from mmseg.apis import MMSegInferencer
+from mmseg.registry import VISUALIZERS
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmseg.registry import MMSegmentationRegistry
@@ -18,13 +19,6 @@ from otx.v2.api.utils.logger import get_logger
 
 if TYPE_CHECKING:
     import numpy as np
-    from mmengine.evaluator import Evaluator
-    from mmengine.hooks import Hook
-    from mmengine.optim import _ParamScheduler
-    from mmengine.visualization import Visualizer
-    from torch import nn
-    from torch.optim import Optimizer
-    from torch.utils.data import DataLoader
 
 logger = get_logger()
 
@@ -52,76 +46,17 @@ class MMSegEngine(MMXEngine):
                 ],
             }
 
-    def train(
-        self,
-        model: torch.nn.Module | dict | None = None,
-        train_dataloader: DataLoader | dict | None = None,
-        val_dataloader: DataLoader | dict | None = None,
-        optimizer: dict | Optimizer | None = None,
-        checkpoint: str | Path | None = None,
-        max_iters: int | None = None,
-        max_epochs: int | None = None,
-        distributed: bool | None = None,
-        seed: int | None = None,
-        deterministic: bool | None = None,
-        precision: str | None = None,
-        val_interval: int | None = None,
-        val_evaluator: Evaluator | dict | list | None = None,
-        param_scheduler: _ParamScheduler | dict | list | None = None,
-        default_hooks: dict | None = None,
-        custom_hooks: list | dict | Hook | None = None,
-        visualizer: Visualizer | dict | None = None,
-        **kwargs,
-    ) -> dict:
-        """Train the model using the given data and hyperparameters.
-
-        Args:
-            model (torch.nn.Module | dict | None): The model to train.
-            train_dataloader (DataLoader | dict | None): The dataloader for training data.
-            val_dataloader (DataLoader | dict | None): The dataloader for validation data.
-            optimizer (dict | Optimizer | None): The optimizer to use for training.
-            checkpoint (str | Path | None): The path to save the checkpoint file.
-            max_iters (int | None): The maximum number of iterations to train for.
-            max_epochs (int | None): The maximum number of epochs to train for.
-            distributed (bool | None): Whether to use distributed training.
-            seed (int | None): The random seed to use for training.
-            deterministic (bool | None): Whether to use deterministic training.
-            precision (str | None): The precision to use for training.
-            val_interval (int | None): The interval at which to perform validation.
-            val_evaluator (Evaluator | dict | list | None): The evaluator to use for validation.
-            param_scheduler (_ParamScheduler | dict | list | None): The parameter scheduler to use for training.
-            default_hooks (dict | None): The default hooks to use for training.
-            custom_hooks (list | dict | Hook | None): The custom hooks to use for training.
-            visualizer (Visualizer | dict | None): The visualizer to use for training.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            dict: A dictionary containing the training results.
-        """
-        if val_evaluator is None:
-            val_evaluator = self.evaluator
-        if visualizer is None:
-            visualizer = self.visualizer
-        return super().train(
-            model,
-            train_dataloader,
-            val_dataloader,
-            optimizer,
-            checkpoint,
-            max_iters,
-            max_epochs,
-            distributed,
-            seed,
-            deterministic,
-            precision,
-            val_interval,
-            val_evaluator,
-            param_scheduler,
-            default_hooks,
-            custom_hooks,
-            visualizer,
-            **kwargs,
-        )
+    def _update_config(self, func_args: dict, **kwargs) -> tuple[Config, bool]:
+        config, update_check = super()._update_config(func_args, **kwargs)
+        if getattr(config, "val_dataloader", None) and not hasattr(config.val_evaluator, "type"):
+            config.val_evaluator = self.evaluator
+            config.val_cfg = {"type": "ValLoop"}
+        if getattr(config, "test_dataloader", None) and not hasattr(config.test_evaluator, "type"):
+            config.test_evaluator = self.evaluator
+            config.test_cfg = {"type": "TestLoop"}
+        if hasattr(config, "visualizer") and config.visualizer.type not in VISUALIZERS:
+            config.visualizer = self.visualizer
+        return config, update_check
 
     def predict(
         self,
@@ -229,35 +164,3 @@ class MMSegEngine(MMXEngine):
             input_shape=input_shape,
             **kwargs,
         )
-
-    def test(
-        self,
-        model: nn.Module | dict | None = None,
-        test_dataloader: DataLoader | None = None,
-        checkpoint: str | Path | None = None,
-        precision: str | None = None,
-        test_evaluator: Evaluator | dict | list | None = None,
-        visualizer: Visualizer | dict | None = None,
-        **kwargs,
-    ) -> dict:
-        """Test the given model on the test dataset.
-
-        Args:
-            model (torch.nn.Module or dict, optional): The model to test. If None, the model
-                passed to the latest will be used. Defaults to None.
-            test_dataloader (DataLoader, optional): The dataloader to use for testing. Defaults to None.
-            checkpoint (str or Path, optional): The path to the checkpoint to load before testing.
-                If None, the checkpoint passed to the latest will be used. Defaults to None.
-            precision (str, optional): The precision to use for testing. Defaults to None.
-            test_evaluator (Evaluator or dict or list, optional): The evaluator(s) to use for testing.
-                Defaults to None.
-            **kwargs: Additional keyword arguments to update the configuration.
-
-        Returns:
-            dict: A dictionary containing the test results.
-        """
-        if test_evaluator is None:
-            test_evaluator = self.evaluator
-        if visualizer is None:
-            visualizer = self.visualizer
-        return super().test(model, test_dataloader, checkpoint, precision, test_evaluator, visualizer, **kwargs)

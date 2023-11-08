@@ -76,3 +76,6 @@ model:
 visualizer:
   name: visualizer
   type: SegLocalVisualizer
+
+val_cfg:
+  type: ValLoop

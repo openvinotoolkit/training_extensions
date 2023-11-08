@@ -581,9 +581,8 @@ class MMXEngine(Engine):
 
         # CODEBASE_COFIG Update
         if codebase_config is None:
-            codebase = codebase if codebase is not None else self.registry.name
-            codebase_config = {"type": codebase, "task": task}
-            deploy_config_dict["codebase_config"] = codebase_config
+            self._update_codebase_config(codebase, task, deploy_config_dict)
+
         # IR_COFIG Update
         if ir_config is None:
             ir_config = {
@@ -610,13 +609,12 @@ class MMXEngine(Engine):
         data_preprocessor = self.dumped_config.get("model", {}).get("data_preprocessor", None)
         mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
         std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
+        to_rgb = False
         if data_preprocessor is not None:
             for rgb_keyword in ("bgr_to_rgb", "to_rgb"):
                 if rgb_keyword in data_preprocessor:
                     to_rgb = data_preprocessor[rgb_keyword]
                     break
-        else:
-            to_rgb = False
         patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
         if not deploy_config_dict.backend_config.get("model_inputs", []):
             if input_shape is None:
@@ -635,3 +633,15 @@ class MMXEngine(Engine):
         )
 
         return exporter.export()
+
+    def _update_codebase_config(self, codebase: str | None, task: str | None, deploy_config_dict: dict) -> None:
+        """Update specific codebase config.
+
+        Args:
+            codebase(str): mmX codebase framework
+            task(str): mmdeploy task
+            deploy_config_dict(dict): Config dict for deployment
+        """
+        codebase = codebase if codebase is not None else self.registry.name
+        codebase_config = {"type": codebase, "task": task}
+        deploy_config_dict["codebase_config"] = codebase_config
