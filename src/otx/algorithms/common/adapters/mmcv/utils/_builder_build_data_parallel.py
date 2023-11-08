@@ -140,9 +140,10 @@ class XPUDataParallel(MMDataParallel):
 
 
 class HPUDataParallel(MMDataParallel):
-    def __init__(self, *args, enable_autocast: bool = False, **kwargs):
+    def __init__(self, *args, enable_autocast: bool = False, put_gt_on_device=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.enable_autocast = enable_autocast
+        self.put_gt_on_device = put_gt_on_device
         self.src_device_obj = torch.device("hpu", self.device_ids[0])
 
     def scatter(self, inputs, kwargs, device_ids):
@@ -153,6 +154,8 @@ class HPUDataParallel(MMDataParallel):
                 for val in x:
                     if isinstance(val, dict):
                         for k in val:
+                            if not self.put_gt_on_device and k.startswith("gt_"):
+                                continue
                             if isinstance(val[k], torch.Tensor):
                                 val[k] = val[k].to(self.src_device_obj)
                             elif isinstance(val[k], list):
