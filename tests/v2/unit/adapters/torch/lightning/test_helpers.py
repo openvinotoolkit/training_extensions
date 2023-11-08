@@ -7,6 +7,11 @@
 from __future__ import annotations
 
 from typing import ClassVar
+from datumaro.components.annotation import Mask as DatumMask
+from datumaro.components.annotation import Polygon as DatumPolygon
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.dataset_base import DatasetItem as DatumDatasetItem
+from datumaro.components.media import Image as DatumImage
 
 import numpy as np
 from otx.v2.api.entities.annotation import (
@@ -15,13 +20,11 @@ from otx.v2.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.v2.api.entities.color import Color
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import Domain, LabelEntity
 from otx.v2.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.v2.api.entities.shapes.ellipse import Ellipse
-from otx.v2.api.entities.shapes.polygon import Point, Polygon
+from otx.v2.api.entities.shapes.polygon import Polygon
 from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 
@@ -55,10 +58,11 @@ def generate_otx_label_schema(labels_names: list[str] = labels_names) -> LabelSc
     return label_schema
 
 
-def generate_visual_prompting_dataset(use_mask: bool = False) -> DatasetEntity:
-    items = []
+def generate_visual_prompting_dataset(use_mask: bool = False) -> dict[Subset, DatumDataset]:
     labels_schema = generate_otx_label_schema()
     labels_list = labels_schema.get_labels(False)
+    
+    dataset = {}
     for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING, Subset.NONE]:
         image_numpy, shapes = generate_random_annotated_image(
             image_width=640,
@@ -71,33 +75,50 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> DatasetEntity:
             use_mask_as_annotation=use_mask,
         )
 
-        out_shapes = []
+        annotations = []
         for shape in shapes:
             shape_labels = shape.get_labels(include_empty=True)
 
             in_shape = shape.shape
             if use_mask:
                 if isinstance(in_shape, Image):
-                    out_shapes.append(shape)
+                    ann = DatumMask(
+                        image=in_shape.numpy,
+                        label=shape_labels[0].id,
+                    )
+                    annotations.append(ann)
             else:
                 if isinstance(in_shape, Rectangle):
                     points = [
-                        Point(in_shape.x1, in_shape.y1),
-                        Point(in_shape.x2, in_shape.y1),
-                        Point(in_shape.x2, in_shape.y2),
-                        Point(in_shape.x1, in_shape.y2),
+                        in_shape.x1 * 640,
+                        in_shape.y1 * 480,
+                        in_shape.x2 * 640,
+                        in_shape.y1 * 480,
+                        in_shape.x2 * 640,
+                        in_shape.y2 * 480,
+                        in_shape.x1 * 640,
+                        in_shape.y2 * 480,
                     ]
                 elif isinstance(in_shape, Ellipse):
-                    points = [Point(x, y) for x, y in in_shape.get_evenly_distributed_ellipse_coordinates()]
+                    points = []
+                    for x, y in in_shape.get_evenly_distributed_ellipse_coordinates():
+                        points.extend([x * 640, y * 480])
                 elif isinstance(in_shape, Polygon):
-                    points = in_shape.points
+                    points = []
+                    for point in in_shape.points:
+                        points.extend([point.x * 640, point.y * 480])
 
-                out_shapes.append(Annotation(Polygon(points=points), labels=shape_labels))
-        image = Image(data=image_numpy)
-        annotation = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=out_shapes)
-        items.append(DatasetItemEntity(media=image, annotation_scene=annotation, subset=subset))
+                ann = DatumPolygon(
+                    points=points,
+                    label=shape_labels[0].id
+                )
+                annotations.append(ann)
+        media = DatumImage.from_numpy(image_numpy)
+        items = [DatumDatasetItem(id=0, media=media, annotations=annotations)]
 
-    return DatasetEntity(items)
+        dataset[subset] = DatumDataset.from_iterable(items)
+
+    return dataset
 
 
 class MockDatasetConfig:

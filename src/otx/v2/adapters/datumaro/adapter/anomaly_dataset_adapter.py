@@ -15,20 +15,10 @@ from datumaro.components.annotation import Mask as DatumMask
 from datumaro.components.dataset import Dataset as DatumDataset
 
 from otx.v2.adapters.torch.modules.utils.mask_to_bbox import mask2bbox
-from otx.v2.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-    NullAnnotationSceneEntity,
-)
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import LabelEntity
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
-from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
 
@@ -98,7 +88,7 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
 
         return super()._generate_default_label_schema(self.label_entities)
 
-    def get_otx_dataset(self) -> DatasetEntity:
+    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
         """Get DatasetEntity."""
         raise NotImplementedError
 

@@ -8,18 +8,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
+from datumaro.components.annotation import Mask, Polygon
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.plugins.transforms import PolygonsToMasks
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
 from otx.v2.adapters.torch.modules.utils.io import get_image_filenames, read_image
-from otx.v2.adapters.torch.modules.utils.mask_to_bbox import convert_polygon_to_mask, generate_bbox_from_mask
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.datasets import DatasetEntity
-from otx.v2.api.entities.image import Image
-from otx.v2.api.entities.label import LabelEntity
+from otx.v2.adapters.torch.modules.utils.mask_to_bbox import generate_bbox_from_mask
 from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.polygon import Polygon
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.utils.logger import get_logger
 
@@ -29,6 +27,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import albumentations as al
+    from datumaro.components.dataset_base import DatasetItem as DatumDatasetItem
     from omegaconf import DictConfig, ListConfig
 
 logger = get_logger()
@@ -67,7 +66,7 @@ class OTXVisualPromptingDataset(Dataset):
 
     def __init__(
         self,
-        dataset: DatasetEntity,
+        dataset: DatumDataset,
         image_size: int,
         mean: list[float],
         std: list[float],
@@ -90,7 +89,7 @@ class OTXVisualPromptingDataset(Dataset):
         else:
             self.transform = get_transform(image_size, mean, std)
         self.offset_bbox = offset_bbox
-        self.labels = dataset.get_labels()
+        self.item_ids: list = [(item.id, item.subset) for item in self.dataset]
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -101,28 +100,28 @@ class OTXVisualPromptingDataset(Dataset):
         return len(self.dataset)
 
     @staticmethod
-    def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: list[LabelEntity]) -> dict:
+    def get_prompts(dataset_item: DatumDatasetItem) -> dict:
         """Get propmts from dataset_item.
 
         Args:
             dataset_item (DatasetItemEntity): Dataset item entity.
-            dataset_labels (list[LabelEntity]): Label information.
 
         Returns:
             dict: Processed prompts with ground truths.
         """
-        width, height = dataset_item.width, dataset_item.height
+        width, height = dataset_item.media.data.shape[:2]
         bboxes: list[list[int]] = []
         points: list = []  # TBD
         gt_masks: list[np.ndarray] = []
         labels: list[ScoredLabel] = []
-        for annotation in dataset_item.get_annotations(labels=dataset_labels, include_empty=False, preserve_id=True):
-            if isinstance(annotation.shape, Image):
+        for annotation in dataset_item.annotations:
+            if isinstance(annotation, Mask):
                 # use mask as-is
-                gt_mask = annotation.shape.numpy.astype(np.uint8)
-            elif isinstance(annotation.shape, Polygon):
+                gt_mask = annotation.image
+            elif isinstance(annotation, Polygon):
                 # convert polygon to mask
-                gt_mask = convert_polygon_to_mask(annotation.shape, width, height)
+                ann_mask = PolygonsToMasks.convert_polygon(annotation, height, width)
+                gt_mask = ann_mask.image
             else:
                 continue
 
@@ -136,11 +135,11 @@ class OTXVisualPromptingDataset(Dataset):
             bboxes.append(bbox)
 
             # add labels
-            labels.extend(annotation.get_labels(include_empty=False))
+            labels.extend([annotation.label])
 
         bboxes = np.array(bboxes)
         return {
-            "original_size": (height, width),
+            "original_size": (width, height),
             "gt_masks": gt_masks,
             "bboxes": bboxes,
             "points": points,
@@ -156,23 +155,25 @@ class OTXVisualPromptingDataset(Dataset):
         Returns:
             dict: Dataset item.
         """
-        dataset_item = self.dataset[index]
-        item: dict = {"index": index, "images": dataset_item.numpy}
+        dataset_item = self.dataset.get(id=self.item_ids[index][0], subset=self.item_ids[index][1])
+        print("################### 2", dataset_item)
+        print(dataset_item.media.data.shape)
+        item: dict = {"index": index, "images": dataset_item.media.data}
 
-        prompts = self.get_prompts(dataset_item, self.labels)
+        prompts = self.get_prompts(dataset_item)
         if len(prompts["gt_masks"]) == 0:
             return {
+                "index": index,
                 "images": [],
                 "bboxes": [],
                 "points": [],
                 "gt_masks": [],
                 "original_size": [],
-                "path": [],
                 "labels": [],
             }
 
         prompts["bboxes"] = np.array(prompts["bboxes"])
-        item.update({**prompts, "path": dataset_item.media.path})
+        item.update({**prompts})
         return self.transform(item)
 
 
@@ -184,27 +185,27 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         dataset (DatasetEntity): Dataset entity.
     """
 
-    def __init__(self, config: DictConfig | ListConfig, dataset: DatasetEntity) -> None:
+    def __init__(self, config: DictConfig | ListConfig, dataset: dict[Subset, DatumDataset]) -> None:
         """Initializes a Dataset object.
 
         Args:
             config (DictConfig | ListConfig): The configuration for the dataset.
-            dataset (DatasetEntity): The dataset to use.
+            dataset (dict[Subset, DatumDataset]): The dataset to use.
 
         Attributes:
-            train_otx_dataset (DatasetEntity): The training dataset.
-            val_otx_dataset (DatasetEntity): The validation dataset.
-            test_otx_dataset (DatasetEntity): The testing dataset.
-            predict_otx_dataset (DatasetEntity): The prediction dataset.
+            train_otx_dataset (DatumDataset): The training dataset.
+            val_otx_dataset (DatumDataset): The validation dataset.
+            test_otx_dataset (DatumDataset): The testing dataset.
+            predict_otx_dataset (DatumDataset): The prediction dataset.
         """
         super().__init__()
         self.config = config
         self.dataset = dataset
 
-        self.train_otx_dataset: DatasetEntity
-        self.val_otx_dataset: DatasetEntity
-        self.test_otx_dataset: DatasetEntity
-        self.predict_otx_dataset: DatasetEntity
+        self.train_otx_dataset: DatumDataset
+        self.val_otx_dataset: DatumDataset
+        self.test_otx_dataset: DatumDataset
+        self.predict_otx_dataset: DatumDataset
 
     def setup(self, stage: str | None = None) -> None:
         """Setup Visual Prompting Data Module.
@@ -219,8 +220,8 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         mean = self.config.normalize.mean
         std = self.config.normalize.std
         if stage == "fit" or stage is None:
-            train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
-            val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
+            train_otx_dataset = self.dataset.get(Subset.TRAINING)
+            val_otx_dataset = self.dataset.get(Subset.VALIDATION)
 
             self.train_dataset = OTXVisualPromptingDataset(
                 train_otx_dataset,
@@ -232,17 +233,17 @@ class OTXVisualPromptingDataModule(LightningDataModule):
             self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, image_size, mean, std)
 
         if stage == "test":
-            test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
+            test_otx_dataset = self.dataset.get(Subset.TESTING)
             self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, image_size, mean, std)
 
         if stage == "predict":
-            predict_otx_dataset = self.dataset
+            predict_otx_dataset = self.dataset.get(Subset.TESTING)
             self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, image_size, mean, std)
 
     def summary(self) -> None:
         """Print size of the dataset, number of images."""
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
-            dataset = self.dataset.get_subset(subset)
+            dataset: DatumDataset = self.dataset.get(subset, DatumDataset.from_iterable([]))
             num_items = len(dataset)
             logger.info(
                 "'%s' subset size: Total '%d' images.",

@@ -201,7 +201,7 @@ class TestVisualPromptDataset:
         )
         mock_dataset_entity = mocker.MagicMock()
         # Empty Dataset
-        mock_dataset_entity.get_subset.return_value = []
+        mock_dataset_entity.get.return_value = []
         dataset.dataset_entity = mock_dataset_entity
         assert dataset._build_dataset(subset="train") is None
         mock_initialize.assert_called_once_with()
@@ -213,12 +213,12 @@ class TestVisualPromptDataset:
 
         # Dataset
         mock_vp_dataset = mocker.patch("otx.v2.adapters.torch.lightning.dataset.OTXVisualPromptingDataset")
-        mock_dataset_entity.get_subset.return_value = mocker.MagicMock()
-        mock_dataset_entity.get_subset.return_value.__len__.return_value = 3
+        mock_dataset_entity.get.return_value = mocker.MagicMock()
+        mock_dataset_entity.get.return_value.__len__.return_value = 3
         dataset.dataset_entity = mock_dataset_entity
         dataset._build_dataset(subset="train")
         mock_vp_dataset.assert_called_once_with(
-            dataset=mock_dataset_entity.get_subset.return_value,
+            dataset=mock_dataset_entity.get.return_value,
             image_size=1024,
             mean=[123.675, 116.28, 103.53],
             std=[58.395, 57.12, 57.375],
