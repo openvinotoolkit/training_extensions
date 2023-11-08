@@ -88,11 +88,28 @@ def test_get_model(mocker: MockerFixture, monkeypatch: MonkeyPatch) -> None:
     configure_in_channels_mock = mocker.patch("otx.v2.adapters.torch.mmengine.mmpretrain.model.configure_in_channels")
     configure_in_channels_mock.return_value = mocker.MagicMock()
 
+    model_dict = {
+        "model": {
+            "name": "test1",
+            "backbone": "resnet50",
+            "neck": {
+                "type": "FPN",
+                "in_channels": -1,
+            },
+            "head": {
+                "type": "ClsHead",
+                "in_channels": -1,
+                "num_classes": 10,
+            },
+        },
+    }
+
     # Mock the get_mmpretrain_model function
     class MockModel(torch.nn.Module):
         def __init__(self) -> None:
             super().__init__()
             self.shape = (1, 256, 14, 14)
+            self._config = Config(model_dict)
 
         def forward(self, *args, **kwargs) -> list:
             _, _ = args, kwargs
@@ -113,21 +130,6 @@ def test_get_model(mocker: MockerFixture, monkeypatch: MonkeyPatch) -> None:
         pretrained=True,
     )
 
-    model_dict = {
-        "model": {
-            "name": "test1",
-            "backbone": "resnet50",
-            "neck": {
-                "type": "FPN",
-                "in_channels": -1,
-            },
-            "head": {
-                "type": "ClsHead",
-                "in_channels": -1,
-                "num_classes": 10,
-            },
-        },
-    }
     model = get_model(model_dict, pretrained=True, num_classes=10, channel_last=True)
     configure_in_channels_mock.assert_called_once()
     assert isinstance(model, torch.nn.Module)
