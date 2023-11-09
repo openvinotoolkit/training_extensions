@@ -13,6 +13,7 @@ from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.apis.onnx import export
 from mmdeploy.backend.openvino.onnx2openvino import from_onnx
 from mmdeploy.backend.openvino.utils import ModelOptimizerOptions
+from mmengine.structures import BaseDataElement
 
 from otx.v2.api.utils.logger import get_logger
 
