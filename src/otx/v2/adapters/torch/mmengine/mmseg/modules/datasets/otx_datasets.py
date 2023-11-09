@@ -87,8 +87,13 @@ class OTXSegDataset(BaseCDDataset):
         """
         self.otx_dataset = otx_dataset
         self.empty_label = empty_label
-        self.labels = labels
-        metainfo = {"classes": [lbs.name for lbs in labels]}
+        self.labels: list[LabelEntity] = labels
+
+        # Add background label if not present
+        mmseg_labels = [lbs.name for lbs in labels]
+        if "background" not in mmseg_labels:
+            mmseg_labels = ["background", *mmseg_labels]
+        metainfo = {"classes": mmseg_labels}
         test_mode = kwargs.get("test_mode", False)
         super().__init__(metainfo=metainfo, pipeline=pipeline, test_mode=test_mode, lazy_init=True)
         self.serialize_data = None  # OTX has its own data caching mechanism

@@ -232,3 +232,21 @@ class MMSegDataset(MMXDataset):
         if pipeline is None and "pipeline" not in dataset_config:
             pipeline = get_default_pipeline(subset=subset)
         return super()._build_dataset(subset, check_and_convert_to_tuple(pipeline), config)
+
+    @property
+    def num_classes(self) -> int:
+        """Returns the number of classes in the dataset.
+
+        If the dataset has not been initialized, this method will first initialize it.
+
+        Returns:
+            The number of classes in the dataset.
+        """
+        # TODO (Eugene): add test cases
+        # CVS-124394
+        if not self.initialize:
+            self._initialize()
+        label_names = [lbs.name for lbs in self.label_schema.get_labels(include_empty=False)]
+        if "background" in label_names:
+            return len(label_names)
+        return len(label_names) + 1
