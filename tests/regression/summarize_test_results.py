@@ -132,7 +132,7 @@ def fill_model_performance(items: Union[list, str], test_type: str, result_data:
         result_data[f"{test_type} Eval Time (Sec.)"].append(items)
 
 
-def summarize_non_anomaly_data(task: str, json_data: dict, result_data: dict) -> dict:
+def summarize_non_anomaly_data(json_data: dict, result_data: dict) -> dict:
     """Make DataFrame by gathering all results."""
     for task_key in json_data.keys():
         for label_type in LABEL_TYPES:
@@ -159,7 +159,7 @@ def summarize_non_anomaly_data(task: str, json_data: dict, result_data: dict) ->
                         nncf_items = get_metric_items(get_metric_dict(nncf_data, i, model))
                         ptq_items = get_metric_items(get_metric_dict(ptq_data, i, model))
 
-                        result_data["Task type"].append(task)
+                        result_data["Task type"].append(task_key)
                         result_data["Train type"].append(train_type)
                         result_data["Label type"].append(label_type)
                         result_data["Model"].append(model)
@@ -171,7 +171,7 @@ def summarize_non_anomaly_data(task: str, json_data: dict, result_data: dict) ->
                         fill_model_performance(ptq_items, "ptq", result_data)
 
 
-def summarize_anomaly_data(task: str, json_data: dict, result_data: dict) -> dict:
+def summarize_anomaly_data(json_data: dict, result_data: dict) -> dict:
     """Make DataFrame by gathering all results."""
     for task_key in json_data.keys():
         task_data = json_data[task_key]
@@ -201,7 +201,7 @@ def summarize_anomaly_data(task: str, json_data: dict, result_data: dict) -> dic
                     nncf_items = get_metric_items(get_metric_dict(nncf_cat_data, i, model))
                     ptq_items = get_metric_items(get_metric_dict(ptq_cat_data, i, model))
 
-                    result_data["Task type"].append(task)
+                    result_data["Task type"].append(task_key)
                     result_data["MVTec Category"].append(anomaly_category)
                     result_data["Model"].append(model)
 
@@ -261,8 +261,8 @@ def summarize_results_data(input_path: str, output_path: str):
             assert len(json_data) != 0, "no json results to summary"
 
             if is_anomaly_task(task) is True:
-                summarize_anomaly_data(task, json_data, ANOMALY_DATA)
+                summarize_anomaly_data(json_data, ANOMALY_DATA)
                 save_file(ANOMALY_DATA, output_path, f"tests-reg_{task}.csv")
             else:
-                summarize_non_anomaly_data(task, json_data, NON_ANOMALY_DATA)
+                summarize_non_anomaly_data(json_data, NON_ANOMALY_DATA)
                 save_file(NON_ANOMALY_DATA, output_path, f"tests-reg_{task}.csv")

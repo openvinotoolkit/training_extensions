@@ -14,6 +14,7 @@
 
 import json
 import os
+from copy import copy
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
@@ -30,6 +31,11 @@ TASK_TYPES = [
     "action_classification",
     "action_detection",
     "anomaly",
+]
+TASKS_TO_RUN_SIGNLE_GPU = [
+    "detection",
+    "semantic_segmentation",
+    "instance_segmentation",
 ]
 TRAIN_TYPES = ["supervised", "semi_supervised", "self_supervised", "class_incr", "tiling"]
 LABEL_TYPES = ["multi_class", "multi_label", "h_label", "supcon"]
@@ -80,13 +86,13 @@ class RegressionTestConfig(object):
 
         self._result_dict = {}
         results_root = kwargs.get("results_root", "/tmp/reg_test_results")
-        if task_type.startswith("action_"):
-            task_type = "action"
-        elif task_type.startswith("anomaly_"):
-            task_type = "anomaly"
-        self.result_dir = os.path.join(results_root, "reg_test_results", f"{task_type}")
+        result_suffix = copy(self.task_type)
+        if result_suffix.startswith("action_"):
+            result_suffix = "action"
+        elif result_suffix.startswith("anomaly_"):
+            result_suffix = "anomaly"
+        self.result_dir = os.path.join(results_root, "reg_test_results", f"{result_suffix}")
         Path(self.result_dir).mkdir(parents=True, exist_ok=True)
-
         self.config_dict = self.load_config()
         self.args = self.config_dict["data_path"]
         train_params = kwargs.get("train_params")
@@ -95,6 +101,8 @@ class RegressionTestConfig(object):
             self.args["train_params"].extend(train_params)
 
         self.num_cuda_devices = torch.cuda.device_count()
+        if self.task_type in TASKS_TO_RUN_SIGNLE_GPU and self.num_cuda_devices > 0:
+            self.num_cuda_devices = 1
         self.update_gpu_args(self.args, enable_auto_num_worker=kwargs.get("enable_auto_num_worker", True))
 
     @property
@@ -105,7 +113,7 @@ class RegressionTestConfig(object):
         dump_path_ = (
             dump_path
             if dump_path is not None
-            else os.path.join(self.result_dir, f"result_{self.train_type}_{self.label_type}.json")
+            else os.path.join(self.result_dir, f"result_{self.task_type}_{self.train_type}_{self.label_type}.json")
         )
         print(f"writing regression result to {dump_path_}")
         with open(dump_path_, "w") as result_file:
@@ -183,7 +191,6 @@ class RegressionTestConfig(object):
         return result
 
     def update_result(self, test_type, result, is_anomaly=False, **kwargs):
-        print(f"update_result({test_type=}, {result=}, {is_anomaly=}, kwargs={kwargs}")
         task_type = self.task_type
         if task_type not in self._result_dict:
             self._result_dict[task_type] = {}
@@ -199,6 +206,7 @@ class RegressionTestConfig(object):
             if test_type not in self._result_dict[task_type][label_type][train_type]:
                 self._result_dict[task_type][label_type][train_type][test_type] = []
             self._result_dict[task_type][label_type][train_type][test_type].append(result)
+            print(f"update_result({task_type=}, {label_type=}, {train_type=}, {test_type=}, {result=}, {is_anomaly=}")
         else:
             category = kwargs.get("category", "unknown")
             if test_type not in self._result_dict[task_type]:
@@ -206,6 +214,7 @@ class RegressionTestConfig(object):
             if category not in self._result_dict[task_type][test_type]:
                 self._result_dict[task_type][test_type][category] = []
             self._result_dict[task_type][test_type][category].append(result)
+            print(f"update_result({task_type=}, {test_type=}, {category=}, {result=}, {is_anomaly=}")
 
     def get_template_performance(self, template: ModelTemplate, **kwargs):
         """Get proper template performance inside of performance list."""
