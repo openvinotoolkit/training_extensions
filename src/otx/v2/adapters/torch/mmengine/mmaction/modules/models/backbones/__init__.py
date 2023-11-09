@@ -1,8 +1,7 @@
 """OTX Adapters for action recognition backbones - mmaction2."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 from mmaction.models.backbones.x3d import X3D
 from mmdet.registry import MODELS as MMDET_MODELS
