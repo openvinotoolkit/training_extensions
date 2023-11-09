@@ -29,6 +29,7 @@ def test_collate_fn() -> None:
             "gt_masks": [Tensor([1, 2, 3])],
             "original_size": [],
             "padding": [],
+            "path": [],
             "labels": [],
         },
         {
@@ -39,6 +40,7 @@ def test_collate_fn() -> None:
             "gt_masks": [Tensor([4, 5, 6])],
             "original_size": [],
             "padding": [],
+            "path": [],
             "labels": [],
         },
     ]
@@ -49,6 +51,7 @@ def test_collate_fn() -> None:
         "points": None,
         "gt_masks": [Tensor([[1, 2, 3]]), Tensor([[4, 5, 6]])],
         "original_size": [[], []],
+        "path": [[], []],
         "labels": [[], []],
         "padding": [[], []],
     }
