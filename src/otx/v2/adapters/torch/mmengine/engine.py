@@ -84,7 +84,7 @@ class MMXEngine(Engine):
             work_dir (Optional[Union[str, Path]], optional): The working directory for the engine. Defaults to None.
         """
         super().__init__(work_dir=work_dir)
-        # Engine's configureation should not affect to DEFAULT_CONFIG
+        # Engine's configuration should not affect to DEFAULT_CONFIG
         self.default_config = deepcopy(DEFAULT_CONFIG)
         self.runner: Runner
         self.latest_model = {"model": None, "checkpoint": None}
