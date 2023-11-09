@@ -361,6 +361,8 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         output_model.optimization_type = ModelOptimizationType.POT
         output_model.optimization_methods = [OptimizationMethod.QUANTIZATION]
         output_model.precision = [ModelPrecision.INT8]
+        metadata = self.get_metadata()
+        output_model.set_data("metadata", json.dumps(metadata).encode())
 
         self.task_environment.model = output_model
         self.inference_model = self.get_openvino_model()
