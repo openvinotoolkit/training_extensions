@@ -89,7 +89,7 @@ class OTXVisualPromptingDataset(Dataset):
         else:
             self.transform = get_transform(image_size, mean, std)
         self.offset_bbox = offset_bbox
-        self.item_ids: list = [(item.id, item.subset) for item in self.dataset]
+        self.item_ids: list = [(item.id, item.subset) for item in self.dataset if len(item.annotations) != 0]
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -97,7 +97,7 @@ class OTXVisualPromptingDataset(Dataset):
         Returns:
             int: Size of the dataset.
         """
-        return len(self.dataset)
+        return len(self.item_ids)
 
     @staticmethod
     def get_prompts(dataset_item: DatumDatasetItem) -> dict:
@@ -160,8 +160,23 @@ class OTXVisualPromptingDataset(Dataset):
         """
         dataset_item = self.dataset.get(id=self.item_ids[index][0], subset=self.item_ids[index][1])
 
-        image = dataset_item.media.data.astype(np.uint8)
-        item: dict = {"index": index, "images": image, "original_size": tuple(image.shape[:2])}
+        image = dataset_item.media.data
+        # OTX expects RGB format
+        if len(image.shape) == 2:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        elif len(image.shape) == 3:
+            if image.shape[-1] == 3:
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            if image.shape[-1] == 4:
+                image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+        image = image.astype(np.uint8)
+
+        item: dict = {
+            "index": index,
+            "path": dataset_item.media.path,
+            "images": image,
+            "original_size": tuple(image.shape[:2]),
+        }
 
         prompts = self.get_prompts(dataset_item)
         if len(prompts["gt_masks"]) == 0:
@@ -171,7 +186,6 @@ class OTXVisualPromptingDataset(Dataset):
                 "points": [],
                 "labels": [],
             }
-            item.update({**prompts})
 
         item.update({**prompts})
         return self.transform(item)
