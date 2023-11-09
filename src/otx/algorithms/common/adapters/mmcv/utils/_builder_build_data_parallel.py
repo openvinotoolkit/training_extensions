@@ -154,6 +154,8 @@ class HPUDataParallel(MMDataParallel):
                 for val in x:
                     if isinstance(val, dict):
                         for k in val:
+                            # don't put annotations on the HPU to proceed
+                            # post-processing on the CPU
                             if not self.put_gt_on_device and k.startswith("gt_"):
                                 continue
                             if isinstance(val[k], torch.Tensor):

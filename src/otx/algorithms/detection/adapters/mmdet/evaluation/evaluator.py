@@ -31,7 +31,7 @@ from terminaltables import AsciiTable
 
 from otx.api.entities.label import Domain
 from otx.api.utils.time_utils import timeit
-
+from otx.algorithms.common.utils.utils import is_hpu_available
 
 def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
     mean_ap, results, dataset=None, scale_ranges=None, logger=None
@@ -112,7 +112,8 @@ def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
         table_data.append(table_)
         table = AsciiTable(table_data)
         table.inner_footing_row_border = True
-        time.sleep(0.1)  # prevent segmentation fault
+        if is_hpu_available():
+            time.sleep(0.1)  # prevent segmentation fault
         print_log("\n" + table.table, logger=logger)
 
 

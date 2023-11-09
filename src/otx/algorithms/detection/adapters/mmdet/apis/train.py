@@ -122,45 +122,32 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
         model.to(f"xpu:{cfg.gpu_ids[0]}")
     elif cfg.device == "hpu":
-        import habana_frameworks.torch.core as htcore
-        from habana_frameworks.torch.utils.library_loader import load_habana_module
-
-        load_habana_module()
-        os.environ["PT_HPU_LAZY_MODE"] = "1"
-        assert len(cfg.gpu_ids) == 1
         model = build_dp(
             model, cfg.device, device_ids=cfg.gpu_ids, dim=0, enable_autocast=bool(fp16_cfg), put_gt_on_device=False
         )
-        model.to(model.src_device_obj)
-        htcore.mark_step()
-        model.zero_grad()
+        # patch optimizer
+        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in HABANA_OPTIMIZERS:
+            cfg.optimizer["type"] = new_type
     else:
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build optimizer
     auto_scale_lr(cfg, distributed, logger)
-    if cfg.device == "hpu":
-        cfg.optimizer = patch_optimizer(cfg.optimizer)
+
+    if cfg.device in ["hpu", "xpu"]:
+        # dynamic patch for nms and roi_align
+        NMSop.forward = monkey_patched_nms
+        RoIAlign.forward = monkey_patched_roi_align
+
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        # dynamic patch for nms and roi_align
-        NMSop.forward = monkey_patched_xpu_nms
-        RoIAlign.forward = monkey_patched_xpu_roi_align
         if fp16_cfg is not None:
             dtype = torch.bfloat16
         else:
             dtype = torch.float32
         model.train()
         model, optimizer = torch.xpu.optimize(model, optimizer=optimizer, dtype=dtype)
-
-    if cfg.device == "hpu":
-        NMSop.forward = monkey_patched_xpu_nms
-        RoIAlign.forward = monkey_patched_xpu_roi_align
-        # build runner
-        if cfg.device == "hpu":
-            if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in HABANA_OPTIMIZERS:
-                cfg.optimizer["type"] = new_type
 
     runner = build_runner(
         cfg.runner, default_args=dict(model=model, optimizer=optimizer, work_dir=cfg.work_dir, logger=logger, meta=meta)
@@ -223,19 +210,7 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
     runner.run(data_loaders, cfg.workflow)
 
 
-def patch_optimizer(cfg_optim):
-    """Patch optimizer for OD and IS."""
-    if cfg_optim["type"] == "SGD":
-        return cfg_optim
-
-    # Only SGD for OD and IS supported by now on HPU
-    cfg_optim["type"] = "SGD"
-    if "betas" in cfg_optim:
-        del cfg_optim["betas"]
-    return cfg_optim
-
-
-def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_threshold, max_num):
+def monkey_patched_nms(ctx, bboxes, scores, iou_threshold, offset, score_threshold, max_num):
     """Runs MMCVs NMS with torchvision.nms, or forces NMS from MMCV to run on CPU."""
     is_filtering_by_score = score_threshold > 0
     if is_filtering_by_score:
@@ -265,7 +240,7 @@ def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_thr
     return inds
 
 
-def monkey_patched_xpu_roi_align(self, input, rois):
+def monkey_patched_roi_align(self, input, rois):
     """Replaces MMCVs roi align with the one from torchvision.
 
     Args:

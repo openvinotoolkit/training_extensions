@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import os
 from .callback import (
     InferenceProgressCallback,
     OptimizationProgressCallback,
@@ -59,4 +60,5 @@ __all__ = [
 
 
 if is_hpu_available():
+    os.environ["PT_HPU_LAZY_MODE"] = "1"
     import habana_frameworks.torch.gpu_migration  # noqa: F401

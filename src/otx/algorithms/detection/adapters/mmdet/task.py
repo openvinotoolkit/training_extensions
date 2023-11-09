@@ -44,8 +44,8 @@ from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.detection.adapters.mmdet.apis.train import (
-    monkey_patched_xpu_nms,
-    monkey_patched_xpu_roi_align,
+    monkey_patched_nms,
+    monkey_patched_roi_align,
     train_detector,
 )
 from otx.algorithms.detection.adapters.mmdet.configurer import (
@@ -348,9 +348,9 @@ class MMDetectionTask(OTXDetectionTask):
         else:
             target_classes = mm_dataset.CLASSES
 
-        if cfg.device == "xpu":
-            NMSop.forward = monkey_patched_xpu_nms
-            RoIAlign.forward = monkey_patched_xpu_roi_align
+        if cfg.device in ["xpu", "hpu"]:
+            NMSop.forward = monkey_patched_nms
+            RoIAlign.forward = monkey_patched_roi_align
 
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
