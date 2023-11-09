@@ -505,7 +505,7 @@ class MMXEngine(Engine):
         task: str | None = None,
         codebase: str | None = None,
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | dict | None = None, 
+        deploy_config: str | dict | None = None,
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
     ) -> dict:
@@ -522,7 +522,7 @@ class MMXEngine(Engine):
             task (Optional[str]): The task to use for exporting. Defaults to None.
             codebase (Optional[str]): The codebase to use for exporting. Defaults to None.
             export_type (str): The type of export to perform. Can be "ONNX" or "OPENVINO". Defaults to "OPENVINO".
-            deploy_config (Optional[str, dict]): The path to the deploy config file to use for exporting. Defaults to None.
+            deploy_config (Optional[str, dict]): The path to the deploy config to use for exporting. Defaults to None.
             device (str): The device to use for exporting. Defaults to "cpu".
             input_shape (Optional[Tuple[int, int]]): The input shape to use for exporting. Defaults to None.
 
@@ -602,9 +602,9 @@ class MMXEngine(Engine):
         # BACKEND_CONFIG Update
         if "backend_config" not in deploy_config_dict:
             backend_config = {
-                "type": "openvino", 
+                "type": "openvino",
                 "model_inputs": [{"opt_shapes": {"input": [1, 3, 224, 224]}}],
-                "input_metas": {"mode": "predict"}
+                "input_metas": {"mode": "predict"},
             }
             deploy_config_dict["backend_config"] = backend_config
 
