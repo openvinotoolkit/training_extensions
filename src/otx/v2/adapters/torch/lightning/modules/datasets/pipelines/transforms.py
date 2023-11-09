@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 import torch
 from torch import Tensor
 from torchvision import transforms
@@ -33,7 +32,7 @@ def collate_fn(batch: list) -> dict:
             list | None: List of batch data.
         """
         func = torch.stack if x == "gt_masks" else torch.tensor
-        items = [func(item[x]) for item in batch if np.asarray(item[x]).size != 0]
+        items = [func(item[x]) for item in batch if item[x] is not None]
         return None if len(items) == 0 else items
 
     index = [item["index"] for item in batch]
