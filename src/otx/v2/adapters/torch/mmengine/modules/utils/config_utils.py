@@ -152,8 +152,10 @@ class CustomConfig(Config):
     @staticmethod
     def to_dict(config: Config | ConfigDict) -> dict:
         """Converts a Config object to a dictionary.
+
         Args:
             config(Config): The Config object to convert.
+
         Return:
             dict: The resulting dictionary.
         """
