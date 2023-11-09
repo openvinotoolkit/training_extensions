@@ -19,8 +19,10 @@ entrypoints:
 hyper_parameters:
   base_path: ../configuration.yaml
   parameter_overrides:
-    dataset:
-      train_batch_size: 1
+    learning_parameters:
+      dataset:
+        train_batch_size:
+          default_value: 1
     algo_backend:
       train_type:
         default_value: Zeroshot
