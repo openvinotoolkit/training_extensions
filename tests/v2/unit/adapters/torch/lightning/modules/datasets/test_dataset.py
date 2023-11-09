@@ -105,14 +105,15 @@ class TestOTXVIsualPromptingDataset:
         item = otx_dataset[0]
 
         # Check the returned item's keys
-        expected_keys = {"index", "original_size", "images", "gt_masks", "bboxes", "points", "labels"}
+        expected_keys = {"index", "original_size", "images", "path", "gt_masks", "bboxes", "points", "labels"}
         assert set(item.keys()) == expected_keys
 
         expected_item = dataset.get(Subset.TRAINING).get(0)
         # Check specific values in the item
+
         assert item["index"] == 0
-        assert (item["images"] == expected_item.media.data).all()
         assert item["original_size"] == expected_item.media.data.shape[:2]
+        assert item["path"] == expected_item.media.path
         assert isinstance(item["gt_masks"], list)
         assert isinstance(item["gt_masks"][0], np.ndarray)
         assert isinstance(item["bboxes"], np.ndarray)

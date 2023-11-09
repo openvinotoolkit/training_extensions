@@ -114,6 +114,7 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> dict[Subset, Da
                 )
                 annotations.append(ann)
         media = DatumImage.from_numpy(image_numpy)
+        media.path = None
         items = [DatumDatasetItem(id=0, media=media, annotations=annotations)]
 
         dataset[subset] = DatumDataset.from_iterable(items)
