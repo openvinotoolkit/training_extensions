@@ -149,6 +149,25 @@ class CustomConfig(Config):
             import_modules_from_strings(**cfg_dict["custom_imports"])
         return CustomConfig(cfg_dict, cfg_text=cfg_text, filename=filename)
 
+    @staticmethod
+    def to_dict(config: Config | ConfigDict) -> dict:
+        """Converts a Config object to a dictionary.
+
+        Args:
+            config(Config): The Config object to convert.
+
+        Return:
+            dict: The resulting dictionary.
+        """
+        output_dict = {}
+        for key, value in config.items():
+            if isinstance(value, (Config, ConfigDict)):
+                output_dict[key] = CustomConfig.to_dict(value)
+            else:
+                output_dict[key] = value
+
+        return output_dict
+
     @property
     def pretty_text(self) -> str:
         """Make python file human-readable.
