@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import fnmatch
+from copy import deepcopy
 from pathlib import Path
 
 import torch
@@ -52,7 +53,7 @@ def get_model(
         model_cfg = model
 
     if model_cfg.get("model", None) is None:
-        model_cfg = Config({"model": model_cfg.to_dict()})
+        model_cfg = Config({"model": Config.to_dict(model_cfg)})
     checkpoint = model_cfg.get("load_from", None)
     model = Config(model_cfg.get("model"))
     if hasattr(model, "name"):
@@ -62,7 +63,7 @@ def get_model(
         base_model = Config.fromfile(filename=MODEL_CONFIGS[model_name])
         checkpoint = base_model.get("load_from", None)
         base_model = base_model.get("model", base_model)
-        model_cfg.model = Config(cfg_dict=Config.merge_cfg_dict(model_cfg.model, base_model))
+        model_cfg.model = Config(cfg_dict=Config.merge_cfg_dict(base_model, model_cfg.model))
 
     model_cfg["model"]["_scope_"] = "mmdet"
     if num_classes is not None:
@@ -98,6 +99,11 @@ def get_model(
     torch_model.cfg = model_cfg
     # For compatibility with other tasks.
     torch_model._config = model_cfg  # noqa: SLF001
+
+    source_config = deepcopy(model_cfg.model)
+    source_config.name = model_name
+    torch_model.config_dict = Config.to_dict(source_config)
+
     return torch_model
 
 

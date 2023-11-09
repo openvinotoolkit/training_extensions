@@ -29,6 +29,6 @@ TASK_CONFIGURATION = {
         "val_data_roots": "tests/assets/car_tree_bug",
         "test_data_roots": "tests/assets/car_tree_bug",
         "sample": "tests/assets/car_tree_bug/images/val/Slide5.PNG",
-        "models": ["mobilenetv2-atss"],
+        "models": ["otx_mobilenetv2-atss"],
     }
 }
