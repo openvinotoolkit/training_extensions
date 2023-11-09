@@ -252,6 +252,7 @@ class MMCVExpParser(BaseExpParser):
 
                 # iter, data time
                 train_record_files = list((task_dir / "logs").glob("*.log.json"))
+                train_record_files.sort(reverse=True, key=lambda x : x.stat().st_mtime)
                 if train_record_files:
                     self._parse_train_record(train_record_files[0])
 
