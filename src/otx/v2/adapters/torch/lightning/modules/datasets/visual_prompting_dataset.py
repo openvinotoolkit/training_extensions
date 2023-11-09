@@ -7,10 +7,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import cv2
 import numpy as np
 from datumaro.components.annotation import Mask, Polygon
 from datumaro.components.dataset import Dataset as DatumDataset
-from datumaro.plugins.transforms import PolygonsToMasks
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
@@ -120,8 +120,12 @@ class OTXVisualPromptingDataset(Dataset):
                 gt_mask = annotation.image
             elif isinstance(annotation, Polygon):
                 # convert polygon to mask
-                ann_mask = PolygonsToMasks.convert_polygon(annotation, width, height)
-                gt_mask = ann_mask.image
+                contour = [
+                    [int(annotation.points[2 * idx]), int(annotation.points[2 * idx + 1])]
+                    for idx in range(len(annotation.points) // 2)
+                ]
+                gt_mask = np.zeros(shape=(height, width), dtype=np.uint8)
+                gt_mask = cv2.drawContours(gt_mask, np.asarray([contour]), 0, 1, -1)
             else:
                 continue
 
@@ -139,7 +143,6 @@ class OTXVisualPromptingDataset(Dataset):
 
         bboxes = np.array(bboxes)
         return {
-            "original_size": (width, height),
             "gt_masks": gt_masks,
             "bboxes": bboxes,
             "points": points,
@@ -157,20 +160,19 @@ class OTXVisualPromptingDataset(Dataset):
         """
         dataset_item = self.dataset.get(id=self.item_ids[index][0], subset=self.item_ids[index][1])
 
+        image = dataset_item.media.data.astype(np.uint8)
+        item: dict = {"index": index, "images": image, "original_size": tuple(image.shape[:2])}
+
         prompts = self.get_prompts(dataset_item)
         if len(prompts["gt_masks"]) == 0:
-            return {
-                "index": index,
-                "images": dataset_item.media.data.astype(np.uint8),
+            prompts = {
+                "gt_masks": [],
                 "bboxes": [],
                 "points": [],
-                "gt_masks": [],
-                "original_size": [],
                 "labels": [],
             }
+            item.update({**prompts})
 
-        item: dict = {"index": index, "images": dataset_item.media.data.astype(np.uint8)}
-        prompts["bboxes"] = np.array(prompts["bboxes"])
         item.update({**prompts})
         return self.transform(item)
 

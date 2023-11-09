@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import torch
 from torch import Tensor
 from torchvision import transforms
@@ -32,12 +33,10 @@ def collate_fn(batch: list) -> dict:
             list | None: List of batch data.
         """
         func = torch.stack if x == "gt_masks" else torch.tensor
-        items = [func(item[x]) for item in batch if item[x] is not None]
+        items = [func(item[x]) for item in batch if np.asarray(item[x]).size != 0]
         return None if len(items) == 0 else items
 
     index = [item["index"] for item in batch]
-    for idx, item in enumerate(batch):
-        print("###############", idx, item["images"].shape)
     images = torch.stack([item["images"] for item in batch])
     bboxes = _convert_empty_to_none("bboxes")
     points = None  # TBD
@@ -56,6 +55,7 @@ def collate_fn(batch: list) -> dict:
             "labels": labels,
             "padding": padding,
         }
+    print("################here? ####################")
     return {
         "index": -1,
         "images": [],
