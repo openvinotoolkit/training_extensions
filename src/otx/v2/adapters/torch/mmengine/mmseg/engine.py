@@ -39,14 +39,18 @@ class MMSegEngine(MMXEngine):
         super().__init__(work_dir=work_dir)
         self.registry = MMSegmentationRegistry()
         self.visualizer = {"name": "visualizer", "type": "SegLocalVisualizer"}
-        self.evaluator = {
-                "type": "IoUMetric",
-                "iou_metrics": [
-                    "mDice",
-                ],
-            }
+        self.evaluator = {"type": "IoUMetric", "iou_metrics": ["mDice"]}
 
     def _update_config(self, func_args: dict, **kwargs) -> tuple[Config, bool]:
+        """Update the configuration of the runner with the provided arguments.
+
+        Args:
+            func_args (dict): The arguments passed to the engine.
+            **kwargs: Additional keyword arguments to update the configuration for mmengine.Runner.
+
+        Returns:
+            tuple[Config, bool]: Config, True if the configuration was updated, False otherwise.
+        """
         config, update_check = super()._update_config(func_args, **kwargs)
         if getattr(config, "val_dataloader", None) and not hasattr(config.val_evaluator, "type"):
             config.val_evaluator = self.evaluator
@@ -65,7 +69,6 @@ class MMSegEngine(MMXEngine):
         checkpoint: str | Path | None = None,
         pipeline: dict | list | None = None,
         device: str | (torch.device | None) = None,
-        task: str | None = None,  # noqa: ARG002
         batch_size: int = 1,
         **kwargs,
     ) -> list[dict]:
@@ -86,7 +89,6 @@ class MMSegEngine(MMXEngine):
             device (Union[str, torch.device, None], optional): The device to use for inference. Can be a string
                 representing the device name (e.g. 'cpu' or 'cuda'), a PyTorch device object, or None to use the
                 default device. Defaults to None.
-            task (Optional[str], optional): The type of task to perform. Defaults to None.
             batch_size (int, optional): The batch size to use for inference. Defaults to 1.
             **kwargs: Additional keyword arguments to pass to the inference function.
 
@@ -128,7 +130,7 @@ class MMSegEngine(MMXEngine):
         task: str | None = "Segmentation",
         codebase: str | None = "mmseg",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | None = None,  # File path only?
+        deploy_config: str | None = None,
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
         **kwargs,
