@@ -52,6 +52,7 @@ class TestMMDetAPI:
             train_data_roots=TASK_CONFIGURATION["instance_segmentation"]["train_data_roots"],
             val_data_roots=TASK_CONFIGURATION["instance_segmentation"]["val_data_roots"],
             test_data_roots=TASK_CONFIGURATION["instance_segmentation"]["test_data_roots"],
+            task="instance_segmentation",
         )
 
     def test_dataset_api(self, dataset: Dataset) -> None:

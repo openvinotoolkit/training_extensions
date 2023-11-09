@@ -41,9 +41,9 @@ model:
         pos_fraction: 0.25
         neg_pos_ub: 1
         add_gt_as_proposals: true
-        mask_size: 28
-        pos_weight: -1
-        debug: false
+      mask_size: 28
+      pos_weight: -1
+      debug: false
   test_cfg:
     rpn:
       nms_across_levels: false

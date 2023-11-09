@@ -107,8 +107,12 @@ class MMDetEngine(MMXEngine):
         # Update pipelines
         if pipeline is None:
             pipeline = [
+                {"type": "LoadImageFromNDArray"},
                 {"type": "Resize", "scale": [512, 512]},
-                {"type": "PackDetInputs", "meta_keys": ['img', 'img_id', 'scale', 'img_shape', 'scale_factor']},
+                {
+                    "type": "PackDetInputs",
+                    "meta_keys": ['img', 'img_id', 'scale', 'img_shape', 'scale_factor', 'ori_shape'],
+                },
             ]
 
         cfg = Config({})

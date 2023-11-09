@@ -15,16 +15,30 @@ from otx.v2.adapters.torch.mmengine.mmdet.modules.datasets import OTXDetDataset
 from otx.v2.adapters.torch.mmengine.mmdet.registry import MMDetRegistry
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
+from otx.v2.api.utils.type_utils import str_to_task_type
 
 SUBSET_LIST = ["train", "val", "test", "unlabeled"]
 
 
+<<<<<<< HEAD
 def get_default_pipeline(subset: str = "train", is_semisl: bool = False) -> list:
+=======
+def get_default_pipeline(
+    subset: str = "train",
+    semisl: bool = False,
+    task: TaskType | str = TaskType.DETECTION,
+) -> list:
+>>>>>>> 16577551b (Update for api tests)
     """Returns the default pipeline for training a model.
 
     Args:
         subset (str): Subset of default pipeline
+<<<<<<< HEAD
         is_semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
+=======
+        semisl (bool, optional): Whether to use a semi-supervised pipeline. Defaults to False.
+        task (TaskType, str): Task type of the dataset. Detection or Instance segmentation.
+>>>>>>> 16577551b (Update for api tests)
 
     Returns:
         list: The default pipeline as a dictionary or list, depending on whether `is_semisl` is True or False.
@@ -33,63 +47,138 @@ def get_default_pipeline(subset: str = "train", is_semisl: bool = False) -> list
     if is_semisl:
         raise NotImplementedError(message)
 
-    default_pipeline = {
-        "train": [
-            {
-                'type': 'LoadResizeDataFromOTXDataset',
-                'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
-                'resize_cfg': {
-                    'type': 'Resize', 'scale': (512, 512), 'keep_ratio': True, 'downscale_only': True,
-                },
-                'enable_memcache': True},
-            {'type': 'MinIoURandomCrop', 'min_ious': (0.1, 0.3, 0.5, 0.7, 0.9), 'min_crop_size': 0.3},
-            {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
-            {'type': 'RandomFlip', 'prob': 0.5},
-            {
-                'type': 'PackDetInputs',
-                'meta_keys': [
-                    'ori_filename',
-                    'flip_direction',
-                    'scale_factor',
-                    'gt_ann_ids',
-                    'flip',
-                    'ignored_labels',
-                    'ori_shape',
-                    'filename',
-                    'img_shape',
-                    'pad_shape',
-                ],
-            },
-        ],
-        "val": [
-            {
-                'type': 'LoadResizeDataFromOTXDataset',
-                'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
-                'resize_cfg': {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
-                'enable_memcache': True,
-                'eval_mode': True,
-            },
-            {
-                'type': 'PackDetInputs',
-                'meta_keys': ['ori_filename', 'scale_factor', 'ori_shape', 'filename', 'img_shape', 'pad_shape'],
-            },
-        ],
-        "test": [
-            {
-                'type': 'LoadResizeDataFromOTXDataset',
-                'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
-                'resize_cfg': {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
-                'enable_memcache': True,
-                'eval_mode': True,
-            },
-            {
-                'type': 'PackDetInputs',
-                'meta_keys': ['ori_filename', 'scale_factor', 'ori_shape', 'filename', 'img_shape', 'pad_shape'],
-            },
-        ],
-    }
+    if isinstance(task, str):
+        task = str_to_task_type(task)
 
-    return default_pipeline[subset]
+    default_pipeline = {
+        TaskType.DETECTION: {
+            "train": [
+                {
+                    'type': 'LoadResizeDataFromOTXDataset',
+                    'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
+                    'resize_cfg': {
+                        'type': 'Resize', 'scale': (512, 512), 'keep_ratio': True, 'downscale_only': True,
+                    },
+                    'enable_memcache': True},
+                {'type': 'MinIoURandomCrop', 'min_ious': (0.1, 0.3, 0.5, 0.7, 0.9), 'min_crop_size': 0.3},
+                {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
+                {'type': 'RandomFlip', 'prob': 0.5},
+                {
+                    'type': 'PackDetInputs',
+                    'meta_keys': [
+                        'ori_filename',
+                        'flip_direction',
+                        'scale_factor',
+                        'gt_ann_ids',
+                        'flip',
+                        'ignored_labels',
+                        'ori_shape',
+                        'filename',
+                        'img_shape',
+                        'pad_shape',
+                    ],
+                },
+            ],
+            "val": [
+                {
+                    'type': 'LoadResizeDataFromOTXDataset',
+                    'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
+                    'resize_cfg': {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
+                    'enable_memcache': True,
+                    'eval_mode': True,
+                },
+                {
+                    'type': 'PackDetInputs',
+                    'meta_keys': ['ori_filename', 'scale_factor', 'ori_shape', 'filename', 'img_shape', 'pad_shape'],
+                },
+            ],
+            "test": [
+                {
+                    'type': 'LoadResizeDataFromOTXDataset',
+                    'load_ann_cfg': {'type': 'LoadAnnotationFromOTXDataset', 'with_bbox': True},
+                    'resize_cfg': {'type': 'Resize', 'scale': (512, 512), 'keep_ratio': False},
+                    'enable_memcache': True,
+                    'eval_mode': True,
+                },
+                {
+                    'type': 'PackDetInputs',
+                    'meta_keys': ['ori_filename', 'scale_factor', 'ori_shape', 'filename', 'img_shape', 'pad_shape'],
+                },
+            ],
+        },
+        TaskType.INSTANCE_SEGMENTATION: {
+            "train": [
+                {
+                    "type": "LoadResizeDataFromOTXDataset",
+                    "load_ann_cfg": {
+                        "type": "LoadAnnotationFromOTXDataset",
+                        "domain": "instance_segmentation",
+                        "with_bbox": True,
+                        "with_mask": True,
+                        "poly2mask": False,
+                    },
+                    "resize_cfg": {
+                        "type": "Resize",
+                        "scale": (512, 512),
+                        "keep_ratio": False,
+                    },
+                    "enable_memcache": True,  # Cache after resizing image & annotations
+                },
+                {"type": "RandomFlip", "prob": 0.5},
+                {"type": "Pad", "size_divisor": 32},
+                {
+                    "type": "PackDetInputs",
+                    "meta_keys": [
+                        "ori_filename",
+                        "flip_direction",
+                        "scale_factor",
+                        "gt_ann_ids",
+                        "flip",
+                        "ignored_labels",
+                        "ori_shape",
+                        "filename",
+                        "img_shape",
+                        "pad_shape",
+                    ],
+                },
+            ],
+            "val": [
+                {
+                    "type": "LoadResizeDataFromOTXDataset",
+                    "load_ann_cfg": {
+                        "type": "LoadAnnotationFromOTXDataset",
+                        "domain": "instance_segmentation",
+                        "with_bbox": True,
+                        "with_mask": True,
+                        "poly2mask": False,
+                    },
+                    "resize_cfg": {"type": "Resize", "scale": (512, 512), "keep_ratio": False},
+                    "enable_memcache": True,  # Cache after resizing image
+                    "eval_mode": True,
+                },
+                {
+                    "type": "PackDetInputs",
+                    "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
+                },
+            ],
+            "test": [
+                {"type": "LoadImageFromOTXDataset"},
+                {"type": "Resize", "scale": (512, 512), "keep_ratio": False},
+                {
+                    "type": "LoadAnnotationFromOTXDataset",
+                    "domain": "instance_segmentation",
+                    "with_bbox": True,
+                    "with_mask": True,
+                    "poly2mask": False,
+                },
+                {
+                    "type": "PackDetInputs",
+                    "meta_keys": ["ori_filename", "scale_factor", "ori_shape", "filename", "img_shape", "pad_shape"],
+                },
+            ],
+        },
+    }
+    return default_pipeline[task][subset]
 
 
 @add_subset_dataloader(SUBSET_LIST)
@@ -174,5 +263,5 @@ class MMDetDataset(MMXDataset):
         dataset_config = config.get("dataset", config) if config is not None else {}
         if pipeline is None and "pipeline" not in dataset_config:
             is_semisl = subset == "unlabeled"
-            pipeline = get_default_pipeline(subset, is_semisl=is_semisl)
+            pipeline = get_default_pipeline(subset, is_semisl=is_semisl, task=self.task)
         return super()._build_dataset(subset, pipeline, config)
