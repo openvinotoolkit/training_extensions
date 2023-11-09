@@ -4,10 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import cv2
+import numpy as np
 from typing import Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
 from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.media import Image as DatumImage
 from datumaro.plugins.transforms import MasksToPolygons
 
 from otx.v2.api.entities.label_schema import LabelSchemaEntity
@@ -77,7 +80,18 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
 
         for _, subset_data in self.dataset.items():
             for datumaro_item in subset_data:
-                # image = self.datum_media_2_otx_media(datumaro_item.media)
+                
+                data = datumaro_item.media.data
+                # OTX expects RGB format
+                if len(data.shape) == 2:
+                    data = cv2.cvtColor(data, cv2.COLOR_GRAY2RGB)
+                elif len(data.shape) == 3:
+                    if data.shape[-1] == 3:
+                        data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                    if data.shape[-1] == 4:
+                        data = cv2.cvtColor(data, cv2.COLOR_BGRA2RGB)
+                datumaro_item.media = DatumImage.from_numpy(data)
+
                 new_annotations = []
                 for ann in datumaro_item.annotations:
                     if ann.type == DatumAnnotationType.polygon:

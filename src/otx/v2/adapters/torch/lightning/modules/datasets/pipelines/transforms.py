@@ -36,6 +36,8 @@ def collate_fn(batch: list) -> dict:
         return None if len(items) == 0 else items
 
     index = [item["index"] for item in batch]
+    for idx, item in enumerate(batch):
+        print("###############", idx, item["images"].shape)
     images = torch.stack([item["images"] for item in batch])
     bboxes = _convert_empty_to_none("bboxes")
     points = None  # TBD

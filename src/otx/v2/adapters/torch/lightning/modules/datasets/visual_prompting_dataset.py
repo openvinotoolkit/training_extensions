@@ -109,7 +109,7 @@ class OTXVisualPromptingDataset(Dataset):
         Returns:
             dict: Processed prompts with ground truths.
         """
-        width, height = dataset_item.media.data.shape[:2]
+        height, width = dataset_item.media.data.shape[:2]
         bboxes: list[list[int]] = []
         points: list = []  # TBD
         gt_masks: list[np.ndarray] = []
@@ -120,7 +120,7 @@ class OTXVisualPromptingDataset(Dataset):
                 gt_mask = annotation.image
             elif isinstance(annotation, Polygon):
                 # convert polygon to mask
-                ann_mask = PolygonsToMasks.convert_polygon(annotation, height, width)
+                ann_mask = PolygonsToMasks.convert_polygon(annotation, width, height)
                 gt_mask = ann_mask.image
             else:
                 continue
@@ -156,15 +156,12 @@ class OTXVisualPromptingDataset(Dataset):
             dict: Dataset item.
         """
         dataset_item = self.dataset.get(id=self.item_ids[index][0], subset=self.item_ids[index][1])
-        print("################### 2", dataset_item)
-        print(dataset_item.media.data.shape)
-        item: dict = {"index": index, "images": dataset_item.media.data}
 
         prompts = self.get_prompts(dataset_item)
         if len(prompts["gt_masks"]) == 0:
             return {
                 "index": index,
-                "images": [],
+                "images": dataset_item.media.data.astype(np.uint8),
                 "bboxes": [],
                 "points": [],
                 "gt_masks": [],
@@ -172,6 +169,7 @@ class OTXVisualPromptingDataset(Dataset):
                 "labels": [],
             }
 
+        item: dict = {"index": index, "images": dataset_item.media.data.astype(np.uint8)}
         prompts["bboxes"] = np.array(prompts["bboxes"])
         item.update({**prompts})
         return self.transform(item)
