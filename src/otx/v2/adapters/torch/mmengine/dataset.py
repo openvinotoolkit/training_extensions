@@ -163,9 +163,9 @@ class MMXDataset(BaseTorchDataset):
         dataset_config.pop("file_list", None)
         dataset_config["_scope_"] = self.scope
 
-        if not _config.get("type", False):
-            _config["type"] = self.base_dataset.__name__
-        dataset = self.dataset_registry.build(_config)
+        if not dataset_config.get("type", False):
+            dataset_config["type"] = self.base_dataset.__name__
+        dataset = self.dataset_registry.build(dataset_config)
         dataset.configs = init_config
         return dataset
 
