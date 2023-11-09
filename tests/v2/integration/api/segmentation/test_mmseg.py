@@ -64,7 +64,7 @@ class TestMMSegAPI:
         Returns:
             None
         """
-        assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=36, val_data_size=80, test_data_size=80)
+        assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=3, val_data_size=2, test_data_size=2)
 
     @pytest.mark.parametrize("model", MODELS)
     def test_engine_api(self, dataset: Dataset, model: str, tmp_dir_path: Path) -> None:
