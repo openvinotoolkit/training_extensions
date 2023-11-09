@@ -604,9 +604,9 @@ class MMXEngine(Engine):
         # Patch input's configuration
         if isinstance(deploy_config_dict, dict):
             deploy_config_dict = Config(deploy_config_dict)
-        data_preprocessor = self.dumped_config.get("model", {}).get("data_preprocessor", None)
-        mean = data_preprocessor["mean"] if data_preprocessor is not None else [123.675, 116.28, 103.53]
-        std = data_preprocessor["std"] if data_preprocessor is not None else [58.395, 57.12, 57.375]
+        data_preprocessor = self.dumped_config.get("model", {}).get("data_preprocessor", {})
+        mean = data_preprocessor.get("mean", [123.675, 116.28, 103.53])
+        std = data_preprocessor.get("std", [58.395, 57.12, 57.375])
         to_rgb = data_preprocessor.get("bgr_to_rgb", data_preprocessor.get("to_rgb", False))
         patch_input_preprocessing(deploy_cfg=deploy_config_dict, mean=mean, std=std, to_rgb=to_rgb)
         if not deploy_config_dict.backend_config.get("model_inputs", []):
