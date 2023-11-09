@@ -40,6 +40,7 @@ args = {
     "--val-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--test-data-roots": "tests/assets/common_semantic_segmentation_dataset/val",
     "--input": "tests/assets/common_semantic_segmentation_dataset/train/images",
+    "--track-resource-usage": "all",
     "train_params": [
         "params",
         "--learning_parameters.learning_rate_warmup_iters",
