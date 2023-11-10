@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 from typing import Any, Dict, List, Optional, Union
+from otx.algorithms.common.configs.training_base import TrainType
 
 import cv2
 import numpy as np
@@ -36,7 +37,8 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Polygon
+from otx.api.entities.shapes.polygon import Polygon, Point
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.shape_factory import ShapeFactory
 
@@ -127,6 +129,13 @@ def generate_bbox_from_mask(gt_mask: np.ndarray, width: int, height: int) -> Lis
     x_min, x_max = np.min(x_indices), np.max(x_indices)
     y_min, y_max = np.min(y_indices), np.max(y_indices)
     return generate_bbox(x_min, y_min, x_max, y_max, width, height)
+
+
+def generate_point_from_mask(gt_mask: np.ndarray) -> np.ndarray:
+    """Randomly generate point from given mask."""
+    candidates = np.where(gt_mask == 1)
+    index = np.random.permutation(len(candidates))[0]
+    return candidates[index]
 
 
 class OTXVisualPromptingDataset(Dataset):
@@ -244,10 +253,97 @@ class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
         image_size (int): Target size to resize image.
         mean (List[float]): Mean for normalization.
         std (List[float]): Standard deviation for normalization.
+        generate_point (bool): Randomly generate a point based on a mask instead of using the mask, defaults to False.
+        generate_bbox (bool): Randomly generate a bouding box based on a mask instead of using the mask, defaults to False.
     """
 
-    def __init__(self, dataset: DatasetEntity, image_size: int, mean: List[float], std: List[float]) -> None:
-        super().__init__(dataset, image_size, mean, std, 0)
+    def __init__(self, dataset: DatasetEntity, image_size: int, mean: List[float], std: List[float], generate_point: bool = False, generate_bbox: bool = False, **kwargs) -> None:
+        super().__init__(dataset, image_size, mean, std, offset_bbox=0)
+        self.generate_point = generate_point
+        self.generate_bbox = generate_bbox
+        
+    # @staticmethod
+    # def get_prompts(dataset_item: DatasetItemEntity, dataset_labels: List[LabelEntity], generate_point: bool = False, generate_bbox: bool = False) -> Dict[str, Any]:
+    #     """Get propmts from dataset_item.
+
+    #     Args:
+    #         dataset_item (DatasetItemEntity): Dataset item entity.
+    #         dataset_labels (List[LabelEntity]): Label information.
+    #         generate_point (bool): Randomly generate a point based on a mask instead of using the mask, defaults to False.
+    #         generate_bbox (bool): Randomly generate a bouding box based on a mask instead of using the mask, defaults to False.
+
+    #     Returns:
+    #         List[Dict[str, Any]]: Processed prompts with ground truths.
+    #     """
+    #     width, height = dataset_item.width, dataset_item.height
+    #     prompts: List = []
+    #     for annotation in dataset_item.get_annotations(labels=dataset_labels, include_empty=False, preserve_id=True):
+    #         label = annotation.get_labels(include_empty=False)
+    #         is_gt_mask = False
+    #         if isinstance(annotation.shape, Image):
+    #             # use mask as-is
+    #             gt_mask = annotation.shape.numpy.astype(np.uint8)
+    #             prompts.append({
+    #                 "type": "annotation",
+    #                 "annotation": gt_mask,
+    #                 "label": label
+    #             })
+    #             is_gt_mask = True
+    #         if isinstance(annotation.shape, Polygon):
+    #             # convert polygon to mask
+    #             gt_mask = convert_polygon_to_mask(annotation.shape, width, height)
+    #             prompts.append({
+    #                 "type": "annotation",
+    #                 "annotation": gt_mask,
+    #                 "label": label
+    #             })
+    #             is_gt_mask = True
+                
+    #         if is_gt_mask:
+    #             is_point = False
+    #             if generate_point:
+    #                 if np.random.rand() > 0.5:
+    #                     prompts.pop(-1)
+    #                     point = generate_point_from_mask(gt_mask)
+    #                     prompts.append({
+    #                         "type": "point",
+    #                         "point_coords": np.array([[point[1], point[0]]]),
+    #                         "point_labels": np.array([1]),
+    #                         "label": label
+    #                     })
+    #                     is_point = True
+                        
+    #             if generate_bbox:
+    #                 if not is_point and np.random.rand() > 0.5:
+    #                     prompts.pop(-1)
+    #                     bbox = generate_bbox_from_mask(gt_mask, width, height)
+    #                     prompts.append({
+    #                         "type": "box",
+    #                         "point_coords": np.array([[bbox[0], bbox[1]], [bbox[2], bbox[3]]]), # (x1, y1), (x2, y2)
+    #                         "point_labels": np.array([1]),
+    #                         "label": label
+    #                     })
+                
+    #         if isinstance(annotation.shape, Rectangle):
+    #             bbox = ShapeFactory.shape_as_rectangle(annotation.shape)
+    #             prompts.append({
+    #                 "type": "box",
+    #                 "point_coords": np.array([
+    #                     [bbox.x1 * width, bbox.y1 * height],
+    #                     [bbox.x2 * width, bbox.y2 * height]]), # (x1, y1), (x2, y2)
+    #                 "point_labels": np.array([1]),
+    #                 "label": label
+    #             })
+    #         if isinstance(annotation.shape, Point):
+    #             point = annotation.shape
+    #             prompts.append({
+    #                 "type": "point",
+    #                 "point_coords": np.array([[point.x * width, point.y * height]]),
+    #                 "point_labels": np.array([1]),
+    #                 "label": label
+    #             })
+
+    #     return prompts
         
     def __getitem__(self, index: int) -> Dict[str, Union[int, List, Tensor]]:
         """Get dataset item.
@@ -261,8 +357,7 @@ class OTXZeroShotVisualPromptingDataset(OTXVisualPromptingDataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {"index": index, "images": dataset_item.numpy}
 
-        prompts = self.get_prompts(dataset_item, self.labels)
-        prompts["bboxes"] = np.array(prompts["bboxes"])
+        prompts = self.get_prompts(dataset_item, self.labels)#, self.generate_point, self.generate_bbox)
         item.update({**prompts, "path": dataset_item.media.path})
         item = self.transform(item)
         return item
@@ -275,11 +370,27 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         config (Union[DictConfig, ListConfig]): Configuration.
         dataset (DatasetEntity): Dataset entity.
     """
+    DATASETS = {
+        TrainType.Incremental: OTXVisualPromptingDataset,
+        TrainType.Zeroshot: OTXZeroShotVisualPromptingDataset,
+    }
 
-    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity) -> None:
+    def __init__(self, config: Union[DictConfig, ListConfig], dataset: DatasetEntity, train_type: TrainType = "Incremental") -> None:
         super().__init__()
         self.config = config
         self.dataset = dataset
+        self.train_type = train_type
+        self.kwargs = {}
+        if self.train_type == TrainType.Zeroshot:
+            # check zero-shot configs
+            if self.config.get("train_batch_size", 1) != 1:
+                logger.warning(f"Zero-shot learning only supports single batch, update {self.config.get('train_batch_size', 1)} to 1.")
+                self.config["train_batch_size"] = 1
+
+            self.kwargs.update({
+                "generate_point": self.config.get("generate_point", False),
+                "generate_bbox": self.config.get("generate_bbox", False),
+            })
 
         self.train_otx_dataset: DatasetEntity
         self.val_otx_dataset: DatasetEntity
@@ -299,21 +410,36 @@ class OTXVisualPromptingDataModule(LightningDataModule):
         mean = self.config.normalize.mean
         std = self.config.normalize.std
         if stage == "fit" or stage is None:
-            train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
-            val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
-
-            self.train_dataset = OTXVisualPromptingDataset(
-                train_otx_dataset, image_size, mean, std, offset_bbox=self.config.offset_bbox
-            )
-            self.val_dataset = OTXVisualPromptingDataset(val_otx_dataset, image_size, mean, std)
+            self.train_dataset = self.DATASETS[self.train_type](
+                dataset=self.dataset.get_subset(Subset.TRAINING),
+                image_size=image_size,
+                mean=mean,
+                std=std,
+                offset_bbox=self.config.offset_bbox,
+                **self.kwargs)
+            
+            # self.val_dataset = None
+            if self.train_type == TrainType.Incremental:
+                self.val_dataset = self.DATASETS[self.train_type](
+                    dataset=self.dataset.get_subset(Subset.VALIDATION),
+                    image_size=image_size,
+                    mean=mean,
+                    std=std)
 
         if stage == "test":
-            test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
-            self.test_dataset = OTXVisualPromptingDataset(test_otx_dataset, image_size, mean, std)
+            self.test_dataset = self.DATASETS[self.train_type](
+                dataset=self.dataset.get_subset(Subset.TESTING),
+                image_siz=image_size,
+                mean=mean,
+                std=std)
 
         if stage == "predict":
-            predict_otx_dataset = self.dataset
-            self.predict_dataset = OTXVisualPromptingDataset(predict_otx_dataset, image_size, mean, std)
+            self.predict_dataset = self.DATASETS[self.train_type](
+                dataset=self.dataset,
+                image_size=image_size,
+                mean=mean,
+                std=std,
+                **self.kwargs)
 
     def summary(self):
         """Print size of the dataset, number of images."""
