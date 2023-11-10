@@ -1,6 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Base Algo Requirements.                                                          #
-natsort==8.4.*
+natsort==8.1.*
 prettytable==3.9.*
 protobuf==3.20.*
 pyyaml
