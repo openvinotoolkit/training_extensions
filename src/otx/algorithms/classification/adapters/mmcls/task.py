@@ -52,6 +52,7 @@ from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
+from otx.algorithms.common.utils import is_hpu_available
 from otx.algorithms.common.utils.data import get_dataset
 from otx.algorithms.common.utils.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -68,6 +69,9 @@ from .configurer import (
     SemiSLClassificationConfigurer,
 )
 from .utils import build_classifier
+
+if is_hpu_available:
+    import habana_frameworks.torch.core as htcore
 
 logger = get_logger()
 
@@ -367,6 +371,10 @@ class MMClassificationTask(OTXClassificationTask):
         # Model
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.train()
+        if is_hpu_available():
+            # TODO (sungchul): move it to appropriate location if needed
+            htcore.hpu.ModuleCacher(max_graphs=10)(model=model.backbone, inplace=True)
+            htcore.hpu.ModuleCacher(max_graphs=10)(model=model.head, inplace=True)
 
         if cfg.distributed:
             convert_sync_batchnorm(model)
