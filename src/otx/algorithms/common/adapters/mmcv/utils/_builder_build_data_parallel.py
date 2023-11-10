@@ -64,7 +64,7 @@ def build_data_parallel(
         model = model.xpu()
         model = XPUDataParallel(model, device_ids=config.gpu_ids)
     elif is_hpu_available() and config.get("gpu_ids", []):
-        model = model.hpu()
+        model = model.to("hpu")
         model = HPUDataParallel(model, device_ids=config.gpu_ids)
     elif torch.cuda.is_available() and config.get("gpu_ids", []):
         if distributed:
@@ -140,9 +140,10 @@ class XPUDataParallel(MMDataParallel):
 
 
 class HPUDataParallel(MMDataParallel):
-    def __init__(self, *args, enable_autocast: bool = False, **kwargs):
+    def __init__(self, *args, enable_autocast: bool = False, put_gt_on_device=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.enable_autocast = enable_autocast
+        self.put_gt_on_device = put_gt_on_device
         self.src_device_obj = torch.device("hpu", self.device_ids[0])
 
     def scatter(self, inputs, kwargs, device_ids):
@@ -153,6 +154,10 @@ class HPUDataParallel(MMDataParallel):
                 for val in x:
                     if isinstance(val, dict):
                         for k in val:
+                            # don't put annotations on the HPU to proceed
+                            # post-processing on the CPU
+                            if not self.put_gt_on_device and k.startswith("gt_"):
+                                continue
                             if isinstance(val[k], torch.Tensor):
                                 val[k] = val[k].to(self.src_device_obj)
                             elif isinstance(val[k], list):

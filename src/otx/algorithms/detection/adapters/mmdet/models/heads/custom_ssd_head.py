@@ -81,6 +81,35 @@ class CustomSSDHead(SSDHead):
                     nn.Conv2d(in_channel, num_base_priors * self.cls_out_channels, kernel_size=3, padding=1)
                 )
 
+    def forward(self, feats):
+        """Forward features from the upstream network.
+
+        Args:
+            feats (tuple[Tensor]): Features from the upstream network, each is
+                a 4D-tensor.
+
+        Returns:
+            tuple:
+                cls_scores (list[Tensor]): Classification scores for all scale
+                    levels, each is a 4D-tensor, the channels number is
+                    num_anchors * num_classes.
+                bbox_preds (list[Tensor]): Box energies / deltas for all scale
+                    levels, each is a 4D-tensor, the channels number is
+                    num_anchors * 4.
+        """
+        cls_scores = []
+        bbox_preds = []
+        for feat, reg_conv, cls_conv in zip(feats, self.reg_convs, self.cls_convs):
+            cls_out = cls_conv(feat)
+            reg_out = reg_conv(feat)
+            if cls_out.device.type == "hpu":
+                cls_scores.append(cls_out.cpu())
+                bbox_preds.append(reg_out.cpu())
+            else:
+                cls_scores.append(cls_out)
+                bbox_preds.append(reg_out)
+        return cls_scores, bbox_preds
+
     def loss_single(
         self,
         cls_score,

@@ -33,7 +33,7 @@ model = dict(
         num_outs=5,
     ),
     rpn_head=dict(
-        type="RPNHead",
+        type="CustomRPNHead",
         in_channels=256,
         feat_channels=256,
         anchor_generator=dict(
