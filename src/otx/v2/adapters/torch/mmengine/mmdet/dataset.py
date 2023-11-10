@@ -174,7 +174,8 @@ class MMDetDataset(MMXDataset):
         Returns:
             Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
         """
-        if pipeline is None:
+        dataset_config = config.get("dataset", config) if config is not None else {}
+        if pipeline is None and "pipeline" not in dataset_config:
             semisl = subset == "unlabeled"
             pipeline = get_default_pipeline(subset, semisl=semisl)
         return super()._build_dataset(subset, pipeline, config)
