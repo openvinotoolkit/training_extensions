@@ -31,6 +31,7 @@ from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar
 
+from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
 from otx.algorithms.common.utils.logger import get_logger
 from otx.algorithms.visual_prompting.adapters.pytorch_lightning.callbacks import (
@@ -85,6 +86,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.task_type = task_environment.model_template.task_type
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
+        self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
+        self.train_type = self.hyper_parameters.algo_backend.train_type
 
         template_file_path = task_environment.model_template.model_template_path
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
@@ -129,8 +132,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             Union[DictConfig, ListConfig]: Visual Prompting config.
         """
-        self.hyper_parameters: VisualPromptingBaseConfig = self.task_environment.get_hyper_parameters()
-
         # set checkpoints
         model_checkpoint: Optional[str] = None
         resume_from_checkpoint: Optional[str] = None
@@ -168,13 +169,14 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             LightningModule: Visual prompting model with/without weights.
         """
 
-        def get_model(config: DictConfig, state_dict: Optional[OrderedDict] = None):
+        def get_model(config: DictConfig, train_type: TrainType, state_dict: Optional[OrderedDict] = None):
             if config.model.name == "SAM":
-                from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import (
-                    SegmentAnything,
-                )
-
-                model = SegmentAnything(config=config, state_dict=state_dict)
+                if train_type == TrainType.Incremental:
+                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import SegmentAnything as VisualPrompter
+                elif train_type == TrainType.Zeroshot:
+                    from otx.algorithms.visual_prompting.adapters.pytorch_lightning.models import ZeroShotSegmentAnything as VisualPrompter
+                
+                model = VisualPrompter(config=config, state_dict=state_dict)
             else:
                 raise NotImplementedError(
                     (f"Current selected model {config.model.name} is not implemented. " f"Use SAM instead.")
@@ -217,7 +219,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 state_dict = model_data
 
         try:
-            model = get_model(config=self.config, state_dict=state_dict)
+            model = get_model(config=self.config, train_type=self.train_type, state_dict=state_dict)
             logger.info("Complete to load model.")
         except BaseException as exception:
             raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
