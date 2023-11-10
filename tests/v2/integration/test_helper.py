@@ -30,6 +30,6 @@ TASK_CONFIGURATION = {
         "val_data_roots": "tests/assets/common_semantic_segmentation_dataset/val",
         "test_data_roots": "tests/assets/common_semantic_segmentation_dataset/val",
         "sample": "tests/assets/common_semantic_segmentation_dataset/train/images/0001.png",
-        "models": ["ocr_lite_hrnet_s_mod2"],
+        "models": ["otx_lite_hrnet_s_mod2"],
     },
 }

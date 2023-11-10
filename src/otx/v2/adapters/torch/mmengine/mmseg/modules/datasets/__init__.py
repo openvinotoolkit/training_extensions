@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .otx_datasets import LoadAnnotationFromOTXDataset, OTXSegDataset, get_annotation_mmseg_format
+from .otx_datasets import OTXSegDataset
+from .pipeline import LoadAnnotationFromOTXDataset, get_annotation_mmseg_format
 
 __all__ = [
     "get_annotation_mmseg_format",

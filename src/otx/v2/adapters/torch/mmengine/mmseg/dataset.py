@@ -211,27 +211,10 @@ class MMSegDataset(MMXDataset):
         Returns:
             Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
         """
-        def check_and_convert_to_tuple(pipeline: list[dict] | None) -> list[dict] | None:
-            """Check if the pipeline is None, and if not, convert any lists in the pipeline to tuples.
-
-            Args:
-                pipeline (list[dict] | None): The pipeline to check and convert.
-
-            Returns:
-                list[dict] | None: The converted pipeline, or None if the input was None.
-            """
-            if pipeline is None:
-                return None
-            for step in pipeline:
-                for key, value in step.items():
-                    if isinstance(value, list):
-                        step[key] = tuple(value)
-            return pipeline
-
         dataset_config = config.get("dataset", config) if config is not None else {}
         if pipeline is None and "pipeline" not in dataset_config:
             pipeline = get_default_pipeline(subset=subset)
-        return super()._build_dataset(subset, check_and_convert_to_tuple(pipeline), config)
+        return super()._build_dataset(subset, pipeline, config)
 
     @property
     def num_classes(self) -> int:

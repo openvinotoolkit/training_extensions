@@ -16,35 +16,30 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 from mmseg.datasets import BaseCDDataset
 
-from otx.v2.adapters.torch.mmengine.mmseg.registry import DATASETS, TRANSFORMS
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
+from otx.v2.adapters.torch.mmengine.mmseg.registry import DATASETS
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity
-from otx.v2.api.entities.utils.segmentation_utils import mask_from_dataset_item
 
 
-def get_annotation_mmseg_format(
-    dataset_item: DatasetItemEntity,
-    labels: list[LabelEntity],
-    use_otx_adapter: bool = True,
-) -> dict:
-    """Function to convert a OTX annotation to mmsegmentation format.
+def check_and_convert_to_tuple(pipeline: list[dict] | None) -> list[dict] | None:
+    """Check if the pipeline is None, and if not, convert any lists in the pipeline to tuples.
 
-    This is used both in the OTXDataset class defined in this file
-    as in the custom pipeline element 'LoadAnnotationFromOTXDataset'
+    Args:
+        pipeline (list[dict] | None): The pipeline to check and convert.
 
-    :param dataset_item: DatasetItem for which to get annotations
-    :param labels: List of labels in the project
-    :return dict: annotation information dict in mmseg format
+    Returns:
+        list[dict] | None: The converted pipeline, or None if the input was None.
     """
-    gt_seg_map = mask_from_dataset_item(dataset_item, labels, use_otx_adapter)
-    gt_seg_map = gt_seg_map.squeeze(2).astype(np.uint8)
-    return {"gt_seg_map": gt_seg_map}
+    if pipeline is None:
+        return None
+    for step in pipeline:
+        for key, value in step.items():
+            if isinstance(value, list):
+                step[key] = tuple(value)
+    return pipeline
 
 
 @DATASETS.register_module()
@@ -66,7 +61,7 @@ class OTXSegDataset(BaseCDDataset):
         otx_dataset: DatasetEntity,
         labels: list[LabelEntity],
         empty_label: list | None = None,
-        pipeline: list | dict | None = None,
+        pipeline: list | None = None,
         **kwargs,
     ) -> None:
         """Dataset class for OTX datasets.
@@ -75,7 +70,7 @@ class OTXSegDataset(BaseCDDataset):
             otx_dataset (DatasetEntity): The OTX dataset to use.
             labels (list[LabelEntity]): List of label entities.
             empty_label (list | None, optional): Empty label. Defaults to None.
-            pipeline (list | dict | None, optional): Data processing pipeline. Defaults to None.
+            pipeline (list | None, optional): Data processing pipeline. Defaults to None.
             **kwargs: Additional keyword arguments.
 
         Attributes:
@@ -95,7 +90,12 @@ class OTXSegDataset(BaseCDDataset):
             mmseg_labels = ["background", *mmseg_labels]
         metainfo = {"classes": mmseg_labels}
         test_mode = kwargs.get("test_mode", False)
-        super().__init__(metainfo=metainfo, pipeline=pipeline, test_mode=test_mode, lazy_init=True)
+        super().__init__(
+            metainfo=metainfo,
+            pipeline=check_and_convert_to_tuple(pipeline),
+            test_mode=test_mode,
+            lazy_init=True,
+        )
         self.serialize_data = None  # OTX has its own data caching mechanism
         self._fully_initialized = True
 
@@ -123,34 +123,3 @@ class OTXSegDataset(BaseCDDataset):
             "seg_fields": [],
         }
         return self.pipeline(data_info)
-
-
-@TRANSFORMS.register_module()
-class LoadAnnotationFromOTXDataset:
-    """Pipeline element that loads an annotation from a OTX Dataset on the fly.
-
-    Expected entries in the 'results' dict that should be passed to this pipeline element are:
-        results['dataset_item']: dataset_item from which to load the annotation
-        results['ann_info']['label_list']: list of all labels in the project
-
-    """
-
-    def __init__(self, use_otx_adapter: bool = True) -> None:
-        """Initializes the pipeline element.
-
-        Args:
-            use_otx_adapter (bool): Whether to use the OTX adapter or not.
-        """
-        self.use_otx_adapter = use_otx_adapter
-
-    def __call__(self, results: dict[str, Any]) -> dict:
-        """Callback function of LoadAnnotationFromOTXDataset."""
-        dataset_item = results.pop("dataset_item")  # Prevent unnessary deepcopy
-        labels = results["ann_info"]["labels"]
-
-        ann_info = get_annotation_mmseg_format(dataset_item, labels, self.use_otx_adapter)
-
-        results["gt_seg_map"] = ann_info["gt_seg_map"]
-        results["seg_fields"].append("gt_seg_map")
-
-        return results
