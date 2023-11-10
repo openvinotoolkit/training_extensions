@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
-from otx.v2.adapters.torch.mmengine.mmaction.dataset import Dataset, get_default_pipeline
+from otx.v2.adapters.torch.mmengine.mmaction.dataset import MMActionDataset, get_default_pipeline
 from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TrainType
@@ -28,7 +28,7 @@ def test_get_default_pipeline() -> None:
 
 class TestDataset:
     def test_init(self) -> None:
-        dataset = Dataset()
+        dataset = MMActionDataset()
         assert dataset.train_data_roots is None
         assert dataset.train_ann_files is None
         assert dataset.val_data_roots is None
@@ -42,7 +42,7 @@ class TestDataset:
         assert dataset.data_format is None
         assert dataset.initialize is False
 
-        dataset = Dataset(
+        dataset = MMActionDataset(
             task="Classification",
             train_type="Incremental",
             train_data_roots="train/data/roots",
@@ -67,7 +67,7 @@ class TestDataset:
 
     def test__initialize(self, mocker: MockerFixture) -> None:
         mock_set_datumaro_adapters = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.Dataset.set_datumaro_adapters")
-        dataset = Dataset()
+        dataset = MMActionDataset()
         dataset.train_type = TrainType.Incremental
         mock_label_schema = mocker.MagicMock()
         mock_label_schema.get_groups.return_value = ["test1"]
@@ -84,7 +84,7 @@ class TestDataset:
         mock_mmpretrain_build_dataset.return_value = mocker.MagicMock()
 
         # Invalid subset
-        dataset = Dataset(
+        dataset = MMActionDataset(
             train_data_roots="train/data/roots",
             train_ann_files="train/ann/files",
         )
@@ -139,7 +139,7 @@ class TestDataset:
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
         # dataset is None
-        dataset = Dataset()
+        dataset = MMActionDataset()
         assert dataset.build_dataloader(dataset=None) is None
 
         mock_get_dist_info = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.get_dist_info", return_value=(1, 2))
