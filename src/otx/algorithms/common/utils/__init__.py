@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import os
+
 from .callback import (
     InferenceProgressCallback,
     OptimizationProgressCallback,

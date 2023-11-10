@@ -29,9 +29,10 @@ from mmdet.core.evaluation.class_names import get_classes
 from mmdet.core.evaluation.mean_ap import average_precision
 from terminaltables import AsciiTable
 
+from otx.algorithms.common.utils.utils import is_hpu_available
 from otx.api.entities.label import Domain
 from otx.api.utils.time_utils import timeit
-from otx.algorithms.common.utils.utils import is_hpu_available
+
 
 def print_map_summary(  # pylint: disable=too-many-locals,too-many-branches
     mean_ap, results, dataset=None, scale_ranges=None, logger=None
