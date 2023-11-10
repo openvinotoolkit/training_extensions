@@ -1,7 +1,7 @@
 """Arithmetics-related codes for otx.core.ov.ops.arithmetics."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from dataclasses import dataclass, field
 

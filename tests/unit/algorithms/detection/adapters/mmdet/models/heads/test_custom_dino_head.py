@@ -8,6 +8,7 @@ import pytest
 import torch
 from mmcv.utils import ConfigDict
 from mmdet.core import build_assigner
+from mmdet.core.bbox.assigners import AssignResult, HungarianAssigner
 from mmdet.models.builder import build_detector
 
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
@@ -82,8 +83,7 @@ class TestCustomDINOHead:
         self.bbox_head.test_cfg = test_cfg
 
     @e2e_pytest_unit
-    @pytest.mark.skip("Test is unstable")
-    def test_forward_train(self):
+    def test_forward_train(self, mocker):
         inputs = [
             torch.zeros([2, 256, 92, 95]),
             torch.zeros([2, 256, 46, 48]),
@@ -165,11 +165,19 @@ class TestCustomDINOHead:
                 "batch_input_shape": (736, 760),
             },
         ]
+
+        mock_assign_result = AssignResult(
+            num_gts=16,
+            gt_inds=torch.randint(0, 2, (900,)),
+            max_overlaps=None,
+            labels=torch.zeros(900),
+        )
+        mocker.patch.object(HungarianAssigner, "assign", return_value=mock_assign_result)
+
         losses = self.bbox_head.forward_train(inputs, img_metas, gt_bboxes, gt_labels)
         assert len(losses) == 39
 
     @e2e_pytest_unit
-    @pytest.mark.skip("Test is unstable")
     def test_simple_test_bboxes(self):
         feats = [
             torch.zeros([2, 256, 100, 134]),

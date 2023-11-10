@@ -1,13 +1,11 @@
 """Utils function for otx.core.ov.ops."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 from openvino.runtime import Node
 
 from .builder import OPS
-
-# TODO: We moved the location of otx.mpa.utils.logger, we need to revert the logger in that code again.
 
 
 def get_dynamic_shape(output):

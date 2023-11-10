@@ -20,8 +20,8 @@ __resize_target_size = (224, 224)
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 __train_pipeline = [
-    dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations"),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(type="LoadAnnotationFromOTXDataset"),
     dict(
         type="TwoCropTransform",
         view0=[
@@ -61,7 +61,22 @@ __train_pipeline = [
         ],
     ),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_semantic_seg"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_semantic_seg"],
+        meta_keys=[
+            "ori_shape",
+            "pad_shape",
+            "ori_filename",
+            "filename",
+            "scale_factor",
+            "flip",
+            "img_norm_cfg",
+            "flip_direction",
+            "ignored_labels",
+            "img_shape",
+        ],
+    ),
 ]
 
-data = dict(train=dict(type="MPASegDataset", pipeline=__train_pipeline))
+data = dict(train=dict(type="OTXSegDataset", pipeline=__train_pipeline))

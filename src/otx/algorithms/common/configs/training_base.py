@@ -30,7 +30,7 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
-from .configuration_enums import BatchSizeAdaptType, POTQuantizationPreset, StorageCacheScheme
+from .configuration_enums import BatchSizeAdaptType, InputSizePreset, POTQuantizationPreset, StorageCacheScheme
 
 # pylint: disable=invalid-name
 
@@ -69,9 +69,21 @@ class BaseConfig(ConfigurableParameters):
             min_value=1,
             max_value=2048,
             header="Batch size",
-            description="The number of training samples seen in each iteration of training. Increasing thisvalue "
+            description="The number of training samples seen in each iteration of training. Increasing this value "
             "improves training time and may make the training more stable. A larger batch size has higher "
             "memory requirements.",
+            warning="Increasing this value may cause the system to use more memory than available, "
+            "potentially causing out of memory errors, please update with caution.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        inference_batch_size = configurable_integer(
+            default_value=1,
+            min_value=1,
+            max_value=512,
+            header="Inference batch size",
+            description="The number of samples seen in each iteration of inference. Increasing this value "
+            "improves inference time. A larger batch size has higher memory requirements.",
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
@@ -174,15 +186,6 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE,
         )
 
-        num_checkpoints = configurable_integer(
-            default_value=5,
-            min_value=1,
-            max_value=100,
-            header="Number of checkpoints that is done during the single training round",
-            description="",
-            affects_outcome_of=ModelLifecycle.NONE,
-        )
-
         enable_supcon = configurable_boolean(
             default_value=False,
             header="Enable Supervised Contrastive helper loss",
@@ -205,6 +208,17 @@ class BaseConfig(ConfigurableParameters):
             header="Enable auto adaptive num_workers",
             description="Adapt num_workers according to current hardware status automatically.",
             affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        input_size = selectable(
+            default_value=InputSizePreset.DEFAULT,
+            header="Configure model input size.",
+            description="The input size of the given model could be configured to one of the predefined resolutions."
+            "Reduced training and inference time could be expected by using smaller input size."
+            "Defaults to per-model default resolution.",
+            warning="Modifying input size may decrease model performance.",
+            affects_outcome_of=ModelLifecycle.NONE,
+            visible_in_ui=False,
         )
 
     @attrs
@@ -277,7 +291,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize,
+            max_value=100000,
         )
 
         stat_requests_number = configurable_integer(
@@ -285,7 +299,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of requests during statistics collection",
             default_value=0,
             min_value=0,
-            max_value=maxsize,
+            max_value=200,
         )
 
         preset = selectable(
@@ -398,7 +412,7 @@ class BaseConfig(ConfigurableParameters):
             "to crash or result in out-of-memory errors. It is recommended to "
             "adjust the scale factor value carefully based on the available "
             "hardware resources and the needs of the application.",
-            default_value=2.0,
+            default_value=1.0,
             min_value=1.0,
             max_value=4.0,
             affects_outcome_of=ModelLifecycle.NONE,

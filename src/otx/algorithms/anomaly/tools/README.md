@@ -20,4 +20,4 @@ python tools/sample.py \
     --model_template_path ./configs/anomaly_segmentation/padim/template.yaml
 ```
 
-Optionally, you can also optimize to `nncf` or `pot` by using the `--optimization` flag
+Optionally, you can also optimize to `nncf` or `ptq` by using the `--optimization` flag

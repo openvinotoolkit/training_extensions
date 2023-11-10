@@ -11,6 +11,7 @@ from tests.regression.regression_test_helpers import (
     TRAIN_TYPES,
 )
 
+
 ANOMALY_DATA = {
     "Task type": [],
     "MVTec Category": [],
@@ -19,17 +20,17 @@ ANOMALY_DATA = {
     "export": [],
     "deploy": [],
     "nncf": [],
-    "pot": [],
+    "ptq": [],
     "train E2E Time (Sec.)": [],
     "export E2E Time (Sec.)": [],
     "deploy E2E Time (Sec.)": [],
     "nncf E2E Time (Sec.)": [],
-    "pot E2E Time (Sec.)": [],
+    "ptq E2E Time (Sec.)": [],
     "train Eval Time (Sec.)": [],
     "export Eval Time (Sec.)": [],
     "deploy Eval Time (Sec.)": [],
     "nncf Eval Time (Sec.)": [],
-    "pot Eval Time (Sec.)": [],
+    "ptq Eval Time (Sec.)": [],
 }
 
 NON_ANOMALY_DATA = {
@@ -41,31 +42,33 @@ NON_ANOMALY_DATA = {
     "export": [],
     "deploy": [],
     "nncf": [],
-    "pot": [],
+    "ptq": [],
     "train E2E Time (Sec.)": [],
     "export E2E Time (Sec.)": [],
     "deploy E2E Time (Sec.)": [],
     "nncf E2E Time (Sec.)": [],
-    "pot E2E Time (Sec.)": [],
+    "ptq E2E Time (Sec.)": [],
     "train Eval Time (Sec.)": [],
     "export Eval Time (Sec.)": [],
     "deploy Eval Time (Sec.)": [],
     "nncf Eval Time (Sec.)": [],
-    "pot Eval Time (Sec.)": [],
+    "ptq Eval Time (Sec.)": [],
 }
 
 
 def get_metric_dict(dict_data: Union[List[Dict[str, Any]], None], idx: int, model: str):
     """Get the proper dict item by referencing the index and model information.
 
-    Since all models could be optimized by POT or NNCF, we need to check that there are proper values in the data.
-    For example, if model A could be optimized by both POT and NNCF and model B couldn't be supported by POT and NNCF.
-    In this case, we have POT, NNCF results about A, however, we don't have POT, NNCF results about B.
+    Since all models could be optimized by PTQ or NNCF, we need to check that there are proper values in the data.
+    For example, if model A could be optimized by both PTQ and NNCF and model B couldn't be supported by PTQ and NNCF.
+    In this case, we have PTQ, NNCF results about A, however, we don't have PTQ, NNCF results about B.
 
     So, if we don't have results, we need to mark the empty result as "-".
 
     """
     if dict_data and len(dict_data) > idx:
+        if dict_data[idx].get(model) is None:
+            return "-"
         return dict_data[idx][model]
     else:
         return "-"
@@ -105,7 +108,7 @@ def filter_task(root: str) -> Dict[str, str]:
         task_key = "_".join(task.split("_")[1:])
     else:
         task_key = task
-    return {"task_key": task_key, "task": task}
+    return task_key, task
 
 
 def is_anomaly_task(task: str) -> bool:
@@ -141,7 +144,7 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
             export_data = task_data.get("export", None)
             deploy_data = task_data.get("deploy", None)
             nncf_data = task_data.get("nncf", None)
-            pot_data = task_data.get("pot", None)
+            ptq_data = task_data.get("ptq", None)
 
             for i, per_model_data in enumerate(train_data):
                 for model in per_model_data:
@@ -149,7 +152,7 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
                     export_items = get_metric_items(get_metric_dict(export_data, i, model))
                     deploy_items = get_metric_items(get_metric_dict(deploy_data, i, model))
                     nncf_items = get_metric_items(get_metric_dict(nncf_data, i, model))
-                    pot_items = get_metric_items(get_metric_dict(pot_data, i, model))
+                    ptq_items = get_metric_items(get_metric_dict(ptq_data, i, model))
 
                     result_data["Task type"].append(task)
                     result_data["Train type"].append(train_type)
@@ -160,7 +163,7 @@ def summarize_non_anomaly_data(task: str, task_key: str, json_data: dict, result
                     fill_model_performance(export_items, "export", result_data)
                     fill_model_performance(deploy_items, "deploy", result_data)
                     fill_model_performance(nncf_items, "nncf", result_data)
-                    fill_model_performance(pot_items, "pot", result_data)
+                    fill_model_performance(ptq_items, "ptq", result_data)
 
 
 def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_data: dict) -> dict:
@@ -173,14 +176,14 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
     export_data = task_data.get("export")
     deploy_data = task_data.get("deploy")
     nncf_data = task_data.get("nncf")
-    pot_data = task_data.get("pot")
+    ptq_data = task_data.get("ptq")
 
     for anomaly_category in ANOMALY_DATASET_CATEGORIES:
         train_cat_data = train_data.get(anomaly_category)
         export_cat_data = export_data.get(anomaly_category)
         deploy_cat_data = deploy_data.get(anomaly_category)
         nncf_cat_data = nncf_data.get(anomaly_category)
-        pot_cat_data = pot_data.get(anomaly_category)
+        ptq_cat_data = ptq_data.get(anomaly_category)
 
         for i, per_model_data in enumerate(train_cat_data):
             for model in per_model_data:
@@ -188,7 +191,7 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
                 export_items = get_metric_items(get_metric_dict(export_cat_data, i, model))
                 deploy_items = get_metric_items(get_metric_dict(deploy_cat_data, i, model))
                 nncf_items = get_metric_items(get_metric_dict(nncf_cat_data, i, model))
-                pot_items = get_metric_items(get_metric_dict(pot_cat_data, i, model))
+                ptq_items = get_metric_items(get_metric_dict(ptq_cat_data, i, model))
 
                 result_data["Task type"].append(task)
                 result_data["MVTec Category"].append(anomaly_category)
@@ -198,42 +201,58 @@ def summarize_anomaly_data(task: str, task_key: str, json_data: dict, result_dat
                 fill_model_performance(export_items, "export", result_data)
                 fill_model_performance(deploy_items, "deploy", result_data)
                 fill_model_performance(nncf_items, "nncf", result_data)
-                fill_model_performance(pot_items, "pot", result_data)
+                fill_model_performance(ptq_items, "ptq", result_data)
 
 
-def save_file(result_data: dict, output_path: str):
+def save_file(result_data: dict, output_path: str, file_name: str):
     df = pd.DataFrame(result_data)
-    df.to_csv(output_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path, exist_ok=True)
+    df.to_csv(os.path.join(output_path, file_name))
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--input_path", default="/tmp/regression_test_results", type=str)
-    parser.add_argument("--output_path", default="/tmp", type=str)
-    return parser.parse_args()
+def merge_reg_results_dict(target, source, overwrite=False):
+    target = target.copy()
+    for k, v in source.items():
+        if isinstance(v, Dict):
+            if k in target:
+                target[k] = merge_reg_results_dict(target[k], v)
+            else:
+                target[k] = v
+        elif isinstance(v, List):
+            if len(target[k]) == 0 or overwrite:
+                target[k] = v
+    return target
 
 
-def summarize_data(args):
-    input_path = args.input_path
+def merge_results_list(results_list: List[Dict]):
+    if len(results_list) == 1:
+        return results_list[0]
+    results_dict = {}
+    for results in results_list:
+        results_dict = merge_reg_results_dict(results_dict, results)
+    return results_dict
 
-    for root, _, files in os.walk(input_path):
-        for result_file in files:
-            task_dict = filter_task(root)
-            task_key, task = task_dict["task_key"], task_dict["task"]
 
-            json_file_path = os.path.join(root, result_file)
-            with open(json_file_path, "r") as f:
-                json_data = json.load(f)
+def summarize_results_data(input_path: str, output_path: str):
+    """summarize regression test result data."""
+    input_path = input_path
+
+    for entity in os.listdir(input_path):
+        entity_path = os.path.join(input_path, entity)
+        if os.path.isdir(entity_path):
+            task_key, task = filter_task(entity_path)
+            results_list = []
+            for result_json in os.listdir(entity_path):
+                result_json_path = os.path.join(entity_path, result_json)
+                if os.path.isfile(result_json_path) and result_json_path.split(".")[-1] == "json":
+                    with open(result_json_path, "r") as f:
+                        results_list.append(json.load(f))
+            json_data = merge_results_list(results_list)
 
             if is_anomaly_task(task) is True:
                 summarize_anomaly_data(task, task_key, json_data, ANOMALY_DATA)
+                save_file(ANOMALY_DATA, output_path, f"tests-reg_{task}_{task_key}.csv")
             else:
                 summarize_non_anomaly_data(task, task_key, json_data, NON_ANOMALY_DATA)
-
-    save_file(ANOMALY_DATA, f"{args.output_path}/anomaly_results.csv")
-    save_file(NON_ANOMALY_DATA, f"{args.output_path}/non_anomaly_results.csv")
-
-
-if __name__ == "__main__":
-    args = parse_args()
-    summarize_data(args)
+                save_file(NON_ANOMALY_DATA, output_path, f"tests-reg_{task}_{task_key}.csv")

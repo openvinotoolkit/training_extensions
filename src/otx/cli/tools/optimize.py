@@ -17,6 +17,8 @@
 import json
 from pathlib import Path
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
@@ -30,6 +32,7 @@ from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_model, save_model_data
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 from otx.core.data.adapter import get_dataset_adapter
@@ -53,6 +56,10 @@ def get_args():
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
+        "--unlabeled-data-roots",
+        help="Comma-separated paths to unlabeled data folders.",
+    )
+    parser.add_argument(
         "--load-weights",
         help="Load weights of trained model",
     )
@@ -68,7 +75,7 @@ def get_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
 
     return parser.parse_args(), override_param
 
@@ -90,23 +97,23 @@ def main():
         )
         args.load_weights = str(latest_model_path)
 
-    is_pot = False
+    is_ptq = False
     if args.load_weights.endswith(".bin") or args.load_weights.endswith(".xml"):
-        is_pot = True
+        is_ptq = True
 
     template = config_manager.template
-    if not is_pot and template.entrypoints.nncf is None:
+    if not is_ptq and template.entrypoints.nncf is None:
         raise RuntimeError(f"Optimization by NNCF is not available for template {args.template}")
 
     # Update Hyper Parameter Configs
     hyper_parameters = config_manager.get_hyparams_config(override_param)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    task_class = get_impl_class(template.entrypoints.openvino if is_pot else template.entrypoints.nncf)
+    task_class = get_impl_class(template.entrypoints.openvino if is_ptq else template.entrypoints.nncf)
 
     # Auto-Configuration for Dataset configuration
     config_manager.configure_data_config(update_data_yaml=config_manager.check_workspace())
-    dataset_config = config_manager.get_dataset_config(subsets=["train", "val"])
+    dataset_config = config_manager.get_dataset_config(subsets=["train", "val", "unlabeled"])
     dataset_adapter = get_dataset_adapter(**dataset_config)
     dataset, label_schema = dataset_adapter.get_otx_dataset(), dataset_adapter.get_label_schema()
 
@@ -124,13 +131,13 @@ def main():
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
     task.optimize(
-        OptimizationType.POT if is_pot else OptimizationType.NNCF,
+        OptimizationType.POT if is_ptq else OptimizationType.NNCF,
         dataset,
         output_model,
         OptimizationParameters(),
     )
 
-    opt_method = "pot" if is_pot else "nncf"
+    opt_method = "ptq" if is_ptq else "nncf"
     if not args.output:
         output_path = config_manager.output_path
         output_path = output_path / opt_method

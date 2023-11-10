@@ -15,6 +15,5 @@
 # and limitations under the License.
 
 from .configuration import SegmentationConfig
-from .configuration_enums import Models
 
-__all__ = ["SegmentationConfig", "Models"]
+__all__ = ["SegmentationConfig"]

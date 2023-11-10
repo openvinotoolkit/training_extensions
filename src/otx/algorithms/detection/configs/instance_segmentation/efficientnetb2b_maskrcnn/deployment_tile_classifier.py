@@ -1,7 +1,7 @@
 """MMDeploy config partitioning EfficientNetB2B MaskRCNN model to tile classifier and MaskRCNN model."""
 # Copyright (C) 2023 Intel Corporation
 #
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: Apache-2.0
 
 _base_ = ["./deployment.py"]
 

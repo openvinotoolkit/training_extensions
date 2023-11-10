@@ -1,10 +1,10 @@
-TestToolsMPADetection:
+TestToolsOTXDetection:
   nncf:
     number_of_fakequantizers: 67
-  pot:
+  ptq:
     number_of_fakequantizers: 67
 TestToolsTilingDetection:
   nncf:
     number_of_fakequantizers: 67
-  pot:
+  ptq:
     number_of_fakequantizers: 67

@@ -1,4 +1,4 @@
-"""Unit Tests for the MPA Dataset Pipeline - Compose."""
+"""Unit Tests for the OTX Dataset Pipeline - Compose."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

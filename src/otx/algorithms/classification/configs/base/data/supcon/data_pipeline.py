@@ -21,6 +21,7 @@ __resize_target_size = 224
 
 
 __train_pipeline = [
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="TwoCropTransform",
         pipeline=[
@@ -34,10 +35,11 @@ __train_pipeline = [
             dict(type="ToTensor", keys=["gt_label"]),
             dict(type="Collect", keys=["img", "gt_label"]),
         ],
-    )
+    ),
 ]
 
 __test_pipeline = [
+    dict(type="LoadImageFromOTXDataset"),
     dict(type="Resize", size=__resize_target_size),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
@@ -45,12 +47,8 @@ __test_pipeline = [
 ]
 
 __dataset_type = "OTXClsDataset"
-__samples_per_gpu = 16
-__workers_per_gpu = 2
 
 data = dict(
-    samples_per_gpu=__samples_per_gpu,
-    workers_per_gpu=__workers_per_gpu,
     train=dict(type=__dataset_type, pipeline=__train_pipeline),
     val=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),
     test=dict(type=__dataset_type, test_mode=True, pipeline=__test_pipeline),

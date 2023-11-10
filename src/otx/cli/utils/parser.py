@@ -259,3 +259,8 @@ def get_parser_and_hprams_data():
         parser.add_argument("template", nargs="?", default=None, help=template_help_str)
 
     return parser, hyper_parameters, params
+
+
+def get_override_param(params):
+    """Get override param list from params."""
+    return [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]

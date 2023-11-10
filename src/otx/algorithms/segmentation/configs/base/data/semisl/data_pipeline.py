@@ -5,8 +5,8 @@ __img_scale = (544, 544)
 __crop_size = (512, 512)
 
 __common_pipeline = [
-    dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations"),
+    dict(type="LoadImageFromOTXDataset", enable_memcache=True),
+    dict(type="LoadAnnotationFromOTXDataset"),
     dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0), keep_ratio=False),
     dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
     dict(type="RandomFlip", prob=0.5, direction="horizontal"),
@@ -18,11 +18,26 @@ train_pipeline = [
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="Pad", size=__crop_size, pad_val=0, seg_pad_val=255),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_semantic_seg"]),
+    dict(
+        type="Collect",
+        keys=["img", "gt_semantic_seg"],
+        meta_keys=[
+            "ori_shape",
+            "pad_shape",
+            "ori_filename",
+            "filename",
+            "scale_factor",
+            "flip",
+            "img_norm_cfg",
+            "flip_direction",
+            "ignored_labels",
+            "img_shape",
+        ],
+    ),
 ]
 
 test_pipeline = [
-    dict(type="LoadImageFromFile"),
+    dict(type="LoadImageFromOTXDataset"),
     dict(
         type="MultiScaleFlipAug",
         img_scale=__img_scale,
@@ -32,7 +47,10 @@ test_pipeline = [
             dict(type="RandomFlip"),
             dict(type="Normalize", **__img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
-            dict(type="Collect", keys=["img"]),
+            dict(
+                type="Collect",
+                keys=["img"],
+            ),
         ],
     ),
 ]
@@ -58,13 +76,15 @@ unlabeled_pipeline = [
     dict(type="RandomCutOut", prob=0.35, n_holes=(1, 8), cutout_ratio=(0.2, 0.4)),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "ul_w_img"]),
+    dict(
+        type="Collect",
+        keys=["img", "ul_w_img"],
+    ),
 ]
 
-# TODO (Soobee) : Remove Repeatdataset in data config
 data = dict(
-    train=dict(dataset=dict(pipeline=train_pipeline)),
-    val=dict(pipeline=test_pipeline),
-    test=dict(pipeline=test_pipeline),
-    unlabeled=dict(pipeline=unlabeled_pipeline),
+    train=dict(type="OTXSegDataset", pipeline=train_pipeline),
+    val=dict(type="OTXSegDataset", pipeline=test_pipeline),
+    test=dict(type="OTXSegDataset", pipeline=test_pipeline),
+    unlabeled=dict(type="OTXSegDataset", pipeline=unlabeled_pipeline),
 )

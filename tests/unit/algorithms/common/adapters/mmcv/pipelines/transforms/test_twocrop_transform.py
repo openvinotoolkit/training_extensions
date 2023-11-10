@@ -1,4 +1,4 @@
-"""Unit Tests for the MPA Dataset Pipelines Transforms - Two Crop."""
+"""Unit Tests for the OTX Dataset Pipelines Transforms - Two Crop."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

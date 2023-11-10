@@ -1,18 +1,7 @@
 """Task of OTX Segmentation."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import io
 import os
@@ -23,6 +12,7 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 
+from otx.algorithms.common.configs.configuration_enums import InputSizePreset
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.base_task import TRAIN_TYPE_DIR_PATH, OTXTask
 from otx.algorithms.common.utils.callback import (
@@ -31,10 +21,9 @@ from otx.algorithms.common.utils.callback import (
 )
 from otx.algorithms.common.utils.ir import embed_ir_model_data
 from otx.algorithms.common.utils.logger import get_logger
-from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
-    get_activation_map,
-)
+from otx.algorithms.common.utils.utils import embed_onnx_model_data
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
+from otx.algorithms.segmentation.utils import get_activation_map
 from otx.algorithms.segmentation.utils.metadata import get_seg_model_api_configuration
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -71,6 +60,7 @@ from otx.api.utils.segmentation_utils import (
     create_hard_prediction_from_soft_prediction,
 )
 from otx.cli.utils.multi_gpu import is_multigpu_child_process
+from otx.core.data.caching.mem_cache_handler import MemCacheHandlerSingleton
 
 logger = get_logger()
 RECIPE_TRAIN_TYPE = {
@@ -109,6 +99,12 @@ class OTXSegmentationTask(OTXTask, ABC):
             self._load_model()
 
         self.data_pipeline_path = os.path.join(self._model_dir, "data_pipeline.py")
+
+        if hasattr(self._hyperparams.learning_parameters, "input_size"):
+            input_size_cfg = InputSizePreset(self._hyperparams.learning_parameters.input_size.value)
+        else:
+            input_size_cfg = InputSizePreset.DEFAULT
+        self._input_size = input_size_cfg.tuple
 
     def infer(
         self,
@@ -172,6 +168,8 @@ class OTXSegmentationTask(OTXTask, ABC):
 
         results = self._train_model(dataset)
 
+        MemCacheHandlerSingleton.delete()
+
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
             logger.info("Training cancelled.")
@@ -222,15 +220,20 @@ class OTXSegmentationTask(OTXTask, ABC):
         if outputs is None:
             raise RuntimeError(results.get("msg"))
 
+        ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
+
         if export_type == ExportType.ONNX:
+            ir_extra_data[("model_info", "mean_values")] = results.get("inference_parameters").get("mean_values")
+            ir_extra_data[("model_info", "scale_values")] = results.get("inference_parameters").get("scale_values")
+
             onnx_file = outputs.get("onnx")
+            embed_onnx_model_data(onnx_file, ir_extra_data)
             with open(onnx_file, "rb") as f:
                 output_model.set_data("model.onnx", f.read())
         else:
             bin_file = outputs.get("bin")
             xml_file = outputs.get("xml")
 
-            ir_extra_data = get_seg_model_api_configuration(self._task_environment.label_schema, self._hyperparams)
             embed_ir_model_data(xml_file, ir_extra_data)
 
             with open(bin_file, "rb") as f:
@@ -316,6 +319,7 @@ class OTXSegmentationTask(OTXTask, ABC):
             "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
 

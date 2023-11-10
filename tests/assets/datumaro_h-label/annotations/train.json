@@ -4,7 +4,7 @@
     "label": {
       "label_groups": [
         {
-          "name": "shape",
+          "name": "blue",
           "group_type": "exclusive",
           "labels": ["blue", "green"]
         },

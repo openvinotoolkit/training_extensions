@@ -76,7 +76,7 @@ def test_get_cls_deploy_config(default_hierarchical_data) -> None:
     inf_conf = {"test": "test"}
     config = get_cls_deploy_config(label_schema, inf_conf)
 
-    assert config["type_of_model"] == "otx_classification"
+    assert config["type_of_model"] == "Classification"
     assert config["converter_type"] == "CLASSIFICATION"
     assert "labels" in config["model_parameters"]
     for k in inf_conf:

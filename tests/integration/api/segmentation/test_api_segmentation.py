@@ -59,7 +59,7 @@ def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Per
     return result_set.performance
 
 
-class TestMPASegAPI:
+class TestOTXSegAPI:
     """
     Collection of tests for OTX API and OTX Model Templates
     """
@@ -167,7 +167,6 @@ class TestMPASegAPI:
         model_template = parse_model_template(osp.join(template_dir, "template.yaml"))
 
         hyper_parameters = create(model_template.hyper_parameters.data)
-        hyper_parameters.learning_parameters.learning_rate_fixed_iters = 0
         hyper_parameters.learning_parameters.learning_rate_warmup_iters = 1
         hyper_parameters.learning_parameters.num_iters = num_iters
         hyper_parameters.learning_parameters.num_checkpoints = 1

@@ -17,6 +17,8 @@
 import json
 from pathlib import Path
 
+# Update environment variables for CLI use
+import otx.cli  # noqa: F401
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
@@ -28,6 +30,7 @@ from otx.cli.utils.io import read_model
 from otx.cli.utils.nncf import is_checkpoint_nncf
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
+    get_override_param,
     get_parser_and_hprams_data,
 )
 from otx.core.data.adapter import get_dataset_adapter
@@ -66,7 +69,7 @@ def get_args():
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
-    override_param = [f"params.{param[2:].split('=')[0]}" for param in params if param.startswith("--")]
+    override_param = get_override_param(params)
 
     return parser.parse_args(), override_param
 

@@ -19,6 +19,7 @@ from tests.test_suite.run_test_command import (
     otx_eval_testing,
     otx_export_testing,
     otx_train_testing,
+    generate_model_template_testing,
 )
 
 args = {

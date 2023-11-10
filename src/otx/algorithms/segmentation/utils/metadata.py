@@ -21,6 +21,7 @@ def get_seg_model_api_configuration(label_schema: LabelSchemaEntity, hyperparams
         ("model_info", "model_type"): "Segmentation",
         ("model_info", "soft_threshold"): str(hyperparams.postprocessing.soft_threshold),
         ("model_info", "blur_strength"): str(hyperparams.postprocessing.blur_strength),
+        ("model_info", "return_soft_prediction"): "True",
         ("model_info", "labels"): all_labels.strip(),
         ("model_info", "label_ids"): all_label_ids.strip(),
         ("model_info", "task_type"): "segmentation",

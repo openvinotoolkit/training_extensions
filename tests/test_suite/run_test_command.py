@@ -8,6 +8,7 @@ import json
 import os
 import shutil
 import sys
+import torch
 from pathlib import Path
 from typing import Dict
 import onnx
@@ -244,6 +245,12 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         else:
             assert os.path.exists(path_to_xml)
             assert os.path.exists(os.path.join(save_path, "openvino.bin"))
+            ckpt = torch.load(f"{template_work_dir}/trained_{template.model_template_id}/models/weights.pth")
+            input_size = ckpt.get("input_size", None)
+            if input_size:
+                with open(path_to_xml, encoding="utf-8") as xml_stream:
+                    xml_model = xml_stream.read()
+                    assert f"{input_size[1]},{input_size[0]}" in xml_model
     else:
         if "Visual_Prompting" in template.model_template_id:
             assert os.path.exists(os.path.join(save_path, "visual_prompting_image_encoder.onnx"))
@@ -251,6 +258,16 @@ def otx_export_testing(template, root, dump_features=False, half_precision=False
         else:
             path_to_onnx = os.path.join(save_path, "model.onnx")
             assert os.path.exists(path_to_onnx)
+
+            if check_ir_meta:
+                onnx_model = onnx.load(path_to_onnx)
+                is_model_type_presented = False
+                for prop in onnx_model.metadata_props:
+                    assert "model_info" in prop.key
+                    if "model_type" in prop.key:
+                        is_model_type_presented = True
+                assert is_model_type_presented
+
             # In case of tile classifier mmdeploy inserts mark nodes in onnx, making it non-standard
             if not os.path.exists(os.path.join(save_path, "tile_classifier.onnx")):
                 onnx.checker.check_model(path_to_onnx)
@@ -504,7 +521,7 @@ def otx_demo_deployment_testing(template, root, otx_dir, args):
     assert os.path.exists(os.path.join(deployment_dir, "output"))
 
 
-def pot_optimize_testing(template, root, otx_dir, args, is_visual_prompting=False):
+def ptq_optimize_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -515,7 +532,7 @@ def pot_optimize_testing(template, root, otx_dir, args, is_visual_prompting=Fals
         "--val-data-roots",
         f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--output",
-        f"{template_work_dir}/pot_{template.model_template_id}",
+        f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
     if is_visual_prompting:
         command_line.extend(
@@ -536,17 +553,17 @@ def pot_optimize_testing(template, root, otx_dir, args, is_visual_prompting=Fals
     check_run(command_line)
     if is_visual_prompting:
         assert os.path.exists(
-            f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_image_encoder.xml"
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
         )
         assert os.path.exists(
-            f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_image_encoder.bin"
+            f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.bin"
         )
-        assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.xml")
-        assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.bin")
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml")
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.bin")
     else:
-        assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
-        assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin")
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml")
+        assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/label_schema.json")
 
 
 def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name, update=False):
@@ -564,19 +581,19 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type, test_name,
     assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
 
 
-def pot_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+def ptq_validate_fq_testing(template, root, otx_dir, task_type, test_name):
     template_work_dir = get_template_dir(template, root)
     if task_type == "visual_prompting":
-        xml_path = f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_image_encoder.xml"
+        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_image_encoder.xml"
     else:
-        xml_path = f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
+        xml_path = f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml"
     path_to_ref_data = os.path.join(
         otx_dir, "tests", "e2e/cli", task_type, "reference", template.model_template_id, "compressed_model.yml"
     )
-    _validate_fq_in_xml(xml_path, path_to_ref_data, "pot", test_name)
+    _validate_fq_in_xml(xml_path, path_to_ref_data, "ptq", test_name)
 
 
-def pot_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
+def ptq_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -585,31 +602,34 @@ def pot_eval_testing(template, root, otx_dir, args, is_visual_prompting=False):
         "--test-data-roots",
         f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--output",
-        f"{template_work_dir}/pot_{template.model_template_id}",
+        f"{template_work_dir}/ptq_{template.model_template_id}",
     ]
     if is_visual_prompting:
         command_line.extend(
             [
                 "--load-weights",
-                f"{template_work_dir}/pot_{template.model_template_id}/visual_prompting_decoder.xml",
+                f"{template_work_dir}/ptq_{template.model_template_id}/visual_prompting_decoder.xml",
             ]
         )
     else:
         command_line.extend(
             [
                 "--load-weights",
-                f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
+                f"{template_work_dir}/ptq_{template.model_template_id}/openvino.xml",
             ]
         )
     command_line.extend(["--workspace", f"{template_work_dir}"])
     check_run(command_line)
-    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
+    assert os.path.exists(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json")
 
-    with open(f"{template_work_dir}/pot_{template.model_template_id}/performance.json") as read_file:
-        pot_performance = json.load(read_file)
+    with open(f"{template_work_dir}/ptq_{template.model_template_id}/performance.json") as read_file:
+        ptq_performance = json.load(read_file)
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
+
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -632,6 +652,8 @@ def nncf_optimize_testing(template, root, otx_dir, args):
 
 
 def nncf_export_testing(template, root):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -651,9 +673,19 @@ def nncf_export_testing(template, root):
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin"
     )
     assert compressed_bin_size < original_bin_size, f"{compressed_bin_size=}, {original_bin_size=}"
+    ckpt = torch.load(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
+    input_size = ckpt.get("input_size", None)
+    if input_size:
+        with open(
+            f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml", encoding="utf-8"
+        ) as xml_stream:
+            xml_model = xml_stream.read()
+            assert f"{input_size[1]},{input_size[0]}" in xml_model
 
 
 def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
     path_to_ref_data = os.path.join(
@@ -664,6 +696,8 @@ def nncf_validate_fq_testing(template, root, otx_dir, task_type, test_name):
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -692,6 +726,8 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold=0.01):
 
 
 def nncf_eval_openvino_testing(template, root, otx_dir, args):
+    if template.entrypoints.nncf is None:
+        pytest.skip("NNCF QAT is disabled: entrypoints.nncf in template is not specified")
     template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
@@ -1024,9 +1060,9 @@ def otx_build_backbone_testing(root, backbone_args):
         task_workspace,
     ]
     check_run(command_line)
-    from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+    from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 
-    model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
+    model_config = OTXConfig.fromfile(os.path.join(task_workspace, "model.py"))
     assert os.path.exists(os.path.join(task_workspace, "model.py"))
     assert "backbone" in model_config["model"], "'backbone' is not in model configs"
     assert (
@@ -1040,9 +1076,9 @@ def otx_build_testing(root, args: Dict[str, str], expected: Dict[str, str]):
     for option, value in args.items():
         command_line.extend([option, value])
     check_run(command_line)
-    from otx.algorithms.common.adapters.mmcv.utils.config_utils import MPAConfig
+    from otx.algorithms.common.adapters.mmcv.utils.config_utils import OTXConfig
 
-    template_config = MPAConfig.fromfile(os.path.join(workspace_root, "template.yaml"))
+    template_config = OTXConfig.fromfile(os.path.join(workspace_root, "template.yaml"))
     assert template_config.name == expected["model"]
     assert (
         template_config.hyper_parameters.parameter_overrides.algo_backend.train_type.default_value

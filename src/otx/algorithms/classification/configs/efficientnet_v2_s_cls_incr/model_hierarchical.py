@@ -1,11 +1,14 @@
 """EfficientNet-V2 for hierarchical config."""
+# Copyright (C) 2023 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 
 # pylint: disable=invalid-name
 
 _base_ = ["../../../../recipes/stages/classification/incremental.yaml", "../base/models/efficientnet_v2.py"]
 
 model = dict(
-    type="SAMImageClassifier",
+    type="CustomImageClassifier",
     task="classification",
     backbone=dict(version="s_21k"),
     head=dict(

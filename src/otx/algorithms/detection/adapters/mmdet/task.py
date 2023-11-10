@@ -1,18 +1,7 @@
 """Task of OTX Detection using mmdetection training backend."""
 
 # Copyright (C) 2023 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
 
 import glob
 import io
@@ -42,13 +31,11 @@ from otx.algorithms.common.adapters.mmcv.hooks.recording_forward_hook import (
 from otx.algorithms.common.adapters.mmcv.utils import (
     adapt_batch_size,
     build_data_parallel,
-    patch_data_pipeline,
-    patch_from_hyperparams,
 )
 from otx.algorithms.common.adapters.mmcv.utils.config_utils import (
-    MPAConfig,
-    update_or_add_custom_hook,
+    OTXConfig,
 )
+from otx.algorithms.common.adapters.torch.utils import convert_sync_batchnorm
 from otx.algorithms.common.configs.configuration_enums import BatchSizeAdaptType
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.nncf_task import NNCFBaseTask
@@ -68,7 +55,6 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_input_preprocessing,
     patch_input_shape,
     patch_ir_scale_factor,
-    patch_tiling,
 )
 from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
@@ -89,7 +75,6 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.core.data import caching
 
 logger = get_logger()
 
@@ -106,52 +91,13 @@ class MMDetectionTask(OTXDetectionTask):
         self._data_cfg: Optional[Config] = None
         self._recipe_cfg: Optional[Config] = None
 
-    # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-    def _init_task(self, dataset: Optional[DatasetEntity] = None, export: bool = False):  # noqa
+    def _init_task(self):  # noqa
         """Initialize task."""
-        self._recipe_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
+        self._recipe_cfg = OTXConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         self._recipe_cfg.domain = self._task_type.domain
         self._config = self._recipe_cfg
 
         self.set_seed()
-
-        # Belows may go to the configure function
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
-
-        # Patch tiling parameters
-        patch_tiling(self._recipe_cfg, self._hyperparams, dataset)
-
-        if not export:
-            patch_from_hyperparams(self._recipe_cfg, self._hyperparams)
-
-        if "custom_hooks" in self.override_configs:
-            override_custom_hooks = self.override_configs.pop("custom_hooks")
-            for override_custom_hook in override_custom_hooks:
-                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
-        if len(self.override_configs) > 0:
-            logger.info(f"before override configs merging = {self._recipe_cfg}")
-            self._recipe_cfg.merge_from_dict(self.override_configs)
-            logger.info(f"after override configs merging = {self._recipe_cfg}")
-
-        # add Cancel training hook
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
-        )
-        if self._time_monitor is not None:
-            update_or_add_custom_hook(
-                self._recipe_cfg,
-                ConfigDict(
-                    type="OTXProgressHook",
-                    time_monitor=self._time_monitor,
-                    verbose=True,
-                    priority=71,
-                ),
-            )
-        self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
-
-        # Update recipe with caching modules
-        self._update_caching_modules(self._recipe_cfg.data)
 
         # Loss dynamics tracking
         if getattr(self._hyperparams.algo_backend, "enable_noisy_label_detection", False):
@@ -173,11 +119,11 @@ class MMDetectionTask(OTXDetectionTask):
         return model
 
     # pylint: disable=too-many-arguments
-    def configure(self, training=True, subset="train", ir_options=None, train_dataset=None):
+    def configure(self, training=True, ir_options=None, train_dataset=None, export=False):
         """Patch mmcv configs for OTX detection settings."""
 
         # deepcopy all configs to make sure
-        # changes under MPA and below does not take an effect to OTX for clear distinction
+        # changes under Configurer and below does not take an effect to OTX for clear distinction
         recipe_cfg = deepcopy(self._recipe_cfg)
         assert recipe_cfg is not None, "'recipe_cfg' is not initialized."
 
@@ -191,21 +137,46 @@ class MMDetectionTask(OTXDetectionTask):
         recipe_cfg.resume = self._resume
 
         if self._train_type == TrainType.Incremental:
-            configurer = IncrDetectionConfigurer()
+            configurer = IncrDetectionConfigurer(
+                "detection",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         elif self._train_type == TrainType.Semisupervised:
-            configurer = SemiSLDetectionConfigurer()
+            configurer = SemiSLDetectionConfigurer(
+                "detection",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         else:
-            configurer = DetectionConfigurer()
+            configurer = DetectionConfigurer(
+                "detection",
+                training,
+                export,
+                self.override_configs,
+                self.on_hook_initialized,
+                self._time_monitor,
+                self._learning_curves,
+            )
         cfg = configurer.configure(
             recipe_cfg,
-            train_dataset,
+            self.data_pipeline_path,
+            self._hyperparams,
             self._model_ckpt,
             self._data_cfg,
-            training,
-            subset,
             ir_options,
             data_classes,
             model_classes,
+            self._input_size,
+            train_dataset=train_dataset,
         )
         if should_cluster_anchors(self._recipe_cfg):
             if train_dataset is not None:
@@ -213,6 +184,8 @@ class MMDetectionTask(OTXDetectionTask):
             elif self._anchors is not None:
                 self._update_anchors(cfg.model.bbox_head.anchor_generator, self._anchors)
         self._config = cfg
+        self._input_size = cfg.model.pop("input_size", None)
+
         return cfg
 
     # pylint: disable=too-many-branches, too-many-statements
@@ -237,9 +210,9 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._is_training = True
 
-        self._init_task(dataset)
+        self._init_task()
 
-        cfg = self.configure(True, "train", None, get_dataset(dataset, Subset.TRAINING))
+        cfg = self.configure(True, None, get_dataset(dataset, Subset.TRAINING))
         logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
@@ -278,7 +251,7 @@ class MMDetectionTask(OTXDetectionTask):
         model.CLASSES = target_classes
 
         if cfg.distributed:
-            torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            convert_sync_batchnorm(model)
 
         validate = bool(cfg.data.get("val", None))
 
@@ -336,9 +309,9 @@ class MMDetectionTask(OTXDetectionTask):
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
-        self._init_task(dataset)
+        self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
         logger.info("infer!")
 
         # Data loader
@@ -372,7 +345,7 @@ class MMDetectionTask(OTXDetectionTask):
         model = self.build_model(cfg, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
         model.eval()
-        feature_model = model.model_t if self._train_type == TrainType.Semisupervised else model
+        feature_model = model.model_s if self._train_type == TrainType.Semisupervised else model
         model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
@@ -456,7 +429,6 @@ class MMDetectionTask(OTXDetectionTask):
             "Number of elements should be the same, however, number of outputs are "
             f"{len(eval_predictions)}, {len(feature_vectors)}, and {len(saliency_maps)}"
         )
-
         results = dict(
             outputs=dict(
                 classes=target_classes,
@@ -503,9 +475,9 @@ class MMDetectionTask(OTXDetectionTask):
                 ),
             )
         )
-        self._init_task(export=True)
+        self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None, export=True)
 
         self._precision[0] = precision
         export_options: Dict[str, Any] = {}
@@ -532,14 +504,26 @@ class MMDetectionTask(OTXDetectionTask):
         if self._precision[0] == ModelPrecision.FP16:
             export_options["deploy_cfg"]["backend_config"]["mo_options"]["flags"].append("--compress_to_fp16")
 
+        backend_cfg_backup = {}
         if export_format == ExportType.ONNX:
+            backend_cfg_backup = export_options["deploy_cfg"]["backend_config"]
             export_options["deploy_cfg"]["backend_config"] = {"type": "onnxruntime"}
+            export_options["deploy_cfg"]["ir_config"]["dynamic_axes"]["image"] = {0: "batch"}
 
         exporter = DetectionExporter()
         results = exporter.run(
             cfg,
             **export_options,
         )
+
+        if export_format == ExportType.ONNX:
+            results["inference_parameters"] = {}
+            results["inference_parameters"]["mean_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--mean_values"])
+            )
+            results["inference_parameters"]["scale_values"] = " ".join(
+                map(str, backend_cfg_backup["mo_options"]["args"]["--scale_values"])
+            )
 
         return results
 
@@ -567,7 +551,7 @@ class MMDetectionTask(OTXDetectionTask):
 
         self._init_task()
 
-        cfg = self.configure(False, "test", None)
+        cfg = self.configure(False, None)
 
         samples_per_gpu = cfg.data.test_dataloader.get("samples_per_gpu", 1)
         if samples_per_gpu > 1:
@@ -683,7 +667,7 @@ class MMDetectionTask(OTXDetectionTask):
             deploy_cfg_path = os.path.join(base_dir, "deployment.py")
         deploy_cfg = None
         if os.path.exists(deploy_cfg_path):
-            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+            deploy_cfg = OTXConfig.fromfile(deploy_cfg_path)
 
             patch_input_preprocessing(cfg, deploy_cfg)
             patch_input_shape(cfg, deploy_cfg)
@@ -703,6 +687,7 @@ class MMDetectionTask(OTXDetectionTask):
             "config": hyperparams_str,
             "labels": labels,
             "confidence_threshold": self.confidence_threshold,
+            "input_size": self._input_size,
             "VERSION": 1,
         }
         if self.config is not None and should_cluster_anchors(self.config):
@@ -722,32 +707,3 @@ class MMDetectionTask(OTXDetectionTask):
         logger.info("Updating anchors")
         origin["heights"] = new["heights"]
         origin["widths"] = new["widths"]
-
-    # These need to be moved somewhere
-    def _update_caching_modules(self, data_cfg: Config) -> None:
-        def _find_max_num_workers(cfg: dict):
-            num_workers = [0]
-            for key, value in cfg.items():
-                if key == "workers_per_gpu" and isinstance(value, int):
-                    num_workers += [value]
-                elif isinstance(value, dict):
-                    num_workers += [_find_max_num_workers(value)]
-
-            return max(num_workers)
-
-        def _get_mem_cache_size():
-            if not hasattr(self._hyperparams.algo_backend, "mem_cache_size"):
-                return 0
-
-            return self._hyperparams.algo_backend.mem_cache_size
-
-        max_num_workers = _find_max_num_workers(data_cfg)
-        mem_cache_size = _get_mem_cache_size()
-
-        mode = "multiprocessing" if max_num_workers > 0 else "singleprocessing"
-        caching.MemCacheHandlerSingleton.create(mode, mem_cache_size)
-
-        update_or_add_custom_hook(
-            self._recipe_cfg,
-            ConfigDict(type="MemCacheHook", priority="VERY_LOW"),
-        )

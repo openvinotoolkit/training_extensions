@@ -18,5 +18,5 @@ custom_hooks:
   - type: SemiSLClsHook
 
 task_adapt:
-  type: "mpa"
+  type: "default_task_adapt"
   op: "REPLACE"

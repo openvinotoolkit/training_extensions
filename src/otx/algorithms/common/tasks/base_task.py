@@ -107,7 +107,7 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
         self._learning_curves = UncopiableDefaultDict(OTXLoggerHook.Curve)
         self._model_label_schema: List[LabelEntity] = []
         self._resume = False
-        self._should_stop = False
+        self._should_stop: bool = False
         self.cancel_interface: Optional[CancelInterfaceHook] = None
         self.reserved_cancel = False
         self._model_ckpt = None
@@ -138,7 +138,11 @@ class OTXTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload, ABC):
     def _setup_distributed_training():
         if not dist.is_initialized():
             torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
-            dist.init_process_group(backend="nccl", init_method="env://", timeout=timedelta(seconds=30))
+            dist.init_process_group(
+                backend="nccl",
+                init_method="env://",
+                timeout=timedelta(seconds=int(os.environ.get("TORCH_DIST_TIMEOUT", 60))),
+            )
             rank = dist.get_rank()
             logger.info(f"Dist info: rank {rank} / {dist.get_world_size()} world_size")
             if rank != 0:
