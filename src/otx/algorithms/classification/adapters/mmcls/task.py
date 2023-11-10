@@ -70,7 +70,7 @@ from .configurer import (
 )
 from .utils import build_classifier
 
-if is_hpu_available:
+if is_hpu_available():
     import habana_frameworks.torch.core as htcore
 
 logger = get_logger()

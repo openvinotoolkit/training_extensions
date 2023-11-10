@@ -64,7 +64,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 
-if is_hpu_available:
+if is_hpu_available():
     import habana_frameworks.torch.core as htcore
 
 logger = get_logger()
