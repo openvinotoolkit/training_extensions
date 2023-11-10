@@ -13,7 +13,7 @@ from mmaction.datasets.rawframe_dataset import RawframeDataset
 from mmaction.registry import DATASETS
 from mmengine.dataset import Compose
 
-from otx.v2.adapters.torch.mmengine.mmaction.modules.datasets.pipelines import RawFrameDecode
+from otx.v2.adapters.torch.mmengine.mmaction.modules.datasets.pipelines import OTXRawFrameDecode
 from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity
 
@@ -50,7 +50,7 @@ class OTXActionClsDataset(RawframeDataset):
 
         self.pipeline = Compose(pipeline)
         for transform in self.pipeline.transforms:
-            if isinstance(transform, RawFrameDecode):
+            if isinstance(transform, OTXRawFrameDecode):
                 transform.otx_dataset = self.otx_dataset
 
     def __getitem__(self, index: int) -> dict[str, Any]:

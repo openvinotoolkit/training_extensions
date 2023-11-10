@@ -22,7 +22,7 @@ TASK_CONFIGURATION = {
         "train_data_roots": "tests/assets/cvat_dataset/action_classification/train",
         "val_data_roots": "tests/assets/cvat_dataset/action_classification/train",
         "test_data_roots": "tests/assets/cvat_dataset/action_classification/train",
-        "sample": "tests/assets/cvat_dataset/action_classification/v2_test",
+        "sample": "tests/assets/cvat_dataset/action_classification/predict",
         "models": ["otx_x3d"],
     },
     "visual_prompting": {

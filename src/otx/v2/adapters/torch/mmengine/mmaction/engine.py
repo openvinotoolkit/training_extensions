@@ -119,7 +119,7 @@ class MMActionEngine(MMXEngine):
         # Update pipelines
         if pipeline is None:
             from otx.v2.adapters.torch.mmengine.mmaction.dataset import get_default_pipeline
-            pipeline = get_default_pipeline(subset="test")
+            pipeline = get_default_pipeline(subset="predict")
         config = Config({})
         if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
             config = model._config  # noqa: SLF001

@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 import torch
-from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.mmaction import Dataset, Engine, get_model, list_models
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
@@ -121,17 +120,16 @@ class TestMMActionAPI:
         assert "acc/top1" in test_score
         assert test_score["acc/top1"] > 0.0
 
-        # Will be implemented after phase 1.
         # Prediction with images
-        # pred_result = engine.predict(
-        #     model=results["model"],
-        #     checkpoint=results["checkpoint"],
-        #     img=TASK_CONFIGURATION["action_classification"]["sample"],
-        # )
-        # assert isinstance(pred_result, list)
-        # assert len(pred_result) == 1
-        # assert "num_classes" in pred_result[0]
-        # assert pred_result[0].num_classes == dataset.num_classes
+        pred_result = engine.predict(
+            model=results["model"],
+            checkpoint=results["checkpoint"],
+            img=TASK_CONFIGURATION["action_classification"]["sample"],
+        )
+        assert isinstance(pred_result, dict)
+        assert len(pred_result['predictions']) == 1
+        assert "rec_labels" in pred_result['predictions'][0]
+        assert "rec_scores" in pred_result['predictions'][0]
 
         # Export Openvino IR Model
         export_output = engine.export(

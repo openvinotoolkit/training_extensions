@@ -14,7 +14,7 @@ from otx.api.entities.datasets import DatasetEntity
 
 
 @TRANSFORMS.register_module(force=True)
-class RawFrameDecode:
+class OTXRawFrameDecode:
     """Load and decode frames with given indices."""
 
     otx_dataset: DatasetEntity
