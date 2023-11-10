@@ -103,6 +103,16 @@ class CustomYOLOXHead(YOLOXHead):
 
         return loss_dict
 
+    def forward_single(self, x, cls_convs, reg_convs, conv_cls, conv_reg, conv_obj):
+        """Forward feature of a single scale level."""
+        cls_score, bbox_pred, objectness = super().forward_single(x, cls_convs, reg_convs, conv_cls, conv_reg, conv_obj)
+        if cls_score.device.type == "hpu":
+            # put on cpu for further post-processing
+            cls_score = cls_score.cpu()
+            bbox_pred = bbox_pred.cpu()
+            objectness = objectness.cpu()
+        return cls_score, bbox_pred, objectness
+
 
 @HEADS.register_module()
 class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOXHead):
@@ -245,6 +255,7 @@ class CustomYOLOXHeadTrackingLossDynamics(TrackingLossDynamicsMixIn, CustomYOLOX
         num_priors = priors.size(0)
         num_gts = gt_labels.size(0)
         gt_bboxes = gt_bboxes.to(decoded_bboxes.dtype)
+
         # No target
         if num_gts == 0:
             cls_target = cls_preds.new_zeros((0, self.num_classes))

@@ -176,7 +176,7 @@ class BaseConfigurer:
         elif "gpu_ids" not in cfg:
             cfg.gpu_ids = range(1)
 
-        # consider "cuda", "hpu" and "cpu" device only
+        # consider "cuda", "xpu", "hpu" and "cpu" device only
         if is_hpu_available():
             cfg.device = "hpu"
         elif torch.cuda.is_available():

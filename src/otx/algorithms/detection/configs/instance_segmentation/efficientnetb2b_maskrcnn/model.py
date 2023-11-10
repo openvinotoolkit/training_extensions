@@ -28,7 +28,7 @@ model = dict(
     type="CustomMaskRCNN",  # Use CustomMaskRCNN for Incremental Learning
     neck=dict(type="FPN", in_channels=[24, 48, 120, 352], out_channels=80, num_outs=5),
     rpn_head=dict(
-        type="RPNHead",
+        type="CustomRPNHead",
         in_channels=80,
         feat_channels=80,
         anchor_generator=dict(type="AnchorGenerator", scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4, 8, 16, 32, 64]),

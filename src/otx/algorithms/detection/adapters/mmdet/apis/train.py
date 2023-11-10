@@ -24,10 +24,12 @@ from mmdet.utils.util_distribution import build_dp, dp_factory
 from torchvision.ops import nms as tv_nms
 from torchvision.ops import roi_align as tv_roi_align
 
-from otx.algorithms.common.adapters.mmcv.utils import XPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils import HPUDataParallel, XPUDataParallel
+from otx.algorithms.common.adapters.mmcv.utils.hpu_optimizers import HABANA_OPTIMIZERS
 
 ext_module = ext_loader.load_ext("_ext", ["nms", "softnms", "nms_match", "nms_rotated", "nms_quadri"])
 dp_factory["xpu"] = XPUDataParallel
+dp_factory["hpu"] = HPUDataParallel
 
 
 def auto_scale_lr(cfg, distributed, logger):
@@ -119,17 +121,27 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
     elif cfg.device == "xpu":
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids, enable_autocast=bool(fp16_cfg))
         model.to(f"xpu:{cfg.gpu_ids[0]}")
+    elif cfg.device == "hpu":
+        model = build_dp(
+            model, cfg.device, device_ids=cfg.gpu_ids, dim=0, enable_autocast=bool(fp16_cfg), put_gt_on_device=False
+        )
+        # patch optimizer
+        if (new_type := "Fused" + cfg.optimizer.get("type", "SGD")) in HABANA_OPTIMIZERS:
+            cfg.optimizer["type"] = new_type
     else:
         model = build_dp(model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build optimizer
     auto_scale_lr(cfg, distributed, logger)
+
+    if cfg.device in ["hpu", "xpu"]:
+        # dynamic patch for nms and roi_align
+        NMSop.forward = monkey_patched_nms
+        RoIAlign.forward = monkey_patched_roi_align
+
     optimizer = build_optimizer(model, cfg.optimizer)
 
     if cfg.device == "xpu":
-        # dynamic patch for nms and roi_align
-        NMSop.forward = monkey_patched_xpu_nms
-        RoIAlign.forward = monkey_patched_xpu_roi_align
         if fp16_cfg is not None:
             dtype = torch.bfloat16
         else:
@@ -198,7 +210,7 @@ def train_detector(model, dataset, cfg, distributed=False, validate=False, times
     runner.run(data_loaders, cfg.workflow)
 
 
-def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_threshold, max_num):
+def monkey_patched_nms(ctx, bboxes, scores, iou_threshold, offset, score_threshold, max_num):
     """Runs MMCVs NMS with torchvision.nms, or forces NMS from MMCV to run on CPU."""
     is_filtering_by_score = score_threshold > 0
     if is_filtering_by_score:
@@ -228,7 +240,7 @@ def monkey_patched_xpu_nms(ctx, bboxes, scores, iou_threshold, offset, score_thr
     return inds
 
 
-def monkey_patched_xpu_roi_align(self, input, rois):
+def monkey_patched_roi_align(self, input, rois):
     """Replaces MMCVs roi align with the one from torchvision.
 
     Args:
