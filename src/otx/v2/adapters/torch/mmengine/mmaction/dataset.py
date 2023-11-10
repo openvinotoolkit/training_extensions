@@ -9,7 +9,6 @@ from functools import partial
 from typing import Iterable
 
 import torch
-from mmaction.registry import DATASETS
 from mmengine.dataset import pseudo_collate, worker_init_fn
 from mmengine.dist import get_dist_info
 from mmengine.utils import digit_version
@@ -17,41 +16,74 @@ from torch.utils.data import DataLoader as TorchDataLoader
 from torch.utils.data import Dataset as TorchDataset
 from torch.utils.data import Sampler
 
+from otx.v2.adapters.torch.mmengine.dataset import MMXDataset
 from otx.v2.adapters.torch.mmengine.mmaction.modules.datasets import (
     OTXActionClsDataset,
 )
-from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
-from otx.v2.api.core.dataset import BaseDataset
+from otx.v2.adapters.torch.mmengine.mmaction.registry import MMActionRegistry
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
-from otx.v2.api.utils.type_utils import str_to_subset_type
 
 SUBSET_LIST = ["train", "val", "test"]
 
 
-def get_default_pipeline() -> dict | list:
+def get_default_pipeline(subset: str) -> list:
     """Returns the default pipeline for mmaction model.
 
+    Args:
+        subset (str): Subset of default pipeline
+
     Returns:
-        Union[Dict, List]: The default pipeline as a dictionary or list, depending on whether `semisl` is True or False.
+        List: The default pipeline as a dictionary or list, depending on whether `semisl` is True or False.
     """
-    return [
-        {
-            "type": "SampleFrames",
-            "clip_len": 8,
-            "frame_interval": 4,
-            "num_clips": 1,
-        },
-        {"type": "RawFrameDecode"},
-        {"type": "mmaction.Resize", "scale": (-1, 256)},
-        {"type": "mmaction.FormatShape", "input_format": "NCTHW"},
-        {"type": "mmaction.PackActionInputs"},
-    ]
+    default_pipeline = {
+        "train":[
+            {
+                "type": "SampleFrames",
+                "clip_len": 8,
+                "frame_interval": 4,
+                "num_clips": 1,
+            },
+            {"type": "RawFrameDecode"},
+            {"type": "Resize", "scale": (-1, 256)},
+            {"type": "FormatShape", "input_format": "NCTHW"},
+            {"type": "PackActionInputs"},
+        ],
+        "val":[
+            {
+                "type": "SampleFrames",
+                "clip_len": 8,
+                "frame_interval": 4,
+                "num_clips": 1,
+                "test_mode": True,
+            },
+            {"type": "RawFrameDecode"},
+            {"type": "Resize", "scale": (-1, 256)},
+            {"type": "CenterCrop", "crop_size": 224},
+            {"type": "FormatShape", "input_format": "NCTHW"},
+            {"type": "PackActionInputs"},
+        ],
+        "test":[
+            {
+                "type": "SampleFrames",
+                "clip_len": 8,
+                "frame_interval": 4,
+                "num_clips": 1,
+                "test_mode": True,
+            },
+            {"type": "RawFrameDecode"},
+            {"type": "Resize", "scale": (-1, 256)},
+            {"type": "CenterCrop", "crop_size": 224},
+            {"type": "FormatShape", "input_format": "NCTHW"},
+            {"type": "PackActionInputs"},
+        ],
+    }
+    return default_pipeline[subset]
 
 
 
 @add_subset_dataloader(SUBSET_LIST)
-class MMActionDataset(BaseDataset):
+class MMActionDataset(MMXDataset):
     """A class representing a dataset for mmaction model."""
 
     def __init__(
@@ -106,6 +138,8 @@ class MMActionDataset(BaseDataset):
             unlabeled_file_list,
             data_format,
         )
+        self.scope = "mmaction"
+        self.dataset_registry = MMActionRegistry().get("dataset")
 
     def _initialize(self) -> None:
         self.set_datumaro_adapters()  # Set self.dataset_entity & self.label_schema
@@ -115,80 +149,33 @@ class MMActionDataset(BaseDataset):
     def _get_sub_task_dataset(self) -> TorchDataset:
         return OTXActionClsDataset
 
-    def build_dataset(
+    def _build_dataset(
         self,
         subset: str,
-        pipeline: list | dict | None = None,
-        config: str | (dict | Config) | None = None,
+        pipeline: list | None = None,
+        config: dict | None = None,
     ) -> TorchDataset | None:
         """Builds a TorchDataset object for the given subset using the specified pipeline and configuration.
 
         Args:
             subset (str): The subset to build the dataset for.
-            pipeline (Optional[Union[list, dict]]): The pipeline to use for the dataset.
+            pipeline (list | None, optional): The pipeline to use for the dataset.
                 Defaults to None.
-            config (Optional[Union[str, dict, Config]]): The configuration to use for the dataset.
+            config (dict | None, optional): The configuration to use for the dataset.
                 Defaults to None.
 
         Returns:
             Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
         """
-        if not self.initialize:
-            self._initialize()
+        if pipeline is None:
+            pipeline = get_default_pipeline(subset)
+        return super()._build_dataset(subset, pipeline, config)
 
-        if subset not in SUBSET_LIST:
-            msg = f"{subset} is not supported subset"
-            raise ValueError(msg)
-
-        otx_dataset = self.dataset_entity.get_subset(str_to_subset_type(subset))
-        labels = self.label_schema.get_labels(include_empty=False)
-        if len(otx_dataset) < 1:
-            return None
-        # Case without config
-        if config is None:
-            _pipeline = pipeline if pipeline is not None else get_default_pipeline()
-            dataset = self.base_dataset(otx_dataset=otx_dataset, labels=labels, pipeline=_pipeline)
-            dataset.configs = {
-                "type": str(self.base_dataset.__qualname__),
-                "data_root": getattr(self, f"{subset}_data_roots"),
-                "ann_file": getattr(self, f"{subset}_ann_files"),
-                "data_prefix": "",
-                "pipeline": _pipeline,
-            }
-            return dataset
-
-        # Config Setting
-        if isinstance(config, str):
-            _config = Config.fromfile(filename=config)
-        elif isinstance(config, dict):
-            _config = Config(cfg_dict=config)
-        else:
-            _config = config
-        # Case with Config
-        dataset_config = _config.get("dataset", _config)
-        init_config = dataset_config.copy()
-        dataset_config["otx_dataset"] = otx_dataset
-        dataset_config["labels"] = labels
-        if pipeline is not None:
-            dataset_config["pipeline"] = pipeline
-        dataset_config.pop("data_roots", None)
-        dataset_config.pop("ann_files", None)
-        dataset_config.pop("file_list", None)
-        dataset_config["_scope_"] = "mmpretrain"
-        # Valid inputs
-        if not dataset_config.get("type", False):
-            dataset_config["type"] = self.base_dataset.__name__
-        if not dataset_config.get("pipeline", False):
-            dataset_config["pipeline"] = get_default_pipeline()
-        dataset = DATASETS.build(dataset_config)
-        dataset.configs = init_config
-        return dataset
-
-    def build_dataloader(
+    def _build_dataloader(
         self,
         dataset: TorchDataset | None,
-        batch_size: int = 2,
-        num_workers: int = 0,
+        batch_size: int | None = 2,
+        num_workers: int | None = 0,
         shuffle: bool = True,
         pin_memory: bool = False,
         drop_last: bool = True,
@@ -218,10 +205,6 @@ class MMActionDataset(BaseDataset):
 
         # Sampler
         seed = kwargs.get("seed", None)
-        if isinstance(sampler, dict):
-            pass
-        if sampler is not None:
-            shuffle = False
 
         init_fn = partial(worker_init_fn, num_workers=num_workers, rank=rank, seed=seed) if seed is not None else None
         if digit_version(torch.__version__) >= digit_version("1.8.0"):
@@ -239,11 +222,10 @@ class MMActionDataset(BaseDataset):
             drop_last=drop_last,
             **kwargs,
         )
-        sampler_cfg = sampler if isinstance(sampler, dict) else {"type": f"{sampler.__class__.__qualname__}"}
         dataset_cfg = dataset.configs if hasattr(dataset, "configs") else dataset
         dataloader.configs = {
             "batch_size": batch_size,
-            "sampler": sampler_cfg,
+            "sampler": sampler,
             "num_workers": num_workers,
             "collate_fn": {"type": "pseudo_collate"},
             "pin_memory": pin_memory,
@@ -251,91 +233,3 @@ class MMActionDataset(BaseDataset):
             "dataset": dataset_cfg,
         }
         return dataloader
-
-    def subset_dataloader(
-        self,
-        subset: str,
-        pipeline: dict | list | None = None,
-        batch_size: int | None = None,
-        num_workers: int | None = None,
-        config: str | dict | None = None,
-        shuffle: bool = True,
-        pin_memory: bool = False,
-        drop_last: bool = True,
-        sampler: Sampler | (Iterable | dict) | None = None,
-        persistent_workers: bool = False,
-        **kwargs,
-    ) -> TorchDataLoader:
-        r"""MMPretrain's Dataset.subset_dataloader.
-
-        Args:
-            subset (str): Enter an available subset of that dataset.
-            pipeline (Optional[Union[list, dict]], optional):
-                Dataset Pipeline. Defaults to None.
-            batch_size (Optional[int], optional): How many samples per batch to load. Defaults to None.
-            num_workers (Optional[int], optional): How many subprocesses to use for data loading.
-                ``0`` means that the data will be loaded in the main process. Defaults to None.
-            config (Optional[Union[str, dict]], optional): Path to configuration file or Config.
-                Defaults to None.
-            shuffle (bool, optional): Set to ``True`` to have the data reshuffled at every epoch. Defaults to True.
-            pin_memory (bool, optional): If ``True``, the data loader will copy Tensors
-                into device/CUDA pinned memory before returning them.  If your data elements
-                are a custom type, or your :attr:`collate_fn` returns a batch that is a custom type,
-                see the example below. Defaults to False.
-            drop_last (bool, optional): value for whether to drop the last data when the batch is not divided up.
-                Defaults to False.
-            sampler (Optional[Union[Sampler, Iterable, Dict]], optional): Defines the strategy to draw
-                samples from the dataset. Can be any ``Iterable`` with ``__len__``
-                implemented. If specified, :attr:`shuffle` must not be specified.. Defaults to None.
-            persistent_workers (bool, optional): If ``True``, the data loader will not shutdown
-                the worker processes after a dataset has been consumed once. This allows to
-                maintain the workers `Dataset` instances alive. Defaults to False.
-            **kwargs (Any): Additional arguments to pass to the DataLoader constructor.
-
-        Returns:
-            torch.utils.data.DataLoader: Returns a subset of dataLoader.
-        """
-        # Config Setting
-        if isinstance(config, str):
-            _config = Config.fromfile(filename=config)
-        elif isinstance(config, dict):
-            _config = Config(cfg_dict=config)
-        elif config is None:
-            _config = Config(cfg_dict={})
-        else:
-            _config = config
-        dataloader_config = _config.get(f"{subset}_dataloader", None)
-        subset_pipeline = pipeline
-        if isinstance(subset_pipeline, dict):
-            subset_pipeline = subset_pipeline[subset]
-        subset_dataset = self.build_dataset(subset=subset, pipeline=subset_pipeline, config=dataloader_config)
-        if batch_size is None:
-            batch_size = _config.get("batch_size", 2)
-        if num_workers is None:
-            num_workers = _config.get("num_workers", 0)
-
-        return self.build_dataloader(
-            dataset=subset_dataset,
-            batch_size=batch_size,
-            num_workers=num_workers,
-            shuffle=shuffle,
-            pin_memory=pin_memory,
-            drop_last=drop_last,
-            sampler=sampler,
-            persistent_workers=persistent_workers,
-            **kwargs,
-        )
-
-    @property
-    def num_classes(self) -> int:
-        """Returns the number of classes in the dataset.
-
-        If the dataset has not been initialized, this method will first initialize it.
-
-        Returns:
-            The number of classes in the dataset.
-        """
-        if not self.initialize:
-            self._initialize()
-        return len(self.label_schema.get_labels(include_empty=False))
-

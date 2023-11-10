@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import torch
+from otx.v2.adapters.torch.mmengine.modules.utils.config_utils import CustomConfig as Config
 from otx.v2.adapters.torch.mmengine.mmaction import Dataset, Engine, get_model, list_models
 
 from tests.v2.integration.api.test_helper import assert_torch_dataset_api_is_working
@@ -88,13 +89,20 @@ class TestMMActionAPI:
             None
         """
         # Setup Engine
-        engine = Engine(work_dir=tmp_dir_path, config="/home/sungmanc/scripts/otx_2.0/otx/src/otx/v2/configs/action_classification/otx_mmaction_classification_default.yaml")
+        engine = Engine(work_dir=tmp_dir_path)
         built_model = get_model(model=model, num_classes=dataset.num_classes)
+        
         # Train (1 epochs)
         results = engine.train(
             model=built_model,
-            train_dataloader=dataset.train_dataloader(),
-            val_dataloader=dataset.val_dataloader(),
+            train_dataloader=dataset.train_dataloader(
+                batch_size=10,
+                num_workers=0,
+            ),
+            val_dataloader=dataset.val_dataloader(
+                batch_size=1,
+                num_workers=0
+            ),
             max_epochs=1,
         )
         assert "model" in results
@@ -113,8 +121,8 @@ class TestMMActionAPI:
         assert "acc/top1" in test_score
         assert test_score["acc/top1"] > 0.0
 
-        #TODO: check later
-        # Prediction with single image
+        # Will be implemented after phase 1.
+        # Prediction with images
         # pred_result = engine.predict(
         #     model=results["model"],
         #     checkpoint=results["checkpoint"],

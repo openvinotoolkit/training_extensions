@@ -15,7 +15,7 @@ train_dataloader:
   persistent_workers: true
   sampler:
     type: DefaultSampler
-    shuffle: false
+    shuffle: True
   dataset:
     type: OTXActionClsDataset
     pipeline:
@@ -37,6 +37,9 @@ train_dataloader:
 val_dataloader:
   batch_size: 1
   num_workers: 0
+  sampler:
+    type: DefaultSampler
+    shuffle: false
   dataset:
     type: OTXActionClsDataset
     pipeline:
@@ -59,6 +62,9 @@ val_dataloader:
 test_dataloader:
   batch_size: 1
   num_workers: 0
+  sampler:
+    type: DefaultSampler
+    shuffle: false
   dataset:
     type: OTXActionClsDataset
     pipeline:

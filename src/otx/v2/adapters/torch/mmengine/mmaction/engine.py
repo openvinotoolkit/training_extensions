@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import torch
+from mmaction.registry import VISUALIZERS
 
 from otx.v2.adapters.torch.mmengine.engine import MMXEngine
 from otx.v2.adapters.torch.mmengine.mmaction.registry import MMActionRegistry
@@ -23,6 +24,8 @@ if TYPE_CHECKING:
 
 logger = get_logger()
 
+MMACTION_DEFAULT_CONFIG_PATH = "src/otx/v2/configs/action_classification/otx_mmaction_classification_default.yaml"
+MMACTION_DEFAULT_CONFIG = Config.fromfile(MMACTION_DEFAULT_CONFIG_PATH)
 
 class MMActionEngine(MMXEngine):
     """The MMActionEngine class is responsible for running inference on pre-trained models."""
@@ -54,6 +57,7 @@ class MMActionEngine(MMXEngine):
         **kwargs,
     ) -> tuple[Config, bool]:
         config, update_check = super()._update_config(func_args, **kwargs)
+
         for subset in ("val", "test"):
             if f"{subset}_dataloader" in config and config[f"{subset}_dataloader"] is not None:
                 evaluator_config = self._get_value_from_config(f"{subset}_evaluator", func_args)
@@ -61,6 +65,17 @@ class MMActionEngine(MMXEngine):
                     evaluator_config=evaluator_config,
                 )
 
+        if hasattr(config, "visualizer") and config.visualizer.type not in VISUALIZERS:
+            config.visualizer = {
+                "type": "ActionVisualizer",
+                "vis_backends": [{"type": "LocalVisBackend"}, {"type": "TensorboardVisBackend"}],
+            }
+
+        if hasattr(config, "param_scheduler"):
+            config.param_scheduler = [
+                {"type": "LinearLR", "by_epoch": True, "begin": 0, "end": 3},
+                {"type": "CosineAnnealingLR"},
+            ]
         return config, update_check
 
     def predict(
@@ -104,7 +119,7 @@ class MMActionEngine(MMXEngine):
         # Update pipelines
         if pipeline is None:
             from otx.v2.adapters.torch.mmengine.mmaction.dataset import get_default_pipeline
-            pipeline = get_default_pipeline()
+            pipeline = get_default_pipeline(subset="test")
         config = Config({})
         if isinstance(model, torch.nn.Module) and hasattr(model, "_config"):
             config = model._config  # noqa: SLF001
