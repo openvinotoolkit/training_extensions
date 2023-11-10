@@ -14,8 +14,8 @@
 /src/otx/v2/config                                          @samet-akcay @harimkang @goodsong81
 
 # OTX API & CLI
-/src/otx/v2/api                                             @samet-akcay @harimkang
-/src/otx/v2/cli                                             @samet-akcay @harimkang
+/src/otx/v2/api                                             @samet-akcay @harimkang @wonjuleee @goodsong81
+/src/otx/v2/cli                                             @samet-akcay @harimkang @wonjuleee @goodsong81
 
 # OTX Adapters Datumaro/Openvino
 /src/otx/v2/adapters/datumaro                               @samet-akcay @harimkang @wonjuleee
