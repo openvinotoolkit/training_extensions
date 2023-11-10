@@ -81,24 +81,24 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
         for _, subset_data in self.dataset.items():
             for datumaro_item in subset_data:
                 new_annotations = []
-                for ann in datumaro_item.annotations:
-                    if ann.type == DatumAnnotationType.polygon:
+                for annotation in datumaro_item.annotations:
+                    if annotation.type == DatumAnnotationType.polygon:
                         # save polygons as-is, they will be converted to masks.
-                        if self._is_normal_polygon(ann):
-                            new_annotations.append(ann)
+                        if self._is_normal_polygon(annotation):
+                            new_annotations.append(annotation)
 
-                    if ann.type == DatumAnnotationType.mask:
+                    if annotation.type == DatumAnnotationType.mask:
                         if self.use_mask:
                             # use masks loaded in datumaro as-is
                             if self.data_type == "common_semantic_segmentation":
-                                if new_label := self.updated_label_id.get(ann.label, None):
-                                    ann.label = new_label
+                                if new_label := self.updated_label_id.get(annotation.label, None):
+                                    annotation.label = new_label
                                 else:
                                     continue
-                            new_annotations.append(ann)
+                            new_annotations.append(annotation)
                         else:
                             # convert masks to polygons, they will be converted to masks again
-                            datumaro_polygons = MasksToPolygons.convert_mask(ann)
+                            datumaro_polygons = MasksToPolygons.convert_mask(annotation)
                             for d_polygon in datumaro_polygons:
                                 if new_label := self.updated_label_id.get(d_polygon.label, None):
                                     d_polygon.label = new_label
@@ -109,8 +109,8 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
                                 if d_polygon.label not in used_labels:
                                     used_labels.append(d_polygon.label)
 
-                    if ann.label not in used_labels and ann.type != DatumAnnotationType.mask:
-                        used_labels.append(ann.label)
+                    if annotation.label not in used_labels and annotation.type != DatumAnnotationType.mask:
+                        used_labels.append(annotation.label)
                 
                 datumaro_item.annotations = new_annotations
 

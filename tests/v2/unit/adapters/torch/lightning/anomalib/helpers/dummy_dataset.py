@@ -100,7 +100,7 @@ class DummyDataset(OTXAnomalyDataset):
         )
         self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
         
-        self.item_ids: list = [item.id for item in self.dataset]
+        self.item_ids: list[str] = [item.id for item in self.dataset]
 
     def get_mock_dataitems(self) -> Dataset:
         dataset_items = []

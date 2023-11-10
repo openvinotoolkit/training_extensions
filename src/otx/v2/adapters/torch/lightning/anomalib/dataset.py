@@ -110,7 +110,7 @@ class AnomalibDataset(LightningDataset):
 
         config.dataset = {"transform_config": {"train": pipeline}, "image_size": [256, 256]}
         otx_dataset: DatumDataset = self.dataset_entity.get(str_to_subset_type(subset), None)
-        if not otx_dataset or len(otx_dataset) < 1:
+        if otx_dataset is None or len(otx_dataset) == 0:
             return None
 
         # [TODO] resotre split_local_global_dataset for subset == "val"

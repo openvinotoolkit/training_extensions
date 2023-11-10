@@ -65,7 +65,7 @@ class LightningDataset(BaseTorchDataset):
                 otx_dataset = self.dataset_entity
             else:
                 otx_dataset = self.dataset_entity.get(str_to_subset_type(subset), None)
-            if not otx_dataset or len(otx_dataset) < 1:
+            if otx_dataset is None or len(otx_dataset) == 0:
                 return None
 
             return OTXVisualPromptingDataset(

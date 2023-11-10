@@ -14,11 +14,6 @@ from datumaro.components.dataset_base import DatasetItem as DatumDatasetItem
 from datumaro.components.media import Image as DatumImage
 
 import numpy as np
-from otx.v2.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
 from otx.v2.api.entities.color import Color
 from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import Domain, LabelEntity
@@ -75,18 +70,18 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> dict[Subset, Da
             use_mask_as_annotation=use_mask,
         )
 
-        annotations = []
+        annotations: list[DatumMask | DatumPolygon] = []
         for shape in shapes:
             shape_labels = shape.get_labels(include_empty=True)
 
             in_shape = shape.shape
             if use_mask:
                 if isinstance(in_shape, Image):
-                    ann = DatumMask(
+                    annotation = DatumMask(
                         image=in_shape.numpy,
                         label=shape_labels[0].id,
                     )
-                    annotations.append(ann)
+                    annotations.append(annotation)
             else:
                 if isinstance(in_shape, Rectangle):
                     points = [
@@ -100,19 +95,19 @@ def generate_visual_prompting_dataset(use_mask: bool = False) -> dict[Subset, Da
                         in_shape.y2 * 480,
                     ]
                 elif isinstance(in_shape, Ellipse):
-                    points = []
+                    points: list[float] = []
                     for x, y in in_shape.get_evenly_distributed_ellipse_coordinates():
                         points.extend([x * 640, y * 480])
                 elif isinstance(in_shape, Polygon):
-                    points = []
+                    points: list[float] = []
                     for point in in_shape.points:
                         points.extend([point.x * 640, point.y * 480])
 
-                ann = DatumPolygon(
+                annotation = DatumPolygon(
                     points=points,
                     label=shape_labels[0].id
                 )
-                annotations.append(ann)
+                annotations.append(annotation)
         media = DatumImage.from_numpy(image_numpy)
         media.path = None
         items = [DatumDatasetItem(id=0, media=media, annotations=annotations)]

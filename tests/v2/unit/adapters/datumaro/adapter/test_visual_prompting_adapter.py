@@ -14,8 +14,6 @@ import pytest
 from otx.v2.adapters.datumaro.adapter.visual_prompting_dataset_adapter import (
     VisualPromptingDatasetAdapter,
 )
-# from otx.v2.api.entities.image import Image
-# from otx.v2.api.entities.shapes.polygon import Polygon
 
 from tests.v2.unit.adapters.datumaro.test_helpers import (
     TASK_NAME_TO_DATA_ROOT,

@@ -111,7 +111,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
         return self._generate_default_label_schema(self.label_entities)
 
     def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
-        """Return DatumaroDataset with fake annotations for Self-SL Classification."""
+        """Return DatumDataset with fake annotations (label_id=0) for Self-SL Classification."""
         self._get_dataset_items(fake_ann=True)
         return self.dataset
 
@@ -124,7 +124,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
     def _get_dataset_items(self, fake_ann: bool = False):       
-         # Set the DatumDataset for Self-SL Classification.
+        """Modify DatumDataset with fake_annotation (label_id=0) for Self-SL Classification."""
         for _, subset_data in self.dataset.items():
             for item in subset_data:
                 if fake_ann:

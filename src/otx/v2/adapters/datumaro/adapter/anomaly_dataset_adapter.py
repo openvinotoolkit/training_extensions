@@ -111,7 +111,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly detection adapter inherited from AnomalyBaseDatasetAdapter."""
 
     def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
-        """Conver DatumaroDataset to DatasetEntity for Anomaly detection."""
+        """Convert Mask annotation into Polygon in DatumaroDataset."""
 
         # Prepare
         for _, subset_data in self.dataset.items():

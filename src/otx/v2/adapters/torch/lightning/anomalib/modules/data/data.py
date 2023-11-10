@@ -45,7 +45,7 @@ class OTXAnomalyDataset(Dataset):
 
     Args:
         config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (Dict[Subset, DatumDataset]): [description]: OTX SDK Dataset
+        dataset (Dict[Subset, DatumDataset]): Datumaro Dataset
 
     Example:
         >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
@@ -58,12 +58,7 @@ class OTXAnomalyDataset(Dataset):
         torch.Size([3, 256, 256])
     """
 
-    def __init__(
-            self,
-            config: DictConfig | ListConfig,
-            dataset: DatumDataset,
-            task_type: TaskType,
-        ) -> None:
+    def __init__(self, config: DictConfig | ListConfig, dataset: DatumDataset, task_type: TaskType) -> None:
         """Initializes a new instance of the Data class.
 
         Args:
@@ -81,7 +76,7 @@ class OTXAnomalyDataset(Dataset):
             to_tensor=True,
         )
 
-        self.item_ids: list = [item.id for item in self.dataset]
+        self.item_ids: list[str] = [item.id for item in self.dataset]
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -173,8 +168,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             self,
             config: DictConfig | ListConfig,
             dataset: dict[Subset, DatumDataset],
-            task_type: TaskType,
-        ) -> None:
+            task_type: TaskType) -> None:
         """Initializes a DataModule instance.
 
         Args:

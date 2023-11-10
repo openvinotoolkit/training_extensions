@@ -75,7 +75,7 @@ class OTXClsDataset(BaseDataset):
         """Load annotations."""
         include_empty = self.empty_label in self.labels
         for item in self.otx_dataset:
-            item_labels = [ann.label for ann in item.annotations]
+            item_labels = [annotation.label for annotation in item.annotations]
             ignored_labels = item.attributes.get("ignored_labels", [])
             class_indices = []
             if item_labels:
