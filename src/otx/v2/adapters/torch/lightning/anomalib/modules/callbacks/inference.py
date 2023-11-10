@@ -122,13 +122,13 @@ class AnomalyInferenceCallback(Callback):
             pred_scores,
         ):
             # generate annotations
-            annotations: list = []
+            new_annotations: list[Bbox] = []
             for box, score, label in zip(im_boxes, im_box_scores, im_box_labels):
                 if box[0] >= box[2] or box[1] >= box[3]:  # discard 1-pixel boxes
                     continue
                 _label = self.label_map[label.item()]
                 probability = score.item()
-                annotations.append(
+                new_annotations.append(
                     Bbox(
                         x=box[0].item() / width,
                         y=box[1].item() / height,
@@ -141,7 +141,7 @@ class AnomalyInferenceCallback(Callback):
                         },
                     ),
                 )
-            dataset_item.annotations.extend(annotations)
+            dataset_item.annotations.extend(new_annotations)
 
     def _process_segmentation_predictions(self, pred_masks: Tensor, anomaly_maps: Tensor, pred_scores: Tensor) -> None:
         """Add segmentation predictions to the dataset items.
@@ -163,7 +163,7 @@ class AnomalyInferenceCallback(Callback):
                 soft_prediction=anomaly_map.squeeze().numpy(),
                 label_map=self.label_map,
             )
-            new_annotations = []
+            new_annotations: list[Polygon] = []
             for annotation in annotations:
                 points = []
                 for pts in annotation.shape.points:
