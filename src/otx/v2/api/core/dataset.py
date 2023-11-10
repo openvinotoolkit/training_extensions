@@ -150,7 +150,7 @@ class BaseDatasetAdapter:
 
     @abstractmethod
     def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
-        """Get Dict[Subset, DatumDataset]."""
+        """Get dict[Subset, DatumDataset]."""
         raise NotImplementedError
 
     def get_label_schema(self) -> LabelSchemaEntity:

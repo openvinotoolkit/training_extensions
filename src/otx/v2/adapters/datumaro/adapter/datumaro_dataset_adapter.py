@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
 
 import os
 from abc import abstractmethod
@@ -129,7 +130,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         encryption_key: Optional[str] = None,
-    ) -> Dict[Subset, DatumDataset]:
+    ) -> dict[Subset, DatumDataset]:
         """Import datasets by using Datumaro.import_from() method.
 
         Args:
@@ -212,7 +213,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
         return dataset
 
     @abstractmethod
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Get DatasetEntity."""
         raise NotImplementedError
 
@@ -265,7 +266,7 @@ class DatumaroDatasetAdapter(BaseDatasetAdapter):
 
     def _prepare_label_information(
         self,
-        datumaro_dataset: Dict[Subset, DatumDataset],
+        datumaro_dataset: dict[Subset, DatumDataset],
     ) -> Dict[str, Any]:
         # Get datumaro category information
         if Subset.TRAINING in datumaro_dataset:

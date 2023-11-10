@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import os
 from typing import Dict, List, Optional
 
@@ -39,7 +41,7 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
         unlabeled_data_roots: Optional[str] = None,
         unlabeled_file_list: Optional[str] = None,
         encryption_key: Optional[str] = None,
-    ) -> Dict[Subset, DatumDataset]:
+    ) -> dict[Subset, DatumDataset]:
         """Import MVTec dataset.
 
         Args:
@@ -88,7 +90,7 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
 
         return super()._generate_default_label_schema(self.label_entities)
 
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Get DatasetEntity."""
         raise NotImplementedError
 
@@ -96,7 +98,7 @@ class AnomalyBaseDatasetAdapter(DatumaroDatasetAdapter):
 class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly classification adapter inherited from AnomalyBaseDatasetAdapter."""
 
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Return DatumaroDataset for Anomaly classification."""
         # Prepare
         for _, subset_data in self.dataset.items():
@@ -110,7 +112,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
 class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly detection adapter inherited from AnomalyBaseDatasetAdapter."""
 
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Convert Mask annotation into Polygon in DatumaroDataset."""
 
         # Prepare
@@ -148,7 +150,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
 class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly segmentation adapter inherited by AnomalyBaseDatasetAdapter and DatumaroDatasetAdapter."""
 
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Conver DatumaroDataset to DatasetEntity for Anomaly segmentation."""
 
         # Prepare

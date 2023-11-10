@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import cv2
-import numpy as np
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
@@ -66,7 +66,7 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
 
         return super()._generate_default_label_schema(self.label_entities)
 
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
         used_labels: List[int] = []
         self.updated_label_id: Dict[int, int] = {}

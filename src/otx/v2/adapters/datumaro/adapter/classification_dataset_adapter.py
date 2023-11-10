@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations 
+
 from typing import Any, Dict, List, Union
 
 from datumaro.components.annotation import LabelCategories as DatumLabelCategories
@@ -24,7 +26,7 @@ class ClassificationDatasetAdapter(DatumaroDatasetAdapter):
     hierarchical-label classification tasks.
     """
 
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Get DatumaroDataset for Classification."""
         return self.dataset
 
@@ -110,7 +112,7 @@ class SelfSLClassificationDatasetAdapter(ClassificationDatasetAdapter):
         self.label_entities = label_information["label_entities"]
         return self._generate_default_label_schema(self.label_entities)
 
-    def get_otx_dataset(self) -> Dict[Subset, DatumDataset]:
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
         """Return DatumDataset with fake annotations (label_id=0) for Self-SL Classification."""
         self._get_dataset_items(fake_ann=True)
         return self.dataset

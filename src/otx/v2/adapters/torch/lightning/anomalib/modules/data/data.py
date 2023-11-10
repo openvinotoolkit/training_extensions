@@ -45,7 +45,7 @@ class OTXAnomalyDataset(Dataset):
 
     Args:
         config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (Dict[Subset, DatumDataset]): Datumaro Dataset
+        dataset (dict[Subset, DatumDataset]): Datumaro Dataset
 
     Example:
         >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
@@ -63,7 +63,7 @@ class OTXAnomalyDataset(Dataset):
 
         Args:
             config (Union[DictConfig, ListConfig]): The configuration for the data.
-            dataset (Dict[Subset, DatumDataset]): The dataset to use for the data.
+            dataset (dict[Subset, DatumDataset]): The dataset to use for the data.
             task_type (TaskType): The type of task to perform on the data.
         """
         self.config = config
