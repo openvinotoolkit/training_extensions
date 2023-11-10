@@ -300,6 +300,7 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
 
     def __init__(self, **kwargs):
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
+        self.label_schema = kwargs.pop("label_schema", None)
         super().__init__(**kwargs)
 
     def load_annotations(self):
@@ -308,6 +309,13 @@ class OTXHierarchicalClsDataset(OTXMultilabelClsDataset):
         for i, _ in enumerate(self.otx_dataset):
             class_indices = []
             item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            if self.label_schema:
+                # NOTE: Parent labels might be missing in annotations.
+                # This code fills the gap just in case.
+                full_item_labels = set()
+                for label in item_labels:
+                    full_item_labels.update(self.label_schema.get_ancestors(label))
+                item_labels = full_item_labels
             ignored_labels = self.otx_dataset[i].ignored_labels
             if item_labels:
                 num_cls_heads = self.hierarchical_info["num_multiclass_heads"]
