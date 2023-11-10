@@ -137,8 +137,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "DeiT-Tiny" and dump_features:
-            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -160,8 +158,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -169,8 +165,6 @@ class TestToolsMultiClassClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain_openvino(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_class_cls"
         otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -383,8 +377,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "DeiT-Tiny" and dump_features:
-            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -399,8 +391,6 @@ class TestToolsMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "multi_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -546,8 +536,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.parametrize("dump_features", [True, False])
     def test_otx_export(self, template, tmp_dir_path, dump_features):
-        if template.name == "DeiT-Tiny" and dump_features:
-            pytest.skip(reason="Issue#2098 ViT template does not support dump_features.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_export_testing(template, tmp_dir_path, dump_features)
 
@@ -562,8 +550,6 @@ class TestToolsHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
-        if template.name == "DeiT-Tiny":
-            pytest.skip(reason="Issue#2098 ViT inference does not work by FeatureVectorHook.")
         tmp_dir_path = tmp_dir_path / "h_label_cls"
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_h)
 
