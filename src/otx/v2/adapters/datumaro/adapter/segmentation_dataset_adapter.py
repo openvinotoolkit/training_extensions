@@ -21,6 +21,7 @@ from datumaro.plugins.data_formats.common_semantic_segmentation import (
 )
 from datumaro.plugins.transforms import MasksToPolygons
 from datumaro.util.meta_file_util import parse_meta_file
+from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from skimage.segmentation import felzenszwalb
 
 from otx.v2.api.entities.annotation import Annotation
@@ -153,6 +154,12 @@ class SegmentationDatasetAdapter(DatumaroDatasetAdapter):
             entity.id = ID(i)
 
         return is_removed
+
+    def get_label_schema(self) -> LabelSchemaEntity:
+        """Get Label Schema."""
+        # TODO (Eugene): considering adding "background" label in label schema.
+        # CVS-124394
+        return super().get_label_schema()
 
 
 class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
