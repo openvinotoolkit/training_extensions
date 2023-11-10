@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from pathlib import Path
-from typing import Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from otx.v2.adapters.datumaro.adapter.anomaly_dataset_adapter import (
     AnomalyClassificationDatasetAdapter,
@@ -52,9 +52,9 @@ class TestOTXAnomalyClassificationDatasetAdapter:
 
     def test_get_otx_dataset(self) -> None:
         assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
 
 class TestOTXAnomalyDetectionDatasetAdapter:
@@ -87,9 +87,9 @@ class TestOTXAnomalyDetectionDatasetAdapter:
 
     def test_get_otx_dataset(self) -> None:
         assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
 
 class TestOTXAnomalySegmentationDatasetAdapter:
@@ -122,6 +122,6 @@ class TestOTXAnomalySegmentationDatasetAdapter:
 
     def test_get_otx_dataset(self) -> None:
         assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)

@@ -81,7 +81,7 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TRAINING in multilabel_train_dataset_adapter.dataset
         assert Subset.VALIDATION in multilabel_train_dataset_adapter.dataset
 
-        assert isinstance(multilabel_train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(multilabel_train_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(multilabel_train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
         multilabel_test_dataset_adapter = ClassificationDatasetAdapter(
@@ -89,7 +89,7 @@ class TestOTXClassificationDatasetAdapter:
         )
 
         assert Subset.TESTING in multilabel_test_dataset_adapter.dataset
-        assert isinstance(multilabel_test_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(multilabel_test_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(multilabel_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
     def test_hierarchical_label(self) -> None:
@@ -106,7 +106,7 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TRAINING in hlabel_train_dataset_adapter.dataset
         assert Subset.VALIDATION in hlabel_train_dataset_adapter.dataset
 
-        assert isinstance(hlabel_train_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(hlabel_train_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(hlabel_train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
         label_tree = hlabel_train_dataset_adapter.get_label_schema().label_tree
@@ -121,7 +121,7 @@ class TestOTXClassificationDatasetAdapter:
         )
 
         assert Subset.TESTING in hlabel_test_dataset_adapter.dataset
-        assert isinstance(hlabel_test_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(hlabel_test_dataset_adapter.get_otx_dataset(), dict)
         assert isinstance(hlabel_test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
 
         label_tree = hlabel_test_dataset_adapter.get_label_schema().label_tree
