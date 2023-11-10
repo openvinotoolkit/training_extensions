@@ -15,6 +15,8 @@ dataset:
       - 57.12
       - 57.375
   offset_bbox: 0
+  generate_point: false
+  generate_bbox: false
 
 model:
   name: SAM
@@ -31,6 +33,8 @@ model:
   use_stability_score: false
   stability_score_offset: 1.
   return_extra_metrics: false
+  # zero-shot
+  default_threshold_reference: 0.3
 
 callback:
   checkpoint: # arguments for ModelCheckpoint
@@ -63,7 +67,7 @@ trainer:
   min_steps: null
   max_time: null
   limit_train_batches: 1.0
-  limit_val_batches: 1.0
+  limit_val_batches: 0 # No validation
   limit_test_batches: 1.0
   limit_predict_batches: 1.0
   val_check_interval: 1.0
