@@ -100,7 +100,7 @@ class AdaptiveTrainSchedulingHook(Hook):
                     hook.interval = adaptive_interval
             self._initialized = True
 
-    def get_adaptive_interval(self, iter_per_epoch) -> int:
+    def get_adaptive_interval(self, iter_per_epoch: int) -> int:
         """Get adaptive interval."""
         adaptive_interval = max(round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1)
         return adaptive_interval
