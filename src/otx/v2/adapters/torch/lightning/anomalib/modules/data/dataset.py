@@ -257,7 +257,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
             subset (Subset): Subset of the dataset.
 
         Returns:
-            List[DatumDatasetItem]: List containing subset dataset.
+            list[DatumDatasetItem]: List containing subset dataset.
         """
         # read annotation file
         samples = pd.read_json(ann_file_path)
