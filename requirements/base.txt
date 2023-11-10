@@ -4,7 +4,7 @@ natsort==8.1.*
 prettytable==3.9.*
 protobuf==3.20.*
 pyyaml
-datumaro~=1.5.0
+datumaro==1.5.1rc3
 psutil==5.9.*
 scipy==1.10.*
 bayesian-optimization==1.4.*

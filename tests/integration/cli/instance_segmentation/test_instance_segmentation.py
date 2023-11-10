@@ -90,9 +90,6 @@ for experimental_template in iseg_config_root.glob("**/*_experimental.yaml"):
 TestInstanceSegmentationModelTemplates = generate_model_template_testing(templates)
 
 
-TestInstanceSegmentationModelTemplates = generate_model_template_testing(templates)
-
-
 class TestInstanceSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates_with_experimental, ids=templates_ids_with_experimental)

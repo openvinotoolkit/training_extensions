@@ -99,9 +99,6 @@ templates_ids = [template.model_template_id for template in templates]
 TestSemanticSegmentationModelTemplates = generate_model_template_testing(templates)
 
 
-TestSemanticSegmentationModelTemplates = generate_model_template_testing(templates)
-
-
 class TestSegmentationCLI:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", default_templates, ids=default_templates_ids)
@@ -246,5 +243,5 @@ class TestSegmentationCLI:
     def test_otx_train_auto_adapt_num_workers(self, template, tmp_dir_path):
         adapting_num_workers_args = copy.deepcopy(args)
         adapting_num_workers_args["train_params"].extend(["--learning_parameters.auto_num_workers", "True"])
-        tmp_dir_path = tmp_dir_path / f"segmentation_auto_adapt_num_workers"
+        tmp_dir_path = tmp_dir_path / "segmentation_auto_adapt_num_workers"
         otx_train_testing(template, tmp_dir_path, otx_dir, adapting_num_workers_args)

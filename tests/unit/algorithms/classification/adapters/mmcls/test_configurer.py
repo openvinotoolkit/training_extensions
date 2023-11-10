@@ -47,11 +47,6 @@ class TestClassificationConfigurer:
             os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_hierarchical.py")
         )
 
-        self.multilabel_model_cfg = MPAConfig.fromfile(os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_multilabel.py"))
-        self.hierarchical_model_cfg = MPAConfig.fromfile(
-            os.path.join(DEFAULT_CLS_TEMPLATE_DIR, "model_hierarchical.py")
-        )
-
     @e2e_pytest_unit
     def test_configure(self, mocker):
         mock_cfg_merge = mocker.patch.object(ClassificationConfigurer, "merge_configs")
