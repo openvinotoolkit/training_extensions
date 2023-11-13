@@ -10,7 +10,7 @@ from otx.v2.adapters.datumaro.adapter.anomaly_dataset_adapter import (
     AnomalyDetectionDatasetAdapter,
     AnomalySegmentationDatasetAdapter,
 )
-from otx.v2.api.entities.datasets import DatasetEntity
+from otx.v2.api.entities.label_schema import LabelSchemaEntity
 from otx.v2.api.entities.subset import Subset
 
 from tests.v2.unit.adapters.datumaro.test_helpers import (
@@ -51,8 +51,10 @@ class TestOTXAnomalyClassificationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
 
 class TestOTXAnomalyDetectionDatasetAdapter:
@@ -84,8 +86,10 @@ class TestOTXAnomalyDetectionDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
 
 class TestOTXAnomalySegmentationDatasetAdapter:
@@ -117,5 +121,7 @@ class TestOTXAnomalySegmentationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), DatasetEntity)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), DatasetEntity)
+        assert isinstance(self.train_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_label_schema(), LabelSchemaEntity)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)

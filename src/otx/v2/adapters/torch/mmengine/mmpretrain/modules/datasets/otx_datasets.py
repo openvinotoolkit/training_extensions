@@ -9,6 +9,7 @@ import logging
 from typing import Optional, Union
 
 import numpy as np
+from datumaro.components.dataset import Dataset as DatumDataset
 from mmengine.dataset import Compose
 from mmengine.registry import build_from_cfg
 from mmpretrain.datasets.base_dataset import BaseDataset
@@ -32,7 +33,7 @@ class OTXClsDataset(BaseDataset):
 
     def __init__(
         self,
-        otx_dataset: DatasetEntity,
+        otx_dataset: DatumDataset,
         labels: list,
         empty_label: Optional[list] = None,
         pipeline: list = [],
@@ -47,6 +48,7 @@ class OTXClsDataset(BaseDataset):
         self.class_acc = False
 
         self._metainfo = self._load_metainfo({"classes": [label.name for label in labels]})
+        self.item_ids: list = []
         self.gt_labels: list = []
         self.num_classes = len(self.CLASSES)
 
@@ -72,39 +74,35 @@ class OTXClsDataset(BaseDataset):
     def load_annotations(self) -> None:
         """Load annotations."""
         include_empty = self.empty_label in self.labels
-        for i, _ in enumerate(self.otx_dataset):
+        for item in self.otx_dataset:
+            item_labels = [annotation.label for annotation in item.annotations]
+            ignored_labels = item.attributes.get("ignored_labels", [])
             class_indices = []
-            item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
-            ignored_labels = self.otx_dataset[i].ignored_labels
             if item_labels:
-                for otx_lbl in item_labels:
-                    if otx_lbl not in ignored_labels:
-                        class_indices.append(self.label_names.index(otx_lbl.name))
+                for label in item_labels:
+                    if label not in ignored_labels:
+                        class_indices.append(label)
                     else:
                         class_indices.append(-1)
             else:  # this supposed to happen only on inference stage
                 class_indices.append(-1)
             self.gt_labels.append(class_indices)
+            self.item_ids.append(item.id)
         self.gt_labels = np.array(self.gt_labels)
 
     def __getitem__(self, index: int) -> dict:
         """Get item from dataset."""
-        dataset = self.otx_dataset
-        item = dataset[index]
-        ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
-
-        height, width = item.height, item.width
-
+        item = self.otx_dataset.get(id=self.item_ids[index])
+        ignored_labels = item.attributes.get("ignored_labels", [])
         gt_label = self.gt_labels[index]
+
         data_info = {
             "dataset_item": item,
-            "width": width,
-            "height": height,
             "index": index,
             "gt_label": gt_label,
             "ignored_labels": ignored_labels,
-            "entity_id": getattr(item, "id_", None),
-            "label_id": self._get_label_id(gt_label),
+            "entity_id": None,
+            "label_id": gt_label,
         }
 
         if self.pipeline is None:

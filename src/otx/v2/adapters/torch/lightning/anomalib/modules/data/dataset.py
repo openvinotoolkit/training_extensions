@@ -19,25 +19,19 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 import pandas as pd
-from bson import ObjectId
+from datumaro.components.annotation import Bbox as DatumBbox
+from datumaro.components.annotation import Label as DatumLabel
+from datumaro.components.annotation import Polygon as DatumPolygon
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.dataset_base import DatasetItem as DatumDatasetItem
+from datumaro.components.media import Image as DatumImage
 
-from otx.v2.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import Domain, LabelEntity
-from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.polygon import Point, Polygon
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 
 
-class BaseAnomalyDataset(DatasetEntity, ABC):
+class BaseAnomalyDataset(ABC):
     """Base Dataloader for Anomaly Tasks."""
 
     def __init__(
@@ -56,7 +50,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
             test_subset (Optional[Dict[str, str]], optional): Path to annotation
                 and dataset used for testing. Defaults to None.
         """
-        items: list[DatasetItemEntity] = []
+        self.dataset: dict[Subset, DatumDataset] = {}
         self.normal_label = LabelEntity(id=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION)
         self.abnormal_label = LabelEntity(
             id=ID(1),
@@ -68,42 +62,41 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
         if train_subset is not None:
             train_ann_file = Path(train_subset["ann_file"])
             train_data_root = Path(train_subset["data_root"])
-            items.extend(
+            self.dataset[Subset.TRAINING] = DatumDataset.from_iterable(
                 self.get_dataset_items(
                     ann_file_path=train_ann_file,
                     data_root_dir=train_data_root,
-                    subset=Subset.TRAINING,
                 ),
             )
 
         if val_subset is not None:
             val_ann_file = Path(val_subset["ann_file"])
             val_data_root = Path(val_subset["data_root"])
-            items.extend(
+            self.dataset[Subset.VALIDATION] = DatumDataset.from_iterable(
                 self.get_dataset_items(
                     ann_file_path=val_ann_file,
                     data_root_dir=val_data_root,
-                    subset=Subset.VALIDATION,
                 ),
             )
 
         if test_subset is not None:
             test_ann_file = Path(test_subset["ann_file"])
             test_data_root = Path(test_subset["data_root"])
-            items.extend(
+            self.dataset[Subset.TESTING] = DatumDataset.from_iterable(
                 self.get_dataset_items(
                     ann_file_path=test_ann_file,
                     data_root_dir=test_data_root,
-                    subset=Subset.TESTING,
                 ),
             )
 
-        super().__init__(items=items)
-
     @abstractmethod
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path) -> list[DatumDatasetItem]:
         """To be implemented ib subclasses."""
         raise NotImplementedError
+
+    def get(self, subset: Subset) -> DatumDataset:
+        """To get subset DatumDataset."""
+        return self.dataset.get(subset, DatumDataset.from_iterable([]))
 
 
 class AnomalyClassificationDataset(BaseAnomalyDataset):
@@ -128,7 +121,7 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
     >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
     """
 
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path) -> list[DatumDatasetItem]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -144,21 +137,16 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
         samples = pd.read_json(ann_file_path)
 
         dataset_items = []
-        for _, sample in samples.iterrows():
+        for idx, sample in samples.iterrows():
             # Create image
             # convert path to str as PosixPath is not supported by Image
-            image = Image(file_path=str(data_root_dir / sample.image_path))
+            media = DatumImage.from_file(path=str(data_root_dir / sample.image_path))
             # Create annotation
-            shape = Rectangle.generate_full_box()
             label: LabelEntity = self.normal_label if sample.label == "good" else self.abnormal_label
-            labels = [ScoredLabel(label, probability=1.0)]
-            annotations = [Annotation(shape=shape, labels=labels)]
-            annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
+            annotations = [DatumLabel(label=label.id, attributes={"is_anomalous": label.is_anomalous})]
 
-            # Create dataset item
-            dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset)
             # Add to dataset items
-            dataset_items.append(dataset_item)
+            dataset_items.append(DatumDatasetItem(id=idx, media=media, annotations=annotations))
 
         return dataset_items
 
@@ -186,7 +174,7 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
 
     """
 
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path) -> list[DatumDatasetItem]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -196,37 +184,30 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
             subset (Subset): Subset of the dataset.
 
         Returns:
-            List[DatasetItemEntity]: List containing subset dataset.
+            List[DatumDatasetItem]: List containing subset dataset.
         """
         # read annotation file
         samples = pd.read_json(ann_file_path)
 
         dataset_items = []
-        for _, sample in samples.iterrows():
+        for idx, sample in samples.iterrows():
             # Create image
             # convert path to str as PosixPath is not supported by Image
-            image = Image(file_path=str(data_root_dir / sample.image_path))
+            media = DatumImage.from_file(path=str(data_root_dir / sample.image_path))
             # Create annotation
             label: LabelEntity = self.normal_label if sample.label == "good" else self.abnormal_label
-            annotations = [
-                Annotation(
-                    Rectangle.generate_full_box(),
-                    labels=[ScoredLabel(label=label, probability=1.0)],
-                ),
-            ]
+            annotations = [DatumLabel(label=label.id, attributes={"is_anomalous": label.is_anomalous})]
             if isinstance(sample.masks, list) and len(sample.masks) > 0:
                 for contour in sample.masks:
-                    points = [Point(x, y) for x, y in contour]
-                    polygon = Polygon(points=points)
+                    points = [float(val) for pair in contour for val in pair]
+                    polygon = DatumPolygon(
+                        points=points,
+                        label=label.id,
+                        attributes={"is_anomalous": label.is_anomalous},
+                    )
                     if polygon.get_area() > 0:
                         # Contour is a closed polygon with area > 0
-                        annotations.append(
-                            Annotation(
-                                shape=polygon,
-                                labels=[ScoredLabel(label, 1.0)],
-                                id=ID(ObjectId()),
-                            ),
-                        )
+                        annotations.append(polygon)
                     else:
                         # Contour is a closed polygon with area == 0
                         warnings.warn(
@@ -236,10 +217,9 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
                             UserWarning,
                             stacklevel=2,
                         )
-            annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
             # Add to dataset items
-            dataset_items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset))
+            dataset_items.append(DatumDatasetItem(id=idx, media=media, annotations=annotations))
 
         return dataset_items
 
@@ -267,7 +247,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
 
     """
 
-    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> list[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path) -> list[DatumDatasetItem]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -277,36 +257,32 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
             subset (Subset): Subset of the dataset.
 
         Returns:
-            List[DatasetItemEntity]: List containing subset dataset.
+            list[DatumDatasetItem]: List containing subset dataset.
         """
         # read annotation file
         samples = pd.read_json(ann_file_path)
 
         dataset_items = []
-        for _, sample in samples.iterrows():
+        for idx, sample in samples.iterrows():
             # Create image
             # convert path to str as PosixPath is not supported by Image
-            image = Image(file_path=str(data_root_dir / sample.image_path))
+            media = DatumImage.from_file(path=str(data_root_dir / sample.image_path))
             # Create annotation
             label: LabelEntity = self.normal_label if sample.label == "good" else self.abnormal_label
-            annotations = [
-                Annotation(
-                    Rectangle.generate_full_box(),
-                    labels=[ScoredLabel(label=label, probability=1.0)],
-                ),
-            ]
+            annotations = [DatumLabel(label=label.id, attributes={"is_anomalous": label.is_anomalous})]
             if isinstance(sample.bboxes, list) and len(sample.bboxes) > 0:
                 for bbox in sample.bboxes:
-                    box = Rectangle(bbox[0], bbox[1], bbox[2], bbox[3])
+                    box = DatumBbox(
+                        bbox[0],
+                        bbox[1],
+                        bbox[2] - bbox[0],
+                        bbox[3] - bbox[1],
+                        label=label.id,
+                        attributes={"is_anomalous": label.is_anomalous},
+                    )
                     if box.get_area() > 0:
                         # Contour is a closed polygon with area > 0
-                        annotations.append(
-                            Annotation(
-                                shape=box,
-                                labels=[ScoredLabel(label, 1.0)],
-                                id=ID(ObjectId()),
-                            ),
-                        )
+                        annotations.append(box)
                     else:
                         # Contour is a closed polygon with area == 0
                         warnings.warn(
@@ -316,9 +292,8 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
                             UserWarning,
                             stacklevel=2,
                         )
-            annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
             # Add to dataset items
-            dataset_items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset))
+            dataset_items.append(DatumDatasetItem(id=idx, media=media, annotations=annotations))
 
         return dataset_items

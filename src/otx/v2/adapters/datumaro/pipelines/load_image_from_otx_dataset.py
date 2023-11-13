@@ -42,7 +42,7 @@ class LoadImageFromOTXDataset:
         if "cache_key" in results:
             return results["cache_key"]
         d_item = results["dataset_item"]
-        results["cache_key"] = d_item.media.path, d_item.roi.id
+        results["cache_key"] = d_item.media.path, d_item.annotations[0].id
         return results["cache_key"]
 
     def _get_memcache_handler(self) -> MemCacheHandlerBase:
@@ -75,18 +75,14 @@ class LoadImageFromOTXDataset:
             img = img.astype(np.float32)
         shape = img.shape
 
-        if img.shape[0] != results["height"]:
-            results["height"] = img.shape[0]
-
-        if img.shape[1] != results["width"]:
-            results["width"] = img.shape[1]
-
         filename = f"Dataset item index {results['index']}"
         results["filename"] = filename
         results["ori_filename"] = filename
         results["img"] = img
         results["img_shape"] = shape[:2]
         results["ori_shape"] = shape[:2]
+        results["height"] = shape[0]
+        results["width"] = shape[1]
         # Set initial values for default meta_keys
         results["pad_shape"] = shape[:2]
         num_channels = 1 if len(shape) < 3 else shape[2]

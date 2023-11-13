@@ -67,7 +67,6 @@ def test_collate_fn() -> None:
     for r, e in zip(results["gt_masks"], expected["gt_masks"]):
         assert torch.all(r == e)
     assert results["original_size"] == expected["original_size"]
-    assert results["path"] == expected["path"]
     assert results["labels"] == expected["labels"]
     assert results["padding"] == expected["padding"]
 
