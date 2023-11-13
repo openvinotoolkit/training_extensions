@@ -4,13 +4,17 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 from typing import Dict, List, Optional
 
 from datumaro.components.annotation import AnnotationType as DatumAnnotationType
+from datumaro.components.dataset import Dataset as DatumDataset
+from datumaro.components.media import Image as DatumImage
 from datumaro.plugins.transforms import MasksToPolygons
 
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
-from otx.v2.api.entities.datasets import DatasetEntity
+from otx.v2.api.entities.label_schema import LabelSchemaEntity
+from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 
 from .segmentation_dataset_adapter import SegmentationDatasetAdapter
@@ -55,13 +59,15 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
             **kwargs,
         )
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
-        # Prepare label information
+    def get_label_schema(self) -> LabelSchemaEntity:
+        """Get Label Schema."""
         label_information = self._prepare_label_information(self.dataset)
         self.label_entities = label_information["label_entities"]
 
-        dataset_items: List[DatasetItemEntity] = []
+        return super()._generate_default_label_schema(self.label_entities)
+
+    def get_otx_dataset(self) -> dict[Subset, DatumDataset]:
+        """Convert DatumaroDataset to DatasetEntity for Visual Prompting."""
         used_labels: List[int] = []
         self.updated_label_id: Dict[int, int] = {}
 
@@ -72,45 +78,41 @@ class VisualPromptingDatasetAdapter(SegmentationDatasetAdapter):
             if self.data_type == "common_semantic_segmentation":
                 self.set_common_labels()
 
-        for subset, subset_data in self.dataset.items():
-            for _, datumaro_items in subset_data.subsets().items():
-                for datumaro_item in datumaro_items:
-                    image = self.datum_media_2_otx_media(datumaro_item.media)
-                    shapes = []
-                    for ann in datumaro_item.annotations:
-                        if ann.type == DatumAnnotationType.polygon:
-                            # save polygons as-is, they will be converted to masks.
-                            if self._is_normal_polygon(ann):
-                                shapes.append(self._get_polygon_entity(ann, image.width, image.height))
+        for _, subset_data in self.dataset.items():
+            for datumaro_item in subset_data:
+                new_annotations = []
+                for annotation in datumaro_item.annotations:
+                    if annotation.type == DatumAnnotationType.polygon:
+                        # save polygons as-is, they will be converted to masks.
+                        if self._is_normal_polygon(annotation):
+                            new_annotations.append(annotation)
 
-                        if ann.type == DatumAnnotationType.mask:
-                            if self.use_mask:
-                                # use masks loaded in datumaro as-is
-                                if self.data_type == "common_semantic_segmentation":
-                                    if new_label := self.updated_label_id.get(ann.label, None):
-                                        ann.label = new_label
-                                    else:
-                                        continue
-                                shapes.append(self._get_mask_entity(ann))
+                    if annotation.type == DatumAnnotationType.mask:
+                        if self.use_mask:
+                            # use masks loaded in datumaro as-is
+                            if self.data_type == "common_semantic_segmentation":
+                                if new_label := self.updated_label_id.get(annotation.label, None):
+                                    annotation.label = new_label
+                                else:
+                                    continue
+                            new_annotations.append(annotation)
+                        else:
+                            # convert masks to polygons, they will be converted to masks again
+                            datumaro_polygons = MasksToPolygons.convert_mask(annotation)
+                            for d_polygon in datumaro_polygons:
+                                if new_label := self.updated_label_id.get(d_polygon.label, None):
+                                    d_polygon.label = new_label
+                                else:
+                                    continue
+                                new_annotations.append(d_polygon)
 
-                            else:
-                                # convert masks to polygons, they will be converted to masks again
-                                datumaro_polygons = MasksToPolygons.convert_mask(ann)
-                                for d_polygon in datumaro_polygons:
-                                    if new_label := self.updated_label_id.get(d_polygon.label, None):
-                                        d_polygon.label = new_label
-                                    else:
-                                        continue
+                                if d_polygon.label not in used_labels:
+                                    used_labels.append(d_polygon.label)
 
-                                    shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
-                                    if d_polygon.label not in used_labels:
-                                        used_labels.append(d_polygon.label)
+                    if annotation.label not in used_labels and annotation.type != DatumAnnotationType.mask:
+                        used_labels.append(annotation.label)
+                
+                datumaro_item.annotations = new_annotations
 
-                        if ann.label not in used_labels and ann.type != DatumAnnotationType.mask:
-                            used_labels.append(ann.label)
-
-                    if len(shapes) > 0:
-                        dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
-                        dataset_items.append(dataset_item)
         self.remove_unused_label_entities(used_labels)
-        return DatasetEntity(items=dataset_items)
+        return self.dataset

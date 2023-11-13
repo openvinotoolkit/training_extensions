@@ -10,6 +10,10 @@ import albumentations
 import numpy as np
 from albumentations.pytorch import ToTensorV2
 from bson import ObjectId
+from datumaro.components.annotation import Label, Bbox, Mask
+from datumaro.components.dataset import Dataset
+from datumaro.components.dataset_base import DatasetItem
+from datumaro.components.media import Image as Image
 from omegaconf import OmegaConf
 from otx.v2.adapters.torch.lightning.anomalib.modules.data.data import (
     OTXAnomalyDataModule,
@@ -25,14 +29,9 @@ from otx.v2.api.entities.annotation import (
     AnnotationSceneEntity,
     AnnotationSceneKind,
 )
-from otx.v2.api.entities.dataset_item import DatasetItemEntity
 from otx.v2.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.v2.api.entities.id import ID
-from otx.v2.api.entities.image import Image
 from otx.v2.api.entities.label import Domain, LabelEntity
-from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.polygon import Point, Polygon
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.subset import Subset
 from otx.v2.api.entities.task_type import TaskType
 from pytorch_lightning.core.datamodule import LightningDataModule
@@ -100,29 +99,28 @@ class DummyDataset(OTXAnomalyDataset):
             ],
         )
         self.config = OmegaConf.create({"dataset": {"image_size": [32, 32]}})
+        
+        self.item_ids: list[str] = [item.id for item in self.dataset]
 
-    def get_mock_dataitems(self) -> DatasetEntity:
+    def get_mock_dataitems(self) -> Dataset:
         dataset_items = []
 
-        image_anomalous = Image(np.ones((32, 32, 1)))
+        image_anomalous = np.ones((32, 32, 1))
         annotations = [
-            Annotation(Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.abnormal_label, probability=1.0)]),
+            Label(label=self.abnormal_label.id, attributes={"is_anomalous": True}),
         ]
-        polygon = Polygon(points=[Point(0.0, 0.0), Point(1.0, 1.0)])
         annotations.append(
-            Annotation(shape=polygon, labels=[ScoredLabel(self.abnormal_label, probability=1.0)], id=ID(ObjectId())),
+            Mask(image=np.ones((32, 32, 1)), label=self.abnormal_label.id, attributes={"is_anomalous": True}),
         )
-        annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
-        dataset_items.append(DatasetItemEntity(media=image_anomalous, annotation_scene=annotation_scene))
+        dataset_items.append(DatasetItem(id=0, media=Image.from_numpy(image_anomalous), annotations=annotations))
 
-        image_normal = Image(np.zeros((32, 32, 1)))
+        image_normal = np.zeros((32, 32, 1))
         annotations = [
-            Annotation(Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.normal_label, probability=1.0)]),
+            Label(label=self.normal_label.id, attributes={"is_anomalous": True}),
         ]
-        annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
-        dataset_items.append(DatasetItemEntity(media=image_normal, annotation_scene=annotation_scene))
+        dataset_items.append(DatasetItem(id=1, media=Image.from_numpy(image_normal), annotations=annotations))
 
-        return DatasetEntity(items=dataset_items, purpose=DatasetPurpose.INFERENCE)
+        return Dataset.from_iterable(dataset_items)
 
 
 class DummyDataModule(LightningDataModule):
@@ -174,6 +172,6 @@ def _get_annotations(task: str) -> Tuple[Dict, Dict, Dict]:
 
     train_subset = {"ann_file": str(ann_file_root / "train.json"), "data_root": str(data_root)}
     test_subset = {"ann_file": str(ann_file_root / "test.json"), "data_root": str(data_root)}
-
     val_subset = {"ann_file": str(ann_file_root / "val.json"), "data_root": str(data_root)}
+
     return train_subset, test_subset, val_subset

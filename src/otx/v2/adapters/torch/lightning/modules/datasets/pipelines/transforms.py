@@ -41,8 +41,8 @@ def collate_fn(batch: list) -> dict:
     points = None  # TBD
     gt_masks = _convert_empty_to_none("gt_masks")
     original_size = [item["original_size"] for item in batch]
-    padding = [item["padding"] for item in batch]
     path = [item["path"] for item in batch]
+    padding = [item["padding"] for item in batch]
     labels = [item["labels"] for item in batch]
     if gt_masks:
         return {

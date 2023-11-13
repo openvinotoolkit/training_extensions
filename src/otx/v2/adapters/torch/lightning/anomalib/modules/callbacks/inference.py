@@ -19,22 +19,19 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
+from datumaro.components.annotation import Bbox, Label, Polygon
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
 from otx.v2.adapters.torch.lightning.anomalib.modules.logger import get_logger
-from otx.v2.api.entities.annotation import Annotation
-from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity
-from otx.v2.api.entities.result_media import ResultMediaEntity
-from otx.v2.api.entities.scored_label import ScoredLabel
-from otx.v2.api.entities.shapes.rectangle import Rectangle
 from otx.v2.api.entities.task_type import TaskType
 from otx.v2.api.entities.utils.segmentation_utils import create_annotation_from_segmentation_map
 
 if TYPE_CHECKING:
     import pytorch_lightning as pl
     from anomalib.models import AnomalyModule
+    from datumaro.components.dataset import Dataset as DatumDataset
 
 logger = get_logger(__name__)
 
@@ -42,11 +39,11 @@ logger = get_logger(__name__)
 class AnomalyInferenceCallback(Callback):
     """Callback that updates the OTX dataset during inference."""
 
-    def __init__(self, otx_dataset: DatasetEntity, labels: list[LabelEntity], task_type: TaskType) -> None:
+    def __init__(self, otx_dataset: DatumDataset, labels: list[LabelEntity], task_type: TaskType) -> None:
         """Initializes an instance of the InferenceCallback class.
 
         Args:
-            otx_dataset (DatasetEntity): The OTX dataset to use for inference.
+            otx_dataset (DatumDataset): The OTX dataset to use for inference.
             labels (List[LabelEntity]): A list of LabelEntity objects representing the labels in the dataset.
             task_type (TaskType): The type of task being performed (e.g. classification, regression).
         """
@@ -82,17 +79,7 @@ class AnomalyInferenceCallback(Callback):
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             self._process_segmentation_predictions(pred_masks, anomaly_maps, pred_scores)
 
-        # add anomaly map as metadata
-        for dataset_item, anomaly_map in zip(self.otx_dataset, anomaly_maps):
-            dataset_item.append_metadata_item(
-                ResultMediaEntity(
-                    name="Anomaly Map",
-                    type="anomaly_map",
-                    label=dataset_item.annotation_scene.get_labels()[0],
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=(anomaly_map * 255).squeeze().cpu().numpy().astype(np.uint8),
-                ),
-            )
+        # [TODO] add anomaly map as metadata in ResultMediaEntity
 
     def _process_classification_predictions(self, pred_labels: Tensor, pred_scores: Tensor) -> None:
         """Add classification predictions to the dataset items.
@@ -105,8 +92,9 @@ class AnomalyInferenceCallback(Callback):
             # get label
             label = self.anomalous_label if pred_label else self.normal_label
             probability = pred_score if pred_label else 1 - pred_score
+            new_annotations = [Label(label=label.id, attributes={"probability": probability})]
             # update dataset item
-            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            dataset_item.annotations.extend(new_annotations)
 
     def _process_detection_predictions(
         self,
@@ -126,7 +114,7 @@ class AnomalyInferenceCallback(Callback):
             image_size: (torch.Size): Image size of the original images.
         """
         height, width = image_size
-        for dataset_item, im_boxes, im_box_scores, im_box_labels, pred_score in zip(
+        for dataset_item, im_boxes, im_box_scores, im_box_labels, _ in zip(
             self.otx_dataset,
             pred_boxes,
             box_scores,
@@ -134,25 +122,26 @@ class AnomalyInferenceCallback(Callback):
             pred_scores,
         ):
             # generate annotations
-            annotations: list[Annotation] = []
+            new_annotations: list[Bbox] = []
             for box, score, label in zip(im_boxes, im_box_scores, im_box_labels):
                 if box[0] >= box[2] or box[1] >= box[3]:  # discard 1-pixel boxes
                     continue
-                shape = Rectangle(
-                    x1=box[0].item() / width,
-                    y1=box[1].item() / height,
-                    x2=box[2].item() / width,
-                    y2=box[3].item() / height,
-                )
                 _label = self.label_map[label.item()]
                 probability = score.item()
-                annotations.append(Annotation(shape=shape, labels=[ScoredLabel(label=_label, probability=probability)]))
-            # get label
-            label = self.anomalous_label if annotations else self.normal_label
-            probability = pred_score if label.is_anomalous else 1 - pred_score
-            # update dataset item
-            dataset_item.append_annotations(annotations)
-            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+                new_annotations.append(
+                    Bbox(
+                        x=box[0].item() / width,
+                        y=box[1].item() / height,
+                        w=(box[2].item() - box[0].item()) / width,
+                        h=(box[3].item() - box[1].item()) / height,
+                        label=_label.id,
+                        attributes={
+                            "probability": probability,
+                            "is_anomalous": True,
+                        },
+                    ),
+                )
+            dataset_item.annotations.extend(new_annotations)
 
     def _process_segmentation_predictions(self, pred_masks: Tensor, anomaly_maps: Tensor, pred_scores: Tensor) -> None:
         """Add segmentation predictions to the dataset items.
@@ -162,7 +151,7 @@ class AnomalyInferenceCallback(Callback):
             anomaly_maps (Tensor): Predicted pixel-level anomaly scores.
             pred_scores (Tensor): Predicted image-level anomaly scores.
         """
-        for dataset_item, pred_mask, anomaly_map, pred_score in zip(
+        for dataset_item, pred_mask, anomaly_map, _ in zip(
             self.otx_dataset,
             pred_masks,
             anomaly_maps,
@@ -174,9 +163,23 @@ class AnomalyInferenceCallback(Callback):
                 soft_prediction=anomaly_map.squeeze().numpy(),
                 label_map=self.label_map,
             )
-            # get label
-            label = self.normal_label if len(annotations) == 0 else self.anomalous_label
-            probability = pred_score if label.is_anomalous else 1 - pred_score
-            # update dataset item
-            dataset_item.append_annotations(annotations)
-            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            new_annotations: list[Polygon] = []
+            for annotation in annotations:
+                points = []
+                for pts in annotation.shape.points:
+                    points.append(pts.x)
+                    points.append(pts.y)
+
+                label = annotation.get_labels()[0].id
+                probability = annotation.get_labels()[0].probability
+                new_annotations.append(
+                    Polygon(
+                        points=points,
+                        label=label,
+                        attributes={
+                            "probability": probability,
+                            "is_anomalous": True,
+                        },
+                    ),
+                )
+            dataset_item.annotations.extend(new_annotations)

@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
@@ -170,7 +172,7 @@ class SelfSLSegmentationDatasetAdapter(SegmentationDatasetAdapter):
         unlabeled_file_list: Optional[str] = None,
         encryption_key: Optional[str] = None,
         pseudo_mask_dir: Optional[Path] = None,
-    ) -> Dict[Subset, DatumDataset]:
+    ) -> dict[Subset, DatumDataset]:
         """Import custom Self-SL dataset for using DetCon.
 
         Self-SL for semantic segmentation using DetCon uses pseudo masks as labels,
