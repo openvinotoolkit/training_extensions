@@ -30,6 +30,7 @@ import torch
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import TQDMProgressBar
+from otx.api.entities.train_parameters import TrainParameters
 
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.utils import set_random_seed
@@ -63,7 +64,10 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from collections import defaultdict
+from pytorch_lightning.callbacks import (
+    TQDMProgressBar,
+)
+from pytorch_lightning.loggers import CSVLogger
 
 logger = get_logger()
 
@@ -469,7 +473,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             shutil.rmtree(self.output_path, ignore_errors=False)
 
 
-class ZeroShotLearnTask(InferenceTask):
+class ZeroShotTask(InferenceTask):
     """Learn task for Zero-shot learning.
     
     **There are two ways to be decided:
@@ -478,6 +482,35 @@ class ZeroShotLearnTask(InferenceTask):
     
     The objective of this task is to get reference features and export it with decoder modules.
     """
+    def train(  # noqa: D102
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: TrainParameters,
+        seed: Optional[int] = None,
+        deterministic: bool = False,
+    ) -> None:
+        logger.info("Training the model.")
+
+        self.seed = seed
+        self.deterministic = deterministic
+        self.set_seed()
+        self.config.trainer.deterministic = "warn" if deterministic else deterministic
+
+        logger.info(f"Training Configs {self.config}")
+
+        self.model = self.load_model(otx_model=self.task_environment.model)
+
+        datamodule = OTXVisualPromptingDataModule(config=self.config.dataset, dataset=dataset, train_type=self.train_type)
+
+        self.trainer = Trainer(
+            logger=CSVLogger(save_dir=self.output_path, name=".", version=self.timestamp),
+            **self.config.trainer)
+        self.trainer.fit(model=self.model, datamodule=datamodule)
+
+        # save resulting model
+        self.save_model(output_model)
+        
     def export(
         self,
         export_type: ExportType,
@@ -501,3 +534,26 @@ class ZeroShotLearnTask(InferenceTask):
         self._initialize_reference()
         
         self.export(export_type, output_model, precision, dump_features)
+        
+    def save_model(self, output_model: ModelEntity) -> None:
+        """Save the model after training is completed.
+
+        Args:
+            output_model (ModelEntity): Output model onto which the weights are saved.
+        """
+        logger.info("Saving the model weights and reference features.")
+        
+        model_info = self.model.state_dict()
+        # TODO (sungchul): is there more efficient way not to manually add properties?
+        model_info.update({
+            "reference_feats": self.model.reference_feats,
+            "reference_prompts": self.model.reference_prompts,
+        })
+        
+        buffer = io.BytesIO()
+        torch.save(model_info, buffer)
+        output_model.set_data("weights.pth", buffer.getvalue())
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+
+        output_model.precision = self.precision
+        output_model.optimization_methods = self.optimization_methods
