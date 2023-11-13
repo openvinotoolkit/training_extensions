@@ -1,3 +1,4 @@
+"""Integration.API test for the action classfication."""
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
@@ -34,7 +35,7 @@ def test_model_api() -> None:
     assert isinstance(otx_model, torch.nn.Module)
 
 
-MODELS: list = list_models("otx*")
+MODELS: list[str] = list_models("otx*")
 
 
 class TestMMActionAPI:
@@ -44,30 +45,30 @@ class TestMMActionAPI:
     """
     @pytest.fixture()
     def dataset(self) -> Dataset:
-            """
-            Returns a Dataset object containing the paths to the training, validation, and test data.
+        """
+        Returns a Dataset object containing the paths to the training, validation, and test data.
 
-            Returns:
-                Dataset: A Dataset object containing the paths to the training, validation, and test data.
-            """
-            return Dataset(
-                train_data_roots=TASK_CONFIGURATION["action_classification"]["train_data_roots"],
-                val_data_roots=TASK_CONFIGURATION["action_classification"]["val_data_roots"],
-                test_data_roots=TASK_CONFIGURATION["action_classification"]["test_data_roots"],
-            )
+        Returns:
+            Dataset: A Dataset object containing the paths to the training, validation, and test data.
+        """
+        return Dataset(
+            train_data_roots=TASK_CONFIGURATION["action_classification"]["train_data_roots"],
+            val_data_roots=TASK_CONFIGURATION["action_classification"]["val_data_roots"],
+            test_data_roots=TASK_CONFIGURATION["action_classification"]["test_data_roots"],
+        )
 
     def test_dataset_api(self, dataset: Dataset) -> None:
-            """
-            Test the Torch dataset & dataloader API for the given dataset.
+        """
+        Test the Torch dataset & dataloader API for the given dataset.
 
-            Args:
-                dataset (Dataset): The dataset to test.
+        Args:
+            dataset (Dataset): The dataset to test.
 
-            Returns:
-                None
-            """
-            register_all_modules(init_default_scope=True)
-            assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=2, val_data_size=2, test_data_size=2)
+        Returns:
+            None
+        """
+        register_all_modules(init_default_scope=True)
+        assert_torch_dataset_api_is_working(dataset=dataset, train_data_size=2, val_data_size=2, test_data_size=2)
 
     @pytest.mark.parametrize("model", MODELS)
     def test_engine_api(self, dataset: Dataset, model: str, tmp_dir_path: Path) -> None:
@@ -94,17 +95,11 @@ class TestMMActionAPI:
         engine = Engine(work_dir=tmp_dir_path)
         built_model = get_model(model=model, num_classes=dataset.num_classes)
         
-        # Train (1 epochs)
+        # Train (1 epoch)
         results = engine.train(
             model=built_model,
-            train_dataloader=dataset.train_dataloader(
-                batch_size=10,
-                num_workers=0,
-            ),
-            val_dataloader=dataset.val_dataloader(
-                batch_size=1,
-                num_workers=0
-            ),
+            train_dataloader=dataset.train_dataloader(batch_size=10, num_workers=0),
+            val_dataloader=dataset.val_dataloader(batch_size=1, num_workers=0),
             max_epochs=1,
         )
         assert "model" in results

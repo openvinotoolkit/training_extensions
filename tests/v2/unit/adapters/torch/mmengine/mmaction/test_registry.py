@@ -1,4 +1,5 @@
-"""Unit-test for the mmaction.registry API."""
+"""Unit-test for the registry API for MMAction."""
+
 # Copyright (C) 2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 

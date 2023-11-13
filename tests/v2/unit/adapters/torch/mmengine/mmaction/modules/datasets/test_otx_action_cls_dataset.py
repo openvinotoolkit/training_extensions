@@ -9,9 +9,7 @@ import pytest
 from mmaction.utils import register_all_modules
 from otx.v2.adapters.torch.mmengine.mmaction.modules.datasets.otx_action_cls_dataset import OTXActionClsDataset
 from mmaction.datasets.transforms import RawFrameDecode
-from otx.v2.adapters.torch.mmengine.mmaction.dataset import (
-    get_default_pipeline,
-)
+from otx.v2.adapters.torch.mmengine.mmaction.dataset import get_default_pipeline
 from otx.api.entities.label import Domain
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.action.test_helpers import (
