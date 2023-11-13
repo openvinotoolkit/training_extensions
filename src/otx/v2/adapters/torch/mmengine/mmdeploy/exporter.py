@@ -87,7 +87,6 @@ class Exporter:
         input_shape = self.deploy_cfg.backend_config.model_inputs[0]["opt_shapes"]["input"]
         input_tensor = torch.randn(input_shape)
         input_metas = self.deploy_cfg.backend_config.get("input_metas", None)
-        input_metas["data_samples"] = input_tensor
         if input_metas is None:
             input_metas = {"data_samples": [BaseDataElement()] * input_shape[0], "mode": "predict"}
         return input_tensor, input_metas

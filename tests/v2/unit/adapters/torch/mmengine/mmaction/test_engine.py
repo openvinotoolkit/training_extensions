@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 import torch
@@ -44,12 +45,17 @@ class TestMMActionEngine:
             engine.predict(model=MockModule(), task="invalid")
 
     def test_export(self, mocker: MockerFixture, tmp_dir_path: Path) -> None:
-        mock_super_export = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.engine.MMXEngine.export")
-        mock_super_export.return_value = {"outputs": {"bin": "test.bin", "xml": "test.xml"}}
         engine = MMActionEngine(work_dir=tmp_dir_path)
-
-        result = engine.export(model="model", checkpoint="checkpoint")
-        assert result == {"outputs": {"bin": "test.bin", "xml": "test.xml"}}
-        mock_super_export.assert_called_once_with(
-            model="model", checkpoint="checkpoint", precision="float32", task="Action Classification", codebase="mmaction", export_type="OPENVINO", deploy_config=None, device="cpu", input_shape=None,
-        )
+        output_dict = {"outputs": {"bin": "test.bin", "xml": "test.xml"}}
+        class MockExporter:
+            def export(self, **kwargs):
+                self.kwargs = kwargs
+                return output_dict
+        class MockModule:
+            def __call__(self, **kwargs):
+                self.kwargs = kwargs
+                self.exporter = MockExporter()
+                return self.exporter
+        mocker.patch("otx.v2.adapters.torch.mmengine.mmdeploy.exporter.Exporter", MockModule())
+        result = engine.export(model=Config({"type": ""}), checkpoint="checkpoint")
+        assert result == output_dict

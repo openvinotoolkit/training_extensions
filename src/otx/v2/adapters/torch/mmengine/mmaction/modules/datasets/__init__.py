@@ -5,5 +5,5 @@
 #
 
 from .otx_action_cls_dataset import OTXActionClsDataset
-
-__all__ = ["OTXActionClsDataset"]
+from . import pipelines
+__all__ = ["OTXActionClsDataset", "pipelines"]

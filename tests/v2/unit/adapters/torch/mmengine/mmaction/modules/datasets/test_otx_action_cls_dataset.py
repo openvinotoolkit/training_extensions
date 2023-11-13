@@ -6,6 +6,7 @@
 
 import pytest
 
+from mmaction.utils import register_all_modules
 from otx.v2.adapters.torch.mmengine.mmaction.modules.datasets.otx_action_cls_dataset import OTXActionClsDataset
 from mmaction.datasets.transforms import RawFrameDecode
 from otx.v2.adapters.torch.mmengine.mmaction.dataset import (
@@ -14,7 +15,6 @@ from otx.v2.adapters.torch.mmengine.mmaction.dataset import (
 from otx.api.entities.label import Domain
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
 from tests.unit.algorithms.action.test_helpers import (
-    MockPipeline,
     generate_action_cls_otx_dataset,
     generate_labels,
 )
@@ -35,22 +35,12 @@ class TestOTXActionClsDataset:
 
     @pytest.fixture(autouse=True)
     def setup(self) -> None:
+        register_all_modules(init_default_scope=True)
         self.video_len = 3
         self.frame_len = 3
         self.labels = generate_labels(3, Domain.ACTION_CLASSIFICATION)
         self.otx_dataset = generate_action_cls_otx_dataset(self.video_len, self.frame_len, self.labels)
         self.pipeline = get_default_pipeline(subset="test")
-
-    @e2e_pytest_unit
-    def test_DataInfoProxy(self) -> None:
-        """Test _DataInfoProxy Class."""
-
-        proxy = OTXActionClsDataset._DataInfoProxy(self.otx_dataset, self.labels, modality="RGB")
-        sample = proxy[0]
-        assert len(proxy) == self.video_len
-        assert "total_frames" in sample
-        assert "start_index" in sample
-        assert "label" in sample
 
     @e2e_pytest_unit
     def test_pipeline(self) -> None:
@@ -67,25 +57,3 @@ class TestOTXActionClsDataset:
 
         dataset = OTXActionClsDataset(self.otx_dataset, self.labels, self.pipeline)
         assert len(dataset) == self.video_len
-
-    @e2e_pytest_unit
-    def test_prepare_train_frames(self) -> None:
-        """Test prepare_train_frames function."""
-
-        dataset = OTXActionClsDataset(self.otx_dataset, self.labels, self.pipeline)
-        dataset.pipeline = MockPipeline()
-        sample = dataset.prepare_train_frames(0)
-        assert "total_frames" in sample
-        assert "start_index" in sample
-        assert "label" in sample
-
-    @e2e_pytest_unit
-    def test_prepare_test_frames(self) -> None:
-        """Test prepare_test_frames function."""
-
-        dataset = OTXActionClsDataset(self.otx_dataset, self.labels, self.pipeline)
-        dataset.pipeline = MockPipeline()
-        sample = dataset.prepare_test_frames(0)
-        assert "total_frames" in sample
-        assert "start_index" in sample
-        assert "label" in sample

@@ -79,6 +79,8 @@ def get_model(
             config = Config.fromfile(filename=model)
         elif model in MODEL_CONFIGS:
             config = Config.fromfile(filename=MODEL_CONFIGS[model])
+    elif isinstance(model, Config):
+        config = model
     else:
         msg = f"model must be a name, a path or a Config object, but got {type(model)}"
         raise TypeError(msg)
@@ -147,7 +149,7 @@ def list_models(pattern: str | None = None) -> list[str]:
     Returns:
         List[str]: A sorted list of available models for pretraining.
     """
-    model_list = []
+    model_list: list[str] = []
     # Add OTX Custom models
     model_list.extend(list(MODEL_CONFIGS.keys()))
 

@@ -11,20 +11,67 @@ from pytest_mock.plugin import MockerFixture
 
 
 def test_get_default_pipeline() -> None:
-    expected_pipeline = [
-        {
-            "type": "SampleFrames", 
-            "clip_len": 8, 
-            "frame_interval": 4,
-            "num_clips": 1,
-        },
-        {"type": "mmaction.RawFrameDecode"},
-        {"type": "mmaction.Resize", "scale": (-1, 256)},
-        {"type": "mmaction.FormatShape", "input_format": "NCTHW"},
-        {"type": "mmaction.PackActionInputs"},
-    ]
-    result = get_default_pipeline()
-    assert result == expected_pipeline
+    expected_pipeline = {
+        "train":[
+            {
+                "type": "SampleFrames",
+                "clip_len": 8,
+                "frame_interval": 4,
+                "num_clips": 1,
+            },
+            {"type": "OTXRawFrameDecode"},
+            {"type": "Resize", "scale": (-1, 256)},
+            {"type": "FormatShape", "input_format": "NCTHW"},
+            {"type": "PackActionInputs"},
+        ],
+        "val":[
+            {
+                "type": "SampleFrames",
+                "clip_len": 8,
+                "frame_interval": 4,
+                "num_clips": 1,
+                "test_mode": True,
+            },
+            {"type": "OTXRawFrameDecode"},
+            {"type": "Resize", "scale": (-1, 256)},
+            {"type": "CenterCrop", "crop_size": 224},
+            {"type": "FormatShape", "input_format": "NCTHW"},
+            {"type": "PackActionInputs"},
+        ],
+        "test":[
+            {
+                "type": "SampleFrames",
+                "clip_len": 8,
+                "frame_interval": 4,
+                "num_clips": 1,
+                "test_mode": True,
+            },
+            {"type": "OTXRawFrameDecode"},
+            {"type": "Resize", "scale": (-1, 256)},
+            {"type": "CenterCrop", "crop_size": 224},
+            {"type": "FormatShape", "input_format": "NCTHW"},
+            {"type": "PackActionInputs"},
+        ],
+        "predict":[
+            {
+                "type": "SampleFrames",
+                "clip_len": 8,
+                "frame_interval": 4,
+                "num_clips": 1,
+                "test_mode": True,
+            },
+            {"type": "RawFrameDecode"},
+            {"type": "Resize", "scale": (-1, 256)},
+            {"type": "CenterCrop", "crop_size": 224},
+            {"type": "FormatShape", "input_format": "NCTHW"},
+            {"type": "PackActionInputs"},
+        ],
+        "invalid":{}
+    }
+    assert get_default_pipeline("train") == expected_pipeline["train"]
+    assert get_default_pipeline("val") == expected_pipeline["val"]
+    assert get_default_pipeline("test") == expected_pipeline["test"]
+    assert get_default_pipeline("predict") == expected_pipeline["predict"]
 
 class TestDataset:
     def test_init(self) -> None:
@@ -66,7 +113,7 @@ class TestDataset:
         assert dataset.unlabeled_file_list=="unlabeled/files"
 
     def test__initialize(self, mocker: MockerFixture) -> None:
-        mock_set_datumaro_adapters = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.Dataset.set_datumaro_adapters")
+        mock_set_datumaro_adapters = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.Dataset.set_datumaro_adapters")
         dataset = MMActionDataset()
         dataset.train_type = TrainType.Incremental
         mock_label_schema = mocker.MagicMock()
@@ -79,9 +126,8 @@ class TestDataset:
         assert dataset.base_dataset.__name__ == "OTXActionClsDataset"
 
     def test_build_dataset(self, mocker: MockerFixture) -> None:
-        mock_initialize = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.Dataset._initialize")
-        mock_mmpretrain_build_dataset = mocker.patch("mmaction.registry.DATASETS.build")
-        mock_mmpretrain_build_dataset.return_value = mocker.MagicMock()
+        mock_mmaction_build_dataset = mocker.patch("mmaction.registry.DATASETS.build")
+        mock_mmaction_build_dataset.return_value = mocker.MagicMock()
 
         # Invalid subset
         dataset = MMActionDataset(
@@ -89,8 +135,7 @@ class TestDataset:
             train_ann_files="train/ann/files",
         )
         with pytest.raises(ValueError, match="invalid is not supported subset"):
-            dataset.build_dataset(subset="invalid")
-        mock_initialize.assert_called_once()
+            dataset._build_dataset(subset="invalid")
 
         mock_label_schema = mocker.MagicMock()
         mock_label_schema.get_labels.return_value = ["label1"]
@@ -100,8 +145,9 @@ class TestDataset:
         mock_dataset_entity = mocker.MagicMock()
         mock_dataset_entity.get_subset.return_value = []
         dataset.dataset_entity = mock_dataset_entity
-        result = dataset.build_dataset(subset="train")
-        assert result is None
+        dataset.initialize = True
+        
+        dataset._build_dataset(subset="train")
         mock_dataset_entity.get_subset.assert_called_once_with(Subset.TRAINING)
         mock_label_schema.get_labels.assert_called_once_with(include_empty=False)
 
@@ -115,39 +161,29 @@ class TestDataset:
         mock_base_dataset.return_value = mocker.MagicMock()
         dataset.base_dataset = mock_base_dataset
 
-        result = dataset.build_dataset(subset="train")
+        dataset._build_dataset(subset="train")
         mock_base_dataset.assert_called_once()
 
-        # config is not None
-        # config is str
-        mock_config = Config({
-            "dataset": {}
-        })
-        mock_fromfile = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.Config.fromfile")
-        mock_fromfile.return_value = mock_config
-        result = dataset.build_dataset(subset="train", config="test.yaml")
-        mock_fromfile.assert_called_once_with(filename="test.yaml")
-        mock_mmpretrain_build_dataset.assert_called_once()
-
         # config is dict
-        result = dataset.build_dataset(subset="train", config={})
-        mock_mmpretrain_build_dataset.assert_called()
+        dataset._build_dataset(subset="train", config={})
+        mock_mmaction_build_dataset.assert_called()
 
         # config is Config with pipeline
-        result = dataset.build_dataset(subset="train", config=Config({}), pipeline=[mocker.MagicMock()])
-        mock_mmpretrain_build_dataset.assert_called()
+        mock_config = {"dataset": {"pipeline": [{"type": "Resize", "scale": [224, 224]}]}}
+        dataset._build_dataset(subset="train", config=mock_config)
+        mock_mmaction_build_dataset.assert_called()
 
     def test_build_dataloader(self, mocker: MockerFixture) -> None:
         # dataset is None
         dataset = MMActionDataset()
-        assert dataset.build_dataloader(dataset=None) is None
+        assert dataset._build_dataloader(dataset=None) is None
 
         mock_get_dist_info = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.get_dist_info", return_value=(1, 2))
         mock_torch_dataloader = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.TorchDataLoader")
         mock_patial = mocker.patch("otx.v2.adapters.torch.mmengine.mmaction.dataset.partial")
         mock_patial.return_value = mocker.MagicMock()
         mock_dataset = mocker.MagicMock()
-        dataset.build_dataloader(
+        dataset._build_dataloader(
             dataset=mock_dataset,
             batch_size=4,
             sampler={},
@@ -161,7 +197,7 @@ class TestDataset:
             num_workers=2,
             collate_fn=mock_patial.return_value,
             pin_memory=False,
-            shuffle=False,
+            shuffle=True,
             worker_init_fn=None,
             drop_last=True,
             persistent_workers=False,

@@ -8,7 +8,4 @@
 # So these all need to be imported at runtime so that the module can be found in mmX.
 from . import datasets, models
 
-__all__ = [
-    "datasets",
-    "models",
-]
+__all__ = ["datasets", "models"]

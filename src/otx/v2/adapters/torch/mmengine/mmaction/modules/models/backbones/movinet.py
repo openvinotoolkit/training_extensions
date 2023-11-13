@@ -152,7 +152,6 @@ class Conv3DBNActivation(nn.Sequential):
 class ConvBlock3D(nn.Module):
     """A module that represents 3D Convolution block."""
 
-    # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(
         self,
         in_planes: int,
@@ -260,20 +259,6 @@ class ConvBlock3D(nn.Module):
         self.conv_type = conv_type
         self.tf_like = tf_like
 
-    def _forward(self, x: Tensor) -> Tensor:
-        shape_with_buffer = x.shape
-        if self.conv_type == "2plus1d":
-            x = rearrange(x, "b c t h w -> (b t) c h w")
-        x = self.conv_1(x)
-        if self.conv_type == "2plus1d":
-            x = rearrange(x, "(b t) c h w -> b c t h w", t=shape_with_buffer[2])
-            if self.conv_2 is not None:
-                w = x.shape[-1]
-                x = rearrange(x, "b c t h w -> b c t (h w)")
-                x = self.conv_2(x)
-                x = rearrange(x, "b c t (h w) -> b c t h w", w=w)
-        return x
-
     def forward(self, x: Tensor) -> Tensor:
         """Forward function of ConvBlock3D."""
         if self.tf_like:
@@ -286,7 +271,18 @@ class ConvBlock3D(nn.Module):
                 self.kernel_size[-2],
                 self.kernel_size[-1],
             )
-        return self._forward(x)
+        shape_with_buffer = x.shape
+        if self.conv_type == "2plus1d":
+            x = rearrange(x, "b c t h w -> (b t) c h w")
+        x = self.conv_1(x)
+        if self.conv_type == "2plus1d":
+            x = rearrange(x, "(b t) c h w -> b c t h w", t=shape_with_buffer[2])
+            if self.conv_2 is not None:
+                w = x.shape[-1]
+                x = rearrange(x, "b c t h w -> b c t (h w)")
+                x = self.conv_2(x)
+                x = rearrange(x, "b c t (h w) -> b c t h w", w=w)
+        return x
 
 
 class SqueezeExcitation(nn.Module):
@@ -357,6 +353,7 @@ class SqueezeExcitation(nn.Module):
 
 
 def _make_divisible(value: float, divisor: int, min_value: int | None = None) -> int:
+    """Change the input channels to gurantee it divisible."""
     if min_value is None:
         min_value = divisor
     new_v = max(min_value, int(value + divisor / 2) // divisor * divisor)
@@ -389,12 +386,14 @@ def same_padding(
         pad_along_height = max(filter_height - stride_h, 0)
     else:
         pad_along_height = max(filter_height - (in_height % stride_h), 0)
+        
     if in_width % stride_w == 0:
         pad_along_width = max(filter_width - stride_w, 0)
     else:
         pad_along_width = max(filter_width - (in_width % stride_w), 0)
     pad_top = pad_along_height // 2
     pad_bottom = pad_along_height - pad_top
+    
     pad_left = pad_along_width // 2
     pad_right = pad_along_width - pad_left
     padding_pad = (pad_left, pad_right, pad_top, pad_bottom)
@@ -472,11 +471,9 @@ class BasicBneck(nn.Module):
             AssertionError: If the stride in configuration is not a tuple.
         """
         super().__init__()
-        if isinstance(cfg.stride, tuple):
-            raise TypeError
         self.res = None
 
-        layers = []
+        layers: list[nn.Module] = []
         if cfg.expanded_channels != cfg.out_channels:
             self.expand = ConvBlock3D(
                 in_planes=cfg.input_channels,
@@ -500,8 +497,7 @@ class BasicBneck(nn.Module):
             norm_layer=norm_layer,
             activation_layer=activation_layer,
         )
-        # pylint: disable=invalid-name
-        self.se = SqueezeExcitation(
+        self.squeeze_excitaion = SqueezeExcitation(
             cfg.expanded_channels,
             activation_1=activation_layer,
             activation_2=(nn.Sigmoid if conv_type == "3d" else nn.Hardsigmoid),
@@ -546,7 +542,7 @@ class BasicBneck(nn.Module):
         if hasattr(self, "expand"):
             x = self.expand(x)
         x = self.deep(x)
-        x = self.se(x)
+        x = self.squeeze_excitaion(x)
         x = self.project(x)
         return residual + self.alpha * x
 
@@ -554,12 +550,7 @@ class BasicBneck(nn.Module):
 class MoViNet(nn.Module):
     """MoViNet class used for video classification."""
 
-    def __init__(
-        self,
-        cfg: Config,
-        conv_type: str | None = "3d",
-        tf_like: bool | None = False,
-    ) -> None:
+    def __init__(self, cfg: Config, conv_type: str | None = "3d", tf_like: bool | None = False) -> None:
         """Initialization.
 
         Args:
@@ -567,7 +558,8 @@ class MoViNet(nn.Module):
             conv_type (str, optional): A string indicating the type of convolutional layer
                 to use. Can be "2d" or "3d". Defaults to "3d".
             tf_like (bool, optional): A boolean indicating whether to use TensorFlow like
-                convolution padding or not. Defaults to False.
+                convolution padding or not since Tensorflow used different operation for the conv and padding. 
+                Defaults to False. 
 
         Attributes:
             conv1 (ConvBlock3D): A convolutional block for the first layer.
@@ -575,15 +567,13 @@ class MoViNet(nn.Module):
             conv7 (ConvBlock3D): A convolutional block for the final layer.
 
         Methods:
-            avg(x: Tensor) -> Tensor: A static method that returns the adaptive average pool
-                of the input tensor.
             _init_weights(module): A private method that initializes the weights of the network's
                 convolutional, batch normalization, and linear layers.
             forward(x: Tensor) -> Tensor: The forward pass of the network.
         """
         super().__init__()
         tf_like = True
-        blocks_dic = OrderedDict()
+        blocks_dict = OrderedDict()
 
         norm_layer = nn.BatchNorm3d if conv_type == "3d" else nn.BatchNorm2d
         activation_layer = nn.SiLU if conv_type == "3d" else nn.Hardswish
@@ -600,15 +590,15 @@ class MoViNet(nn.Module):
             activation_layer=activation_layer,
         )
         for i, block in enumerate(cfg.blocks):
-            for j, basicblock in enumerate(block):
-                blocks_dic[f"b{i}_l{j}"] = BasicBneck(
-                    basicblock,
+            for j, basic_block in enumerate(block):
+                blocks_dict[f"b{i}_l{j}"] = BasicBneck(
+                    basic_block,
                     conv_type=conv_type,
                     tf_like=tf_like,
                     norm_layer=norm_layer,
                     activation_layer=activation_layer,
                 )
-        self.blocks = nn.Sequential(blocks_dic)
+        self.blocks = nn.Sequential(blocks_dict)
         self.conv7 = ConvBlock3D(
             in_planes=cfg.conv7.input_channels,
             out_planes=cfg.conv7.out_channels,
@@ -620,18 +610,6 @@ class MoViNet(nn.Module):
             norm_layer=norm_layer,
             activation_layer=activation_layer,
         )
-
-    def avg(self, x: Tensor) -> Tensor:
-        """Returns the adaptive average pool of the input tensor.
-
-        Args:
-            x (Tensor): A tensor to be averaged.
-
-        Returns:
-            Tensor: A tensor with the averaged values.
-
-        """
-        return  functional.adaptive_avg_pool3d(x, 1)
 
     @staticmethod
     def _init_weights(module: nn.Module) -> None:
@@ -656,7 +634,7 @@ class MoViNet(nn.Module):
         x = self.conv1(x)
         x = self.blocks(x)
         x = self.conv7(x)
-        return self.avg(x)
+        return functional.adaptive_avg_pool3d(x, 1)
 
     def init_weights(self) -> None:
         """Initializes the weights of network."""
@@ -714,7 +692,6 @@ class OTXMoViNet(MoViNet):
         super().__init__(cfg)
 
     @staticmethod
-    # pylint: disable=too-many-arguments
     def fill_se_config(
         conf: Config,
         input_channels: int,

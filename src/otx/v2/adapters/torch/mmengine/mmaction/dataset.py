@@ -24,7 +24,7 @@ from otx.v2.adapters.torch.mmengine.mmaction.registry import MMActionRegistry
 from otx.v2.api.entities.task_type import TaskType, TrainType
 from otx.v2.api.utils.decorators import add_subset_dataloader
 
-SUBSET_LIST = ["train", "val", "test"]
+SUBSET_LIST = ["train", "val", "test", "predict"]
 
 
 def get_default_pipeline(subset: str) -> list:
@@ -36,6 +36,10 @@ def get_default_pipeline(subset: str) -> list:
     Returns:
         List: The default pipeline as a dictionary or list, depending on whether `semisl` is True or False.
     """
+    if subset not in SUBSET_LIST:
+        msg = f"{subset} is not supported subset"
+        raise ValueError(msg)
+
     default_pipeline = {
         "train":[
             {
@@ -115,29 +119,28 @@ class MMActionDataset(MMXDataset):
         data_format: str | None = None,
     ) -> None:
         r"""MMAction's Dataset class.
-
         Args:
-            task (Optional[Union[TaskType, str]], optional): The task type of the dataset want to load.
+            task (TaskType | str | None, optional): The task type of the dataset want to load.
                 Defaults to None.
-            train_type (Optional[Union[TrainType, str]], optional): The train type of the dataset want to load.
+            train_type (TrainType | str | None, optional): The train type of the dataset want to load.
                 Defaults to None.
-            train_data_roots (Optional[str], optional): The root address of the dataset to be used for training.
+            train_data_roots (str | None, optional): The root address of the dataset to be used for training.
                 Defaults to None.
-            train_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+            train_ann_files (str | None, optional): Location of the annotation file for the dataset
                 to be used for training. Defaults to None.
-            val_data_roots (Optional[str], optional): The root address of the dataset
+            val_data_roots (str | None, optional): The root address of the dataset
                 to be used for validation. Defaults to None.
-            val_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+            val_ann_files (str | None, optional): Location of the annotation file for the dataset
                 to be used for validation. Defaults to None.
-            test_data_roots (Optional[str], optional): The root address of the dataset
+            test_data_roots (str | None, optional): The root address of the dataset
                 to be used for testing. Defaults to None.
-            test_ann_files (Optional[str], optional): Location of the annotation file for the dataset
+            test_ann_files (str | None, optional): Location of the annotation file for the dataset
                 to be used for testing. Defaults to None.
-            unlabeled_data_roots (Optional[str], optional): The root address of the unlabeled dataset
+            unlabeled_data_roots (str | None, optional): The root address of the unlabeled dataset
                 to be used for training. Defaults to None.
-            unlabeled_file_list (Optional[str], optional): The file where the list of unlabeled images is declared.
+            unlabeled_file_list (str | None, optional): The file where the list of unlabeled images is declared.
                 Defaults to None.
-            data_format (Optional[str], optional): The format of the dataset. Defaults to None.
+            data_format (str | None, optional): The format of the dataset. Defaults to None.
         """
         super().__init__(
             task,
@@ -179,7 +182,7 @@ class MMActionDataset(MMXDataset):
                 Defaults to None.
 
         Returns:
-            Optional[TorchDataset]: The built TorchDataset object, or None if the dataset is empty.
+            TorchDataset | None: The built TorchDataset object, or None if the dataset is empty.
         """
         if pipeline is None:
             pipeline = get_default_pipeline(subset)

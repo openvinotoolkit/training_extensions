@@ -18,7 +18,6 @@ from otx.v2.api.entities.datasets import DatasetEntity
 from otx.v2.api.entities.label import LabelEntity
 
 
-# pylint: disable=too-many-instance-attributes
 @DATASETS.register_module()
 class OTXActionClsDataset(RawframeDataset):
     """Wrapper that allows using a OTX dataset to train mmaction models."""
@@ -67,7 +66,7 @@ class OTXActionClsDataset(RawframeDataset):
 
     def _update_meta_data(self) -> None:
         """Update video metadata of each item in self.otx_dataset."""
-        video_info:dict = {}
+        video_info: dict = {}
         start_index = 0
         for idx, item in enumerate(self.otx_dataset):
             metadata = item.get_metadata()[0].data

@@ -30,10 +30,7 @@ MMACTION_DEFAULT_CONFIG = Config.fromfile(MMACTION_DEFAULT_CONFIG_PATH)
 class MMActionEngine(MMXEngine):
     """The MMActionEngine class is responsible for running inference on pre-trained models."""
 
-    def __init__(
-        self,
-        work_dir: str | Path | None = None,
-    ) -> None:
+    def __init__(self, work_dir: str | Path | None = None) -> None:
         """Initialize a new instance of the MMActionEngine class.
 
         Args:
@@ -43,7 +40,7 @@ class MMActionEngine(MMXEngine):
         super().__init__(work_dir=work_dir)
         self.registry = MMActionRegistry()
 
-    def _update_eval_config(self, evaluator_config: list | dict | None) -> list | dict | None:
+    def _update_eval_config(self, evaluator_config: dict | None) -> dict | None:
         if evaluator_config is None or not evaluator_config:
             evaluator_config = {
                 "type": "AccMetric",
@@ -51,19 +48,13 @@ class MMActionEngine(MMXEngine):
             }
         return evaluator_config
 
-    def _update_config(
-        self,
-        func_args: dict,
-        **kwargs,
-    ) -> tuple[Config, bool]:
+    def _update_config(self, func_args: dict, **kwargs) -> tuple[Config, bool]:
         config, update_check = super()._update_config(func_args, **kwargs)
 
         for subset in ("val", "test"):
             if f"{subset}_dataloader" in config and config[f"{subset}_dataloader"] is not None:
                 evaluator_config = self._get_value_from_config(f"{subset}_evaluator", func_args)
-                config[f"{subset}_evaluator"] = self._update_eval_config(
-                    evaluator_config=evaluator_config,
-                )
+                config[f"{subset}_evaluator"] = self._update_eval_config(evaluator_config=evaluator_config)
 
         if hasattr(config, "visualizer") and config.visualizer.type not in VISUALIZERS:
             config.visualizer = {
@@ -153,7 +144,7 @@ class MMActionEngine(MMXEngine):
         task: str | None = "VideoRecognition",
         codebase: str | None = "mmaction",
         export_type: str = "OPENVINO",  # "ONNX" or "OPENVINO"
-        deploy_config: str | None = None,  # File path only?
+        deploy_config: str | dict | None = None,
         device: str = "cpu",
         input_shape: tuple[int, int] | None = None,
     ) -> dict:
@@ -212,7 +203,7 @@ class MMActionEngine(MMXEngine):
         self.dumped_config["model"] = model_cfg
         self.dumped_config["default_scope"] = "mmengine"
 
-        # Configure deploy_cfg
+        # deploy_cfg
         codebase_config = None
         ir_config = None
         backend_config = None
@@ -224,12 +215,13 @@ class MMActionEngine(MMXEngine):
         else:
             deploy_config_dict = {}
 
-        # CODEBASE_COFIG Update
+        # codebase_config update
         if codebase_config is None:
             codebase = codebase if codebase is not None else self.registry.name
             codebase_config = {"type": codebase, "task": task}
             deploy_config_dict["codebase_config"] = codebase_config
-        # IR_COFIG Update
+        
+        # if_config update
         if ir_config is None:
             ir_config = {
                 "type": "onnx",
@@ -266,7 +258,6 @@ class MMActionEngine(MMXEngine):
                         },
                     },
                 ],
-                "input_metas": {"mode": "predict"},
                 "mo_options":{
                     "args":{
                         "--source_layout": "?bctwh",
