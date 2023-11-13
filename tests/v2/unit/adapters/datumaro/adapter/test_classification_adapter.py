@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from pathlib import Path
-from typing import Dict, TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional
 
 from otx.v2.adapters.datumaro.adapter.classification_dataset_adapter import (
     ClassificationDatasetAdapter,
@@ -57,8 +57,8 @@ class TestOTXClassificationDatasetAdapter:
         assert Subset.TESTING in self.test_dataset_adapter.dataset
 
     def test_get_otx_dataset(self) -> None:
-        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), Dict)
-        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), Dict)
+        assert isinstance(self.train_dataset_adapter.get_otx_dataset(), dict)
+        assert isinstance(self.test_dataset_adapter.get_otx_dataset(), dict)
 
     def test_get_label_schema(self) -> None:
         _ = self.train_dataset_adapter.get_otx_dataset()
@@ -155,10 +155,10 @@ class TestSelfSLClassificationDatasetAdapter:
 
     def test_get_otx_dataset(self) -> None:
         dataset_imagenet = self.train_dataset_adapter_imagenet.get_otx_dataset()
-        assert isinstance(dataset_imagenet, Dict)
+        assert isinstance(dataset_imagenet, dict)
         assert len(self.train_dataset_adapter_imagenet.get_label_schema().get_labels(False)) == 2
         dataset_only_images = self.train_dataset_adapter_images_only.get_otx_dataset()
-        assert isinstance(dataset_only_images, Dict)
+        assert isinstance(dataset_only_images, dict)
         lables = self.train_dataset_adapter_images_only.get_label_schema().get_labels(False)
         assert len(lables) == 1
         assert lables[0].name == "fake_label"
