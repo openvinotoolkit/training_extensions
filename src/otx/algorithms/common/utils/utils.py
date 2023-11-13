@@ -25,6 +25,13 @@ except ImportError:
     HPU_AVAILABLE = False
     htorch = None
 
+XPU_AVAILABLE = None
+try:
+    import intel_extension_for_pytorch as ipex
+except ImportError:
+    XPU_AVAILABLE = False
+    ipex = None
+
 
 class UncopiableDefaultDict(defaultdict):
     """Defauldict type object to avoid deepcopy."""
@@ -169,9 +176,12 @@ def embed_onnx_model_data(onnx_file: str, extra_model_data: Dict[Tuple[str, str]
     onnx.save(model, onnx_file)
 
 
-def is_xpu_available():
+def is_xpu_available() -> bool:
     """Checks if XPU device is available."""
-    return hasattr(torch, "xpu") and torch.xpu.is_available()
+    global XPU_AVAILABLE  # noqa: PLW0603
+    if XPU_AVAILABLE is None:
+        XPU_AVAILABLE = hasattr(torch, "xpu") and torch.xpu.is_available()
+    return XPU_AVAILABLE
 
 
 def is_hpu_available() -> bool:

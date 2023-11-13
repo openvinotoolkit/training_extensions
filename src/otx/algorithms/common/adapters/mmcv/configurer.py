@@ -182,13 +182,7 @@ class BaseConfigurer:
         elif torch.cuda.is_available():
             cfg.device = "cuda"
         elif is_xpu_available():
-            try:
-                import intel_extension_for_pytorch as ipex  # noqa: F401
-
-                cfg.device = "xpu"
-            except ModuleNotFoundError:
-                cfg.device = "cpu"
-                cfg.gpu_ids = range(-1, 0)
+            cfg.device = "xpu"
         else:
             cfg.device = "cpu"
             cfg.gpu_ids = range(-1, 0)
