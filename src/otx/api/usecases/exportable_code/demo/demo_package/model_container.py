@@ -1,7 +1,6 @@
 """ModelContainer class used for loading the model in the model wrapper."""
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2022-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 import importlib
 import json
@@ -64,7 +63,8 @@ class ModelContainer:
                 else ["Normal", "Anomaly"]
             )
         else:
-            self.model_parameters["labels"] = []
+            # model already contains correct labels
+            self.model_parameters.pop("labels")
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
